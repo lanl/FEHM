@@ -2385,7 +2385,7 @@ cHari every particle
       implicit none
       integer inmatrix, infractu, tempbox, idpr, idpr2, itmpbox
       real*8 ret_weight_fac
-      real*8 zmax
+      real*8 :: zmax = -9e30
 
       return_flag = 0
 

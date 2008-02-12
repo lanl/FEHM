@@ -154,6 +154,6 @@
 
       integer iaroot
       character*110 avs_root, geoname
-      logical net_flux, vol_flux
+      logical net_flux, vol_flux, dit_flag
 
       end module avsio

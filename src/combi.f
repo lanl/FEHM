@@ -315,12 +315,30 @@
       real*8, allocatable ::   sx_y(:)
       real*8, allocatable ::   sx_z(:)
 
+c arrays for interface reduction
+      integer nitfcpairs, ncoldpairs
+      integer nitfcitfc, nitfcsizes
+      integer, allocatable ::  filter_flag(:)
+      integer, allocatable ::  zone_pair(:,:)
+      integer, allocatable ::  zonec_pair(:,:)
+      integer, allocatable ::  itfcsize(:)
+      real*8, allocatable ::   red_factor(:)
+      real*8, allocatable ::   ftn_factor(:)
+      real*8, allocatable ::   itfcporsize(:,:)
+      real*8, allocatable ::   itfcprobsize(:,:)
+
+      integer, allocatable ::  nflxc(:)
+
 c
 c arrays for use with rate-limited processes (gdpm etc)
 c
       integer igdpm_rate, ngdpm_rate
       integer, allocatable ::  igdpm_rate_nodes(:)
-	real*8, allocatable ::   gdpm_cond(:)
+      real*8, allocatable ::   gdpm_cond(:)
       real*8 val_conh, val_cont
+
+c arrays for parameter designation in restart files
+      character*4 rstr(6), rstw(6)
+
       end module combi
 

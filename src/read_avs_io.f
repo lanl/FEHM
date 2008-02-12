@@ -195,6 +195,7 @@ c     assign defaults
       iozid = 0
       net_flux = .false.
       vol_flux = .false.
+      dit_flag = .false.
       
       if (iptty .ne. 0) then
          write(iptty, 100)
@@ -213,6 +214,10 @@ c     unformatted output, keyword: unformatted
          elseif((chdum(1:2) .eq. 'fo').or.(chdum(1:2) .eq. 'FO'))then
 c     formatted output, keyword: formatted
             ioformat = 2
+
+         elseif((chdum(1:2) .eq. 'no').or.(chdum(1:2) .eq. 'NO'))then
+c     no output at dits, keyword: nodit
+            dit_flag = .TRUE.
 
          elseif((chdum(1:1) .eq. 'm').or.(chdum(1:1) .eq. 'M'))then
 c     output grid material properties, keyword: material

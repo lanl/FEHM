@@ -498,19 +498,7 @@ c
       real*8              day_save_ss, fdum_last, aiaa_save, daymax_save
       real*4              vernum
 
-      real*8, allocatable :: red_factor(:)
-      real*8, allocatable :: ftn_factor(:)
-      integer, allocatable :: filter_flag(:)
-      integer, allocatable :: zone_pair(:,:)
-      integer, allocatable :: zonec_pair(:,:)
-      integer, allocatable :: itfcsize(:)
-      real*8, allocatable :: itfcporsize(:,:)
-      real*8, allocatable :: itfcprobsize(:,:)
-      integer nitfcpairs, ncoldpairs
-      integer nitfcitfc, nitfcsizes
-
-      integer, allocatable :: nflxc(:)
-
+      character* 3        header_flag
       character* 4        altc, accm
       character* 5        sssol
       character* 8        jtime
@@ -523,7 +511,7 @@ c
       logical macroread(nmacros)
 
       logical tpor_flag, compute_flow, hist_flag, reverse_flow
-      logical out_zones, spercent
+      logical out_zones, spercent, mass_read, pres_read
 
       end module comai
 

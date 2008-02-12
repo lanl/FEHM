@@ -302,7 +302,8 @@ c local
       logical opend
       logical exists
       integer ilen, rlen, flen
-      integer ityp, max_con  
+      integer ityp
+      integer :: max_con = 0
       character*100 filename, tail
       character*72 cline
       character*32 sxformat

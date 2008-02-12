@@ -336,7 +336,7 @@ C     the length of each component.
             mout = mout + 2
          end if
          nmaterial    = iomaterial * mout
-         nmaterial_dual  = nmaterial_dual * iodual 
+         nmaterial_dual  = nmaterial * iodual 
       else
          nmaterial    = iomaterial
          nmaterial_dual  = iodual * iomaterial
@@ -399,8 +399,9 @@ C     Open with ascii format, not binary
             end if
             
             inquire (lu, OPENED=opnd)
-            if (.not. opnd .and. .not. exists) then
+            if (.not. opnd .or. geoname .eq. ' ') then
 ! Use root name determined above
+               geoname = ''
                geoname(1:iaroot) = avs_root(1:iaroot)
                geoname(iaroot+1:iaroot+3) = "geo"
                if (geoname .eq. nmfil(3)) then

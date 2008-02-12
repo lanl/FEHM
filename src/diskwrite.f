@@ -147,6 +147,12 @@
       character*11 file_format
       parameter(tolw=1.d-99,sat_dum= 1.d00)
       integer jx,mi,ncount,nc,nc1,nc2,nc3,nd1,nd2,nd3,j,nx,ny,ii,i
+      logical log_flag
+
+      if (header_flag .eq. 'new') then
+         call diskwrite_new
+         return
+      end if
 
       call dated (jdate,jtime)
       inquire (isave, opened = ex)
@@ -393,8 +399,9 @@ c     write(isave) (max(pho(mi)-phi_inc,tolw),  mi=1,n )
 
       nsave  =  1
 
-      if (iccen.eq.1) call diskc
-      if (ptrak) call diskp
+      log_flag = .TRUE.
+      if (iccen.eq.1) call diskc(log_flag)
+      if (ptrak) call diskp(log_flag)
       if (istrs.ne.0) call  stress  ( 4 )
 
       close  ( isave )

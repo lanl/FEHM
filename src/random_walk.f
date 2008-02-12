@@ -313,6 +313,7 @@ c     Lichtner et al 99, eq 59-62 and 76-78
                   r(1,3)=-1.
                   r(2,2)=+1.
                   r(3,1)=+1.
+                  sig2 = 1.
                else
                   sbeta=sqrt(beta)
                   sig=uz/u

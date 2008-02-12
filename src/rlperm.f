@@ -449,8 +449,9 @@ c
 
 
       integer iz,ndummy,i,irlpd,mi,ieosd,it,ir,j,num_models,ireg
-      real*8 alpha,beta,alamda,alpi,smcut,slcut,fac,ds,dhp,rl,rv
-      real*8 drls,drvs,rp1,rp2,rp3,rp4,denom,star,hp,rl1,rv1
+      real*8 alpha,beta,alamda,alpi,smcut,slcut,fac,ds,dhp
+      real*8 rp1,rp2,rp3,rp4,denom,star,hp,rl1,rv1
+      real(8) :: rl = 1., rv = 1., drls = 0., drvs = 0.
       real*8 drls1,drvs1,akf,akm,porf,permb,sl
       real*8 smcutm,smcutf,alpham,alamdam,facf
       real*8 rpa1, rpa2, rpa3, rpa4, rpa5      

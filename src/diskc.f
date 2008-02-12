@@ -1,4 +1,4 @@
-      subroutine  diskc
+      subroutine  diskc(read_trac)
 !***********************************************************************
 !  Copyright, 2004,  The  Regents  of the  University of California.
 !  This program was prepared by the Regents of the University of 
@@ -222,21 +222,44 @@ C***********************************************************************
 
       integer isolflg,nspecl,iq,mi
       real*8 dumm
+      character*4 tracword
+      logical read_trac
 
       nspecl = 0
       if ( nsave .eq. 0 )  then
          isolflg = 0
-         read(iread ,   *,end=10) nspecl
-         isolflg = 1
+         if (wdd1(5:8) .eq. 'trac') then
+            if (bin_flag .eq. 1 .or. bin_flag .eq. 2) then
+               read(iread, end = 10, err = 10) nspecl
+            else
+               read(iread ,   *, end=10, err = 10) nspecl
+            end if
+            isolflg = 1
+         else if (read_trac) then
+            if (bin_flag .eq. 1 .or. bin_flag .eq. 2) then
+               read(iread, end = 10, err = 10) tracword
+               read(iread, end = 10, err = 10) nspecl
+            else
+               read(iread ,   *, end=10, err = 10) tracword
+               read(iread ,   *, end=10, err = 10) nspecl
+            end if
+            if (tracword .eq. 'trac') isolflg = 1
+         end if
  10      continue
-         if( isolflg .eq. 0 .or. wdd1(5:8) .ne. 'trac') then
+         if( isolflg .eq. 0) then
 c     
 c     either eof found or particle tracking info found (no
 c     concentration data to read in
 c     
-            if (iout .ne. 0) write(iout  ,6000)
-            if ( iatty .gt. 0 )  write(iatty ,6000)
- 6000       format(/,1x,'no tracer data present on restart file')
+            write(ierr, 6000)
+            if (iout .ne. 0) write(iout, 6000)
+            if (iptty .gt. 0 ) write(iptty, 6000)
+ 6000       format('Tracer data not found in restart file')
+         else if (.not. read_trac) then
+            write(ierr, 6001)
+            if (iout .ne. 0) write(iout, 6001)
+            if (iptty .gt. 0 ) write(iptty, 6001)
+ 6001       format('Tracer data found in restart file will not be used')
          else
             do iq=1,nspecl
                npn=npt(iq)
@@ -266,27 +289,25 @@ c
       else
          if ( isave .gt. 0 )  then
             if (bin_flag .eq. 1 .or. bin_flag .eq. 3) then
-               if (isave .ne. 0) write(isave) nspeci
+               if (header_flag .eq. 'new') write(isave) 'trac'
+               write(isave) nspeci
                do iq=1,nspeci
                   npn    =  npt(iq)
                   if( icns(iq) .eq. -2 ) then
-                     if (isave .ne. 0) write(isave) 
-     &                    (anv(mi+npn), mi = 1,n)
+                     write(isave) (anv(mi+npn), mi = 1,n)
                   else
-                     if (isave .ne. 0) write(isave) 
-     &                    (an(mi+npn), mi = 1,n)
+                     write(isave) (an(mi+npn), mi = 1,n)
                   end if
                enddo
             else
-               if (isave .ne. 0) write(isave,*) nspeci
+               if (header_flag .eq. 'new') write(isave, *) 'trac'
+               write(isave, *) nspeci
                do iq=1,nspeci
                   npn    =  npt(iq)
                   if( icns(iq) .eq. -2 ) then
-                     if (isave .ne. 0) write(isave ,6100)  
-     &                    (anv(mi+npn), mi = 1,n)
+                     write(isave , 6100) (anv(mi+npn), mi = 1,n)
                   else
-                     if (isave .ne. 0) write(isave ,6100)  
-     &                    (an(mi+npn), mi = 1,n)
+                     write(isave , 6100) (an(mi+npn), mi = 1,n)
                   end if
  6100             format(4g20.10)
                enddo

@@ -135,13 +135,14 @@ c
       integer chngsign, iroot
       integer i, i1, i2, if, iff1, ii, iii, iz, j, jj, jjj, kb
       integer neqp1, nflx_old, nmatavw, nmat2avw,  node1, node2
-      real*8  area_t, axy, axyf
+      real*8  area_t, axyf
       real*8  coordx1, coordy1, coordz1, coordx2, coordy2, coordz2
       real*8  cosx, cosy, cosz
       real*8  dili, dilkb, divi, divkb, dis, dis_max
-      real*8  fid, fid1, flx12vd, flx12ld, tol, tolf, vxy, vxyf
+      real*8  fid, fid1, flx12vd, flx12ld, tol, tolf, vxyf
       real*8  x1, x2, y1, y2, z00, z1, z2
       real*8  x_flx, y_flx, z_flx
+      real(8) :: axy = 0., vxy = 0.
       logical null1
       parameter(z00=0.0d00, tolf = 1.d-50)
 

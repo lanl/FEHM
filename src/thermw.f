@@ -809,15 +809,17 @@ C**********************************************************************
       real*8 rnsd3,rnsn,rnsd,rns,rov,drspn1,drspn2,drspn,drospd
       real*8 drsen1,drsen2,drsen,drostd,visn1,visn2,visn3,visn,visd1
       real*8 visd2,visd3,visd,vis,xvisv,dvspn1,dvspn2,dvspn,dvispd
-      real*8 dvisvp,dvsen1,dvsen2,dvsen,dvised,dvisvt,dtd,sl,qdis
+      real*8 dvisvp,dvsen1,dvsen2,dvsen,dvised,dvisvt,sl,qdis
       real*8 cp,por,vol,pldif,permsd,eskd,eqdum,rag,sig
-      real*8 rop,rop1,damp,daep,daep1,damh,daeh,dragp,dsigp,dsige
+      real*8 rop,rop1,daep1,dragp,dsigp,dsige
       real*8 den1,roe,dql,hprod,dhprdp,dhprde,htc,tbound,hflux
       real*8 dhflxp,sbound,cprd,edif,denrd,vfd,rl,dvfp,tfun
       real*8 tfunn,tfund,dtpsn,dtpsd,dpldt,psat,vfcal,rop2,daep2
-      real*8 dqv,dhflxe,dtps,drovp,drovt
+      real*8 dqv,dhflxe,drovp,drovt
       real*8 xa,xa2,xa3,xa4
       real*8, allocatable :: sto1(:)
+      real(8) :: damh = 0., damp = 0., daep = 0., daeh = 0.
+      real(8) :: dtps = 0., dtd = 0.
 
       integer i_mem_rlp
       save i_mem_rlp

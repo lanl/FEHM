@@ -146,7 +146,8 @@ c bhl_11/3/06
       character*32 cmsg(input_max)
       character*100 input_line
 
-      integer li,lns,lns1,itemp,np_temp,np_temp_max
+      integer li,lns,lns1,itemp,np_temp
+      integer :: np_temp_max = 0
 
 c  dummy is number of particles, already read in
  !cli to be compatible with V2.2, the code will use nstep when

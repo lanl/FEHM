@@ -400,7 +400,8 @@ c code written by g zyvoloski feb 1980
 
       real*8 bpd,tbnd,pcid,pv,dtsatp,dpsats,dpsatt,tdumm
       integer iflg,ico2d,i,istflag,mi,it
-      real*8 hum,alp,beta,sr,smax,qtcd,qtotci,dencht
+      real*8 hum,alp,beta,sr,smax,qtcd,dencht
+      real(8) :: qtotci = 0.
       integer mlev1,mlev2,mdd,md
       real*8 rqd,qcd,psatl,qcmax
       logical ngas_flag

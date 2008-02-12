@@ -1,4 +1,4 @@
-      subroutine diskp
+      subroutine diskp(read_ptrk)
 !***********************************************************************
 !  Copyright, 2004,  The  Regents  of the  University of California.
 !  This program was prepared by the Regents of the University of 
@@ -93,20 +93,43 @@ C***********************************************************************
       integer imsg(4),msg(4)
       real*8  xmsg(4)
       character*32 cmsg(4)
+      character*4 ptrkword
+      logical read_ptrk
             
 ! zvd 22-Jan-04 Fluxes are no longer read or written in diskp
 
       if (nsave .eq. 0 ) then
          isolflg = 0
-         read(iread, *, end = 10) dummy_string
-         isolflg=1
+         if (wdd1(5:8) .eq. 'ptrk') then
+            if (bin_flag .eq. 1 .or. bin_flag .eq. 2) then
+               read(iread, end = 10, err = 10) dummy_string
+            else
+               read(iread, *, end = 10, err = 10) dummy_string
+            end if
+            isolflg=1
+         else if (read_ptrk) then
+            if (bin_flag .eq. 1 .or. bin_flag .eq. 2) then
+               read(iread, end = 10, err = 10) ptrkword
+               read(iread, end = 10, err = 10) dummy_string
+            else
+               read(iread, *, end = 10, err = 10) ptrkword
+               read(iread, *, end = 10, err = 10) dummy_string
+            end if
+            if (ptrkword .eq. 'ptrk') isolflg=1
+         end if
  10      continue
-         if (isolflg.eq.0 .or. wdd1(5:8) .ne. 'ptrk') then
+         if (isolflg.eq.0) then
 c     either eof found or trac data is in the file instead of particle
 c     tracking data, so we continue without reading stuff in
             if (iout .ne. 0) write(iout,6000)
             if (iatty.gt.0) write(iatty,6000)
- 6000       format(/,1x,'no particle tracking on restart file')
+ 6000       format('Particle tracking data not found in restart file')
+         else if (.not. read_ptrk) then
+            write(ierr, 6001)
+            if (iout .ne. 0) write(iout, 6001)
+            if (iptty .gt. 0 ) write(iptty, 6001)
+ 6001       format('Particle tracking data found in restart file will',
+     &           ' not be used')
          else
 c     read in data
             call parse_string(dummy_string,imsg,msg,xmsg,cmsg,nwds)
@@ -175,21 +198,44 @@ c     fix data
          endif
          
       else if ((isave.gt.0)) then
-         select case (prnt_rst)
-         case (1, 2, 11, 12, 21, 22, 31, 32)
-            write(isave,*) num_particles(1), rseed, rseed_release
-            write(isave,*) (box(i,1),i=1,num_particles(1))
-            write(isave,*) (frac_done(i,1),i=1,num_particles(1))
-            write(isave,*) (theta(i,1),i=1,num_particles(1))
-            write(isave,*) (timeleft(i,1),i=1,num_particles(1))
-         case (-1, -2, -11, -12, -21, -22, -31, -32)
-            write(isave,*) num_particles(1), -rseed
-            write(isave,*) (box(i,1),i=1,num_particles(1))
-            write(isave,*) (timeleft(i,1),i=1,num_particles(1))
-         case default
+         if (bin_flag .eq. 1 .or. bin_flag .eq. 3) then
+            select case (prnt_rst)
+            case (1, 2, 11, 12, 21, 22, 31, 32)
+               if (header_flag .eq. 'new') write(isave) 'ptrk'
+               write(dummy_string, *)  num_particles(1), rseed, 
+     &              rseed_release
+               write(isave) dummy_string
+               write(isave) (box(i,1),i=1,num_particles(1))
+               write(isave) (frac_done(i,1),i=1,num_particles(1))
+               write(isave) (theta(i,1),i=1,num_particles(1))
+               write(isave) (timeleft(i,1),i=1,num_particles(1))
+            case (-1, -2, -11, -12, -21, -22, -31, -32)
+               if (header_flag .eq. 'new') write(isave,*) 'ptrk'
+               write(dummy_string, *) num_particles(1), -rseed
+               write(isave) dummy_string
+               write(isave) (box(i,1),i=1,num_particles(1))
+               write(isave) (timeleft(i,1),i=1,num_particles(1))
+            case default
 ! Do nothing, particle data is not written to restart file
-         end select
-         
+            end select
+         else
+            select case (prnt_rst)
+            case (1, 2, 11, 12, 21, 22, 31, 32)
+               if (header_flag .eq. 'new') write(isave,*) 'ptrk'
+               write(isave,*) num_particles(1), rseed, rseed_release
+               write(isave,*) (box(i,1),i=1,num_particles(1))
+               write(isave,*) (frac_done(i,1),i=1,num_particles(1))
+               write(isave,*) (theta(i,1),i=1,num_particles(1))
+               write(isave,*) (timeleft(i,1),i=1,num_particles(1))
+            case (-1, -2, -11, -12, -21, -22, -31, -32)
+               if (header_flag .eq. 'new') write(isave,*) 'ptrk'
+               write(isave,*) num_particles(1), -rseed
+               write(isave,*) (box(i,1),i=1,num_particles(1))
+               write(isave,*) (timeleft(i,1),i=1,num_particles(1))
+            case default
+! Do nothing, particle data is not written to restart file
+            end select
+        end if 
       endif
       
       return

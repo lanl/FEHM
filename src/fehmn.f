@@ -491,17 +491,19 @@ c     run of fehm. It is initialized to 0 in comai
       integer open_file
 
       logical used
-      real*8 tims_save, day_saverip, contr_riptot, in3save
+      real*8 tims_save, day_saverip, in3save
       real*8 deneht, denht, eskd, enthp, flemax, flmax, prav, 
-     *     pravg, tajj, tas, tassem, tasii, teinfl, tinfl, 
-     *     tmav, tmavg, tyming,inflow_thstime,inen_thstime
+     *     pravg, tajj, tas, teinfl, tinfl, tmav, tmavg, tyming
+      real(8) :: inflow_thstime = 0., inen_thstime = 0.
+      real(8) :: contr_riptot = 1.0d+30
+      real(8) :: tasii = 0., tassem = 0.
       real*4 caz(2)
 c*** water table rise modification
       real*8 water_table_old
 c*** water table rise modification
       logical it_is_open
-      integer im,ja,mi, tscounter, flowflag, i
-      integer :: ichk = 0
+      integer im, ja, mi, i
+      integer :: ichk = 0, tscounter = 0, flowflag = 0
       integer number_of_outbuffers, jpr
       integer :: n_input_arguments = 0
       integer index_N_large, index_in_species

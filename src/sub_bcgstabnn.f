@@ -90,7 +90,8 @@ c     .. Parameters ..
 c
 c rearranged  next line (119)to would complile on PC 
       integer maxit, iter, idof, iptty, maxor
-      integer l, n, mxmv, ldw, ldrw, iwork(l+1), info
+      integer l, n, ldw, ldrw, iwork(l+1), info
+      integer :: mxmv = 0
       double precision x(*), b(*), tol
       double precision work(n*idof,3+2*(l+1)), rwork(l+1,3+2*(l+1))
 c gaz 8-23-2002 rwork(l+1,3+2*(l+1)) > rwork(l+2,3+2*(l+1)) above

@@ -80,6 +80,7 @@ c
       real*8 head_ck1, head_ck2, strd_wtsi, hgrid
       real*8 hfac_h,hfac_l,pt,p_dum,wt_elev2
       character*80 form_string
+      logical:: debug_flag = .FALSE.
       parameter (htol=1.d-15,dentol=1.d+1)
       parameter (min_sat=1.d-5, strd_wtsi= 1.d00)
       parameter (hfac_h=1.00d0, hfac_l=1.00d0)
@@ -199,15 +200,19 @@ c     is reasonable, if not, release it
                         wellim(inode)=1.d-15
                         s(inode) = rlptol
                         ka(inode) = 0
-                        if (iptty .ne. 0) then
-                           write(iptty, 101) inode
-                           write(iptty, 102) hnode, p_dum
-                           write(iptty, 103) cord(inode,1),cord(inode,2)
-                        end if
-                        if (iout .ne. 0) then
-                           write(iout, 101) inode
-                           write(iout, 102) hnode, p_dum
-                           write(iout, 103) cord(inode,1), cord(inode,2)
+                        if (debug_flag) then
+                           if (iptty .ne. 0) then
+                              write(iptty, 101) inode
+                              write(iptty, 102) hnode, p_dum
+                              write(iptty, 103) cord(inode,1),
+     &                             cord(inode,2)
+                           end if
+                           if (iout .ne. 0) then
+                              write(iout, 101) inode
+                              write(iout, 102) hnode, p_dum
+                              write(iout, 103) cord(inode,1), 
+     &                             cord(inode,2)
+                           end if
                         end if
                      endif
                   else
@@ -275,18 +280,20 @@ c     release head from original node
                endif
  803        enddo
          end if
-         ishfile = open_file('new-specified-heads','unknown')
-         ishfile2 = open_file('new-specified-heads.csv','unknown')
-         write(ishfile,'(a4)') 'flow'
-         do ii=1,n0
-            call headctr(4,ii,pflow(ii),hmin)
-            if(ka(ii).lt.0.) write(ishfile,203) ii,ii,1,hmin,1.,
-     &           wellim(ii)/1.0e+06
-            write(ishfile2,206) (cord(ii,mmm),mmm=1,3),hmin
-          end do
-         write(ishfile,'(a4)') ' '
-         close(ishfile)
-         close(ishfile2)
+         if (debug_flag) then
+            ishfile = open_file('new-specified-heads','unknown')
+            ishfile2 = open_file('new-specified-heads.csv','unknown')
+            write(ishfile,'(a4)') 'flow'
+            do ii=1,n0
+               call headctr(4,ii,pflow(ii),hmin)
+               if(ka(ii).lt.0.) write(ishfile,203) ii,ii,1,hmin,1.,
+     &              wellim(ii)/1.0e+06
+               write(ishfile2,206) (cord(ii,mmm),mmm=1,3),hmin
+            end do
+            write(ishfile,'(a4)') ' '
+            close(ishfile)
+            close(ishfile2)
+         end if
 
  101     format (1x,'releasing head in flow macro at node ', i8)
  102     format (1x,'z(node) = ', g16.9, ' applied head was ', g16.9)

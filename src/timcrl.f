@@ -234,6 +234,7 @@ C***********************************************************************
       use comdti
       use comsplitts
       use comai
+      use avsio, only : dit_flag
       implicit none
 
       real*8 dafac, daycrl, pravg, tfacd, tmavg
@@ -304,7 +305,9 @@ c     only use dits if transient)
             day    =  ditnd - days
             ilt    =  1
             daysp  =  ditnd
-            icontr =  1
+c If dit_flag is true, contour data will not be written for each dit
+c New cont keyword "nodit"
+            if (.not. dit_flag) icontr =  1
             if (icgts .ne. 0)  then
                iprtout    =  iabs(itc(nicg))
                iac    =  iprtout

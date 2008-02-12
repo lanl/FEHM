@@ -684,7 +684,7 @@ c**** write number of plot nodes, node numbers and coordinates ****
             write(ishisp, form1_string) ptime,  
      &           (max(pci(nskw(i)),1.d-20), i=1,m)
          end if
-         call flush(ishisp)
+c         call flush(ishisp)
       end if
       if (ishist .ne. 0 ) then
 ! Output temperature in degrees C
@@ -696,7 +696,7 @@ c**** write number of plot nodes, node numbers and coordinates ****
             write(ishist, form2_string) ptime, 
      &           (max(t(nskw(i)), 1.d-20), i= 1, m)
          end if
-         call flush(ishist)
+c         call flush(ishist)
       end if
       if(ishiswt.ne.0) then
 ! Output water table elevations
@@ -713,7 +713,7 @@ c**** write number of plot nodes, node numbers and coordinates ****
             else
                call wtsictr(11)
             end if
-            call flush(ishiswt)
+c            call flush(ishiswt)
          end if
       endif
       if (ishishd .ne. 0 ) then
@@ -764,7 +764,7 @@ c
      &              i= 1, m)
             end if    
          end if
-         call flush(ishishd)
+c         call flush(ishishd)
       end if
       if (ishiss .ne. 0 ) then
 ! Output saturations
@@ -777,7 +777,7 @@ c
             end if
          end do
          write(ishiss, form1_string) ptime, (dumv(i), i= 1, m)
-         call flush(ishiss)
+c         call flush(ishiss)
       end if
       if (ishiswc .ne. 0 ) then
 ! Output water contents
@@ -792,7 +792,7 @@ c
             end if
          end do
          write(ishiswc, form1_string) ptime, (dumv(i), i= 1, m)
-         call flush(ishiswc)
+c         call flush(ishiswc)
       end if
       if (ishisf .ne. 0 ) then
 ! Output flow in kg/s
@@ -804,7 +804,7 @@ c
             endif
          end do
          write(ishisf, form1_string) ptime, (dumv(i), i= 1, m)
-         call flush(ishisf)
+c         call flush(ishisf)
       end if
       if (ishise .ne. 0 ) then
 ! Output enthalpy in MJ/kg
@@ -816,7 +816,7 @@ c
             write(ishise, form2_string) ptime,
      &           (max(qh(nskw(i)), 1.d-20), i= 1, m)
          end if
-         call flush(ishise)
+c         call flush(ishise)
       end if
       if (ishishm .ne. 0 ) then
 ! Output humidity
@@ -826,12 +826,12 @@ c
          end do
          write(ishishm, form1_string) ptime, (max(dumv(i), 1.d-20), 
      &        i= 1, m) 
-         call flush(ishishm)
+c         call flush(ishishm)
       end if
       if (ishisfz .ne. 0) then
 ! Output zone fluxes
          call flxz (2, ptime)
-         call flush(ishisfz)
+c         call flush(ishisfz)
       end if
       if (ishisg .ne. 0 ) then
 ! Output global variables
@@ -859,7 +859,7 @@ c
      &              teoutf, totalein, qte
             end select
          end if
-         call flush(ishisg)
+c         call flush(ishisg)
       end if
 
       last_step = l

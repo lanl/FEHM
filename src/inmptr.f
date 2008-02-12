@@ -140,7 +140,8 @@ c                  George Zyvoloski, EES-5
       integer:: dump10,idummy,max1d2,isimnum,irfile,set_value
       integer:: failed_nodes,itmp_shrink,numparams,temp_aidex
       integer:: temp_aidex_1,total_1d_size,max1d, n_col_irv, ithn
-      integer:: np_temp, np_temp_max, lns, lns1, li 
+      integer:: np_temp, lns, lns1, li 
+      integer::  np_temp_max = 0
       integer:: lnwds, nwds, ii   !cli
       integer:: icount, colloid_counter, rev_count, irrev_count
 

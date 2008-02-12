@@ -200,15 +200,67 @@
       real*8 dummyreal,tolw,sat_dum,satr
       parameter(tolw=1.d-99,sat_dum= 1.d00)
       integer jx,mi,ncount,nc,nc1,nc2,nc3,nd1,nd2,nd3,j,nx,ny,ii,i
+      integer modneq, rerr
       character*80 dumtitle
       character*30 dumver
       character*11 dumdate, dumflag
       character*8 dumtime
+      character*4 :: geom_type = ''
+      logical, dimension (2) :: read_trac = .FALSE.
+      logical, dimension (2) :: read_ptrk = .FALSE.
+      logical, dimension (2) :: read_temp = .FALSE.
+      logical, dimension (2) :: read_pres = .FALSE.
+      logical, dimension (2) :: read_gasp = .FALSE.
+      logical, dimension (2) :: read_sat  = .FALSE.
+      logical, dimension (2) :: read_flux = .FALSE.
+      logical, dimension (2) :: read_mass = .FALSE.
 
+      mass_read = .FALSE.
       inquire (iread, opened = ex)
       if (ex) close (iread)
       open (iread,file=nmfil(6),status=cstats(6),form=cform(6))
-           
+
+      if (iout .ne. 0) write (iout, 10) trim(nmfil(6))
+      if (iptty .ne. 0) write (iptty, 10) trim(nmfil(6))
+ 10   format ('Reading initial condition data from file ', a)
+
+      do i = 1, 6
+         select case (rstr(i))
+         case ('all')
+            if (ico2 .ge. 0) read_temp(1) = .TRUE.
+            read_pres(1) = .TRUE.
+            if (irdof .ne. 13) read_sat(1)  = .TRUE.
+            if (ico2 .gt. 0) read_gasp(1) = .TRUE.
+            if (iccen .ne. 0) read_trac(1) = .TRUE.
+            if (ptrak) read_ptrk(1) = .TRUE.
+         case ('temp')
+            read_temp(1) = .TRUE.
+         case ('pres')
+            read_pres(1) = .TRUE.
+            pres_read = .TRUE.
+         case ('satu')
+            read_sat(1)  = .TRUE.
+         case ('trac')
+            read_trac(1) = .TRUE.
+         case ('ptrk')
+            read_ptrk(1) = .TRUE.
+         case ('gasp')
+            read_gasp(1) = .TRUE.
+         case ('mass')
+             read_mass(1) = .TRUE.
+             mass_read = .TRUE.
+         case ('none')
+c Values from the restart file will not be used
+         end select
+      end do
+
+      if (.not. compute_flow) read_flux(1) = .TRUE.
+
+      if (.not. read_pres(1)) then
+         phi = pho
+         pres_read = .FALSE.
+      end if
+
       rewind  iread
       if (cform(6) .eq. 'formatted') then
          read (iread ,   *) dumver, dumdate, dumtime
@@ -222,41 +274,169 @@ c
 c     read descriptors
 c     
          read(iread,'(a4)') wdd1(1:4)
-         read(iread,'(a4)') wdd1(5:8)
-         read(iread,'(a4)') wdd1(9:12)
-         read(iread,'(a4)') wdd1(13:16)
-         read(iread,'(a4)') wdd1(17:20)
-         ncount=neq
-         if(wdd1(13:16).eq.'dpdp') ncount=neq+neq
-         if(wdd1(17:20).eq.'dual') ncount=neq+neq+neq
-         if (wdd1(1:4).eq.'ngas') then
-            read(iread ,*)  ( t   (mi) , mi=1,ncount )
-            read(iread ,*)  ( s   (mi) , mi=1,ncount )
-            read(iread ,*)  ( phi (mi) , mi=1,ncount )
-            read(iread ,*)  ( pci (mi) , mi=1,ncount )
+         if (wdd1(1:4) .eq. 'h20 ' .or. wdd1(1:4) .eq. 'air ' .or.
+     &      wdd1(1:4) .eq. 'ngas') then 
+c this is old style input
+            read(iread,'(a4)') wdd1(5:8)
+            read(iread,'(a4)') wdd1(9:12)
+            read(iread,'(a4)') wdd1(13:16)
+            read(iread,'(a4)') wdd1(17:20)
+            ncount=neq
+            if(wdd1(13:16).eq.'dpdp') ncount=neq+neq
+            if(wdd1(17:20).eq.'dual') ncount=neq+neq+neq
+
+            if (wdd1(1:4).eq.'ngas') then
+               if (read_temp(1)) then
+                  read(iread ,*)  ( t   (mi) , mi=1,ncount )
+                  read_temp(2) = .TRUE.
+               else
+                  read (iread, *) ( dummyreal, mi = 1,ncount )
+                  if (iout .ne. 0) write (iout, 400) 'temperatures'
+                  if (iptty .ne. 0) write (iptty, 400) 'temperatures'
+               end if
+               if (read_sat(1)) then
+                  read(iread ,*)  ( s   (mi) , mi=1,ncount )
+                  read_sat(2) = .TRUE.
+               else
+                  read (iread, *) ( dummyreal, mi = 1,ncount )
+                  if (iout .ne. 0) write (iout, 400) 'saturations'
+                  if (iptty .ne. 0) write (iptty, 400) 'saturations'
+               end if
+               if (read_pres(1)) then
+                  read(iread ,*)  ( phi (mi) , mi=1,ncount )
+                  read_pres(2) = .TRUE.
+               else
+                  read (iread, *) ( dummyreal, mi = 1,ncount )
+                  if (iout .ne. 0) write (iout, 400) 'pressures'
+                  if (iptty .ne. 0) write (iptty, 400) 'pressures'
+               end if
+               if (read_gasp(1)) then
+                  read(iread ,*)  ( pci (mi) , mi=1,ncount )
+                  read_gasp(2) = .TRUE.
 c     
 c     check for negative partial pressures
 c     
-            do i=1,ncount
-               pci(i)=max(0.0d+0,pci(i))
-            enddo
+                  do i=1,ncount
+                     pci(i)=max(0.0d+0,pci(i))
+                  enddo
+               else
+                  read (iread, *) ( dummyreal, mi = 1,ncount )
+                  if (iout .ne. 0) write (iout, 400) 'gas pressures'
+                  if (iptty .ne. 0)write (iptty, 400) 'gas pressures'
+               end if
 
-         else if(wdd1(1:4).eq.'h20 ') then
-            read(iread ,*)  ( t   (mi) , mi=1,ncount )
-            if (irdof .ne. 13 .or. ifree .ne. 0) then
-               read(iread ,*)  ( s   (mi) , mi=1,ncount )
-            else
-               read(iread ,*)  ( dummyreal , mi=1,ncount )
-            end if
-            read(iread ,*)  ( phi (mi) , mi=1,ncount )
-         else if(wdd1(1:4).eq.'air ') then
-            if (irdof .ne. 13 .or. ifree .ne. 0) then
-               read(iread ,*)  ( s   (mi) , mi=1,ncount )
-            else
-               read(iread ,*)  ( dummyreal , mi=1,ncount )
-            end if
-            read(iread ,*)  ( phi (mi) , mi=1,ncount )
-         endif
+            else if(wdd1(1:4).eq.'h20 ') then
+               if (read_temp(1)) then
+                  read(iread ,*)  ( t   (mi) , mi=1,ncount )
+                  read_temp(2) = .TRUE.
+               else
+                  read (iread, *) ( dummyreal, mi = 1,ncount )
+                  if (iout .ne. 0) write (iout, 400) 'temperatures'
+                  if (iptty .ne. 0) write (iptty, 400) 'temperatures'
+               end if
+               if (read_sat(1) .and. irdof .ne. 13) then
+                  read(iread ,*)  ( s   (mi) , mi=1,ncount )
+                  read_sat(2) = .TRUE.
+               else
+                  read (iread, *) ( dummyreal, mi = 1,ncount )
+                  if (iout .ne. 0) write (iout, 400) 'saturations'
+                  if (iptty .ne. 0) write (iptty, 400) 'saturations'
+               end if
+               if (read_pres(1)) then
+                  read(iread ,*)  ( phi (mi) , mi=1,ncount )
+                  read_pres(2) = .TRUE.
+               else
+                  read (iread, *) ( dummyreal, mi = 1,ncount )
+                  if (iout .ne. 0) write (iout, 400) 'pressures'
+                  if (iptty .ne. 0) write (iptty, 400) 'pressures'
+               end if
+
+            else if(wdd1(1:4).eq.'air ') then
+               if (read_sat(1) .and. irdof .ne. 13) then
+                  read(iread ,*)  ( s   (mi) , mi=1,ncount )
+                  read_sat(2) = .TRUE.
+               else
+                  read (iread, *) ( dummyreal, mi = 1,ncount )
+                  if (iout .ne. 0) write (iout, 400) 'saturations'
+                  if (iptty .ne. 0) write (iptty, 400) 'saturations'
+               end if
+               if (read_pres(1)) then
+                  read(iread ,*)  ( phi (mi) , mi=1,ncount )
+                  read_pres(2) = .TRUE.
+               else
+                  read (iread, *) ( dummyreal, mi = 1,ncount )
+                  if (iout .ne. 0) write (iout, 400) 'pressures'
+                  if (iptty .ne. 0) write (iptty, 400) 'pressures'
+               end if
+            endif
+
+         else
+            rerr = 0
+            backspace (iread)
+            read (iread, *) ncount, geom_type
+            modneq = mod(ncount,neq)
+            if (modneq .ne. 0) goto 2000
+             do
+               read (iread ,'(a11)', end = 100) dumflag
+               select case (dumflag(1:4))
+               case ('temp')
+                  if (read_temp(1)) then
+                     read (iread, *) ( t(mi), mi = 1,ncount )
+                     read_temp(2) = .TRUE.
+                  else
+                     read (iread, *) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 'temperatures'
+                     if (iptty .ne. 0) write (iptty, 400) 'temperatures'
+                  end if
+               case ('pres')
+                  if (read_pres(1)) then
+                     read (iread, *) ( phi(mi), mi = 1,ncount )
+                     read_pres(2) = .TRUE.
+                  else
+                     read (iread, *) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 'pressures'
+                     if (iptty .ne. 0) write (iptty, 400) 'pressures'
+                  end if
+               case ('satu', 'sat ')
+                  if (read_sat(1) .and. irdof .ne. 13) then
+                     read (iread, *) ( s(mi), mi = 1,ncount )
+                     read_sat(2) = .TRUE.
+                  else
+                     read (iread, *) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 'saturations'
+                     if (iptty .ne. 0) write (iptty, 400) 'saturations'
+                  end if
+               case ('gasp', 'gas ')
+                  if (read_gasp(1)) then
+                     read (iread, *) ( pci(mi), mi = 1,ncount )
+                     read_gasp(2) = .TRUE.
+                  else
+                     read (iread, *) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 'gas pressures'
+                     if (iptty .ne. 0)write (iptty, 400) 'gas pressures'
+                  end if
+               case ('mass')
+                  if (dumflag(1:9) .ne. 'mass flux') then
+                     if (read_mass(1)) then
+                        if (.not. allocated(mass_var)) 
+     &                       allocate(mass_var(n))
+                        read (iread, *) (mass_var(mi), mi = 1,ncount )
+                        read_mass(2) = .TRUE.
+                     else
+                        read (iread, *) ( dummyreal, mi = 1,ncount )
+                        if (iout .ne. 0) write (iout, 400) 'masses'
+                        if (iptty .ne. 0)write (iptty, 400) 'masses'
+                     endif
+                  else
+                     backspace (iread)
+                     exit
+                  end if
+               case default
+                  backspace (iread)
+                  exit
+               end select
+            end do
+         end if
          read(iread ,'(a11)', end = 100) dumflag
          if (dumflag .ne. 'no fluxes  ') then
             select case (dumflag(1:3))
@@ -264,9 +444,11 @@ c
                read(iread, *, end = 100) numflux
                read(iread, 6002) (a_axy(i), i = 1,numflux)
                read(iread, 6002) (a_vxy(i), i = 1,numflux)
+               read_flux(2) = .TRUE.
             case ('liq')
                read(iread, *, end = 100) numflux
                read(iread, 6002) (a_axy(i), i = 1,numflux)
+               read_flux(2) = .TRUE.
             case ('mas')
                read(iread, *, end = 100) numflux
                if (size(a_axy) .lt. numflux) then
@@ -274,9 +456,11 @@ c
                   allocate (a_axy(numflux))
                end if
                read(iread, 6001) (a_axy(i), i = 1,numflux)
+               read_flux(2) = .TRUE.
             case ('vap')
                read(iread, *, end = 100) numflux
                read(iread, 6002) (a_vxy(i), i = 1,numflux)
+               read_flux(2) = .TRUE.
             case default
                backspace iread
             end select
@@ -307,71 +491,238 @@ c
 c     read descriptors
 c     
          read(iread) wdd1(1:4)
-         read(iread) wdd1(5:8)
-         read(iread) wdd1(9:12)
-         read(iread) wdd1(13:16)
-         read(iread) wdd1(17:20)
-         ncount=neq
-         if(wdd1(13:16).eq.'dpdp') ncount=neq+neq
-         if(wdd1(17:20).eq.'dual') ncount=neq+neq+neq
-         if (wdd1(1:4).eq.'ngas') then
-            read(iread)  ( t   (mi) , mi=1,ncount )
-            read(iread)  ( s   (mi) , mi=1,ncount )
-            read(iread)  ( phi (mi) , mi=1,ncount )
-            read(iread)  ( pci (mi) , mi=1,ncount )
+         if (wdd1(1:4) .eq. 'h20 ' .or. wdd1(1:4) .eq. 'air ' .or.
+     &        wdd1(1:4) .eq. 'ngas') then 
+            read(iread) wdd1(5:8)
+            read(iread) wdd1(9:12)
+            read(iread) wdd1(13:16)
+            read(iread) wdd1(17:20)
+            ncount=neq
+            if(wdd1(13:16).eq.'dpdp') ncount=neq+neq
+            if(wdd1(17:20).eq.'dual') ncount=neq+neq+neq
+            if (wdd1(1:4).eq.'ngas') then
+               if (read_temp(1)) then
+                  read(iread)  ( t   (mi) , mi=1,ncount )
+                  read_temp(2) = .TRUE.
+               else
+                  read(iread)  ( dummyreal , mi=1,ncount )
+                  if (iout .ne. 0) write (iout, 400) 'temperatures'
+                  if (iptty .ne. 0) write (iptty, 400) 'temperatures'
+               end if
+               if (read_sat(1)) then
+                  read(iread)  ( s   (mi) , mi=1,ncount )
+                  read_sat(2) = .TRUE.
+               else
+                  read (iread) ( dummyreal, mi = 1,ncount )
+                  if (iout .ne. 0) write (iout, 400) 'saturations'
+                  if (iptty .ne. 0) write (iptty, 400) 'saturations'
+               end if
+               if (read_pres(1)) then
+                  read(iread)  ( phi (mi) , mi=1,ncount )
+                  read_pres(2) = .TRUE.
+               else
+                  read (iread) ( dummyreal, mi = 1,ncount )
+                  if (iout .ne. 0) write (iout, 400) 'pressures'
+                  if (iptty .ne. 0) write (iptty, 400) 'pressures'
+               end if
+               if (read_gasp(1)) then
+                  read(iread)  ( pci (mi) , mi=1,ncount )
+                  read_gasp(2) = .TRUE.
 c     
 c     check for negative partial pressures
 c     
-            do i=1,ncount
-               pci(i)=max(0.0d+0,pci(i))
-            enddo
+                  do i=1,ncount
+                     pci(i)=max(0.0d+0,pci(i))
+                  enddo
+               else
+                  read (iread, *) ( dummyreal, mi = 1,ncount )
+                  if (iout .ne. 0) write (iout, 400) 'gas pressures'
+                  if (iptty .ne. 0)write (iptty, 400) 'gas pressures'
+               end if
 
-         else if(wdd1(1:4).eq.'h20 ') then
-            read(iread)  ( t   (mi) , mi=1,ncount )
-            if (irdof .ne. 13 .or. ifree .ne. 0) then
-               read(iread)  ( s   (mi) , mi=1,ncount )
-            else
-               read(iread)  ( dummyreal , mi=1,ncount )
-            end if
-            read(iread)  ( phi (mi) , mi=1,ncount )
-         else if(wdd1(1:4).eq.'air ') then
-            if (irdof .ne. 13 .or. ifree .ne. 0) then
-               read(iread)  ( s   (mi) , mi=1,ncount )
-            else
-               read(iread)  ( dummyreal , mi=1,ncount )
-            end if
-            read(iread)  ( phi (mi) , mi=1,ncount )
-         endif
-         dumflag = '           '
-         read(iread , end = 100) dumflag
+            else if(wdd1(1:4).eq.'h20 ') then
+               if (read_temp(1)) then
+                  read(iread)  ( t   (mi) , mi=1,ncount )
+                  read_temp(2) = .TRUE.
+               else
+                  read (iread) ( dummyreal, mi = 1,ncount )
+                  if (iout .ne. 0) write (iout, 400) 'temperatures'
+                  if (iptty .ne. 0) write (iptty, 400) 'temperatures'
+               end if
+               if (read_sat(1) .and. irdof .ne. 13) then
+                  read(iread)  ( s   (mi) , mi=1,ncount )
+                  read_sat(2) = .TRUE.
+               else
+                  read(iread)  ( dummyreal , mi=1,ncount )
+                  if (iout .ne. 0) write (iout, 400) 'saturations'
+                  if (iptty .ne. 0) write (iptty, 400) 'saturations'
+               end if
+               if (read_pres(1)) then
+                  read(iread)  ( phi (mi) , mi=1,ncount )
+               else
+                  read (iread) ( dummyreal, mi = 1,ncount )
+                  if (iout .ne. 0) write (iout, 400) 'pressures'
+                  if (iptty .ne. 0) write (iptty, 400) 'pressures'
+               end if
+            else if(wdd1(1:4).eq.'air ') then
+               if (read_sat(1) .and. irdof .ne. 13) then
+                  read(iread)  ( s   (mi) , mi=1,ncount )
+                  read_sat(2) = .TRUE.
+               else
+                  read(iread)  ( dummyreal , mi=1,ncount )
+                  if (iout .ne. 0) write (iout, 400) 'saturations'
+                  if (iptty .ne. 0) write (iptty, 400) 'saturations'
+               end if
+               if (read_pres(1)) then
+                  read(iread)  ( phi (mi) , mi=1,ncount )
+                  read_pres(2) = .TRUE.
+               else
+                  read (iread) ( dummyreal, mi = 1,ncount )
+                  if (iout .ne. 0) write (iout, 400) 'pressures'
+                  if (iptty .ne. 0) write (iptty, 400) 'pressures'
+               end if
+            endif
+            dumflag = '           '
+            read(iread , end = 100) dumflag
+         else
+            rerr = 0
+            rewind (iread)
+            read (iread) dumver, dumdate, dumtime, dumtitle
+            read (iread)  days
+            read (iread) ncount, geom_type
+            modneq = mod(ncount,neq)
+            if (modneq .ne. 0) goto 2000
+            do
+               dumflag = '           '
+               read (iread , end = 100) dumflag
+               select case (dumflag(1:4))
+               case ('temp')
+                  if (read_temp(1)) then
+                     read (iread) ( t(mi), mi = 1,ncount )
+                     read_temp(2) = .TRUE.
+                  else
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 'temperatures'
+                     if (iptty .ne. 0) write (iptty, 400) 'temperatures'
+                  end if
+               case ('pres')
+                  if (read_pres(1)) then
+                     read (iread) ( phi(mi), mi = 1,ncount )
+                     read_pres(2) = .TRUE.
+                  else
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 'pressures'
+                     if (iptty .ne. 0) write (iptty, 400) 'pressures'
+                  end if
+               case ('satu', 'sat ')
+                  if (read_sat(1) .and. irdof .ne. 13) then
+                     read (iread) ( s(mi), mi = 1,ncount )
+                     read_sat(2) = .TRUE.
+                  else
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 'saturations'
+                     if (iptty .ne. 0) write (iptty, 400) 'saturations'
+                  end if
+               case ('gasp', 'gas ')
+                  if (read_gasp(1)) then
+                     read (iread) ( pci(mi), mi = 1,ncount )
+                     read_gasp(2) = .TRUE.
+                  else
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 'gas pressures'
+                     if (iptty .ne. 0)write (iptty, 400) 'gas pressures'
+                  end if
+               case ('mass')
+                  if (read_mass(1)) then
+                     read (iread) (mass_var(mi), mi = 1,ncount )
+                     read_mass(2) = .TRUE.
+                  else
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 'masses'
+                     if (iptty .ne. 0)write (iptty, 400) 'masses'
+                  endif
+               case default
+                  exit
+               end select
+            end do
+         end if
          if (dumflag .ne. 'no fluxes  ') then
             read(iread) numflux
             if (flux_flag(1:3) .eq. 'all' .or. flux_flag(1:3) .eq. 
      &           'liq') read(iread) (a_axy(i), i = 1,numflux)
             if (flux_flag(1:3) .eq. 'all' .or. flux_flag(1:3) .eq. 
      &           'vap') read(iread) (a_vxy(i), i = 1,numflux)
+            if (flux_flag(1:3) .eq. 'all' .or. flux_flag(1:3) .eq. 
+     &           'liq' .or. flux_flag(1:3) .eq. 'vap')
+     &           read_flux(2) = .TRUE.
             if (reverse_flow) then
                a_axy = -1. * a_axy
                a_vxy = -1. * a_vxy
             end if
+         else
+            if (.not. compute_flow) then
+               if (dumflag .eq. 'no fluxes  ' .or. dumflag .eq. '') then
+                  write (ierr, *) 'Fluxes not found in restart file',
+     &                 'while using rflo option'
+                  if (iptty .ne. 0) then
+                     write (iptty, *) 'Fluxes not found in restart ',
+     &                    'file while using rflo option: STOPPING'
+                  end if
+                  stop
+               end if
+            end if
          end if
       end if
+ 400  format ('Not using ', a, ' found in restart file')
+ 500  format (a, ' not found in restart file')
+ 600  format (a, ' found in restart file will be used')
+ 100  continue
+      if (read_temp(1) .and. .not. read_temp(2)) then
+         if (iout .ne. 0) write (iout, 500) 'Temperatures'
+         if (iptty .ne. 0) write (iptty, 500) 'Temperatures'
+      end if
+      if (read_pres(1) .and. .not. read_pres(2)) then
+         if (iout .ne. 0) write (iout, 500) 'Pressures'
+         if (iptty .ne. 0) write (iptty, 500) 'Pressures'
+      end if
+      if (read_pres(1) .and. read_mass(1)) then
+         if (read_mass(2)) then
+c Mass option currently not supported, swapped formats 400/600
+c   and set mass_read flag to false
+            mass_read = .FALSE.
+            if (iout .ne. 0) write (iout, 400) 'Masses'
+            if (iptty .ne. 0) write (iptty, 400) 'Masses'
+            if (read_pres(2)) then
+               if (iout .ne. 0) write (iout, 600) 'Pressures'
+               if (iptty .ne. 0) write (iptty, 600) 'Pressures'
+            end if
+         else if (read_pres(2)) then
+            if (iout .ne. 0) write (iout, 600) 'Pressures'
+            if (iptty .ne. 0) write (iptty, 600) 'Pressures'
+         end if
+      end if
+      if (read_mass(1) .and. .not. read_mass(2)) then
+         if (iout .ne. 0) write (iout, 500) 'Masses'
+         if (iptty .ne. 0) write (iptty, 500) 'Masses'
+         mass_read = .FALSE.
+      end if
+      if (read_gasp(1) .and. .not. read_gasp(2)) then
+         if (iout .ne. 0) write (iout, 500) 'Gas pressures'
+         if (iptty .ne. 0) write (iptty, 500) 'Gas pressures'
+      end if
+      if (read_sat(1) .and. .not. read_sat(2)) then
+         if (iout .ne. 0) write (iout, 500) 'Saturations'
+         if (iptty .ne. 0) write (iptty, 500) 'Saturations'
+      end if
+      if (read_flux(1) .and. .not. read_flux(2)) then
+         if (iout .ne. 0) write (iout, 500) 'Fluxes'
+         if (iptty .ne. 0) write (iptty, 500) 'Fluxes'
+      end if
+
+      nc=1         
 c     
 c     sort out multiple grids
 c 
- 100  continue
-      if (.not. compute_flow) then
-         if (dumflag .eq. 'no fluxes  ' .or. dumflag .eq.  '') then
-            write (ierr, *) 'Fluxes not found in restart file',
-     &           'while using rflo option'
-            if (iptty .ne. 0) then
-               write (iptty, *) 'Fluxes not found in restart file',
-     &              'while using rflo option: STOPPING'
-            end if
-            stop
-         end if
-      end if
-      nc=1         
       if(idpdp.ne.0) then
          if(wdd1(13:16).eq.'dpdp') then
             nc=2
@@ -477,18 +828,27 @@ c
 
       nsave  =  0
       
-      if(wdd1(5:8).eq.'trac') then
+      if(wdd1(5:8).eq.'trac' .or. read_trac(1)) then
          if (iccen .eq. 1) then
-            call diskc
+            call diskc(read_trac(1))
+         else if (read_trac(1)) then
+            write (ierr, 1002)
+            if (iout .ne. 0) write (iout, 1002)
+            if (iptty .ne. 0) write (iptty, 1002)
          else
             write (ierr, 1000)
             if (iout .ne. 0) write (iout, 1000)
             if (iptty .ne. 0) write (iptty, 1000)
         end if
-      end if     
-      if(wdd1(5:8).eq.'ptrak') then
+      end if
+    
+      if(wdd1(5:8).eq.'ptrk' .or. read_ptrk(1)) then
          if (ptrak) then
-           call diskp 
+           call diskp(read_ptrk(1))
+         else if (read_ptrk(1)) then
+            write (ierr, 1003)
+            if (iout .ne. 0) write (iout, 1003)
+            if (iptty .ne. 0) write (iptty, 1003)
          else
             write (ierr, 1001)
             if (iout .ne. 0) write (iout, 1001)
@@ -499,9 +859,22 @@ c
 
  1000 format (1x, 'Tracer data found in restart file for non-trac',
      &     ' problem, data will not be used')
- 1001 format (1x, 'Particle tracking  data found in restart file for ',
+ 1001 format (1x, 'Particle tracking data found in restart file for',
      &     ' non-ptrk problem, data will not be used')
+ 1002 format (1x, 'Tracer data requested for non-trac problem')
+ 1003 format (1x, 'Particle tracking data requested for non-ptrk',
+     &     ' problem')
       close (iread)
       return
+
+ 2000 continue
+      if (geom_type .ne. 'dual' .or. geom_type .ne. 'dpdp' .or.
+     &     geom_type .ne. 'gdpm') geom_type = ''
+      write (ierr, 1004) geom_type, ncount, neq
+      if (iout .ne. 0) write (iout, 1004) geom_type, ncount, neq
+      if (iptty .ne. 0) write (iptty, 1004) geom_type, ncount, neq
+ 1004 format(1x,a, 'Problem has ', i7, ' data elements for grid with ', 
+     &     i10, ' nodes', /, 'Stopping')
+      stop
       end
       

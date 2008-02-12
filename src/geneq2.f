@@ -713,22 +713,22 @@ c
                kz=kb-icd
                neighc=it9(jm)
 c add coding to save upwind position
-               if(iad.le.iad_up) then
+cc               if(iad.le.iad_up) then
                   fid=0.5
                   axyd=t8(neighc)
                   if(axyd.lt.0.0) fid=dnwgt
                   if(axyd.gt.0.0) fid=upwgt
                   t9(neighc)=fid
 c
-                  call setbit(nbits,neighc,upwind_l(iz4m1),fid)
+cc                  call setbit(nbits,neighc,upwind_l(iz4m1),fid)
 c
-               else
-                  if(bit(nbits,neighc,upwind_l(iz4m1))) then 
-                     t9(neighc)=1.0
-                  else
-                     t9(neighc)=0.0
-                  endif
-               endif
+cc               else
+cc                  if(bit(nbits,neighc,upwind_l(iz4m1))) then 
+cc                     t9(neighc)=1.0
+cc                  else
+cc                     t9(neighc)=0.0
+cc                  endif
+cc               endif
  61         continue
 c
 c form equations
@@ -810,22 +810,22 @@ c
                kz=kb-icd
                neighc=it9(jm)
 c add coding to save upwind position
-               if(iad.le.iad_up) then
+cc               if(iad.le.iad_up) then
                   fid=0.5
                   vxyd=t8(neighc)
                   if(vxyd.lt.0.0) fid=dnwgt
                   if(vxyd.gt.0.0) fid=upwgt
                   t9(neighc)=fid
 c
-                  call setbit(nbits,neighc,upwind_v(iz4m1),fid)
+cc                  call setbit(nbits,neighc,upwind_v(iz4m1),fid)
 c
-               else
-                  if(bit(nbits,neighc,upwind_v(iz4m1))) then 
-                     t9(neighc)=1.0
-                  else
-                     t9(neighc)=0.0
-                  endif
-               endif
+cc               else
+cc                  if(bit(nbits,neighc,upwind_v(iz4m1))) then 
+cc                     t9(neighc)=1.0
+cc                  else
+cc                     t9(neighc)=0.0
+cc                  endif
+cc               endif
  64         continue
 c
 c form equations
@@ -946,22 +946,22 @@ c
                kz=kb-icd
                neighc=it9(jm)
 c add coding to save upwind position
-               if(iad.le.iad_up) then
+cc               if(iad.le.iad_up) then
                   fid=0.5
                   axyd=t8(neighc)
                   if(axyd.lt.0.0) fid=dnwgt
                   if(axyd.gt.0.0) fid=upwgt
                   t9(neighc)=fid
 c
-                  call setbit(nbits,neighc,upwind_l(iz4m1),fid)
+cc                  call setbit(nbits,neighc,upwind_l(iz4m1),fid)
 c
-               else
-                  if(bit(nbits,neighc,upwind_l(iz4m1))) then 
-                     t9(neighc)=1.0
-                  else
-                     t9(neighc)=0.0
-                  endif
-               endif
+cc               else
+cc                  if(bit(nbits,neighc,upwind_l(iz4m1))) then 
+cc                     t9(neighc)=1.0
+cc                 else
+cc                     t9(neighc)=0.0
+cc                  endif
+cc               endif
  71         continue
 c     
 c     form equations
@@ -1044,22 +1044,22 @@ c
                kz=kb-icd
                neighc=it9(jm)
 c add coding to save upwind position
-               if(iad.le.iad_up) then
+cc               if(iad.le.iad_up) then
                   fid=0.5
                   vxyd=t8(neighc)
                   if(vxyd.lt.0.0) fid=dnwgt
                   if(vxyd.gt.0.0) fid=upwgt
                   t9(neighc)=fid
 c
-                  call setbit(nbits,neighc,upwind_v(iz4m1),fid)
+cc                  call setbit(nbits,neighc,upwind_v(iz4m1),fid)
 c
-               else
-                  if(bit(nbits,neighc,upwind_v(iz4m1))) then 
-                     t9(neighc)=1.0
-                  else
-                     t9(neighc)=0.0
-                  endif
-               endif
+cc               else
+cc                  if(bit(nbits,neighc,upwind_v(iz4m1))) then 
+cc                     t9(neighc)=1.0
+cc                  else
+cc                     t9(neighc)=0.0
+cc                  endif
+cc               endif
  74         continue
 c     
 c     form equations

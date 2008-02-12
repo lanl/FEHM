@@ -395,7 +395,7 @@ C***********************************************************************
       use commeth
       implicit none
 
-      integer icall, dummyint, j
+      integer icall, dummyint, j, iconv_tmp
       integer mdof,ldnmax,ldnmaxtmp,ncont,neqp1,igmax
       integer nstorederiv,nstoresolve,i,icode,irdum
       integer ncon_size,ncon_size_orig
@@ -1014,7 +1014,7 @@ c
          end if
 
 c convert from head to pressure if no initial value file
-         if(iread.le.0) then
+         if(iread.le.0 .or. .not. pres_read) then
 c
 c this is new(set IC heads equal to lowest fixed head
 c
@@ -1057,6 +1057,15 @@ c**** initialize coefficients adjust volumes in dpdp calcs ****
          t (i) = to(i)
          vtot = vtot + volume(i)
       end do
+
+      if (mass_read) then
+         iconv_tmp = iconv
+         iconv = 1
+         call convctr(3)
+         deallocate (mass_var)
+         iconv = iconv_tmp
+      end if
+
 c  initialize pressure dependent porosity
       call porosi(4)      
 c

@@ -88,7 +88,8 @@ C           otherwise use relative stopping criterion, as indicated above
 c
 c     .. Parameters ..
 c
-      integer l, n, mxmv, ldw, ldrw, iwork(l+1), info
+      integer l, n, ldw, ldrw, iwork(l+1), info
+      integer :: mxmv = 0
       double precision x(*), b(*), tol
       double precision work(n,3+2*(l+1)), rwork(l+1,3+2*(l+1))
 c gaz 1-18-2002 ldw and ldrw not defined

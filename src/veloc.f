@@ -120,7 +120,8 @@ C***********************************************************************
       real*8 pnxl_out, pnyl_out, pnzl_out, pnxv_out, pnyv_out, pnzv_out
       real*8 area_t, axy, axyf, dili, dilkb, dis, divi, divkb 
       real*8 fid, fid1
-      real*8 vld_in, vld_out, vld, vvd, vvd_in, vvd_out, vxy, vxyf 
+      real*8 vld_in, vld_out, vvd_in, vvd_out, vxy, vxyf
+      real(8) :: vld = 0., vvd = 0.
       real*8 xdis_cos, ydis_cos, zdis_cos
       real*8 tol, dis_tol
       parameter(tol=1.d-30, dis_tol=1.d-20)

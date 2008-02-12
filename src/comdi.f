@@ -857,5 +857,8 @@
       real*8, allocatable :: sinkint(:)
  
       integer, allocatable :: ieos_ch(:)
+
+! gaz 11-Jan-08 Pressure from mass conversion
+      real*8, allocatable :: mass_var(:)
         
       end module comdi

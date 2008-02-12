@@ -50,7 +50,8 @@
       use davidi
 
       implicit none
-      integer addnode, iconn, idummy, i1, i2, ipr_vapor
+      integer addnode, iconn, idummy, i1, i2
+      integer :: ipr_vapor = 0
       integer flxz_flag, indexa_axy, inneq, inode, izone, md
       real*8 ptime, sumfout, sumsink, sumsource, sumboun, sum_vap
       character*90, allocatable :: flux_string(:)

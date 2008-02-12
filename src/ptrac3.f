@@ -259,6 +259,7 @@ c......s kelkar 5/2/2001 snapshot output
          
       if(iskprt.eq.iprt.and.iprt.ne.0) then
          itime = 0
+         if (iptty .ne. 0) write(iptty,*) 'Calling snapshot', tt1,itime
          call write_snapshot
       end if
 c............................
@@ -1019,7 +1020,6 @@ c     s_print = s(current_node)
       implicit none
 
       integer print_node
-
 
       write(isptr1,9795)'days=', tt1,itime
  9795 format(a6,g17.10,1x,i8)

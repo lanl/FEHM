@@ -44,14 +44,23 @@
 !***********************************************************************
 
       use comai
+      use combi, only : rstr, rstw
       use comxi
       implicit none
 
+      integer i, imsg(5), msg(5), nwds
+      real*8  xmsg(5)
+      character*32 cmsg(5)
       character*80 chdum
       logical null1
 
+! Default will be to read or write all variables from/to restart file 
+! (based on problem type) using new header style
+      header_flag = 'new'
+
 ! While loop to read restart control information
       do
+         chdum = ''
          read (inpt, '(a80)') chdum
          if (null1(chdum) .or. chdum(1:3) .eq. 'end' .or. 
      &        chdum(1:3) .eq. 'END') exit
@@ -78,11 +87,23 @@
 ! Restart output
             cform(7) = 'binary'
 ! overwrite - only 1 set of restart data is saved
-! append - multiple sets of restart data are written
+! append - multiple sets of restart data are written (not implemented)
          case ('over')
             app_flag = 0
          case ('appe')
             app_flag = 1
+         case ('read')
+! List parameters to be read from restart file
+            call parse_string(chdum,imsg,msg,xmsg,cmsg,nwds)
+            do i = 2, nwds
+               if (msg(i) .eq. 3) rstr(i-1) = cmsg(i)(1:4)
+            end do
+         case ('writ')
+! List parameters to be written to restart file
+            call parse_string(chdum,imsg,msg,xmsg,cmsg,nwds)
+            do i = 2, nwds
+               if (msg(i) .eq. 3) rstw(i-1) = cmsg(i)(1:4)
+            end do
 ! noflux - no flux output
 ! flux - both liquid and vapor
 ! lflux - liquid flux only
@@ -95,8 +116,15 @@
             flux_flag = 'liquid flux'
          case ('vflu', 'VFLU')
             flux_flag = 'vapor flux '
+! fluxes and flow source/sink flow for mixing model
          case ('rtdm', 'RTDM')
             call gen_mixmodel
+! new - restart file will be written using new header format
+         case ('new ', 'NEW ')
+            header_flag = 'new'
+! old - restart file will be written using old header format
+         case ('old ', 'OLD ')
+            header_flag = 'old'
          end select flags
       enddo
 

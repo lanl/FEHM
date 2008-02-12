@@ -352,6 +352,7 @@ c ico2 set in scanin.f
       app_flag = 0
       flux_flag = 'no fluxes  '
       maxmix_flag = 0
+      header_flag = 'new'
 C *** integer in comrxni.h
 C *** integers in davidi.h 
 ! Read in scanin
@@ -382,6 +383,7 @@ c initialize scalar reals in comai
       ay     =   0.0
       ayc    =   0.0
       contim =   1.0d+30
+      contim_rip =   1.0d+30
       day    =   0.0
       daycf  =   0.0
       daycm  =   0.0
@@ -492,6 +494,10 @@ c zero out include combi
          yt=0
          zd=0
          zt=0
+         rstr = ''
+         rstr(1) = 'all'
+         rstw = ''
+         rstw(1) = 'all'
       end if
 c zero out include comci
       akc=0
@@ -671,6 +677,7 @@ c     dit=0
       fc=0
       flx12l=0
       flx12v=0
+      head0=0
       iadd=0
       iaddt=0
       icapt=0
@@ -726,9 +733,9 @@ c     itc=0
       rp7f=0
       rp8f=0
       rp9f=0
-      s=0
-      sii=0
-      sio=0
+      s=1.
+      sii=1.
+      sio=1.
       sk=0
       so=0
       t=0
