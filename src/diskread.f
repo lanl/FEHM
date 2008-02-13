@@ -229,6 +229,7 @@
          case ('all')
             if (ico2 .ge. 0) read_temp(1) = .TRUE.
             read_pres(1) = .TRUE.
+            pres_read = .TRUE.
             if (irdof .ne. 13) read_sat(1)  = .TRUE.
             if (ico2 .gt. 0) read_gasp(1) = .TRUE.
             if (iccen .ne. 0) read_trac(1) = .TRUE.
