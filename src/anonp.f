@@ -1,4 +1,4 @@
-      subroutine anonp
+      subroutine anonp 
 !***********************************************************************
 !  Copyright, 1993, 2004,  The  Regents of the University of California.
 !  This program was prepared by the Regents of the University of 
@@ -1258,9 +1258,8 @@ c     coding for 2-d elements
                      endif
                   endif
                enddo
-            endif
-
- 11      continue
+             endif
+11      continue
 c gaz 11-09-2001 comment out mdnode , call after     `
 c     
 c     call md_nodes to add multiply defined nodes
@@ -1376,7 +1375,10 @@ c     code for multiple defined nodes
          enddo
       endif
 c     
-c     
+c  
+      if (iout .ne. 0) write(iout, 2009)
+      if (iptty .ne. 0) write(iptty, 2009)
+ 2009 format (' >>>>>> Starting FE coef. calcs <<<<<< ')   
 c     printout positions required for geometric coefficients
 c     
       neibr = ncon(neq+1)-ncon(neq)

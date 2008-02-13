@@ -999,7 +999,8 @@ c     write out new size for b matrix
      &     i10, '<<<<<<') 
       
 c     Initialize eos values as necessary (for air)
-      
+c first set phase state for wtsi
+      call wtsictr(-1)      
       if (ico2.lt.0.and.ice.eq.0) then
          call airctr(-1,0)
 !     else if (ico2.lt.0.and.ice.ne.0) then
@@ -1333,7 +1334,11 @@ c      call rarng(1)
             node_ptr_num =>node_ptr_num%nnp
          end do outer
       end if
-
+c
+c call gdpm_corr to add connections if necessary
+c        
+       call gdpm_corr(-1)
+c
 ! zvd - moved history file setup after zone volume calculations
       if (hist_flag) then
 ! Initial call for file setup

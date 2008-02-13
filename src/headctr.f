@@ -76,12 +76,13 @@ c------------------------------------------------------------------
       use comrxni
       use comfi
       use comii
+	use comwt
       implicit none
 
 C      integer iflg,icode
       integer iflg, neq2
       integer mi,mid,ii,iseth
-      real*8 rho1grav,cord_val
+      real*8 cord_val
       real*8 pres_value
       real*8 head_value
       save iseth
@@ -90,7 +91,7 @@ c================================================================
       if(ihead.eq.0) return
 c================================================================
       neq2 = 2*neq
-      rho1grav = crl(1,1)*(9.81d-6)
+
       if(iflg.eq.0) then
          if(.not.allocated(head)) allocate(head(n0))
          if(grav.le.0.0) then
@@ -105,8 +106,8 @@ c
 c check for campatibility
 c
          if(ico2.ge.0) then
-            write(iout,10) 
-            if (iptty.ne.0) write(iptty,10) 
+            if (iout .ne. 0) write(iout,10) 
+            if (iptty. ne. 0) write(iptty,10) 
  10         format(/,'**** head macro without air macro :stopping')
             stop
          endif
@@ -126,7 +127,7 @@ c
             if(iseth.eq.1) then
                cord_val = 0.0
             else
-               cord_val = cord(mid,igrav)
+               cord_val = cord(mid,igrav) 
             endif
             head(mi)=(pho(mi)-crl(4,1))/rho1grav + cord_val
      &           -head0
@@ -173,11 +174,11 @@ c
          endif
          head_value=(pres_value-crl(4,1))/rho1grav +
      &        cord_val-head0
-         head_value= max(head_value,0.0d00)
-c         if (ifree .ne. 0) then
-c            if (izone_free_nodes(mid).ne.0) then
-c              if(s(mid).le.1.E-3) head_value=0.
-c            end if
+	   if(irich.eq.0) then
+          head_value= max(head_value,0.0d00)
+	   endif
+c         if(ifree.ne.0.and.izone_free_nodes(mid).ne.0) then
+c            if(s(mid).le.1.E-3) head_value=0.
 c         endif	 
 		
       else if(iflg.eq.5) then
@@ -205,7 +206,28 @@ c
 c
 c convert from head to pressure(all nodes,pflow)
 c
-         do mi=1,n
+       if(irich.eq.0) then
+        
+	   do mi=1,n
+            if(mi.gt.neq2) then
+               mid=mi-neq2
+            elseif(mi.gt.neq) then
+               mid=mi-neq
+            else
+               mid=mi
+            endif
+            if(iseth.eq.1) then
+               cord_val = 0.0
+            else
+               cord_val = cord(mid,igrav) 
+            endif
+            if(pflow(mi).ne.0.0) then
+               pflow(mi)=rho1grav*(pflow(mi)-cord_val+head0)
+     &              +crl(4,1)
+            endif
+         enddo
+	 else
+	   do mi=1,n
             if(mi.gt.neq2) then
                mid=mi-neq2
             elseif(mi.gt.neq) then
@@ -223,6 +245,7 @@ c
      &              +crl(4,1)
             endif
          enddo
+	 endif
       endif
 c 
       return

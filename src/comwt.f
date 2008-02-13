@@ -34,7 +34,7 @@
       integer, allocatable :: node_above(:)
       integer, allocatable :: pointer_above(:)
 
-      integer wt_flag, iad_up_wtsi
+      integer wt_flag, iad_up_wtsi, irich
       real*8  wt_elev
 
       real*8 sattol, zfac_ani, head_ck_first, head_id

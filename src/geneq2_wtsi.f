@@ -15,6 +15,7 @@ CD1
 CD1 PURPOSE
 CD1
 CD1 To generate equations isothermal air-water solution at each node.
+CD1 gaz- generalized to included richards equation - 031507
 CD1
 C**********************************************************************
 CD2
@@ -59,10 +60,10 @@ c
       use comdi
       use comci
       use combi
-      use comii
+	use comii
       use comdti
       use comai
-      use comwt
+	use comwt
       implicit none
 
       integer i,imm
@@ -165,9 +166,10 @@ c     real*8 sxzc
       real*8 delz2
       real*8 reduction_factor
       real*8 grav_air,s_wt_fac,ds_fac_wti,ds_fac_wtkb
-      real*8 rlpfree,dfid,dfid1,phi_0,cap_fac
-      real*8 rlxyd, drlxyi, drlxykb, dfi, dfkb, tiny
-      parameter(dis_tol=1.d-12, cap_fac = 0.0d00, tiny = 1.d-20)
+      real*8 rlpfree,dfid,dfid1,phi_0 
+	real*8 rlxyd, drlxyi, drlxykb, dfi, dfkb, tiny
+	real*8 rlpfree1,df1, rlzf_dum, drlzf_dum
+      parameter(dis_tol=1.d-12, tiny = 1.d-20)
 
       logical bit
 c     integer isl,isw_term
@@ -175,15 +177,14 @@ c     integer isl,isw_term
       integer iz4m1
       integer imd,iwd
 
-c
+c 
 c additional terms 
 c
       real*8 tcap1(nn),tcap2(nn),dtcap1(nn),dtcap2(nn)
-      real*8 pcai, axycap, pcaij,pcakb
+	real*8 pcai, axycap, pcaij,pcakb
 c
-      phi_0 = crl(4,1) + phi_inc
-c     water column height correction
-      pcai = cap_fac*dzrg(i)*(rlxyf(i)-0.5)
+    	phi_0 = crl(4,1) + phi_inc
+c	water column height correction
 
 c changed by avw -- entered here by seh
       neqp1=neq+1
@@ -293,10 +294,10 @@ c
             alxkb=axkb
             alykb=aykb
             alzkb=azkb
-            reduction_factor = red_factor(istrw_itfc(it11(jm)))
-            perml(1)=2.*alxkb*alxi/(alxkb+alxi)
-            perml(2)=2.*alykb*alyi/(alykb+alyi)
-            perml(3)=2.*alzkb*alzi/(alzkb+alzi)
+             reduction_factor = red_factor(istrw_itfc(it11(jm)))
+             perml(1)=2.*alxkb*alxi/(alxkb+alxi)
+             perml(2)=2.*alykb*alyi/(alykb+alyi)
+             perml(3)=2.*alzkb*alzi/(alzkb+alzi)
             sx2c=sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz)
 
             pvikb=phi(kb)
@@ -310,10 +311,10 @@ c
             delz2=(cord(kz,3)-cord(iz,3))**2
             dis2=delx2+dely2+delz2
             if(dis2.gt.dis_tol.and.iwd.gt.0) then
-               pxy=sx2c*dis2/(delx2/perml(1)+
-     &              dely2/perml(2)+delz2/perml(3))
+             pxy=sx2c*dis2/(delx2/perml(1)+
+     &           dely2/perml(2)+delz2/perml(3))
             else
-               pxy=sx2c*sx_mult*max(perml(1),perml(2),perml(3))
+             pxy=sx2c*sx_mult*max(perml(1),perml(2),perml(3))
             endif
 	    pxy = pxy*reduction_factor
             pxyi=pxy*(phikb-phii)
@@ -341,9 +342,9 @@ c
             aykb=pny(kb)
             alxkb=axkb
             alykb=aykb
-            reduction_factor = red_factor(istrw_itfc(it11(jm)))
-            perml(1)=2.*alxkb*alxi/(alxkb+alxi)
-            perml(2)=2.*alykb*alyi/(alykb+alyi)
+             reduction_factor = red_factor(istrw_itfc(it11(jm)))
+             perml(1)=2.*alxkb*alxi/(alxkb+alxi)
+             perml(2)=2.*alykb*alyi/(alykb+alyi)
             radkb=0.5*(radi+cord(kz,3))
             sx2c=radkb*(sx(iw,isox)+sx(iw,isoy))
             pvikb=phi(kb)
@@ -383,14 +384,15 @@ c     liquid phase calculations
             pxyi=t1(neighc)
 		  pxy=t3(neighc)
             sx4d=t6(neighc)
-            pcakb = cap_fac*dzrg(kb)*(rlxyf(kb)-0.5)
             axyd=pxyi+0.5*sx4d
-     &           *(rolf(i)+rolf(kb))
-     &           *((cord(kz,igrav)-cord(iz,igrav))   
-     &           +(pcakb-pcai))        
-            t8(neighc)=axyd
+     &		   *(rolf(i)+rolf(kb))
+     &           *((cord(kz,igrav)-cord(iz,igrav)))   
       
+            t8(neighc)=axyd
+            
+
  70      continue
+
 c     
 c     determine upwind nodes and if liquid phase exists
 c     wtsi_isot = 1 isotropic; wtsi_isot = 0 anisotropic
@@ -399,91 +401,114 @@ c     wtsi_isot = 1 isotropic; wtsi_isot = 0 anisotropic
             kb=it8(jm)
             kz=kb-icd
             neighc=it9(jm)
-            if(wtsi_isot.ne.0) then
+	if(wtsi_isot.ne.0) then
 c calculate information needed for direction cosines
-               delx2=(cord(kz,1)-cord(iz,1))**2
-               if(icnl.eq.0) then
+	    delx2=(cord(kz,1)-cord(iz,1))**2
+		if(icnl.eq.0) then
 c 3-d problem
-                  dely2=(cord(kz,2)-cord(iz,2))**2
-               else
+            dely2=(cord(kz,2)-cord(iz,2))**2
+		else
 c 2-d problem
-                  dely2=0.
-               endif
-               delz2=(cord(kz,igrav)-cord(iz,igrav))**2
-               dis2=delx2+dely2+delz2
-               dxy2=delx2+dely2
+          	dely2=0.
+		endif
+ 	      delz2=(cord(kz,igrav)-cord(iz,igrav))**2
+            dis2=delx2+dely2+delz2
+		  dxy2=delx2+dely2
 						
-            endif
-            if(iad.le.iad_up) then
-               axyd=t8(neighc)
-               if(axyd.gt.0.0) then
-                  imm=iz
-               else
-                  imm=kz
-               endif
+	endif
+      if(iad.le.iad_up) then
+            axyd=t8(neighc)
 
-               if(wtsi_isot.eq.2) then
+
+	    if(axyd.gt.0.0) then
+			  imm=iz
+		   else
+			  imm=kz
+		endif
+
+	    if(wtsi_isot.eq.2) then
 c
 c calculate harmonic weighted relative permeability
 c   
 
-                  rlxyd = 2.*rlxyf(iz)*rlxyf(kz)/(rlxyf(iz)+rlxyf(kz)
-     &                 +tiny)
-                  drlxyi = 2.*drlxyf(iz)*rlxyf(kz)/(rlxyf(iz)+rlxyf(kz)
-     &                 +tiny) - 2.*rlxyf(iz)*rlxyf(kz)/(rlxyf(iz)
-     &                 +rlxyf(kz)+tiny)**2*drlxyf(iz)
-                  drlxykb= 2.*drlxyf(kz)*rlxyf(iz)/(rlxyf(iz)+rlxyf(kz)
-     &                 +tiny) - 2.*rlxyf(iz)*rlxyf(kz)/(rlxyf(iz)
-     &                 +rlxyf(kz)+tiny)**2*drlxyf(kz)
+         rlxyd = 2.*rlxyf(iz)*rlxyf(kz)/(rlxyf(iz)+rlxyf(kz)+tiny)
+	   drlxyi = 2.*drlxyf(iz)*rlxyf(kz)/(rlxyf(iz)+rlxyf(kz)+tiny) -
+     &   2.*rlxyf(iz)*rlxyf(kz)/(rlxyf(iz)+rlxyf(kz)+tiny)**2*drlxyf(iz)
+	   drlxykb= 2.*drlxyf(kz)*rlxyf(iz)/(rlxyf(iz)+rlxyf(kz)+tiny) -
+     &   2.*rlxyf(iz)*rlxyf(kz)/(rlxyf(iz)+rlxyf(kz)+tiny)**2*drlxyf(kz)
 c not correct
-                  rlpfree=rlxyd*(dxy2/dis2)+rlzf(imm)*(delz2/dis2)
-                  dfi=drlxyi*(dxy2/dis2)+drlzf(imm)*(delz2/dis2)
-                  dfkb=drlxykb*(dxy2/dis2)+drlzf(imm)*(delz2/dis2)
-               else if(wtsi_isot.eq.1) then
+  	        rlpfree=rlxyd*(dxy2/dis2)+rlzf(imm)*(delz2/dis2)
+			dfi=drlxyi*(dxy2/dis2)+drlzf(imm)*(delz2/dis2)
+              dfkb=drlxykb*(dxy2/dis2)+drlzf(imm)*(delz2/dis2)
+	    else if(wtsi_isot.eq.1) then
 	
-                  rlpfree=rlxyf(imm)*(dxy2/dis2)+rlzf(imm)*(delz2/dis2)
-                  df=drlxyf(imm)*(dxy2/dis2)+drlzf(imm)*(delz2/dis2)
+c			rlpfree=rlxyf(imm)*(dxy2/dis2)+rlzf(imm)*(delz2/dis2)
+c			df=drlxyf(imm)*(dxy2/dis2)+drlzf(imm)*(delz2/dis2)
+c
+c using standard rlpermc
+c
+              rlpfree1=rlf(imm)	
+	        df1 = drlef(imm)*drlxyf(imm)	
 
-               else
-                  rlpfree=rlxyf(imm)	
-                  df = drlxyf(imm)	
-               endif
+				rlzf_dum = zfac_ani*rlpfree1           
+	            if(rlzf_dum.le.0.0d0) then
+	               rlzf_dum = 0.d0
+                     drlzf_dum  = zfac_ani*df1
+	            else if(rlzf_dum.ge.1.d00) then
+	               rlzf_dum = 1.d00
+                     drlzf_dum  = 0.0d0
+	            else
+	               drlzf_dum= zfac_ani*df1
+   	            endif             
 
-               if(axyd.gt.0.0) then
+              rlpfree=rlpfree1*(dxy2/dis2)+rlzf_dum*(delz2/dis2)
+			df=df1*(dxy2/dis2)+drlzf_dum*(delz2/dis2)
+
+ 	    else
+               rlpfree=rlxyf(imm)	
+			 df = drlxyf(imm)
+c
+c using standard rlpermc
+c			 	
+              rlpfree=rlf(imm)	
+	        df = drlef(imm)*drlxyf(imm)	
+	    endif
+
+		if(axyd.gt.0.0) then
 c water is flowing out of node i
-                  if(wtsi_isot.eq.2) then
-                     t91(neighc)=rlpfree
-                     t9(neighc)=0.0	         
-                     dfid1f(neighc)=dfi
-                     dfidf(neighc)=dfkb
-                  else
-                     t91(neighc)=rlpfree
-                     t9(neighc)=0.0
-                     dfid1f(neighc)=df
-                     dfidf(neighc)=0.0
-                  end if
-               else
-c water is flowing into node i
-                  if(wtsi_isot.eq.2) then
-                     t9(neighc)=rlpfree
-                     t91(neighc)=0.0  
-                     dfid1f(neighc)=dfi
-                     dfidf(neighc)=dfkb 
-                  else 
-                     t9(neighc)=rlpfree
-                     t91(neighc)=0.0  
-                     dfid1f(neighc)=0.0
-                     dfidf(neighc)=df
-                  end if
-               end if
-
-               call setbit(nbits,neighc,upwind_v(iz4m1),fid)
+	        if(wtsi_isot.eq.2) then
+               t91(neighc)=rlpfree
+               t9(neighc)=0.0	         
+			 dfid1f(neighc)=dfi
+               dfidf(neighc)=dfkb
+			else 
+               t91(neighc)=rlpfree
+               t9(neighc)=0.0
+			 dfid1f(neighc)=df
+               dfidf(neighc)=0.0
+	        endif
             else
+c water is flowing into node i
+	        if(wtsi_isot.eq.2) then
+               t9(neighc)=rlpfree
+               t91(neighc)=0.0  
+			 dfid1f(neighc)=dfi
+               dfidf(neighc)=dfkb 
+			else 
+               t9(neighc)=rlpfree
+               t91(neighc)=0.0  
+			 dfid1f(neighc)=0.0
+               dfidf(neighc)=df
+	        endif
+          endif
+
+          call setbit(nbits,neighc,upwind_v(iz4m1),fid)
+      else
 c placeholder if_block:  we should never go here
-               if(.not.bit(nbits,neighc,upwind_v(iz4m1))) then 
+           if(.not.bit(nbits,neighc,upwind_v(iz4m1))) then 
 c placeholder if_block:  we should never go here
-               endif
-            endif
+           endif
+      endif
  71      continue
 c     
 c     form equations
@@ -498,7 +523,7 @@ c
                jml=nelmdg(kz)-neqp1
                heatc=t5(neighc)
                axyd=t8(neighc)
-
+		    
                fid=t9(neighc)
                fid1=t91(neighc)
                dfid=dfidf(neighc)
@@ -508,17 +533,14 @@ c
                sx4d=t6(neighc)
                dilkb=dil(kb)
                dilpkb=dilp(kb)
-               pcakb = cap_fac*dzrg(kb)*(rlxyf(kb)-0.5)
+
 	         axyd = axyd 
 	         dlpi=-pxy+0.5*sx4d*(dglp(i))
-     &              *((cord(kz,igrav)-cord(iz,igrav))+(pcakb-pcai)) 
-     &              -0.5*sx4d*(rolf(i)+rolf(kb))
-     &              *cap_fac*dzrg(i)*drlxyf(i)
+     &              *((cord(kz,igrav)-cord(iz,igrav))) 
+
 
                dlpkb=pxy+0.5*sx4d*(dglp(kb))
-     &              *((cord(kz,igrav)-cord(iz,igrav))+(pcakb-pcai))
-     &              +0.5*sx4d*(rolf(i)+rolf(kb))
-     &              *cap_fac*dzrg(kb)*drlxyf(kb)
+     &              *((cord(kz,igrav)-cord(iz,igrav)))
 
 c
 c put derivative wrt free surface in

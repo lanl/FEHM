@@ -270,8 +270,8 @@ C**** Only want to set specified nodes ?
                to(i) =  tmp(i)
 c single phase set saturation for wtsi
                if(pho(i).le.0.) then
-                  s(i)=-pho(i)
-                  pho(i)=head0
+c                 s(i)=-pho(i)
+c                 pho(i)=head0
                else
                   if (irdof .ne. 13 .or. ifree .ne. 0) s (i) =  1.0
 !                 s (i) =  1.0

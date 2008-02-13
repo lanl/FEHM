@@ -163,90 +163,93 @@ c
       integer, allocatable ::  igdpm_rate_nodes_dum(:)      
       character*20 dummy
       logical null1, sheat_flag, stran_flag
-      real*8  aijsave, aiidiff
+      real*8  aijsave, aiidiff, corr_tol
+      parameter (corr_tol = 1.e-18)
       
       if(igdpm_rate.le.0) return 
-     
+      
       if (iflg.eq.0) then
-c 
-c read nodes and processes to be modified
-c
-        allocate(igdpm_rate_nodes(n0))
+c     
+c     read nodes and processes to be modified
+c     
+         allocate(igdpm_rate_nodes(n0))
 
-        igdpm_rate = 1
-        macro = 'cgdp'
+         igdpm_rate = 1
+         macro = 'cgdp'
 	 
-        
-            read (inpt, '(a80)') wdd1
-            select case (wdd1(1:4))
-            case ('heat')
-               read (wdd1, *) dummy,val_conh
-	         val_conh = val_conh*1.d-6
-               sheat_flag = .true.    
-               igdpm_rate = 1
-            case('tran')
-               read (wdd1, *) dummy, val_conh
-	         val_conh = val_conh*1.d-6
-               stran_flag = .true.
-               igdpm_rate = 2               
-            end select
          
-         
-            igroup = 1
-            narrays = 1
-            itype(1) = 4
-            default(1) = 0
- 
+         read (inpt, '(a80)') wdd1
+         select case (wdd1(1:4))
+         case ('heat')
+            read (wdd1, *) dummy,val_conh
+            val_conh = max(val_conh*1.d-6,corr_tol)
+            sheat_flag = .true.    
+            igdpm_rate = 1
+         case('tran')
+            read (wdd1, *) dummy, val_conh
+            val_conh = max(val_conh*1.d-6,corr_tol)
+            stran_flag = .true.
+            igdpm_rate = 2               
+         end select
+      
+      
+         igroup = 1
+         narrays = 1
+         itype(1) = 4
+         default(1) = 0
+      
 c     
 c     read in initial node  identifier here
-c 
-            call initdata2( inpt, ischk, n0, narrays,
+c     
+         call initdata2( inpt, ischk, n0, narrays,
      &        itype, default, macroread(8), macro, igroup, ireturn,
      &        i4_1 = igdpm_rate_nodes(1:n0))
-     
-c
-c expandthe array size needed to store next nearest nodes  
-c
-      do i= 1,n0
-	 if(igdpm_rate_nodes(i).gt.0) then
-	  i1 = nelm(i)+1
-	  i2 = nelm(i+1)
-	  do jj = i1,i2
-	   kb = nelm(jj)
-	   if(igdpm_rate_nodes(kb).eq.0) then
-	    igdpm_rate_nodes(kb) = -1
-	   endif
-	  enddo 
-	 endif
-      enddo
-	ngdpm_rate = 0
-	kc = 0 
-      do i= 1,n0
-	 if(igdpm_rate_nodes(i).gt.0) then
-	  ngdpm_rate = ngdpm_rate + 1
-	 else if(igdpm_rate_nodes(i).lt.0) then
-	  kc = kc+1
-	 endif
-	enddo 
-	write (iout,*)'gdpm primary nodes ', ngdpm_rate, 'fringe nodes ',
-     & kc 	 
+
+      else if (iflg .eq. -1) then     
+c     
+c     expand the array size needed to store next nearest nodes  
+c     just counting nodes now
+c     
+         do i= 1,n0
+            if(igdpm_rate_nodes(i).gt.0) then
+               i1 = nelm(i)+1
+               i2 = nelm(i+1)
+               do jj = i1,i2
+                  kb = nelm(jj)
+                  if(igdpm_rate_nodes(kb).eq.0) then
+c     igdpm_rate_nodes(kb) = -1
+                  endif
+               enddo 
+            endif
+         enddo
+         ngdpm_rate = 0
+         kc = 0 
+         do i= 1,n0
+            if(igdpm_rate_nodes(i).gt.0) then
+               ngdpm_rate = ngdpm_rate + 1
+            else if(igdpm_rate_nodes(i).lt.0) then
+               kc = kc+1
+            endif
+         enddo
+         if (iout .ne. 0) write (iout,*)'gdpm primary nodes ',
+     &        ngdpm_rate, 'next neighbor nodes ', kc 	 
       else if (iflg .eq. 1) then
-c
-c remove resistance from identified nodes 
-c
-c  should be called just before array normalization and order switching
-c
-       neqp1 = neq+1
-       if(igdpm_rate.eq.1) then
-c heat conduction terms       
-       
-        do i = 1,n0
-	   if(igdpm_rate_nodes(i).ne.0) then        
-          call gdpm_geneqh(i)
-	   endif
-        enddo 
-       else if(igdpm_rate.eq.2) then
-       endif
+c     
+c     remove resistance from identified nodes 
+c     
+c     should be called just before array normalization and order switching
+c     
+         neqp1 = neq+1
+         if(igdpm_rate.eq.1) then
+c     heat conduction terms       
+            
+            do i = 1,n0
+               if(igdpm_rate_nodes(i).gt.0) then        
+                  call gdpm_geneqh(i)
+               endif
+            enddo 
+         else if(igdpm_rate.eq.2) then
+         endif
       end if
 
       end

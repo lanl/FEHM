@@ -233,8 +233,6 @@ c     return if 3-d and ns = 6 (can't divide prisms  further)
          if(icnl.eq.0.and.ns.eq.6) return
 c     return if 2-d and ns = 3 (can't divide triangles further)
          if(icnl.ne.0.and.ns.eq.3) return
-c     return if ns <= 2 can't divide 1-d elements
-         if (ns .le. 2) return
          if(icnl.ne.0) then
 c     2-d elements
 c     nelt=element count
@@ -358,14 +356,23 @@ c     3-d elements
             do 50 ie=1,nei
 c     identify local nodes
                npoine=(ie-1)*ns
-               nloc(1)=nelm(npoine+1)
-               nloc(2)=nelm(npoine+2)
-               nloc(3)=nelm(npoine+3)
-               nloc(4)=nelm(npoine+4)
-               nloc(5)=nelm(npoine+5)
-               nloc(6)=nelm(npoine+6)
-               nloc(7)=nelm(npoine+7)
-               nloc(8)=nelm(npoine+8)
+c               nloc(1)=nelm(npoine+1)
+c               nloc(2)=nelm(npoine+2)
+c               nloc(3)=nelm(npoine+3)
+c               nloc(4)=nelm(npoine+4)
+c               nloc(5)=nelm(npoine+5)
+c               nloc(6)=nelm(npoine+6)
+c               nloc(7)=nelm(npoine+7)
+c               nloc(8)=nelm(npoine+8)
+c
+	         nloc(5)=nelm(npoine+1)
+               nloc(6)=nelm(npoine+2)
+               nloc(7)=nelm(npoine+3)
+               nloc(8)=nelm(npoine+4)
+               nloc(1)=nelm(npoine+5)
+               nloc(2)=nelm(npoine+6)
+               nloc(3)=nelm(npoine+7)
+               nloc(4)=nelm(npoine+8)
 c     divide into tetrahedrals
                if(ivf.eq.-99) then
 c     only doing this for brick elements

@@ -1,4 +1,4 @@
-      subroutine thrair(ndummy)
+      subroutine thrair(ndummy) 
 !***********************************************************************
 !  Copyright, 2004,  The  Regents  of the  University of California.
 !  This program was prepared by the Regents of the University of 
@@ -367,7 +367,7 @@ c
             allocate(s0(n),pcp0(n),dpcps0(n),rlf0(n))
             allocate(drlfs0(n),rvf0(n),drvfs0(n))       
          endif
-
+      
 c     get relative perms
          if(iad.lt.abs(iexrlp).or.abs(iexrlp).eq.0) then
             call rlperm(ndummy,1)
@@ -380,6 +380,7 @@ c     get relative perms
             call pcp_save(2,neq,ndummy,0,pcp,dpcef,rlf,drlef,
      &           rvf,drvef,s,pcp0,dpcps0,rlf0,drlfs0,
      &           rvf0,drvfs0,s0)
+
             do mid=1,neq
                mi=mid+ndummy
                drlpf(mi)=0.0          
@@ -441,19 +442,19 @@ c
       dtin=1.0/dtot
 c     
 c     generate coef and derivatives
-c     
+c    
       ifree1 = 0 
       do 100 mid=1,neq
          mi=mid+ndummy
-         ieosd=2  
+         ieosd=2 
 c count non fully saturated cells	    
          pl =phi(mi) 
          if (ifree .ne. 0) then  
             sl = rlxyf(mi) - rlptol
-            if(sl.lt.1.0 - rlptol) ifree1 = ifree1 + 1
+		  if(sl.lt.1.0 - rlptol) ifree1 = ifree1 + 1
          else if (irdof .ne. 13 ) then
-            sl = s(mi)
-            if(s(mi).lt.1.0) ifree1 = ifree1 + 1
+            sl = s(mi) 
+		  if(s(mi).lt.1.0) ifree1 = ifree1 + 1
          else
             sl = 1.0d0
          end if
@@ -553,14 +554,13 @@ c     flow in or out
                   qwdis=permsd*(sl-sflux)
                   dqws=permsd
                endif
-            else if(sflux.le.0.0) then
-	       
+            else if(sflux.le.0.0) then	       
                permsdv = permsd*seep_facv
                qadis=permsdv*xrv*(pl-pflowd)
                dqap=permsdv*xrv + drvp*permsdv*(pl-pflowd)
                dqas= drv*permsdv*(pl-pflowd)
                if(pl-pflowd.gt.0.0) then
-	          permsdl = permsd*seep_facl
+	            permsdl = permsd*seep_facl
                   qwdis=permsdl*xrl*(pl-pflowd)
                   dqwp=permsdl*xrl + drlp*permsdl*(pl-pflowd)
                   dqws= drl*permsdl*(pl-pflowd) 
@@ -572,7 +572,7 @@ c     flow in or out
                endif
                
             endif
-            if(wellim(mi).lt.0.and.sflux.lt.0.0) then
+            if(wellim(mi).lt.0.and.sflux.lt.0.0) then 
                qadis = permsd*(pl-pflowd)
                dqap  = permsd 
                dqas = 0.0
@@ -603,82 +603,87 @@ c     rol = rolref*(1.0+comw*(pl-pref))
                dqws=-dqws
                dqwp=-dqwp
             endif
-         else if(kq.eq.-3.and.irdof.ne.13) then
+
+         else if(kq.eq.-3.and.ifree.eq.0) then
 c     ===Seepage face condition for air and water 
-            permsd=abs(wellim(mi))
-            permsdv = permsd*seep_facv
-            permsdl = permsd*seep_facl
-            watterm= xrl*permsdl
-            airterm= xrv*permsdv
-            pflow(mi) = crl(4,1)
-            pdifa = pl-pflow(mi)
-            pdifw = pl-pflow(mi)
-            if(pdifw.gt.0.0) then
-               qwdis = watterm*pdifw
+
+               permsd=abs(wellim(mi))
+               permsdv = permsd*seep_facv
+               permsdl = permsd*seep_facl
+               watterm= xrl*permsdl
+               airterm= xrv*permsdv
+	         pflow(mi) = crl(4,1)
+               pdifa = pl-pflow(mi)
 c     
-               dqws = drl*permsdl*pdifw 
-               dqwp = drlp*permsdl*pdifw + watterm 
-            else
-               qwdis = 0.0
-               dqws = 0.0
-               dqwp = 0.0
-            endif
-            qadis = airterm*(pdifa) 
-            dqas = drv*permsdv*pdifa
-            dqap = drvp*permsdv*pdifa + airterm
+               pdifw = pl-pflow(mi)
+               if(pdifw.gt.0.0) then
+                  qwdis = watterm*pdifw
+c     
+                  dqws = drl*permsdl*pdifw 
+                  dqwp = drlp*permsdl*pdifw + watterm 
+               else
+                  qwdis = 0.0
+                  dqws = 0.0
+                  dqwp = 0.0
+               endif
+               qadis = airterm*(pdifa) 
+               dqas = drv*permsdv*pdifa
+               dqap = drvp*permsdv*pdifa + airterm
 
 
          else if(kq.eq.-3.and.ifree.ne.0) then
 c     Seepage face for simpliflied water table
 c     outflow only based on highest cell pressure (sat = 1.)
 c     
-            permsd= qc(mi)/wellim(mi)
+c            permsd= qc(mi)/wellim(mi)
+	      permsd=abs(wellim(mi))
             permsdl = permsd*seep_facl
             plow = head12(mi,2)
-            watterm= permsdl*esk(mi)
+	      watterm= permsdl*esk(mi)
             watfrac = rlxyf(mi)
             dwfracp = drlxyf(mi)
             pdifw = pwl-plow
-            if(pdifw.ge.0.0d0) then
-               qwdis = watterm*watfrac*pdifw
+	      if(pdifw.ge.0.0d0) then
+             qwdis = watterm*watfrac*pdifw
                dqws = 0.0
                dqwp = watterm*watfrac + watterm*dwfracp*pdifw
             else
 	       qwdis = 0.0
 	       dqws = 0.0
-               dqwp = 0.0
-            endif
+             dqwp = 0.0
+	      endif
 
 
          else if(kq.eq.-4.and.ifree.ne.0) then
 c     Seepage face for simpliflied water table
-c     outflow only based on highest cell pressure (sat = 1.)
+c     
 c     based on average cell pressure
-            permsd= qc(mi)/wellim(mi)
+c            permsd= qc(mi)/wellim(mi)
+	      permsd=abs(wellim(mi))
             permsdl = permsd*seep_facl
             plow = 0.5*(head12(mi,2)+head12(mi,1))
-            watterm= permsdl*esk(mi)
+	      watterm= permsdl*esk(mi)
             watfrac = rlxyf(mi)
             dwfracp = drlxyf(mi)
             pdifw = pwl-plow
-            if(pdifw.ge.0.0d0) then
-               qwdis = watterm*watfrac*pdifw
+	      if(pdifw.ge.0.0d0) then
+             qwdis = watterm*watfrac*pdifw
                dqws = 0.0
                dqwp = watterm*watfrac + watterm*dwfracp*pdifw
             else
 	       qwdis = 0.0
 	       dqws = 0.0
-               dqwp = 0.0
-            endif
-            
-          else if(kq.eq.-5.and.ifree.ne.0) then
+             dqwp = 0.0
+	      endif
+           
+         else if(kq.eq.-5.and.ifree.ne.0) then
 c Seepage face for simpliflied water table
 c only flow when cell is full
 c might need rlxyf here
             permsd=abs(wellim(mi))
             permsdl = permsd*seep_facl
             watterm= permsdl
-            watfrac = max(rlxyf(mi)-rlptol,0.0d0)
+            watfrac = max(rlxyf(mi)-rlptol,0.0d00)
             plow = head12(mi,2)          
             qwdis = watterm*watfrac*(pwl-plow)
             qwmax = esk(mi)
@@ -690,21 +695,67 @@ c might need rlxyf here
                qwdis = 0.
                dqwp = 0.0
             endif
-         else if(kq.eq.-7.and.irdof.ne.13) then
+         else if(kq.eq.-6.and.irdof.ne.13) then
 c     ===Ponding condition for air and water 
 c     ===area input in pflow term
             rol = rolref
             area=pflow(mi)
-            uperm=-pnx(mi)*rol*rol*grav*area/xvisl
-            
+            uperm=-pnx(mi)*rol*rol*grav*area/xvisl            
             wat_ex= (sl-1.0)/sl
             dwat_exs= 1.0/sl - (sl-1.0)/sl**2
             qwdis=uperm*wat_ex
             dqws=uperm*dwat_exs
-            dqwp=0.0              
-            qadis=0.
-            dqas=0.
-            dqap=0.
+            dqwp=0.0d00              
+            qadis=0.0d00
+            dqas=0.0d00
+            dqap=0.0d00
+         else if(kq.eq.-7.and.ifree.eq.0) then
+c     ===specified air pressure no flow water
+c     flow in or out
+            permsd=abs(wellim(mi))
+            pflowd=pflow(mi)
+	      qadis = xrv*permsd*(pl-pflowd)
+	      dqap = permsd*xrv
+	      dqas = permsd*(pl-pflowd)*drv
+            qwdis = 0.0d00
+               dqws = 0.0d00
+               dqwp = 0.0d00  
+         else if(kq.eq.-9.and.ifree.eq.0) then
+c     ===specified air pressure 
+c     ===specified saturation
+c no derivatives of rlps
+c     flow in or out
+            permsd=abs(wellim(mi))
+            pflowd=pflow(mi)
+            sflux = esk(mi)
+	      qadis =permsd*(pl-pflowd)
+	      dqap = permsd
+	      dqas = 0.0d0
+            qwdis = permsd*(sl-sflux)
+            dqws = permsd
+            dqwp = 0.0d00
+         else if(kq.eq.-10.and.ifree.eq.0) then
+c     ===specified air pressure 
+c     ===specified flux
+c no derivatives of rlps
+          if(sl.lt.1.d0) then
+            permsd=abs(wellim(mi))
+            pflowd=pflow(mi)
+            sflux = esk(mi)
+	      qadis =permsd*(pl-pflowd)
+	      dqap = permsd
+	      dqas = 0.0d0
+            qwdis = sflux
+            dqws = 0.0d00
+            dqwp = 0.0d00
+		 else
+	      qadis = 0.0d0
+	      dqap = 0.0d0
+		  dqas = 0.0d0
+            qwdis = sflux
+            dqws = 0.0d00
+            dqwp = 0.0d00
+		 endif    				      			   
          else if(kq.eq.-22.and.irdof.ne.13) then
 c     ===manage outflow only conditions
             if(sflux.lt.0.0) then
@@ -721,16 +772,16 @@ c     ===manage outflow only conditions
          else if(kq.eq.-22.and.irdof.eq.13) then
 c     make sure there is a deivative wrt P for ifree ne 0
          else if(kq.eq.2) then
-            qwdis = qc(mi)
-            qadis = esk(mi)
-            dqws  = 0.0
-            dqwp = 0.0
+           qwdis = qc(mi)
+	     qadis = esk(mi)
+	      dqws  = 0.0
+	      dqwp = 0.0
             dqap  = 0.0
             dqas  = 0.0
-         else if(kq.eq.-6) then
-            pflowd = pflow(mi)
-            sflux = esk(mi)
-            permsd = wellim(mi) 
+         else if(kq.eq.-8) then
+              pflowd = pflow(mi)
+			sflux = esk(mi)
+			permsd = wellim(mi) 
             if(sflux.ge.1.0) then
                qwdis=permsd*(pl-pflowd)
                dqwp=permsd
@@ -738,30 +789,30 @@ c     make sure there is a deivative wrt P for ifree ne 0
 
             else if(sflux.gt.0.0.and.sflux.lt.1.0) then
 
-               qadis=permsd*(pl-pflowd)
-               dqap=permsd
-               qwdis=permsd*(sl-sflux)
-               dqws=permsd
-               
-            else if(sflux.lt.0.0) then
-               qadis=permsd*(pl-pflowd)
-               dqap=permsd
-               qwdis = 0.0
-               dqws = 0.0
+                  qadis=permsd*(pl-pflowd)
+                  dqap=permsd
+                  qwdis=permsd*(sl-sflux)
+                  dqws=permsd
+
+	      else if(sflux.lt.0.0) then
+	            qadis=permsd*(pl-pflowd)
+                  dqap=permsd
+	            qwdis = 0.0
+	            dqws = 0.0
             endif
          else if(kq.eq.1) then
-            if(ifree.ne.0) then
+	      if(ifree.ne.0) then
 c outflow only if water present
-               if(qdis.gt.0.0.and.esk(mi).lt.0.0) then
+             if(qdis.gt.0.0.and.esk(mi).lt.0.0) then
 c	        permsd = sx1(mi)
-                  qwdis = qdis*rlxyf(mi)
-                  dqwp  = qdis*drlxyf(mi)
+              qwdis = qdis*rlxyf(mi)
+	        dqwp  = qdis*drlxyf(mi)
 c		    qwdis = qdis
 c	        dqwp = 0.0
-               else
-                  qwdis = qdis
-                  dqwp = 0.0
-               endif
+	       else
+	        qwdis = qdis
+	        dqwp = 0.0
+	       endif
             else if(esk(mi).ge.0.0) then
                if(sl.gt.0.0) then
                   qwdis=qdis*esk(mi)
@@ -890,12 +941,12 @@ c     source terms
          deallocate(s0,pcp0,dpcps0,rlf0)
          deallocate(drlfs0,rvf0,drvfs0)       
       endif
-      do mi = 1,n
-         if(nelm(mi)+1.eq.nelm(mi+1)) then
-            sk(mi) = 0.0
-            qh(mi) = 0.0
+	do mi = 1,n
+       if(nelm(mi)+1.eq.nelm(mi+1)) then
+	  sk(mi) = 0.0
+	  qh(mi) = 0.0
 	 endif
-      enddo
+	enddo
 
       return
       end

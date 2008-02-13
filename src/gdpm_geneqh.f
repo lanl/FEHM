@@ -60,7 +60,7 @@ C***********************************************************************
       logical bit
       integer i, iz4m1
       integer ial, iau, icd, ii1, ii2, idg, ij, ij1, ij2, isl, iq, iz
-      integer jm, jmi, jmia, jml, kb, kz
+      integer jm, jmi, jmia, jml, kb, kz, ig, kbg
       integer neighc, neqp1, nmatavw
       integer imd,iwd
       real*8 dis2,dis_tol,sx_min
@@ -117,17 +117,16 @@ c
       jmi=nelmdg(i-icd)
       jmia=jmi-neqp1
 
-
-      do jm=jmi+1,ii2
-        iq=iq+1
+      do jm=ii1,ii2
         kb=nelm(jm)+icd
-	  if(igdpm_rate_nodes(kb).ne.0) then
+        if(kb.ne.i) then
+	   iq=iq+1
          it8(iq)=kb
          it9(iq)=jm-ii1+1
          it10(iq)=istrw(jm-neqp1)
          it11(iq)=jm-neqp1
          ij1=nelm(nelm(jm))+1
-         ij2=nelmdg(nelm(jm))-1
+         ij2=nelm(nelm(jm)+1)
          do ij=ij1,ij2
           if(nelm(ij).eq.iz) then
            it12(iq)=ij-neqp1
@@ -153,9 +152,12 @@ c
              thykb=val_conh
              thzkb=val_conh
 	      else
-             thxkb=dis_tol
-             thykb=dis_tol
-             thzkb=dis_tol
+             thxkb=thx(kb)
+             thykb=thy(kb)
+             thzkb=thz(kb)
+	       thxkb=val_conh
+             thykb=val_conh
+             thzkb=val_conh
             endif
 
             sx2t=2.*thxi*thxkb/(thxi+thxkb)
@@ -230,19 +232,19 @@ c
       kb=it8(jm)
       kz=kb-icd
       neighc=it9(jm)
-      heatc=t5(neighc)
       iau=it11(jm)
       ial=it12(jm)
       jml=nelmdg(kz)-neqp1
       heatc=t5(neighc)
-      bp(iz+nrhs(2))=bp(iz+nrhs(2))+heatc*(t(kb)-ti)
-      bp(kz+nrhs(2))=bp(kz+nrhs(2))-heatc*(t(kb)-ti)
-      
+      bp(iz+nrhs(2))=bp(iz+nrhs(2))+heatc*(t(kb)-ti)      
       a(jmia+nmat(4))=a(jmia+nmat(4))-heatc*dtpae(i)     
-      a(ial+nmat(4))=a(ial+nmat(4))+heatc*dtpae(i)     
       a(iau+nmat(4))=a(iau+nmat(4))+heatc*dtpae(kb)
-      a(jml+nmat(4))=a(jml+nmat(4))-heatc*dtpae(kb)
-      
+	if(igdpm_rate_nodes(kb).eq.0) then
+c add terms to other gridblocks
+       bp(kz+nrhs(2))=bp(kz+nrhs(2))-heatc*(t(kb)-ti) 
+       a(jml+nmat(4))=a(jml+nmat(4))-heatc*dtpae(kb)
+	 a(ial+nmat(4))=a(ial+nmat(4))+heatc*dtpae(i)     
+	endif      
 66    continue
 
       r e t u r n

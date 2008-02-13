@@ -64,7 +64,7 @@ c sets air and water pressure with 2 phase conditions
 
       integer iflg, neq2
       integer mi,mid
-      real*8 rho1grav,rho2grav,hmax,drocp0
+      real*8 rho2grav,hmax,drocp0
       real*8 pcl0,roc0,pref,rolref,tref,tempc,roc
       parameter(pcl0 = 0.101325)
       parameter(roc0 = 1.292864)
@@ -74,7 +74,6 @@ c sets air and water pressure with 2 phase conditions
       rolref=crl(1,1)
       pref=crl(4,1)
       roc = drocp0*pref
-      rho1grav = crl(1,1)*(-grav)
       rho2grav = roc*(-grav)
       neq2 = 2*neq
 

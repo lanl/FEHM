@@ -323,7 +323,8 @@ CPS   IF a liquid,  solid  or a henry's law tracer
                   danl(mi) = max( rolf(mim) * s(mim), rtol )
                else
                   danv(mi) = 0.
-                  danl(mi) = max( rolf(mim), rtol )
+c  gaz 120107
+                  danl(mi) = max( rolf(mim)*s(mim), rtol )
                end if
             end do
          else

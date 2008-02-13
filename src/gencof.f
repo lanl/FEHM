@@ -270,6 +270,8 @@ C***********************************************************************
       integer i, i1, i2, i7, i8, icsh, ij, intgo, ipiv, iq, isx, iw0
       integer j, jset, k, kb, knum, kset, lz, nele, nelu, neu
       integer nga, noder, nsl, nrq, nrqd, nrs, nterm, numkset
+	integer icrem
+      real*8 tenth, arem
       real*8, allocatable ::  aj(:,:)
       real*8, allocatable :: dumm(:)
       logical proc
@@ -326,6 +328,8 @@ c
       endif
 c     save integration type
       intgo=intg
+      tenth = max(neluc/10,1)
+      icrem = 0
 c     
 c     loop on equation coefficient types
 c     
@@ -354,6 +358,7 @@ c
                   bcoef(i,j)=0.0
                enddo
             enddo
+
 c     
 c     loop on integration points
 c     
@@ -362,6 +367,14 @@ c
 c     loop on unique elements
 c     
                do neu=1,neluc
+                  arem = mod(float(neu),tenth)
+                  if(arem.eq.0.and.nga.eq.1.and.nrqd.eq.1) then
+                     icrem = icrem + 10
+                     if (iout.ne.0) write(iout,*)
+     &                    'area coefs., percent complete = ', icrem
+                     if (iptty.ne.0) write(iptty,*)
+     &                    'area coefs., percent complete = ', icrem
+                  endif
                   nele=ineluf(neu)
 c     calculate number of nodes
                   nsl=nsf(nele)

@@ -1,46 +1,35 @@
       subroutine gensmethh2o    
-!***********************************************************************
-!  Copyright, 2004,  The  Regents  of the  University of California.
-!  This program was prepared by the Regents of the University of 
-!  California at Los Alamos National Laboratory (the University) under  
-!  contract No. W-7405-ENG-36 with the U.S. Department of Energy (DOE). 
-!  All rights in the program are reserved by the DOE and the University. 
-!  Permission is granted to the public to copy and use this software 
-!  without charge, provided that this Notice and any statement of 
-!  authorship are reproduced on all copies. Neither the U.S. Government 
-!  nor the University makes any warranty, express or implied, or 
-!  assumes any liability or responsibility for the use of this software.
-!**********************************************************************
-!D1
-!D1  PURPOSE 
-!D1
-!D1  This subroutine solves the non-isothermal water-methane equations 
-!D1  full jacobian (unsymmetric, 3n by 3n).
-!D1
-!***********************************************************************
-!D2
-!D2 REVISION HISTORY 
-!D2
-!D2 FEHM Version 2.30
-!D2 
-!D2 $Log:   /pvcs.config/fehm90/src/gensmethh2o.f_a  $
-!D2
-!***********************************************************************
-!D3
-!D3  REQUIREMENTS TRACEABILITY
-!D3
-!D3  2.3.2 Heat- and mass-transfer equations
-!D3  2.5.2 Solve nonlinear equation set at each time step
-!D3
-!***********************************************************************
-!D4
-!D4  SPECIAL COMMENTS AND REFERENCES
-!D4
-!D4 Requirements from SDN: 10086-RD-2.20-00
-!D4   SOFTWARE REQUIREMENTS DOCUMENT (RD) for the 
-!D4   FEHM Application Version 2.20
-!D4
-!***********************************************************************
+C***********************************************************************
+CD1
+CD1  PURPOSE 
+CD1
+CD1  This subroutine solves the non-isothermal water-methane equations 
+CD1  full jacobian (unsymmetric, 3n by 3n).
+CD1
+C***********************************************************************
+CD2
+CD2  REVISION HISTORY
+CD2
+CD2 
+CD2    Rev 1.0   06/20/02 10:24:20   pvcs
+CD2 original version in process of being certified
+CD2 
+C***********************************************************************
+CD3
+CD3  REQUIREMENTS TRACEABILITY
+CD3
+CD3  2.3.2 Heat- and mass-transfer equations
+CD3  2.5.2 Solve nonlinear equation set at each time step
+CD3
+C***********************************************************************
+CD4
+CD4  SPECIAL COMMENTS AND REFERENCES
+CD4
+CD4 Requirements from SDN: 10086-RD-2.20-00
+CD4   SOFTWARE REQUIREMENTS DOCUMENT (RD) for the 
+CD4   FEHM Application Version 2.20
+CD4
+C***********************************************************************
 
       use comai
       use comgi
@@ -59,13 +48,13 @@
       integer nmatd, index(6)
       integer i, j, icoupl_iter, id, idl, idofm 
       integer jj,ii,idiag
-      integer iprint,inorm
+      integer iprint,inorm, j_temp,i_temp
       integer neqp1, nrhs1, nrhs2, nrhs3, nsizea, nsizea1 
       real*8, allocatable :: dumz(:)
       real*8, allocatable :: dumn(:)
       real*8, allocatable :: sto5(:)   
-      real*8  facr, fdum2, tollr, tolls
-      parameter (iprint=0,inorm = 1)
+      real*8  facr, fdum2, tollr, tolls, fdum_temp
+      parameter (iprint=0,inorm = 0)
       
       neqp1=neq+1
       nmatd=nelm(neqp1)-neqp1
@@ -149,7 +138,7 @@ c     print out before manipulating or normalizing arrays
         write(*,*) jj
         write(*,*) bp(id+nrhs(jj))
         write(*,*) 'diagonal of a'
-	idiag=nelmdg(id)-neqp1
+	  idiag=nelmdg(id)-neqp1
         write(*,200) (a(idiag+nmat(6*(jj-1)+ii)),ii=1,6)
        enddo
        write(*,*) 
@@ -160,7 +149,7 @@ c     print out before manipulating or normalizing arrays
         write(*,*) jj
         write(*,*) bp(id+nrhs(jj))
         write(*,*) 'diagonal of a'
-	idiag=nelmdg(id)-neqp1
+	   idiag=nelmdg(id)-neqp1
         write(*,200) (a(idiag+nmat(6*(jj-1)+ii)),ii=1,6)
        enddo
        if(iprint.eq.2) stop
@@ -181,6 +170,7 @@ c  gaz 2-27-03
      &      ,index,idofm,dumn(1),dumn(17),dumn(33),0,fdum2)
        else
 	 fdum2 = 0.0
+	   index(1) = 0
          do i=1,neq
           do j=1,idofm
            fdum2 = fdum2+bp(i+nrhs(j))*bp(i+nrhs(j))
@@ -194,24 +184,23 @@ c     return and/or stop if singular
 c     
       if(index(1).lt.0 ) then
          if (iout .ne. 0) then
-            write(iout,*) '   '
-            write(iout, 100) 
-            write(iout,*) '   '
-            write(iout,'(i8,3g12.3)')
-     &           abs(nmatb(1)),(cord(abs(nmatb(1)),i),i=1,3)
+            write(iout,*)
+            write(iout,100) 
+            write(iout,*)
          end if
+c     write(iout,'(i8,3g12.3)')
+c     &        abs(nmatb(1)),(cord(abs(nmatb(1)),i),i=1,3)
          if(iptty.gt.0)then
-            write(iptty,*) '   '
-            write(iptty, 100) 
-            write(iptty,*) '   '
-            write(iptty,'(i8,3g12.3)') 
-     &           abs(nmatb(1)),(cord(abs(nmatb(1)),i),i=1,3)
+            write(iptty,*)
+            write(iptty,100) 
+            write(iptty,*)
+c     write(iptty,'(i8,3g12.3)') 
+c     &        abs(nmatb(1)),(cord(abs(nmatb(1)),i),i=1,3)
          endif
          iad=maxit
          return
       endif
- 100   format('* singular matrix found during normalization *')
-      
+ 100  format('* singular matrix found during normalization *')
 c     find residual
 c     
       fdum=sqrt(fdum2)
@@ -221,15 +210,24 @@ c
          f0=max(fdum*epe,tmch)
       endif
       if(fdum1.lt.0.0.and.iad.ne.0) then
+	   fdum_temp = 0.0d0
+	   j_temp = 0
+	   i_temp = 0
          do i=1,neq
           do j=1,idofm
-            if(abs(bp(i+nrhs(j))).gt.tmch) go to 99
+            if(abs(bp(i+nrhs(j))).gt.fdum_temp) then
+	       fdum_temp = abs(bp(i+nrhs(j)))
+	       i_temp = i
+	       j_temp = j
+	      endif
           enddo
          enddo
-         fdum=-1.0
-         go to 999
- 99      continue
-         f0=-1.0      
+	   if(fdum_temp.lt.tmch) then
+          fdum=-1.0
+          go to 999
+         else
+          f0=-1.0  
+	   endif  
       endif
       if(f0.gt.0.0) then
          if(fdum.le.f0.and.iad.ne.0) goto 999
@@ -246,7 +244,7 @@ c     set maximum iterations in solve_new
 c     
       iter=maxsolve
       call storage_derivatives(1,1)
-      allocate(dumz(neq*5*4))
+      allocate(dumz(neq*3*4))
 c
 c     set maximum recoupling iterations if necesary
 c     
@@ -262,17 +260,33 @@ c
 c     full dof solution
 c
 
-             if(gdpm_flag.eq.0) then 
-              call solve_new(neq,a,b,bp,nmat,nb,nrhs,nelm,nop,north
-     &             ,tollr,irb,iirb,npvt,gmres,dumz,piv
-     &             ,h,c,ss,g,y,iter,iback,idofm,iptty,maxor,accm)
+             if(gdpm_flag.eq.0) then
+              if (igauss .gt. 1) then
+               call solve_new(neq,a,b,bp,nmat,nb,nrhs,nelm,nop
+     *              ,north,tollr,irb,iirb,npvt,gmres,dumz,piv
+     *              ,h,c,ss,g,y,iter,iback,idofm,iptty,maxor,accm)
+              else
+               call solve_new(neq,a,b,bp,nmat,nmat,nrhs,nelm,nelm
+     *              ,north,tollr,irb,iirb,npvt,gmres,dumz,piv
+     *              ,h,c,ss,g,y,iter,iback,idofm,iptty,maxor,accm)
+              end if 
+
              else
-             call solve_dual(neq_primary,neq,a,b,bp,nmat,nb,nrhs
-     &            ,nelm,nelm_primary,nop,north,tollr,irb,iirb
-     &            ,npvt,gmres,dumz,piv
-     &            ,h,c,ss,g,y,iter,iback,idofm,iptty,maxor
-     &            ,igdpm,maxgdpmlayers,ngdpm_layers,nelmdg,accm
-     &            ,mdof_sol)
+              if (igauss .gt. 1) then
+                  call solve_dual(neq_primary,neq,a,b,bp,nmat,nb,nrhs
+     &                 ,nelm,nelm_primary,nop,north,tollr,irb,iirb
+     &                 ,npvt,gmres,dumz,piv
+     &                 ,h,c,ss,g,y,iter,iback,idofm,iptty,maxor
+     &                 ,igdpm,maxgdpmlayers,ngdpm_layers,nelmdg,accm
+     &                 ,mdof_sol)
+               else
+                  call solve_dual(neq_primary,neq,a,b,bp,nmat,nmat,nrhs
+     &                 ,nelm,nelm_primary,nelm_primary,north,tollr,irb
+     &                 ,iirb,npvt,gmres,dumz,piv
+     &                 ,h,c,ss,g,y,iter,iback,idofm,iptty,maxor
+     &                 ,igdpm,maxgdpmlayers,ngdpm_layers,nelmdg,accm
+     &                 ,mdof_sol)
+               end if
              endif
 
       else if(irdof.eq.-idofm) then

@@ -449,8 +449,9 @@ c
 
 
       integer iz,ndummy,i,irlpd,mi,ieosd,it,ir,j,num_models,ireg
-      real*8 alpha,beta,alamda,alpi,smcut,slcut,fac,ds,dhp,rl,rv
-      real*8 drls,drvs,rp1,rp2,rp3,rp4,denom,star,hp,rl1,rv1
+      real*8 alpha,beta,alamda,alpi,smcut,slcut,fac,ds,dhp
+      real*8 rp1,rp2,rp3,rp4,denom,star,hp,rl1,rv1
+      real(8) :: rl = 1., rv = 1., drls = 0., drvs = 0.
       real*8 drls1,drvs1,akf,akm,porf,permb,sl
       real*8 smcutm,smcutf,alpham,alamdam,facf
       real*8 rpa1, rpa2, rpa3, rpa4, rpa5      
@@ -867,6 +868,13 @@ c     no permeability, no porosity
                   rp2 = rp2f(it)
                   rp3 = rp3f(it)
                   rp4 = rp4f(it)
+               else
+! Use linear model as default
+                  rp1 = 0.
+                  rp2 = 0.
+                  rp3 = 1.
+                  rp4 = 1.
+                  irpd = 1
                end if
                sl = s(mi)
                if(irpd.eq.1) then

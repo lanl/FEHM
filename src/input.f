@@ -559,7 +559,11 @@ c**** areas, weights(user-defined) for boundary conditions ***
       else if (macro(1:4) .eq. 'wtsi') then
 c**** free surface calculation with head(saturated only)***
 c**** water table simple
-         ifree = 1
+         backspace inpt
+         read(inpt,*,end = 698) macro(1:4), ifree
+	   go to 699
+698      ifree = -1
+699      continue
          call wtsictr (0)
 
       else if (macro(1:4) .eq. 'grad') then
@@ -602,16 +606,18 @@ c**** output in terms of head, not pressures   ****
 c
          backspace inpt
          read(inpt,'(a80)') input_msg 
-         read(input_msg,*,end= 995) macro, head0, temp0, pres0
+         read(input_msg,*,end= 995) macro, head0, temp0, pres0, sat_ich,
+     &	    head_id
          go to 1005
  995     head0 = 0.0
          temp0 = 20.0
          pres0 = 0.1   
+	   sat_ich = 0.0
+	   head_id= 0.0
  1005    continue
          call water_density(temp0, pres0,rol0)
          ichead=1
          if(.not.allocated(head)) allocate(head(n0))
-
       else if (macro .eq. 'bous') then
 c constant densities etc for flow terms
          read(inpt,*) icons
@@ -651,7 +657,6 @@ c don't break connection between nodes with boundary conditions
                write(iptty,*)'macro ignored'
             end if
          end if
-
       else if (macro .eq. 'cgdp') then
 c**** rate-limited gdpm node identifcation (cgdpm)****
          igdpm_rate = 1
@@ -1001,7 +1006,7 @@ c     inmptr is called in part_track instead of here
 c*** water table rise modification
            read(inpt,'(a4)')macro
            if(macro.eq.'wtri')then
-             read(inpt,*)water_table
+             read(inpt,*) water_table
            else
              water_table=-1.d+10
              backspace (inpt)

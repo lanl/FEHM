@@ -1,47 +1,35 @@
       subroutine  geneq_meth ( i )
-!***********************************************************************
-!  Copyright, 2004,  The  Regents  of the  University of California.
-!  This program was prepared by the Regents of the University of 
-!  California at Los Alamos National Laboratory (the University) under  
-!  contract No. W-7405-ENG-36 with the U.S. Department of Energy (DOE). 
-!  All rights in the program are reserved by the DOE and the University. 
-!  Permission is granted to the public to copy and use this software 
-!  without charge, provided that this Notice and any statement of 
-!  authorship are reproduced on all copies. Neither the U.S. Government 
-!  nor the University makes any warranty, express or implied, or 
-!  assumes any liability or responsibility for the use of this software.
-!**********************************************************************
-!D1
-!D1  PURPOSE
-!D1
-!D1  This subroutine generates the equations for 3-dimensional heat
-!D1  and mass transfer for methane componet of a mixture 
-!D1
-!***********************************************************************
-!D2
-!D2  REVISION HISTORY 
-!D2
-!D2 FEHM Version 2.20
-!D2 
-!D2 10-OCT-02    G. Zyvoloski           Initial implementation.
-!D2
-!D2 $Log:   /pvcs.config/fehm90/src/geneq_meth.f_a  $
-!D2
-!***********************************************************************
-!D3
-!D3  REQUIREMENTS TRACEABILITY
-!D3
-!D3  2.3.2 Heat- and mass-transfer equations
-!D3
-!***********************************************************************
-!D4
-!D4  SPECIAL COMMENTS AND REFERENCES
-!D4
-!D4 Requirements from SDN: 10086-RD-2.20-00
-!D4   SOFTWARE REQUIREMENTS DOCUMENT (RD) for the 
-!D4   FEHM Application Version 2.20
-!D4
-!***********************************************************************
+C***********************************************************************
+CD1
+CD1  PURPOSE
+CD1
+CD1  This subroutine generates the equations for 3-dimensional heat
+CD1  and mass transfer for methane componet of a mixture 
+CD1
+C***********************************************************************
+CD2
+CD2  REVISION HISTORY 
+CD2
+CD2 Revision                    ECD
+CD2 Date         Programmer     Number  Comments
+CD2
+CD2 10-OCT-02    G. Zyvoloski           Initial implementation.
+CD2
+C***********************************************************************
+CD3
+CD3  REQUIREMENTS TRACEABILITY
+CD3
+CD3  2.3.2 Heat- and mass-transfer equations
+CD3
+C***********************************************************************
+CD4
+CD4  SPECIAL COMMENTS AND REFERENCES
+CD4
+CD4 Requirements from SDN: 10086-RD-2.20-00
+CD4   SOFTWARE REQUIREMENTS DOCUMENT (RD) for the 
+CD4   FEHM Application Version 2.20
+CD4
+C***********************************************************************
 
       use comflow
       use davidi
@@ -109,9 +97,18 @@ c changed by avw 4/95 -- entered into new version by seh
       endif
 
       sx1d=sx1(i)
+c tenma Apr-25-2005 parallel layer permeability reduction factor (Sand & Mud )
+c    pnx(i) = 1.0 => parallet model
+      if (pnx(i) .eq. 1.0e+06) then
+	axi=pnx(i)*ka0_xy(i)
+      ayi=pny(i)*ka0_xy(i)
+      azi=pnz(i)*permhyd_z(i)
+	else
       axi=pnx(i)
       ayi=pny(i)
       azi=pnz(i)
+	end if
+c tenma Apr-25-2005 parallel layer permeability reduction factor (Sand & Mud )
       alxi=axi
       avxi=axi
       alyi=ayi
@@ -195,16 +192,25 @@ c
             iw=it10(jm)
             iwd=it10(jm)
             iw =abs(iwd)
+c tenma Apr-25-2005 parallel layer permeability reduction factor (Sand & Mud )
+c    pnx(i) = 1.0 => parallet model
+            if (pnx(kb) .eq. 1.0e+06) then
+	      axkb=pnx(kb)*ka0_xy(kb)
+            aykb=pny(kb)*ka0_xy(kb)
+            azkb=pnz(kb)*permhyd_z(kb)
+	      else
             axkb=pnx(kb)
             aykb=pny(kb)
             azkb=pnz(kb)
+	      end if
+c tenma Apr-25-2005 parallel layer permeability reduction factor (Sand & Mud )
             alxkb=axkb
             alykb=aykb
             alzkb=azkb
             reduction_factor = red_factor(istrw_itfc(it11(jm)))
-            perml(1)=2.*alxkb*alxi/(alxkb+alxi)
-            perml(2)=2.*alykb*alyi/(alykb+alyi)
-            perml(3)=2.*alzkb*alzi/(alzkb+alzi)
+            perml(1)=2.*reduction_factor*alxkb*alxi/(alxkb+alxi)
+            perml(2)=2.*reduction_factor*alykb*alyi/(alykb+alyi)
+            perml(3)=2.*reduction_factor*alzkb*alzi/(alzkb+alzi)
             sx2c=sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz)
             thxkb=thx(kb)
             thykb=thy(kb)
@@ -220,12 +226,11 @@ c           pxy=sx2c*perml(1)+sx3c*perml(2)+sxzc*perml(3)
             delz2=(cord(kz,3)-cord(iz,3))**2
             dis2=delx2+dely2+delz2
             if(dis2.gt.dis_tol.and.iwd.gt.0) then
-               pxy=sx2c*dis2/(delx2/perml(1)+
-     &              dely2/perml(2)+delz2/perml(3))
+             pxy=sx2c*dis2/(delx2/perml(1)+
+     &           dely2/perml(2)+delz2/perml(3))
             else
-               pxy=sx2c*sx_mult*max(perml(1),perml(2),perml(3))
+             pxy=sx2c*sx_mult*max(perml(1),perml(2),perml(3))
             endif
-            pxy = pxy*reduction_factor
             pxyi=pxy*(phikb-phii)
             pxyh=pxy*(pvikb-pvii)
             if(dis2.gt.dis_tol.and.iwd.gt.0) then
@@ -254,13 +259,21 @@ c
             iwd=it10(jm)
             iw = abs(iwd)
             neighc=it9(jm)
+c tenma Apr-25-2005 parallel layer permeability reduction factor (Sand & Mud )
+c    pnx(i) = 1.0 => parallet model
+            if (pnx(kb) .eq. 1.0e+06) then
+	      axkb=pnx(kb)*ka0_xy(kb)
+            aykb=pny(kb)*ka0_xy(kb)
+	      else
             axkb=pnx(kb)
             aykb=pny(kb)
+	      end if
+c tenma Apr-25-2005 parallel layer permeability reduction factor (Sand & Mud )
             alxkb=axkb
             alykb=aykb
             reduction_factor = red_factor(istrw_itfc(it11(jm)))
-            perml(1)=2.*alxkb*alxi/(alxkb+alxi)
-            perml(2)=2.*alykb*alyi/(alykb+alyi)
+            perml(1)=2.*reduction_factor*alxkb*alxi/(alxkb+alxi)
+            perml(2)=2.*reduction_factor*alykb*alyi/(alykb+alyi)
             radkb=0.5*(radi+cord(kz,3))
             sx2c=radkb*(sx(iw,isox)+sx(iw,isoy))
             thxkb=thx(kb)
@@ -279,7 +292,6 @@ c           pxy=sx2c*perml(1)+sx3c*perml(2)
             else
               pxy=sx2c*sx_mult*max(perml(1),perml(2))
             endif
-            pxy = pxy*reduction_factor
             pxyi=pxy*(phikb-phii)
             pxyh=pxy*(pvikb-pvii)
             if(dis2.gt.dis_tol.and.iwd.gt.0) then
