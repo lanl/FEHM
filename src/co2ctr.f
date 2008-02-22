@@ -400,10 +400,12 @@ c code written by g zyvoloski feb 1980
 
       real*8 bpd,tbnd,pcid,pv,dtsatp,dpsats,dpsatt,tdumm
       integer iflg,ico2d,i,istflag,mi,it
-      real*8 hum,alp,beta,sr,smax,qtcd,qtotci,dencht
+      real*8 hum,alp,beta,sr,smax,qtcd,dencht
+      real(8) :: qtotci = 0.
       integer mlev1,mlev2,mdd,md
       real*8 rqd,qcd,psatl,qcmax
       logical ngas_flag
+      save ngas_flag
       
 c     set tbnd for pco2 change(see about line 580)
       parameter(tbnd = -1.0)
@@ -417,6 +419,7 @@ c     iflg is used to tell if call is for initialization
             qtc=0.0
             qtotc=0.0
             amc=0.0
+            ngas_flag = .false.
             read(inpt,*) ico2d
 c     dont call co2ctr if ico2d=0
             if(ico2d.eq.0) then
@@ -445,11 +448,12 @@ c
      &           default, macroread(2), macro, igroup, ireturn,
      2           r8_1=pci(1:n0))
 
-            if (pci(1) .eq. -666) then
-               ngas_flag = .true.
-            else
-               ngas_flag = .false.
-            end if
+            do i = 1, n0
+               if (pci(1) .eq. -666) then
+                  ngas_flag = .true.
+                  exit
+               end if
+            end do
 c     
 c     read in specified pressure for  noncon gas
 c     
@@ -523,14 +527,21 @@ c
                   endif
                   to(i)=-pcid
                else if(ieos(i).eq.2) then
+c================================================================
+c      PHS  9/1/2006   Modification so that code does not 
+c           crash on restart.  Now assumes that total P is good
+c           and resets air pressure to be total - water vapor
+c================================================================
                   if(pcid.gt.pho(i)) then
-                     write(ierr, 130) i
-                     if (iout .ne. 0) write(iout, 130) i
-                     if (iptty .ne. 0) write(iptty, 130) i
-                     istflag = -1
-                     goto 9000
- 130                 format ('ngas pressure gt total pressure at i=',
-     &                    i8)
+c                     write(ierr, 130) i
+c                     if (iout .ne. 0) write(iout, 130) i
+c                     if (iptty .ne. 0) write(iptty, 130) i
+	               pv= psatl(t(i),pcp(i),dpcef(i),dpsatt,dpsats,0)
+	               pci(i) = pho(i) - pv
+c                     istflag = -1
+c                     goto 9000
+c 130                 format ('ngas pressure gt total pressure at i=',
+c     &                    i8)
                   else if(pcid.lt.tbnd) then
                      write(ierr, 140) 
                      if (iout .ne. 0) write(iout, 140) 
@@ -538,9 +549,8 @@ c
                      istflag = -1
                      goto 9000
  140                 format ('ngas pressure lt 0.')
-                  endif
-                  pv=pho(i)-pcid
-                  if (.not. ngas_flag) then
+                  else
+                     pv=pho(i)-pcid
                      to(i)=psatl(pv,pcp(i),dpcef(i),dtsatp,dpsats,1)
                   end if
                endif
@@ -719,7 +729,7 @@ c gaz 5-3-2001 need to output air source/sink
  803           format(' ','gas output information',//,'  node ',
      &              'gas par pres',3x,'cap pres ',3x,'liquid pres '
      &              ,3x,'air src',6x,'residual')
- 804           format(1x,i5,5x,f8.3,1x,f10.3,5x,f10.3,3x,
+ 804           format(1x,i7,5x,f8.3,1x,f10.3,5x,f10.3,3x,
      &              g12.4,1x,g9.3)
 c     calculate global mass and energy flows
                if (iout .ne. 0) then

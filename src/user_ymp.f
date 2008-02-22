@@ -97,7 +97,9 @@ C***********************************************************************
       integer, allocatable :: idum(:)
       integer, allocatable :: idum_b(:)
       integer, allocatable :: izone_awt(:)
-      real*8 cons(1000,2),times(1000),tdum
+      real*8, allocatable :: cons(:,:)
+	real*8, allocatable :: times(:)
+      real*8 tdum
       real*8 delx, delx1, delx2, dely, dely1, dely2
       real*8 dumx, dumy, dis, dis2, dis_min, discal, discal2
       real*8 x0, x01, x02, xa, y0, y01, y02, ya, xx, yy, zz 
@@ -120,6 +122,8 @@ C***********************************************************************
       character*80 water_file, above_wt_file, outside_zone_file
       logical matrix_node, null1, xy, ex
 
+      save ntimes, times, cons, counter, dumcyc
+
       select case (k)
 c      PHS  10/05/05   Adding user option 666 to allow D. Neeper to 
 c-----------------------------------------------------------------------
@@ -128,6 +132,7 @@ c      test the analytical solution
          if(readflag.NE.1) then
             incf = open_file('nodes_conc_fixed.macro','unknown')
             read(incf,*) ntimes, node_a, node_b
+            allocate(times(ntimes),cons(ntimes,2))
             do iii = 1,ntimes
                read(incf,*) times(iii), cons(iii,1), cons(iii,2)
             end do

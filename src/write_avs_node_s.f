@@ -229,7 +229,7 @@ c----------------------------------------------------------------------
       implicit none
 
       integer maxscalar
-      parameter (maxscalar = 16)
+      parameter (maxscalar = 17)
       integer neq,nscalar,lu,ifdual,icall,open_file
       integer i,j,iolp,iovp,nout,iz,iendz,il,idz, i1, i2, index, iaxy, k
       integer size_head, size_pcp, istart, iend, ic1, ic2, length, nadd
@@ -237,8 +237,8 @@ c----------------------------------------------------------------------
       real*8 hdum, sdum, px, py, pz, flxdum
       character*80 title(2*maxscalar+3)
       character*150 :: tecstring = ''
-      character*320 tstring2
-      character*320 string
+      character*340 tstring2
+      character*340 string
       character*20 vstring
       character*43 tstring
       character*5 char_type
@@ -473,6 +473,12 @@ C---  Max number of scalars is 13 + 3 coordinates
                   string(ic1:ic2) = vstring
                   ic1 = ic2 + 1
                end if
+            end if
+            if (iocapillary .eq. 1) then
+               write(vstring,110) dls(1:k), pcp(i)
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
             end if
             if (iotemperature .eq. 1) then
                write(vstring,110) dls(1:k), t(i)

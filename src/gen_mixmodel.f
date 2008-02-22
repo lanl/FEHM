@@ -61,6 +61,7 @@
 c     Read in parameters associated with the mixing reactor
 
 
+      fractional_area = 1.0
       read (inpt, '(a80)') chdum
       if(chdum(1:3) .eq. 'min') then
          maxmix_flag = 1

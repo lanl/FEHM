@@ -173,6 +173,7 @@ c     assign defaults
       iodual = 0
       iovelocity = 0
       iopressure = 0
+      iocapillary = 0
       iotemperature = 0
       iosaturation = 0
       iohead = 0
@@ -338,10 +339,17 @@ c     Loop over each zone for determining izone_surf array
      &              write(iptty, *) ' iozid           ', iozid         
             end if
          elseif((chdum(1:1) .eq. 'c').or.(chdum(1:1) .eq. 'C'))then
+            if ((chdum(2:2) .eq. 'a').or.(chdum(2:2) .eq. 'A'))then
+c     output capillary pressusre
+               iocapillary = 1
+               if (iptty .ne. 0) 
+     &              write(iptty, *) ' iocapillary ', iocapillary
+            else
 c     output concentration, keyword: concentration 
-            ioconcentration = 1
-            if (iptty .ne. 0) 
-     &           write(iptty, *) ' ioconcentration ', ioconcentration
+               ioconcentration = 1
+               if (iptty .ne. 0) 
+     &              write(iptty, *) ' ioconcentration ', ioconcentration
+            endif
 
          elseif((chdum(1:2) .eq. 'kd').or.(chdum(1:1) .eq. 'KD'))then
 c     output concentration, keyword: concentration 
@@ -541,6 +549,23 @@ c     illegal character found
             end if
          end if
       end if
+      
+      if (iocapillary .ne. 0) then
+! water only and not wtsi problem
+         if (irdof .eq. 13 .and. ifree .eq. 0) then
+            write(ierr, 110) 
+     &           'capillary pressure defined for non-capillary problem'
+            write(ierr, 120) 'capillary pressure'
+            write(ierr, 100)
+            if (iptty .ne. 0) then
+               write(iptty, 110) 
+     &            'capillary pressure defined for non-capillary problem'
+               write(iptty, 120) 'capillary pressure'
+               write(iptty, 100)
+               iocapillary = 0
+            end if
+         end if
+      end if
 
       if (ihead .ne. 1 .and. iohead .eq. 1 ) then
          write(ierr, 100)
@@ -618,6 +643,7 @@ c     illegal character found
      .     , /, ' (ve)locity      or (VE)LOCITY  '
      .     , /, ' (dp)            or (DP) - note: do not use dual!'
      .     , /, ' (p)ressure      or (P)RESSURE  '
+     .     , /, ' (ca)pillary     or (CA)PILLARY '
      .     , /, ' (he)ad          or (HE)AD  '
      .     , /, ' (t)emperature   or (T)EMPERATURE   '
      .     , /, ' (s)aturation    or (S)ATURATION  '

@@ -754,17 +754,13 @@ c    calculate cutoff values for cap pressure
      &              0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
             endif 
             
-         enddo   
-c 040207 gaz	     
-	   do i=1,num_models  
-	    if(irlpt(i).ge.3.and.irlpt(i).le.20) then
-	     icapt(i) = irlpt(i)
-	    endif
-	   enddo         
+         enddo                
 c     
 c     return if read data from a file
 c     
          if(ex) return
+         
+c     read in nodal capillary type
          
 c     read in nodal capillary type
       
@@ -785,8 +781,7 @@ c     read in nodal capillary type
             else if(irlpt(irlp(i)).eq.21) then
                icap(i) = 1
             else
-c gaz 040207
-               icap(i)=irlp(i)
+               icap(i)=0
             endif
          enddo
       
@@ -960,19 +955,19 @@ c     corey relationships(geothermal)
                   endif
                elseif(irpd.eq.3) then
 c rlp(h)
-c                  call vg_regions(1,ireg,mi,su_cut)
+                  call vg_regions(1,ireg,mi,su_cut)
                   call vgcap( sl, rp1, rp2, rp3, rp4, 
      2                 rp7f(it), rp8f(it), rp9f(it),
      3                 rp10f(it), rp6f(it),su_cut ,
      4                 cp1f(it),cp2f(it),hp, dhp ,ireg    )
-                  star = (sl-rp1f(it))/(rp2f(it)-rp1f(it)) 
+                  star = (sl-rp1f(it))/(rp2f(it)-rp1f(it))
                   call vgrlp(sl, star, rp3, rp4, hmin, hp,
      2                 dhp, rl, drls, rv, drvs,0)
-                  pcp(mi) = h_to_p * hp
-                  dpcef(mi) = h_to_p * dhp
+                  pcp(mi) = 9.8e-3 * hp
+                  dpcef(mi) = 9.8e-3 * dhp
                elseif(irpd.eq.8) then
 c rlp(h) and vapor rlp
-c                  call vg_regions(1,ireg,mi,su_cut)
+                  call vg_regions(1,ireg,mi,su_cut)
                   call vgcap( sl, rp1, rp2, rp3, rp4, 
      2                 rp7f(it), rp8f(it), rp9f(it),
      3                 rp10f(it), rp6f(it),su_cut ,
@@ -980,11 +975,11 @@ c                  call vg_regions(1,ireg,mi,su_cut)
                   star = (sl-rp1f(it))/(rp2f(it)-rp1f(it))
                   call vgrlp(sl, star, rp3, rp4, hmin, hp,
      2                 dhp, rl, drls, rv, drvs,1)
-                  pcp(mi) = h_to_p * hp
-                  dpcef(mi) = h_to_p * dhp
+                  pcp(mi) = 9.8e-3 * hp
+                  dpcef(mi) = 9.8e-3 * dhp
                elseif(irpd.eq.9) then
 c rlp(h) and vapor rlp
-c                  call vg_regions(1,ireg,mi,su_cut)
+                  call vg_regions(1,ireg,mi,su_cut)
                   call vgcap( sl, rp1, rp2, rp3, rp4, 
      2                 rp7f(it), rp8f(it), rp9f(it),
      3                 rp10f(it), rp6f(it),su_cut ,
@@ -998,11 +993,11 @@ c                  call vg_regions(1,ireg,mi,su_cut)
                   call vgrlpa(sl, star, rp3, rp4, hmin, hp,
      2                 dhp, rpa1, rpa2, rpa3, rpa4, rpa5,
      3                 rp1f(it), rp2f(it), rl, drls, rv, drvs)
-                  pcp(mi) = h_to_p * hp
-                  dpcef(mi) = h_to_p * dhp
+                  pcp(mi) = 9.8e-3 * hp
+                  dpcef(mi) = 9.8e-3 * dhp
                elseif(irpd.eq.5) then
 c rlp(S)
-c                  call vg_regions(1,ireg,mi,su_cut)
+                  call vg_regions(1,ireg,mi,su_cut)
                   call vgcap( sl, rp1, rp2, rp3, rp4, 
      2                 rp7f(it), rp8f(it), rp9f(it),
      3                 rp10f(it), rp6f(it), su_cut,
@@ -1010,8 +1005,8 @@ c                  call vg_regions(1,ireg,mi,su_cut)
                   star = (sl-rp1f(it))/(rp2f(it)-rp1f(it))
                   call  vgrlps(2, sl, star, rp3, rp4, rp1, rp2, 
      2                 tol_l, tol_u, rl, drls, rv, drvs )
-                  pcp(mi) = h_to_p * hp
-                  dpcef(mi) = h_to_p * dhp
+                  pcp(mi) = 9.8e-3 * hp
+                  dpcef(mi) = 9.8e-3 * dhp
                elseif(irpd.eq.4) then
 c     
 c     akf-fracture saturated permeability(rp15)
@@ -1025,7 +1020,7 @@ c
                   if( idpdp .ne. 0 .or. idualp .ne. 0 ) then
                      
                      if( mi .le. neq ) then
-c                        call vg_regions(2,ireg,mi,su_cut)
+                        call vg_regions(2,ireg,mi,su_cut)
                         call vgcap( sl, rp11f(it), rp12f(it), rp13f(it),
      2                       rp14f(it), rp20f(it), rp21f(it), rp22f(it),
      3                       rp23f(it), rp16f(it), su_cut,    
@@ -1036,7 +1031,7 @@ c                        call vg_regions(2,ireg,mi,su_cut)
                         permb = akf * porf
                         
                      else
-c                        call vg_regions(1,ireg,mi,su_cut)
+                        call vg_regions(1,ireg,mi,su_cut)
                         call vgcap( sl, rp1, rp2, rp3, rp4, 
      2                       rp7f(it), rp8f(it), rp9f(it),
      3                       rp10f(it), rp6f(it), su_cut,      
@@ -1048,7 +1043,7 @@ c                        call vg_regions(1,ireg,mi,su_cut)
                      end if
                      
                   else
-c                     call vg_regions(1,ireg,mi,su_cut)
+                     call vg_regions(1,ireg,mi,su_cut)
                      call vgcap( sl, rp1, rp2, rp3, rp4,  
      2                    rp7f(it), rp8f(it), rp9f(it),
      3                    rp10f(it), rp6f(it), su_cut,      
@@ -1086,8 +1081,8 @@ c     set saturated permeabilities(assume isotropic)
                      endif
                   endif
 c     set capillary pressures
-                  pcp(mi) = h_to_p * hp
-                  dpcef(mi) = h_to_p * dhp
+                  pcp(mi) = 9.8e-3 * hp
+                  dpcef(mi) = 9.8e-3 * dhp
 
                elseif(irpd.eq.6.or.irpd.eq.7) then
 c     
@@ -1177,8 +1172,8 @@ c     set saturated permeabilities(assume isotropic)
                      endif
                   endif
 c     set capillary pressures
-                  pcp(mi) = h_to_p * hp
-                  dpcef(mi) = h_to_p * dhp
+                  pcp(mi) = 9.8e-3 * hp
+                  dpcef(mi) = 9.8e-3 * dhp
 
                elseif(irpd.eq.11) then
 c Brooks-Corey

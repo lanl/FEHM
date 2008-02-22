@@ -652,12 +652,19 @@ c      call storage_derivatives(0)
       allocate(denci(n7))
 c***  allocate memory to all arrays in comdi ***
 c     ***** COMMON Block fdd *****
-      if(irdof.ne.13) then
+      if(irdof.ne.13 .or. ifree .ne. 0) then
         allocate(pcp(n0))
+        allocate(dpcef(n0))
+        pcp = 0.
+        dpcef = 0.
+      else
+        allocate(pcp(1))
+        allocate(dpcef(1))
+      end if     
+      if(irdof.ne.13) then
         allocate(deneh(n0))
         allocate(denej(n0))
       else
-        allocate(pcp(1))
         allocate(deneh(1))
         allocate(denej(1))
       endif	

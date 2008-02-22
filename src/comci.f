@@ -285,7 +285,7 @@
       real*8, pointer ::   divp(:) 
       real*8, pointer ::  dmef(:)
       real*8, pointer ::  dmpf(:)
-      real*8, pointer ::   dpcef(:) 
+!      real*8, pointer ::   dpcef(:) 
       real*8, pointer ::   dq(:)
       real*8, pointer ::  dqh(:)
       real*8, pointer ::   dqt(:)
@@ -320,6 +320,7 @@
       real*8, allocatable ::   akc(:)
       real*8, allocatable ::   danl(:) 
       real*8, allocatable ::   danv(:) 
+      real*8, allocatable ::   dpcef(:)
 ! allocatable storage for saved LU factors
       real*8, allocatable :: bsave(:)
       real*8, allocatable :: pivsave(:)

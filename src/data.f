@@ -238,7 +238,7 @@ C***********************************************************************
       use comrtd
       use comrxni
       use comsplitts
-      use comwt, only : head_id
+      use comwt, only : head_id, irich
       use comzone
       use davidi
       implicit none
@@ -370,6 +370,8 @@ C *** integers in davidi.h
       ngrad = 0
       nconv = 0
       isteady = 0
+C from comwt
+      irich = 0
 
 c initialize scalar reals in comai
       aiaa   =   1.0
@@ -435,6 +437,7 @@ C new variables in comsplitts
       gradnt =   0.0
       grav   =   0.0
       histime =  1.d+30
+C from comwt
       head_id =  0.0
       overf  =   0.0
       pein   =   0.0

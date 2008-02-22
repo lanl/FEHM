@@ -398,6 +398,7 @@ C**********************************************************************
          enddo
       enddo
       ndconv=0
+      tol_value = 0
 c start SIA loop
  1000 continue
       iter_flag = 0
@@ -461,8 +462,6 @@ c gaz 2-13-03        call coneq1(0, matnum,spec_num)
 	               else
                         call coneq1(0, matnum,spec_num)
                      endif
-
-
                      if (imdnode.ne.0) 
      2                 call coneq1mdnode(matnum,spec_num)
                   else

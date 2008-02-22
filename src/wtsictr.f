@@ -1,4 +1,4 @@
-      subroutine wtsictr(iflg)    
+      subroutine wtsictr(iflg)
 !***********************************************************************
 !  Copyright, 2004,  The  Regents  of the  University of California.
 !  This program was prepared by the Regents of the University of 
@@ -73,23 +73,21 @@ c     12 flow_wt macro or a water table output desired
 c     
       integer iflg,icode, izone, inode,imove,match,im,imm,in,iu,ip
       integer mi,neqp1,i,i1,i2,ii,j,jj,kb,itop,mm,ij,iij, ihead_ck
-      integer ishfile, ishfile2, open_file
-      integer nmove, mmm, iwm, k, itp,it, ireg
+      integer ishfile, ishfile2, open_file, inodeb
+      integer nmove, mmm, iwm, k, itp
       real*8  hnode, hmax, hmin, x1,x2,min_sat,cut,hmid
       real*8  htol, dentol, cord_z_max, dis_ck, cap_val
-      real*8 head_ck1, head_ck2,  hgrid
+      real*8 head_ck1, head_ck2, strd_wtsi, hgrid
       real*8 hfac_h,hfac_l,pt,p_dum,wt_elev2
-      real*8 hp, sl, dhp,rp1,rp2,rp3,rp4,su_cut 
       character*80 form_string
-      integer inodeb
+      logical:: debug_flag = .FALSE.
       parameter (htol=1.d-15,dentol=1.d+1)
-      parameter (min_sat=1.d-5)
+      parameter (min_sat=1.d-5, strd_wtsi= 1.d00)
       parameter (hfac_h=1.00d0, hfac_l=1.00d0)
 
 ! Defined as parameter in comwt
 !      sattol = 1.d-1
-c phi_inc now in common
-c      phi_inc = head0*crl(1,1)*(-grav)
+!      phi_inc = head0*crl(1,1)*(-grav)
 
 c     flag=7 
       cut=0.0
@@ -101,16 +99,15 @@ c
 c     read input       
 c     
 c     contr option ifree = -1 (heads,sat) , +1 (phi,sat)
-c ifree now read in input
-c         ifree = -1
-	   wtsi_isot = 0
-	   isw_term = 0
-	   zfac_ani = 1.d0
-	   sattol = 0.1
-c 
+         ifree = -1
+         wtsi_isot = 0
+         isw_term = 0
+         zfac_ani = 1.d0
+         sattol = 0.1
+c
 c iad_up_wtsi fixed at 1000 (no explicit component)
 c
-	   iad_up_wtsi = 1000
+         iad_up_wtsi = 1000
          read(inpt,*) nfree
          if(.not.allocated(izone_free)) then
             allocate(izone_free(max(1,nfree)))
@@ -118,51 +115,37 @@ c
             allocate(ifree_im_ex(1))
             allocate(dry_zone(n0))
             allocate(t91(nn))
-	      
             allocate(dfidf(nn))
             allocate(dfid1f(nn))
-	      
             allocate(rlzf(n0))
             allocate(rlxyf(n0))
             allocate(drlxyf(n0))
             allocate(drlzf(n0))
-            if(.not.allocated(pcp)) then
-             allocate(pcp(n0))
-             allocate(dpcef(n0))
-            else
-             deallocate(pcp)
-             allocate(pcp(n0))
-             allocate(dpcef(n0))
-            endif
+c            allocate(dpcef(n0))
             allocate(izone_free_nodes(n0))  
             dry_zone = 0 
          end if   
-	   if (ifree.eq.-2) then
-	    irich = 1
-	   else
-	    irich = 0
-	   endif
          allocate(head12(n0,2))
          allocate(dzrg(n0))
          backspace inpt
          read(inpt, *, end=555, err=555) nfree, 
-     &     (izone_free(i),i=1,nfree),head_tol,rlptol,zfac_ani,head_id,
-     &     sattol
+     &        (izone_free(i),i=1,nfree),head_tol,rlptol,zfac_ani,
+     &        head_id,sattol
 
          if(abs(zfac_ani).lt.1.0d0) then
 	    zfac_ani = 1.0d0
 	    wtsi_isot = 0
          else if(zfac_ani.lt.0.d0) then
-	    wtsi_isot = 2
-          zfac_ani = abs(zfac_ani)
-	   else
-          wtsi_isot = 1
-	   endif
+            wtsi_isot = 2
+            zfac_ani = abs(zfac_ani)
+         else
+	    wtsi_isot = 1
+         endif
 
          go to 556
  555     continue
          head_tol = 1.d-2
-         isw_term = 0 
+         isw_term = 0
          wtsi_isot = 0
  556     continue	     
 c         iad_up= min(iad_up,mm)
@@ -171,8 +154,8 @@ c         iad_up= max(iad_up,-1)
 c     Loop over each zone for determining izone_free array
 
          izone_free_nodes=0
-c	  set number of partialy filled cells = 0
-	   ifree1 = 0
+c     set number of partialy filled cells = 0
+         ifree1 = 0
          do izone = 1, nfree
             do inode = 1, n0
                if(izonef(inode).eq.izone_free(izone)) then
@@ -188,9 +171,9 @@ c
 c     if there's a flow_wt macro or a water table output desired
 c     sort wtsi nodes into columns ordered by igrav coordinate
 c     
-         if(ishiswt.ne.0.or.move_wt.ne.0.) then
+c         if(ishiswt.ne.0.or.move_wt.ne.0.) then
             call wtsi_column
-         endif
+c         endif
 c     adjust constant head nodes to ensure that h(node) >= 
 c     h(bottom of cell)
 c     If flow_wt node, place specified head
@@ -217,15 +200,19 @@ c     is reasonable, if not, release it
                         wellim(inode)=1.d-15
                         s(inode) = rlptol
                         ka(inode) = 0
-                        if (iptty .ne. 0) then
-                           write(iptty, 101) inode
-                           write(iptty, 102) hnode, p_dum
-                           write(iptty, 103) cord(inode,1),cord(inode,2)
-                        end if
-                        if (iout .ne. 0) then
-                           write(iout, 101) inode
-                           write(iout, 102) hnode, p_dum
-                           write(iout, 103) cord(inode,1), cord(inode,2)
+                        if (debug_flag) then
+                           if (iptty .ne. 0) then
+                              write(iptty, 101) inode
+                              write(iptty, 102) hnode, p_dum
+                              write(iptty, 103) cord(inode,1),
+     &                             cord(inode,2)
+                           end if
+                           if (iout .ne. 0) then
+                              write(iout, 101) inode
+                              write(iout, 102) hnode, p_dum
+                              write(iout, 103) cord(inode,1), 
+     &                             cord(inode,2)
+                           end if
                         end if
                      endif
                   else
@@ -247,7 +234,7 @@ c
                               esk(in)=esk(inode)
                               move_type(in)=1
                               izoneflxz(in)=izoneflxz(inode)
-							izonef(in)=izonef(inode)
+                              izonef(in)=izonef(inode)
 c     
                               if (iptty .ne. 0) write(iptty, 104) 
      &                             inode, in, p_dum
@@ -293,55 +280,30 @@ c     release head from original node
                endif
  803        enddo
          end if
-          ishfile = open_file('new-specified-heads','unknown')
-          ishfile2 = open_file('new-specified-heads.cvs','unknown')
-          write(ishfile,'(a4)') 'flow'
-          do ii=1,n0
-             call headctr(4,ii,pflow(ii),hmin)
-             if(ka(ii).lt.0.) write(ishfile,203) ii,ii,1,hmin,1.,
-     &           wellim(ii)/1.0e+06
-             write(ishfile2,206) (cord(ii,mmm),mmm=1,3),hmin
-           end do
-          write(ishfile,'(a4)') ' '
-          close(ishfile)
-          close(ishfile2)
- 
-  101     format (x,'releasing head in flow macro at node ', i8)
-  102     format (x,'z(node) = ', g16.9, ' applied head was ', g16.9)
-  103     format (x,'x,y = ', 2(g16.9, x))
-  104     format (x,'spec head ', i8,' moved to ',i8,' head=',g16.9)
-  105     format (x,'there are no wtsi nodes for spec head ', i8)
-  106     format (x,'head ', g16.9, 'is released')
-  203     format(3i10,3f15.3)
-  206     format(4(f15.3,','))
+         if (debug_flag) then
+            ishfile = open_file('new-specified-heads','unknown')
+            ishfile2 = open_file('new-specified-heads.csv','unknown')
+            write(ishfile,'(a4)') 'flow'
+            do ii=1,n0
+               call headctr(4,ii,pflow(ii),hmin)
+               if(ka(ii).lt.0.) write(ishfile,203) ii,ii,1,hmin,1.,
+     &              wellim(ii)/1.0e+06
+               write(ishfile2,206) (cord(ii,mmm),mmm=1,3),hmin
+            end do
+            write(ishfile,'(a4)') ' '
+            close(ishfile)
+            close(ishfile2)
+         end if
 
-      else if(iflg.eq.-1) then
-c      go to 23
-	do inode = 1,neq
-       if(izone_free_nodes(inode).ne.0) then
-        izone_free_nodes(inode) = ieos(inode)
-c get liquid pressure in two phase region
-        if(ka(inode).lt.0) then
-	   if(esk(inode).gt.0.and.esk(inode).lt.1.0) then
-	    s(inode) = esk(inode)
-	    ieos(inode) = 2
-	    izone_free_nodes(inode)=2
-	   endif
-	  endif
-        if(izone_free_nodes(inode).eq.2) then
-	    so(inode) = s(inode)
-	  else if(izone_free_nodes(inode).eq.3) then
-	    so(inode) = 0.0
-	    s(inode) = 0.0
-	  else
-	    so(inode) = 1.0
-	    s(inode) = 1.0
-	  endif
-	 endif
-	enddo
-      call rlperm(0,1) 
+ 101     format (1x,'releasing head in flow macro at node ', i8)
+ 102     format (1x,'z(node) = ', g16.9, ' applied head was ', g16.9)
+ 103     format (1x,'x,y = ', 2(g16.9, 1x))
+ 104     format (1x,'spec head ', i8,' moved to ',i8,' head=',g16.9)
+ 105     format (1x,'there are no wtsi nodes for spec head ', i8)
+ 106     format (1x,'head ', g16.9, 'is released')
+ 203     format(3i10,3f15.3)
+ 206     format(4(f15.3,','))
 
-23	continue  
       else if(iflg.eq.1) then
 c     
 c     calculate max and min pressures associated with cell 
@@ -349,82 +311,36 @@ c
 c     calculate head values for all nodes (based on pho)
 c     
 c     first remove specified head nodes from wtsi list
-c   
-c      need to set default   rlp
-
-
-c convert to head
-      do inode = 1,n0
-	 if(s(inode).lt.1.0) then
-	  phi(inode) = crl(4,1)-pcp(inode)
-	  pho(inode) = phi(inode)
-c	  call headctr(4,inode,pho(inode),pho(inode))
-	  if(ka(inode).lt.0) then
-	   pflow(inode) = pho(inode)
-	   esk(inode) = 1.0
-	  endif
-	 endif
-	enddo 
-      if(rlp_flag.eq.0) then
-       rlp_flag = 1
-	  irlpt(1) = 1
-        icapp = 1
-        icapt(1)=1
-        rp1f(1) = 0.0
-	  rp2f(1) = 0.0
-	  rp3f(1) = 1.0
-        rp4f(1) = 1.0
-	  cp1f(1) = 0.0
-	  cp3f(1) = 1.0
-        cp2f(1) = 0.0
-	  deallocate(irlp,icap)
-	  allocate(irlp(n0))
-	  allocate(icap(n0))
-	   do i=1,n0
-	      irlp(i) = 1
-	      icap(i) = 1
-         enddo
- 
-	endif
+c     
+c save this commented out code for later 
+c         do inode=1,n0
+c            if(ka(inode).eq.-1) izone_free_nodes(inode)=0
+c         enddo
 c  fill the array head
-         ifree1 = 0
 c
-       call headctr(2,0,0.0d0,0.0d0)
-c
-	   head12=0.
+c         rho1grav = crl(1,1)*(9.81d-6)
+         call headctr(2,0,0.,0.)
+	 head12=0.
          do inode=1,n0
 
             if(izone_free_nodes(inode).ne.0) then
-              
+               i1=nelm(inode)+1
+               i2=nelm(inode+1)
                hmax=cord(inode,igrav)
                hmin=cord(inode,igrav)
-	         hgrid = 0.5d0*dzrg(inode)
+               hgrid = 0.5d0*dzrg(inode)
                hmax=cord(inode,igrav)+hgrid
                hmin=cord(inode,igrav)-hgrid
-                if (rlp_flag .eq. 1) then
-                   if(icap(inode).ne.0) then
-                      itp= icapt(icap(inode))
-                      if(itp.eq.1) then
-c  linear capillary pressure
-                         cap_val = cp1f(icap(inode))*cp3f(icap(inode))/
-     &					   rho1grav
-                      else if(itp.eq.3) then
-c  VG capillary pressure
-		               it = irlp(inode)
-	                   s(inode) = 0.0
-	                   cap_val = rp10f(it)/rho1grav 
-                      else
-                         cap_val = 0.0d0
-                      endif
-                      hmin = hmin - cap_val
-	              if(irich.eq.1) then
-                     hmin = cord(inode,igrav) - cap_val
-                     hmax = cord(inode,igrav) 
-                    endif
-c gaz testing 041107
-c                     hmin = cord(inode,igrav) 
-c                     hmax = cord(inode,igrav) 
-                   endif
+               if (rlp_flag .eq. 1) then
+                  if(icap(inode).ne.0) then
+                     itp= icapt(icap(inode))
+                     if(itp.eq.1) then
+                        cap_val = cp1f(icap(inode))/rho1grav
+                     else
+                        cap_val = 0.0d0
+                     endif
+                     hmin = min(hmin,cord(inode,igrav)-cap_val)
+                  endif
                end if
                if(head(inode).lt.hmin) then
 c     the cell is dry
@@ -432,7 +348,7 @@ c     count as partially filled cell
                   ifree1 = ifree1+1 
                   izone_free_nodes(inode) = 3
                   call headctr(5,inode,pho(inode),hmin)
-c                 pho(inode) = crl(4,1) + phi_inc 
+c                  pho(inode) = crl(4,1) + phi_inc
                else if(head(inode).lt.hmax) then   
 c cell is partially full
                   ifree1 = ifree1+1 
@@ -450,20 +366,15 @@ c     this call changes head12 from meters to pressure
                endif
             endif
          enddo
-c
          phi = pho
-c
-c calculate the saturation for VG models
-c
-        call vgcap_inv_calc(1,0)
-c
+
 c     
       else if(iflg.eq.2) then
-c      
+c
 c call relative perm module for wtsi 
 c
-      call rlperm_wtsi(1)
-c
+         call rlperm_wtsi(1)   
+c         
       else if (iflg.eq.7) then
          nmove = 0
          do i=1,n0
@@ -483,7 +394,7 @@ c we're searching from the top
                      goto 88
 		  endif
                end do
-c              write(33,*) day,' all wtsi cells in column ',i,' are dry'
+!              write(33,*) day,' all wtsi cells in column ',i,' are dry'
 			    imove=-1
  88            if(imove.gt.0) then
 c     move the source/sink to node imove only
@@ -500,7 +411,7 @@ c     if water table rises later)
                      move_type(imove)=move_type(i)
 c     transfer node in flxz array 
                      izoneflxz(imove)=izoneflxz(i)
-	izonef(imove)=izonef(i)
+                     izonef(imove)=izonef(i)
                   endif
 c     remove source from the node 
 !                  tcc=tcc+sk(imove)
@@ -512,7 +423,7 @@ c     remove source from the node
                   qc(i)=0.
                   move_type(i)=0.
                   izoneflxz(i)=0
-	izonef(i)=0
+                  izonef(i)=0
                endif
             endif
          end do
@@ -528,7 +439,29 @@ c
          so = s
 
       else if(iflg.eq.9)	then
+c     
+c     calculate the gridblock length in the gravity direction
+c     
 
+c         rho1grav = crl(1,1)*(9.81d-6)
+c         rho1grav = 1.
+	 do i = 1,neq
+            i1=nelm(i)+1
+            i2=nelm(i+1)
+            hmid=cord(i,igrav)
+            hmin=0.
+	    hmax=0.
+            do ii =i1,i2
+               kb=nelm(ii)
+               hmax=max(cord(kb,igrav)-hmid,hmax)
+               hmin=min(cord(kb,igrav)-hmid,hmin)
+            enddo
+            if(ivf.eq.-1) then
+               dzrg(i) = max(hmax,abs(hmin))
+            else
+               dzrg(i) = abs(hmax-hmin)/2.	            
+            endif      
+         enddo
       else if (iflg.eq.11) then
 c     write wt output for time history
 c         do i=1,n_wt_cols
@@ -688,4 +621,4 @@ c     find wt elevation in that column
 
 c     
       return
-      end    
+      end                

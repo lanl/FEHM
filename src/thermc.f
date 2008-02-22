@@ -318,13 +318,12 @@ CPS   IF a liquid,  solid  or a henry's law tracer
                mim=mi-npt(nsolute)
                anl(mi)=an(mi)
                if(abs(icns(nsolute)).ne.2) anv(mi)=0.0
-               if (irdof .ne. 13) then
+               if (irdof .ne. 13 .or. ifree .ne. 0) then
                   danv(mi) = max( rovf(mim) * ( 1. - s(mim) ), rtol )
                   danl(mi) = max( rolf(mim) * s(mim), rtol )
                else
                   danv(mi) = 0.
-c  gaz 120107
-                  danl(mi) = max( rolf(mim)*s(mim), rtol )
+                  danl(mi) = max( rolf(mim), rtol )
                end if
             end do
          else

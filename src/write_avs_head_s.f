@@ -61,7 +61,7 @@ C************************************************************************
       implicit none
 
       integer maxscalar
-      parameter (maxscalar = 16)
+      parameter (maxscalar = 17)
       integer neq,nscalar,lu,ifdual
       integer i,j,iolp,iovp,nout,icall,idz
       integer size_head, size_pcp, istart, iend, ic1, ic2, length
@@ -71,7 +71,7 @@ C************************************************************************
       character*20 formstring
       character*40 title(maxscalar+3)
       character*20 units(maxscalar+3)
-      character*1140 tstring2
+      character*1200 tstring2
       character*280 string
       character*50 tstring
 
@@ -91,6 +91,7 @@ C************************************************************************
      &     units(17) /'(no dim)'/,
      &     units(18) /'(kg/s)'/,
      &     units(19) /'(kg/s)'/,
+     &     units(20) /'(MPa)'/,
      &     units(14) /'(m)'/,
      &     units(15) /'(m)'/,
      &     units(16) /'(m)'/
@@ -136,6 +137,7 @@ C   calculation done in avs_io()
          title(18) = trim(dual_char) // 'Liquid Flux (kg/s)'
       end if
       title(19) = trim(dual_char) // 'Vapor Flux (kg/s)'
+      title(20) = trim(dual_char) // 'Capillary Pressure (MPa)'
       title(14) = 'X coordinate (m)'
       title(15) = 'Y coordinate (m)'
       title(16) = 'Z coordinate (m)'         
@@ -178,6 +180,9 @@ C---Max number of scalars is 9 + 3 coordinates
                write(lu,200) trim(title(6)), trim(units(6))
             end if
          end if
+         if (iocapillary .eq. 1) then
+            write(lu,200) trim(title(20)), trim(units(20))
+         end if         
          if (iotemperature .eq. 1) then
             write(lu,200) trim(title(3)), trim(units(3))
          end if
@@ -279,6 +284,12 @@ C--altc is 'avsx', 'tec', 'sur'
                length = len_trim(tstring)
                ic2 = ic2 + length
             end if
+         end if
+         if (iocapillary.eq. 1) then
+            write(tstring,formstring) trim(title(20))
+            tstring2 = tstring2(ic1:ic2) // tstring
+            length = len_trim(tstring)
+            ic2 = ic2 + length
          end if
          if (iotemperature .eq. 1) then
             write(tstring,formstring) trim(title(3))

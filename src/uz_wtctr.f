@@ -60,7 +60,6 @@ c     uz pressure correction
 	    allocate (head12(n0,2))
 	    allocate (dhead12s(n0))
          else if (iz.eq.100) then
-            rho1grav = crl(1,1)*(9.81d-6)
 c     allocate arrays calculate distances
             
             do inode=1,n0

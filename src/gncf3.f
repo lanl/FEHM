@@ -881,26 +881,16 @@ c
          a33=sa11*sa22-sa12*sa21
          detja=sa11*sa22*sa33+sa12*sa23*sa31+sa13*sa21*sa32
      *        -sa13*sa22*sa31-sa23*sa32*sa11-sa33*sa21*sa12
-c         aj(neu,1)=-a11
-c         aj(neu,2)=-a12
-c         aj(neu,3)=-a13
-c         aj(neu,4)=-a21
-c         aj(neu,5)=-a22
-c         aj(neu,6)=-a23
-c         aj(neu,7)=-a31
-c         aj(neu,8)=-a32
-c         aj(neu,9)=-a33
-c         aj(neu,10)=-detja
-	   aj(neu,1)=a11
-         aj(neu,2)=a12
-         aj(neu,3)=a13
-         aj(neu,4)=a21
-         aj(neu,5)=a22
-         aj(neu,6)=a23
-         aj(neu,7)=a31
-         aj(neu,8)=a32
-         aj(neu,9)=a33
-         aj(neu,10)=detja
+         aj(neu,1)=-a11
+         aj(neu,2)=-a12
+         aj(neu,3)=-a13
+         aj(neu,4)=-a21
+         aj(neu,5)=-a22
+         aj(neu,6)=-a23
+         aj(neu,7)=-a31
+         aj(neu,8)=-a32
+         aj(neu,9)=-a33
+         aj(neu,10)=-detja
       else
 c     
 c     pebi calcs
@@ -1241,8 +1231,8 @@ c     recall jacobian information
                do jz=1,nsl
                   ij=knum+jz
                   bcoef(neu,ij)=bcoef(neu,ij)+
-     &                 (a21*wx(nga,k)+a22*wy(nga,k)+a23*wz(nga,k))*
-     &                 (a31*wx(nga,jz)+a32*wy(nga,jz)+a33*wz(nga,jz))*
+     *                 (a21*wx(nga,k)+a22*wy(nga,k)+a23*wz(nga,k))*
+     5                 (a31*wx(nga,jz)+a32*wy(nga,jz)+a33*wz(nga,jz))*
      &                 dnga/detja
                enddo
             enddo
@@ -1262,8 +1252,8 @@ c     recall jacobian information
                do jz=1,nsl
                   ij=knum+jz
                   bcoef(neu,ij)=bcoef(neu,ij)+
-     &                 (a31*wx(nga,k)+a32*wy(nga,k)+a33*wz(nga,k))*
-     &                 (a21*wx(nga,jz)+a22*wy(nga,jz)+a23*wz(nga,jz))*
+     *                 (a31*wx(nga,k)+a32*wy(nga,k)+a33*wz(nga,k))*
+     5                 (a21*wx(nga,jz)+a22*wy(nga,jz)+a23*wz(nga,jz))*
      &                 dnga/detja
                enddo
             enddo
