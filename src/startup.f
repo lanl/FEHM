@@ -416,6 +416,9 @@ C***********************************************************************
       real*8 very_small
       parameter (very_small= 1.d-30)
 
+c     Calculate rho1grav
+c      rho1grav = crl(1,1)*(9.81d-6)
+c      rho1grav = 997.*9.81d-6
 c**** Deallocate printout information array for variable porosity model
 c**** if allocated and not a variable porosity problem
       if (iporos .ne. -4) then
@@ -999,12 +1002,17 @@ c     write out new size for b matrix
      &     i10, '<<<<<<') 
       
 c     Initialize eos values as necessary (for air)
-      
+c     first set phase state for wtsi
+c      call wtsictr(-1)           
       if (ico2.lt.0.and.ice.eq.0) then
          call airctr(-1,0)
 !     else if (ico2.lt.0.and.ice.ne.0) then
 !        call icectr(-1,0)
       endif
+c     Calculate rho1grav
+      rho1grav = crl(1,1)*(9.81d-6)
+c      rho1grav = 997.*9.81d-6
+
 c     Moved calls to airctr for head option to below the iflg = -1 call
 c if head input has been used,convert to pressures
 c
@@ -1333,6 +1341,10 @@ c      call rarng(1)
             node_ptr_num =>node_ptr_num%nnp
          end do outer
       end if
+
+c call gdpm_corr to add connections if necessary
+c        
+       call gdpm_corr(-1)
 
 ! zvd - moved history file setup after zone volume calculations
       if (hist_flag) then

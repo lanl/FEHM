@@ -282,9 +282,9 @@ c     Set pointers to sections of the arrays for the derivatives
          dmpf => bigblock(startpos:endpos)
          drlpf => bigblock(startpos:endpos)
          
-         startpos = endpos + 1
-         endpos = endpos + n0_irdof
-         dpcef => bigblock(startpos:endpos)
+!         startpos = endpos + 1
+!         endpos = endpos + n0_irdof
+!         dpcef => bigblock(startpos:endpos)
          
          startpos = endpos + 1
          endpos = endpos + n0_subst
@@ -365,7 +365,7 @@ c     Zero out derivative arrays
          divp=0
          dmef=0
          dmpf=0
-         dpcef=0
+!         dpcef=0
          dq=0
          dqh=0
          dqt=0

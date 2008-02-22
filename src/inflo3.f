@@ -107,29 +107,59 @@ c free drainage
 	         pflow(i) = 0.0
                ka(i) = -2
             else if (katmp(i).eq.-3) then
-c seepage face  
+c seepage face  - 2 phase and wtsi
                pflow(i) = sktmp(i)
                esk(i) = esktmp(i)
-               wellim(i) = -abs(aiped(i)) * 1.0e+06
+               wellim(i) = abs(aiped(i)) * 1.0e+06
                ka(i) = -3
-            else if (katmp(i).eq.-5) then
-c seepage face  (only flow if cell is full)
-               pflow(i) = sktmp(i)
-               esk(i) = esktmp(i)
-               wellim(i) = -abs(aiped(i)) * 1.0e+06
-               ka(i) = -5
             else if (katmp(i).eq.-4) then
-c ponding condition
+c seepage face  average pressure
                pflow(i) = sktmp(i)
                esk(i) = esktmp(i)
                wellim(i) = abs(aiped(i)) * 1.0e+06
                ka(i) = -4
+            else if (katmp(i).eq.-5) then
+c seepage face  (only flow if cell is full) wtsi only
+               pflow(i) = sktmp(i)
+               esk(i) = esktmp(i)
+               wellim(i) = abs(aiped(i)) * 1.0e+06
+               ka(i) = -5
             else if (katmp(i).eq.-6) then
-c set coupled model heads condition
+c set ponding condition
                pflow(i) = sktmp(i)
                esk(i) = esktmp(i)
                wellim(i) = abs(aiped(i)) * 1.0e+06
                ka(i) = -6
+            else if (katmp(i).eq.-7) then 
+c set air only pressure with no water source
+               pflow(i) = sktmp(i) 
+               esk(i) = esktmp(i)
+               wellim(i) = abs(aiped(i)) * 1.0e+06
+               ka(i) = -7
+            else if (katmp(i).eq.-9) then 
+c set air  pressure, set water saturation
+               pflow(i) = sktmp(i) 
+               esk(i) = esktmp(i)
+               wellim(i) = abs(aiped(i)) * 1.0e+06
+               ka(i) = -9
+            else if (katmp(i).eq.-10) then 
+c set air  pressure, specified flow
+               pflow(i) = sktmp(i) 
+               esk(i) = esktmp(i)
+               wellim(i) = abs(aiped(i)) * 1.0e+06
+               ka(i) = -10
+            else if (katmp(i).eq.-8) then
+c set ponding condition
+               pflow(i) = sktmp(i)
+               esk(i) = esktmp(i)
+               wellim(i) = abs(aiped(i)) * 1.0e+06
+               ka(i) = -8
+            else if (katmp(i).eq.-22) then
+c set special outflow only condition
+               pflow(i) = sktmp(i)
+               esk(i) = esktmp(i)
+               wellim(i) = abs(aiped(i)) * 1.0e+06
+               ka(i) = -22
             end if
          end if
       end do

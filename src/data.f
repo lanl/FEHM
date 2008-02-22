@@ -221,25 +221,26 @@ CPS END  data
 CPS
 C***********************************************************************
 
-      use davidi
-      use comrxni
-      use comflow
-      use comji
-      use comii
-      use comhi
-      use comgi
-      use comfi
-      use comei
-      use comdi
-      use comci
-      use comchem
-      use combi
-      use comdti
       use comai
+      use combi
+      use comchem
+      use comci
+      use comdi
+      use comdti
+      use comei
+      use comfi
+      use comflow
+      use comgi
+      use comhi
+      use comii
+      use comji
       use compart
-      use comsplitts
       use comrtd
+      use comrxni
+      use comsplitts
+      use comwt, only : head_id, irich
       use comzone
+      use davidi
       implicit none
 
       integer i
@@ -352,6 +353,7 @@ c ico2 set in scanin.f
       app_flag = 0
       flux_flag = 'no fluxes  '
       maxmix_flag = 0
+      sat_ich = 0
       header_flag = 'new'
 C *** integer in comrxni.h
 C *** integers in davidi.h 
@@ -368,6 +370,8 @@ C *** integers in davidi.h
       ngrad = 0
       nconv = 0
       isteady = 0
+C from comwt
+      irich = 0
 
 c initialize scalar reals in comai
       aiaa   =   1.0
@@ -433,6 +437,8 @@ C new variables in comsplitts
       gradnt =   0.0
       grav   =   0.0
       histime =  1.d+30
+C from comwt
+      head_id =  0.0
       overf  =   0.0
       pein   =   0.0
 C added phi_inc to comai so it only needs to be computed in one place

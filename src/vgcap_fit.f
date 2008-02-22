@@ -147,7 +147,7 @@ c with hmax: linear extension of slope at slcut
             hcut = 1.0/alpha*(1.0/smcut**alpi-1.0)**(1.0-alamda)
        slope=(hcut-hmin)/(1.0-slcut)
        c3=-slope
-       c4=slope-hmin
+       c4=slope+hmin
       endif
       return
       end

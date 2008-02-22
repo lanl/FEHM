@@ -477,7 +477,7 @@ c ZVD 05/01/07 added form_flag, ishisc, ishiswc
       integer             form_flag, ishisc, ishiswc
       integer             imbe_ctr, imbet_ctr
 c
-      integer             ich_max,ich_m1,ich_m2
+      integer             ich_max,ich_m1,ich_m2,sat_ich
       integer :: irun = 0
 
       real*8              aener, aiaa, am0, amass, ame, an0, asteam
@@ -496,6 +496,8 @@ c
       real*8              contim_rip, histime, aiar, tims_trans
       real*8              daycs_save, daycf_save, dayhf_save, dayhs_save
       real*8              day_save_ss, fdum_last, aiaa_save, daymax_save
+C gaz 11-06-2007
+      real*8              rho1grav,h_to_p
       real*4              vernum
 
       character* 3        header_flag

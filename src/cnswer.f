@@ -455,10 +455,12 @@ c         if(idpdp.ne.0)nsizea=4*nsizea
                   call  thermc  (0)
                   if(idpdp.eq.0) then
 c gaz 2-13-03        call coneq1(0, matnum,spec_num)
-                     if(ianpe.eq.0) then
-                        call coneq1(0, matnum,spec_num)
-                     else
+                     if(ianpe.ne.0) then
                         call coneq1_ani(0, matnum,spec_num)
+                     else if (gdpm_flag.ne.0) then
+                        call coneq1_gdpm(0, matnum,spec_num)
+	               else
+                        call coneq1(0, matnum,spec_num)
                      endif
                      if (imdnode.ne.0) 
      2                 call coneq1mdnode(matnum,spec_num)
@@ -593,10 +595,12 @@ c                     icnl = icnls
          call thermc (0)
          if(idpdp.eq.0) then
 c gaz 2-13-03 call coneq1(0,1,1)
-            if(ianpe.eq.0) then
-               call coneq1(0,1,1)
-            else
+            if(ianpe.ne.0) then
                call coneq1_ani(0,1,1)
+            else if (gdpm_flag.ne.0) then
+               call coneq1_gdpm(0,1,1)
+            else
+	         call coneq1(0,1,1)
             endif
             if (imdnode.ne.0)
      2           call coneq1mdnode(1,1)

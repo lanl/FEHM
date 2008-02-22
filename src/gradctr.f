@@ -65,7 +65,9 @@ c================================================================
 c================================================================
       if(iflg.eq.0) then
 c
-c read input       
+c read input  
+c cordg : reference coordinate
+c idirg : gradient coordinate direction (1 = x,2 = y, 3 = z)    
 c igradf=1 : initial pressure is a variable 
 c igradf=2 : initial temperature is a variable 
 c igradf=3 : initial saturation  is a variable 
@@ -74,7 +76,7 @@ c igradf=5 : specified inflow temperture (or enthalpy) is a variable
 c xg1 is x coordinate at reference point
 c yg1 is y coordinate at reference point
 c zg1 is z coordinate at reference point
-c var0 is variable at cord 1
+c var0 is variable at cordg
 c grad1 is the linear gradient
 c
          read(inpt,*) ngrad
@@ -95,11 +97,18 @@ c     Loop over each zone for determining izone_grad array
            
          izone_grad_nodes = 0
          do izone = 1, ngrad
-            do inode = 1, n0
+	      if(izone_grad(izone).lt.0) then
+             do inode = 1, n0
+c if negative set all nodes               
+                  izone_grad_nodes(inode) = izone_grad(izone)              
+             end do
+	      else
+             do inode = 1, n0
                if(izonef(inode).eq.izone_grad(izone)) then
                   izone_grad_nodes(inode) = izone_grad(izone)
                end if
-            end do
+             end do
+	      endif
          end do
 
       else if(iflg.eq.1) then

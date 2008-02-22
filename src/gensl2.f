@@ -462,7 +462,9 @@ c
                call add_accumulation(id)	
             else if(ianpe.ne.0) then
                call geneq2_ani(id)
-               call add_accumulation(id)
+            else if(irich.ne.0) then
+               call geneq2_rich(id)
+               call add_accumulation(id)	
             else if(ifree.ne.0) then
                call geneq2_wtsi(id)
                call add_accumulation(id)
@@ -604,6 +606,7 @@ c
          enddo
          fdum=sqrt(fdum2)
          if(fdum.eq.0.0) go to 999
+	   mink = n
          if(iad.eq.0) then
             f0=max(fdum*epe,tmch)
          endif
@@ -682,6 +685,7 @@ c
 
          fdum=sqrt(fdum2)
 c check if fluxes are small enough to quit
+         mink=n
          if(g1.lt.0.) then
             if(bp_max.le.abs(g1)) then
                fdum = -999.0

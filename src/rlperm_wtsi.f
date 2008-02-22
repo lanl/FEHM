@@ -55,7 +55,7 @@
       integer iflg, inode, mm, ihead_ck, j
       integer iadtest, iad_ck_wtsi
       real*8  hmin, hmax, hfac_l, hfac_h, strd_wtsi
-      real*8  rlzf_dum, dis_ck, rho1grav, head_ck1, head_ck2
+      real*8  rlzf_dum, dis_ck, head_ck1, head_ck2
       real*8  fac_wtsi
       parameter (iad_ck_wtsi= 1)
       parameter (strd_wtsi= 1.d00)
@@ -65,7 +65,7 @@
       if(iflg.eq.0) then
          
       else if(iflg.eq.1) then
-         rho1grav = crl(1,1)*(9.81d-6)
+c         rho1grav = crl(1,1)*(9.81d-6)
 c     
 c     calculate relative perms and other free surface quantities
 c     

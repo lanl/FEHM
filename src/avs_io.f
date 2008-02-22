@@ -309,9 +309,10 @@ C     the length of each component.
          endif
       endif      
       nscalar = (ioliquid+iovapor+iovapor*iadif)*iopressure
-     >           +iotemperature+iosaturation+iohead+ioporosity
-     >           +iosource+(ioliquid+iovapor)*iodensity
-     >           +iopermeability*3+iozid+(ioliquid+iovapor)*ioflx
+     >     +iotemperature+iosaturation+iohead+ioporosity
+     >     +iosource+(ioliquid+iovapor)*iodensity
+     >     +iopermeability*3+iozid+(ioliquid+iovapor)*ioflx
+     >     +iocapillary
       nscalar_dual    = nscalar * iodual
       nvector         = (ioliquid+iovapor)*iovelocity
       nvector_dual    = nvector * iodual

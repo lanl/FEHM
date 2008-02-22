@@ -590,8 +590,11 @@ c     zero out y
             h(i,j) = tmp1
             h(i+1,j) = tmp2
  3400    continue
-         sqroot = sqrt(h(j,j)*h(j,j)+h(j+1,j)*h(j+1,j))
-         sqroot =max(sqroot,1.d-12)
+          sqroot = max(h(j,j)*h(j,j)+h(j+1,j)*h(j+1,j),1.d-20)
+	    sqroot = sqrt(sqroot)
+c         sqroot = sqrt(h(j,j)*h(j,j)+h(j+1,j)*h(j+1,j))
+c         sqroot =max(sqroot,1.d-12)
+
          c(j) = h(j,j)/sqroot
          s(j) = -h(j+1,j)/sqroot
          h(j,j) = sqroot

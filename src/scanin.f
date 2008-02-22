@@ -344,6 +344,7 @@ c RJP 12/14/06 added following
 
 c**** read startup parameters ****
       rewind inpt
+      iccen = 0
       ice = 0
       ico2 = 0
       icgts = 0

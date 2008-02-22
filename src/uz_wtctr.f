@@ -51,7 +51,7 @@ CD1
 
       integer i,iz,ndummy,mid,it,mi,itp,itperm,itpperm,im
       integer inode, i1, i2, ii,kb
-      real*8 cp1,cp3,rho1grav,hmax,hmin,hmid
+      real*8 cp1,cp3,hmax,hmin,hmid
 
 
       if(iwt_uz.ne.0) then
@@ -60,7 +60,6 @@ c     uz pressure correction
 	    allocate (head12(n0,2))
 	    allocate (dhead12s(n0))
          else if (iz.eq.100) then
-            rho1grav = crl(1,1)*(9.81d-6)
 c     allocate arrays calculate distances
             
             do inode=1,n0
@@ -75,9 +74,9 @@ c     allocate arrays calculate distances
                   hmin=min(cord(kb,igrav)-hmid,hmin)
                enddo
                if(ivf.eq.-1) then
-     	            head12(inode,1) = rho1grav*max(hmax,abs(hmin))
+     	            head12(inode,1) = max(hmax,abs(hmin))
                else
-                  head12(inode,1) = rho1grav*abs(hmax-hmin)/2.   
+                  head12(inode,1) = abs(hmax-hmin)/2.   
                endif
 
             enddo

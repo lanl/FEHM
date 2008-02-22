@@ -372,23 +372,23 @@ c
       use comgi
       use comii
       use comxi
+      use comwt
       use davidi
       use comflow 
-      use comsplitts
-      use comwt
+      use comsplitts 
       implicit none
 
       integer iflg,ndummy,ico2d,ndum,nndum,ieoss,iieoss,iwelbs,i,mid
-      integer mi,i1,i2,ilev,mlev,il,md,irlpsv,irlptsv,nr1
+      integer mi,i1,i2,ilev,mlev,il,md,irlpsv,irlptsv,icapsv,nr1
       integer nr2,irdofsv 
-      integer ii,ij,im,inode,iwm,ja,k,kb
+      integer  ii,ij,im,inode,iwm,ja,k,kb
       real*8 tref,pref,pssv,ssv,phisv,dmpfd,dmefd,dqd,rqd,qcd
       real*8 strd_iter,tol_phase
       real*8 inflow_thstime,inen_thstime,denht,deneht
       real*8 dels,delp,dfdum11,dfdum12,dfdum21,dfdum22
       real*8 dfdum11i,dfdum12i,dfdum21i,dfdum22i,detdf
       real*8 fdum01,fdum02,sx1d,phidum,phi_dif,phi_1,phi_2
-      real*8 hmid, hmin, hmax, rho1grav
+      real*8 hmax, hmin, hmid
       character*80 form_string
       save tref,pref
       parameter(strd_iter=0.90,tol_phase = 1.d-3)
@@ -439,6 +439,8 @@ c
             ssv=s(1)
             irlpsv=irlp(1)
             irlptsv=irlpt(1)
+	      icapsv = icapp
+	      icapp = 0
             s(1)=1.0
             iieoss=iieos(1)
             ieos(1)=1
@@ -463,6 +465,7 @@ c
             iwelb=iwelbs
             irlp(1)=irlpsv
             irlpt(1)=irlptsv
+	      icapp = icapsv
 c     reference density is in crl(1,1)
 c     reference liquid viscosity is in crl(2,1)
 c     reference compressibility is in crl(3,1)
@@ -800,31 +803,33 @@ c conditions (based on pair = pref at max height)
 c correct for negative pressures
 c
           call head_2phase(0)           
-
+ 
        elseif(iflg.eq.11) then
-c          call wtsictr(9)
 c     
 c     calculate the gridblock length in the gravity direction
 c     
-          rho1grav = 1.
-          if (.not. allocated(dzrg)) allocate(dzrg(n0))
-          do i = 1,neq
-             i1=nelm(i)+1
-             i2=nelm(i+1)
-             hmid=cord(i,igrav)
-             hmin=0.
-             hmax=0.
-             do ii =i1,i2
-                kb=nelm(ii)
-                hmax=max(cord(kb,igrav)-hmid,hmax)
-                hmin=min(cord(kb,igrav)-hmid,hmin)
-             enddo
-             if(ivf.eq.-1) then
-                dzrg(i) = rho1grav*max(hmax,abs(hmin))
-             else
-                dzrg(i) = rho1grav*abs(hmax-hmin)/2.	            
-             endif      
-          enddo
+       if(.not.allocated(dzrg))then
+	  allocate(dzrg(neq))
+	 endif 
+	 do i = 1,neq
+            i1=nelm(i)+1
+            i2=nelm(i+1)
+            hmid=cord(i,igrav)
+            hmin=0.
+	      hmax=0.
+            do ii =i1,i2
+               kb=nelm(ii)
+               hmax=max(cord(kb,igrav)-hmid,hmax)
+               hmin=min(cord(kb,igrav)-hmid,hmin)
+            enddo
+c distinguish between block and edge centered
+            if(ivf.eq.-1) then
+               dzrg(i) = max(hmax,abs(hmin))
+            else
+               dzrg(i) = abs(hmax-hmin)/2.	            
+            endif      
+         enddo
+      
        elseif(iflg.eq.12) then
 c     write wt outpt
 c         do i=1,n_wt_cols
@@ -872,13 +877,13 @@ c         do i=1,n_wt_cols
       else if (iflg.eq.14) then
 c     write wt output for contours
          if (altc(1:4) .eq. 'avsx') then
-            write (form_string, 4015) ' : '
+            write (form_string, 4015) ' : ', ' : '
             write (isconwt, 4019)
          else if (altc(1:3) .eq. 'sur') then
-            write (form_string, 4015) ', '
+            write (form_string, 4015) ', ', ', '
             write (isconwt, 4020)
          else if (altc(1:3) .eq. 'avs' .or. altc(1:3) .eq. 'tec') then
-            write (form_string, 4015) ' '
+            write (form_string, 4015) ' ', ' '
             if (altc(1:3) .eq. 'tec') then
                write (isconwt, 4018) days
             else
@@ -911,17 +916,19 @@ c     write wt output for contours
             end do
  4010       continue
             write(isconwt,form_string) cord(inode,1), cord(inode,2),
-     &              cord(inode,3), wt_elev
+     &              cord(inode,3), izonef(inode), wt_elev, 0.0
          end do
 
- 4015    format("(1x, 3(g16.9, '", a, "'), g16.9)")
- 4020    format(1x, 'X (m), Y (m), Z (m), WT elev (m)')           
- 4019    format(1x, 'X (m) : Y (m) : Z (m) : WT elev (m)')           
- 4018    format('variables = "X (m)" "Y (m)" "Z (m)" "WT elev (m)"',
-     &        /, 'zone t = "Simulation time ', g16.9, ' days"') 
-
-       endif
+ 4015    format("(1x, 3(g16.9, '", a, "'), i4, 2('", a, "', g16.9))")
+ 4020    format(1x, 'X (m), Y (m), Z (m), Zone, WT elev (m), ', 
+     &        'WT elev2 (m)')
+ 4019    format(1x, 'X (m) : Y (m) : Z (m) : Zone : WT elev (m) : ',
+     &        'WT elev2 (m)')           
+ 4018    format('variables = "X (m)" "Y (m)" "Z (m)" " Zone" ', 
+     &        '"WT elev (m) "', '"WT elev2 (m)"', / 
+     &        'zone t = "Simulation time ', g16.9, ' days"') 
       endif
+      endif       
 
       return
       end

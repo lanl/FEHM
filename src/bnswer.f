@@ -1,15 +1,4 @@
       subroutine bnswer
-!***********************************************************************
-!  Copyright, 2004,  The  Regents  of the  University of California.
-!  This program was prepared by the Regents of the University of 
-!  California at Los Alamos National Laboratory (the University) under  
-!  contract No. W-7405-ENG-36 with the U.S. Department of Energy (DOE). 
-!  All rights in the program are reserved by the DOE and the University. 
-!  Permission is granted to the public to copy and use this software 
-!  without charge, provided that this Notice and any statement of 
-!  authorship are reproduced on all copies. Neither the U.S. Government 
-!  nor the University makes any warranty, express or implied, or 
-!  assumes any liability or responsibility for the use of this software.
 C**********************************************************************
 CD1
 CD1 PURPOSE
@@ -31,12 +20,6 @@ CD2                                     the current version differs
 CD2                                     from these in minor ways.  
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/bnswer.f_a  $
-!D2 
-!D2    Rev 2.5   06 Jan 2004 10:42:22   pvcs
-!D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
-!D2 
-!D2    Rev 2.4   29 Jan 2003 08:55:16   pvcs
-!D2 FEHM Version 2.20, STN 10086-2.20-00
 !D2 
 !D2    Rev 2.3   14 Nov 2001 13:04:56   pvcs
 !D2 FEHM Version 2.12, STN 10086-2.12-00
@@ -270,17 +253,16 @@ C**********************************************************************
       use comsplitts
       implicit none
 
-      integer iad_min, iad_mult, idvrge
-      real*8 fdum_mult
-      parameter (fdum_mult=1.d02,iad_mult=20)
-      save idvrge
+      integer iad_min,iad_mult
+	real*8 fdum_mult
+	parameter (fdum_mult=1.d02,iad_mult= 100)
 
       itert=0
       minkt=0
       strd=1.
       iad=0
-      if(g1.lt.0.0) then
-	 iad_min = 0
+	if(g1.lt.0.0) then
+	 iad_min = 0.0
       else if(maxit.ge.0) then
          iad_min=1
       else
@@ -289,44 +271,38 @@ C**********************************************************************
       if(iflux_ts.ne.0.and.ico2.lt.0) then
          call cascade_sat(0)
       endif
-      fdum = 0.0
-      idvrge = 0
-      fdum_last = float(neq)
+	fdum = 0.0
+      fdum_last = 1.
 c     
 c     check iterations against maximum
 c     
  1000 continue
-      if(iad.eq.1) then
-         fdum_last = fdum
-      else if(fdum.gt.fdum_last) then
-	 idvrge = idvrge +1
-	 if(idvrge.gt.iad_mult) then 
-            mlz = -1
-            bp = 0.0
-            goto 2000
-         endif
-         
-      endif      
+      if(fdum.gt.fdum_last*fdum_mult.and.iad.ge.iad_mult) then
+	  mlz = -1
+	  bp = 0.0
+	  goto 2000
+	else 
+        fdum_last = fdum
+	endif
       if(iad.gt.abs(maxit)) then
          mlz=-1
          goto 2000
       endif
       if(iad.gt.abs(maxit)/2) then
-c         strd=1. 
+c         strd=.95 
       endif
 c     
 c     update variable states
 c     
       if(ice.eq.0) then
-         call varchk(0,0)
-         
+       call varchk(0,0)
       else
-         call icectr(-1,0)
-         call icectr(1,0)
+       call icectr(-1,0)
+       call icectr(1,0)
 c     added this to check the state of hydrate for the next iteration
-c     gaz-commented out 9-2-2003
-         call icectr(-6,0)
-c     if (mlz.eq.-1) goto 2000
+c gaz-commented out 9-2-2003
+       call icectr(-6,0)
+c      if (mlz.eq.-1) goto 2000
       endif
 
 c     call appropriate sub to generate equations
@@ -344,27 +320,27 @@ c     call appropriate sub to generate equations
          if(ico2.lt.0.and.ice.eq.0) then
 c     single porosity
             if(idpdp.eq.0) then
-               if(isplitts.ge.-1) then
-                  call airctr(4,0)
-               else if(isplitts.eq.-2) then
-                  call airctr(-4,0)
-c     explicit iterations finished in airctr so return
-                  go to 2000
-               endif
+             if(isplitts.ge.-1) then
+               call airctr(4,0)
+             else if(isplitts.eq.-2) then
+               call airctr(-4,0)
+c explicit iterations finished in airctr so return
+               go to 2000
+             endif
             else
 c     dpdp enabled
                call dpdp(3)
             endif
          endif
 
-c     gaz 10-15-2001
+c gaz 10-15-2001
          if(ico2.lt.0.and.ice.ne.0) then
 c     single porosity
             if(idpdp.eq.0) then
                call icectr(4,0)
             else
 c     dpdp not enabled
-c     
+c                             
             endif
          endif
 
@@ -378,17 +354,16 @@ c
 
       endif
       if(fdum.le.f0.and.iad.ge.iad_min) goto 2000
-      itotal=itotal+1
       iad=iad+1
+      itotal=itotal+1
 c     
 c     apply nr corrections
 c     
       if(ice.eq.0) then
-         call varchk(1,0)
+       call varchk(1,0)
       else
-         call icectr(2,0)
+       call icectr(2,0)
       endif
-
       if(epe.le.0.) goto 2000
 c     
 c     check if varibles are out of bounds

@@ -203,43 +203,56 @@ c
 	     idir = max(1,idirc(izone))
 	     dist = cord(inode,idir)-cordc(izone)
 		 headconv = headconv_val(izone)
-	     if(iconvf(izone).eq.1) then
-           ihead=1
-           dumconv = crl(1,1)
-           dumconv1 = crl(4,1)
-           pdum =conv1(izone)+rol0*headconv*(-grav)
-           tdum = conv2(izone)
-           call water_density(tdum,pdum,rolconv)
-           crl(1,1)=rolconv
-           crl(4,1)=pres0
-           head0_dum = head0
-           head0 = headconv
-           call headctr(5,inode,pho(inode),pho(inode))
-           head0 = head0_dum
-           crl(1,1)= dumconv
-           crl(4,1)= dumconv1
-           ihead=0
-           if(varc(izone).ne.0) then
-            to(inode) = tdum+ varc(izone)*dist
-           endif
+	      if(iconvf(izone).eq.1) then
+	       if(pho(inode).le.cord(inode,igrav)) then
+	           pho(inode)= conv1(izone)
+	           s(inode) = 0.
+	       else
+                 ihead=1
+                 dumconv = crl(1,1)
+                 dumconv1 = crl(4,1)
+                 pdum =conv1(izone)+rol0*headconv*(-grav)
+                 tdum = conv2(izone)
+                 call water_density(tdum,pdum,rolconv)
+                 crl(1,1)=rolconv
+                 crl(4,1)=pres0
+                 head0_dum = head0
+                 head0 = headconv
+                 call headctr(5,inode,pho(inode),pho(inode))
+                 head0 = head0_dum
+                 crl(1,1)= dumconv
+                 crl(4,1)= dumconv1
+                 ihead=0
+                 if(varc(izone).ne.0) then
+                  to(inode) = tdum+ varc(izone)*dist
+                 endif
+	           s(inode) = 1.d0
+	      endif
 	     else if(iconvf(izone).eq.2) then
             if(ka(inode).lt.0) then
-             ihead=1
-             dumconv = crl(1,1)
-             dumconv1 = crl(4,1)
-             pdum =conv1(izone)+rol0*headconv*(-grav)
-             tdum = conv2(izone)
-             call water_density(tdum,pdum,rolconv)
-             crl(1,1)=rolconv
-             crl(4,1)=pres0
-             head0_dum = head0
-             head0 = headconv
-             call headctr(5,inode,pflow(inode),pflow(inode))
-             head0 = head0_dum
-             crl(1,1)= dumconv
-             crl(4,1)= dumconv1
-             ihead=0
-	           endif
+	       if(pflow(inode).le.cord(inode,igrav)) then
+	         pflow(inode)= conv1(izone)
+	         esk(inode) = -1.
+	         ka(inode) = 0
+	         pho(inode) = conv1(izone)
+	       else
+               ihead=1
+               dumconv = crl(1,1)
+               dumconv1 = crl(4,1)
+               pdum =conv1(izone)+rol0*headconv*(-grav)
+               tdum = conv2(izone)
+               call water_density(tdum,pdum,rolconv)
+               crl(1,1)=rolconv
+               crl(4,1)=pres0
+               head0_dum = head0
+               head0 = headconv
+               call headctr(5,inode,pflow(inode),pflow(inode))
+               head0 = head0_dum
+               crl(1,1)= dumconv
+               crl(4,1)= dumconv1
+               ihead=0
+	       endif
+	          endif
 	         endif
 	        endif
 	       enddo

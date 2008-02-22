@@ -318,7 +318,7 @@ c
       integer  yama1, yama2, open_file
 c
       real*8  dpp ,dclost, pso, delp, closur, gt, xrl, dgtp, dgtt, drl
-      real*8  dclosp, delpsb, permsb, dsigt, sy, alength, rho1grav
+      real*8  dclosp, delpsb, permsb, dsigt, sy, alength
       real*8  den_w0, comp_w0,hmid,hmin,hmax,por_ll
       parameter(den_w0=997.808d00,comp_w0=5.687D-4,por_ll=1.d-8)
       save yama1, yama2
@@ -1009,7 +1009,6 @@ c calculate intial quantities
 c calculate max pressure change for specific yield model -5 
                pho = phini
                phi = phini
-               rho1grav = crl(1,1)*(9.81d-6)     
                do i = 1,neq
                   if(amgang(i).lt.0.0d0) then
                      i1=nelm(i)+1

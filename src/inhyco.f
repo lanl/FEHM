@@ -57,7 +57,18 @@
 
       integer i
       real*8 conv 
-
+      real*8, allocatable ::  hycox(:)
+      real*8, allocatable ::  hycoy(:)
+      real*8, allocatable ::  hycoz(:)
+      parameter (conv=9.89d-13/9.66d-6)
+      allocate (hycox(n0))
+      allocate (hycoy(n0))
+      allocate (hycoz(n0))
+      do i = 1,n0
+         hycox(i) = pnx(i)/conv
+	 hycoy(i) = pny(i)/conv
+	 hycoz(i) = pnz(i)/conv
+      enddo
       macro = 'hyco'
 c**** read hydraulic conductivity data (in m/sec)  
       narrays = 3
@@ -68,37 +79,41 @@ c**** read hydraulic conductivity data (in m/sec)
       default(2) = zero_t
       default(3) = zero_t
       igroup = 1
+c     convert to intrinsic perms at 20 C and 0.1 Mpa
 
       call initdata2 (inpt, ischk, n0, narrays, itype, 
-     *     default, macroread(14), macro, igroup, ireturn,
-     2     r8_1=pnx(1:n0),r8_2=pny(1:n0),r8_3=pnz(1:n0)) 
+     1     default, macroread(14), macro, igroup, ireturn,
+     2     r8_1=hycox(1:n0),r8_2=hycoy(1:n0),r8_3=hycoz(1:n0))   
 
       do i=1,n0
-         if(pnx(i).ge.0.0d00) then
-            pnx(i) = max (zero_t, pnx(i))
+         if(hycox(i).ge.0.0d00) then
+            hycox(i) = max (zero_t, hycox(i))
+            pnx(i) = conv*hycox(i)	      
          else
-            pnx(i) = 1.0d00/10.0d00**(abs(pnx(i)))
+            hycox(i) = 1.0d00/10.0d00**(abs(hycox(i)))
+            pnx(i) = conv*hycox(i)
          endif
-         if(pny(i).ge.0.0d00) then
-            pny(i) = max (zero_t, pny(i))
+         if(hycoy(i).ge.0.0d00) then
+            hycoy(i) = max (zero_t, hycoy(i))
+            pny(i) = conv*hycoy(i)
          else
-            pny(i) = 1.0d00/10.0d00**(abs(pny(i)))
-         endif
-         if(pnz(i).ge.0.0d00) then
-            pnz(i) = max (zero_t, pnz(i))
+            hycoy(i) = 1.0d00/10.0d00**(abs(hycoy(i)))
+            pny(i) = conv*hycoy(i)           
+         endif 
+         if(hycoz(i).ge.0.0d00) then
+            hycoz(i) = max (zero_t, hycoz(i))
+            pnz(i) = conv*hycoz(i)
          else
-            pnz(i) = 1.0d00/10.0d00**(abs(pnz(i)))
+            hycoz(i) = 1.0d00/10.0d00**(abs(hycoz(i)))
+            pnz(i) = conv*hycoz(i)
          endif
       end do
-c convert to intrinsic perms at 20 C and 0.1 Mpa
-      conv = 9.89d-13/9.66d-6
-      do i=1,n0
-         pnx(i) = conv*pnx(i)
-         pny(i) = conv*pny(i)
-         pnz(i) = conv*pnz(i)
-      end do
+      
+      deallocate (hycox)
+      deallocate (hycoy)
+      deallocate (hycoz)
 
       macroread(14) = .TRUE.
-   
+      
 
       end

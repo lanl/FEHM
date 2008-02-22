@@ -75,7 +75,7 @@ c
       integer mi,neqp1,i,i1,i2,ii,j,jj,kb,itop,mm,ij,iij, ihead_ck
       integer ishfile, ishfile2, open_file, inodeb
       integer nmove, mmm, iwm, k, itp
-      real*8  hnode, hmax, hmin, rho1grav ,x1,x2,min_sat,cut,hmid
+      real*8  hnode, hmax, hmin, x1,x2,min_sat,cut,hmid
       real*8  htol, dentol, cord_z_max, dis_ck, cap_val
       real*8 head_ck1, head_ck2, strd_wtsi, hgrid
       real*8 hfac_h,hfac_l,pt,p_dum,wt_elev2
@@ -121,7 +121,7 @@ c
             allocate(rlxyf(n0))
             allocate(drlxyf(n0))
             allocate(drlzf(n0))
-            allocate(dpcef(n0))
+c            allocate(dpcef(n0))
             allocate(izone_free_nodes(n0))  
             dry_zone = 0 
          end if   
@@ -318,7 +318,7 @@ c            if(ka(inode).eq.-1) izone_free_nodes(inode)=0
 c         enddo
 c  fill the array head
 c
-         rho1grav = crl(1,1)*(9.81d-6)
+c         rho1grav = crl(1,1)*(9.81d-6)
          call headctr(2,0,0.,0.)
 	 head12=0.
          do inode=1,n0
@@ -444,7 +444,7 @@ c     calculate the gridblock length in the gravity direction
 c     
 
 c         rho1grav = crl(1,1)*(9.81d-6)
-         rho1grav = 1.
+c         rho1grav = 1.
 	 do i = 1,neq
             i1=nelm(i)+1
             i2=nelm(i+1)
@@ -457,9 +457,9 @@ c         rho1grav = crl(1,1)*(9.81d-6)
                hmin=min(cord(kb,igrav)-hmid,hmin)
             enddo
             if(ivf.eq.-1) then
-               dzrg(i) = rho1grav*max(hmax,abs(hmin))
+               dzrg(i) = max(hmax,abs(hmin))
             else
-               dzrg(i) = rho1grav*abs(hmax-hmin)/2.	            
+               dzrg(i) = abs(hmax-hmin)/2.	            
             endif      
          enddo
       else if (iflg.eq.11) then

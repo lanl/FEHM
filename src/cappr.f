@@ -1,4 +1,4 @@
-      subroutine cappr(iz,ndummy)
+      subroutine cappr(iz,ndummy) 
 !***********************************************************************
 !  Copyright, 2004,  The  Regents  of the  University of California.
 !  This program was prepared by the Regents of the University of 
@@ -268,15 +268,23 @@ c
       use comdti
       use comai
       use comki
+	use comwt
 
       implicit none
 
-      integer i,iz,ndummy,mid,it,mi,itp,itperm,itpperm,im
-      real*8 cp1,cp3
-
+      integer i,iz,ndummy,mid,it,mi,itp,itperm,itpperm,im, iz_temp
+	real*8 hp, sl, dhp,rp1,rp2,rp3,rp4,sucut,slcut
+      real*8 cp1,cp3,cap_max
+      integer jj, ireg
+	real*8 s_corr,ds_corrp,s_vg,ds_vgp
+	real*8 ph_dum,hmin,hmax,pl,del_h,del_s,dr_nr
+	real*8 ac3, ac4, bc3, bc4, hlcut, hucut, dslh
+	real*8 smcut,smcutm,scutm,alamda,alpi,hcut,alpha,beta
+	parameter (scutm = 1.d-03)	
+	
 c read in data
-      if(icapp.ne.0) then
-         if(iz.ne.0) then
+      if(icapp.eq.0) return
+         if(iz.gt.0) then
 c     
 c     load nodal capillary pressures
 c     
@@ -285,15 +293,14 @@ c
                it=icap(mi)
                itperm = irlp(mi)
                itpperm = irlpt(itperm)
-               if(it .eq. 0 .or. (itpperm .ge. 3 .and. 
-     &              itpperm .le. 20)) then
-                  itp = 0
-               else
+              if(it.eq.0.or.(itpperm .ge. 3 .and. itpperm .le. 20)) then
+                  itp = itpperm 
+              else
                   itp=icapt(it)
-               end if
+              end if
                if(itp.eq.1) then
 c     
-c     linear forsythe(1989) model
+c     linear forsythe(1988) model
 c     
                   cp1=cp1f(it)
                   cp3=cp3f(it)
@@ -312,9 +319,113 @@ c
                      dpcef(mi)=0.0  
                   endif
                endif
+               if(itp.eq.3) then
+c     
+c     van Genucten (1980) model (calculated in rlperm)
+c     
+               endif
             enddo
-         end if
+ 
+         else if(iz.lt.0) then
+c
+c inverse models (031707 gaz)
+c     
+c     load nodal capillary pressures
+c   
+         
+
+         do mid=1,neq
+              mi=mid+ndummy
+c inverse calculation valid only for wtsi nodes
+              iz_temp = izone_free_nodes(mi)
+	        if(iz_temp .gt. 1) then  
+               it=icap(mi)
+               itperm = irlp(mi)
+               itpperm = irlpt(itperm)
+               if(itpperm .ge. 3 .and. itpperm .le. 20) then
+                  itp = itpperm 
+               else
+                  itp=icapt(it)
+               end if    
+	   if(itp.eq.1) then          
+c     
+c     linear forsyth(1988) model
+c     inverse solved explicitly
+c
+                  cp1=cp1f(it)
+                  cp3=cp3f(it)
+c  "+" removes negative cap pressure
+                  hmin = head12(mi,1)+cp1*cp3 
+		        hmax = head12(mi,2)
+	            del_h = hmax-hmin
+	            pl = phi(mi)
+	             if(irich.eq.0) then
+c richard's equation  with wtsi correction
+                    if(iz_temp.eq.2) then
+                      rlxyf(mi) = (pl-(hmin-cp1*cp3))/
+     &				 (del_h+cp1) + rlptol   
+			        drlxyf(mi) = 1.d0/(del_h+cp1) 
+				    s(mi) = rlxyf(mi) - rlptol    
+				  else
+				   	rlxyf(mi) = 0.0
+					s(mi) = 0.0
+				    drlxyf(mi) = 1.d0/(del_h+cp1) 
+				  endif	 
+	            else
+c richard's equation only
+                   call vgcap_inv_calc(2,mi)   
+	            endif
+ 
+          else if(itp.eq.3) then
+c     
+c     van Genucten (1980) model
+c  
+c s = cap_inv  explicit calc 
+c hmin and hmax are "pressures" 
+c 
+c richard's equation  with wtsi correction
+	      if(irich.eq.0) then
+c get richards equation terms 
+	        call vgcap_inv_calc(2,mi)   
+c wtsi terms  (still needs work gaz-112007)
+             	  hmin = head12(mi,1) 
+		      hmax = head12(mi,2)
+	          del_h = hmax-hmin
+	          pl = phi(mi) 
+                s_corr = (pl-hmin)/del_h  
+                ds_corrp = 1.d0/del_h
+	          if(s_corr.lt.0.0d0) then
+	            s_corr = 0.0d0
+	            ds_corrp = 0.0d0
+	          else if(s_corr.gt.1.0d0) then
+	           s_corr = 1.0d0
+	           ds_corrp = 0.0d0
+ 	          endif
+c
+c  gaz dslh is not defined 
+	           s_vg = s(mi) 
+                 ds_vgp = drlxyf(mi)			   
+c 			   	
+c Now the combination
+c			   
+			   	rlxyf(mi) = s_corr*(1.d0-s_vg) + s_vg + rlptol
+                  s(mi) = rlxyf(mi) - rlptol
+                  drlxyf(mi) = ds_corrp*(1.d0-s_vg) 
+     &				+ (1.d0-s_corr)*ds_vgp   
+	       
+	       else 
+c
+c richard's equation only (test solution)
+c
+                 call vgcap_inv_calc(2,mi)   	          	 			                          
+             endif
+        endif
+c end itp block
+        endif
+c end wtsi block
+       enddo   
       endif
 
+     
       return
       end

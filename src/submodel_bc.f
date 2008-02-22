@@ -109,7 +109,7 @@ c     read input parameters
          izone2 = 0
          read(wdd1,*,end=10) keyword,izone1,izone2
          go to 20
- 10      izone2=20
+ 10      izone2=0
  20      if(keyword.ne.'flux'.and.keyword.ne.'head'
      &        .and.keyword.ne.'pres'.and.keyword.ne.'flow'.and.
      &        keyword.ne.'init'.and.keyword.ne.'flgh') then
