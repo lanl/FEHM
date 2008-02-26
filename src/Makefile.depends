@@ -1,0 +1,445 @@
+# DO NOT DELETE THIS LINE - used by make depend
+accum_derivative.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+accum_derivative.o: comgi.o comii.o comrxni.o comsplitts.o davidi.o
+accum_term.o: comai.o comci.o comdi.o comdti.o comii.o davidi.o
+add_gdpm.o: comai.o combi.o comdti.o
+air_rdof.o: comai.o comci.o comdi.o comdti.o comii.o
+air_rdof_part.o: com_part.o comai.o comci.o comdi.o comdti.o comii.o
+airctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
+airctr.o: comgi.o comii.o comsplitts.o comwt.o comxi.o davidi.o
+airctr_part.o: com_part.o comai.o combi.o comci.o comdi.o comdti.o comei.o
+airctr_part.o: comfi.o comflow.o comgi.o comii.o comsplitts.o comxi.o davidi.o
+allocmem.o: comai.o combi.o comchem.o comci.o comcouple.o comdi.o comdti.o
+allocmem.o: comei.o comfi.o comflow.o comgi.o comhi.o comii.o comji.o comnire.o
+allocmem.o: compart.o comriv.o comrxnb.o comrxni.o comsk.o comsptr.o comzeoli.o
+allocmem.o: davidi.o
+anonp.o: comai.o combi.o comdi.o comdti.o comei.o
+anonp_ani.o: comai.o combi.o comdi.o comdti.o comei.o
+area_vol_weightctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+area_vol_weightctr.o: comgi.o comii.o comrxni.o davidi.o
+avs_io.o: avsio.o comai.o combi.o comchem.o comdi.o comdti.o commeth.o
+avs_io.o: comrxni.o comwt.o comxi.o davidi.o
+avs_write_cord.o: comai.o
+avs_write_struc.o: comai.o
+bcon.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comgi.o comsplitts.o
+bcon.o: davidi.o
+bnswer.o: comai.o combi.o comdi.o comdti.o comei.o comgi.o comsplitts.o
+bnswer_part.o: com_part.o comai.o combi.o comdi.o comdti.o comei.o comgi.o
+bnswer_part.o: comsplitts.o
+calculate_cdf.o: comai.o comdti.o comsk.o
+calculate_ret.o: comai.o comdti.o comsk.o
+cappr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+cappr.o: comii.o comki.o comwt.o
+cappr_hyd.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+cappr_hyd.o: comii.o comki.o commeth.o
+cascade_sat.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+cascade_sat.o: comflow.o comgi.o comji.o davidi.o
+cell_time.o: comdti.o comflow.o
+cfluxz.o: comai.o combi.o comchem.o comdi.o comdti.o comflow.o comxi.o
+chemod.o: comai.o combi.o comchem.o comci.o comdi.o comdti.o comrxni.o davidi.o
+cliffnodes.o: comai.o comsk.o comsptr.o
+close_files.o: comai.o
+cnswer.o: comai.o combi.o comchem.o comci.o comcouple.o comdi.o comdti.o
+cnswer.o: comei.o comfi.o comgi.o comrxni.o
+cntlin.o: comai.o comxi.o
+cntlio.o: comai.o comxi.o
+co2ctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+co2ctr.o: comhi.o comii.o comki.o comxi.o davidi.o
+coeffc.o: comai.o
+compute_exit_new.o: comai.o combi.o comdi.o comflow.o comsk.o comsptr.o
+concadiff.o: comai.o
+concen.o: comai.o combi.o comci.o comdi.o comdti.o comgi.o compart.o
+coneq1.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o comfi.o
+coneq1.o: comflow.o comgi.o comji.o comrxni.o comxi.o davidi.o
+coneq1_ani.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o
+coneq1_ani.o: comfi.o comflow.o comgi.o comji.o comrxni.o comxi.o davidi.o
+coneq1_gdpm.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o
+coneq1_gdpm.o: comfi.o comflow.o comgi.o comji.o comrxni.o comxi.o davidi.o
+coneq1mdnode.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o
+coneq1mdnode.o: comfi.o comflow.o comgi.o comji.o comrxni.o davidi.o
+contr.o: avsio.o comai.o combi.o comci.o comdi.o comdti.o comhi.o comii.o
+contr.o: compart.o comwt.o comxi.o davidi.o
+contrc.o: comai.o combi.o comdi.o comdti.o comxi.o
+contrj.o: comai.o combi.o comci.o comdi.o comdti.o
+convctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+convctr.o: comii.o comrxni.o davidi.o
+cplxcalc.o: comchem.o comdi.o comdti.o comrxni.o
+crdpdp.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+crdpdp.o: comhi.o davidi.o
+csolve.o: comai.o combi.o comchem.o comci.o comcouple.o comdi.o comdti.o
+csolve.o: comflow.o comgi.o comji.o comrxnb.o comrxni.o davidi.o
+ctdpdp.o: comai.o comdi.o comdti.o comgi.o davidi.o
+darcy_derivatives_BLI.o: combi.o comci.o comdi.o comsptr.o
+data.o: comai.o combi.o comchem.o comci.o comdi.o comdti.o comei.o comfi.o
+data.o: comflow.o comgi.o comhi.o comii.o comji.o compart.o comrtd.o comrxni.o
+data.o: comsplitts.o comwt.o comzone.o davidi.o
+datchk.o: comai.o combi.o comdi.o comdti.o comfi.o comii.o compart.o comxi.o
+datchk.o: davidi.o
+dated_pc.o: comai.o
+dated_pgi32.o: comai.o
+dated_pgi64.o: comai.o
+dated_sun.o: comai.o
+daycrl.o: comai.o combi.o comci.o comdi.o comdti.o comgi.o compart.o
+daycrl.o: comsplitts.o davidi.o
+diagnostics.o: comai.o combi.o comci.o comdi.o comdti.o comgi.o davidi.o
+directional_search.o: comai.o comsk.o comsptr.o
+diskc.o: comai.o combi.o comdi.o comdti.o comrxni.o
+diskp.o: comai.o combi.o comdti.o compart.o comrxni.o
+diskread.o: comai.o combi.o comdi.o comdti.o comfi.o comflow.o comii.o
+diskread.o: compart.o comxi.o davidi.o
+diskwrite.o: comai.o combi.o comdi.o comdti.o comfi.o comflow.o comii.o
+diskwrite.o: compart.o comxi.o davidi.o
+diskwrite_new.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comflow.o
+diskwrite_new.o: comii.o compart.o comxi.o davidi.o
+dispersion_divergence.o: comai.o comdi.o comsptr.o
+dispersion_divergence_omr.o: comai.o comdi.o comsptr.o
+dispersion_gradient.o: comai.o comdi.o comsptr.o
+dispersion_node.o: comdi.o compart.o comsptr.o
+done_macro.o: comai.o
+dpdp.o: comai.o comdi.o comdti.o
+dpdp3.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
+dpdp3.o: comgi.o comhi.o comji.o davidi.o
+dpdpfa.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
+dpdpfa.o: comgi.o comhi.o comji.o davidi.o
+dpdpfh.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+dpdpfh.o: comhi.o comji.o davidi.o
+dpdpta.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
+dpdpta.o: comgi.o comhi.o comji.o comrxnb.o comrxni.o davidi.o
+dual.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+dual.o: comhi.o comki.o
+dualex.o: comai.o combi.o comdi.o comdti.o comei.o comfi.o comgi.o comhi.o
+dualfa.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+dualfa.o: comhi.o comji.o davidi.o
+dualfh.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+dualfh.o: comhi.o comji.o davidi.o
+dualta.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o comfi.o
+dualta.o: comgi.o comhi.o comji.o comrxnb.o comrxni.o
+dualtx.o: comai.o combi.o comdi.o comdti.o comei.o comfi.o comgi.o comhi.o
+dvacalc.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+dvacalc.o: comhi.o davidi.o
+enthp.o: comai.o comdi.o comdti.o comfi.o comii.o
+explicit.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
+explicit.o: comgi.o comji.o davidi.o
+fehmn.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
+fehmn.o: compart.o comrtd.o comrxni.o comsplitts.o comsptr.o comwt.o comxi.o
+fehmn.o: davidi.o
+fehmn_pc_dll.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+fehmn_pc_dll.o: comflow.o compart.o comrtd.o comrxni.o comsplitts.o comsptr.o
+fehmn_pc_dll.o: comwt.o comxi.o davidi.o
+fehmn_pcx.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
+fehmn_pcx.o: compart.o comrtd.o comrxni.o comsplitts.o comsptr.o comwt.o
+fehmn_pcx.o: comxi.o davidi.o
+fimpf.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o davidi.o
+find_closest_curve.o: comai.o compfrac.o
+find_v_3lsq.o: comsptr.o
+find_v_lsq.o: comai.o combi.o comflow.o comsk.o comsptr.o
+flow_boun.o: combi.o comci.o comdi.o comwt.o
+flow_boundary_conditions.o: comai.o combi.o comci.o comdi.o comdti.o comei.o
+flow_boundary_conditions.o: comfi.o comii.o comki.o comxi.o davidi.o
+flux_net.o: comai.o combi.o comci.o comdi.o comflow.o comgi.o comji.o davidi.o
+flxn.o: comai.o combi.o comflow.o davidi.o
+flxo.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
+flxo.o: comgi.o comxi.o davidi.o
+flxz.o: comai.o combi.o comdi.o comdti.o comflow.o davidi.o
+ftime.o: compfrac.o
+gdpm_corr.o: comai.o combi.o comdti.o comei.o comki.o davidi.o
+gdpm_geneqh.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+gdpm_geneqh.o: comflow.o comgi.o comhi.o comji.o davidi.o
+gen_mixmodel.o: comai.o combi.o comrtd.o
+gencof.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comgi.o
+gencon.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o comgi.o
+gencon.o: comhi.o comji.o comrxnb.o comrxni.o davidi.o
+gendat.o: comai.o combi.o comci.o comdti.o
+geneq1.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
+geneq1.o: comgi.o comhi.o comji.o davidi.o
+geneq2.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
+geneq2.o: comgi.o comji.o davidi.o
+geneq2_ani.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+geneq2_ani.o: comflow.o comgi.o comji.o davidi.o
+geneq2_part.o: com_part.o comai.o combi.o comci.o comdi.o comdti.o comei.o
+geneq2_part.o: comfi.o comflow.o comgi.o comji.o davidi.o
+geneq2_rich.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+geneq2_rich.o: comflow.o comgi.o comii.o comji.o comwt.o davidi.o
+geneq2_uz_wt.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+geneq2_uz_wt.o: comflow.o comgi.o comji.o davidi.o
+geneq2_wtsi.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+geneq2_wtsi.o: comflow.o comgi.o comii.o comji.o comwt.o davidi.o
+geneq3.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comgi.o comji.o
+geneq3.o: davidi.o
+geneq_h2o.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
+geneq_h2o.o: comgi.o comhi.o comji.o commeth.o davidi.o
+geneq_hyd.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
+geneq_hyd.o: comgi.o comhi.o comji.o commeth.o davidi.o
+geneq_hyd_equil.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+geneq_hyd_equil.o: comflow.o comgi.o comhi.o comji.o commeth.o davidi.o
+geneq_meth.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+geneq_meth.o: comflow.o comgi.o comhi.o comji.o commeth.o davidi.o
+geneqc.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
+geneqc.o: comgi.o comji.o comrxni.o comzeoli.o davidi.o
+geneqmdnode.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+geneqmdnode.o: comflow.o comgi.o comji.o davidi.o
+generate_flow.o: comai.o combi.o comdi.o comflow.o comrtd.o
+gensdp.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+gensdp.o: comhi.o davidi.o
+gensdp3.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+gensdp3.o: comhi.o davidi.o
+gensl1.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o comfi.o
+gensl1.o: comflow.o comgi.o comhi.o davidi.o
+gensl2.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o comfi.o
+gensl2.o: comflow.o comgi.o comhi.o comji.o comsplitts.o comwt.o davidi.o
+gensl2_part.o: com_part.o comai.o combi.o comci.o comcouple.o comdi.o comdti.o
+gensl2_part.o: comei.o comfi.o comflow.o comgi.o comhi.o comji.o comsplitts.o
+gensl2_part.o: davidi.o
+gensl3.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comgi.o davidi.o
+gensl4.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+gensl4.o: comhi.o davidi.o
+gensmethh2o.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o
+gensmethh2o.o: comfi.o comgi.o comhi.o commeth.o davidi.o
+gensmethh2o_equil.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o
+gensmethh2o_equil.o: comei.o comfi.o comgi.o comhi.o commeth.o davidi.o
+gentdp.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o comfi.o
+gentdp.o: comgi.o comhi.o comji.o comrxnb.o comrxni.o davidi.o
+geoin.o: comai.o
+getarea.o: comsptr.o
+gncf2.o: comai.o combi.o comci.o comdi.o comdti.o comei.o
+gncf3.o: comai.o combi.o comci.o comdi.o comdti.o comei.o
+grad_array.o: comai.o combi.o comsptr.o
+gradctr.o: comai.o combi.o comdi.o comdti.o comfi.o commeth.o
+head_2phase.o: comai.o combi.o comdi.o comdti.o comfi.o comgi.o comii.o
+head_2phase.o: comrxni.o
+headctr.o: comai.o combi.o comdi.o comdti.o comfi.o comgi.o comii.o comrxni.o
+headctr.o: comwt.o
+hstz.o: combi.o comdi.o comwt.o comzone.o
+hyddiss.o: comai.o combi.o comdi.o comdti.o comki.o commeth.o
+hydrate_array.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+hydrate_array.o: comgi.o comhi.o commeth.o davidi.o
+hydrate_equil.o: comai.o comei.o commeth.o davidi.o
+hydrate_properties.o: comai.o commeth.o
+icectr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+icectr.o: comii.o comki.o commeth.o comsplitts.o comxi.o davidi.o
+impsample.o: comai.o comdti.o comsk.o comsptr.o
+impsample_ptrk.o: comai.o comsk.o
+inanpe.o: comai.o comdi.o comdti.o comki.o
+incond.o: comai.o comdi.o comdti.o comki.o
+incoord.o: comai.o combi.o comdti.o comxi.o
+inctrl.o: comai.o combi.o comdti.o comki.o
+indpdp.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+indpdp.o: comhi.o davidi.o
+infiles.o: comai.o
+inflo2.o: comai.o combi.o comdi.o comdti.o
+inflo3.o: comai.o combi.o comdi.o comdti.o comki.o
+infloa.o: comai.o combi.o comdi.o comdti.o comki.o
+inflogh.o: comai.o combi.o comdi.o comdti.o comki.o
+inflow.o: comai.o combi.o comdi.o comdti.o comki.o
+inflow_wt.o: comai.o combi.o comdi.o comdti.o comki.o comwt.o
+infrlp.o: comai.o comdi.o comdti.o comki.o
+ingdpm.o: comai.o combi.o comdi.o comdti.o comki.o
+ingrowth.o: comai.o comdi.o comdti.o compart.o comsk.o
+inhflx.o: comai.o comdi.o comdti.o comki.o
+inhist.o: comai.o comdi.o comwt.o comxi.o comzone.o davidi.o
+inhstz.o: comai.o combi.o comdti.o comzone.o
+inhyco.o: comai.o comdi.o comdti.o comki.o
+initchem.o: comchem.o comdi.o comdti.o comrxni.o
+initdata2.o: comai.o combi.o comdti.o
+initfc.o: comai.o combi.o comdi.o comdti.o comki.o
+inmentat.o: comai.o combi.o comdti.o
+inmptr.o: comai.o combi.o comdi.o comdti.o comki.o compart.o compfrac.o comsk.o
+inmptr.o: comsptr.o comxi.o
+innode.o: comai.o combi.o comdi.o comdti.o comki.o
+inpatran.o: comai.o combi.o comdti.o
+inperm.o: comai.o comdi.o comdti.o comki.o
+inpres.o: comai.o comdi.o comdti.o comki.o davidi.o
+inptrk.o: comai.o combi.o comdi.o comdti.o comki.o compart.o compfrac.o comsk.o
+inptrk.o: comsptr.o
+input.o: comai.o combi.o comchem.o comci.o comdi.o comdti.o compart.o comrxni.o
+input.o: comsplitts.o comsptr.o comwt.o davidi.o
+inrestart.o: comai.o combi.o comxi.o
+inrock.o: comai.o comdi.o comdti.o comki.o
+insptr.o: comai.o combi.o comdi.o comdti.o comki.o compart.o compfrac.o comsk.o
+insptr.o: comsptr.o comxi.o
+interblock_iso.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+interblock_iso.o: comflow.o comgi.o comhi.o comii.o comji.o comzeoli.o davidi.o
+interp.o: compfrac.o
+intime.o: comai.o comci.o comdi.o comdti.o
+inzeol.o: comai.o combi.o comdi.o comdti.o comki.o comzeoli.o
+iofile.o: comai.o comxi.o
+load_omr_flux_array.o: comai.o combi.o comci.o comdi.o comdti.o comflow.o
+load_omr_flux_array.o: comsk.o comsptr.o davidi.o
+loadpcnsk.o: comai.o combi.o comdi.o comdti.o compart.o
+massflow.o: comai.o combi.o comci.o comdi.o comdti.o comflow.o compart.o
+massflow.o: davidi.o
+mdnodes.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+mdnodes.o: davidi.o
+methh2o_combine.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+methh2o_combine.o: comgi.o comhi.o commeth.o davidi.o
+model_setup.o: comdi.o comdti.o
+move_particle.o: comai.o combi.o comdi.o comdti.o comsptr.o
+namefile2.o: avsio.o comai.o
+near3.o: comai.o combi.o comdti.o
+new_loc_omr.o: comai.o combi.o comdi.o comsk.o comsptr.o
+node_midedge_box_size.o: combi.o
+normal.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+normal.o: comhi.o davidi.o
+open_file.o: comai.o
+outbnd.o: comai.o combi.o comdi.o comdti.o comfi.o comii.o davidi.o
+paractr.o: com_part.o comai.o combi.o comdi.o comdti.o comgi.o davidi.o
+part_track.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+part_track.o: comflow.o comgi.o comhi.o comji.o compart.o compfrac.o comsk.o
+part_track.o: comsptr.o davidi.o
+peint.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comii.o
+pest.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
+pest.o: comgi.o comji.o comxi.o davidi.o
+plot.o: comai.o combi.o comdi.o comdti.o comfi.o comii.o comwt.o davidi.o
+plot_hyd.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comhi.o
+plot_hyd.o: comki.o commeth.o
+plot_new.o: comai.o combi.o comdi.o comdti.o comfi.o comwt.o comzone.o davidi.o
+plotc1.o: comai.o combi.o comchem.o comci.o comdi.o comdti.o compart.o
+plotc1.o: comrxni.o comsptr.o
+pod_derivatives.o: comai.o comci.o comdi.o comsptr.o comxi.o
+porosi.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+porosi.o: comii.o comki.o comnire.o comwt.o comxi.o
+porosity_gradient_log.o: comai.o combi.o comdi.o comsptr.o
+porosity_gradient_omr.o: comai.o combi.o comdi.o comsptr.o
+psat.o: comai.o comdti.o comii.o
+psatl.o: comai.o comdti.o comii.o
+ptrac1.o: comai.o combi.o comci.o comdi.o comflow.o compart.o comsk.o comsptr.o
+ptrac1.o: comxi.o davidi.o
+ptrac3.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
+ptrac3.o: comgi.o comhi.o comji.o compart.o comsk.o comsptr.o comxi.o davidi.o
+radius.o: comai.o combi.o comdti.o
+random_walk.o: comdi.o compart.o comsk.o comsptr.o
+random_walk_omr.o: comdi.o compart.o comsk.o comsptr.o
+rarng.o: comai.o combi.o comdi.o comdti.o
+rdcon.o: comai.o combi.o comchem.o comci.o comcouple.o comdi.o comdti.o comfi.o
+rdcon.o: comflow.o comki.o compart.o comrxni.o
+rddpdp.o: comai.o combi.o comdti.o comhi.o comki.o
+rdthick.o: comai.o combi.o comdi.o comdti.o comhi.o comki.o
+react.o: comai.o combi.o comchem.o comci.o comcouple.o comdi.o comdti.o comei.o
+react.o: comfi.o comgi.o comrxni.o davidi.o
+read_avs_io.o: avsio.o comai.o combi.o comdi.o comdti.o davidi.o
+read_rtd.o: comrtd.o
+read_rxn.o: comai.o combi.o comchem.o comcouple.o comdi.o comdti.o comrxni.o
+read_sx.o: combi.o
+read_tcurve.o: comai.o comdi.o compfrac.o
+releasemem.o: comai.o combi.o comchem.o comci.o comcouple.o comdi.o comdti.o
+releasemem.o: comei.o comfi.o comflow.o comgi.o comhi.o comii.o comji.o
+releasemem.o: compart.o compfrac.o comrtd.o comrxnb.o comrxni.o comsk.o
+releasemem.o: comsptr.o comzeoli.o davidi.o
+renum.o: comai.o combi.o comdti.o comei.o comki.o
+resettrc.o: comai.o comci.o comdi.o comdti.o
+resetv.o: comai.o comci.o comdi.o comdti.o comfi.o davidi.o
+river_ctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+river_ctr.o: comii.o comriv.o comrxni.o comxi.o davidi.o
+rlp_frac.o: comai.o combi.o comci.o comdi.o comdti.o
+rlperm.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comhi.o
+rlperm.o: comki.o
+rlperm_hyd.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comhi.o
+rlperm_hyd.o: comki.o commeth.o
+rlperm_wtsi.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comgi.o comii.o
+rlperm_wtsi.o: comwt.o
+scaled_perm.o: comai.o comdi.o comdti.o comki.o
+scanin.o: comai.o combi.o comchem.o comcouple.o comdi.o comdti.o compart.o
+scanin.o: comriv.o comrxni.o comsk.o comsplitts.o comsptr.o comwt.o comxi.o
+scanin.o: comzeoli.o davidi.o
+set_mptr.o: comai.o combi.o comci.o comdi.o comdti.o comflow.o compart.o
+set_mptr.o: davidi.o
+set_ptrk.o: comai.o combi.o comci.o comdi.o comdti.o comflow.o compart.o
+set_ptrk.o: davidi.o
+setconnarray.o: comai.o combi.o comdti.o comxi.o
+setord.o: comai.o combi.o comci.o comcouple.o comdti.o comrxni.o davidi.o
+setparams.o: comai.o combi.o comchem.o comdi.o comdti.o comriv.o comxi.o
+setparams.o: comzeoli.o
+setunits.o: comai.o
+setzone.o: comai.o combi.o comdti.o
+sfn2r.o: combi.o comdti.o
+sfn3r.o: combi.o comdti.o
+shap2r.o: comai.o combi.o comdti.o
+shap3p.o: comai.o combi.o comdti.o
+shap3r.o: comai.o combi.o comdti.o
+sice.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+sice.o: comii.o comki.o
+slvesu.o: comxi.o
+solstore.o: comai.o comci.o comcouple.o comdi.o comdti.o comfi.o comrxni.o
+split.o: comai.o combi.o comdti.o
+sptr_save.o: comai.o comdi.o comsk.o comsptr.o comxi.o
+ss_trans.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comfi.o
+ss_trans.o: comgi.o compart.o comrxni.o davidi.o
+start_macro.o: comai.o
+startup.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o comfi.o
+startup.o: comflow.o comgi.o comii.o commeth.o compart.o comsptr.o comwt.o
+startup.o: comzone.o davidi.o
+steady.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comsplitts.o
+steady.o: davidi.o
+sther.o: comai.o comdi.o comdti.o comii.o
+storage_derivatives.o: comci.o comdti.o davidi.o
+storsx.o: comai.o combi.o comdti.o comxi.o
+stream_tube.o: comsk.o comsptr.o
+structured.o: comai.o combi.o comdi.o comdti.o comxi.o
+subdivide_rtd.o: comrtd.o
+submodel_bc.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+submodel_bc.o: comflow.o comgi.o comii.o comji.o comxi.o davidi.o
+sx_combine.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+sx_combine.o: comii.o davidi.o
+sx_combine_ani.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+sx_combine_ani.o: comgi.o comii.o davidi.o
+termin.o: comai.o comxi.o
+termio.o: comai.o comxi.o
+ther_meth_h2o.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+ther_meth_h2o.o: comgi.o comii.o commeth.o comrxni.o
+thermc.o: comai.o combi.o comchem.o comci.o comcouple.o comdi.o comdti.o
+thermc.o: comfi.o comgi.o comrxni.o davidi.o
+thermw.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+thermw.o: comii.o comrxni.o
+thickness.o: comai.o combi.o comdi.o comdti.o comfi.o comgi.o comrxni.o
+thomeercap.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comhi.o
+thomeercap.o: comki.o
+thrair.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+thrair.o: comii.o comrxni.o comwt.o davidi.o
+thrmwc.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+thrmwc.o: comii.o comrxni.o
+thrsznapl.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+thrsznapl.o: comii.o comrxni.o davidi.o
+timcrl.o: avsio.o comai.o comdi.o comdti.o compart.o comsplitts.o
+time_delay.o: comai.o compfrac.o
+tracout.o: comai.o comchem.o comdi.o comxi.o
+tree_search.o: combi.o comsk.o comsptr.o
+user_ymp.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
+user_ymp.o: comhi.o comii.o compart.o
+userc.o: comai.o combi.o comci.o comdi.o comdti.o compart.o
+uz_wtctr.o: comai.o combi.o comdi.o comdti.o comii.o
+varchk.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+varchk.o: comii.o davidi.o
+varchk_part.o: comai.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o comii.o
+varchk_part.o: davidi.o
+varctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+varctr.o: comii.o comrxni.o davidi.o
+vcon.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+vcon.o: comii.o comki.o
+veloc.o: comai.o combi.o comci.o comdi.o comdti.o comflow.o comji.o davidi.o
+velocities.o: comdi.o comsptr.o
+velocity_derivatives.o: comsptr.o
+velocity_derivatives_lsq.o: comai.o combi.o comci.o comflow.o comsk.o comsptr.o
+vfcal.o: comai.o combi.o comdi.o comdti.o
+vg_regions.o: comai.o comdi.o comdti.o
+vgcap_inv_calc.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+vgcap_inv_calc.o: comhi.o comii.o comki.o comwt.o
+write_avs_head_s.o: avsio.o comai.o comdi.o davidi.o
+write_avs_node_con.o: avsio.o comai.o combi.o comchem.o comdi.o comdti.o
+write_avs_node_con.o: comrxni.o
+write_avs_node_h.o: comai.o
+write_avs_node_mat.o: avsio.o comai.o combi.o comchem.o comdi.o comrxni.o
+write_avs_node_mat.o: davidi.o
+write_avs_node_s.o: avsio.o comai.o combi.o comci.o comdi.o comfi.o comflow.o
+write_avs_node_s.o: comwt.o davidi.o
+write_avs_node_v.o: avsio.o comai.o combi.o comdi.o
+write_rlp_hyd.o: comai.o commeth.o
+writeio.o: comai.o comxi.o
+wrtcon.o: comai.o combi.o comdi.o comdti.o comgi.o comxi.o
+wrtout.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
+wrtout.o: comgi.o comii.o comwt.o comxi.o davidi.o
+wrtptrk.o: comai.o combi.o comdi.o comdti.o comgi.o compart.o comsk.o comxi.o
+wtrise.o: comai.o combi.o comdi.o comflow.o compart.o
+wtsi_column.o: comai.o combi.o comdi.o comdti.o comwt.o comxi.o
+wtsictr.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comii.o comwt.o
+wtsictr.o: comxi.o
+zone.o: comai.o combi.o comdti.o
