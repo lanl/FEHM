@@ -186,6 +186,7 @@ c.................................................................
       count_sptr2=0
       inc_sptr2=0
       btc_done = .false.
+      totflag = .false.
       if (.not. compute_flow .or. l .eq. 1) time_reset = .false.
 
 c*******************************************************************
@@ -255,21 +256,22 @@ c flag if the node i has seen a particle or not
       if(ddt.lt.edt) edt=ddt
       tto=0
 
+      idebug=0
+
 c......s kelkar 5/2/2001 snapshot output
          
       if(iskprt.eq.iprt.and.iprt.ne.0) then
          itime = 0
-         if (iptty .ne. 0) write(iptty,*) 'Calling snapshot', tt1,itime
+         if (idebug .ne. 0 .and. iptty .ne. 0) 
+     &        write(iptty,*) 'Calling snapshot', tt1,itime
          call write_snapshot
       end if
 c............................
 
-      idebug=0
-
       do itime=1,itm
 c     Store old time
          tt1_old = tt1
-         if (totflag) edt = min (edt*part_mult, dtmx)
+         if (totflag .and. nzbtc .ne. 0) edt = min (edt*part_mult, dtmx)
          tto=tto+edt
 c     *** see if this is last time step***
          if(tto.ge.ddt) then

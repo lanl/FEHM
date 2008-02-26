@@ -277,6 +277,11 @@ c order) ZVD 16-Oct-2006
       ip_flag = .false.
       itensor = -999
       nzbtc = 0
+      part_mult = 2.
+      part_steps = 10
+      part_frac = .1 * num_part
+      delta_part = .0001 * num_part
+      time_btc = 0.d0
       nplum = 0
       cliff_flag=.false.
       corner_flag = .false.
@@ -834,8 +839,6 @@ c     input is read properly)
                else
                   part_mult = xmsg(3)
                endif
-            else
-               part_mult = 2.
             end if
 ! ZVD 05/05 - if present read in fraction of particles that should 
 ! break through before increasing the time step
@@ -845,8 +848,6 @@ c     input is read properly)
                else
                   part_frac = xmsg(4) * num_part
                endif
-            else
-               part_frac = .1 * num_part
             end if
 ! ZVD 05/05 - if present read in fraction of particles that should 
 ! break through during a time step so that the time step is not 
@@ -857,8 +858,6 @@ c     input is read properly)
                else
                   delta_part = xmsg(5) * num_part
                endif            
-            else
-               delta_part = .0001 * num_part
             end if
 ! ZVD 05/05 - if present read in number of time steps that should be 
 ! checked for delta_part before increasing the time step
@@ -869,8 +868,6 @@ c     input is read properly)
                else
                   part_steps = xmsg(6)
                endif
-            else
-               part_steps = 10
             end if
 ! ZVD 05/05 - if present read in time (in days) small breakthrough 
 ! time steps should be started (for late initial breakthrough)
@@ -880,8 +877,6 @@ c     input is read properly)
                else
                   time_btc = xmsg(7)
                endif
-            else
-               time_btc = 0.d0
             end if
             if(nzbtc.gt.0) then
                read(inpt,*)(zbtc(jj),jj=1,nzbtc)
