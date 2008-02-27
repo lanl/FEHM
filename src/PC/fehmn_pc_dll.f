@@ -493,7 +493,7 @@ c     run of fehm. It is initialized to 0 in comai
       logical used
       real*8 tims_save, day_saverip, in3save
       real*8 deneht, denht, eskd, enthp, flemax, flmax, prav, 
-     *     pravg, tajj, tas, tinfl, tmav, tmavg, tyming
+     *     pravg, tajj, tas, teinfl, tinfl, tmav, tmavg, tyming
       real(8) :: inflow_thstime = 0., inen_thstime = 0.
       real(8) :: contr_riptot = 1.0d+30
       real(8) :: tasii = 0., tassem = 0.
