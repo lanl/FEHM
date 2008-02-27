@@ -196,8 +196,10 @@ c     directions for concatination of files
       write(lu,355)
      1'# ************************************************************ '
       write(lu,320)neq,nei,num_ndata,num_cdata,num_mdata
-  320 format(i10.10,2x,i10,2x,i10,2x,i10,2x,i10)
 
+      close (lu)
+
+  320 format(i10.10,2x,i10,2x,i10,2x,i10,2x,i10)
   355 format(a55)
 
       return

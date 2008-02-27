@@ -464,7 +464,6 @@ C No binary option
                if (altc(1:3) .eq. 'avs' ) 
      &              call write_avs_ucd_header(lu,verno,jdate,wdd,
      1              neq_primary,nei,nmaterial,num_cdata,num_mdata)
-               close(lu)
                
                if (altc(1:3) .eq. 'tec') then
                   tmp_tail = trim(material_tail) // '.dat'
@@ -494,7 +493,6 @@ C No binary option
      &              call write_avs_ucd_header
      1              (lu,verno,jdate,wdd,neq_primary,nei,nmaterial_dual,
      2              num_cdata,num_mdata)
-               close(lu)
                n1 = neq_primary + 1
                if (altc(1:3) .eq. 'tec') then
                   tmp_tail = trim(material_dual_tail) // '.dat'
@@ -518,10 +516,9 @@ C No binary option
             if (ioformat .eq. 1) then
 C No binary option
             else
-               if (altc(1:3) .eq. 'avs' ) 
-     &           call write_avs_ucd_header(lu,verno,jdate,wdd,
-     1              neq_primary,nei,nscalar,num_cdata,num_mdata)
-               close(lu)
+               if (altc(1:3) .eq. 'avs' )
+     &              call write_avs_ucd_header(lu,verno,jdate,wdd,
+     &              neq_primary,nei,nscalar,num_cdata,num_mdata)
             endif
          endif
          
@@ -536,7 +533,6 @@ C No binary option
      &              call write_avs_ucd_header
      1              (lu,verno,jdate,wdd,neq_primary,nei,nscalar_dual,
      2              num_cdata,num_mdata)
-               close(lu)
             endif
          endif
          
@@ -553,7 +549,6 @@ C No binary option
      &              call write_avs_ucd_header(lu, verno,jdate,wdd,
      1              neq_primary,nei,(nvector*len_vec),num_cdata,
      2              num_mdata)
-               close(lu)
             endif
          endif
          
@@ -568,7 +563,6 @@ C No binary option
      &              call write_avs_ucd_header(lu,verno,jdate,wdd,
      1              neq_primary,nei,(nvector_dual*len_vec),num_cdata,
      2              num_mdata)
-               close(lu)
             endif
          endif
          
@@ -582,7 +576,6 @@ C No binary option
                if (altc(1:3) .eq. 'avs' ) 
      &              call write_avs_ucd_header(lu,verno,jdate,wdd,
      1              neq_primary,nei,nconcen,num_cdata,num_mdata)
-               close(lu)
             endif
          endif
          
@@ -597,7 +590,6 @@ C No binary option
      &              call write_avs_ucd_header
      1              (lu,verno,jdate,wdd,neq_primary,
      &              nei,nconcen_dual,num_cdata,num_mdata)
-               close(lu)
             endif
          endif
          
