@@ -3,9 +3,22 @@
 # Makefile for FEHM
 #
 #***********************************************************************
+# Usage: gmake -f Makefile.fehm [FLAGS] [TARGET]
 #
-PRIMEDIR = /scratch/ymp/zvd/FEHM_V2.30open/src/
-SRCDIR = ${PRIMEDIR}
+# Command line flags: BIT (Linux only), DEBUG
+#   BIT=32      PGI 32 bit compiler (default)
+#   BIT=64	PGI 64 bit compiler
+#   DEBUG=OFF	Compile without -g flag (default)
+#   DEBUG=ON    Compile with -g flag
+#***********************************************************************
+# GNU Make version 3.79.1 or later should be used
+# gmake (make) should be executed form the directory where the objects 
+# will reside.
+# Edit SRCDIR to point to the directory where the source code is located
+# Edit FC,LIBRARY,FFLAGS for your environment and compiler 
+#***********************************************************************
+
+SRCDIR = /scratch/ymp/zvd/FEHM_V2.30open/src/
 WORKDIR = ./
 INCDIR = ./
 OBJDIR = ./
@@ -16,8 +29,13 @@ BIT = 32
 STATIC =
 OPSYS_FULL = $(shell uname -a )
 OPSYS = $(shell uname -s )
-DATE = $(shell date '+%d%b%y')
 DATETAG = $(shell date '+%y-%m-%d')
+
+ifeq (${DEBUG}, ON)
+DATE = dbg
+else
+DATE = $(shell date '+.%d%b%y')
+endif
 
 # Linux OS ------------------------------
 ifeq (${OPSYS}, Linux)
@@ -36,7 +54,8 @@ LD = /usr/bin/ld
 ifeq (${DEBUG}, ON)
 FFLAGS = -g -C -Kieee -Mlfs -tp ${TARGET}
 else
-FFLAGS = -O1 -Kieee -Mlfs -tp ${TARGET} 
+#FFLAGS = -O1 -Kieee -Mlfs -tp ${TARGET} 
+FFLAGS = -fast -Kieee -Mlfs -tp ${TARGET} 
 endif
 STATIC = -Bstatic
 endif
@@ -67,7 +86,7 @@ dated:
 	sed s/OS\ DATE/${OSTAG}\ ${DATETAG}/ ${SRCDIR}dated.template >  ${SRCDIR}dated.f
 
 xfehm : ${OBJECTS}
-	${FC} ${FFLAGS} ${OBJECTS} ${LIBRARY} ${STATIC} -o xfehm_v2.30${OSTAG}.${DATE}
+	${FC} ${FFLAGS} ${OBJECTS} ${LIBRARY} ${STATIC} -o xfehm_v2.30${OSTAG}${DATE}
 
 test:
 	echo ${OSTAG} ${FFLAGS} ${DATETAG} ${DATE}

@@ -491,6 +491,10 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
             go to 20
          endif
          if(.not. sflux_flag) then
+            if (isteady .eq. 1) then
+               isteady = 2
+               itt = 0
+            end if
             go to 10
          endif
 
