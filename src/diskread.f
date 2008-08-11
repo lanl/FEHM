@@ -187,12 +187,14 @@
 
       use comai
       use combi
+      use comco2
       use comdi
       use comdti
       use comfi
       use comflow
       use comii
       use compart
+      use comriv
       use comxi
       use davidi
       implicit none
@@ -267,10 +269,17 @@ c Values from the restart file will not be used
          read (iread ,   *) dumver, dumdate, dumtime
          read (iread ,   *) dumtitle
          read (iread ,   *)  days
+
          if(ice.ne.0) then
             call icectr (20,0)
             return
          endif
+
+         if(icarb.eq.1) then
+            call icectrco2 (20,0)
+            return
+         endif
+
 c     
 c     read descriptors
 c     
@@ -285,8 +294,9 @@ c this is old style input
             ncount=neq
             if(wdd1(13:16).eq.'dpdp') ncount=neq+neq
             if(wdd1(17:20).eq.'dual') ncount=neq+neq+neq
-
-            if (wdd1(1:4).eq.'ngas') then
+            if (wdd1(1:4).eq.'ngas' .or. wdd1(1:4).eq.'wnga') then
+               if(iriver.ne.0 .and. wdd1 .eq. 'ngas') 
+     &              ncount = ncount - npoint_riv
                if (read_temp(1)) then
                   read(iread ,*)  ( t   (mi) , mi=1,ncount )
                   read_temp(2) = .TRUE.
@@ -325,8 +335,23 @@ c
                   if (iout .ne. 0) write (iout, 400) 'gas pressures'
                   if (iptty .ne. 0)write (iptty, 400) 'gas pressures'
                end if
+               if (iriver .ne. 0 .and. wdd1(1:4) .eq. 'ngas') then
+                  do i = ncount+1,ncount+npoint_riv
+                     j = iriver_con_node(i-ncount)
+                     if (read_temp(1)) 
+     &                    t(i) = t(iriver_con_node(i-ncount))
+                     if (read_sat(1)) 
+     &                    s(i) = s(iriver_con_node(i-ncount))
+                     if (read_pres(1)) 
+     &                    phi(i) = phi(iriver_con_node(i-ncount))
+                     if (read_gasp(1)) 
+     &                    pci(i) = pci(iriver_con_node(i-ncount))
+		  enddo
+               end if
 
-            else if(wdd1(1:4).eq.'h20 ') then
+            else if(wdd1(1:4).eq.'h20 ' .or. wdd1(1:4).eq.'nh20') then
+               if(iriver.ne.0 .and. wdd1(1:4) .eq. 'h2o ') 
+     &              ncount = ncount - npoint_riv
                if (read_temp(1)) then
                   read(iread ,*)  ( t   (mi) , mi=1,ncount )
                   read_temp(2) = .TRUE.
@@ -351,8 +376,21 @@ c
                   if (iout .ne. 0) write (iout, 400) 'pressures'
                   if (iptty .ne. 0) write (iptty, 400) 'pressures'
                end if
+               if (iriver .ne. 0 .and. wdd1(1:4) .eq. 'h2o ') then
+                  do i = ncount+1,ncount+npoint_riv
+                     j = iriver_con_node(i-ncount)
+                     if (read_temp(1)) 
+     &                    t(i) = t(iriver_con_node(i-ncount))
+                     if (read_sat(1)) 
+     &                    s(i) = s(iriver_con_node(i-ncount))
+                     if (read_pres(1)) 
+     &                    phi(i) = phi(iriver_con_node(i-ncount))
+		  enddo
+               end if
 
-            else if(wdd1(1:4).eq.'air ') then
+            else if(wdd1(1:4).eq.'air ' .or. wdd1(1:4).eq.'nair') then
+               if(iriver.ne.0 .and. wdd1(1:4) .eq. 'air ') 
+     &              ncount = ncount - npoint_riv
                if (read_sat(1) .and. irdof .ne. 13) then
                   read(iread ,*)  ( s   (mi) , mi=1,ncount )
                   read_sat(2) = .TRUE.
@@ -368,6 +406,15 @@ c
                   read (iread, *) ( dummyreal, mi = 1,ncount )
                   if (iout .ne. 0) write (iout, 400) 'pressures'
                   if (iptty .ne. 0) write (iptty, 400) 'pressures'
+               end if
+               if (iriver .ne. 0 .and. wdd1(1:4) .eq. 'air ') then
+                  do i = ncount+1,ncount+npoint_riv
+                     j = iriver_con_node(i-ncount)
+                     if (read_sat(1)) 
+     &                    s(i) = s(iriver_con_node(i-ncount))
+                     if (read_pres(1)) 
+     &                    phi(i) = phi(iriver_con_node(i-ncount))
+		  enddo
                end if
             endif
 
@@ -501,7 +548,9 @@ c
             ncount=neq
             if(wdd1(13:16).eq.'dpdp') ncount=neq+neq
             if(wdd1(17:20).eq.'dual') ncount=neq+neq+neq
-            if (wdd1(1:4).eq.'ngas') then
+            if (wdd1(1:4).eq.'ngas' .or. wdd1(1:4).eq.'wnga') then
+               if(iriver.ne.0 .and. wdd1 .eq. 'ngas') 
+     &              ncount = ncount - npoint_riv
                if (read_temp(1)) then
                   read(iread)  ( t   (mi) , mi=1,ncount )
                   read_temp(2) = .TRUE.
@@ -540,8 +589,23 @@ c
                   if (iout .ne. 0) write (iout, 400) 'gas pressures'
                   if (iptty .ne. 0)write (iptty, 400) 'gas pressures'
                end if
+               if (iriver .ne. 0 .and. wdd1(1:4) .eq. 'ngas') then
+                  do i = ncount+1,ncount+npoint_riv
+                     j = iriver_con_node(i-ncount)
+                     if (read_temp(1)) 
+     &                    t(i) = t(iriver_con_node(i-ncount))
+                     if (read_sat(1)) 
+     &                    s(i) = s(iriver_con_node(i-ncount))
+                     if (read_pres(1)) 
+     &                    phi(i) = phi(iriver_con_node(i-ncount))
+                     if (read_gasp(1)) 
+     &                    pci(i) = pci(iriver_con_node(i-ncount))
+		  enddo
+               end if
 
-            else if(wdd1(1:4).eq.'h20 ') then
+            else if(wdd1(1:4).eq.'h20 ' .or. wdd1(1:4).eq.'nh20') then
+               if(iriver.ne.0 .and. wdd1(1:4) .eq. 'h2o ') 
+     &              ncount = ncount - npoint_riv
                if (read_temp(1)) then
                   read(iread)  ( t   (mi) , mi=1,ncount )
                   read_temp(2) = .TRUE.
@@ -565,7 +629,21 @@ c
                   if (iout .ne. 0) write (iout, 400) 'pressures'
                   if (iptty .ne. 0) write (iptty, 400) 'pressures'
                end if
-            else if(wdd1(1:4).eq.'air ') then
+               if (iriver .ne. 0 .and. wdd1(1:4) .eq. 'h2o ') then
+                  do i = ncount+1,ncount+npoint_riv
+                     j = iriver_con_node(i-ncount)
+                     if (read_temp(1)) 
+     &                    t(i) = t(iriver_con_node(i-ncount))
+                     if (read_sat(1)) 
+     &                    s(i) = s(iriver_con_node(i-ncount))
+                     if (read_pres(1)) 
+     &                    phi(i) = phi(iriver_con_node(i-ncount))
+		  enddo
+               end if
+
+            else if(wdd1(1:4).eq.'air ' .or. wdd1(1:4).eq.'nair') then
+               if(iriver.ne.0 .and. wdd1(1:4) .eq. 'air ') 
+     &              ncount = ncount - npoint_riv
                if (read_sat(1) .and. irdof .ne. 13) then
                   read(iread)  ( s   (mi) , mi=1,ncount )
                   read_sat(2) = .TRUE.
@@ -582,9 +660,20 @@ c
                   if (iout .ne. 0) write (iout, 400) 'pressures'
                   if (iptty .ne. 0) write (iptty, 400) 'pressures'
                end if
+               if (iriver .ne. 0 .and. wdd1(1:4) .eq. 'air ') then
+                  do i = ncount+1,ncount+npoint_riv
+                     j = iriver_con_node(i-ncount)
+                     if (read_sat(1)) 
+     &                    s(i) = s(iriver_con_node(i-ncount))
+                     if (read_pres(1)) 
+     &                    phi(i) = phi(iriver_con_node(i-ncount))
+		  enddo
+               end if
             endif
+
             dumflag = '           '
             read(iread , end = 100) dumflag
+
          else
             rerr = 0
             rewind (iread)

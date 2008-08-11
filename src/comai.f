@@ -475,6 +475,8 @@ c RJP 12/13/06 added nriver below
       integer             nstep_save, nriver, nrlp, nei_in, ns_in
 c ZVD 05/01/07 added form_flag, ishisc, ishiswc
       integer             form_flag, ishisc, ishiswc
+c RJP added for history of carbon mass
+      integer             ishiscm, ishiscfz, ishiscs	 
       integer             imbe_ctr, imbet_ctr
 c
       integer             ich_max,ich_m1,ich_m2,sat_ich

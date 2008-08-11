@@ -393,6 +393,7 @@ C***********************************************************************
       use comsptr, only : sptrak
       use comzone
       use commeth
+      use comco2
       implicit none
 
       integer icall, dummyint, j, iconv_tmp
@@ -554,7 +555,8 @@ c**** complete pest information(if interpolation is used) ****
          endif
       endif
 c mlz is now the size of sx(mlz, j)
-      if (mlz .ne. 0 .and. irun .eq. 1 .and. lda .le. 0) call split(0)
+c      if (mlz .ne. 0 .and. irun .eq. 1 .and. lda .le. 0) call split(0)
+      if (mlz .ne. 0 .and. irun .eq. 1 .and. lda .le. 0) call split(1)
       if (lda .ne. 0.and.irun.eq.1) call storsx
 c gaz 11-09-2001 
       if(lda.le.0.and.imdnode.ne.0.and.irun.eq.1) then
@@ -667,6 +669,12 @@ c
       ncont=nelm(neqp1)
       ldna=ncont-neqp1
       if(irun.eq.1) then
+
+         if(idof_co2.gt.0) then
+            allocate(c_axy(ldna))
+            allocate(c_vxy(ldna))
+         endif
+
          if (idoff .gt. 0) then
             if (idpdp .ne. 0) then
                allocate(a_axy(2*ldna+neq))
@@ -720,6 +728,7 @@ c      set clathrate properties equal to water properties for a test
 c
       call icectr(-2,0)
 
+      call icectrco2(-2,0)
 
 c gaz 11-11-2001 moved before call to add_gdpm
 c     if (icnl .ne. 0)  then
@@ -1121,6 +1130,9 @@ c get cell lengths for wtsi if necessary
       else if(ico2.lt.0.and.ice.ne.0) then
          call icectr(6, 0)
       endif
+      if(icarb.eq.1) then
+         call icectrco2(6,0)
+      endif
 
 c change porosity and permeability if necessary if Gangi model is used
       call porosi(3)
@@ -1132,31 +1144,41 @@ c**** determine initial variable state ****
 c gaz 10-18-2001     call sice (1)
       if(compute_flow .or. iccen .eq. 1) then
          if(ice.eq.0) then
-            call varchk (0, 0)
+            if(icarb.eq.1) then
+               call icectrco2(-1,0)
+               call icectrco2(14,0)
+               call icectrco2(-34,0)
+               call icectrco2(3,0)
+               call icectrco2(-3,0)
+               call icectrco2(-33,0)
+               call icectrco2(-35,0)
+            else
+               call varchk (0, 0)
+            end if
          else
             call icectr (-1,0)
             call icectr (1,0)
 c added check for hydrate line
             call icectr (-6,0)
 c allocate space check properties, dellocate space
-          if(idof_meth.ne.7) then
-            call icectr (-34,0)
-            call icectr (3,0)
-            call icectr (-3,0)
-            call icectr (-33,0)
-            call icectr (-35,0)
+            if(idof_meth.ne.7) then
+               call icectr (-34,0)
+               call icectr (3,0)
+               call icectr (-3,0)
+               call icectr (-33,0)
+               call icectr (-35,0)
 	    else
 	      call icectr (-34,0)
 c     id mobile methane and water
-            call hydrate_equil(2,0)
-            call icectr (3,0)
-            call icectr (-3,0)
-            call icectr (-33,0)
-            call  hydrate_equil(3,0)
-            call icectr (-35,0)
+              call hydrate_equil(2,0)
+              call icectr (3,0)
+              call icectr (-3,0)
+              call icectr (-33,0)
+              call  hydrate_equil(3,0)
+              call icectr (-35,0)
 	      
-	    endif
-         endif
+           endif
+        endif
       else
          if(ico2.lt.0.and.ice.eq.0) then
 c     air water problem
@@ -1226,6 +1248,8 @@ c**** calculate initial mass and energy ****
          if(ice.ne.0) then
 c**** calculate initial mass and energy for component system ****
             call icectr(7,0)
+         elseif(icarb.eq.1) then
+            call icectrco2(7,0)
          endif
          amass = am0
          aener = ame
@@ -1283,6 +1307,10 @@ c**** initialize pflow if needed ****
       do i = 1, n
          if (abs(pflow(i)) .lt. zero_t.or.
      &        pflow(i).eq.-999.)  pflow(i) = pho(i)
+         if (icarb.ne.0) then
+            if(abs(pflowco2(i)) .lt. zero_t.or.
+     &           pflowco2(i).eq.-999.)  pflowco2(i) = phoco2(i)
+         endif
          if(ico2.ge.0.or.ice.ne.0) then
             if (qflux(i) .eq. -999 .and. qflxm(i).gt.0.0)
      &           qflux(i) = to(i)

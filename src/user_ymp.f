@@ -78,6 +78,7 @@ C***********************************************************************
       use comai
       use combi
       use comci
+      use comco2
       use comdi
       use comei
       use comfi
@@ -98,20 +99,21 @@ C***********************************************************************
       integer, allocatable :: idum_b(:)
       integer, allocatable :: izone_awt(:)
       real*8, allocatable :: cons(:,:)
-	real*8, allocatable :: times(:)
+      real*8, allocatable :: times(:)
       real*8 tdum
       real*8 delx, delx1, delx2, dely, dely1, dely2
       real*8 dumx, dumy, dis, dis2, dis_min, discal, discal2
-      real*8 x0, x01, x02, xa, y0, y01, y02, ya, xx, yy, zz 
+      real*8 x0, x01, x02, xa1, y0, y01, y02, ya1, xx, yy, zz 
       real*8 xbmin, xbmax, ybmin, ybmax, xcal, ycal, xmin, ymin
       real*8 x_level_1, x_level_2, y_level_1, y_level_2, y_split
       real*8 x_cutoff_E, x_cutoff_W, y_cutoff_N, y_cutoff_S
-      real*8 xw, xe, ys, yn, deldist, x_center, y_center, radius
+      real*8 xw1, xe, ys, yn, deldist, x_center, y_center, radius
       real*8 head_val, hgt_max, perm_fac, perm_tol, perm_set 
       real*8 recharge_new, recharge_orig
       real*8 sum_volj, sum_volj100, tempa, temp_grad
       real*8 total_recharge, total_recharge_in, total_recharge1
-      real*8 total_recharge2, tol, fluxd, vol, frac
+      real*8 total_recharge2, tol, fluxd, vol, frac, shut_time
+      real*8 rzw, sww, scc
       real*8, allocatable :: sk_save(:)
       real*8, allocatable :: sk_save1(:)
       real*8, allocatable :: sk_save2(:)
@@ -125,6 +127,41 @@ C***********************************************************************
       save ntimes, times, cons, counter, dumcyc
 
       select case (k)
+c RJP added for turning off CO2 injection wells
+      case (999)
+         if(readflag.NE.1) then
+            incf = open_file('co2_inj.txt','unknown')
+            read(incf,*) shut_time
+            close (incf)
+            readflag = 1
+         end if	
+         if(days.ge.shut_time*365.25) then
+            do i = 1, neq
+               if(skco2(i).lt.0.d0) skco2(i) = 0
+            enddo
+         endif
+c RJP added 10/17/07 for changing the saturations for goldsim
+      case(998)
+         if(readflag.NE.1) then
+            incf = open_file('time_dep_sat.txt','unknown')
+            read(incf,*) rzw,sww,scc
+            close(incf)
+            readflag = 1
+            fow(1) = sww
+            fol(1) = scc
+            fw(1) = sww
+            fl(1) = scc
+            fog(1) = 1.d0-fow(1)-fol(1)
+            fg(1) = 1.d0-fw(1)-fl(1)
+            if(rzw.ne.0) then
+               fow(2) = sww
+               fol(2) = scc
+               fw(2) = sww
+               fl(2) = scc
+               fog(2) = 1.d0-fow(2)-fol(2)
+               fg(2) = 1.d0-fw(2)-fl(2)
+            endif
+         endif
 c      PHS  10/05/05   Adding user option 666 to allow D. Neeper to 
 c-----------------------------------------------------------------------
 c      test the analytical solution
@@ -172,7 +209,7 @@ c
             read (ifile1,'(a80)') dum_user
 !            write(*,*) 'Enter coordinates for model boundaries, ',
 !     &           'xw,xe,ys,yn'
-            read(ifile1,*) xw,xe,ys,yn
+            read(ifile1,*) xw1,xe,ys,yn
 !            write(*,*) 'Enter distance criteria for boundary search'
             read(ifile1,*) deldist
             close (ifile1)
@@ -188,7 +225,7 @@ c
             do i=1,10000000
 c     top boundary side node with new coords reflecting new model
                read(ifile2,*, end = 987) x0,y0, dumx
-               if(abs(x0-xw).lt.deldist) then 
+               if(abs(x0-xw1).lt.deldist) then 
                   i1 = i1 + 1
                   write(ifile1,'(3g18.9)') x0,y0,dumx
                else if(abs(x0-xe).lt.deldist) then
@@ -859,9 +896,9 @@ c
             else if(mod_type.eq.3) then
 !               write(*,*) 
 !     &              ' ENTER coordinates for box boundaries xw,xe,ys,yn'
-               read(ifile1,*) xw,xe,ys,yn
+               read(ifile1,*) xw1,xe,ys,yn
                write(ifile2,'(a26,4f12.3)') 'zonn   # xw, xe, ys, yn: ',
-     &             xw, xe, ys, yn 
+     &             xw1, xe, ys, yn 
             endif
             close (ifile1)
             write(*,*) ' calculating volume percentages....'
@@ -899,7 +936,7 @@ c
                else if(mod_type.eq.3) then
                   do i=1,neq
                      if(irlp(i).eq.j) then 
-                        if (cord(i,1) .ge. xw .and. cord(i,1) .le. xe
+                        if (cord(i,1) .ge. xw1 .and. cord(i,1) .le. xe
      &                       .and. cord(i,2) .ge. ys .and. cord(i,2)
      &                       .le. yn) then
                            ii = ii+1
@@ -1002,33 +1039,33 @@ c     convert C/km/ to C/m
      &           'pres           #with temperature gradient'
             write(*,*) 'setting temperatures.....'
             x0 = 1.d20
-            xa = -1.d20
+            xa1 = -1.d20
             y0 = 1.d20
-            ya = -1.d20
+            ya1 = -1.d20
             do i=1,n0
                x0=min(x0,cord(i,1))
-               xa=max(xa,cord(i,1))
+               xa1=max(xa1,cord(i,1))
                y0=min(y0,cord(i,2))
-               ya=max(ya,cord(i,2))
+               ya1=max(ya1,cord(i,2))
             enddo
-            ix = int((xa - x0)/delx) + 1
-            jx = int((ya - y0)/dely) + 1
+            ix = int((xa1 - x0)/delx) + 1
+            jx = int((ya1 - y0)/dely) + 1
             allocate(temp2(ix,jx))
             temp2=0.
             do k=1,nawt
                kb=izone_awt(k)
-               xa=cord(kb,1)
-               ya=cord(kb,2)
-               ix= int((xa-x0)/delx) + 1
-               jx= int((ya-y0)/dely) + 1
+               xa1=cord(kb,1)
+               ya1=cord(kb,2)
+               ix= int((xa1-x0)/delx) + 1
+               jx= int((ya1-y0)/dely) + 1
                temp2(ix,jx) = cord(kb,3)
             enddo
             
             do kb=1,n0
-               xa=cord(kb,1)
-               ya=cord(kb,2)
-               ix= int((xa-x0)/delx) + 1
-               jx= int((ya-y0)/dely) + 1
+               xa1=cord(kb,1)
+               ya1=cord(kb,2)
+               ix= int((xa1-x0)/delx) + 1
+               jx= int((ya1-y0)/dely) + 1
                hgt_max=temp2(ix,jx)-cord(kb,3)
                temp1(kb) = tempa+temp_grad*hgt_max
             enddo

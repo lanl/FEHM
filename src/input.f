@@ -484,6 +484,8 @@ C***********************************************************************
       use comsplitts
       use comchem
       use comwt
+      use comco2
+      use comriv
       implicit none
 
       integer i, izone, inode
@@ -906,6 +908,7 @@ c**** read in hydraulic conductivity**
             call inhyco
          end if
  321     continue
+
       else if (macro .eq. 'ice ' .or. macro .eq. 'meth') then
 c**** read in ice or hydrate information ****
          ice = 1
@@ -913,6 +916,19 @@ c also set to isothermal air-water to use some code structure
          ico2 = -2
 c gaz 10-15-2001
          call icectr(0, 0)
+
+c RJP 04/08/07 added CO2 keywords
+      else if (macro .eq. 'carb') then
+c read problem type
+c iprtype = 1, water only problem (2 DOFs)
+c iprtype = 2, co2 only problem (2 DOFs)
+c iprtype = 3, CO2-water problem, no solubility (3 DOFs)
+c iprtype = 4, co2-water problem, w/ soubility (4 DOFs)
+c iprtype = 5, co2-water-air w/ solubility (5 DOFs)
+
+         read(inpt,*) iprtype
+         icarb = 1
+         call icectrco2(0,0)
 
       else if (macro .eq. 'imex') then
 c**** implicit-explicit solution ****
@@ -1301,17 +1317,7 @@ c**** output for parameter estimation routine PEST ****
       else if (macro .eq. 'rive'.or. macro .eq. 'well') then
 c RJP 12/13/06 modification to read wellbore/river specific data
 c**** river and wellbore model input ****
-c now read in incood 
-c         jj = 0
-c 221     continue
-c         read (inpt, '(a80)') wdd1
-c         do i = 1,80
-c            if(wdd1(i:i).ne.' ') go to 221
-c         enddo
-c         jj = jj +1
-c         if(jj.le.0) go to 221
 
-c         nriver = 1
          call river_ctr(0)
          call river_ctr(1)
          call river_ctr(5)

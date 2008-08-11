@@ -51,7 +51,8 @@
       use comdti
       use comai
       use comsplitts
-      use com_part 
+      use com_part
+      use comco2
       implicit none
 
       integer iad_min, iad_ck
@@ -153,6 +154,11 @@ c     single porosity
 c     dpdp not enabled
 c     
                endif
+            endif
+
+c     RJP 04/10/07 added following make sure works.
+            if(icarb.eq.1) then
+               call icectrco2(4,0)
             endif
 
             if(ico2.eq.0.and.ice.eq.0) then

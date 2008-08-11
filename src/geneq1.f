@@ -172,6 +172,7 @@ C***********************************************************************
       use combi
       use comdti
       use comai
+      use comriv
       implicit none
 
       logical bit
@@ -325,6 +326,15 @@ c           pxy=sx2c*perml(1)+sx3c*perml(2)+sxzc*perml(3)
             delx2=(cord(kz,1)-cord(iz,1))**2
             dely2=(cord(kz,2)-cord(iz,2))**2
             delz2=(cord(kz,3)-cord(iz,3))**2
+            if(iriver.ne.0) then
+               if(delz2.eq.0.d0.and.kb.lt.(neq_primary-npoint_riv)) then
+                  if((mdnodes_riv(i).ne.0).or.
+     &                 (mdnodes_riv(kb).ne.0)) then
+                     delx2=mod_dis(iw-nic_old,1)**2
+                     dely2=mod_dis(iw-nic_old,2)**2
+                  endif
+               endif
+            endif
             dis2=delx2+dely2+delz2
             if(dis2.gt.dis_tol.and.iwd.gt.0) then
                pxy=sx2c*dis2/(delx2/perml(1)+

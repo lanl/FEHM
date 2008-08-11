@@ -252,6 +252,7 @@ c
       use combi
       use comci
       use comdi
+      use comsplitts, only : dtot_next
       use comwt
 
       implicit none
@@ -673,19 +674,23 @@ c gaz steady state management 10-30-04
                         vtotw(i)=0.0d00
                      endif
                   endif
+c zvd 16-Jul08, all weighting will use vtotw for now
                   if(iqenth.ne.0) then
                      if(sourcee_type(i).lt.0) then
-                        vtote(i)=0.0d00
+                        vtotw(i)=0.0d00
+c                        vtote(i)=0.0d00
                      endif
                   endif
                   if(iqa.ne.0) then
                      if(sourcea_type(i).lt.0) then
-                        vtota(i)=0.0d00
+                        vtotw(i)=0.0d00
+c                        vtota(i)=0.0d00
                      endif
                   endif
                   if(ifd.ne.0) then
                      if(drainar_type(i).lt.0) then
-                        atotd(i)=0.0d00
+                        vtotw(i)=0.0d00
+c                        atotd(i)=0.0d00
                      endif
                   endif
 c
@@ -695,6 +700,7 @@ c
                      day=timestep(abs(time_type(i)),i)
                      daynew=day
                      days=days0+day
+                     dtot_next = 0.0
                   endif
                endif
             enddo
@@ -1014,7 +1020,7 @@ C End Volume/distance weighted cases
                   endif
                   if(iqa.ne.0) then
                      if(sourcea_type(imodel).lt.0) then
-                        vfac = sf*vol_nd(i)/vtota(imodel)
+c                        vfac = sf*vol_nd(i)/vtota(imodel)
                         qa(i)=sourcea(abs(time_type(imodel)),imodel)*
      &                       vfac
                      endif
@@ -1185,8 +1191,8 @@ C
                endif
               endif
             enddo
-            write(iout,*)' '
-            write(iptty,*)' '
+            if(iout.ne.0) write(iout,*)' '
+            if(iptty.ne.0) write(iptty,*)' '
             do i=1,mmodel
               if(time_interpolate(i) .ne. 0)then
                    time_factor2 = 
@@ -1203,12 +1209,12 @@ C
      *                    ' f2=',time_factor2
                 endif
                if(iptty.ne.0) then
-                write(iptty,20)' ti_linear t=',days,
-     *                    ' model #=',i,
-     *                    ' t1=',time(abs(time_type(i))  ,i),
-     *                    ' t2=',time(abs(time_type(i))+1,i),
-     *                    ' f1=',time_factor1,
-     *                    ' f2=',time_factor2
+                  write(iptty,20)' ti_linear t=',days,
+     *                 ' model #=',i,
+     *                 ' t1=',time(abs(time_type(i))  ,i),
+     *                 ' t2=',time(abs(time_type(i))+1,i),
+     *                 ' f1=',time_factor1,
+     *                 ' f2=',time_factor2
    20      format(a,g15.10,a,i4,a,g10.4,a,g10.4,a,g10.4,a,g10.4)
                 endif
               endif

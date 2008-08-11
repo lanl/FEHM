@@ -308,6 +308,8 @@ C***********************************************************************
       use comsplitts
 c RJP 12/14/06 added following
       use comriv
+c RJP 04/17/06 added following
+      use comco2
       use davidi
 
       implicit none
@@ -347,6 +349,7 @@ c**** read startup parameters ****
       iccen = 0
       ice = 0
       ico2 = 0
+      icarb = 0
       icgts = 0
       idoff = 1
       ihead = 0
@@ -369,6 +372,7 @@ c**** read startup parameters ****
       ncplx = 0
       numrxn = 0
       numvcon = 0
+      nriver = 0
       rlp_flag = 0
       rxn_flag = 0
       if(allocated(izone_free_nodes)) izone_free_nodes = 0
@@ -506,6 +510,12 @@ c     check for read from other file
                read(locunitnum,*) idumm,(adumm,ja=1,6)
             elseif(idumm.eq.15) then
                read(locunitnum,*) idumm,(adumm,ja=1,6)
+            elseif(idumm.eq.16) then
+               read(locunitnum,*) idumm,(adumm,ja=1,14)
+            elseif(idumm.eq.17) then
+               read(locunitnum,*) idumm,(adumm,ja=1,14)
+            elseif(idumm.eq.18) then
+               read(locunitnum,*) idumm,(adumm,ja=1,16)
             elseif(idumm.eq.21) then
                read(locunitnum,*) idumm,(adumm,ja=1,6)
             end if
@@ -654,6 +664,10 @@ c     need to know if air-water  is envoked
            
       else if (macro .eq. 'ice ' .or. macro .eq. 'meth') then
          ice = 1
+         
+c RJP added carbon flag
+      else if (macro .eq. 'carb') then
+         icarb = 1
          
       else if (macro  .eq.  'boun')  then
 c     need to know if boussinesq approx is envoked

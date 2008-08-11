@@ -44,6 +44,7 @@
 !***********************************************************************
 
       use combi, only : sx1
+      use comco2
       use comdi, only : head, t, phi, qh, pnx, ifree, rlxyf
       use comwt, only : rlptol, sattol, wt_flag, wt_elev, head_id
       use comzone
@@ -108,6 +109,16 @@ c gaz 7-22-05
                   avg_values(num_zone,eflag) = sx1(i)*pnx(i) * qh(i) + 
      &                 avg_values(num_zone,eflag)
                end if
+c     RJP added below for outputing total carbon mass in different zones
+               if (carbflag.ne.0) then
+                  avg_values(num_zone,carbflag) = 
+     &                 avg_values(num_zone,carbflag)+denco2h(i)*sx1(i)
+               endif
+c     RJP 08/09/07 added below
+               if (carbflag2.ne.0) then
+                  avg_values(num_zone,carbflag2) = 
+     &                 avg_values(num_zone,carbflag2)+fl(i)
+               endif
                node_ptr =>node_ptr%nnp
                count = count + 1
                if (count .eq. k) exit
@@ -117,26 +128,28 @@ c gaz 7-22-05
       end do outer
       do i = 1, num_zone
          do j = 1, ozflag
-            if (zone_volume(i) .eq. 0.) then
+            if(j.ne.carbflag) then
+               if (zone_volume(i) .eq. 0.) then
 ! No nodes in zone
-               avg_values(i,j) = -9.99e6
-            else
-               if (j .ne. hflag ) then
-! parameter being averaged is not head
-                  avg_values(i,j) = avg_values(i,j)/zone_volume(i)
+                  avg_values(i,j) = -9.99e6
                else
-! head is being averaged
-                  if (zv(i) .ne. 0.) then
-                     avg_values(i,j) = avg_values(i,j)/zv(i)
+                  if (j .ne. hflag ) then
+! parameter being averaged is not head
+                     avg_values(i,j) = avg_values(i,j)/zone_volume(i)
                   else
-                     ij = -1*zn(i)
-                     if (wt_flag .ne. 0 .and. ij .ne. 0) then
-! Find water_table in column
-                        call wtsictr(ij)
-                        avg_values(i,j) = -1.*wt_elev
+! head is being averaged
+                     if (zv(i) .ne. 0.) then
+                        avg_values(i,j) = avg_values(i,j)/zv(i)
                      else
+                        ij = -1*zn(i)
+                        if (wt_flag .ne. 0 .and. ij .ne. 0) then
+! Find water_table in column
+                           call wtsictr(ij)
+                           avg_values(i,j) = -1.*wt_elev
+                        else
 ! All nodes in zone dry
-                        avg_values(i,j) = -1.11e6
+                           avg_values(i,j) = -1.11e6
+                        end if
                      end if
                   end if
                end if

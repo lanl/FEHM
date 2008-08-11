@@ -181,7 +181,8 @@ c      write_avs_node_mat, write_avs_ucd_header
       use combi
       use comchem
       use comdi
-      use comdti, only : n0 
+      use comdti, only : n0
+      use comriv, only : iriver
       use comrxni
       use comxi
       use commeth
@@ -312,7 +313,7 @@ C     the length of each component.
      >     +iotemperature+iosaturation+iohead+ioporosity
      >     +iosource+(ioliquid+iovapor)*iodensity
      >     +iopermeability*3+iozid+(ioliquid+iovapor)*ioflx
-     >     +iocapillary
+     >     +iocapillary+ioco2*2
       nscalar_dual    = nscalar * iodual
       nvector         = (ioliquid+iovapor)*iovelocity
       nvector_dual    = nvector * iodual
@@ -621,7 +622,11 @@ C zvd 10/23/2007 remove altc, days from call, they are in comai
 
               if(iohyd.eq.0) then
                  call write_avs_node_s(icall, neq_primary, nscalar, lu,
-     &                ifdual)
+     &                ifdual, 0)
+c     RJP 04/30/2007 added for wellbore nodes below
+                 if (iriver .ne. 0) 
+     &                call write_avs_node_s(icall, neq_primary, nscalar,
+     &                lu, ifdual, iriver)
               else
                  call namefile2(icall,lu,ioformat,scalar_tail,iaroot)
                  call write_avs_node_h(
@@ -683,7 +688,12 @@ C zvd 10/23/2007 remove altc, days from call, they are in comai
 
                  if (iohyd.eq.0) then 
                     call write_avs_node_s(icall, neq_primary, nscalar,
-     &                   lu, ifdual)
+     &                   lu, ifdual, 0)
+c     RJP 04/30/2007 added for wellbore nodes below
+                    if (iriver .ne. 0) 
+     &                   call write_avs_node_s(icall, neq_primary, 
+     &                   nscalar, lu, ifdual, iriver)
+
                  else
                     call namefile2(icall,lu,ioformat,
      &                duals_tail,iaroot)

@@ -152,6 +152,7 @@ C***********************************************************************
       use avsio
       use comai, only : altc, ihead, ierr, iptty, icnl
       use combi, only : izonef
+      use comco2, only : icarb
       use comdi, only : nsurf, izone_surf, izone_surf_nodes, ifree
       use comdti, only : n0
       use davidi, only : irdof
@@ -191,6 +192,7 @@ c     assign defaults
       iopermeability = 0
       iozone = 0
       iowt = 0
+      ioco2 = 0
       iokd = 0
       ioflx = 0
       iozid = 0
@@ -343,7 +345,13 @@ c     Loop over each zone for determining izone_surf array
 c     output capillary pressusre
                iocapillary = 1
                if (iptty .ne. 0) 
-     &              write(iptty, *) ' iocapillary ', iocapillary
+     &              write(iptty, *) ' iocapillary     ', iocapillary
+            else if((chdum(1:3) .eq. 'co2').or.(chdum(1:3) .eq. 'CO2'))
+     &              then
+c     output co2 related saturations
+               ioco2 = 1
+               if (iptty .ne. 0) 
+     &              write(iptty, *) ' ioco2           ', ioco2
             else
 c     output concentration, keyword: concentration 
                ioconcentration = 1
@@ -567,6 +575,20 @@ c     illegal character found
          end if
       end if
 
+      if (ioco2 .ne. 0 .and. icarb .eq. 0) then
+         write(ierr, 100)
+         write(ierr, 110) 'co2 defined for non-co2 problem'
+         write(ierr, 120) 'co2'
+         write(ierr, 100)
+         if (iptty .ne. 0) then
+            write(iptty, 100)
+            write(iptty, 110) 'co2 defined for non-co2 problem'
+            write(iptty, 120) 'co2'
+            write(iptty, 100)
+         end if
+         ioco2 = 0   
+      end if
+
       if (ihead .ne. 1 .and. iohead .eq. 1 ) then
          write(ierr, 100)
          write(ierr, 110) 'head defined for non-head problem'
@@ -653,6 +675,7 @@ c     illegal character found
      .     , /, ' (pe)rmeability  or (PE)RMEABILITY '
      .     , /, ' (x)yz           or (X)YZ  '
      .     , /, ' (c)oncentration or (C)ONCENTRATION  '
+     .     , /, ' (co2)           or (CO2) '
      .     , /, ' (hy)drate       or (HY)DRATE  '
      .     , /, ' (fw)ater        or (FW)ATER  '
      .     , /, ' (fh)ydrate      or (FH)YDRATE  '

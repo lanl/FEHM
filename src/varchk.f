@@ -393,14 +393,15 @@ CPS END varchk
 CPS 
 C**********************************************************************
 
-      use comdti
       use comai
-	use combi
+      use combi
       use comci
+      use comco2
       use comdi
+      use comdti
       use comei
-      use comgi
       use comfi
+      use comgi
       use comii
       use davidi
       implicit none
@@ -660,9 +661,12 @@ c
 c     determine phase state for low-temperature solid-liquid-gas system
 c
             call icectr(1,ndummy)
+c RJP 04/10/07 modified for CO2
+         else if(icarb.eq.1) then
+            call icectrco2(1,ndummy)
          endif
 c end block for idof.ne.1
-        endif
+      endif
 c
 c     call eos routines
 c
@@ -674,7 +678,16 @@ c
          if(ico2.gt.0) then
             call thrmwc(ndummy)
          else if(ico2.eq.0) then
-            call thermw(ndummy)
+c RJP 04/10/07
+            if(icarb.eq.1) then
+               call icectrco2(-34,ndummy)
+c              call icectrco2(3,ndummy)
+c              call icectrco2(-3,ndummy)
+               call icectrco2(33,ndummy)
+               call icectrco2(-35,ndummy)
+            else
+               call thermw(ndummy)
+            end if
          else if(ico2.lt.0.and.ice.eq.0)then
             call airctr(3,ndummy)
          else if(ico2.lt.0.and.ice.ne.0)then
@@ -758,6 +771,9 @@ c
 c     make corrections for solid-liquid-gas mixture
 c     
             call icectr(2,ndummy)
+c RJP 04/10/07 added CO2 part
+         else if(icarb.eq.1) then
+            call icectrco2(2,ndummy)
          endif
 c
       endif

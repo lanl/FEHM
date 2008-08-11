@@ -256,9 +256,11 @@ C***********************************************************************
       numfil(1) = iocntl 
 
       do i = 2,nmmax-1
-         nmfil(i) = blank
+         nmfil(i) = ''
+c         nmfil(i) = blank
       end do
-      root_name = blank
+      root_name = ''
+c      root_name = blank
       read (iocntl, '(a6)') dummy
       backspace (iocntl)
       if (dummy(5:5) .eq. ":" .or. dummy(6:6) .eq. ":") then
@@ -327,6 +329,8 @@ C***********************************************************************
                nmfil(27) = filename
             case ('nopf')
                nmfil(28) = filename
+            case ('co2i')
+               nmfil(29) = filename
             case default
                write (ierr, 2000) nmfil(1), dummy
 ! Use unit 6 here as iptty not yet defined
@@ -350,7 +354,7 @@ C***********************************************************************
 
             numfil(i) = nufilb(i)
             if (cstats(i) .eq. 'old    ') then
-               inquire  (file = nmfil(i), exist = ex)
+               inquire  (file = trim(nmfil(i)), exist = ex)
                if (.not. ex) then
                   if (iowork(i) .eq. 'isstor') then
                      cstats(i) = 'new    '
@@ -370,7 +374,7 @@ C***********************************************************************
                   inquire (numfil(i), opened = opnd)
                   if (.not. opnd) then
                      open (numfil(i), file = nmfil(i), status=cstats(i),
-     *                    form =  cform (i), err = 12)
+     *                    form =  cform(i), err = 12)
                      if (cform(i) .eq. 'formatted') then
                         read (numfil(i), '(a4)', err=8, iostat=istat) 
      &                       macro
@@ -381,9 +385,9 @@ C***********************************************************************
  8                      if (istat .ne. 0) then
 ! Check to see if file is unformatted
                            close (numfil(i))
-                           cform (i) = 'unformatted'
+                           cform(i) = 'unformatted'
                            open (numfil(i), file=nmfil(i), 
-     *                          status = cstats(i), form = cform (i), 
+     *                          status = cstats(i), form = cform(i), 
      *                          err = 12)
                            read (numfil(i), err=12) macro
                            read (numfil(i), err=12) itest
@@ -394,9 +398,9 @@ C***********************************************************************
  10                     if (istat .ne. 0) then
 ! Check to see if file is formatted
                            close (numfil(i))
-                           cform (i) = 'formatted'
+                           cform(i) = 'formatted'
                            open (numfil(i), file=nmfil(i), 
-     *                          status = cstats(i), form = cform (i), 
+     *                          status = cstats(i), form = cform(i), 
      *                          err = 12)
                            read (numfil(i), '(a4)', err=12, 
      &                       iostat=istat) macro
@@ -408,7 +412,7 @@ C***********************************************************************
                   end if
                else
                  open (numfil(i), file = nmfil(i), status = cstats(i),
-     *                 form = cform (i), err = 12)
+     *                 form = cform(i), err = 12)
                end if
                goto 23
  12            isw(i)=2

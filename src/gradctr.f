@@ -48,10 +48,11 @@ CD4   FEHM Application Version 2.20
 CD4
 **********************************************************************
 
-      use comdti
       use comai
       use combi
+      use comco2
       use comdi
+      use comdti
       use comfi
       use commeth
       implicit none
@@ -139,6 +140,11 @@ c
                         pflowmeth(inode)=var0(izone) + grad1(izone)*dist
                      else if(igradf(izone).eq.8) then
                         qflux(inode)=var0(izone) + grad1(izone)*dist
+c RJP 04/10/07 added the following part for CO2
+                     else if(igradf(izone).eq.9) then
+                        phoco2(inode)=var0(izone) + grad1(izone)*dist
+                     else if(igradf(izone).eq.10) then
+                        pflowco2(inode)=var0(izone) + grad1(izone)*dist
                      endif
                   endif
                enddo
@@ -159,6 +165,9 @@ c
                         pflowmeth(inode)=var0(izone) + grad1(izone)*dist
                      else if(igradf(izone).eq.8) then
                         qflux(inode)=var0(izone) + grad1(izone)*dist
+c RJP 04/10/07 added following for CO2
+                     else if(igradf(izone).eq.10) then
+                        pflowco2(inode)=var0(izone) + grad1(izone)*dist
                      endif
                   endif
                enddo

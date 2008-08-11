@@ -2,7 +2,8 @@
      2     nscalar,
      3     lu,
      4     ifdual, 
-     5     idz)
+     5     idz,
+     6     iriver2)
 !***********************************************************************
 !  Copyright, 2006,  The  Regents of the University of California.
 !  This program was prepared by the Regents of the University of 
@@ -61,9 +62,9 @@ C************************************************************************
       implicit none
 
       integer maxscalar
-      parameter (maxscalar = 17)
+      parameter (maxscalar = 21)
       integer neq,nscalar,lu,ifdual
-      integer i,j,iolp,iovp,nout,icall,idz
+      integer i,j,iolp,iovp,nout,icall,idz,iriver2
       integer size_head, size_pcp, istart, iend, ic1, ic2, length
       character*5 dual_char
       character*14 tailstring
@@ -92,28 +93,40 @@ C************************************************************************
      &     units(18) /'(kg/s)'/,
      &     units(19) /'(kg/s)'/,
      &     units(20) /'(MPa)'/,
+     &     units(21) /'(no dim)'/,
+     &     units(22) /'(no dim)'/,
+     &     units(23) /'(no dim)'/,
+     &     units(24) /'(no dim)'/,
      &     units(14) /'(m)'/,
      &     units(15) /'(m)'/,
      &     units(16) /'(m)'/
 
-C BEGIN
+C     BEGIN
       size_head = size(head)
-C   nscalar=(iovapor+ioliquid)*iopressure+iosaturation+iotemperature
-C   calculation done in avs_io()
+C     nscalar=(iovapor+ioliquid)*iopressure+iosaturation+iotemperature
+C     calculation done in avs_io()
       nout = nscalar + iocord
       if(ifdual .ne. 0)then
          dual_char = 'Dual '
-         tailstring = '_sca_dual_node'
+         if (iriver2 .eq. 0) then
+            tailstring = '_sca_dual_node'
+         else
+            tailstring = '_wel_dual_node'
+         end if
       else
          dual_char = ''
-         tailstring = '_sca_node'
+         if (iriver2 .eq. 0) then
+            tailstring = '_sca_node'
+         else
+            tailstring = '_wel_node'
+         end if
       endif
 
       call namefile2(icall,lu,ioformat,tailstring,idz)
 
-! Header is only written to the first tecplot file
+c     Header is only written to the first tecplot file
       if (icall .gt. 1 .and. altc(1:3) .eq. 'tec') return
- 
+      
       title( 1) = trim(dual_char) // 'Liquid Pressure (MPa)'
       title( 2) = trim(dual_char) // 'Vapor Pressure (MPa)'
       title( 3) = trim(dual_char) // 'Temperature (deg C)'
@@ -138,12 +151,16 @@ C   calculation done in avs_io()
       end if
       title(19) = trim(dual_char) // 'Vapor Flux (kg/s)'
       title(20) = trim(dual_char) // 'Capillary Pressure (MPa)'
+      title(21) = trim(dual_char) // 'Water Fraction'
+      title(22) = trim(dual_char) //'Super-Critical/Liquid CO2 Fraction'
+      title(23) = trim(dual_char) // 'Gaseous CO2 Fraction'
+      title(24) = trim(dual_char) // 'CO2 Phase State'
       title(14) = 'X coordinate (m)'
       title(15) = 'Y coordinate (m)'
-      title(16) = 'Z coordinate (m)'         
-         
+      title(16) = 'Z coordinate (m)'
+      
       if(altc(1:3).eq.'avs' .and. altc(4:4) .ne. 'x') then
-C---Max number of scalars is 9 + 3 coordinates
+C---  Max number of scalars is 9 + 3 coordinates
          string = ''
          write (string, '(i2.2)') nout
          ic1 = 3
@@ -158,15 +175,15 @@ C---Max number of scalars is 9 + 3 coordinates
 
          string = ''
          if (iocord .ne. 0) then
-! Write X coordinate
+c     Write X coordinate
             if (icnl .ne. 3 .and. icnl .ne. 6) 
      &           write(lu,200) trim(title(14)), trim(units(14))
-! Write Y coordinate
+c     Write Y coordinate
             if (icnl .ne. 2 .and. icnl .ne. 5) 
-     &            write(lu,200) trim(title(15)), trim(units(15))
-! Write Z coordinate
+     &           write(lu,200) trim(title(15)), trim(units(15))
+c     Write Z coordinate
             if (icnl .ne. 1 .and. icnl .ne. 4) 
-     &            write(lu,200) trim(title(16)), trim(units(16))
+     &           write(lu,200) trim(title(16)), trim(units(16))
          end if
          if (iozid .eq. 1) then
             write(lu,200) trim(title(17)), trim(units(17))
@@ -188,6 +205,12 @@ C---Max number of scalars is 9 + 3 coordinates
          end if
          if (iosaturation .eq. 1) then
             write(lu,200) trim(title(4)), trim(units(4))
+         end if
+         if (ioco2 .eq. 1) then
+            write(lu,200) trim(title(21)), trim(units(21)) 
+            write(lu,200) trim(title(22)), trim(units(22)) 
+            write(lu,200) trim(title(23)), trim(units(23)) 
+            write(lu,200) trim(title(24)), trim(units(24)) 
          end if
          if (iohead .eq. 1 .and. size_head .ne. 1) then
             write(lu,200) trim(title(5)), trim(units(5))
@@ -212,12 +235,12 @@ C---Max number of scalars is 9 + 3 coordinates
          if (ioflx .eq. 1 .and. ioliquid .eq. 1) then
             write(lu,200) trim(title(18)), trim(units(18))
          end if
-          if (ioflx .eq. 1 .and. iovapor .eq. 1) then
+         if (ioflx .eq. 1 .and. iovapor .eq. 1) then
             write(lu,200) trim(title(19)), trim(units(19))
          end if         
          
       else
-C--altc is 'avsx', 'tec', 'sur'
+C--   altc is 'avsx', 'tec', 'sur'
          tstring = ''
          if(altc(1:4) .eq. 'avsx') then
             write (formstring, 100) ' : '
@@ -233,21 +256,21 @@ C--altc is 'avsx', 'tec', 'sur'
          ic1 = 1
          ic2 = len_trim(tstring2)
          if (iocord .ne. 0) then
-! Write X coordinate
+c     Write X coordinate
             if (icnl .ne. 3 .and. icnl .ne. 6) then
                write(tstring,formstring) trim(title(14))
                tstring2 = tstring2(ic1:ic2) // tstring
                length = len_trim(tstring)
                ic2 = ic2 + length
             end if
-! Write Y coordinate
+c     Write Y coordinate
             if (icnl .ne. 2 .and. icnl .ne. 5) then
                write(tstring,formstring) trim(title(15))
                tstring2 = tstring2(ic1:ic2) // tstring
                length = len_trim(tstring)
                ic2 = ic2 + length
             end if
-! Write Z coordinate
+c     Write Z coordinate
             if (icnl .ne. 1 .and. icnl .ne. 4) then
                write(tstring,formstring) trim(title(16))
                tstring2 = tstring2(ic1:ic2) // tstring
@@ -303,6 +326,24 @@ C--altc is 'avsx', 'tec', 'sur'
             length = len_trim(tstring)
             ic2 = ic2 + length
          end if
+         if (ioco2 .eq. 1) then
+            write(tstring,formstring) trim(title(21))
+            tstring2 = tstring2(ic1:ic2) // tstring
+            length = len_trim(tstring)
+            ic2 = ic2 + length
+            write(tstring,formstring) trim(title(22))
+            tstring2 = tstring2(ic1:ic2) // tstring
+            length = len_trim(tstring)
+            ic2 = ic2 + length
+            write(tstring,formstring) trim(title(23))
+            tstring2 = tstring2(ic1:ic2) // tstring
+            length = len_trim(tstring)
+            ic2 = ic2 + length
+            write(tstring,formstring) trim(title(24))
+            tstring2 = tstring2(ic1:ic2) // tstring
+            length = len_trim(tstring)
+            ic2 = ic2 + length
+         end if
          if (iohead .eq. 1 .and. size_head .ne. 1) then
             write(tstring,formstring) trim(title(5))
             tstring2 = tstring2(ic1:ic2) // tstring
@@ -352,13 +393,13 @@ C--altc is 'avsx', 'tec', 'sur'
             tstring2 = tstring2(ic1:ic2) // tstring
             length = len_trim(tstring)
             ic2 = ic2 + length
-          end if
-          if (ioflx .eq. 1 .and. iovapor .eq. 1) then
+         end if
+         if (ioflx .eq. 1 .and. iovapor .eq. 1) then
             write(tstring,formstring) trim(title(19))
             tstring2 = tstring2(ic1:ic2) // tstring
             length = len_trim(tstring)
             ic2 = ic2 + length
-        end if         
+         end if
          if (altc(1:3) .eq. 'tec') then
             write(lu, 400) verno, jdate, jtime, trim(wdd)
          end if

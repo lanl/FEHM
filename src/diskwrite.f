@@ -140,6 +140,8 @@
       use comii
       use compart
       use comxi
+      use comco2
+      use comriv
       use davidi
       implicit none
 
@@ -149,7 +151,8 @@
       integer jx,mi,ncount,nc,nc1,nc2,nc3,nd1,nd2,nd3,j,nx,ny,ii,i
       logical log_flag
 
-      if (header_flag .eq. 'new') then
+      if (header_flag .eq. 'new' .and. iriver .eq. 0) then
+! Force old style output if wellbore macro is invoked for now
          call diskwrite_new
          return
       end if
@@ -166,7 +169,15 @@
          call icectr (-20,0)
          return
       endif
-c
+
+      if(icarb.eq.1) then
+         write(isave, 6000)  verno, jdate, jtime, wdd
+         write(isave ,*)  days
+         call icectrco2 (-20,0)
+         return
+      endif
+
+cc
 c if necessary, correct for head increment before saving
 c only converted here for 'write' density not denfined on
 c read portion 
@@ -194,9 +205,15 @@ c      endif
  6000    format(a30, 3x, a11, 3x, a8, /, a80)
          write(isave ,*)  days
 c     write descriptors
-         if (ico2.gt.0) write(isave,'(a4)') 'ngas'
-         if (ico2.lt.0) write(isave,'(a4)') 'air '
-         if (ico2.eq.0) write(isave,'(a4)') 'h20 '
+         if (iriver .ne. 0) then
+            if (ico2.gt.0) write(isave,'(a4)') 'wnga'
+            if (ico2.lt.0) write(isave,'(a4)') 'wair'
+            if (ico2.eq.0) write(isave,'(a4)') 'wh20'
+         else
+            if (ico2.gt.0) write(isave,'(a4)') 'ngas'
+            if (ico2.lt.0) write(isave,'(a4)') 'air '
+            if (ico2.eq.0) write(isave,'(a4)') 'h20 '
+         end if
          if ((iccen.eq.0).and..not.ptrak) write(isave,'(a4)') 'ntra'
          if (iccen.ne.0) write(isave,'(a4)') 'trac'
          if (ptrak) write(isave,'(a4)') 'ptrk'
@@ -299,9 +316,15 @@ c     write(isave ,6002) (max(pho(mi)-phi_inc,tolw),  mi=1,n )
          write(isave)  verno, jdate, jtime, wdd
          write(isave)  days
 c     write descriptors
-         if (ico2.gt.0) write(isave) 'ngas'
-         if (ico2.lt.0) write(isave) 'air '
-         if (ico2.eq.0) write(isave) 'h20 '
+         if (iriver .ne. 0) then
+            if (ico2.gt.0) write(isave) 'wnga'
+            if (ico2.lt.0) write(isave) 'wair'
+            if (ico2.eq.0) write(isave) 'wh20'
+         else
+            if (ico2.gt.0) write(isave) 'ngas'
+            if (ico2.lt.0) write(isave) 'air '
+            if (ico2.eq.0) write(isave) 'h20 '
+         end if
          if ((iccen.eq.0).and..not.ptrak) write(isave) 'ntra'
          if (iccen.ne.0) write(isave) 'trac'
          if (ptrak) write(isave) 'ptrk'

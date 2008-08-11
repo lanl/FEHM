@@ -462,8 +462,11 @@ c     added combi and comflow to get izonef and a_axy arrays
 c     in subroutine computefluxvalues
       use combi
       use comflow
+      use comco2
+      use comriv
       use comfi, only : qtc, qtotc
       use comrtd, only : maxmix_flag
+      use property_interpolate
 
       implicit none
 
@@ -488,7 +491,7 @@ c     irun is a counter for each realization in a multiple simulation
 c     run of fehm. It is initialized to 0 in comai
 
       character*80 filename
-      integer open_file
+      integer open_file, ifail
 
       logical used
       real*8 tims_save, day_saverip, in3save
@@ -612,6 +615,32 @@ c**** allocate memory ****
 c**** call data initialization routine ****
          call data
 
+c**** call co2_properties_interpolation_lookup_table RJP 04/09/07
+         if (icarb .ne. 0) then
+            inquire(file=nmfil(29), exist=intfile_ex)
+            if(.not.intfile_ex) then
+               write(ierr, 6010) trim(nmfil(29))
+               write(ierr, 6012)
+               if (iout .ne. 0) then
+                  write(iout, 6010) trim(nmfil(29))
+                  write(iout, 6012)
+               end if         
+               if (iptty .ne. 0) then
+                  write(iptty, 6010) trim(nmfil(29))
+                  write(iptty, 6012)
+               end if         
+               stop
+            endif
+	
+            call read_interpolation_data(ifail,nmfil(29))
+
+         end if
+
+ 6010    format('CO2 Properties Interpolation Table File not found: ', 
+     &        /, a, /, 'Stopping')
+ 6012    format('Input correct name in control file using, co2in : ',
+     &        'filename')
+
 c**** read and write data ****
          in3save = in(3)
          if(in(3).eq.0) then
@@ -619,6 +648,8 @@ c**** read and write data ****
          end if
          
          call infiles(in(3))
+         if (nriver .ne. 0) call river_ctr(33)
+
          in(3) = in3save
 c**** modify gravity to reflect vector value ****
 
@@ -761,14 +792,18 @@ c         call welbor (1)
 
 c**** calculate inflowing enthalpy ****
             if(ico2.ge.0.and.ice.eq.0) then
-               do mi = 1, n
-                  eskd = esk(mi)
+               if(icarb.eq.1) then
+                  call icectrco2(-4,0)
+               else
+                  do mi = 1, n
+                     eskd = esk(mi)
 c**** if source input is a temp convert to enthalpy ****
-                  if (eskd .lt. 0.0)  then
-                     eskd = enthp(mi, -eskd)
-                  end if
-                  eflow(mi) = eskd
-               end do
+                     if (eskd .lt. 0.0)  then
+                        eskd = enthp(mi, -eskd)
+                     end if
+                     eflow(mi) = eskd
+                  end do
+               end if
             else if (ice.ne.0) then
                call icectr(-4,0)
             endif
@@ -1021,6 +1056,8 @@ c**** update component arrays or mixtures ****
 c added call for balance error
                call icectr (9,0)
                call icectr (8,0)
+               if(icarb.eq.1) call icectrco2 (9,0)
+               if(icarb.eq.1) call icectrco2 (8,0)
 
 c**** update ice arrays ****
 c gaz 10-18-2001 call sice (3)
@@ -1343,6 +1380,10 @@ c     array for rip simulations
      2        .and.int(in(n_input_arguments+4)).ne.0)
      3        call loadoutarray
       end if
+
+c RJP 04/10/07 this is for co2 properties table look-up
+      call interpolation_arrays_deallocate()
+
 c     no more method = 4
 c     elseif(method.eq.4) then
 

@@ -265,11 +265,11 @@ c**** read flow data ****
                ka(i) = 1
             else
                if (aiped(i) .lt. 0.) then
-                  ka(i) = -1
+                  ka(i) = -2
                else
                   ka(i) = -1
                end if
-               wellim(i) = aiped(i) * 1.0e+06
+               wellim(i) = abs(aiped(i)) * 1.0e+06
                pflow(i) = sktmp(i)
             end if
          end if

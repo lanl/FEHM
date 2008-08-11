@@ -229,13 +229,16 @@ C**********************************************************************
       use comii
       use comdti
       use comai
+      use comco2
+      use commeth
       use davidi
       implicit none
 
-      real*8 smind,smaxd,smind_t,smaxd_t
+      real*8 smind,smaxd,smind_t,smaxd_t,sminc, smaxc
       real*8 pmin_ice,pmax_ice
       real*8 tmin_ice,tmax_ice
       parameter(smind = -2.,smaxd = 5.,smind_t = -0.5,smaxd_t = 1.5)
+	parameter(sminc = -0.15   , smaxc = 1.15)
       parameter(pmin_ice=-1.0,pmax_ice=200.0)
       parameter(tmin_ice=-10.0,tmax_ice=400.0)
       integer i, ii
@@ -243,145 +246,203 @@ C**********************************************************************
       integer ieo
       real*8 tl
       real*8 sl
+c     RJP 04/15/07 added following for CO2
+      real*8 pmin_co2, pmax_co2, tmin_co2, tmax_co2
+      real*8 sco2g, sco2l
+      parameter(pmin_co2=-1.0,pmax_co2=200.0)
+      parameter(tmin_co2=-65.0)
+
+      if(ico2prop_flg.eq.1) then
+         tmax_co2=600.0
+      else
+         tmax_co2=400.0
+      endif
+
       mlz=0
       if(ico2.ge.0) then
-      do i=1,n
-      if(ps(i).ne.0.0.and.idof.gt.1) then
-         if(i.le.neq) then
-            ii=i
-         else if(i.ge.neq+1.and.i.le.neq+neq) then
-            ii=i-neq
-         else
-            ii=i-neq-neq
-         endif
-c
-         pl=phi(i)
-c
-         ieo=iieos(i)
-         if(ieo.gt.2) ieo=2
-c     
-            tl=t(i)
-            sl=s(i)
-            if(pl.lt.pmin(ieo)) mlz=1
-            if(pl.gt.pmax(ieo)) mlz=1
-            if(sl.lt.smind_t) mlz=1
-            if(sl.gt.smaxd_t) mlz=1
-            if(tl.lt.tmin(ieo)) mlz=1
-            if(tl.gt.tmax(ieo)) mlz=1
-            if(ico2.gt.0) then
-               if(pci(i).lt.0.0d00) mlz=1
-            endif
-         if(mlz.eq.1) then
-            if (iout .ne. 0) then
-               write(iout,*)'time step= ',l,' time step size= ',day
-               write(iout,9001) i,cord(ii,1),cord(ii,2),cord(ii,3)
-               write(iout,*)'p= ',pl,' t= ',tl,' s= ',sl
-               if(ico2.gt.0) write(iout,*)'pci(i)= ',pci(i)
-            end if
-            if(iptty.gt.0) then
-               write(iptty,*)'time step= ',l,' time step size= ',
-     &              day
-               write(iptty,9001) i,cord(ii,1),cord(ii,2),cord(ii,3)
-               write(iptty,*)'p= ',pl,' t= ',tl,' s= ',sl
-               if(ico2.gt.0) write(iptty,*)'pci(i)= ',pci(i)
-            endif
-            goto 9000
-         endif
-      end if
-      enddo
-c gaz 10-20-2001
-      else if(ice.eq.0) then
-c isothermal air water
-      do i=1,n
+         if(icarb.eq.1) then
+            do i=1,n
 
-      if(ps(i).ne.0.0.and.idof.gt.1) then
-         if(i.le.neq) then
-            ii=i
-         else if(i.ge.neq+1.and.i.le.neq+neq) then
-            ii=i-neq
-         else
-            ii=i-neq-neq
-         endif	
-         pl=phi(i)
-c
-         ieo=iieos(i)
-         if(ieo.gt.2) ieo=2
+               if(ps(i).ne.0.0.and.idof.gt.1) then
+                  if(i.le.neq) then
+                     ii=i
+                  else if(i.ge.neq+1.and.i.le.neq+neq) then
+                     ii=i-neq
+                  else
+                     ii=i-neq-neq
+                  endif	
 c     
-         if (irdof .ne. 13 .or. ifree .ne. 0) then
-            sl=s(i)
+                  pl=phico2(i)
+c     
+                  tl=tco2(i)
+                  sl=fw(i)
+		  sco2g=fg(i)
+		  sco2l=fl(i)
+                  if(pl.lt.pmin_co2 ) mlz=1
+                  if(pl.gt.pmax_co2 ) mlz=1
+                  if(sl.lt.sminc) mlz=1
+                  if(sl.gt.smaxc) mlz=1
+		  if(sco2g.lt.sminc) mlz=1
+                  if(sco2g.gt.smaxc) mlz=1
+		  if(sco2l.lt.sminc) mlz=1
+                  if(sco2l.gt.smaxc) mlz=1
+                  if(tl.lt.tmin_co2 ) mlz=1
+                  if(tl.gt.tmax_co2 ) mlz=1
+                  if(mlz.eq.1)  goto 9000
+               end if
+            enddo
          else
-            sl = 1.0d0
+            do i=1,n
+               if(ps(i).ne.0.0.and.idof.gt.1) then
+                  if(i.le.neq) then
+                     ii=i
+                  else if(i.ge.neq+1.and.i.le.neq+neq) then
+                     ii=i-neq
+                  else
+                     ii=i-neq-neq
+                  endif
+c     
+                  pl=phi(i)
+c     
+                  ieo=iieos(i)
+                  if(ieo.gt.2) ieo=2
+c     
+                  tl=t(i)
+                  sl=s(i)
+                  if(pl.lt.pmin(ieo)) mlz=1
+                  if(pl.gt.pmax(ieo)) mlz=1
+                  if(sl.lt.smind_t) mlz=1
+                  if(sl.gt.smaxd_t) mlz=1
+                  if(tl.lt.tmin(ieo)) mlz=1
+                  if(tl.gt.tmax(ieo)) mlz=1
+                  if(ico2.gt.0) then
+                     if(pci(i).lt.0.0d00) mlz=1
+                  endif
+                  if(mlz.eq.1) goto 9000
+               end if
+            enddo
          end if
-         if(pl.lt.pmin(ieo)) mlz=1
-         if(pl.gt.pmax(ieo)) mlz=1
-         if(sl.lt.smind) mlz=1
-         if(sl.gt.smaxd) mlz=1
-c
-         if(mlz.eq.1) then
-            if (iout .ne. 0) then
-               write(iout,*)'time step= ',l,' time step size= ',day
-               write(iout,9001) i,cord(ii,1),cord(ii,2),cord(ii,3)
-               write(iout,*)'p= ',pl,' s= ',sl
-            end if
-            if(iptty.gt.0) then
-               write(iptty,*)'time step= ',l,' time step size= ',
-     &              day
-               write(iptty,9001) i,cord(ii,1),cord(ii,2),cord(ii,3)
-               write(iptty,*)'p= ',pl,' s= ',sl
-            endif
-            goto 9000
-         endif
-      end if
-      enddo
-c gaz 10-20-2001
-      else if(ice.ne.0) then
-      do i=1,n
+c     gaz 10-20-2001
+      else if(ice.eq.0) then
+c     RJP 04/15/07 modified below to include CO2
+         if(icarb.eq.1) then
+            do i=1,n
 
-      if(ps(i).ne.0.0.and.idof.gt.1) then
-         if(i.le.neq) then
-          ii=i
-         else if(i.ge.neq+1.and.i.le.neq+neq) then
-          ii=i-neq
-         else
-          ii=i-neq-neq
-         endif	
-c
-         pl=phi(i)
-c
-         ieo=iieos(i)
-         if(ieo.gt.2) ieo=2
+               if(ps(i).ne.0.0.and.idof.gt.1) then
+                  if(i.le.neq) then
+                     ii=i
+                  else if(i.ge.neq+1.and.i.le.neq+neq) then
+                     ii=i-neq
+                  else
+                     ii=i-neq-neq
+                  endif	
 c     
-            tl=t(i)
-            if (irdof .ne. 13 .or. ifree .ne. 0) then
-               sl=s(i)
-            else
-               sl = 1.0d0
+                  pl=phico2(i)
+c     
+                  tl=tco2(i)
+                  sl=fw(i)
+		  sco2g=fg(i)
+		  sco2l=fl(i)
+                  if(pl.lt.pmin_co2 ) mlz=1
+                  if(pl.gt.pmax_co2 ) mlz=1
+                  if(sl.lt.smind) mlz=1
+                  if(sl.gt.smaxd) mlz=1
+		  if(sco2g.lt.smind) mlz=1
+                  if(sco2g.gt.smaxd) mlz=1
+		  if(sco2l.lt.smind) mlz=1
+                  if(sco2l.gt.smaxd) mlz=1
+                  if(tl.lt.tmin_co2 ) mlz=1
+                  if(tl.gt.tmax_co2 ) mlz=1
+                  if(mlz.eq.1) goto 9000
+               end if
+            enddo
+         else
+c     isothermal air water
+            do i=1,n
+
+               if(ps(i).ne.0.0.and.idof.gt.1) then
+                  if(i.le.neq) then
+                     ii=i
+                  else if(i.ge.neq+1.and.i.le.neq+neq) then
+                     ii=i-neq
+                  else
+                     ii=i-neq-neq
+                  endif	
+                  pl=phi(i)
+c     
+                  ieo=iieos(i)
+                  if(ieo.gt.2) ieo=2
+c     
+                  if (irdof .ne. 13 .or. ifree .ne. 0) then
+                     sl=s(i)
+                  else
+                     sl = 1.0d0
+                  end if
+                  if(pl.lt.pmin(ieo)) mlz=1
+                  if(pl.gt.pmax(ieo)) mlz=1
+                  if(sl.lt.smind) mlz=1
+                  if(sl.gt.smaxd) mlz=1
+                  if(mlz.eq.1) goto 9000
+               end if
+            enddo
+         end if
+c     gaz 10-20-2001
+      else if(ice.ne.0) then
+         do i=1,n
+
+            if(ps(i).ne.0.0.and.idof.gt.1) then
+               if(i.le.neq) then
+                  ii=i
+               else if(i.ge.neq+1.and.i.le.neq+neq) then
+                  ii=i-neq
+               else
+                  ii=i-neq-neq
+               endif	
+c     
+               pl=phi(i)
+c     
+               ieo=iieos(i)
+               if(ieo.gt.2) ieo=2
+c     
+               tl=t(i)
+               if (irdof .ne. 13 .or. ifree .ne. 0) then
+                  sl=s(i)
+               else
+                  sl = 1.0d0
+               end if
+               if(pl.lt.pmin_ice ) mlz=1
+               if(pl.gt.pmax_ice ) mlz=1
+               if(sl.lt.smind_t) mlz=1
+               if(sl.gt.smaxd_t) mlz=1
+               if(tl.lt.tmin_ice ) mlz=1
+               if(tl.gt.tmax_ice ) mlz=1
+               if(mlz.eq.1) goto 9000
             end if
-            if(pl.lt.pmin_ice ) mlz=1
-            if(pl.gt.pmax_ice ) mlz=1
-            if(sl.lt.smind_t) mlz=1
-            if(sl.gt.smaxd_t) mlz=1
-            if(tl.lt.tmin_ice ) mlz=1
-            if(tl.gt.tmax_ice ) mlz=1
-         if(mlz.eq.1) then
-            if (iout .ne. 0) then
-               write(iout,*)'time step= ',l,' time step size= ',day
-               write(iout,9001) i,cord(ii,1),cord(ii,2),cord(ii,3)
-               write(iout,*)'p= ',pl,' t= ',tl,' s= ',sl
-            end if
-            if(iptty.gt.0) then
-               write(iptty,*)'time step= ',l,' time step size= ',
-     &              day
-               write(iptty,9001) i,cord(ii,1),cord(ii,2),cord(ii,3)
-               write(iptty,*)'p= ',pl,' t= ',tl,' s= ',sl
-            endif
-            goto 9000
-         endif
-      end if
-      enddo
+         enddo
       endif
+
  9000 continue
- 9001 format('out of bounds:node ',i8
-     $ ,' x= ',g12.4,' y= ',g12.4,' z= ',g12.4) 
+      if(mlz.eq.1) then
+         if (iout .ne. 0) then
+            write(iout, 9010) l, day
+            write(iout, 9011) i, cord(ii,1), cord(ii,2),
+     &           cord(ii,3)
+            write(iout, 9012) pl, tl, sl
+            if(ico2.gt.0  .and. icarb .eq. 0) write(iout, 9013) pci(i)
+         end if
+         if(iptty.gt.0) then
+            write(iptty, 9010) l, day
+            write(iptty, 9011) i,cord(ii,1),cord(ii,2),
+     &           cord(ii,3)
+            write(iptty, 9012) pl, tl, sl
+            if(ico2.gt.0 .and. icarb .eq. 0) write(iptty, 9013) pci(i)
+         endif
+      endif
+
+ 9010 format ('time step = ', i8, ' time step size = ', g21.14)
+ 9011 format ('out of bounds : node ', i8,
+     $     ' x = ', g12.4, ' y = ', g12.4, ' z = ', g12.4)
+ 9012 format (' p = ', g16.9, ' t =', g16.9, ' s = ', g16.9)
+ 9013 format (' pci = ', g16.9)
       return
       end

@@ -247,6 +247,7 @@ C***********************************************************************
       use comii
       use comdti
       use comai
+      use comco2
       use comwt, only : sattol, rlptol
       use davidi
       implicit none
@@ -413,5 +414,7 @@ c**** write number of plot nodes, node numbers and coordinates ****
       end if
 
       if (ice.ne.0) call plot_hyd(igf)
+C RJP 04/10/07 added below
+      if(icarb.eq.1) call plot_co2(igf)
 
       end

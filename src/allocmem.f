@@ -236,6 +236,8 @@ C***********************************************************************
       use comnire
 c RJP 12/4/06 added following
       use comriv
+c RJP 04/17/06 added following
+      use comco2
 
       implicit none
 
@@ -815,7 +817,8 @@ c     ***** COMMON Block fdd2 *****
       endif
 ****   TENMA   ****
 c     ***** COMMON Block fice *****
-      if (ice .eq. 1) then
+c  RJP added icarb flag below
+      if ((ice .eq. 1) .or. (icarb.eq.1)) then
          allocate(sii(n6),sio(n6))
 c     ***** COMMON Block iice *****
          allocate(ices(n6))
@@ -918,7 +921,8 @@ c  gaz 2-25-03 needed idof+1, idof*idof +1 for ice
 c     open t1-t13 space
       allocate(t1(nn),t2(nn),t3(nn),t4(nn))
       allocate(t5(nn),t5v(nn),t6(nn),t7(nn))
-      allocate(t8(nn),t9(nn),t10(nn))
+c RJP 04/08/07 added t13 for diffusion terms.
+      allocate(t8(nn),t9(nn),t10(nn),t13(nn),t14(nn),t17(nn))
       allocate(it4(nn),it5(nn),it6(nn),it8(nn),it8a(nn))
       allocate(it9(nn),it10(nn),it11(nn),it12(nn),it13(nn))
       allocate(it9a(nn),it10a(nn),it11a(nn),it12a(nn),it13a(nn))

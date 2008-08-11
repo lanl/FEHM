@@ -107,6 +107,7 @@ C***********************************************************************
       use combi
       use comdti
       use comai
+      use comco2
       implicit none
 
       integer ibp,ibp1,ibp2,ibp3,ibp4,ibp5,ibp6
@@ -154,7 +155,7 @@ c     print out worst residuals
             endif
          endif
  400     format ('#### largest N-R corrections, timestep ',i8, ' ####')
-         if(idof.eq.1) then
+         if(idof.eq.1 .or. idof_co2.eq.1) then
             ibp=0
             ibp1=0
             bpmax=-1.0
@@ -177,7 +178,7 @@ c     print out worst residuals
                if (iout .ne. 0) write(iout,900) 'EQ1',bp(ibp1+nrhs(1)),
      $              ibp1,cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
             endif
-         else if(idof.eq.2) then
+         else if(idof.eq.2 .or. idof_co2.eq.2) then
             ibp=0
             ibp1=0
             ibp2=0
@@ -216,7 +217,7 @@ c     print out worst residuals
      $                 ,cord(ibp2,2),cord(ibp2,3)
                endif
             end if
-         else if(idof.eq.3) then
+         else if(idof.eq.3 .or. idof_co2.eq.3) then
             ibp=0
             ibp1=0
             ibp2=0
@@ -269,7 +270,7 @@ c     print out worst residuals
      $                 cord(ibp3,1),cord(ibp3,2),cord(ibp3,3)
                end if
             endif
-         else if(idof.eq.4) then
+         else if(idof.eq.4 .or. idof_co2.eq.4) then
             ibp=0
             ibp1=0
             ibp2=0
@@ -345,7 +346,7 @@ c
      $                 cord(ibp4,1),cord(ibp4,2),cord(ibp4,3)
                end if
             endif
-         else if(idof.eq.6) then
+         else if(idof.eq.6 .or. idof_co2.eq.6) then
             ibp=0 
             ibp1=0
             ibp2=0

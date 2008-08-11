@@ -189,6 +189,7 @@ C***********************************************************************
       use comfi
       use comdti
       use comai
+      use comco2
       use davidi
       implicit none
 
@@ -240,6 +241,10 @@ c**** reset noncondensible gas if appropriate ****
 c**** reset ice solution ****
       if ( ice .ne. 0 )  then
          call icectr(11,0)
+      end if
+c**** RJP 04/10/07 reset co2 solution ****
+      if ( icarb .eq. 1 )  then
+         call icectrco2(11,0)
       end if
 
       return

@@ -153,6 +153,7 @@ C***********************************************************************
 
       integer i, j, lu, ifdual, maxtitle, mout, length, ic1, ic2
       integer il, open_file, nelm(ns_in)
+      integer icord1, icord2, icord3
       parameter(maxtitle = 22)
       character*3 dls
       character*5 char_type, dual_char
@@ -258,28 +259,44 @@ c------------------------------------------------------------------------------
 !            nform = '(' // "'" // ' "' // "', a, '" // '"' // "')"
             write (nform, 300)
             if (iocord .ne. 0) then
-               if (iocord .ne. 0) then
+               select case (icnl)
+               case (1, 4)
+                  icord1 = 1
+                  icord2 = 2
+                  icord3 = 1
+               case (2, 5)
+                  icord1 = 1
+                  icord2 = 3
+                  icord3 = 2
+               case(3, 6)
+                  icord1 = 1
+                  icord2 = 3
+                  icord3 = 1
+               case default
+                  icord1 = 1
+                  icord2 = 3
+                  icord3 = 1
+               end select
 ! Write X coordinate
-                  if (icnl .ne. 3 .and. icnl .ne. 6) then
-                     write(temp_string,nform) trim(title(12))
-                     ic2 = ic2 + len_trim(temp_string)
-                     print_title(ic1:ic2) = temp_string
-                     ic1 = ic2 + 1
-                  end if
+               if (icnl .ne. 3 .and. icnl .ne. 6) then
+                  write(temp_string,nform) trim(title(12))
+                  ic2 = ic2 + len_trim(temp_string)
+                  print_title(ic1:ic2) = temp_string
+                  ic1 = ic2 + 1
+               end if
 ! Write Y coordinate
-                  if (icnl .ne. 2 .and. icnl .ne. 5) then
-                     write(temp_string,nform) trim(title(13))
-                     ic2 = ic2 + len_trim(temp_string)
-                     print_title(ic1:ic2) = temp_string
-                     ic1 = ic2 + 1
-                  end if
+               if (icnl .ne. 2 .and. icnl .ne. 5) then
+                  write(temp_string,nform) trim(title(13))
+                  ic2 = ic2 + len_trim(temp_string)
+                  print_title(ic1:ic2) = temp_string
+                  ic1 = ic2 + 1
+               end if
 ! Write Z coordinate
-                  if (icnl .ne. 1 .and. icnl .ne. 4) then
-                     write(temp_string,nform) trim(title(14))
-                     ic2 = ic2 + len_trim(temp_string)
-                     print_title(ic1:ic2) = temp_string
-                     ic1 = ic2 + 1
-                  end if
+               if (icnl .ne. 1 .and. icnl .ne. 4) then
+                  write(temp_string,nform) trim(title(14))
+                  ic2 = ic2 + len_trim(temp_string)
+                  print_title(ic1:ic2) = temp_string
+                  ic1 = ic2 + 1
                end if
                write (temp_string, fmt=nform) 'node'
             else
@@ -409,7 +426,7 @@ c------------------------------------------------------------------------------
 
             if (altc(1:3) .eq. 'tec' .and. iocord .ne. 0) then
 ! Write coordinates
-               do i = 1, iocord
+               do i = icord1, icord2, icord3
                   write(temp_string,'(g16.9)') corz(j,i)
                   ic2 = ic1 + 17
                   vstring(ic1:ic2) = temp_string

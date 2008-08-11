@@ -18,7 +18,7 @@
 # Edit FC,LIBRARY,FFLAGS for your environment and compiler 
 #***********************************************************************
 
-SRCDIR = /scratch/ymp/zvd/FEHM_V2.30open/src/
+SRCDIR = /scratch/ymp/zvd/FEHM_V2.30open_CO2/src/
 WORKDIR = ./
 INCDIR = ./
 OBJDIR = ./
@@ -78,6 +78,7 @@ endif
 # SUN OS ------------------------------
 
 OBJECTS := $(patsubst ${SRCDIR}%.f,%.o,$(wildcard ${SRCDIR}*.f))
+OBJECTS_F90 := $(patsubst ${SRCDIR}%.f90,%.o,$(wildcard ${SRCDIR}*.f90))
 
 all: dated xfehm
 
@@ -85,16 +86,16 @@ dated:
 	rm -f  ${SRCDIR}dated.f
 	sed s/OS\ DATE/${OSTAG}\ ${DATETAG}/ ${SRCDIR}dated.template >  ${SRCDIR}dated.f
 
-xfehm : ${OBJECTS}
-	${FC} ${FFLAGS} ${OBJECTS} ${LIBRARY} ${STATIC} -o xfehm_v2.30${OSTAG}${DATE}
+xfehm : ${OBJECTS} ${OBJECTS_F90}
+	${FC} ${FFLAGS} ${OBJECTS} ${OBJECTS_F90} ${LIBRARY} ${STATIC} -o xfehm_v2.30${OSTAG}${DATE}
 
 test:
 	echo ${OSTAG} ${FFLAGS} ${DATETAG} ${DATE}
 
-%.mod : ${SRCDIR}%.f
+%.o : ${SRCDIR}%.f
 	${FC} ${DFLAG} ${FFLAGS} $< -c
 
-%.o : ${SRCDIR}%.f
+%.o : ${SRCDIR}%.f90
 	${FC} ${DFLAG} ${FFLAGS} $< -c
 
 clean :

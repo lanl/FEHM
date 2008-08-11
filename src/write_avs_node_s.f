@@ -2,7 +2,8 @@
      2     neq,
      3     nscalar,
      4     lu,
-     8     ifdual)
+     5     ifdual,
+     6     iriver2)
 !***********************************************************************
 !  Copyright, 1993, 2004,  The  Regents of the University of California.
 !  This program was prepared by the Regents of the University of 
@@ -226,19 +227,23 @@ c----------------------------------------------------------------------
       use comflow, only : a_axy, a_vxy
       use comwt, only : sattol, head_id, rlptol
       use davidi
+c RJP 1/12/07 added following
+      use comco2
+      use comriv, only : npoint_riv
       implicit none
 
       integer maxscalar
-      parameter (maxscalar = 17)
-      integer neq,nscalar,lu,ifdual,icall,open_file
+      parameter (maxscalar = 21)
+      integer neq,nscalar,lu,ifdual,icall,open_file,offset,iriver2
       integer i,j,iolp,iovp,nout,iz,iendz,il,idz, i1, i2, index, iaxy, k
       integer size_head, size_pcp, istart, iend, ic1, ic2, length, nadd
+      integer icord1, icord2, icord3
       integer nelm2(ns_in)
       real*8 hdum, sdum, px, py, pz, flxdum
       character*80 title(2*maxscalar+3)
       character*150 :: tecstring = ''
-      character*340 tstring2
-      character*340 string
+      character*420 tstring2
+      character*420 string
       character*20 vstring
       character*43 tstring
       character*5 char_type
@@ -270,17 +275,27 @@ C   ERROR checking:
          istart = neq + 1
          iend = neq * 2
          nadd = nelm(neq+1)-neq-1
-      else
-         istart = 1
-         iend = neq
-         nadd = 0
+         offset = neq
+      else 
+         if (iriver2 .ne. 0) then
+! Output for river/well nodes         
+            istart = neq - npoint_riv + 1
+            iend = neq
+            nadd = 0
+            offset = 0
+         else
+            istart = 1
+            iend = neq - npoint_riv
+            nadd = 0
+            offset = 0
+         end if
       endif
     
       if (icall .eq. 1) tecstring = ''
 
 ! Surfer headers need to be written to each zone file
       if (altc(1:3) .ne. 'sur') then
-         call write_avs_head_s(icall,nscalar,lu,ifdual,0)
+         call write_avs_head_s(icall,nscalar,lu,ifdual,0,iriver2)
       end if
 
       if (iozone .ne. 0 ) then
@@ -290,7 +305,6 @@ C   ERROR checking:
          idz = iozone
       end if
 
-C---  Max number of scalars is 13 + 3 coordinates
       do iz = 1, iendz
 ! Zone loop
          if (iozone .ne. 0) then
@@ -384,7 +398,7 @@ C---  Max number of scalars is 13 + 3 coordinates
          end if
 
          if (altc(1:3) .eq. 'sur') then
-            call write_avs_head_s(icall,nscalar,lu,ifdual,idz)
+            call write_avs_head_s(icall,nscalar,lu,ifdual,idz,iriver2)
             dls = ', '
             k = 2
          else if (altc(1:4) .eq. 'avsx') then
@@ -416,7 +430,7 @@ C---  Max number of scalars is 13 + 3 coordinates
                if (altc(1:4) .eq. 'avsx') then
 ! For avsx all three coordinates are always output
                   do j = 1,3
-                     write(vstring,110) dls(1:k), corz(i,j)
+                     write(vstring,110) dls(1:k), corz(i - offset,j)
                      ic2 = ic1 + len_trim(vstring)
                      string(ic1:ic2) = vstring
                      ic1 = ic2 + 1
@@ -424,8 +438,26 @@ C---  Max number of scalars is 13 + 3 coordinates
                else if (altc(1:4) .eq. 'avs' .or. altc(1:3) .eq. 'sur'
      &                 .or. icall .eq. 1) then
 ! Coordinates will only be output in the first file for tecplot
-                  do j = 1,iocord
-                     write(vstring,110) dls(1:k), corz(i,j)
+                  select case (icnl)
+                  case (1, 4)
+                     icord1 = 1
+                     icord2 = 2
+                     icord3 = 1
+                  case (2, 5)
+                     icord1 = 1
+                     icord2 = 3
+                     icord3 = 2
+                  case(3, 6)
+                     icord1 = 1
+                     icord2 = 3
+                     icord3 = 1
+                  case default
+                     icord1 = 1
+                     icord2 = 3
+                     icord3 = 1
+                  end select
+                  do j = icord1, icord2, icord3
+                     write(vstring,110) dls(1:k), corz(i - offset,j)
                      ic2 = ic1 + len_trim(vstring)
                      string(ic1:ic2) = vstring
                      ic1 = ic2 + 1
@@ -501,6 +533,48 @@ c saturations are never zeroed out, report what is in array
                ic2 = ic1 + len_trim(vstring)
                string(ic1:ic2) = vstring
                ic1 = ic2 + 1
+            end if
+            if (ioco2 .eq. 1) then
+               if (ps(i) .le. 0.) then
+                  sdum = 0.d0
+                  write(vstring,112) sdum
+                  ic2 = ic1 + 11
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+                  write(vstring,112) sdum
+                  ic2 = ic1 + 11
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+                  write(vstring,112) sdum
+                  ic2 = ic1 + 11
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+                  write(vstring,115) sdum
+                  ic2 = ic1 + 11
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+               else
+! Water volume fraction
+                  write(vstring,112) fw(i)
+                  ic2 = ic1 + 11
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+! Liquid co2 fraction
+                  write(vstring,112) fl(i)
+                  ic2 = ic1 + 11
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+! Gaseous co2 fraction
+                  write(vstring,112) fg(i)
+                  ic2 = ic1 + 11
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+! Phase state of co2
+                  write(vstring,115) ices(i)
+                  ic2 = ic1 + 11
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+               end if
             end if
             if (iohead .eq. 1 .and. size_head .ne. 1) then
                if (ps(i) .le. 0.) then
@@ -601,6 +675,7 @@ c might need help in the
             length = len_trim(string)
             write(lu,'(a)') string(1:length)
  200     enddo
+         call flush(lu)
          if (altc(1:3) .eq. 'sur') close (lu)
       enddo
 
@@ -622,6 +697,7 @@ c might need help in the
  100  format(i10.10)
  105  format(a, i10.10)
  110  format(a, g16.9)
+ 112  format(a, f10.4)
  115  format(a, i4)
 c 120  format('ZONE T = "',i4.4,' Simulation time ',1p,g16.9,' days"', a)
  118  format('TEXT T = "Simulation time ',1p,g16.9,' days"')

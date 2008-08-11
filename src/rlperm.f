@@ -542,6 +542,17 @@ c rp4f is maximum vapor rv perm
                endif
                icapp = 1
                icapt(i)=1
+c RJP 04/19/07 Introduced new rel-perm model for CO2.  
+            elseif ((irlpd .eq. 16).or.(irlpd.eq.17)) then
+               read(inpt,*) irlpt(i),rp1f(i),rp2f(i),rp3f(i),
+     &              rp4f(i),rp5f(i),rp6f(i),rp7f(i), rp8f(i),
+     &              rp9f(i),rp10f(i),rp11f(i),rp12f(i), rp13f(i),
+     &              rp14f(i)
+            elseif (irlpd .eq. 18) then
+               read(inpt,*) irlpt(i),rp1f(i),rp2f(i),rp3f(i),
+     &              rp4f(i),rp5f(i),rp6f(i),rp7f(i), rp8f(i),
+     &              rp9f(i),rp10f(i),rp11f(i),rp12f(i), rp13f(i),
+     &              rp14f(i),rp15f(i),rp16f(i)
             else if (irlpd .eq.21) then
 c Thomeer capillary pressure and Corey relative perms
 c rp1f is irreducible water saturation

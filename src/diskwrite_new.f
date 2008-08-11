@@ -140,6 +140,8 @@
       use comflow
       use comii
       use compart
+      use comco2
+      use comriv
       use comxi
       use davidi
       implicit none
@@ -171,7 +173,14 @@
          return
       endif
 
-! For compatibility with previous versions 
+      if(icarb.eq.1) then
+         write(isave, 6000)  verno, jdate, jtime, wdd
+         write(isave ,*)  days
+         call icectrco2 (-20,0)
+         return
+      endif
+
+c! For compatibility with previous versions 
 ! Liquid fluxes should be written to restart file
       if (abs(prnt_rst) .eq. 2) flux_flag = 'liquid flux'
            

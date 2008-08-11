@@ -151,7 +151,7 @@
       integer ioconcentration,iodisplacement,iohead,ioformat
       integer iofw,iofh,ioporosity,iosource,iodensity,iocord
       integer iopermeability,iogeo,iozone,iowt,iokd,iozid
-      integer iocapillary
+      integer iocapillary,ioco2
 
       integer iaroot
       character*110 avs_root, geoname

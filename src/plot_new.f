@@ -45,6 +45,7 @@
 
       use comai
       use combi
+      use comco2, only : denco2h, fl, fg
       use comdi
       use comdti
       use comfi
@@ -62,13 +63,15 @@
       character*400 glob_string
       character*80 info_string, title_string, formh_string 
       character*80 form1_string, form2_string, formp_string
-      character*110 formz_string
+      character*80 formcs_string
+      character*110 formz_string 
       character*14 time_string, file_format, dumv_string
       character*14, allocatable :: var_string(:), var_tmp(:)
       logical time2print
 
-      save last_step, last_time, dumv, form1_string, form2_string,
-     &     formp_string
+      save last_step, last_time, dumv
+      save form1_string, form2_string, formh_string
+      save formp_string, formcs_string
 
       if (out_zones .and. ozflag .eq. 0) then
          write (ierr, 100)
@@ -355,6 +358,46 @@ c            write(ishis, '(a4)')  '    '
                end if
             end if
          end if
+c RJP 04/30/07 added following for outputting time-dependent CO2 mass
+         if (ishiscm .ne. 0 ) then
+! Ouput CO2 mass kg
+            info_string = info_string(ic1:ic2) // 'CO2 mass '
+            ic2 = len_trim(info_string) + 1
+            title_string = 'CO2 mass (Kg)'
+            call plot_header(ishiscm, var_num, form2_string)
+         end if
+         if (ishiscs .ne. 0 ) then
+! Ouput CO2 Saturation
+            info_string = info_string(ic1:ic2) // 'CO2 saturations '
+            ic2 = len_trim(info_string) + 1
+            title_string = 'CO2 Saturation: Liquid, Gaseous'
+            if (form_flag .eq. 1) then
+               write (formcs_string, 200) 2*m
+            else if (form_flag .eq. 2) then
+               write (formcs_string, 210) 2*m
+            else
+               write (formcs_string, 220) 2*m
+            end if
+            deallocate (var_string)
+            allocate (var_string(2*m))
+            j = 0
+            k = 0
+            do i = 1, m
+               j = k + 1
+               k = j + 1
+               var_string(j) = trim(var_tmp(i)) // ' Liq'
+               var_string(k) = trim(var_tmp(i)) // ' Gas'
+            end do
+            call plot_header(ishiscs,2*m,formcs_string)
+            deallocate (var_string)
+            allocate (var_string(var_num))
+            var_string = var_tmp
+            if (form_flag .le. 1) then
+               write (formcs_string, 300) 2*m
+            else
+               write (formcs_string, 310) 2*m
+            end if
+         end if
          if (ishisfz .ne. 0) then
 ! Output zone fluxes
             info_string = info_string(ic1:ic2) // 'zone flux '
@@ -382,6 +425,28 @@ c            write(ishis, '(a4)')  '    '
                write(ishisfz, '(a)') trim(title_string)
                write(ishisfz, '(a)') trim(formz_string)
             endif
+         end if
+         if (ishiscfz .ne. 0) then
+! Output CO2 zone fluxes
+            info_string = info_string(ic1:ic2) // 'zone CO2 flux '
+            ic2 = len_trim(info_string) + 1
+            title_string = 'Zone CO2 Flux (kg/s)'
+            if (form_flag .eq. 1) then
+               formz_string = 'variables = "' // trim(time_string) //
+     &              '"' // ' "Zone" "Source" "Sink" "Net" "Boundary"'
+               write(ishiscfz, '(a)') trim(formz_string)
+               write(ishiscfz, 230) 50., 95., trim(wdd)
+               write(ishiscfz, 230) 50., 90., trim(title_string)
+            else if (form_flag .eq. 2) then
+               formz_string = trim(time_string) //
+     &              ", Zone, Source, Sink, Net, Boundary"
+               write(ishiscfz, '(a)') trim(formz_string)
+            else
+               formz_string = trim(time_string) //
+     &              " Zone Source Sink Net Boundary"
+               write(ishiscfz, '(a)') trim(title_string)
+               write(ishiscfz, '(a)') trim(formz_string)
+            end if             
          end if
          if (ishisc .ne. 0) then
 ! Output concentrations
@@ -426,6 +491,7 @@ c            write(ishis, '(a4)')  '    '
                end if
             end if
          end if
+
  1000    format('Time (days)', 6x, 'X (m)', 10x, 'Y (m)', 10x, 'Z (m)',
      &        11x, 'WT elev (m)', 5x, 'Porosity', 
      &        10x, 'Node', 10x, 'Out node')
@@ -828,11 +894,37 @@ c         call flush(ishisf)
      &        i= 1, m) 
          call flush(ishishm)
       end if
+C RJP 04/30/07
+      if (ishiscm .ne. 0 ) then
+! Output CO2 mass in Kg
+         if (out_zones) then
+            write(ishiscm, form2_string) ptime,
+     &           (denco2h(nskw(i))*sx1(nskw(i)),i=1,m),
+     &           (avg_values(j,carbflag), j=1,node_azones)
+         else
+            write(ishiscm, form2_string) ptime,
+     &           (denco2h(nskw(i))*sx1(nskw(i)),i=1,m)
+         end if
+         call flush(ishiscm)
+      end if
+C RJP 08/09/07
+      if (ishiscs .ne. 0 ) then
+! Output CO2 sats only for nodes if present
+         write(ishiscs, formcs_string) ptime, (max(fl(nskw(i)),0.d0),
+     &        i=1,m), (max(fg(nskw(i)),0.d0),i=1,m)
+      end if
       if (ishisfz .ne. 0) then
 ! Output zone fluxes
          call flxz (2, ptime)
          call flush(ishisfz)
       end if
+! RJP 7/5/07 added following for co2 zone fluxes
+      if (ishiscfz .ne. 0) then
+! Output zone fluxes
+         call flxz (3, ptime)
+         call flush(ishiscfz)
+      end if
+
       if (ishisg .ne. 0 ) then
 ! Output global variables
          if (days .ge. 0) then

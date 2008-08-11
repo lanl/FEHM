@@ -284,6 +284,7 @@ C***********************************************************************
       nufilb(26)=35
       nufilb(27)=36
       nufilb(28)=37
+      nufilb(29)=38
       suffix(1)='.files'
       suffix(2)='.dat'
       suffix(3)='.dat'
@@ -312,6 +313,7 @@ C***********************************************************************
       suffix(24)='.subbc'
       suffix(27)='.col'
       suffix(28)='.nop'
+      suffix(29)='.txt'
       iowork(1)='iocntl'
       iowork(2)='inpt  '
       iowork(3)='incoor'
@@ -339,7 +341,8 @@ C***********************************************************************
       iowork(26)='isptr9'
       iowork(24)='isubm '
       iowork(27)='iswt  '
-      iowork(28)='ionop  '
+      iowork(28)='ionop '
+      iowork(29)='ioco2 '
       cstats(1)='old    '
       cstats(2)='old    '
       cstats(3)='old    '
@@ -368,6 +371,7 @@ C***********************************************************************
       cstats(26)='unknown'
       cstats(27)='unknown'
       cstats(28)='unknown'
+      cstats(29)='old    '
       cform(1)='formatted'
       cform(2)='formatted'
 ! Coordinate file can be formatted or unformatted
@@ -397,6 +401,7 @@ C***********************************************************************
       cform(26)='formatted'
       cform(27)='formatted'
       cform(28)='unformatted'
+      cform(29)='formatted'
       blank=' '
       nmfil( 1) = 'fehmn.files'
       nmfil( 2) = 'fehmn.dat'
@@ -426,6 +431,7 @@ C***********************************************************************
       nmfil(24) = 'fehmn.subbc'
       nmfil(27) = ''
       nmfil(28) = 'nop.temp'
+      nmfil(29) = 'co2_interp_table.txt'
       nmfily( 1) = 'terminal console input'
       nmfily( 2) = 'terminal console output'
       nmfily( 3) = 'not using'

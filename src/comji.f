@@ -212,6 +212,11 @@
       real*8, allocatable ::  t8(:) 
       real*8, allocatable ::  t9(:) 
       real*8, allocatable ::  t10(:) 
+      real*8, allocatable ::  t13(:) 
+      real*8, allocatable ::  t14(:)
+      real*8, allocatable ::  t15(:)
+      real*8, allocatable ::  t16(:)
+      real*8, allocatable ::  t17(:)
 
 !     ***** Pointers in COMMON Block eq2 *****
       real*8, allocatable ::  upwind_l(:)

@@ -103,7 +103,6 @@ c**** node coordinate data ****
 c     ivf = -1 will indicate that the strucured grid (block-centered)
 c     will be used
          ivf = -1
-         mlz = 0
          mc = 1
          read (incoor, '(a80)') wdd1
          read(wdd1,*) keyword
@@ -215,7 +214,8 @@ c     convert to FEHM timestep changes
             tims = 0.0
             icgts = nper
             nstep = 100000
-            read(inmod,*) perlen,nstp,tsmult,modchar(1:2)
+            read(inmod,*) 
+     &           perlen,nstp,tsmult,modchar(1:2)
             perlen = perlen*timeconv
             tims = tims + perlen
             iprtout = nstp
@@ -360,33 +360,30 @@ c     z assumes z(nz+1)is lowest elevation
                x(0) = -x(1)
                x(nx+1) = 2.0*x(nx) - x(nx-1)
             else
-               x(0) = x(1)
-               x(nx+1) = x(nx)
+               x(0) = 2.0*x(1) - x(2)
+               x(nx+1) = 2.0*x(nx) - x(nx-1)
             endif
             if(ny.eq.1) then
                y(0) = -y(1)
                y(ny+1) = 2.0*y(ny) - y(ny-1)
             else
-               y(0) = y(1)
-               y(ny+1) = y(ny)
+               y(0) = 2.0*y(1) - y(2)
+               y(ny+1) = 2.0*y(ny) - y(ny-1)
             endif
             if(nz.eq.1) then
                z(nz+1) = -z(1)
                z(0) = 2.0*z(1) - z(2)
             else
-               z(0) = z(1)
-               z(nz+1) = z(nz)
+               z(0) = 2.0*z(1) - z(2)
+               z(nz+1) = 2.0*z(nz) - z(nz-1)
             endif
-c     x(nx+1) = 2.0*x(nx) - x(nx-1)
-c     y(ny+1) = 2.0*y(ny) - y(ny-1)
+            x(nx+1) = 2.0*x(nx) - x(nx-1)
+            y(ny+1) = 2.0*y(ny) - y(ny-1)
             do i = 1,nx
                dx(i) = 0.5*(x(i+1)-x(i-1))
             enddo
             do i = 1,ny
                dy(i) = 0.5*(y(i+1)-y(i-1))
-            enddo
-            do i = 1,nz
-               dz(i) = abs(0.5*(z(i+1)-z(i-1)))
             enddo
          else
             xl = x0
@@ -718,7 +715,7 @@ c     write coordinates to a file
             fdm_name(froot+1:froot+12) = ".coordinates"
             nunit = open_file(fdm_name,'unknown')
             inquire (file = fdm_name, write = response)
-! In case can't write to directory with grid file
+!In case can't write to directory with grid file
             if (response .eq. 'NO') then
                close (nunit)
                if (iout .ne. 0) then 

@@ -19,7 +19,7 @@
 !***********************************************************************
 
       integer node_azones
-      integer hflag, pflag, tflag, eflag, ozflag
+      integer hflag, pflag, tflag, eflag, ozflag, carbflag, carbflag2
       real*8, allocatable :: avg_values(:,:), zone_volume(:)
 
       type :: integer_value

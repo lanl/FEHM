@@ -82,6 +82,10 @@
       ishiswt = 0
       ishisc = 0
       ishiswc = 0
+      ishiscm = 0
+      ishiscfz = 0
+      ishiscs = 0
+
       wt_flag = 0
 
       if (null1(root_name)) then
@@ -478,6 +482,50 @@
             end if
             if (out_zones) then
                ozflag = ozflag + 1
+            end if
+! RJP 08/09/07 added below for outputing CO2 related states
+! RJP added below for outputing CO2 mass
+        case ('co2', 'CO2')
+! Output CO2 mass in kg
+            fname =  root(1:iroot) // '_co2m' // hissfx
+            ishiscm = ishis + 210
+            open (unit=ishiscm, file=fname, form='formatted')
+            select case (form_flag)
+            case (0)
+               write(ishiscm, 6000) verno, jdate, jtime, trim(wdd)
+            case (1)
+               write(ishiscm, 6005) verno, jdate, jtime
+            end select
+            if (out_zones) then
+               ozflag = ozflag + 1
+               carbflag = ozflag
+            end if
+! RJP 07/05/07 added below for outputing CO2 flux
+        case ('cfl', 'CFL')
+! Output CO2 zone fluxes in kg/s
+            fname =  root(1:iroot) // '_co2flx' // hissfx
+            ishiscfz = ishis + 220
+            open (unit=ishiscfz, file=fname, form='formatted')
+            select case (form_flag)
+            case (0)
+               write(ishiscm, 6000) verno, jdate, jtime, trim(wdd)
+            case (1)
+               write(ishiscm, 6005) verno, jdate, jtime
+            end select
+        case ('sco', 'SCO')
+! Output CO2 mass in kg
+            fname =  root(1:iroot) // '_co2s' // hissfx
+            ishiscs = ishis + 230
+            open (unit=ishiscs, file=fname, form='formatted')
+            select case (form_flag)
+            case (0)
+               write(ishiscm, 6000) verno, jdate, jtime, trim(wdd)
+            case (1)
+               write(ishiscm, 6005) verno, jdate, jtime
+            end select
+            if (out_zones) then
+               ozflag = ozflag + 1
+               carbflag2 = ozflag
             end if
          case ('glo', 'GLO')
 ! Output global variables

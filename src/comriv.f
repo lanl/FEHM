@@ -30,12 +30,13 @@
 !D2
 !***********************************************************************
 
-      integer npoint_riv,iriver,maxlay,nbc_riv,npoint_riv_old
+      integer npoint_riv,iriver,maxlay,nbc_riv,npoint_riv_old,nic_old
       integer maxriver_nodes
       integer, allocatable :: isriverf(:) 
       integer, allocatable :: ifriverf(:)
       integer, allocatable :: iriverf(:)
       integer, allocatable :: inriverf(:)
+      integer, allocatable :: iwsp(:)
       integer, allocatable :: isriver(:) 
       integer, allocatable :: ibc_river(:) 
       integer, allocatable :: iriver_list(:)
@@ -56,11 +57,14 @@
       real*8, allocatable ::  coor_riv(:,:)
       real*8, allocatable  :: coor_dum(:,:)
       real*8, allocatable ::  area_riv(:,:)
+      real*8, allocatable ::  csg_th(:,:)
       real*8, allocatable ::  perm_riv(:,:)  
       real*8, allocatable ::  river01(:)
       real*8, allocatable ::  river02(:)
       real*8, allocatable ::  river03(:)
       real*8, allocatable  :: vol1(:)
+      real*8, allocatable :: mod_dis(:,:)
       
-      parameter (maxriver_nodes = 10000)
+      parameter (maxriver_nodes = 100000)
+
       end module comriv

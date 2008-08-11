@@ -115,6 +115,7 @@ C***********************************************************************
       use comii
       use comwt
       use comflow
+      use comco2
       implicit none
 
       real*8 totalflin,totalein,curinflow,cureinflow
@@ -388,6 +389,10 @@ c
 c     
 c**** output for co2 ****
 c     
+               if(icarb.eq.1) then
+                  call icectrco2(5,0)
+                  call icectrco2(-5,0)
+               endif	
                if (ico2.gt.0) call  co2ctr  ( 5 )
                if (ico2.lt.0.and.ice.eq.0) then
                   call  airctr  ( 5,0 )
