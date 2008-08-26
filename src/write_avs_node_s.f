@@ -230,9 +230,10 @@ c----------------------------------------------------------------------
 
       integer maxscalar
       parameter (maxscalar = 17)
-      integer neq,nscalar,lu,ifdual,icall,open_file
+      integer neq,nscalar,lu,ifdual,icall,open_file,offset
       integer i,j,iolp,iovp,nout,iz,iendz,il,idz, i1, i2, index, iaxy, k
       integer size_head, size_pcp, istart, iend, ic1, ic2, length, nadd
+      integer icord1, icord2, icord3
       integer nelm2(ns_in)
       real*8 hdum, sdum, px, py, pz, flxdum
       character*80 title(2*maxscalar+3)
@@ -270,10 +271,12 @@ C   ERROR checking:
          istart = neq + 1
          iend = neq * 2
          nadd = nelm(neq+1)-neq-1
+         offset = neq
       else
          istart = 1
          iend = neq
          nadd = 0
+         offset = 0
       endif
     
       if (icall .eq. 1) tecstring = ''
@@ -416,7 +419,7 @@ C---  Max number of scalars is 13 + 3 coordinates
                if (altc(1:4) .eq. 'avsx') then
 ! For avsx all three coordinates are always output
                   do j = 1,3
-                     write(vstring,110) dls(1:k), corz(i,j)
+                     write(vstring,110) dls(1:k), corz(i - offset,j)
                      ic2 = ic1 + len_trim(vstring)
                      string(ic1:ic2) = vstring
                      ic1 = ic2 + 1
@@ -424,8 +427,26 @@ C---  Max number of scalars is 13 + 3 coordinates
                else if (altc(1:4) .eq. 'avs' .or. altc(1:3) .eq. 'sur'
      &                 .or. icall .eq. 1) then
 ! Coordinates will only be output in the first file for tecplot
-                  do j = 1,iocord
-                     write(vstring,110) dls(1:k), corz(i,j)
+                  select case (icnl)
+                  case (1, 4)
+                     icord1 = 1
+                     icord2 = 2
+                     icord3 = 1
+                  case (2, 5)
+                     icord1 = 1
+                     icord2 = 3
+                     icord3 = 2
+                  case(3, 6)
+                     icord1 = 1
+                     icord2 = 3
+                     icord3 = 1
+                  case default
+                     icord1 = 1
+                     icord2 = 3
+                     icord3 = 1
+                  end select
+                  do j = icord1, icord2, icord3
+                     write(vstring,110) dls(1:k), corz(i - offset,j)
                      ic2 = ic1 + len_trim(vstring)
                      string(ic1:ic2) = vstring
                      ic1 = ic2 + 1
@@ -566,8 +587,13 @@ c might need help in the
             endif
             if (ioflx .eq. 1 .and. ioliquid .eq. 1) then
                if (.not. net_flux) then
-                  iaxy = nelmdg (i) - (neq + 1) + nadd
-                  write(vstring,110) dls(1:k), a_axy(iaxy)
+c                  iaxy = nelmdg (i) - (neq + 1) + nadd
+c                  write(vstring,110) dls(1:k), a_axy(iaxy)
+                  if (vol_flux) then
+                     write(vstring,110) dls(1:k), sk(i) / sx1(i)
+                  else
+                     write(vstring,110) dls(1:k), sk(i)
+                  end if
                else
                   i1 = nelm(i) + 1
                   i2 = nelm(i+1)

@@ -158,6 +158,7 @@ C***********************************************************************
       character*320 tstring
       integer icall, neq, nvector, lu, ifdual, length
       integer i, istep, nout, iz, idz, iendz, j, k, iocord_temp
+      integer icord1, icord2, icord3
       real*8  write_array(9)
       real*8  pnxv(neq), pnyv(neq), pnzv(neq)
       real*8  pnxl(neq), pnyl(neq), pnzl(neq)
@@ -201,6 +202,26 @@ c     error
                iocord = 2
             end if
          end if
+      end if
+      if (iocord .ne. 0) then
+         select case (icnl)
+         case (1, 4)
+            icord1 = 1
+            icord2 = 2
+            icord3 = 1
+         case (2, 5)
+            icord1 = 1
+            icord2 = 3
+            icord3 = 2
+         case(3, 6)
+            icord1 = 1
+            icord2 = 3
+            icord3 = 1
+         case default
+            icord1 = 1
+            icord2 = 3
+            icord3 = 1
+         end select
       end if
 
       nout = nvector
@@ -305,10 +326,12 @@ c     error
          write(lu,90) nout, (3, i = 1, nout)
          write(lu, 100) (trim(title(i)), i = 1, nout)
       else if(altc(1:3).eq.'tec') then
-         write(lu,301) verno, jdate, jtime, trim(wdd)
-         write(lu,300) (trim(title(i)), i = 1, iocord), 
-     &        (trim(title2(i)), i = 1, k), 
-     &        (trim(title(i)), i = iocord + 1, nout), '"'
+         if (icall .eq. 1) then
+            write(lu,301) verno, jdate, jtime, trim(wdd)
+            write(lu,300) (trim(title(i)), i = 1, iocord), 
+     &           (trim(title2(i)), i = 1, k), 
+     &           (trim(title(i)), i = iocord + 1, nout), '"'
+         end if
          if (iozone .ne. 0) write(lu,302) days
       else if(altc(1:3).eq.'sur') then
          write(tstring,400) (trim(title2(i)), i = 1, k),
@@ -338,12 +361,19 @@ c     error
             if (iozone .eq. 1) then
                if (izone_surf_nodes(i).ne.idz) goto 199
             end if
-            do j = 1, iocord
-               write_array(j) = corz(i, j)
-            end do
-            if (iocord .eq. 2 .and. altc(1:3) .eq. 'avs') then
-               write_array(j) = corz(i, j)
-               j = j + 1
+            if (iocord .ne. 0) then
+               if (iocord .eq. 2 .and. altc(1:3) .eq. 'avs') then
+                  do j = 1, 3
+                     write_array(j) = corz(i, j)
+                  end do
+               else
+                  do j = icord1, icord2, icord3
+                     write_array(j) = corz(i, j)
+                  end do
+                  j = iocord + 1
+               end if
+            else
+               j = 1
             end if
             if (iovapor .eq. 1) then
                write_array(j) = pnxv(i)

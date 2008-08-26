@@ -177,6 +177,7 @@ C***********************************************************************
 
       integer add_dual, maxcon, iz, idz, iendz, il, open_file
       integer neq,nspeci,lu,ifdual,icall,length,i1,i2
+      integer icord1, icord2, icord3
       integer npt(*),nelm2(ns_in)
       parameter (maxcon = 100)
       real*8 an(n0,nspeci)
@@ -212,6 +213,27 @@ C***********************************************************************
          dual_char = 'Dual '
          tailstring = '_con_dual_node'
       endif
+
+      if (iocord .ne. 0) then
+         select case (icnl)
+         case (1, 4)
+            icord1 = 1
+            icord2 = 2
+            icord3 = 1
+         case (2, 5)
+            icord1 = 1
+            icord2 = 3
+            icord3 = 2
+         case(3, 6)
+            icord1 = 1
+            icord2 = 3
+            icord3 = 1
+         case default
+            icord1 = 1
+            icord2 = 3
+            icord3 = 1
+         end select
+      end if
 
       if (iozone .ne. 0 ) then
          iendz = nsurf
@@ -418,13 +440,13 @@ c---------------------------------------
                end if
                if (altc(1:3) .eq. 'tec' .and. iocord .ne. 0) then
                   if (icall .eq. 1 .and. iozid .eq. 0) then
-                     write(lu, fstring) (corz(i,j), j=1,iocord), i,
-     +                    (min(1.0d+20, max(1.0d-20,
+                     write(lu, fstring) (corz(i,j), j = icord1, icord2,
+     +                    icord3), i, (min(1.0d+20, max(1.0d-20,
      +                    an(i+add_dual,n))), n=1,nspeci)
                   else if (icall .eq. 1 .and. iozid .eq. 1) then
-                     write(lu, fstring) (corz(i,j), j=1,iocord), i,
-     +                    izonef(i), (min(1.0d+20, max(1.0d-20,
-     +                    an(i+add_dual,n))), n=1,nspeci)
+                     write(lu, fstring) (corz(i,j), j = icord1, icord2,
+     +                    icord3), i,izonef(i), (min(1.0d+20, 
+     +                    max(1.0d-20,an(i+add_dual,n))), n=1,nspeci)
                   else
                      write(lu, fstring) i, (min(1.0d+20, max(1.0d-20,
      +                    an(i+add_dual,n))), n=1,nspeci)
@@ -441,13 +463,13 @@ c---------------------------------------
                   
                else if (iocord .ne. 0) then
                   if (iozid .eq. 0) then
-                     write(lu, fstring) i, (corz(i,j), j=1,iocord),
-     +                    (min(1.0d+20, max(1.0d-20,
+                     write(lu, fstring) i, (corz(i,j), j = icord1, 
+     +                    icord2, icord3), (min(1.0d+20, max(1.0d-20,
      +                    an(i+add_dual,n))), n=1,nspeci)
                   else
-                     write(lu, fstring) i, (corz(i,j), j=1,iocord),
-     +                    izonef(i), (min(1.0d+20, max(1.0d-20,
-     +                    an(i+add_dual,n))), n=1,nspeci)
+                     write(lu, fstring) i, (corz(i,j), j = icord1,
+     +                    icord2, icord3), izonef(i), (min(1.0d+20, 
+     +                    max(1.0d-20, an(i+add_dual,n))), n=1,nspeci)
                   end if
 
                else
@@ -614,10 +636,12 @@ c=================================================
                   if (izone_surf_nodes(in).ne.idz) goto 299
                end if               
                j=0
-               do i = 1, iocord
-                  j = j+1
-                  write_array(j)=corz(in,i)
-               end do
+               if (iocord .ne. 0) then
+                  do i = icord1, icord2, icord3
+                     j = j+1
+                     write_array(j)=corz(in,i)
+                  end do
+               end if
                do i = 1,ncpntprt
                   ic = cpntprt(i)
                   j=j+1
