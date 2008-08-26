@@ -481,8 +481,9 @@ c         nrhs_sol(1)=nrhs(2)
             anvri=0.
             danvri=0.
          end if
+cHari 3/26/08
          if (irdof .ne. 13 .or. ifree .ne. 0) then
-            satr = s(i)
+            satr = min(s(i),strac_max)
          else
             satr = 1.d0
          end if
@@ -620,8 +621,9 @@ c
                   do jm=1,iq
                      kb=it8(jm)
                      kbnsp = kb + (nsp - 1) * neq
+cHari 3/26/08
                      if (irdof .ne. 13) then
-                        satrkb = s(kb)
+                        satrkb = min(s(kb),strac_max)
                      else
                         satrkb = 1.0
                      end if
@@ -723,8 +725,9 @@ c--------------------------------------------------------------------
                   do jm=1,iq
                      kb=it8(jm)
                      kbnsp = kb + (nsp - 1) * neq
+cHari 3/26/08
                      if (irdof .ne. 13) then
-                        satrkb = s(kb)
+                        satrkb = min(s(kb),strac_max)
                      else
                         satrkb = 1.0
                      end if
@@ -923,7 +926,8 @@ c
                   do jm=1,iq
                      kb=it8(jm)
                      kbnsp = kb + (nsp - 1) * neq
-                     satrkb = s(kb)
+cHari 3/26/08
+                     satrkb = min(s(kb),strac_max)
 c----------------- PHS ------- 9/3/2004 -----------------------------
                      newdiffkb = concadiff(2,mflagv(nsp,itrc(kbnsp)),
      &                    diffmfv(nsp,itrc(kbnsp)),ps(kb),satrkb,
@@ -999,7 +1003,9 @@ c--------------------------------------------------------------------
                   do jm=1,iq
                      kb=it8(jm)
                      kbnsp = kb + (nsp - 1) * neq
-                     satrkb = s(kb)
+cHari 3/26/08
+
+                     satrkb = min(s(kb),strac_max)
 c----------------- PHS ------- 9/3/2004 -----------------------------
                      newdiffkb = concadiff(2,mflagv(nsp,itrc(kbnsp)),
      &                    diffmfv(nsp,itrc(kbnsp)),ps(kb),satrkb,

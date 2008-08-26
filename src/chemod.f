@@ -112,7 +112,7 @@ C**********************************************************************
       integer irxn,i,j,isp,itemp,itemp2,matnum,mat
       integer isolute
       real*8 dt,dum
-      real*8 danl_subst,danv_subst
+      real*8 danl_subst,danv_subst,stemp
 
 
       do in=1,n0
@@ -252,7 +252,9 @@ c.........Call user-defined subroutines
                
  299           continue
                if (irdof .ne. 13) then
-                  danl_subst = max(rolf(in)*s(in),rtol)
+cHari 3/26/08
+                  stemp = min(strac_max,s(in))
+                  danl_subst = max(rolf(in)*stemp,rtol)
                else
                   danl_subst = max(rolf(in),rtol)
                endif
@@ -287,7 +289,10 @@ c.........Call user-defined subroutines
                   else                  
                      mi=in+(pcpnt(ic)-1)*n0
                      if (irdof .ne. 13) then
-                        danl_subst = max(rolf(in)*s(in),rtol)
+
+cHari 3/26/08
+                        stemp = min(strac_max,s(in))
+                        danl_subst = max(rolf(in)*stemp,rtol)
                      else
                         danl_subst = max(rolf(in),rtol)
                      end if
@@ -318,7 +323,9 @@ c.........Call user-defined subroutines
                   iv=irxniv(irxn,isp)
                   mi=in+(pvap(iv)-1)*n0
                   drdcvap(iv,in)=drdcvap(iv,in)+drvap(iv)
-                  danv_subst = max( rovf(in)*(1-s(in)),rtol)
+cHari 3/26/08
+                  stemp = min(strac_max,s(in))
+                  danv_subst = max( rovf(in)*(1-stemp),rtol)
                   rc(mi)=rc(mi)-(ps_trac(in)*danv_subst*sx1(in)*
      2                 rrvap(iv)/3600)
                   drdcvap(iv,in)=drdcvap(iv,in)-(ps_trac(in)*
@@ -355,7 +362,7 @@ c <<< Subroutine SPECIATE >>>
       real*8 err,dum,denom
       real*8 gas_const
       parameter (gas_const=8.314)
-      real*8 temp_conv
+      real*8 temp_conv,stemp
       parameter (temp_conv=273.16)
       character*1 trans
 
@@ -1162,7 +1169,7 @@ c ----Inherent statements
 c  ...Declarations of variables
       integer in,irxn
 
-      real*8 den,dt,por,danl_subst
+      real*8 den,dt,por,danl_subst,stemp
 
 c  ...Inherent common blocks
 
@@ -1189,8 +1196,10 @@ c  ...Substitutions
          ckeqlb1=10**ckeqlb1
       endif
       ckmtrn1=ckmtrn(irxn)
+cHari 3/26/08
       if (irdof .ne. 13) then
-         danl_subst = max(rolf(in)*s(in),rtol)
+         stemp = min(s(in),strac_max)
+         danl_subst = max(rolf(in)*stemp,rtol)
       else
          danl_subst = max(rolf(in),rtol)
       end if
@@ -1248,7 +1257,7 @@ c ----Inherent statements
 
 c  ...Declarations of variables
       integer in,irxn,mi
-      real*8 den,dt
+      real*8 den,dt,stemp
 
 c  ...Inherent common blocks
 
@@ -1275,8 +1284,10 @@ c  ...User-introduced variables
       endif
       ckmtrn1=ckmtrn(irxn)
       simmmx1=simmmx(irxn)
+cHari 3/26/08
       if (irdof .ne. 13) then
-         danl_subst = max(rolf(in)*s(in),rtol)
+         stemp = min(strac_max,s(in))
+         danl_subst = max(rolf(in)*stemp,rtol)
       else
          danl_subst = max(rolf(in),rtol)
       end if
@@ -1342,7 +1353,7 @@ c       <          maxprt,maxrxn,maxspcs,maxtbc
 c  ...Declarations of variables
       integer in,irxn
 
-      real*8 den,dt,por
+      real*8 den,dt,por,stemp
       
 c  ...Inherent common blocks
 
@@ -1358,8 +1369,10 @@ c  ...User-introduced variables
       real*8 danl_subst,wr_conv
       por = ps_trac(in)
       den = denr(in)
+cHari 3/26/08
       if (irdof .ne. 13) then
-         danl_subst = max(rolf(in)*s(in),rtol)
+         stemp = min(strac_max,s(in))
+         danl_subst = max(rolf(in)*stemp,rtol)
       else
          danl_subst = max(rolf(in),rtol)
       end if
@@ -1671,7 +1684,7 @@ c  ...Declarations of variables
       integer in,irxn
       integer mi
 
-      real*8 dt
+      real*8 dt, stemp
 
 c  ...Inherent common blocks
 
@@ -1821,7 +1834,7 @@ c ----Inherent statements
 c  ...Declarations of variables
       integer in,irxn,mi
 
-      real*8 dt
+      real*8 dt, stemp
 
 c  ...Inherent common blocks
 
@@ -1857,8 +1870,10 @@ c     The total amount of the species now decays, and the
 c     portion of the derivative associated with the sorbed part
 c     is included in drcpnt
 
+cHari 3/26/08
          if (irdof .ne. 13) then
-            convfact = rolf(in)*s(in)*ps_trac(in)
+            stemp = min(strac_max,s(in))
+            convfact = rolf(in)*stemp*ps_trac(in)
          else
             convfact = rolf(in)*ps_trac(in)
          end if
@@ -1893,12 +1908,15 @@ c======================================================
 c= = = = ADDING Henrys Fix to decay in vapor component
 c= = = = 11/21/2003  P. Stauffer
 c======================================================
-CPS   IF species is Henrys 
+CPS   IF species is Henrys
+
+cHari 3/26/08
+ 
          if (abs(icns(irxn)).eq.2) then
-                          
-           h_correct = ( anv(mi)*rovf(in)*(1-s(in)) 
-     2                  +anl(mi)*rolf(in)*(s(in)) )
-     3                  /(anl(mi)*rolf(in)*(s(in)))
+           stemp = min(strac_max,s(in))               
+           h_correct = ( anv(mi)*rovf(in)*(1-stemp) 
+     2                  +anl(mi)*rolf(in)*(stemp) )
+     3                  /(anl(mi)*rolf(in)*(stemp))
 
          end if
 
@@ -1950,7 +1968,10 @@ CPS   calculate sorption terms
      5           conc_subst**betadfl(pvap(par),itrc(mi)))**2
 CPS   ENDIF
          endif
-         convfact = rovf(in)*(1.-s(in))*ps_trac(in)
+
+cHari 3/26/08
+         stemp = min(strac_max,s(in))
+         convfact = rovf(in)*(1.-stemp)*ps_trac(in)
          sorbconc = scv(mi)/max(1.d-20,convfact)
          newvappar=an(mi) + sorbconc
          rrvap(par)= -ckmtrn(irxn)*newvappar
@@ -1975,7 +1996,7 @@ c     User-defined subroutine #6 (Nodal reaction)
 c  ...Declarations of variables
       integer in,irxn
 
-      real*8 dt
+      real*8 dt, stemp
 c  ...Inherent common blocks
 c local variables
       integer ic,iv,mi
@@ -1991,7 +2012,10 @@ c        --- Henry's law reaction  ---
       ovap=anlo(mi)
       ckeqlb1=ckeqlb(irxn)
       ckmtrn1=ckmtrn(irxn)
-      conv = (rovf(in)*(1-s(in)))/(mw_air*s(in)*rolf(in)*phi(in)*
+
+cHari 3/26/08
+      stemp = min(strac_max,s(in))
+      conv = (rovf(in)*(1-stemp))/(mw_air*stemp*rolf(in)*phi(in)*
      2     (1000/101.325))
       if(ic.gt.100)then
          rrcplx(ic) = -((cplx(ic)-ckeqlb1*ovap)/(1/ckmtrn1+(dt/conv)*
@@ -2029,7 +2053,7 @@ c     User-defined subroutine #7 (Nodal reaction)
 c  ...Declarations of variables
       integer in,irxn
 
-      real*8 dt
+      real*8 dt, stemp
 c  ...Inherent common blocks
 c local variables
       integer i,ic,mi,im,ic2,j
@@ -2041,7 +2065,10 @@ c local variables
       real*8 den,por,proddr,ckeqlb1,eqcheck
 c ----Users can write codes below----
       if (irdof .ne. 13) then
-         danl_subst = max(rolf(in)*s(in),rtol)
+
+cHari 3/26/08
+         stemp = min(strac_max,s(in))
+         danl_subst = max(rolf(in)*stemp,rtol)
       else
          danl_subst = max(rolf(in),rtol)
       end if
@@ -2123,7 +2150,7 @@ c     User-defined subroutine #8 (Nodal reaction)
 c  ...Declarations of variables
       integer in,irxn
 
-      real*8 dt
+      real*8 dt, stemp
 c  ...Inherent common blocks
 c local variables
       integer i,ic,mi,im,ic2,j
@@ -2135,7 +2162,10 @@ c local variables
       real*8 den,por,prod,ckeqlb1,eqcheck
 c ----Users can write codes below----
       if (irdof .ne. 13) then
-         danl_subst = max(rolf(in)*s(in),rtol)
+
+cHari 3/26/08
+         stemp = min(strac_max,s(in))
+         danl_subst = max(rolf(in)*stemp,rtol)
       else
          danl_subst = max(rolf(in),rtol)
       end if
