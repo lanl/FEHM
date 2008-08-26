@@ -42,8 +42,8 @@ subroutine co2_properties(iflg,iphase,var1,var2,var3,istate,var4,var5)
   elseif(iflg.eq.4) then
      ! determine properties and derivatives for liquid,vapor,supercritical phases
      icode=1   ! an array
-     if(iphase.eq.4) iphase1=1
-     call get_co2_properties(ifail,iphase1,9,icode,temperature,pressure,var5)
+     if(iphase.eq.4) iphase=1
+     call get_co2_properties(ifail,iphase,9,icode,temperature,pressure,var5)
      var5(4)=var5(4)*1.d-3
      var5(5)=var5(5)*1.d-3
      var5(6)=var5(6)*1.d-3

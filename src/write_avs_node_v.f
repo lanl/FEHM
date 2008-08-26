@@ -326,10 +326,12 @@ c     error
          write(lu,90) nout, (3, i = 1, nout)
          write(lu, 100) (trim(title(i)), i = 1, nout)
       else if(altc(1:3).eq.'tec') then
-         write(lu,301) verno, jdate, jtime, trim(wdd)
-         write(lu,300) (trim(title(i)), i = 1, iocord), 
-     &        (trim(title2(i)), i = 1, k), 
-     &        (trim(title(i)), i = iocord + 1, nout), '"'
+         if (icall .eq. 1) then
+            write(lu,301) verno, jdate, jtime, trim(wdd)
+            write(lu,300) (trim(title(i)), i = 1, iocord), 
+     &           (trim(title2(i)), i = 1, k), 
+     &           (trim(title(i)), i = iocord + 1, nout), '"'
+         end if
          if (iozone .ne. 0) write(lu,302) days
       else if(altc(1:3).eq.'sur') then
          write(tstring,400) (trim(title2(i)), i = 1, k),

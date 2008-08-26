@@ -85,7 +85,7 @@
       integer myfile, open_file
       save myfile
       logical it_is_open
-      saveamco2f, amco2f0, amco2f1,  amco2w, amco2w0, amco2w1, amco21
+      save amco2f, amco2f0, amco2f1,  amco2w, amco2w0, amco2w1, amco21
       save skmd1, skmd2, skmd21, skmd3, skmd31
 
       if(icarb.ne.0) then  
