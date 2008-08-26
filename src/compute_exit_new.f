@@ -1171,6 +1171,7 @@ c exited the CV of node i, the particle is placed slightly outside ipc-plane
       implicit none
 
       integer i,np1,ip
+      integer debug_pollock
 
       real*8 epsilon,xp1,yp1,zp1,xp2,yp2,zp2,xc,yc,zc
       real*8 alamda,amue,anue,ap,d,cl,ccm,cn,fac1,fac2
@@ -1182,6 +1183,7 @@ c exited the CV of node i, the particle is placed slightly outside ipc-plane
       epsilon=1.e-10
 	epsilon2=1.e-12
       epomr=1.e-4
+      debug_pollock = 1
 
 c     particle crossed the y-z plane in the x-direction
          
@@ -1190,7 +1192,8 @@ c     particle crossed the y-z plane in the x-direction
 c calculating vx2b from vomrx and aomrx because these may have
 c been modified in fixggg and no longer equal vx2bv(np1)
          vx2b = vomrx + aomrx*(ddx(i)-xp1)
-         if(vomrx.le.0..or.vx2b.le.0.) call exit_pollock
+         if((vomrx.le.0..or.vx2b.le.0.).and.debug_pollock.eq.1) call 
+     2    exit_pollock(i,np1,ip,xp1,yp1,zp1,vomrx,vomry,vomrz,vomrx)
 
 c     set the particle at the cell face and calculate the actual time 
 c     needed to get there
@@ -1226,7 +1229,8 @@ c make sure yc is between yp1 and yp2
 c calculating vx1b from vomrx and aomrx because these may have
 c been modified in fixggg and no longer equal vx2bv(np1)
          vx1b = vomrx - aomrx*xp1
-         if(vomrx.ge.0..or.vx1b.ge.0.) call exit_pollock
+         if((vomrx.ge.0..or.vx1b.ge.0.).and.debug_pollock.eq.1) call  
+     2    exit_pollock(i,np1,ip,xp1,yp1,zp1,vomrx,vomry,vomrz,vomrx)
 
          xc=0.-ddx(i)*epsilon2
          x_new(np1)=vx1b/vomrx
@@ -1255,7 +1259,8 @@ c     particle crossed the x-z plane in the y-direction
 c calculating vy2b from vomry and aomry because these may have
 c been modified in fixggg and no longer equal vy2bv(np1)
          vy2b = vomry + aomry*(ddy(i)-yp1)
-         if(vomry.le.0..or.vy2b.le.0.) call exit_pollock
+         if((vomry.le.0..or.vy2b.le.0.).and.debug_pollock.eq.1) call  
+     2    exit_pollock(i,np1,ip,xp1,yp1,zp1,vomrx,vomry,vomrz,vomrx)
 
          yc=ddy(i)*(1.+epsilon2)
          y_new(np1)=vy2b/vomry
@@ -1283,7 +1288,8 @@ c been modified in fixggg and no longer equal vy2bv(np1)
 c calculating vy1b from vomry and aomry because these may have
 c been modified in fixggg and no longer equal vy1bv(np1)
          vy1b = vomry - aomry*yp1
-         if(vomry.ge.0..or.vy1b.ge.0.) call exit_pollock
+         if((vomry.ge.0..or.vy1b.ge.0.).and.debug_pollock.eq.1) call  
+     2    exit_pollock(i,np1,ip,xp1,yp1,zp1,vomrx,vomry,vomrz,vomrx)
 
          yc=0.-ddy(i)*epsilon2
          y_new(np1)=vy1b/vomry
@@ -1312,7 +1318,8 @@ c     particle crossed the x-y plane in the z-direction
 c calculating vz2b from vomrz and aomrz because these may have
 c been modified in fixggg and no longer equal vz2bv(np1)
          vz2b = vomrz + aomrz*(ddz(i)-zp1)
-         if(vomrz.le.0..or.vz2b.le.0.) call exit_pollock
+         if((vomrz.le.0..or.vz2b.le.0.).and.debug_pollock.eq.1) call  
+     2    exit_pollock(i,np1,ip,xp1,yp1,zp1,vomrx,vomry,vomrz,vomrx)
 
          zc=ddz(i)*(1.+epsilon2)
          z_new(np1)=vz2b/vomrz
@@ -1340,7 +1347,8 @@ c been modified in fixggg and no longer equal vz2bv(np1)
 c calculating vz1b from vomrz and aomrz because these may have
 c been modified in fixggg and no longer equal vz1bv(np1)
          vz1b = vomrz - aomrz*zp1
-         if(vomrz.ge.0..or.vz1b.ge.0.) call exit_pollock
+         if((vomrz.ge.0..or.vz1b.ge.0.).and.debug_pollock.eq.1) call  
+     2    exit_pollock(i,np1,ip,xp1,yp1,zp1,vomrx,vomry,vomrz,vomrx)
 
          zc=0.-ddz(i)*epsilon2
          z_new(np1)=vz1b/vomrz
@@ -1775,17 +1783,26 @@ c of the velocity from inp1, set flag top reset velocities in newnode
 
 c........................................................
 
-      subroutine exit_pollock
+      subroutine  exit_pollock
+     2 (i,np1,ip,xp1,yp1,zp1,vomrx,vomry,vomrz,vomr)
 
       use comai, only : ierr, iptty 
 
-      write(ierr,*)'Error in pollock_intersect_plane'
-      write(ierr,*)'Sign of velocity wrong. STOP'
-      write(iptty,*)'Error in pollock_intersect_plane'
-      write(iptty,*)'Sign of velocity wrong. STOP'
+      real*8 vomr
+
+      write(ierr,*)'pollock_intersect_plane. Sign of velocity wrong.'
+      write(ierr,*)'i,np1,ip,xp1,yp1,zp1,vomrx,vomry,vomrz,vomr-ip'
+      write(ierr,*)i,np1,ip,xp1,yp1,zp1,vomrx,vomry,vomrz,vomr
+
+      if (iptty .ne. 0) then
+      write(iptty,*)'pollock_intersect_plane. Sign of velocity wrong.'
+      write(iptty,*)'i,np1,ip,xp1,yp1,zp1,vomrx,vomry,vomrz,vomr-ip'
+      write(iptty,*)i,np1,ip,xp1,yp1,zp1,vomrx,vomry,vomrz,vomr
+      end if
 
 c      stop
       call pause_compute_exit
+      call remove_particle(np1,1,i,1)
 
       return
 

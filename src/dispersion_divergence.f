@@ -75,7 +75,8 @@ c D and div.D terms for the general dispersion tensor
       current_flag = tprpflag(current_model)
       if(current_flag.eq.2.or.current_flag.eq.4) then
 
-         pormax=ps(i)
+c zvd 13-May-08 Change ps(*) to ps_trac(*)
+         pormax=ps_trac(i)
          call darcy_derivatives_BLI(i,ix,iy,iz,xp,yp,zp,
      $        dvd,dvxd,dvyd,dvzd,v,vv,pormax)
 
