@@ -257,7 +257,7 @@ C***********************************************************************
       iprtout=imsg(4)
       iyear=imsg(5)
       month=imsg(6)
-      if (nwds.eq.7) then
+      if (nwds.ge.7) then
          irsttime=1
          if (msg(7).eq.1) then
             rsttime=imsg(7)

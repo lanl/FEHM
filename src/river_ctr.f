@@ -123,7 +123,7 @@ c RJP 1/9/07 added river_zone
       integer iroot, river_zone(maxiriver), icdum
       character*120 well_file_name, well_root
 c RJP 1/9/07 changed following
-      save n_ncon, river_zone
+      save n_ncon, river_zone, inwel
       maxlay = 200
 c
 C

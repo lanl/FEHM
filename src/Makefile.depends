@@ -369,7 +369,7 @@ startup.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o comfi.o
 startup.o: comflow.o comgi.o comii.o commeth.o compart.o comsptr.o comwt.o
 startup.o: comzone.o davidi.o
 steady.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comsplitts.o
-steady.o: davidi.o
+steady.o: comsteady.o davidi.o
 sther.o: comai.o comdi.o comdti.o comii.o
 storage_derivatives.o: comci.o comdti.o davidi.o
 storsx.o: comai.o combi.o comdti.o comxi.o

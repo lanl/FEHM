@@ -443,10 +443,12 @@ c at least set nrlp to 1 (might not be set if rlp macro not called)
          n0 = 2 * neq
          neq_primary = neq
       else
-c	gdpm nodes must be added to neq
-         neq_primary = neq
-         n0 = neq_primary + ngdpmnodes
-         neq=n0
+c     gdpm nodes must be added to neq
+         if (irun .eq. 1) then
+            neq_primary = neq
+            n0 = neq_primary + ngdpmnodes
+            neq=n0
+         end if
       end if
 
       if (idualp .eq. 1) then

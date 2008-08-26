@@ -67,8 +67,10 @@ c     Add 25 more spaces for extrapolated tail of curve
 
 c     Allocate space in rtd arrays
 
-      allocate(time_rtd(rtdcount))
-      allocate(rtd(rtdcount))
+      if (.not. allocated(time_rtd)) then
+         allocate(time_rtd(rtdcount))
+         allocate(rtd(rtdcount))
+      end if
       time_rtd = 0.
       rtd = 0.
 

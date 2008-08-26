@@ -88,25 +88,22 @@ c     convert to intrinsic perms at 20 C and 0.1 Mpa
       do i=1,n0
          if(hycox(i).ge.0.0d00) then
             hycox(i) = max (zero_t, hycox(i))
-            pnx(i) = conv*hycox(i)	      
          else
             hycox(i) = 1.0d00/10.0d00**(abs(hycox(i)))
-            pnx(i) = conv*hycox(i)
          endif
+         pnx(i) = conv*hycox(i)	      
          if(hycoy(i).ge.0.0d00) then
             hycoy(i) = max (zero_t, hycoy(i))
-            pny(i) = conv*hycoy(i)
          else
             hycoy(i) = 1.0d00/10.0d00**(abs(hycoy(i)))
-            pny(i) = conv*hycoy(i)           
          endif 
+         pny(i) = conv*hycoy(i)
          if(hycoz(i).ge.0.0d00) then
             hycoz(i) = max (zero_t, hycoz(i))
-            pnz(i) = conv*hycoz(i)
          else
             hycoz(i) = 1.0d00/10.0d00**(abs(hycoz(i)))
-            pnz(i) = conv*hycoz(i)
          endif
+         pnz(i) = conv*hycoz(i)
       end do
       
       deallocate (hycox)
