@@ -208,44 +208,38 @@ C***********************************************************************
       use comdti
       use comfi
       use comsplitts
+      use comsteady
       use davidi
       implicit none
 
-      real*8 tolerance,toldp,tolds,toldt,toldc,toldh,tolde,smult,sday
-      real*8 balance_tol,inflowe,inflow,flow_rate,divisor,divisore
-      real*8 enth_rate
-      real*8 shtl,shtl0,tacc,accmax,ratio,stmch,stmch0,tmch1,tmch2
-      real*8 pdifmax,sdifmax,tdifmax,pcidifmax,hdifmax
-      integer i, iflg, itt, snstep
+      integer i, iflg, itt
+      real*8 divisor, divisore, inflow, inflowe
       character*20 dummy
-      logical null1, svar_flag, sflux_flag
-      parameter (tolerance = 1.d20)
-      save toldp, tolds, toldt, toldc, tolde, balance_tol
-      save smult, sday, snstep, shtl, shtl0, stmch, stmch0, tacc
-      save pdifmax,sdifmax,tdifmax,pcidifmax,flow_rate,enth_rate
+      logical null1
+
       if(isteady.eq.0) return
 
       if(iflg .eq. 0) then
-! Reading steady input parameters
+c     Reading steady input parameters
          toldh = tolerance
          toldp = tolerance
          tolds = tolerance
          toldt = tolerance
          toldc = tolerance
          tolde = tolerance
-	   tacc = tolerance
+         tacc = tolerance
          spercent = .false.
          divisor = 1.
          divisore = 1.
          smult = 1.
          sday = 0.
          shtl = 0.0
-	   tacc = 0.0
          stmch = 0.0
          balance_tol = tolerance
          svar_flag = .false.
          sflux_flag = .false.
          time_ss = 1.d20
+         sminstep = 2
          if (ifree .ne. 0)  then
             snstep = 150
             smult = 2.0
@@ -294,6 +288,8 @@ C***********************************************************************
                read (wdd1, *) dummy, sday
             case('snst')
                read (wdd1, *) dummy, snstep
+            case('smst')
+               read (wdd1, *) dummy, sminstep
             case('shtl')
                read (wdd1, *) dummy, shtl
             case('sacc')
@@ -304,7 +300,7 @@ C***********************************************************************
                spercent = .true.
             end select
          end do
-         
+      
       else if(iflg.eq.-1) then
 c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
          tims_trans = tims
@@ -336,6 +332,7 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
          endif
          if(irdof.eq.13) then
             pdifmax = 0.0
+            accmax = 0.0
             do i = 1, n
                if (spercent) then
                   if (pho(i) .ne. 0.) then
@@ -346,15 +343,15 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
                      divisor = 1.
                   end if
                end if
- 
                pdifmax = max(abs((phi(i)-pho(i))/divisor),pdifmax)
-	         accmax = max(abs(deni(i)*sx1(i)),accmax) 
+               accmax = max(abs(deni(i)*sx1(i)),accmax) 
             end do
             if(pdifmax.gt.toldp) go to 100 
-		  if(accmax.gt.tacc) go to 100     
+            if(accmax.gt.tacc) go to 100     
          else if(ico2.lt.0) then
             pdifmax = 0.0
             sdifmax = 0.0
+            accmax = 0.0
             do i = 1, n
                if (spercent) then
                   if (pho(i) .ne. 0) then
@@ -376,15 +373,16 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
                   end if
                end if
                sdifmax = max(abs((s(i)-so(i))/divisor),sdifmax) 
-			 accmax = max(abs(deni(i)*sx1(i)),accmax)   
+               accmax = max(abs(deni(i)*sx1(i)),accmax)   
             end do
             if(pdifmax.gt.toldp) go to 100
             if(sdifmax.gt.tolds) go to 100 
-		  if(accmax.gt.tacc) go to 100   
+            if(accmax.gt.tacc) go to 100   
          else if(ico2.eq.0) then   
             pdifmax = 0.0
             sdifmax = 0.0
             tdifmax = 0.0
+            accmax = 0.0
             do i = 1, n
                if (spercent) then
                   if (pho(i) .ne. 0.) then
@@ -416,17 +414,18 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
                   end if
                end if
                tdifmax = max(abs((t(i)-to(i))/divisor),tdifmax)
-			 accmax = max(abs(deni(i)*sx1(i)),accmax) 
+               accmax = max(abs(deni(i)*sx1(i)),accmax) 
             end do
             if(pdifmax.gt.toldp) go to 100   
             if(sdifmax.gt.tolds) go to 100   
             if(tdifmax.gt.toldt) go to 100  
-		  if(accmax.gt.tacc) go to 100     
+            if(accmax.gt.tacc) go to 100     
          else if(ico2.gt.0) then
             pdifmax = 0.0
             sdifmax = 0.0
             tdifmax = 0.0
             pcidifmax = 0.0
+            accmax = 0.0
             do i = 1, n
                if (spercent) then
                   if (pho(i) .ne. 0.) then
@@ -468,14 +467,14 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
                   end if
                end if
                pcidifmax = max(abs((pci(i)-pcio(i))/divisor),pcidifmax)
-			 accmax = max(abs(deni(i)*sx1(i)),accmax) 
+               accmax = max(abs(deni(i)*sx1(i)),accmax) 
             end do
+            if(pdifmax.gt.toldp) go to 100   
+            if(sdifmax.gt.tolds) go to 100   
+            if(tdifmax.gt.toldt) go to 100   
+            if(pcidifmax.gt.toldc) go to 100  
+            if(accmax.gt.tacc) go to 100   
          endif
-         if(pdifmax.gt.toldp) go to 100   
-         if(sdifmax.gt.tolds) go to 100   
-         if(tdifmax.gt.toldt) go to 100   
-         if(pcidifmax.gt.toldc) go to 100  
-	   if(accmax.gt.tacc) go to 100   
          isteady=1
  100     continue
       else if(iflg.eq.2) then
@@ -499,7 +498,6 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
          endif
 
  20      continue
-!         if(ico2.lt.0) then
          if(ico2.lt.0) then
             if (spercent) then
                if (qtoti .ne. 0) then
@@ -533,7 +531,6 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
                   tmch = min(tmch1,tmch2)
                endif			 		 
             endif
-!         else if(ico2.ge.0) then
          else if(ico2.ge.0) then
             if (spercent) then
                if (qtoti .ne. 0) then
@@ -567,7 +564,7 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
             else
                if (stmch.ne.0) then
                   ratio = max(1.0d0,abs(flow_rate/balance_tol),
-     &            abs(enth_rate/tolde)				)
+     &                 abs(enth_rate/tolde))
                   tmch1 = min(ratio*stmch0,stmch)
                   ratio = tims/days
                   tmch2 = min(ratio*stmch0,stmch)
@@ -579,6 +576,10 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
 
  10      continue
          if(isteady .eq. 2) then
+            if (l .lt. sminstep) then
+               isteady = 1
+               return
+            end if
             if(itt .eq. 0) then
                if (toldh .ne. tolerance)
      &              hdifmax = pdifmax /( 997. * 9.8d-6)               
@@ -622,10 +623,10 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
                if (iout .ne. 0) write(iout,52) time_ss, days
                if(iptty.ne.0) write(iptty,52) time_ss, days
             endif
-C If we have reached steady state make sure we output information
-      
+C     If we have reached steady state make sure we output information
+            
             ntty = 2
-	      
+            
             if (isty .eq. 0) then
                ifinsh = 1
                isteady = 0
