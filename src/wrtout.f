@@ -286,7 +286,7 @@ c
  6030          format(46x,'source/sink',2x,'source/sink',/,
      &              3x,'Node',2x,' p(MPa)',4x,' e(MJ)',5x,
      &              'l sat',2x,'temp(c)',3x,'(kg/s)',7x,'(MJ/s)')
- 6130          format(56x,'source/sink',2x,'source/sink',/,
+ 6130          format(56x,'source/sink',2x,'air source/sink',/,
      &              3x,'Node',1x,' head(m)',4x,' p(MPa)',4x,' e(MJ)',5x,
      &              'l sat',2x,'temp(c)',3x,'(kg/s)',7x,'(kg/s)')
  6230          format(46x,'source/sink',2x,'source/sink',/,
@@ -367,7 +367,7 @@ c     CHANGE ABOVE TO JUST PRINT OUT qh ARRAY
                            crl(4,1)= dumconv1
                            ihead=0
                         endif
-                                ! phod is head with offset removed
+c     phod is head with offset removed
                         write(iout, 6032)  md , phod , pres_out , eqd , 
      &                       sl , t(md) , rqd , qh(md) 
                         if ( iatty .gt. 0 )  write(iatty ,6032)  md ,
