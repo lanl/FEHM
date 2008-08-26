@@ -63,8 +63,12 @@
       character*80 info_string, title_string, formh_string 
       character*80 form1_string, form2_string, formp_string
       character*110 formz_string
+      character*90, allocatable :: formf_string(:)
+      character*28 vt_string
       character*14 time_string, file_format, dumv_string
       character*14, allocatable :: var_string(:), var_tmp(:)
+      character*8 zone_string
+      character*3 dls
       logical time2print
 
       save last_step, last_time, dumv, form1_string, form2_string,
@@ -116,7 +120,6 @@ c            write(ishis, '(a4)')  '    '
          form2_string = ''
          formh_string = ''
          formp_string = ''
-         formz_string = ''
          title_string = ''
          length = 0
          ic1 = 1
@@ -357,30 +360,52 @@ c            write(ishis, '(a4)')  '    '
          end if
          if (ishisfz .ne. 0) then
 ! Output zone fluxes
+ 240        format ('(a, ', i3, '(a))')
             info_string = info_string(ic1:ic2) // 'zone flux '
             ic2 = len_trim(info_string) + 1
             title_string = 'Zone Flux (kg/s)'
+            allocate (formf_string(nflxz))
+            formz_string = ''
             if (form_flag .eq. 1) then
-               formz_string = 'variables = "' // trim(time_string) //
-     &              '"' // ' "Zone" "Source" "Sink" "Net" "Boundary"'
-               if (irdof .ne. 13 .or. ifree .ne. 0) 
-     &              formz_string = trim(formz_string) // ' "Vapor"'
-               write(ishisfz, '(a)') trim(formz_string)
+               dls = '" "'
+               vt_string ='variables = "' // trim(time_string)
+            else if (form_flag .eq. 2) then
+               dls = ", "
+               vt_string = trim(time_string)
+            else
+               dls = " "
+               vt_string = trim(time_string)
+            end if
+            write(formz_string, 240) nflxz
+            do i = 1, nflxz
+               write(zone_string, '("Zone", i3.3, 1x)') iflxz(i)
+               formf_string(i) = ''
+               if (prnt_flxzvar(1)) formf_string(i) = 
+     &              trim(formf_string(i)) // dls // zone_string //
+     &              'Source'
+               if (prnt_flxzvar(2)) formf_string(i) = 
+     &              trim(formf_string(i)) // dls // zone_string //
+     &              'Sink'
+               if (prnt_flxzvar(3)) formf_string(i) = 
+     &              trim(formf_string(i)) // dls // zone_string //
+     &              'Net'
+               if (prnt_flxzvar(4)) formf_string(i) = 
+     &              trim(formf_string(i)) // dls // zone_string //
+     &              'Boundary'
+               if ((irdof .ne. 13 .or. ifree .ne. 0) .and.
+     &              prnt_flxzvar(5)) formf_string(i) = 
+     &              trim(formf_string(i)) // dls // zone_string //
+     &              'Vapor'
+               if (form_flag .eq. 1 .and. i .eq.  nflxz) 
+     &              formf_string(i) = trim(formf_string(i)) // '"'
+            end do
+            if (form_flag .eq. 0)
+     &           write(ishisfz, '(a)') trim(title_string)
+            write(ishisfz, formz_string) trim(vt_string), 
+     &           (trim(formf_string(i)), i = 1, nflxz)
+            if (form_flag .eq. 1) then
                write(ishisfz, 230) 50., 95., trim(wdd)
                write(ishisfz, 230) 50., 90., trim(title_string)
-            else if (form_flag .eq. 2) then
-               formz_string = trim(time_string) //
-     &              ", Zone, Source, Sink, Net, Boundary"
-               if (irdof .ne. 13 .or. ifree .ne. 0) 
-     &              formz_string = trim(formz_string) // ", Vapor"
-               write(ishisfz, '(a)') trim(formz_string)
-            else
-               formz_string = trim(time_string) //
-     &              " Zone Source Sink Net Boundary"
-               if (irdof .ne. 13 .or. ifree .ne. 0) 
-     &              formz_string = trim(formz_string) // " Vapor"
-               write(ishisfz, '(a)') trim(title_string)
-               write(ishisfz, '(a)') trim(formz_string)
             endif
          end if
          if (ishisc .ne. 0) then
@@ -390,6 +415,7 @@ c            write(ishis, '(a4)')  '    '
          end if
          if (ishiswt .ne. 0) then
 ! output water table elevations
+            formz_string = ''
             info_string = info_string(ic1:ic2) // 'water table '
             ic2 = len_trim(info_string) + 1
             title_string = "Water table"

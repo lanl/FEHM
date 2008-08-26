@@ -54,6 +54,8 @@
       integer :: ipr_vapor = 0
       integer flxz_flag, indexa_axy, inneq, inode, izone, md
       real*8 ptime, sumfout, sumsink, sumsource, sumboun, sum_vap
+      character*18 value_string
+      character*24 form_string
       character*90, allocatable :: flux_string(:)
       logical matrix_node
 
@@ -196,45 +198,50 @@ c     Write results
             end if
          else
 ! Fluxes are written to flux history file
+            form_string = ''
             if (form_flag .le. 1) then
-               if (ipr_vapor .eq. 0) then
-                  write (flux_string(izone), 1050) sumsource, sumsink, 
-     &                 sumfout, sumboun
-               else
-                  write (flux_string(izone), 1050) sumsource, sumsink, 
-     &                 sumfout, sumboun, sum_vap
-               end if
+               form_string = '(1x, g16.9)'
             else
-               if (ipr_vapor .eq. 0) then
-                  write (flux_string(izone), 1055) sumsource, sumsink, 
-     &                 sumfout, sumboun
-               else
-                  write (flux_string(izone), 1056) sumsource, sumsink, 
-     &                 sumfout, sumboun, sum_vap
-               end if
+               form_string = '(", ", g16.9)'
+            end if
+            if (prnt_flxzvar(1)) then
+               write(value_string, form_string) sumsource
+               flux_string(izone) = trim(flux_string(izone)) // 
+     &              trim(value_string)
+            end if
+            if (prnt_flxzvar(2)) then
+               write(value_string, form_string) sumsink
+               flux_string(izone) = trim(flux_string(izone)) //
+     &              trim(value_string)
+            end if
+            if (prnt_flxzvar(3)) then
+               write(value_string, form_string) sumfout
+               flux_string(izone) = trim(flux_string(izone)) //
+     &              trim(value_string)
+            end if
+            if (prnt_flxzvar(4)) then
+               write(value_string, form_string) sumboun
+               flux_string(izone) = trim(flux_string(izone)) //
+     &              trim(value_string)
+            end if
+            if ((ipr_vapor .ne. 0) .and. prnt_flxzvar(5)) then
+               write(value_string, form_string) sum_vap
+               flux_string(izone) = trim(flux_string(izone)) //
+     &              trim(value_string)
             end if
          end if
- 1045    format(1x,i4,' (',i6,')',2x,1p,4(1x,e12.5))
- 1046    format(1x,i4,' (',i6,')',2x,1p,5(1x,e12.5))
- 1050    format(4(g16.9, 1x), g16.9)
- 1051    format(g16.9, 1x, i4, 1x, a)
- 1055    format(3(g16.9, ", "), g16.9)
- 1056    format(4(g16.9, ", "), g16.9)
- 1057    format(g16.9, ", ", i4, ", ", a)
 
       end do
+ 1045 format(1x,i4,' (',i6,')',2x,1p,4(1x,e12.5))
+ 1046 format(1x,i4,' (',i6,')',2x,1p,5(1x,e12.5))
+ 1047 format('(g16.9, ', i3, '(a))')
 
       if (flxz_flag .eq. 2) then
 ! Write to flux history file
-         do i1 = 1, nflxz
-            if (form_flag .le. 1) then
-               write (ishisfz, 1051) ptime, iflxz(i1), 
-     &              trim(flux_string(i1))
-            else
-               write (ishisfz, 1057) ptime, iflxz(i1), 
-     &              trim(flux_string(i1))
-            end if
-         end do
+         form_string = ''
+         write(form_string, 1047) nflxz
+         write (ishisfz, form_string) ptime, (trim(flux_string(i1)),
+     &        i1 = 1, nflxz)
       end if
 
       end

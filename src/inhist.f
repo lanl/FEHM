@@ -43,6 +43,7 @@
 !***********************************************************************
 
       use comai
+      use combi, only : prnt_flxzvar
       use comdi
       use comxi
       use comzone
@@ -51,7 +52,7 @@
       implicit none
 
       character*8 hissfx, trcsfx
-      character*32 cmsg(4)
+      character*32 cmsg(4), cdum
       character*80 chdum
       character*120 fname, root
       logical null1, opend
@@ -147,10 +148,12 @@
             if  (chdum(1:3) .eq. 'tec' .or. chdum(1:3) .eq. 'TEC') then
 ! Output using tecplot format
                form_flag = 1
+               hissfx = '_his.dat'
             else if (chdum(1:3) .eq. 'sur' .or. chdum(1:3) .eq. 'SUR') 
      &              then
 ! Output using sufer (csv) format
                form_flag = 2
+               hissfx = '_his.csv'
             end if      
          case ('yea','day','sec','hrs','YEA','DAY','SEC','HRS')
             if (chdum(1:3) .eq. 'yea' .or. chdum(1:3) .eq. 'YEA') then
@@ -428,6 +431,28 @@
          case ('zfl', 'ZFL')
 ! Output zone fluxes
             if (nflxz .ne. 0) then
+               call parse_string(chdum,imsg,msg,xmsg,cmsg,nwds)
+               if (nwds .gt. 1) then
+! Select fluxes to output
+                  prnt_flxzvar = .FALSE.
+                  do i = 2, nwds
+                     if (msg(i) .eq. 3) then
+                        cdum = cmsg(i)
+                        select case (cdum(1:3))
+                        case ('sou', 'SOU')   ! Source
+                           prnt_flxzvar(1) = .TRUE.
+                        case ('sin', 'SIN')   ! Sink
+                           prnt_flxzvar(2) = .TRUE.
+                        case ('net', 'NET')   ! Net
+                           prnt_flxzvar(3) = .TRUE.
+                        case ('bou', 'BOU')   ! Boundary
+                           prnt_flxzvar(4) = .TRUE.
+                        case ('vap', 'VAP')   ! Vapor
+                           prnt_flxzvar(5) = .TRUE.
+                        end select
+                     end if
+                  end do
+               end if
                fname =  root(1:iroot) // '_flxz' // hissfx
                ishisfz = ishis + 170
                open (unit=ishisfz, file=fname, form='formatted')
