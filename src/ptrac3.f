@@ -2520,6 +2520,7 @@ c...................................
      &        part_id(iparticle,1), part_id(iparticle,2), 
      &        izonef(upcoming_node), upcoming_node
       end if
+      call flush(isptr3)
 
  444  format (1x, g21.14, 4(1x, i7))
  445  format (1x, 3(g16.9, 1x), g21.14, 4(1x, i7), 1(1x, g16.9))

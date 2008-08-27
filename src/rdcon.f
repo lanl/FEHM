@@ -849,7 +849,10 @@ CC for all liquid / vapor calculations
 c
 c read in data for each species
 c
-         
+c Define maximum saturation for vapor or Henry's species,
+c currently only a single value can be defined for all vapor/Henry's 
+c species so it only needs to be entered once
+         strac_max = 0.99
          do nsp=1,nspeci
             npn=npt(nsp)
 !            read(inpt,*) icns(nsp)
@@ -861,8 +864,19 @@ c construct input necessary for chemod and read_rxn
             if(icns(nsp).eq.1.or.abs(icns(nsp)).eq.2)then
                icpnt = icpnt + 1
                pcpnt(icpnt)=nsp
-               if (nwds .ge. 2 .and. rxn_flag .eq. 0 .and. 
-     &              msg(2) .eq. 3) cpntnam(icpnt) = cmsg(2)
+               if (nwds .ge. 2) then
+c check to see if this is a component name
+                  if (rxn_flag .eq. 0 .and. msg(2) .eq. 3)  
+     &                 cpntnam(icpnt) = cmsg(2)
+c check to see if the maximum saturation is specified for Henry's
+                  if(abs(icns(nsp)).eq.2) then 
+                     if (nwds .eq. 2 .and. msg(2) .eq. 2) then
+                        strac_max = xmsg(2)
+                     else if (nwds .eq. 3 .and. msg(3) .eq. 2) then
+                        strac_max = xmsg(3)
+                     end if
+                  end if
+               end if
             elseif(icns(nsp).eq.0)then
                iimm = iimm + 1
                pimm(iimm)=nsp
@@ -871,8 +885,17 @@ c construct input necessary for chemod and read_rxn
             else
                ivap = ivap + 1
                pvap(ivap)=nsp
-               if (nwds .ge. 2 .and. rxn_flag .eq. 0 .and. 
-     &              msg(2) .eq. 3) vapnam(ivap) = cmsg(2)
+               if (nwds .ge. 2) then
+c check to see if this is a component name
+                  if (rxn_flag .eq. 0 .and. msg(2) .eq. 3) 
+     &                 vapnam(ivap) = cmsg(2)
+c check to see if the maximum saturation is specified for vapor
+                  if (nwds .eq. 2 .and. msg(2) .eq. 2) then
+                     strac_max = xmsg(2)
+                  else if (nwds .eq. 3 .and. msg(3) .eq. 2) then
+                     strac_max = xmsg(3)
+                  end if
+               end if
             endif
 
 CPS     IF the current tracer is solid

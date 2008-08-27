@@ -229,6 +229,7 @@
       parameter (conc_min = 1.e-20)
       real*8    gas_const
       parameter (gas_const = 8.314)
+      real*8    strac_max
 
 !      integer   max_rxns
 !      parameter (max_rxns = 10)

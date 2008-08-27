@@ -141,8 +141,11 @@ c     Header is only written to the first tecplot file
       title(12) = trim(dual_char) // 'Y Permeability (log m**2)'
       title(13) = trim(dual_char) // 'Z Permeability (log m**2)'
       title(17) = trim(dual_char) // 'Zone'
-      if (vol_flux) then
+      if (vol_flux .and. net_flux) then
          title(18) = trim(dual_char) // 'Net Liquid Flux (kg/s/m**3)'
+         units(18) = '(kg/s/m**3)'
+      else if (vol_flux) then
+         title(18) = trim(dual_char) // 'Liquid Flux (kg/s/m**3)'
          units(18) = '(kg/s/m**3)'
       else if (net_flux) then
          title(18) = trim(dual_char) // 'Net Liquid Flux (kg/s)'

@@ -396,8 +396,12 @@ c     output node flux, keyword: flux
             if (nwds .gt. 1) then
                if (cmsg(2) .eq. 'net' .or. cmsg(2) .eq. 'NET') then
                   net_flux = .true.
-               else if (cmsg(2) .eq. 'vol' .or. cmsg(2) .eq. 'vol') then
+c     volume weighted net flux
+               else if (cmsg(2) .eq. 'vol' .or. cmsg(2) .eq. 'VOL') then
                   net_flux = .true.
+                  vol_flux = .true.
+c     volume weighted boundary flux
+               else if (cmsg(2) .eq. 'vwg' .or. cmsg(2) .eq. 'vwg') then
                   vol_flux = .true.
                end if
             end if

@@ -1127,7 +1127,7 @@ c     ********at final relative initial state *********
       ddzv=ddz(ijkv)
       
 c     **** is the initial state valid? *****
-      where((ijkv.lt.1).or.(ijkv.gt.neq)) ijkv=0
+cc      where((ijkv.lt.1).or.(ijkv.gt.neq)) ijkv=0
 c      where((x1.gt.ddxv).or.(x1.lt.0.))     ijkv=0
 c      where((y1.gt.ddyv).or.(y1.lt.0.))     ijkv=0
 c      if(icnl.eq.0) then

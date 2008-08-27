@@ -54,7 +54,9 @@
       integer addnode, iconn, idummy, i1, i2
       integer :: ipr_vapor = 0
       integer flxz_flag, indexa_axy, inneq, inode, izone, md
-      real*8 ptime, sumfout, sumsink, sumsource, sumboun, sumvout
+      real*8 ptime, sumfout, sumsink, sumsource, sumboun, sum_vap
+      character*18 value_string
+      character*24 form_string
       character*90, allocatable :: flux_string(:)
       logical matrix_node
 
@@ -114,7 +116,7 @@ c     into other parts of the zone
          sumsink = 0.
          sumsource = 0.
          sumboun = 0.0
-         sumvout = 0.0
+         sum_vap = 0.0
          md=0
 c     Loop over all nodes
          do inode = 1, n0
@@ -142,9 +144,9 @@ c     Add boundary condition sources
 c     calculate vapor out (assume zero if in at this time)
                   if(irdof.ne.13.or.ifree.ne.0) then
                      if(sk(inode).gt.0.0d0) then
-                        sumvout = sumvout + (1.0-s(inode))*sk(inode)
-                     endif
-                  endif
+                        sum_vap = sum_vap + (1.0-s(inode))*sk(inode)
+                     end if
+                  end if
                end if
 c     Set index for looping through a_axy depending on whether
 c     the node is a fracture or matrix node
@@ -164,7 +166,7 @@ c     the value is a sink term
      2                       .ne.izone.or.nelm(iconn)
      3                       .eq.inneq) then
                            sumfout = sumfout + c_axy(indexa_axy)
-                           sumvout = sumvout + c_vxy(indexa_axy)
+                           sum_vap = sum_vap + c_vxy(indexa_axy)
                            if(nelm(iconn).eq.inneq) then
                               sumsink = sumsink + c_axy(indexa_axy)
                            end if
@@ -215,46 +217,81 @@ c     Fluxes are written to tty and output file
             else 
                if(iatty.ne.0) then
                   write(iatty,1046) iflxz(izone), md,
-     2                 sumsource, sumsink, sumfout, sumboun, sumvout
+     2                 sumsource, sumsink, sumfout, sumboun, sum_vap
                end if
                if(ntty.eq.2 .and. iout .ne. 0) then
                   write(iout,1046) iflxz(izone), md,
-     2                 sumsource, sumsink, sumfout, sumboun, sumvout
+     2                 sumsource, sumsink, sumfout, sumboun, sum_vap
                end if    
             end if
          else if (flxz_flag .eq. 2) then
 c     Fluxes are written to flux history file
+            form_string = ''
             if (form_flag .le. 1) then
-               if (ipr_vapor .eq. 0) then
-                  write (flux_string(izone), 1050) sumsource, sumsink, 
-     &                 sumfout, sumboun
-               else
-                  write (flux_string(izone), 1050) sumsource, sumsink, 
-     &                 sumfout, sumboun, sumvout
-               end if
+               form_string = '(1x, g16.9)'
             else
-               if (ipr_vapor .eq. 0) then
-                  write (flux_string(izone), 1055) sumsource, sumsink, 
-     &                 sumfout, sumboun
-               else
-                  write (flux_string(izone), 1056) sumsource, sumsink, 
-     &                 sumfout, sumboun, sumvout
-               end if
+               form_string = '(", ", g16.9)'
+            end if
+            if (prnt_flxzvar(1)) then
+               write(value_string, form_string) sumsource
+               flux_string(izone) = trim(flux_string(izone)) // 
+     &              trim(value_string)
+            end if
+            if (prnt_flxzvar(2)) then
+               write(value_string, form_string) sumsink
+               flux_string(izone) = trim(flux_string(izone)) //
+     &              trim(value_string)
+            end if
+            if (prnt_flxzvar(3)) then
+               write(value_string, form_string) sumfout
+               flux_string(izone) = trim(flux_string(izone)) //
+     &              trim(value_string)
+            end if
+            if (prnt_flxzvar(4)) then
+               write(value_string, form_string) sumboun
+               flux_string(izone) = trim(flux_string(izone)) //
+     &              trim(value_string)
+            end if
+            if ((ipr_vapor .ne. 0) .and. prnt_flxzvar(5)) then
+               write(value_string, form_string) sum_vap
+               flux_string(izone) = trim(flux_string(izone)) //
+     &              trim(value_string)
             end if
          elseif (flxz_flag.eq.3) then
 c     Fluxes are written to flux history file
             if (form_flag .le. 1) then
                write (flux_string(izone), 1050) sumsource, sumsink, 
-     &              sumfout, sumvout, sumboun
+     &              sumfout, sum_vap, sumboun
             else
                write (flux_string(izone), 1056) sumsource, sumsink, 
-     &              sumfout, sumvout, sumboun
+     &              sumfout, sum_vap, sumboun
+            end if
+            if (prnt_flxzvar(2)) then
+               write(value_string, form_string) sumsink
+               flux_string(izone) = trim(flux_string(izone)) //
+     &              trim(value_string)
+            end if
+            if (prnt_flxzvar(3)) then
+               write(value_string, form_string) sumfout
+               flux_string(izone) = trim(flux_string(izone)) //
+     &              trim(value_string)
+            end if
+            if (prnt_flxzvar(4)) then
+               write(value_string, form_string) sumboun
+               flux_string(izone) = trim(flux_string(izone)) //
+     &              trim(value_string)
+            end if
+            if ((ipr_vapor .ne. 0) .and. prnt_flxzvar(5)) then
+               write(value_string, form_string) sum_vap
+               flux_string(izone) = trim(flux_string(izone)) //
+     &              trim(value_string)
             end if
          end if
       end do
 
  1045 format(1x,i4,' (',i6,')',2x,1p,4(1x,e12.5))
  1046 format(1x,i4,' (',i6,')',2x,1p,5(1x,e12.5))
+ 1047 format('(g16.9, ', i3, '(a))')
  1050 format(4(g16.9, 1x), g16.9)
  1051 format(g16.9, 1x, i4, 1x, a)
  1055 format(3(g16.9, ", "), g16.9)

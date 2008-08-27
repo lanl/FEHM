@@ -234,7 +234,6 @@ c     Reading steady input parameters
          smult = 1.
          sday = 0.
          shtl = 0.0
-         tacc = 0.0
          stmch = 0.0
          balance_tol = tolerance
          svar_flag = .false.
@@ -259,48 +258,48 @@ c     Reading steady input parameters
             read (inpt, '(a80)') wdd1
             if ( null1(wdd1) .or. wdd1(1:3) .eq. 'end' ) exit
             select case (wdd1(1:4))
-         case ('shea')
-            read (wdd1, *) dummy, toldh
-            toldp = toldh * 997. * 9.8d-6
-            svar_flag = .true.
-         case('spre')
-            read (wdd1, *) dummy, toldp
-            svar_flag = .true.
-         case ('stem')
-            read (wdd1, *) dummy, toldt
-            svar_flag = .true.
-         case('ssat')
-            read (wdd1, *) dummy, tolds
-            svar_flag = .true.
-         case('sair')
-            read (wdd1, *) dummy, toldc
-            svar_flag = .true.
-         case('sflu')
-            read (wdd1, *) dummy, balance_tol
-            sflux_flag = .true.
-         case('sent')
-            read (wdd1, *) dummy, tolde
-            sflux_flag = .true.             
-         case ('stim')
-            read (wdd1, *) dummy, time_ss
-         case ('smul')
-            read (wdd1, *) dummy, smult
-         case('sday')
-            read (wdd1, *) dummy, sday
-         case('snst')
-            read (wdd1, *) dummy, snstep
-         case('smst')
-            read (wdd1, *) dummy, sminstep
-         case('shtl')
-            read (wdd1, *) dummy, shtl
-         case('sacc')
-            read (wdd1, *) dummy, tacc
-         case('stmc')
-            read (wdd1, *) dummy, stmch
-         case('sper')
-            spercent = .true.
-         end select
-      end do
+            case ('shea')
+               read (wdd1, *) dummy, toldh
+               toldp = toldh * 997. * 9.8d-6
+               svar_flag = .true.
+            case('spre')
+               read (wdd1, *) dummy, toldp
+               svar_flag = .true.
+            case ('stem')
+               read (wdd1, *) dummy, toldt
+               svar_flag = .true.
+            case('ssat')
+               read (wdd1, *) dummy, tolds
+               svar_flag = .true.
+            case('sair')
+               read (wdd1, *) dummy, toldc
+               svar_flag = .true.
+            case('sflu')
+               read (wdd1, *) dummy, balance_tol
+               sflux_flag = .true.
+            case('sent')
+               read (wdd1, *) dummy, tolde
+               sflux_flag = .true.             
+            case ('stim')
+               read (wdd1, *) dummy, time_ss
+            case ('smul')
+               read (wdd1, *) dummy, smult
+            case('sday')
+               read (wdd1, *) dummy, sday
+            case('snst')
+               read (wdd1, *) dummy, snstep
+            case('smst')
+               read (wdd1, *) dummy, sminstep
+            case('shtl')
+               read (wdd1, *) dummy, shtl
+            case('sacc')
+               read (wdd1, *) dummy, tacc
+            case('stmc')
+               read (wdd1, *) dummy, stmch
+            case('sper')
+               spercent = .true.
+            end select
+         end do
       
       else if(iflg.eq.-1) then
 c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
@@ -333,6 +332,7 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
          endif
          if(irdof.eq.13) then
             pdifmax = 0.0
+            accmax = 0.0
             do i = 1, n
                if (spercent) then
                   if (pho(i) .ne. 0.) then
@@ -351,6 +351,7 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
          else if(ico2.lt.0) then
             pdifmax = 0.0
             sdifmax = 0.0
+            accmax = 0.0
             do i = 1, n
                if (spercent) then
                   if (pho(i) .ne. 0) then
@@ -381,6 +382,7 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
             pdifmax = 0.0
             sdifmax = 0.0
             tdifmax = 0.0
+            accmax = 0.0
             do i = 1, n
                if (spercent) then
                   if (pho(i) .ne. 0.) then
@@ -423,6 +425,7 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
             sdifmax = 0.0
             tdifmax = 0.0
             pcidifmax = 0.0
+            accmax = 0.0
             do i = 1, n
                if (spercent) then
                   if (pho(i) .ne. 0.) then
@@ -466,12 +469,12 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
                pcidifmax = max(abs((pci(i)-pcio(i))/divisor),pcidifmax)
                accmax = max(abs(deni(i)*sx1(i)),accmax) 
             end do
+            if(pdifmax.gt.toldp) go to 100   
+            if(sdifmax.gt.tolds) go to 100   
+            if(tdifmax.gt.toldt) go to 100   
+            if(pcidifmax.gt.toldc) go to 100  
+            if(accmax.gt.tacc) go to 100   
          endif
-         if(pdifmax.gt.toldp) go to 100   
-         if(sdifmax.gt.tolds) go to 100   
-         if(tdifmax.gt.toldt) go to 100   
-         if(pcidifmax.gt.toldc) go to 100  
-         if(accmax.gt.tacc) go to 100   
          isteady=1
  100     continue
       else if(iflg.eq.2) then

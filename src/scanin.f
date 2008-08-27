@@ -1018,10 +1018,13 @@ c check for file keyword, and read past filename if present
          read(locunitnum,*)ncplx,numrxn
          read (locunitnum, *)
          read (locunitnum, *)ngroups
+         allocate(group_mat(ncpnt,ncpnt))
+         group_mat = 0
          if(irun.eq.1) then
-            allocate(group(ngroups,ncpnt),pos(ngroups,ncpnt))
-            allocate(n_couple_species(ngroups),group_mat(ncpnt,ncpnt))
-            allocate(fzero(ngroups))
+            if (ngroups .ne. 0) then
+               allocate(group(ngroups,ncpnt),pos(ngroups,ncpnt))
+               allocate(n_couple_species(ngroups),fzero(ngroups))
+            end if
          end if
          group = 0
          pos = 0

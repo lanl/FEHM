@@ -114,32 +114,33 @@ c find the max porosity amongst the connected nodes. This will be used in
 c dispersion_divergence for calculating (DIv(Phi.D))/pormax. this is being 
 c done to avoide large jumps in (DIv(Phi.D))/porosity resulting from
 c those in ps(I)
-      pormax=ps(i)
-      if(ps(ix ).gt.pormax) pormax=ps(ix )
-      if(ps(iy ).gt.pormax) pormax=ps(iy )
-      if(ps(iz ).gt.pormax) pormax=ps(iz )
-      if(ps(iyz).gt.pormax) pormax=ps(iyz)
-      if(ps(izx).gt.pormax) pormax=ps(izx)
-      if(ps(iyx).gt.pormax) pormax=ps(iyx)
-      if(ps(ixy).gt.pormax) pormax=ps(ixy)
+c zvd 13-May-08 change ps(*) to ps_trac(*)
+      pormax=ps_trac(i)
+      if(ps_trac(ix ).gt.pormax) pormax=ps_trac(ix )
+      if(ps_trac(iy ).gt.pormax) pormax=ps_trac(iy )
+      if(ps_trac(iz ).gt.pormax) pormax=ps_trac(iz )
+      if(ps_trac(iyz).gt.pormax) pormax=ps_trac(iyz)
+      if(ps_trac(izx).gt.pormax) pormax=ps_trac(izx)
+      if(ps_trac(iyx).gt.pormax) pormax=ps_trac(iyx)
+      if(ps_trac(ixy).gt.pormax) pormax=ps_trac(ixy)
 c...............................
 
 
 c calculate the darcy velocities at nodes of interest
       do iisk=-3,3,+1
-         gi(iisk)=ggg(i,iisk)*ps(i)
-         gix(iisk)=ggg(ix,iisk)*ps(ix)
-         giy(iisk)=ggg(iy,iisk)*ps(iy)
-         giz(iisk)=ggg(iz,iisk)*ps(iz)
+         gi(iisk)=ggg(i,iisk)*ps_trac(i)
+         gix(iisk)=ggg(ix,iisk)*ps_trac(ix)
+         giy(iisk)=ggg(iy,iisk)*ps_trac(iy)
+         giz(iisk)=ggg(iz,iisk)*ps_trac(iz)
       enddo
-      giyz(+1)=ggg(iyz,+1)*ps(iyz)
-      giyz(-1)=ggg(iyz,-1)*ps(iyz)
-      gizx(+2)=ggg(izx,+2)*ps(izx)
-      gizx(-2)=ggg(izx,-2)*ps(izx)
-      giyx(+3)=ggg(iyx,+3)*ps(iyx)
-      giyx(-3)=ggg(iyx,-3)*ps(iyx)
-      gixy(+3)=ggg(ixy,+3)*ps(ixy)
-      gixy(-3)=ggg(ixy,-3)*ps(ixy)
+      giyz(+1)=ggg(iyz,+1)*ps_trac(iyz)
+      giyz(-1)=ggg(iyz,-1)*ps_trac(iyz)
+      gizx(+2)=ggg(izx,+2)*ps_trac(izx)
+      gizx(-2)=ggg(izx,-2)*ps_trac(izx)
+      giyx(+3)=ggg(iyx,+3)*ps_trac(iyx)
+      giyx(-3)=ggg(iyx,-3)*ps_trac(iyx)
+      gixy(+3)=ggg(ixy,+3)*ps_trac(ixy)
+      gixy(-3)=ggg(ixy,-3)*ps_trac(ixy)
 c
       dx=(cord(ix,1)-cord(i,1))/length_factor
       dy=(cord(iy,2)-cord(i,2))/length_factor

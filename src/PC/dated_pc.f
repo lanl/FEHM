@@ -242,6 +242,6 @@ c      write(jtimex,'(i2.2,1h:,i2.2,1h:,i2.2)')  jjtime
 ! Version number passed to GoldSim
       vernum = 2.30
 ! Code version identifier
-      verno = "FEHM V2.30pc 08-08-07 QA:NA"
+      verno = "FEHM V2.30pc 08-08-26 QA:NA"
 
       end

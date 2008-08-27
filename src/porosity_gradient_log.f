@@ -89,13 +89,13 @@ c account for boundary nodes, s kelkar, 12/19 02
       if(i.eq.iz) dz=(cord(irray(i,-3*k1),3)-cord(i,3))/length_factor
             
 c     recall porosities
-      
-      porx1=ps(i)
-      porx2=ps(ix)
-      pory1=ps(i)
-      pory2=ps(iy)
-      porz1=ps(i)
-      porz2=ps(iz)
+c zvd 13-May-08 change ps(*) to ps_trac(*)      
+      porx1=ps_trac(i)
+      porx2=ps_trac(ix)
+      pory1=ps_trac(i)
+      pory2=ps_trac(iy)
+      porz1=ps_trac(i)
+      porz2=ps_trac(iz)
       
 c     form derivatives
       fac1=porx1/porx2

@@ -561,11 +561,6 @@ c**** areas, weights(user-defined) for boundary conditions ***
       else if (macro(1:4) .eq. 'wtsi') then
 c**** free surface calculation with head(saturated only)***
 c**** water table simple
-         backspace inpt
-         read(inpt,*,end = 698) macro(1:4), ifree
-	   go to 699
-698      ifree = -1
-699      continue
          call wtsictr (0)
 
       else if (macro(1:4) .eq. 'grad') then
@@ -614,8 +609,8 @@ c
  995     head0 = 0.0
          temp0 = 20.0
          pres0 = 0.1   
-	   sat_ich = 0.0
-	   head_id= 0.0
+         sat_ich = 0.0
+         head_id= 0.0
  1005    continue
          call water_density(temp0, pres0,rol0)
          ichead=1
