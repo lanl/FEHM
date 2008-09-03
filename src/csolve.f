@@ -670,6 +670,7 @@ c**** set time step for tracer solution , call solution            ****c
       integer iv
       integer ix
       integer iprttrc
+      integer :: idebug = 1
       parameter(toldil = 1.d-20)
       save daytr
 c seh
@@ -1401,11 +1402,12 @@ c     Add counter for total SIA iterations
 *** convergence
          if(iprttrc.ge.abs(nprttrc).or.icfin.le.0) then
             if (nprttrc .gt. 0) then
-               write(iout,*)'# SIA Iterations ', sia_iter
-     2           ,'(total = ',sia_iter_tot, ' )'
+                if (iout .ne. 0 .and. idebug .eq. 1) 
+     1              write(iout,*)'# SIA Iterations ', sia_iter
+     2              ,'(total = ',sia_iter_tot, ' )'
             endif
          endif
-         if(iptty .ne. 0 ) then
+         if(iptty .ne. 0 .and. idebug .eq. 1) then
             write(iptty,*)'# SIA Iterations ', sia_iter
      2          ,'(total = ',sia_iter_tot, ' )'
          end if
