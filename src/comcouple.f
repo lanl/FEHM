@@ -88,15 +88,16 @@
 
       integer ngroups
       integer, allocatable :: group(:,:)
-      integer,allocatable :: pos(:,:)
+      integer, allocatable :: pos(:,:)
       integer, allocatable :: n_couple_species(:)
       integer mdof_sol
       integer, allocatable :: nb_sol(:)
       integer, allocatable :: nmat_sol(:)
       integer, allocatable :: nrhs_sol(:)
-      integer henry_model(10)
-      real*8 awwa(10,5)
-      real*8 hawwa(10,5)
-      real*8, allocatable :: fzero(:)
+c zvd 02-Sep-08 Make henry model variables allocatable
+      integer, allocatable :: henry_model(:)
+c      real*8, allocatable ::  awwa(:,:)
+      real*8, allocatable ::  hawwa(:,:)
+      real*8, allocatable ::  fzero(:)
       
       end module comcouple

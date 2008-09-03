@@ -177,7 +177,7 @@ C***********************************************************************
 
       integer add_dual, maxcon, iz, idz, iendz, il, open_file
       integer neq,nspeci,lu,ifdual,icall,length,i1,i2
-      integer icord1, icord2, icord3
+      integer icord1, icord2, icord3, iaq, ivap, isolid
       integer npt(*),nelm2(ns_in)
       parameter (maxcon = 100)
       real*8 an(n0,nspeci)
@@ -349,14 +349,20 @@ c---------------------------------------
             i = i + 1
          end if
          j = i
+         iaq = 0
+         ivap = 0
+         isolid = 0
          do i = 1, nspeci
             select case (icns(i))
             case (1, 2, -2)
-               title(j) = trim(dual_char)//trim(cpntnam(i))
+               iaq = iaq + 1
+               title(j) = trim(dual_char)//trim(cpntnam(iaq))
             case (0)
-               title(j) = trim(dual_char)//trim(immnam(i))
+               isolid = isolid + 1
+               title(j) = trim(dual_char)//trim(immnam(isolid))
             case (-1)
-               title(j) = trim(dual_char)//trim(vapnam(i))
+               ivap = ivap + 1
+               title(j) = trim(dual_char)//trim(vapnam(ivap))
             end select
             j = j+ 1
          end do
