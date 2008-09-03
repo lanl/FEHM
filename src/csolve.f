@@ -670,7 +670,7 @@ c**** set time step for tracer solution , call solution            ****c
       integer iv
       integer ix
       integer iprttrc
-      integer :: idebug = 1
+      integer :: idebug = 0
       parameter(toldil = 1.d-20)
       save daytr
 c seh
