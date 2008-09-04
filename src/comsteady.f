@@ -1,6 +1,6 @@
       module comsteady
 !***********************************************************************
-! Copyright 2006 Los Alamos National Security, LLC  All rights reserved
+! Copyright 2008 Los Alamos National Security, LLC  All rights reserved
 ! Unless otherwise indicated,  this information has been authored by an 
 ! employee or employees of the Los Alamos National Security, LLC (LANS),
 ! operator of the  Los  Alamos National  Laboratory  under Contract  No.

@@ -1402,7 +1402,7 @@ c     Add counter for total SIA iterations
 *** convergence
          if(iprttrc.ge.abs(nprttrc).or.icfin.le.0) then
             if (nprttrc .gt. 0) then
-                if (iout .ne. 0 .and. idebug .eq. 1) 
+               if (iout .ne. 0 .and. idebug .eq. 1) 
      1              write(iout,*)'# SIA Iterations ', sia_iter
      2              ,'(total = ',sia_iter_tot, ' )'
             endif

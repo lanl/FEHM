@@ -350,17 +350,17 @@ CPS END cnswer
 CPS 
 C**********************************************************************
 
+      use comai
       use combi
       use comchem
       use comci
+      use comcouple
       use comdi
-      use comgi
+      use comdti
       use comei
       use comfi
+      use comgi
       use comrxni
-      use comcouple
-      use comdti
-      use comai
       implicit none
 
       integer neqp1
@@ -388,7 +388,9 @@ C**********************************************************************
       integer c_node
       integer num_left_to_solve
       integer reset_flag
+
       save reset_flag
+
       sia_iter = 0
       c_node = 0
       do isolute = 1, nspeci
@@ -399,7 +401,7 @@ C**********************************************************************
       enddo
       ndconv=0
       tol_value = 0
-c start SIA loop
+c     start SIA loop
  1000 continue
       iter_flag = 0
       if ( sia_iter .gt. abs(iaccmx) )   then
@@ -428,11 +430,11 @@ c start SIA loop
          call chemod(dtotc/3600,tol_value)
 
          if (tol_value .eq. 2) then
-           if (iout .ne. 0) write(iout, 6020) 
-           if ( iptty .ne. 0 ) write(iptty, 6020)  
-           goto 9000
+            if (iout .ne. 0) write(iout, 6020) 
+            if ( iptty .ne. 0 ) write(iptty, 6020)  
+            goto 9000
          elseif (tol_value .eq. 3) then
-           goto 9000 
+            goto 9000 
          endif
       endif
 
@@ -443,7 +445,7 @@ c start SIA loop
          spec_num_dp = 1
          bp = 0 
          nsizea=(nelm(neqp1)-neqp1)*n_couple_species(igrp)**2
-c         if(idpdp.ne.0)nsizea=4*nsizea
+c     if(idpdp.ne.0)nsizea=4*nsizea
          a=0
          do aq_compnum = 1, n_couple_species(igrp)
             ic = pos(igrp,aq_compnum)
@@ -454,16 +456,16 @@ c         if(idpdp.ne.0)nsizea=4*nsizea
                if(ic.eq.ic2)then
                   call  thermc  (0)
                   if(idpdp.eq.0) then
-c gaz 2-13-03        call coneq1(0, matnum,spec_num)
+c     gaz 2-13-03        call coneq1(0, matnum,spec_num)
                      if(ianpe.ne.0) then
                         call coneq1_ani(0, matnum,spec_num)
                      else if (gdpm_flag.ne.0) then
                         call coneq1_gdpm(0, matnum,spec_num)
-	               else
+                     else
                         call coneq1(0, matnum,spec_num)
                      endif
                      if (imdnode.ne.0) 
-     2                 call coneq1mdnode(matnum,spec_num)
+     2                    call coneq1mdnode(matnum,spec_num)
                   else
                      call gentdp(0,igrp,matnum_dp,spec_num_dp
      2                    ,sia_iter,ic,n_couple_species(igrp))
@@ -486,10 +488,10 @@ c gaz 2-13-03        call coneq1(0, matnum,spec_num)
                      call thermc(neq+neq)
                      if(rxn_flag.eq.1)call react(3,matnum,spec_num,
      2                    ic,ic2,igrp)
-c                     icnls = icnl
-c                     icnl = 1
+c     icnls = icnl
+c     icnl = 1
                      call  dualta(spec_num,matnum)
-c                     icnl = icnls
+c     icnl = icnls
                   end if     
                else
                   if(rxn_flag.eq.1)then
@@ -594,13 +596,13 @@ c                     icnl = icnls
          a=0
          call thermc (0)
          if(idpdp.eq.0) then
-c gaz 2-13-03 call coneq1(0,1,1)
+c     gaz 2-13-03 call coneq1(0,1,1)
             if(ianpe.ne.0) then
                call coneq1_ani(0,1,1)
             else if (gdpm_flag.ne.0) then
                call coneq1_gdpm(0,1,1)
             else
-	         call coneq1(0,1,1)
+               call coneq1(0,1,1)
             endif
             if (imdnode.ne.0)
      2           call coneq1mdnode(1,1)
@@ -622,10 +624,10 @@ c gaz 2-13-03 call coneq1(0,1,1)
             call thermc(neq+neq)
             if(rxn_flag.eq.1)call react(3,1,1,
      2           1,iv,1)
-c            icnls = icnl
-c            icnl = 1
+c     icnls = icnl
+c     icnl = 1
             call  dualta(spec_num,matnum)
-c            icnl = icnls
+c     icnl = icnls
          end if     
          if(idpdp.eq.0) then
             call  gencon(1,sia_iter,1)
@@ -637,10 +639,10 @@ c            icnl = icnls
             if(ndconv(in).ne.(ncpnt+nimm+nvap))then
                mi = in+(pvap(iv)-1)*n0
                an(mi) =  an(mi) - bp(in)
-               if(abs(bp(mi)).gt.max(epc*an(mi),epc))then
+               if(abs(bp(in)).gt.max(epc*an(mi),epc))then
                   iter_flag=1
                elseif(abs(an(mi)).gt.epc*epc)then
-                  if(abs(bp(mi)/an(mi)).gt.0.01)then
+                  if(abs(bp(in)/an(mi)).gt.0.01)then
                      iter_flag=1
                   else
                      ndconv(in)=ndconv(in)+1
@@ -651,6 +653,7 @@ c            icnl = icnls
             endif
          enddo
       enddo
+
       do im = 1, nimm
          nsp = pimm(im)
          call thermc(0)
@@ -680,7 +683,7 @@ c            icnl = icnls
             endif
          enddo
       enddo
-c      if( iter_flag.eq.0.and.sia_iter.gt.1 ) then
+c     if( iter_flag.eq.0.and.sia_iter.gt.1 ) then
       if( iter_flag.eq.0.and.sia_iter.gt.0 ) then
          sia_iter = sia_iter+1
          if(iptty.ne.0)write(iptty,*)'Sia Iteration Number ',sia_iter
@@ -697,12 +700,12 @@ c      if( iter_flag.eq.0.and.sia_iter.gt.1 ) then
             newimm = an(mi)
             if(newimm.le.conc_min)then
                an(mi)=0.d0
-c  No mineral present at node
+c     No mineral present at node
                pd_flag(im,in)=1
-c Added 12/30/99 by geh
+c     Added 12/30/99 by geh
             else
-	           pd_flag(im,in)=0
-c end add - geh
+               pd_flag(im,in)=0
+c     end add - geh
             endif
          enddo
       enddo
@@ -710,11 +713,11 @@ c end add - geh
       return
  6000 format(/,1x,'SIA iterations gt maxit  ')
  6010 format(/,1x,'Negative concentrations encountered at node: ', 
-     2       i7, ', Component: ', a12, '; Cut time step.')
+     2     i7, ', Component: ', a12, '; Cut time step.')
  6020 format(/,1x,'Negative concentrations encountered in CHEMOD', 
-     2       ', cut time step.')
+     2     ', cut time step.')
  6030 format(/,1x,'Negative mineral concentrations encountered at',
-     2       '  node: ', i7, ', Mineral: ', i2)
+     2     '  node: ', i7, ', Mineral: ', i2)
  6040 format(/,1x,'Negative h+ concentrations encountered at',
-     2       '  node: ', i7)
+     2     '  node: ', i7)
       end
