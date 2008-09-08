@@ -912,7 +912,7 @@ c         call flush(ishisf)
                write(ishisg, '(9(g16.9, 1x))') ptime, amass, asteam, 
      &              qtoti, curinflow, toutfl, totalflin, qt, dmass
             case (5)  ! Air
-               write(ishisg, '8(g16.9, 1x))') ptime, aener, qtotei, 
+               write(ishisg, '(8(g16.9, 1x))') ptime, aener, qtotei, 
      &              cureinflow, teoutf, totalein, qte, dae
             case (6)  ! Energy
                write(ishisg, '(8(g16.9, 1x))') ptime, aener, qtotei,
