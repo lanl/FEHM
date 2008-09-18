@@ -153,7 +153,9 @@
       integer iopermeability,iogeo,iozone,iowt,iokd,iozid
       integer iocapillary
 
-      integer iaroot
+      integer iaroot, timec_flag
+      real*8  contour_time
+      character*50 timec_string
       character*110 avs_root, geoname
       logical net_flux, vol_flux, dit_flag
 

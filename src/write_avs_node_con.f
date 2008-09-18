@@ -381,7 +381,7 @@ c---------------------------------------
      &              i=1,iocord), 'node', (trim(title(i)), 
      &              i=iocord+1,itotal2)
             end if
-            if (iozone .ne. 0) write (lu, 97) days
+            if (iozone .ne. 0) write (lu, 97) trim(timec_string)
          end if
 
          do iz = 1, iendz
@@ -391,7 +391,7 @@ c---------------------------------------
             end if
             if (altc(1:3) .eq. 'tec') then
                if (iozone .eq. 0) then
-                  write (lu, 94) days, trim(tecstring)
+                  write (lu, 94) trim(timec_string), trim(tecstring)
                else
                   write (lu, 95) idz, trim(tecstring)
                end if
@@ -607,7 +607,7 @@ c=======================================================
      &              i=1,iocord), 'node', (trim(title(i)), 
      &              i=iocord+1,itotal2)
             end if
-            if (iozone .ne. 0) write (lu, 97) days              
+            if (iozone .ne. 0) write (lu, 97) trim(timec_string)
          end if
 
 c=================================================
@@ -621,7 +621,7 @@ c=================================================
             end if
             if (altc(1:3) .eq. 'tec') then
                if (iozone .eq. 0) then
-                  write (lu, 94) days, trim(tecstring)
+                  write (lu, 94) trim(timec_string), trim(tecstring)
                else
                   write (lu, 95) idz, trim(tecstring)
                end if
@@ -774,10 +774,12 @@ c=================================================
       end if
       if (altc(1:3) .ne. 'sur') close (lu)
 
- 94   format('ZONE T = "Simulation time ',1p,g16.9,' days"', a)
+c 94   format('ZONE T = "Simulation time ',1p,g16.9,' days"', a)
+ 94   format('ZONE T = ', a, a)
  95   format('ZONE T = "',i4.4,'"', a)
  96   format("('node', ", i3, "(', ', a))")
- 97   format('TEXT T = "Simulation time ',1p,g16.9,' days"')
+c 97   format('TEXT T = "Simulation time ',1p,g16.9,' days"')
+ 97   format('TEXT T = ', a)
  98   format ('TITLE = "', a30, 1x, a11, 1x, a8, 1x, a, '"')
  99   format ('(a11, ', i3, "('",' "',"', a, '",'"',"'))")
  104  format ('(1x, ', i3, '(g16.9, 1x), i10.10, ', i3, '(1x, g16.9))')
