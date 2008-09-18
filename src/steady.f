@@ -580,50 +580,51 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
                isteady = 1
                return
             end if
+c     If we have reached steady state or reached our maximum
+c     time limit, make sure we output information
             if(itt .eq. 0) then
-               if (toldh .ne. tolerance)
-     &              hdifmax = pdifmax /( 997. * 9.8d-6)               
-               if (iout .ne. 0) then
-                  write(iout,50) days
-                  if (toldp .ne. tolerance)
-     &                 write(iout,40) 'pressure', pdifmax, toldp
-                  if (toldh .ne. tolerance)
-     &                 write(iout,40) 'head', hdifmax, toldh
-                  if (tolds .ne. tolerance)
-     &                 write(iout,40) 'saturation', sdifmax, tolds
-                  if (toldt .ne. tolerance)
-     &                 write(iout,40) 'temperature', tdifmax, toldt
-                  if (toldc .ne. tolerance)
-     &                 write(iout,40) 'air pressure', pcidifmax, toldc
-                  if (balance_tol .ne. tolerance) write(iout,40) 
-     &                 'flow balance (IN-OUT)', flow_rate, balance_tol
-                  if (tolde .ne. tolerance) write(iout,40) 
-     &                 'enthalpy balance (IN-OUT)', enth_rate, tolde
-                  if (isty .ne. 0) write(iout,51)
-               end if
-               if(iptty.ne.0) then
-                  write(iptty,50) days
-                  if (toldp .ne. tolerance)
-     &                 write(iptty,40) 'pressure', pdifmax, toldp
-                  if (toldh .ne. tolerance)
-     &                 write(iptty,40) 'head', hdifmax, toldh
-                  if (tolds .ne. tolerance)
-     &                 write(iptty,40) 'saturation', sdifmax, tolds
-                  if (toldt .ne. tolerance)
-     &                 write(iptty,40) 'temperature', tdifmax, toldt
-                  if (toldc .ne. tolerance)
-     &                 write(iptty,40) 'air pressure', pcidifmax, toldc
-                  if (balance_tol .ne. tolerance) write(iptty,40) 
-     &                 'flow balance (IN-OUT)', flow_rate, balance_tol
-                  if (tolde .ne. tolerance) write(iptty,40) 
-     &                 'enthalpy balance (IN-OUT)', enth_rate, tolde
-                  if (isty .ne. 0) write(iptty,51)
-               endif
+               if (iout .ne. 0) write(iout,50) days
+               if(iptty.ne.0) write(iptty,50) days
             else
                if (iout .ne. 0) write(iout,52) time_ss, days
                if(iptty.ne.0) write(iptty,52) time_ss, days
             endif
-C     If we have reached steady state make sure we output information
+            if (toldh .ne. tolerance)
+     &           hdifmax = pdifmax /( 997. * 9.8d-6)               
+            if (iout .ne. 0) then
+               if (toldp .ne. tolerance)
+     &              write(iout,40) 'pressure', pdifmax, toldp
+               if (toldh .ne. tolerance)
+     &              write(iout,40) 'head', hdifmax, toldh
+               if (tolds .ne. tolerance)
+     &              write(iout,40) 'saturation', sdifmax, tolds
+               if (toldt .ne. tolerance)
+     &              write(iout,40) 'temperature', tdifmax, toldt
+               if (toldc .ne. tolerance)
+     &              write(iout,40) 'air pressure', pcidifmax, toldc
+               if (balance_tol .ne. tolerance) write(iout,40) 
+     &              'flow balance (IN-OUT)', flow_rate, balance_tol
+               if (tolde .ne. tolerance) write(iout,40) 
+     &              'enthalpy balance (IN-OUT)', enth_rate, tolde
+               if (isty .ne. 0) write(iout,51)
+            end if
+            if(iptty.ne.0) then
+               if (toldp .ne. tolerance)
+     &              write(iptty,40) 'pressure', pdifmax, toldp
+               if (toldh .ne. tolerance)
+     &              write(iptty,40) 'head', hdifmax, toldh
+               if (tolds .ne. tolerance)
+     &              write(iptty,40) 'saturation', sdifmax, tolds
+               if (toldt .ne. tolerance)
+     &              write(iptty,40) 'temperature', tdifmax, toldt
+               if (toldc .ne. tolerance)
+     &              write(iptty,40) 'air pressure', pcidifmax, toldc
+               if (balance_tol .ne. tolerance) write(iptty,40) 
+     &              'flow balance (IN-OUT)', flow_rate, balance_tol
+               if (tolde .ne. tolerance) write(iptty,40) 
+     &              'enthalpy balance (IN-OUT)', enth_rate, tolde
+               if (isty .ne. 0) write(iptty,51)
+            endif
             
             ntty = 2
             
