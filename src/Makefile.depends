@@ -3,6 +3,8 @@ accum_derivative.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 accum_derivative.o: comgi.o comii.o comrxni.o comsplitts.o davidi.o
 accum_term.o: comai.o comci.o comdi.o comdti.o comii.o davidi.o
 add_gdpm.o: comai.o combi.o comdti.o
+air_combine.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
+air_combine.o: comhi.o comii.o commeth.o davidi.o
 air_rdof.o: comai.o comci.o comdi.o comdti.o comii.o
 air_rdof_part.o: com_part.o comai.o comci.o comdi.o comdti.o comii.o
 airctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
@@ -75,10 +77,7 @@ data.o: comflow.o comgi.o comhi.o comii.o comji.o compart.o comrtd.o comrxni.o
 data.o: comsplitts.o comwt.o comzone.o davidi.o
 datchk.o: comai.o combi.o comdi.o comdti.o comfi.o comii.o compart.o comxi.o
 datchk.o: davidi.o
-dated_pc.o: comai.o
-dated_pgi32.o: comai.o
-dated_pgi64.o: comai.o
-dated_sun.o: comai.o
+dated.o: comai.o
 daycrl.o: comai.o combi.o comci.o comdi.o comdti.o comgi.o compart.o
 daycrl.o: comsplitts.o davidi.o
 diagnostics.o: comai.o combi.o comci.o comdi.o comdti.o comgi.o davidi.o
@@ -118,22 +117,17 @@ dualtx.o: comai.o combi.o comdi.o comdti.o comei.o comfi.o comgi.o comhi.o
 dvacalc.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 dvacalc.o: comhi.o davidi.o
 enthp.o: comai.o comdi.o comdti.o comfi.o comii.o
+evaporation.o: comai.o combi.o comdi.o comevap.o
 explicit.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
 explicit.o: comgi.o comji.o davidi.o
-fehmn.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
-fehmn.o: compart.o comrtd.o comrxni.o comsplitts.o comsptr.o comwt.o comxi.o
-fehmn.o: davidi.o
-fehmn_pc_dll.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
-fehmn_pc_dll.o: comflow.o compart.o comrtd.o comrxni.o comsplitts.o comsptr.o
-fehmn_pc_dll.o: comwt.o comxi.o davidi.o
-fehmn_pcx.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
-fehmn_pcx.o: compart.o comrtd.o comrxni.o comsplitts.o comsptr.o comwt.o
-fehmn_pcx.o: comxi.o davidi.o
+fehmn.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comevap.o comfi.o
+fehmn.o: comflow.o compart.o comrtd.o comrxni.o comsplitts.o comsptr.o comwt.o
+fehmn.o: comxi.o davidi.o
 fimpf.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o davidi.o
 find_closest_curve.o: comai.o compfrac.o
 find_v_3lsq.o: comsptr.o
 find_v_lsq.o: comai.o combi.o comflow.o comsk.o comsptr.o
-flow_boun.o: combi.o comci.o comdi.o comwt.o
+flow_boun.o: combi.o comci.o comdi.o comsplitts.o comwt.o
 flow_boundary_conditions.o: comai.o combi.o comci.o comdi.o comdti.o comei.o
 flow_boundary_conditions.o: comfi.o comii.o comki.o comxi.o davidi.o
 flux_net.o: comai.o combi.o comci.o comdi.o comflow.o comgi.o comji.o davidi.o
@@ -160,6 +154,8 @@ geneq2_part.o: com_part.o comai.o combi.o comci.o comdi.o comdti.o comei.o
 geneq2_part.o: comfi.o comflow.o comgi.o comji.o davidi.o
 geneq2_rich.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 geneq2_rich.o: comflow.o comgi.o comii.o comji.o comwt.o davidi.o
+geneq2_switch.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+geneq2_switch.o: comflow.o comgi.o comji.o davidi.o
 geneq2_uz_wt.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 geneq2_uz_wt.o: comflow.o comgi.o comji.o davidi.o
 geneq2_wtsi.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
@@ -190,6 +186,8 @@ gensl2.o: comflow.o comgi.o comhi.o comji.o comsplitts.o comwt.o davidi.o
 gensl2_part.o: com_part.o comai.o combi.o comci.o comcouple.o comdi.o comdti.o
 gensl2_part.o: comei.o comfi.o comflow.o comgi.o comhi.o comji.o comsplitts.o
 gensl2_part.o: davidi.o
+gensl2_switch.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o
+gensl2_switch.o: comfi.o comgi.o comhi.o comwt.o davidi.o
 gensl3.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comgi.o davidi.o
 gensl4.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 gensl4.o: comhi.o davidi.o
@@ -236,7 +234,7 @@ infrlp.o: comai.o comdi.o comdti.o comki.o
 ingdpm.o: comai.o combi.o comdi.o comdti.o comki.o
 ingrowth.o: comai.o comdi.o comdti.o compart.o comsk.o
 inhflx.o: comai.o comdi.o comdti.o comki.o
-inhist.o: comai.o comdi.o comwt.o comxi.o comzone.o davidi.o
+inhist.o: comai.o combi.o comdi.o comwt.o comxi.o comzone.o davidi.o
 inhstz.o: comai.o combi.o comdti.o comzone.o
 inhyco.o: comai.o comdi.o comdti.o comki.o
 initchem.o: comchem.o comdi.o comdti.o comrxni.o
@@ -251,8 +249,8 @@ inperm.o: comai.o comdi.o comdti.o comki.o
 inpres.o: comai.o comdi.o comdti.o comki.o davidi.o
 inptrk.o: comai.o combi.o comdi.o comdti.o comki.o compart.o compfrac.o comsk.o
 inptrk.o: comsptr.o
-input.o: comai.o combi.o comchem.o comci.o comdi.o comdti.o compart.o comrxni.o
-input.o: comsplitts.o comsptr.o comwt.o davidi.o
+input.o: comai.o combi.o comchem.o comci.o comdi.o comdti.o comevap.o compart.o
+input.o: comrxni.o comsplitts.o comsptr.o comwt.o davidi.o
 inrestart.o: comai.o combi.o comxi.o
 inrock.o: comai.o comdi.o comdti.o comki.o
 insptr.o: comai.o combi.o comdi.o comdti.o comki.o compart.o compfrac.o comsk.o
@@ -393,8 +391,8 @@ thermw.o: comii.o comrxni.o
 thickness.o: comai.o combi.o comdi.o comdti.o comfi.o comgi.o comrxni.o
 thomeercap.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comhi.o
 thomeercap.o: comki.o
-thrair.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
-thrair.o: comii.o comrxni.o comwt.o davidi.o
+thrair.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comevap.o comfi.o
+thrair.o: comgi.o comii.o comrxni.o comwt.o davidi.o
 thrmwc.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 thrmwc.o: comii.o comrxni.o
 thrsznapl.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
