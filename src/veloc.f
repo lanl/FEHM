@@ -184,7 +184,7 @@ c gaz 1-25-03 used abs(iw)
                iw = abs(iwd)
 c     use internode fluxes already stored
                axy=a_axy(jj-neqp1)
-               if (irdof .ne. 13) then
+               if (irdof .ne. 13 .and. jswitch .eq. 0) then
                   vxy=a_vxy(jj-neqp1)
                end if
 c     velocities
@@ -250,7 +250,7 @@ c                  area_t=-(sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz))*dis
                      endif
                   endif
                endif
-               if (irdof .ne. 13) then
+               if (irdof .ne. 13 .and. jswitch .eq. 0) then
                   if(vxy.gt.0.0) then
                      fid=upwgt
                      fid1=1.0-fid
@@ -301,7 +301,7 @@ c                  area_t=-(sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz))*dis
                end if
             enddo
 c     calculate magnitude of vapor velocity
-            if (irdof .ne. 13) then
+            if (irdof .ne. 13 .and. jswitch .eq. 0) then
                vvd_in = sqrt(pnxv_in**2 + pnyv_in**2 + pnzv_in**2)
                vvd_out = sqrt(pnxv_out**2 + pnyv_out**2 + pnzv_out**2)
                if( vvd_in .gt. vvd_out ) then
@@ -380,7 +380,7 @@ c     calculate lower diagonal geometric coefficient
                   iw=it10(ij)                
 c     use internode fluxes already stored
                   axy=a_axy(jj-neqp1+nelm(neq+1)-neq-1)
-                  if (irdof .ne. 13) then
+                  if (irdof .ne. 13 .and. jswitch .eq. 0) then
                      vxy=a_vxy(jj-neqp1+nelm(neq+1)-neq-1)
                   end if
 c     velocities
@@ -443,7 +443,7 @@ c     velocities
                         endif
                      endif
                   endif
-                  if (irdof .ne. 13) then
+                  if (irdof .ne. 13 .and. jswitch .eq. 0) then
                      if(vxy.gt.0.0) then
                         fid=upwgt
                         fid1=1.0-fid
@@ -494,7 +494,7 @@ c     velocities
                   endif
                enddo
 c     calculate magnitude of vapor velocity
-               if (irdof .ne. 13) then
+               if (irdof .ne. 13 .and. jswitch .eq. 0) then
                   vvd_in = sqrt(pnxv_in**2 + pnyv_in**2 + pnzv_in**2)
                   vvd_out =sqrt(pnxv_out**2 + pnyv_out**2 + pnzv_out**2)
                   if( vvd_in .gt. vvd_out ) then

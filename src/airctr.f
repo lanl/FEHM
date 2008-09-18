@@ -4,7 +4,7 @@
 !  This program was prepared by the Regents of the University of 
 !  California at Los Alamos National Laboratory (the University) under  
 !  contract No. W-7405-ENG-36 with the U.S. Department of Energy (DOE). 
-!  All rights in the program are reserved by the DOE and the University. 
+!  All rights in the program are reserved by the DOE and the University.
 !  Permission is granted to the public to copy and use this software 
 !  without charge, provided that this Notice and any statement of 
 !  authorship are reproduced on all copies. Neither the U.S. Government 
@@ -383,19 +383,20 @@ c
       integer nr2,irdofsv 
       integer  ii,ij,im,inode,iwm,ja,k,kb
       real*8 tref,pref,pssv,ssv,phisv,dmpfd,dmefd,dqd,rqd,qcd
-      real*8 strd_iter,tol_phase
       real*8 inflow_thstime,inen_thstime,denht,deneht
       real*8 dels,delp,dfdum11,dfdum12,dfdum21,dfdum22
       real*8 dfdum11i,dfdum12i,dfdum21i,dfdum22i,detdf
       real*8 fdum01,fdum02,sx1d,phidum,phi_dif,phi_1,phi_2
       real*8 hmax, hmin, hmid
       character*80 form_string
+      real*8 pref_1_2,pref_2_1,s_1_2,schng,pchng
+      parameter (pchng = 0.005,schng = 0.005)
       save tref,pref
-      parameter(strd_iter=0.90,tol_phase = 1.d-3)
+      if (jswitch.ne.0) strd_iter = strd_rich
 
-C ? ico2d not passed in, not initialized
+C     ? ico2d not passed in, not initialized
       ico2d = 0
-c     return if no air present
+c     return if no air present 
       if(ico2.lt.0) then
 c     iflg is used to tell if call is for initialization
          if(iflg.eq.0) then
@@ -414,7 +415,7 @@ c
             tmin(1)=-1.e05
             tmax(1)=1.e05
 
-c	Read in NAPL properties for SZ NAPL case
+c     Read in NAPL properties for SZ NAPL case
 
             if(ico2.eq.-3) then
                read(inpt,*) dennapl, viscnapl
@@ -425,11 +426,11 @@ c
 c     calculate density,compressibility,and viscosity of water
 c     
             ndum=neq
-	      nndum = n
+            nndum = n
             irdofsv=irdof
             irdof=0
             neq=1
-	      n = 1
+            n = 1
             dtot=1.0
             pssv=ps(1)
             ps(1)=1.0
@@ -439,8 +440,8 @@ c
             ssv=s(1)
             irlpsv=irlp(1)
             irlptsv=irlpt(1)
-	      icapsv = icapp
-	      icapp = 0
+            icapsv = icapp
+            icapp = 0
             s(1)=1.0
             iieoss=iieos(1)
             ieos(1)=1
@@ -456,7 +457,7 @@ c
             call thermw(0)
             irdof=irdofsv
             neq=ndum
-	      n = nndum
+            n = nndum
             ieos(1)=ieoss
             iieos(1)=iieoss
             phi(1)=phisv
@@ -465,7 +466,7 @@ c
             iwelb=iwelbs
             irlp(1)=irlpsv
             irlpt(1)=irlptsv
-	      icapp = icapsv
+            icapp = icapsv
 c     reference density is in crl(1,1)
 c     reference liquid viscosity is in crl(2,1)
 c     reference compressibility is in crl(3,1)
@@ -489,462 +490,510 @@ c     reference air viscosity is in crl(5,1)
 c     
 c     make thernmal conductivities small
 c     
-c GAZ 10-23-98 eliminate thermal conductivities for isothermal
-c           do i=1,n0
-c              thx(i)=1.e-30
-c              thy(i)=1.e-30
-c              thz(i)=1.e-30
-c           enddo
+c     GAZ 10-23-98 eliminate thermal conductivities for isothermal
+c     do i=1,n0
+c     thx(i)=1.e-30
+c     thy(i)=1.e-30
+c     thz(i)=1.e-30
+c     enddo
 c     
 c     initialize 2-phase regions             
 c     
             do i=1,n0
                ieos(i)=2
             enddo
-
+         elseif(iflg.eq.-2) then
+c     
+c     for rich eq make "a" smaller
+c     eliminate a_vxy
+c     
+            if(jswitch.ne.0.and.idpdp.eq.0) then
+               if(allocated(a_vxy)) deallocate(a_vxy)
+               ndum = nelm(neq+1) - (neq+1)
+               if(allocated(a)) deallocate(a)
+               allocate(a(2*ndum))	     
+	    endif
          elseif(iflg.eq.1) then
 c     
 c     determine phase state
-c
+c     
             if(ifree.ne.0) then
-         
+               
                do  mid=1,neq
                   mi=mid+ndummy
                   ieos(mi) = 2
                enddo
-
-           else if(irdof.ne.13) then
-c pnx used to be set in the following loops -- currently removed     
-               if (iad.eq.0) strd = 1.0        
-               do  mid=1,neq
-                  mi=mid+ndummy
-c
-                  if(s(mi).lt.1.0-tol_phase.and.ieos(mi).eq.1) then
-c                     if(iad.eq.1) strd = strd_iter
-                     strd = strd_iter
-                     ieos(mi)=2
-c                    call phase_timcrl(days,day,dtot,dtotdm)
-c
-                  else if(s(mi).gt.tol_phase.and.ieos(mi).eq.3) then
-c                     if(iad.eq.1) strd = strd_iter
-                     strd = strd_iter
-                     ieos(mi)=2
-c                    call phase_timcrl(days,day,dtot,dtotdm)
-c
-                  else if(s(mi).gt.1.0+tol_phase.and.ieos(mi).eq.2) then
-c                     if(iad.eq.1) strd = strd_iter
-                     strd = strd_iter
-                     ieos(mi)=1
-c                    call phase_timcrl(days,day,dtot,dtotdm)
-c
-                  else if(s(mi).le.-tol_phase.and.ieos(mi).eq.2) then
-                     if(iad.eq.1) strd = strd_iter
-                     s(mi)=0.0
-                     strd = strd_iter
-                     ieos(mi)=3
-c                    call phase_timcrl(days,day,dtot,dtotdm)
-c
-                  endif
-               enddo
-               do  mid=1,neq
-                  mi=mid+ndummy
- 
-                  if(phi(mi).lt.1.d-2) then
-                     if(iad.eq.1) strd = strd_iter
-                     phi(mi)=1.d-2
-                     if (so(mi).ge.1.0) then
-                      s(mi)= 0.999
-                      phi(mi)=5.d-2
-                      strd = strd_iter
+               continue
+            else if(irdof.ne.13) then   
+               if (iad.eq.0) strd = 1.0 
+               pref = crl(4,1) 
+               pref_1_2 =  pref - pchng
+               pref_2_1 =  pref + pchng  
+               s_1_2 = 1.0 - schng
+	       if (jswitch.ne.0) then
+                  do  mid=1,neq
+                     mi=mid+ndummy
+c     
+                     if(phi(mi).lt.pref_1_2.and.ieos(mi).eq.1) then
+                        strd = strd_iter
+                        s(mi) = s_1_2
+                        phi(mi) = pref
+                        ieos(mi)=2 
+                     else if(s(mi).lt.1.0-tol_phase.and.ieos(mi).eq.1) 
+     &                       then
+                        strd = strd_iter
+                        s(mi) = s_1_2
+                        ieos(mi)=2 
+                     else if(s(mi).gt.tol_phase.and.ieos(mi).eq.3) then
+                        strd = strd_iter
+                        ieos(mi)=2
+                     else if(s(mi).gt.1.0+tol_phase.and.ieos(mi).eq.2) 
+     &                       then
+                        strd = strd_iter
+                        phi(mi) = pref_2_1
+                        s(mi) = 1.
+                        ieos(mi)=1
+                     else if(s(mi).le.-tol_phase.and.ieos(mi).eq.2) then
+                        s(mi)=0.0
+                        strd = strd_iter
+c     ieos(mi)=3
                      endif
+c     
+                  enddo
+               else
+c     
+c     determine phase state
+c     
+                  if(irdof.ne.13) then
+c     pnx used to be set in the following loops -- currently removed
+                     if (iad.eq.0) strd = 1.0        
+                     do  mid=1,neq
+                        mi=mid+ndummy
+c     
+                        if(s(mi).lt.1.0.and.ieos(mi).eq.1) then
+                           if(iad.eq.1) strd = strd_iter
+                           strd = strd_iter
+                           ieos(mi)=2
+c     call phase_timcrl(days,day,dtot,dtotdm)
+c     
+                        else if(s(mi).gt.0.0.and.ieos(mi).eq.3) then
+                           if(iad.eq.1) strd = strd_iter
+                           strd = strd_iter
+                           ieos(mi)=2
+c     call phase_timcrl(days,day,dtot,dtotdm)
+c     
+                        else if(s(mi).gt.1.0.and.ieos(mi).eq.2) then
+                           if(iad.eq.1) strd = strd_iter
+                           ieos(mi)=1
+c     call phase_timcrl(days,day,dtot,dtotdm)
+c     
+                        else if(s(mi).le.0.0.and.ieos(mi).eq.2) then
+                           if(iad.eq.1) strd = strd_iter
+                           s(mi)=0.0
+                           strd = strd_iter
+                           ieos(mi)=3
+c     call phase_timcrl(days,day,dtot,dtotdm)
+c     
+                        endif
+                     enddo
+                     do  mid=1,neq
+                        mi=mid+ndummy
+                        
+                        if(phi(mi).lt.1.d-2) then
+                           if(iad.eq.1) strd = strd_iter
+                           phi(mi)=1.d-2
+                           if (so(mi).ge.1.0) then
+                              s(mi)= 0.999
+                              phi(mi)=5.d-2
+                              strd = strd_iter
+                           endif
+                        endif
+c     
+                        if(s(mi).lt.0.0) then
+                           if(iad.eq.1) strd = strd_iter
+                           s(mi)=0.0
+c     strd = strd_iter
+                        endif
+c     
+                        if(s(mi).gt.1.0) then
+                           if(iad.eq.1) strd = strd_iter
+c     s(mi)=1.0
+c     strd = strd_iter
+                        endif
+c     
+                     enddo
                   endif
-c
-                  if(s(mi).lt.0.0) then
-c                    if(iad.eq.1) strd = strd_iter
-                     s(mi)=0.0
-                    strd = strd_iter
-                  endif
-c
-                  if(s(mi).gt.1.0) then
-c                     if(iad.eq.1) strd = strd_iter
-                     s(mi)=1.0
-                    strd = strd_iter
-                  endif
-c
-               enddo
+               endif
             endif
-c gaz taken out 4-11-2001 
-c              if(ihead.ne.0) then
-c               do  mid=1,neq
-c                 mi=mid+ndummy
-c                 if(ka(mi).lt.0.and.phi(mi).lt.crl(4,1)) then
-c                    pflow(mi)=crl(4,1)
-c                    wellim(mi)=1.e-2
-c                    esk(mi)=-1.0             
-c                 endif
-c               enddo
-c              endif
          elseif(iflg.eq.2) then
-          if(abs(irdof).ne.14) then
+            if(abs(irdof).ne.14) then
 c     
-c           update solution
+c     update solution
 c     
-             nr1=nrhs(1)
-             nr2=nrhs(2)
-c           strd is passed through common
-             do i=1,neq
-                i1=i+nr1
-                i2=i+nr2
-                phi(i)=phi(i)-bp(i1)*strd
-c gaz 041805
-c               if (irdof .ne. 13 .or. ifree .ne. 0) 
-                if (irdof .ne. 13 ) 
-     &               s(i)=s(i)-bp(i2)*strd
-             enddo
-c
-c call cascade redistribution if requested
-c
-             if(iflux_ts.ne.0) then
-                call cascade_sat(1)
-             endif
-c
-          else
+               nr1=nrhs(1)
+               nr2=nrhs(2)
+c     strd is passed through common
+               do i=1,neq
+                  i1=i+nr1
+                  i2=i+nr2
+                  phi(i)=phi(i)-bp(i1)*strd
+c     gaz 041805
+c     if (irdof .ne. 13 .or. ifree .ne. 0) 
+                  if (irdof .ne. 13 ) 
+     &                 s(i)=s(i)-bp(i2)*strd
+               enddo
 c     
-c           update solution(with exact mass balance)
+c     call cascade redistribution if requested
 c     
-             nr1=nrhs(1)
-             nr2=nrhs(2)
-c           strd is passed through common
-             do i=1,neq
-                i1=i+nr1
-                i2=i+nr2
-                phi(i)=phi(i)-bp(i1)*strd
-             enddo
-c
-c           call wellrate(0,0) 
-c           call thrair(0)
-             call interblock_iso(0) 
-          
-          endif
-       elseif(iflg.eq.3) then
-          if(ico2.eq.-3) then
+               if(iflux_ts.ne.0) then
+                  call cascade_sat(1)
+               endif
+c     
+            else
+c     
+c     update solution(with exact mass balance)
+c     
+               nr1=nrhs(1)
+               nr2=nrhs(2)
+c     strd is passed through common
+               do i=1,neq
+                  i1=i+nr1
+                  i2=i+nr2
+                  phi(i)=phi(i)-bp(i1)*strd
+               enddo
+c     
+c     call wellrate(0,0) 
+c     call thrair(0)
+               call interblock_iso(0) 
+               
+            endif
+         elseif(iflg.eq.3) then
+            if(ico2.eq.-3) then
 c     call isothermal SZ NAPL thermodynamics
-             call thrsznapl(ndummy)
-          else
+               call thrsznapl(ndummy)
+            else
 c     call isothermal air water thermodynamics
-             if(ifree.ne.0) then
-                call wtsictr(2)
-                call thrair(ndummy)
-c                call wtsictr(4)
-             else
-                call thrair(ndummy)
-             endif
-          end if
-       elseif(iflg.eq.4) then
+               if(ifree.ne.0) then
+                  call wtsictr(2)
+                  call thrair(ndummy)
+c     call wtsictr(4)
+               else
+                  call thrair(ndummy)
+               endif
+            end if
+         elseif(iflg.eq.4) then
 c     call equation generation and load a array
-c    new:zero a_axy (anisotropy requires accumulation)
-          a_axy=0.0d00
-          call gensl2
-       elseif(iflg.eq.-4) then
-c solve explicit equations
-          call gensl2_explicit       
-c
-       elseif(iflg.eq.5 .and. irdof .ne. 13) then
-          if(ntty.eq.2) then
+c     new:zero a_axy (anisotropy requires accumulation)
+            a_axy=0.0d00
+            if(jswitch.eq.1) then
+               call gensl2_switch
+            else 
+               call gensl2
+            endif
+         elseif(iflg.eq.-4) then
+c     solve explicit equations
+            call gensl2_explicit       
+c     
+         elseif(iflg.eq.5 .and. irdof .ne. 13) then
+            if(ntty.eq.2) then
 c     
 c     output for air
 c     
-             if (iout .ne. 0) write(iout,803)
-             if (iatty .ne. 0) write(iatty,803)
+               if (iout .ne. 0) write(iout,803)
+               if (iatty .ne. 0) write(iatty,803)
 c     
 c     organize differing amounts of output for dpdp and dual solutions
 c     
-c
-             if(idualp.ne.0) then
-                ilev=3
-                mlev=m/3
-             else if(idpdp.ne.0) then
-                ilev=2
-                mlev=m/2
-             else
-                ilev=1
-                mlev=m
-             endif
+c     
+               if(idualp.ne.0) then
+                  ilev=3
+                  mlev=m/3
+               else if(idpdp.ne.0) then
+                  ilev=2
+                  mlev=m/2
+               else
+                  ilev=1
+                  mlev=m
+               endif
                
-             do il=1,ilev
-                if(il.ne.1) then
-                   if (iout .ne. 0) write(iout,702) il
-                   if (iatty .gt. 0) write(iatty,702) il
- 702               format(2x,'Matrix Level = ',i1)
-                endif
-                do i=1,mlev
-                   md=  nskw(i+(il-1)*mlev)
-                   rqd= sk(md)
-                   qcd=qh(md)
-                   if(ihead.ne.0.and.ifree.ne.0) then
+               do il=1,ilev
+                  if(il.ne.1) then
+                     if (iout .ne. 0) write(iout,702) il
+                     if (iatty .gt. 0) write(iatty,702) il
+ 702                 format(2x,'Matrix Level = ',i1)
+                  endif
+                  do i=1,mlev
+                     md=  nskw(i+(il-1)*mlev)
+                     rqd= sk(md)
+                     qcd=qh(md)
+                     if(ihead.ne.0.and.ifree.ne.0) then
 c     wtsi solution
-                      if(s(md).le.0.0) then
-                         phidum = crl(4,1) - phi_inc
-                      else if(s(md).lt.1.0) then
-                         phi_1 = head12(md,1)
-                         phi_2 = head12(md,2)
-                         phi_dif = phi_2-phi_1
-                         phidum = crl(4,1) + s(md)*(phi_dif)
-                      else
-                         phi_1 = head12(md,1)
-                         phi_2 = head12(md,2)
-                         phidum = phi(md) - phi_inc + 0.5*(phi_2-phi_1)
-                      endif
-                      if (iout .ne. 0) write(iout,804) 
-     &                     md,phidum,0.0,phidum,qcd
-                      if (iatty .ne. 0) 
-     &                     write(iout,804) md,phidum,0.0,phidum,qcd
-                   else if (ihead.ne.0 .or. 
-     &                     (irdof .eq. 13 .and. abs(ifree) .ne. 1)) then
+                        if(s(md).le.0.0) then
+                           phidum = crl(4,1) - phi_inc
+                        else if(s(md).lt.1.0) then
+                           phi_1 = head12(md,1)
+                           phi_2 = head12(md,2)
+                           phi_dif = phi_2-phi_1
+                           phidum = crl(4,1) + s(md)*(phi_dif)
+                        else
+                           phi_1 = head12(md,1)
+                           phi_2 = head12(md,2)
+                           phidum = phi(md) - phi_inc + 
+     &                          0.5*(phi_2-phi_1)
+                        endif
+                        if (iout .ne. 0) write(iout,804) 
+     &                       md,phidum,0.0,phidum,qcd
+                        if (iatty .ne. 0) 
+     &                       write(iout,804) md,phidum,0.0,phidum,qcd
+                     else if (ihead.ne.0 .or. 
+     &                       (irdof .eq. 13 .and. abs(ifree) .ne. 1)) 
+     &                       then
 c     head solution
-                      if (iout .ne. 0) write(iout,804) 
-     &                     md,max(phi(md)-phi_inc,0.1d00),
-     &                     0.d00,max(phi(md)-phi_inc,0.1d00),qcd
-                      if (iatty .ne. 0) write(iatty,804)
-     &                     md,max(phi(md)-phi_inc,0.1d00),
-     &                     0.d00,max(phi(md)-phi_inc,0.1d00),qcd
-                   else
+                        if (iout .ne. 0) write(iout,804) 
+     &                       md,max(phi(md)-phi_inc,0.1d00),
+     &                       0.d00,max(phi(md)-phi_inc,0.1d00),qcd
+                        if (iatty .ne. 0) write(iatty,804)
+     &                       md,max(phi(md)-phi_inc,0.1d00),
+     &                       0.d00,max(phi(md)-phi_inc,0.1d00),qcd
+                     else
 c     two-phase solution
-                      if (iout .ne. 0) write(iout,804) 
-     &                     md,phi(md),pcp(md),
-     &                     phi(md)-pcp(md),qcd
-                      if (iatty .ne. 0)
-     &                     write(iatty,804) md,phi(md),pcp(md),
-     &                     phi(md)-pcp(md),qcd
-                   endif
-                enddo
-             enddo
- 803         format(/,20x,'Nodal Information (Vapor)',/,2x,'Node',3x,
-     *            'air(vp) pres',3x,'cap pres ',3x,'liquid pres '
-     *            ,3x,'source/sink(kg/s)')
- 804         format(i7,5x,f8.3,1x,f10.3,4x,f10.3,5x,g12.4)
+                        if (iout .ne. 0) write(iout,804) 
+     &                       md,phi(md),pcp(md),
+     &                       phi(md)-pcp(md),qcd
+                        if (iatty .ne. 0)
+     &                       write(iatty,804) md,phi(md),pcp(md),
+     &                       phi(md)-pcp(md),qcd
+                     endif
+                  enddo
+               enddo
+ 803           format(/,20x,'Nodal Information (Vapor)',/,2x,'Node',3x,
+     *              'air(vp) pres',3x,'cap pres ',3x,'liquid pres '
+     *              ,3x,'source/sink(kg/s)')
+ 804           format(i7,5x,f8.3,1x,f10.3,4x,f10.3,5x,g12.4)
 c     calculate global mass and energy flows
-             if (iout .ne. 0) then
-                write(iout,703) 
-                write(iout,704) qtotei
-                write(iout,705) qtote
-                write(iout,706) qte
-                write(iout,707) dife
-             end if
+               if (iout .ne. 0) then
+                  write(iout,703) 
+                  write(iout,704) qtotei
+                  write(iout,705) qtote
+                  write(iout,706) qte
+                  write(iout,707) dife
+               end if
 c     calculate global mass and energy flows
-             if(iatty.ne.0) then
-                write(iatty,703) 
-                write(iatty,704) qtotei
-                write(iatty,705) qtote
-                write(iatty,706) qte
-                write(iatty,707) dife
-             endif
- 703         format(/,20x,'Global Mass Balances (Vapor)')
- 704         format(1x,'Vapor discharge this time step: ',e14.6,' kg')
- 705         format(1x,'Total vapor discharge: ',9x,e14.6,' kg')
- 706         format(/,1x,'Net kg vapor discharge (total out-total ',
-     &            'in): ',e14.6)
- 707         format(1x,'Conservation Error: ',25x,e14.6)
-          endif
-       elseif(iflg.eq.6) then
+               if(iatty.ne.0) then
+                  write(iatty,703) 
+                  write(iatty,704) qtotei
+                  write(iatty,705) qtote
+                  write(iatty,706) qte
+                  write(iatty,707) dife
+               endif
+ 703           format(/,20x,'Global Mass Balances (Vapor)')
+ 704           format(1x,'Vapor discharge this time step: ',e14.6,' kg')
+ 705           format(1x,'Total vapor discharge: ',9x,e14.6,' kg')
+ 706           format(/,1x,'Net kg vapor discharge (total out-total ',
+     &              'in): ',e14.6)
+ 707           format(1x,'Conservation Error: ',25x,e14.6)
+            endif
+         elseif(iflg.eq.6) then
 c     
 c     store sk in qc
 c     initialize t,to,tini,iieos
 c     
-          tref=crl(6,1)
-          do i=1,n
-             qc(i)=sk(i)
-             if(to(i).eq.0.0d00) then
-                t(i)=tref
-                to(i)=tref
-                tini(i)=tref
-             endif
-             iieos(i)=1
-             if(ieos(i).eq.1) then
-                ieos(i)=2
-                if (irdof .ne. 13 .or. ifree .ne. 0) then
-                   s(i)=1.0
-                   so(i)=1.0
-                end if
-             endif
-             if(abs(irdof).eq.14) then
-                denj(i)=1.0-s(i)
-             endif
-          enddo
-c
-c check also for free surface calcs
-c
-          if(ifree.ne.0) then
-             call wtsictr(1)	
-             call wtsictr(12)
-c             call wtsictr(9)
-          endif
-       elseif(iflg.eq.7) then
-c
-c this only applies if we have a moving water table, etc.
-c
-          call headctr(3,0,0.0,0.0)
+            tref=crl(6,1)
+            do i=1,n
+               qc(i)=sk(i)
+               if(to(i).eq.0.0d00) then
+                  t(i)=tref
+                  to(i)=tref
+                  tini(i)=tref
+               endif
+               iieos(i)=1
+               if(ieos(i).eq.1) then
+                  ieos(i)=2
+                  if (irdof .ne. 13 .or. ifree .ne. 0) then
+                     s(i)=1.0
+                     so(i)=1.0
+                  end if
+               endif
+               if(abs(irdof).eq.14) then
+                  denj(i)=1.0-s(i)
+               endif
+            enddo
+c     
+c     check also for free surface calcs
+c     
+            if(ifree.ne.0) then
+               call wtsictr(1)	
+               call wtsictr(12)
+c     call wtsictr(9)
+            endif
+         elseif(iflg.eq.7) then
+c     
+c     this only applies if we have a moving water table, etc.
+c     
+            call headctr(3,0,0.0,0.0)
 
-       elseif(iflg.eq.8) then
-c
-c convert from pressure to head
-c
-          call headctr(2,0,0.0,0.0)
-       elseif(iflg.eq.9) then
-c
-c convert from head to pressure boundary value
-c
-          call headctr(6,0,0.0,0.0)
+         elseif(iflg.eq.8) then
+c     
+c     convert from pressure to head
+c     
+            call headctr(2,0,0.0,0.0)
+         elseif(iflg.eq.9) then
+c     
+c     convert from head to pressure boundary value
+c     
+            call headctr(6,0,0.0,0.0)
 
-       elseif(iflg.eq.10) then
-c
-c convert from head to pressure boundary and initial 
-c conditions (based on pair = pref at max height)
-c correct for negative pressures
-c
-          call head_2phase(0)           
- 
-       elseif(iflg.eq.11) then
+         elseif(iflg.eq.10) then
+c     
+c     convert from head to pressure boundary and initial 
+c     conditions (based on pair = pref at max height)
+c     correct for negative pressures
+c     
+            call head_2phase(0)           
+            
+         elseif(iflg.eq.11) then
 c     
 c     calculate the gridblock length in the gravity direction
 c     
-       if(.not.allocated(dzrg))then
-	  allocate(dzrg(neq))
-	 endif 
-	 do i = 1,neq
-            i1=nelm(i)+1
-            i2=nelm(i+1)
-            hmid=cord(i,igrav)
-            hmin=0.
-	      hmax=0.
-            do ii =i1,i2
-               kb=nelm(ii)
-               hmax=max(cord(kb,igrav)-hmid,hmax)
-               hmin=min(cord(kb,igrav)-hmid,hmin)
+            if(.not.allocated(dzrg))then
+               allocate(dzrg(neq))
+            endif 
+            do i = 1,neq
+               i1=nelm(i)+1
+               i2=nelm(i+1)
+               hmid=cord(i,igrav)
+               hmin=0.
+               hmax=0.
+               do ii =i1,i2
+                  kb=nelm(ii)
+                  hmax=max(cord(kb,igrav)-hmid,hmax)
+                  hmin=min(cord(kb,igrav)-hmid,hmin)
+               enddo
+c     distinguish between block and edge centered
+               if(ivf.eq.-1) then
+                  dzrg(i) = max(hmax,abs(hmin))
+               else
+                  dzrg(i) = abs(hmax-hmin)/2.	            
+               endif      
             enddo
-c distinguish between block and edge centered
-            if(ivf.eq.-1) then
-               dzrg(i) = max(hmax,abs(hmin))
-            else
-               dzrg(i) = abs(hmax-hmin)/2.	            
-            endif      
-         enddo
-      
-       elseif(iflg.eq.12) then
+            
+         elseif(iflg.eq.12) then
 c     write wt outpt
-c         do i=1,n_wt_cols
-          iwm=0
-          do ij=1,m
-             i=wcol(nskw(ij)) 
-             do k=1,iwm
-                if(i.eq.col_out(k)) goto 566
-             end do
-            iwm=iwm+1
-            col_out(iwm)=i
-            do im=n_col(i),1,-1
-               inode=col(i,im)
-               if(s(inode).lt.1.or.im.eq.1) then
-                  wt_elev = (s(inode) - 0.5)*dzrg(inode) +
-     &                 cord(inode,igrav)
-                  if(wt_elev.eq.0..and.im.ne.n_col(i)) then
-                     inode=col(i,im+1)
+c     do i=1,n_wt_cols
+            iwm=0
+            do ij=1,m
+               i=wcol(nskw(ij)) 
+               do k=1,iwm
+                  if(i.eq.col_out(k)) goto 566
+               end do
+               iwm=iwm+1
+               col_out(iwm)=i
+               do im=n_col(i),1,-1
+                  inode=col(i,im)
+                  if(s(inode).lt.1.or.im.eq.1) then
                      wt_elev = (s(inode) - 0.5)*dzrg(inode) +
      &                    cord(inode,igrav)
+                     if(wt_elev.eq.0..and.im.ne.n_col(i)) then
+                        inode=col(i,im+1)
+                        wt_elev = (s(inode) - 0.5)*dzrg(inode) +
+     &                       cord(inode,igrav)
+                     endif
+                     if(wt_elev.eq.0..and.im.eq.n_col(i)) then
+                        if (iptty .ne. 0) write(iptty, 4006) inode,
+     &                       cord(inode,1), cord(inode,2)
+                        if (iout .ne. 0) write(iout, 4006) inode,
+     &                       cord(inode,1), cord(inode,2)
+                     endif
+                     goto 4009
                   endif
-                  if(wt_elev.eq.0..and.im.eq.n_col(i)) then
-                     if (iptty .ne. 0) write(iptty, 4006) inode,
-     &                    cord(inode,1), cord(inode,2)
-                     if (iout .ne. 0) write(iout, 4006) inode,
-     &                    cord(inode,1), cord(inode,2)
-                  endif
-                  goto 4009
-               endif
-            end do
- 4009       continue
-            if (form_flag .eq. 2) then
-               write(ishiswt,4004) days, cord(inode,1),
-     &              cord(inode,2), cord(inode,3), wt_elev,
-     &              ps(inode), inode, nskw(ij)
-            else
-               write(ishiswt,4005) days, cord(inode,1),
-     &              cord(inode,2), cord(inode,3), wt_elev,
-     &              ps(inode), inode, nskw(ij)
-            end if
- 566     end do
- 4004    format(1x,6(g16.9,', '),i8,', ',i8)
- 4005    format(1x,6(g16.9,1x),2(i8,1x))
- 4006    format(1x,'all nodes are dry ', i8, 1x, 2(g16.9, 1x))
-      else if (iflg.eq.14) then
+               end do
+ 4009          continue
+               if (form_flag .eq. 2) then
+                  write(ishiswt,4004) days, cord(inode,1),
+     &                 cord(inode,2), cord(inode,3), wt_elev,
+     &                 ps(inode), inode, nskw(ij)
+               else
+                  write(ishiswt,4005) days, cord(inode,1),
+     &                 cord(inode,2), cord(inode,3), wt_elev,
+     &                 ps(inode), inode, nskw(ij)
+               end if
+ 566        end do
+ 4004       format(1x,6(g16.9,', '),i8,', ',i8)
+ 4005       format(1x,6(g16.9,1x),2(i8,1x))
+ 4006       format(1x,'all nodes are dry ', i8, 1x, 2(g16.9, 1x))
+         else if (iflg.eq.14) then
 c     write wt output for contours
-         if (altc(1:4) .eq. 'avsx') then
-            write (form_string, 4015) ' : ', ' : '
-            write (isconwt, 4019)
-         else if (altc(1:3) .eq. 'sur') then
-            write (form_string, 4015) ', ', ', '
-            write (isconwt, 4020)
-         else if (altc(1:3) .eq. 'avs' .or. altc(1:3) .eq. 'tec') then
-            write (form_string, 4015) ' ', ' '
-            if (altc(1:3) .eq. 'tec') then
-               write (isconwt, 4018) days
-            else
-               write (isconwt, '("04 1 1 1 1")')
-               write (isconwt, '(a)') 'X coordinate (m), (m)'
-               write (isconwt, '(a)') 'Y coordinate (m), (m)'
-               write (isconwt, '(a)') 'Z coordinate (m), (m)'
-               write (isconwt, '(a)') 'Water table elevation (m), (m)'
+            if (altc(1:4) .eq. 'avsx') then
+               write (form_string, 4015) ' : ', ' : '
+               write (isconwt, 4019)
+            else if (altc(1:3) .eq. 'sur') then
+               write (form_string, 4015) ', ', ', '
+               write (isconwt, 4020)
+            else if (altc(1:3) .eq. 'avs' .or. altc(1:3) .eq. 'tec') 
+     &              then
+               write (form_string, 4015) ' ', ' '
+               if (altc(1:3) .eq. 'tec') then
+                  write (isconwt, 4018) days
+               else
+                  write (isconwt, '("04 1 1 1 1")')
+                  write (isconwt, '(a)') 'X coordinate (m), (m)'
+                  write (isconwt, '(a)') 'Y coordinate (m), (m)'
+                  write (isconwt, '(a)') 'Z coordinate (m), (m)'
+                  write (isconwt, '(a)') 
+     &                 'Water table elevation (m), (m)'
+               end if
             end if
-         end if
-         do i=1,n_wt_cols
-            do im=n_col(i),1,-1
-               inode=col(i,im)
-               if(s(inode).lt.1.or.im.eq.1) then
-                  wt_elev = (s(inode) - 0.5)*dzrg(inode) +
-     &                 cord(inode,igrav)
-                  if(wt_elev.eq.0..and.im.ne.n_col(i)) then
-                     inode=col(i,im+1)
+            do i=1,n_wt_cols
+               do im=n_col(i),1,-1
+                  inode=col(i,im)
+                  if(s(inode).lt.1.or.im.eq.1) then
                      wt_elev = (s(inode) - 0.5)*dzrg(inode) +
      &                    cord(inode,igrav)
+                     if(wt_elev.eq.0..and.im.ne.n_col(i)) then
+                        inode=col(i,im+1)
+                        wt_elev = (s(inode) - 0.5)*dzrg(inode) +
+     &                       cord(inode,igrav)
+                     endif
+                     if(wt_elev.eq.0..and.im.eq.n_col(i)) then
+                        if (iptty .ne. 0) write(iptty, 4006) inode,
+     &                       cord(inode,1), cord(inode,2)
+                        if (iout .ne. 0) write(iout, 4006) inode,
+     &                       cord(inode,1), cord(inode,2)
+                     endif
+                     goto 4010
                   endif
-                  if(wt_elev.eq.0..and.im.eq.n_col(i)) then
-                     if (iptty .ne. 0) write(iptty, 4006) inode,
-     &                    cord(inode,1), cord(inode,2)
-                     if (iout .ne. 0) write(iout, 4006) inode,
-     &                    cord(inode,1), cord(inode,2)
-                  endif
-                  goto 4010
-               endif
-            end do
- 4010       continue
-            write(isconwt,form_string) cord(inode,1), cord(inode,2),
+               end do
+ 4010          continue
+               write(isconwt,form_string) cord(inode,1), cord(inode,2),
      &              cord(inode,3), izonef(inode), wt_elev, 0.0
-         end do
+            end do
 
- 4015    format("(1x, 3(g16.9, '", a, "'), i4, 2('", a, "', g16.9))")
- 4020    format(1x, 'X (m), Y (m), Z (m), Zone, WT elev (m), ', 
-     &        'WT elev2 (m)')
- 4019    format(1x, 'X (m) : Y (m) : Z (m) : Zone : WT elev (m) : ',
-     &        'WT elev2 (m)')           
- 4018    format('variables = "X (m)" "Y (m)" "Z (m)" " Zone" ', 
-     &        '"WT elev (m) "', '"WT elev2 (m)"', / 
-     &        'zone t = "Simulation time ', g16.9, ' days"') 
-      endif
+ 4015       format("(1x, 3(g16.9, '", a, "'), i4, 2('", a, "', g16.9))")
+ 4020       format(1x, 'X (m), Y (m), Z (m), Zone, WT elev (m), ', 
+     &           'WT elev2 (m)')
+ 4019       format(1x, 'X (m) : Y (m) : Z (m) : Zone : WT elev (m) : ',
+     &           'WT elev2 (m)')           
+ 4018       format('variables = "X (m)" "Y (m)" "Z (m)" " Zone" ', 
+     &           '"WT elev (m) "', '"WT elev2 (m)"', / 
+     &           'zone t = "Simulation time ', g16.9, ' days"') 
+         endif
       endif       
 
       return
       end
       subroutine phase_timcrl(days,day,dtot,dtotdm)
-c
-c adjusts timestep when phase change occurs
-c
+c     
+c     adjusts timestep when phase change occurs
+c     
       implicit none
       real*8 days,dtot,day,dtotdm
-c
+c     
       return
-       if(dtot.gt.dtotdm) then
-                     days=days-day
-                     dtot=dtotdm  
-                     day = dtot/86400.0d00
-                     days=days+day
-       endif
+      if(dtot.gt.dtotdm) then
+         days=days-day
+         dtot=dtotdm  
+         day = dtot/86400.0d00
+         days=days+day
+      endif
       return
       end

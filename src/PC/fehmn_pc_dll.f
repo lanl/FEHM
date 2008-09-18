@@ -446,24 +446,25 @@ CPS END fehmn
 CPS
 C***********************************************************************
 
+      use comai
+      use combi
       use comci
       use comdi
-      use comei
-      use davidi
-      use comrxni
       use comdti
-      use comai
-      use comsptr
-      use comsplitts
-      use comxi
-      use comwt
+      use comei
+      use comevap, only : evaporation_flag
+      use comfi, only : qtc, qtotc
+      use comflow, only : a_axy
       use compart
+      use comrtd, only : maxmix_flag
+      use comrxni
+      use comsplitts
+      use comsptr
+      use comwt
+      use comxi
+      use davidi
 c     added combi and comflow to get izonef and a_axy arrays
 c     in subroutine computefluxvalues
-      use combi
-      use comflow
-      use comfi, only : qtc, qtotc
-      use comrtd, only : maxmix_flag
 
       implicit none
 
@@ -716,6 +717,9 @@ c
             call porosi(4)
          endif      
 
+c     Call evaporation routine if this is an evaporation problem
+         if (evaporation_flag) call evaporation(1)
+
 c ************** major time step loop ***************************
          do l = 1, nstep
 c
@@ -741,6 +745,9 @@ c*** water table rise modification
             water_table_old = in(7)
 c*** water table rise modification
             call timcrl
+
+c     Call evaporation routine if this is an evaporation problem
+            if (evaporation_flag) call evaporation(2)
 
             if (ichk .ne. 0)  call user (ichk)
 c

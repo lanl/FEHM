@@ -25,7 +25,7 @@ CD2
 CD2 Revision                    ECD
 CD2 Date         Programmer     Number  Comments
 CD2
-CD2 $Log:   /pvcs.config/fehm90/src/vgcap.f_a  $
+CD2 $Log:   /pvcs.config/fehm90/src/vgcap.f_a  $ 
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:44:28   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -302,15 +302,17 @@ c     use linear interpolation for upper cutoff
          endif
 
       else if(sl.le.0.0) then
-c     lower residual cutoff
+c     lower saturation cutoff
          hp = ac4
-         dhp= 0.0
-c     upper residual cutoff
+         dhp= ac3
+c     upper saturation cutoff
       else
          hp = bc3*sl + bc4
          dhp= bc3
          hp = 0.0 
          dhp= 0.0
+c gaz  02-18-08
+         dhp = bc3
       endif
       return
       end

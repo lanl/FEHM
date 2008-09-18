@@ -64,14 +64,13 @@
       integer nr2,irdofsv
       integer ja
       real*8 tref,pref,pssv,ssv,phisv,dmpfd,dmefd,dqd,rqd,qcd
-      real*8 strd_iter, strd_part
+      real*8  strd_part
       real*8 inflow_thstime,inen_thstime,denht,deneht
       
       real*8 dels,delp,dfdum11,dfdum12,dfdum21,dfdum22
       real*8 dfdum11i,dfdum12i,dfdum21i,dfdum22i,detdf
       real*8 fdum01,fdum02,sx1d
       save tref,pref
-      parameter(strd_iter=0.9)
 
 C ? ico2d not passed in, not initialized
       ico2d = 0

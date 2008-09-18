@@ -279,13 +279,16 @@ c     vxy=a_vxy(jj-neqp1)
                   
                   if(i.gt.neq.and.j.gt.neq) then
                      axy=a_axy(jj-neqp1+nmatavw)
-                     if (irdof .ne. 13) vxy=a_vxy(jj-neqp1+nmatavw)
+                     if (irdof .ne. 13 .and. jswitch .eq. 0) 
+     &                    vxy=a_vxy(jj-neqp1+nmatavw)
                   else if (i.le.neq.and.j.le.neq) then
                      axy=a_axy(jj-neqp1)
-                     if (irdof .ne. 13) vxy=a_vxy(jj-neqp1)
+                     if (irdof .ne. 13 .and. jswitch .eq. 0) 
+     &                    vxy=a_vxy(jj-neqp1)
                   else
                      axy=a_axy(nmat2avw+i)
-                     if (irdof .ne. 13) vxy=a_vxy(nmat2avw+i)
+                     if (irdof .ne. 13 .and. jswitch .eq. 0) 
+     &                    vxy=a_vxy(nmat2avw+i)
                   endif
                   
                   if(ivelo.lt.0) then
@@ -294,7 +297,7 @@ c     velocities
                         dis=sqrt((cord(iii,1)-cord(kb,1))**2
      &                       + (cord(iii,2)-cord(kb,2))**2 
      &                       + (cord(iii,3)-cord(kb,3))**2)
-                     area_t=-(sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz))*dis        
+                     area_t=-(sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz))*dis
                      else
                         dis=sqrt((cord(iii,1)-cord(kb,1))**2
      &                       + (cord(iii,2)-cord(kb,2))**2) 

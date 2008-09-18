@@ -400,7 +400,7 @@ CPS        call inhflx to read radiation flux data
 CPS     ELSE IF macro read is rlp
 CPS        call rlperm to read in relative permeability data
 CPS     ELSE IF macro read is rock
-CPS        call inrock to read rock property data
+CPS        call inrock to read rock propety data
 CPS     ELSE IF macro read is rxn
 CPS        call read_rxn to read reaction rate data
 CPS        IF reactions are specified
@@ -472,18 +472,19 @@ CPS END input
 CPS
 C***********************************************************************
 
-      use davidi
-      use comrxni
-      use comdti
       use comai
       use combi
-      use comci
-      use compart
-      use comdi
-      use comsptr
-      use comsplitts
       use comchem
+      use comci
+      use comdi
+      use comdti
+      use comevap, only : evaporation_flag
+      use compart
+      use comrxni
+      use comsplitts
+      use comsptr
       use comwt
+      use davidi
       implicit none
 
       integer i, izone, inode
@@ -613,6 +614,7 @@ c
          call water_density(temp0, pres0,rol0)
          ichead=1
          if(.not.allocated(head)) allocate(head(n0))
+
       else if (macro .eq. 'bous') then
 c constant densities etc for flow terms
          read(inpt,*) icons
@@ -652,6 +654,7 @@ c don't break connection between nodes with boundary conditions
                write(iptty,*)'macro ignored'
             end if
          end if
+
       else if (macro .eq. 'cgdp') then
 c**** rate-limited gdpm node identifcation (cgdpm)****
          igdpm_rate = 1
@@ -738,6 +741,11 @@ c**** element node data, read in incoord subroutine  ****
 c**** forms simple water eos and/or changes the eos set number ****
          iieosd =  0
          call sther (iieosd)
+
+      else if (macro .eq. 'evap') then
+c**** set flag and input name of file with evaporation nodes ****
+         evaporation_flag = .true.
+         call evaporation(0)
 
       else if (macro .eq. 'fdm ') then
 c finite difference input 
@@ -1168,7 +1176,10 @@ c**** read in relative permeability information ****
 c**** read in relative permeability factors ****
 c**** these are minimum relative permeabilities *****
          call infrlp        
-
+      else if (macro .eq. 'rich') then
+         jswitch = 1
+         read (inpt,*) strd_rich,tol_phase 
+c**** rock densities, etc ****
       else if (macro .eq. 'rock') then
 c**** rock densities, etc ****
          call inrock

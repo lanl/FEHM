@@ -960,7 +960,10 @@ c first check if saturation change(to 0r from 2-phase) occurs
       
       bp(iz+nrhs(1))=bp(iz+nrhs(1))+sx1d*deni(i)+sk(i)
       a(jmia+nmat(1))=a(jmia+nmat(1))+sx1d*dmpf(i)+dq(i)
-      if(irdof.ne.13) then
+	if(jswitch.ne.0) then
+         a(jmia+nmat(2))=a(jmia+nmat(2))+sx1d*dmef(i)+dqh(i)
+         bp(iz+nrhs(2))=bp(iz+nrhs(2))+sx1d*denei(i)+qh(i)
+      else if(irdof.ne.13) then
          a(jmia+nmat(2))=a(jmia+nmat(2))+sx1d*dmef(i)+dqh(i)
          a(jmia+nmat(3))=a(jmia+nmat(3))+sx1d*depf(i)+drc(i)
          a(jmia+nmat(4))=a(jmia+nmat(4))+sx1d*deef(i)+deqh(i)

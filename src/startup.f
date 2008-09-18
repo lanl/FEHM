@@ -413,6 +413,7 @@ C***********************************************************************
       integer, allocatable :: nop_temp(:)      
       integer i1,i2,ipiv,icnt
       integer count, num_zone
+      integer nsbb
       real*8 very_small
       parameter (very_small= 1.d-30)
 
@@ -932,8 +933,11 @@ c
       endif
  6011 format(1x,'storage available for a matrix resized to ',
      &     i10, '<<<<<<') 
+c  gaz 032208 change to richards eq
       if(irun.eq.1) then
-         if (compute_flow .or. iccen .eq. 1) then
+         if(jswitch.ne.0) then
+            call airctr(-2,0)
+         else if (compute_flow .or. iccen .eq. 1) then
             allocate(a(ldnmax))
          endif
       end if
@@ -941,13 +945,18 @@ c modify storage of LU factorization matrix for 6-2
 c 3-1 full GMRES schemes
       if(compute_flow .or. iccen .eq. 1) then
          if (igauss .gt. 1) then
-            if(irdof.ge.0) then
-               nbd = (nop(neq_primary+1)-(neq_primary+1))*mdof**2
-            else if(irdof.eq.-3) then
-               nbd = (nop(neq_primary+1)-(neq_primary+1))*1**2
-            else if(irdof.eq.-6) then
-               nbd = (nop(neq_primary+1)-(neq_primary+1))*2**2
-            endif
+            nsbb = nop(neq_primary+1)-(neq_primary+1)
+         else
+            nsbb = nelm(neq_primary+1)-(neq_primary+1)
+         end if
+         if (jswitch.eq.1) then
+            nbd = nsbb
+         else if(irdof.ge.0) then
+            nbd = nsbb*mdof**2
+         else if(irdof.eq.-3) then
+            nbd = nsbb*1**2
+         else if(irdof.eq.-6) then
+            nbd = nsbb*2**2
          else
             nbd = (nelm(neqp1)-neqp1)*mdof**2
          end if
