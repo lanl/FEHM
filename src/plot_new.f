@@ -75,14 +75,23 @@
       save last_step, last_time, dumv, form1_string, form2_string,
      &     formp_string, start_ae, start_mass
 
-      if (out_zones .and. ozflag .eq. 0) then
+      if (m .eq. 0 .and. node_azones .eq. 0) then
          write (ierr, 100)
          if (iout .ne. 0) write (iout, 100)
          if (iptty .ne. 0 ) write (iptty, 100)
          stop
+      end if
+      if (out_zones .and. ozflag .eq. 0) then
+         write (ierr, 110)
+         if (iout .ne. 0) write (iout, 110)
+         if (iptty .ne. 0 ) write (iptty, 110)
+         stop
       endif
  100  format ('***** STOPPING *****', /, 
+     &     'nodes and/or zones must be defined for history plot output')
+ 110  format ('***** STOPPING *****', /, 
      &     'node macro for zone averaging must precede hist macro')
+
             
       if (igf .eq. 0)  then
 
