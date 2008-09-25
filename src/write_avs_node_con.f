@@ -335,7 +335,11 @@ c----------------------------------------
 c     PHS 4/27/00   Added new format for avsxpress!!
 c---------------------------------------
          fstring = ''
-         itotal2 = nspeci+iocord+iozid
+         if (altc(1:3) .eq. 'tec') then
+            itotal2 = nspeci+iocord+iozid+1
+         else
+            itotal2 = nspeci+iocord+iozid
+         end if
          allocate (title(itotal2))
          do i = 1, iocord
             if (altc(1:3) .eq. 'avs' .and. altc(4:4) .ne. 'x') then
@@ -344,6 +348,10 @@ c---------------------------------------
                title(i) = trim(cordname(i))
             end if
          end do
+         if (altc(1:3) .eq. 'tec') then
+            title(i) = 'Node'
+            i = i + 1
+         end if
          if (iozid .eq. 1) then
             title(i) = 'Zone'
             i = i + 1
@@ -376,10 +384,9 @@ c---------------------------------------
          else if (altc(1:3) .eq. 'tec') then
             if (icall .eq. 1) then
                write(lu, 98) verno, jdate, jtime, trim(wdd)
-               write (fstring, 99) itotal2+1
+               write (fstring, 99) itotal2
                write(lu, fstring) 'VARIABLES = ', (trim(title(i)), 
-     &              i=1,iocord), 'node', (trim(title(i)), 
-     &              i=iocord+1,itotal2)
+     &              i=1,itotal2)
             end if
             if (iozone .ne. 0) write (lu, 97) trim(timec_string)
          end if

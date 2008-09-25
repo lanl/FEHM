@@ -237,6 +237,7 @@ C***********************************************************************
       character*32 cmsg(4)
       character*80 chdum
 
+      ierr_flag = 0
 c**** read node numbers for output ****
       if(macro .eq. 'node') then
          nflag = 1

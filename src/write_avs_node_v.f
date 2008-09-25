@@ -155,7 +155,7 @@ C***********************************************************************
       character*40 :: tec_string = ''
       character*45 title(3*maxvector), title2(2)
       character*50 fstring
-      character*320 tstring
+      character*500 tstring
       integer icall, neq, nvector, lu, ifdual, length
       integer i, istep, nout, iz, idz, iendz, j, k, iocord_temp
       integer icord1, icord2, icord3
@@ -227,6 +227,8 @@ c     error
       nout = nvector
       if (iocord .ne. 0) nout = nout + 1
 
+      title = ''
+      title2 = ''
       if (altc(1:3) .eq. 'avs' .and. altc(4:4) .ne. 'x') then
          j = 0
          if (iocord .ne. 0 ) then
@@ -328,14 +330,33 @@ c     error
       else if(altc(1:3).eq.'tec') then
          if (icall .eq. 1) then
             write(lu,301) verno, jdate, jtime, trim(wdd)
-            write(lu,300) (trim(title(i)), i = 1, iocord), 
-     &           (trim(title2(i)), i = 1, k), 
-     &           (trim(title(i)), i = iocord + 1, nout), '"'
+c            write(lu,300) (trim(title(i)), i = 1, iocord), 
+c     &           (trim(title2(i)), i = 1, k), 
+c     &           (trim(title(i)), i = iocord + 1, nout), '"'
+            tstring = 'VARIABLES = "'
+            do i = 1, iocord
+               tstring = trim(tstring) // trim(title(i))
+            end do
+            do i = 1, k
+               tstring = trim(tstring) // trim(title2(i))
+            end do
+            do i = iocord + 1, nout
+               tstring = trim(tstring) // trim(title(i))
+            end do
+            tstring = trim(tstring) // '"'
+            write(lu, '(a)') trim(tstring)
          end if
          if (iozone .ne. 0) write(lu,302) trim(timec_string)
       else if(altc(1:3).eq.'sur') then
-         write(tstring,400) (trim(title2(i)), i = 1, k),
-     &        (trim(title(i)), i = 1, nout)
+c         write(tstring,400) (trim(title2(i)), i = 1, k),
+c     &        (trim(title(i)), j = 1, nout)
+         tstring = ''
+         do i = 1, k
+            tstring = trim(tstring) // trim(title2(i))
+         end do
+         do i = 1, nout
+            tstring = trim(tstring) // trim(title(i))
+         end do
       end if
 
       do iz = 1, iendz

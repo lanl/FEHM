@@ -271,7 +271,7 @@ C***********************************************************************
       integer j, jset, k, kb, knum, kset, lz, nele, nelu, neu
       integer nga, noder, nsl, nrq, nrqd, nrs, nterm, numkset
 	integer icrem
-      real*8 tenth, arem
+      real*8 tenth, arem, rneu
       real*8, allocatable ::  aj(:,:)
       real*8, allocatable :: dumm(:)
       logical proc
@@ -367,7 +367,8 @@ c
 c     loop on unique elements
 c     
                do neu=1,neluc
-                  arem = mod(float(neu),tenth)
+                  rneu = float(neu)
+                  arem = mod(rneu,tenth)
                   if(arem.eq.0.and.nga.eq.1.and.nrqd.eq.1) then
                      icrem = icrem + 10
                      if (iout.ne.0) write(iout,*)
