@@ -777,7 +777,7 @@ c GAZ 02-08-01
 c set neq to neq_primary here for gdpm, then set back later
 c also set n0 to neq_primary here for gdpm, then set back later
 c
-      if(gdpm_flag.ne.0) then
+      if(gdpm_flag.ne.0 .or. nriver.ne.0) then
          neq_total = neq
          neq = neq_primary
          n0_save= n0
@@ -1441,7 +1441,7 @@ c
 c GAZ 02-08-01
 c setting neq back 
 c
-      if(gdpm_flag.ne.0) then
+      if(gdpm_flag.ne.0 .or. nriver.ne.0) then
          neq = neq_total
          n0=n0_save
       endif

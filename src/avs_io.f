@@ -397,10 +397,13 @@ C     Open with ascii format, not binary
                      end if
                      geoname = ' '
                   end if
+               else
+! Check to make sure we can open the existing file
+                  open (lu, file = geoname, iostat = io_err, err=410)
                end if
             end if
             
-            inquire (lu, OPENED=opnd)
+ 410        inquire (lu, OPENED=opnd)
             if (.not. opnd .or. geoname .eq. ' ') then
 ! Use root name determined above
                geoname = ''
@@ -424,6 +427,8 @@ C     Open with ascii format, not binary
      &              "Using existing geometry file: ", geoname
                if (iptty .ne. 0) write (iptty, *) 
      &              "Using existing geometry file: ", geoname
+! We will reopen the file when it needs to be read
+               if (opnd) close (lu)
                
             else if (opnd) then
 ! Write geometry file

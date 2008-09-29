@@ -727,14 +727,14 @@ c     calculate phase-change pressure and dp/dt
                   if(yc(ij).ge.ycmax) then
                      ico2dis(ij)=1
                      yc(ij) = ycmax
-                     yw(ij)=1-yc(ij)
+                     yw(ij) = 1.d0 - yc(ij)
                      if(iced.ne.2) then
                         fl(ij) = 0.000001d0
                         fw(ij) = fw(ij) - 0.000001d0
                      else
                         fg(ij) = 0.000001d0
                         fw(ij) = fw(ij) - 0.000001d0
-                        fl(ij) = 1.d0-fw(ij)-fg(ij)
+                        fl(ij) = 1.d0 - fw(ij) - fg(ij)
                      endif
                      dmol(ij) = tem(2)
                      dmol(ij+neq) = tem(3)
@@ -743,17 +743,17 @@ c     calculate phase-change pressure and dp/dt
                   if(yc(ij).lt.ycmax) then
                      if(fw(ij).lt.1.d0) then
                         yc(ij) = ycmax
-                        yw(ij)=1.d0-yc(ij)
+                        yw(ij) = 1.d0 - yc(ij)
                      else
-                        ico2dis(ij)=0
+                        ico2dis(ij) = 0
 c     fw(ij)= 1.d0
 c     fl(ij)= 0.d0
                         yc(ij) = ycmax*0.999999d0
-                        yw(ij)=1.d0-yc(ij)
+                        yw(ij) = 1.d0 - yc(ij)
                      endif
                   else
                      yc(ij) = ycmax
-                     yw(ij)=1-yc(ij)
+                     yw(ij) = 1.d0 - yc(ij)
                      dmol(ij) = tem(2)
                      dmol(ij+neq) = tem(3)
                   endif
@@ -841,6 +841,8 @@ c     water-only problem
                   else
                      phico2(i) = phico2(i)-bp(i1)*strd
                      tco2(i) = tco2(i)-bp(i2)*strd
+                     if (phico2(i) .ge. 0. .and. phico2(i) .lt. 0.1)
+     &                    phico2(i) = 0.1
                   endif
                   t(i) = tco2(i)
                enddo
@@ -857,10 +859,14 @@ c     co2-only problem, includes phase-change
                   elseif(icesd.ne.2)then
                      phico2(i) = phico2(i)-bp(i1)*strd
                      tco2(i) = tco2(i)-bp(i2)*strd
+                     if (phico2(i) .ge. 0. .and. phico2(i) .lt. 0.1)
+     &                    phico2(i) = 0.1
                   else
                      phico2(i)=phico2(i)-bp(i1)*strd
                      fg(i) = fg(i) - bp(i2)*strd
                      fl(i) = 1.d0-fg(i)-fw(i)
+                     if (phico2(i) .ge. 0. .and. phico2(i) .lt. 0.1)
+     &                    phico2(i) = 0.1
                   endif
                   t(i) = tco2(i)
                enddo
@@ -885,11 +891,15 @@ c     co2-water problem, includes phase-change, no CO2 dissolution
                      else
                         fl(i) = 1.d0-fw(i)
                      endif
+                     if (phico2(i) .ge. 0. .and. phico2(i) .lt. 0.1)
+     &                    phico2(i) = 0.1
                   else
                      phico2(i)=phico2(i)-bp(i1)*strd
                      fg(i) = fg(i) - bp(i2)*strd
                      fw(i) = fw(i) - bp(i3)*strd
                      fl(i) = 1.d0-fg(i)-fw(i)
+                     if (phico2(i) .ge. 0. .and. phico2(i) .lt. 0.1)
+     &                    phico2(i) = 0.1
                   endif
                   t(i) = tco2(i)
                enddo
@@ -910,6 +920,8 @@ c     Isothermal co2-water problem no CO2 dissolution
                      else
                         fl(i) = 1.d0-fw(i)
                      endif
+                     if (phico2(i) .ge. 0. .and. phico2(i) .lt. 0.1)
+     &                    phico2(i) = 0.1
                   endif
                   tco2(i) = tco2(i)
                   t(i) = tco2(i)
@@ -942,6 +954,8 @@ c     state.
                      else
                         yc(i) = yc(i) - bp(i3)*strd
                      endif
+                     if (phico2(i) .ge. 0. .and. phico2(i) .lt. 0.1)
+     &                    phico2(i) = 0.1
                   else
                      phico2(i)=phico2(i)-bp(i1)*strd
                      fg(i) = fg(i) - bp(i2)*strd
@@ -956,6 +970,8 @@ c     state.
                         yc(i) = yc(i) - bp(i3)*strd
                      endif
                      fl(i) = 1.d0-fg(i)-fw(i)
+                     if (phico2(i) .ge. 0. .and. phico2(i) .lt. 0.1)
+     &                    phico2(i) = 0.1
                   endif
                   t(i) = tco2(i)
                   if(iwatdis.eq.1) then
@@ -997,12 +1013,16 @@ c     calculate phase-change pressure and dp/dt
                         fl(i) = 1.d0-fw(i)
                      endif
                      xc(i) = xc(i) - bp(i4)*strd
+                     if (phico2(i) .ge. 0. .and. phico2(i) .lt. 0.1)
+     &                    phico2(i) = 0.1
                   else
                      phico2(i)=phico2(i)-bp(i1)*strd
                      fg(i) = fg(i) - bp(i2)*strd
                      fw(i) = fw(i) - bp(i3)*strd
                      fl(i) = 1.d0-fg(i)-fw(i)
                      xc(i) = xc(i) - bp(i4)*strd
+                     if (phico2(i) .ge. 0. .and. phico2(i) .lt. 0.1)
+     &                    phico2(i) = 0.1
                   endif
                   t(i) = tco2(i)
                enddo

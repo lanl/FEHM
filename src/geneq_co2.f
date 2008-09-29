@@ -123,7 +123,6 @@ C***********************************************************************
       real*8 diffi,diffkb,df2t,df3t,dfzt,df3c
 
       parameter(dis_tol=1.d-12)
-
 c     
 c     
                                 ! Guessed at value for grav_air
@@ -569,14 +568,18 @@ c     derivatives wrt co2 mass fraction in water-rich phase
                   dwewi=dweyci
                else
                   dwapi=dwapi+dwayci*dmol(i)
-                  dwaei=dwaei+dweyci*dmol(i+neq)
+                  dwaei=dwaei+dwayci*dmol(i+neq)
+                  dwepi=dwepi+dweyci*dmol(i)
+                  dweei=dweei+dweyci*dmol(i+neq)
                endif
                if(ico2dis(kb).eq.0) then
                   dwawkb=dwayckb
                   dwewkb=dweyckb
                else
                   dwapkb=dwapkb+dwayckb*dmol(i)
-                  dwaekb=dwaekb+dweyckb*dmol(i+neq)
+                  dwaekb=dwaekb+dwayckb*dmol(i+neq)
+                  dwepkb=dwepkb+dweyckb*dmol(i)
+                  dweekb=dweekb+dweyckb*dmol(i+neq)
                endif
             endif
             
@@ -769,16 +772,18 @@ c     derivatives wrt co2 mass fraction in water-rich phase (yc)
                   dvewi=dveyci
                else
                   dvapi=dvapi+dvayci*dmol(i)
-c zvd 07-Aug-08 should following be dvaei?
-c                  dvaei=dlaei+dveyci*dmol(i+neq)
-                  dvaei=dvaei+dveyci*dmol(i+neq)
+                  dvaei=dvaei+dvayci*dmol(i+neq)
+                  dvepi=dvepi+dveyci*dmol(i)
+                  dveei=dveei+dveyci*dmol(i+neq)
                endif
                if(ico2dis(kb).eq.0) then
                   dvawkb=dvayckb
                   dvewkb=dveyckb
                else
                   dvapkb=dvapkb+dvayckb*dmol(i)
-                  dvaekb=dvaekb+dveyckb*dmol(i+neq)
+                  dvaekb=dvaekb+dvayckb*dmol(i+neq)
+                  dvepkb=dvepkb+dveyckb*dmol(i)
+                  dveekb=dveekb+dveyckb*dmol(i+neq)
                endif
             endif
 
@@ -966,14 +971,18 @@ c     derivatives wrt co2 mass fraction in water-rich phase (yc)
                   dlewi=dleyci
                else
                   dlapi=dlapi+dlayci*dmol(i)
-                  dlaei=dlaei+dleyci*dmol(i+neq)
+                  dlaei=dlaei+dlayci*dmol(i+neq)
+                  dlepi=dlepi+dleyci*dmol(i)
+                  dleei=dleei+dleyci*dmol(i+neq)
                endif
                if(ico2dis(kb).eq.0) then
                   dlawkb=dlayckb
                   dlewkb=dleyckb
                else
                   dlapkb=dlapkb+dlayckb*dmol(i)
-                  dlaekb=dlaekb+dleyckb*dmol(i+neq)
+                  dlaekb=dlaekb+dlayckb*dmol(i+neq)
+                  dlepkb=dlepkb+dleyckb*dmol(i)
+                  dleekb=dleekb+dleyckb*dmol(i+neq)
                endif
             endif
 
@@ -1117,71 +1126,250 @@ c     mass balance terms
          dgwwkb=0.0
          dgwyckb=wat_prop(3*neq+kb)
          dgwyakb=wat_prop(4*neq+kb)
+
          bp(iz+nrhs(3))=bp(iz+nrhs(3))+diffc*(yckb*rowkb-yci*rowi)
          bp(kz+nrhs(3))=bp(kz+nrhs(3))-diffc*(yckb*rowkb-yci*rowi)
-         a(jmia+nmat(11))=a(jmia+nmat(11))-diffc*yci*dgwpi
-         a(ial+nmat(11))=a(ial+nmat(11))+diffc*yci*dgwpi
-         a(iau+nmat(11))=a(iau+nmat(11))+diffc*yckb*dgwpkb
-         a(jml+nmat(11))=a(jml+nmat(11))-diffc*yckb*dgwpkb
-         a(jmia+nmat(12))=a(jmia+nmat(12))-diffc*yci*dgwei
-         a(ial+nmat(12))=a(ial+nmat(12))+diffc*yci*dgwei
-         a(iau+nmat(12))=a(iau+nmat(12))+diffc*yckb*dgwekb
-         a(jml+nmat(12))=a(jml+nmat(12))-diffc*yckb*dgwekb
-         a(jmia+nmat(13))=a(jmia+nmat(13))-diffc*yci*dgwwi
-         a(ial+nmat(13))=a(ial+nmat(13))+diffc*yci*dgwwi
-         a(iau+nmat(13))=a(iau+nmat(13))+diffc*yckb*dgwwkb
-         a(jml+nmat(13))=a(jml+nmat(13))-diffc*yckb*dgwwkb
-         a(jmia+nmat(14))=a(jmia+nmat(14))-diffc*(yci*dgwyci+rowi)
-         a(ial+nmat(14))=a(ial+nmat(14))+diffc*(yci*dgwyci+rowi)
-         a(iau+nmat(14))=a(iau+nmat(14))+diffc*(yckb*dgwyckb+rowkb)
-         a(jml+nmat(14))=a(jml+nmat(14))-diffc*(yckb*dgwyckb+rowkb)
-         a(jmia+nmat(15))=a(jmia+nmat(15))-diffc*yci*dgwyai
-         a(ial+nmat(15))=a(ial+nmat(15))+diffc*yci*dgwyai
-         a(iau+nmat(15))=a(iau+nmat(15))+diffc*yckb*dgwyakb
-         a(jml+nmat(15))=a(jml+nmat(15))-diffc*yckb*dgwyakb
+         if(iprtype.eq.4) then
+            if(ico2dis(i).eq.0) then
+               a(jmia+nmat(11))=a(jmia+nmat(11))-diffc*yci*dgwpi
+               a(ial+nmat(11))=a(ial+nmat(11))+diffc*yci*dgwpi
+               a(jmia+nmat(12))=a(jmia+nmat(12))-diffc*yci*dgwei
+               a(ial+nmat(12))=a(ial+nmat(12))+diffc*yci*dgwei
+               a(jmia+nmat(13))=a(jmia+nmat(13))-diffc*(yci*dgwyci+rowi)
+               a(ial+nmat(13))=a(ial+nmat(13))+diffc*(yci*dgwyci+rowi)
+               a(jmia+nmat(14))=a(jmia+nmat(14))-diffc*(yci*dgwyci+rowi)
+               a(ial+nmat(14))=a(ial+nmat(14))+diffc*(yci*dgwyci+rowi)
+               a(jmia+nmat(15))=a(jmia+nmat(15))-diffc*yci*dgwyai
+               a(ial+nmat(15))=a(ial+nmat(15))+diffc*yci*dgwyai
+            else
+               a(jmia+nmat(11))=a(jmia+nmat(11))-diffc*yci*(dgwpi+
+     &              dgwyci*dmol(i))
+               a(ial+nmat(11))=a(ial+nmat(11))+diffc*yci*(dgwpi+
+     &              dgwyci*dmol(i))
+               a(jmia+nmat(12))=a(jmia+nmat(12))-diffc*yci*(dgwei+
+     &              dgwyci*dmol(i+neq))
+               a(ial+nmat(12))=a(ial+nmat(12))+diffc*yci*(dgwei+
+     &              dgwyci*dmol(i+neq))
+               a(jmia+nmat(13))=a(jmia+nmat(13))-diffc*yci*dgwwi
+               a(ial+nmat(13))=a(ial+nmat(13))+diffc*yci*dgwwi
+               a(jmia+nmat(14))=a(jmia+nmat(14))-diffc*(yci*dgwyci+rowi)
+               a(ial+nmat(14))=a(ial+nmat(14))+diffc*(yci*dgwyci+rowi)
+               a(jmia+nmat(15))=a(jmia+nmat(15))-diffc*yci*dgwyai
+               a(ial+nmat(15))=a(ial+nmat(15))+diffc*yci*dgwyai
+            endif
+         else
+            a(jmia+nmat(11))=a(jmia+nmat(11))-diffc*yci*dgwpi
+            a(ial+nmat(11))=a(ial+nmat(11))+diffc*yci*dgwpi
+            a(jmia+nmat(12))=a(jmia+nmat(12))-diffc*yci*dgwei
+            a(ial+nmat(12))=a(ial+nmat(12))+diffc*yci*dgwei
+            a(jmia+nmat(13))=a(jmia+nmat(13))-diffc*yci*dgwwi
+            a(ial+nmat(13))=a(ial+nmat(13))+diffc*yci*dgwwi
+            a(jmia+nmat(14))=a(jmia+nmat(14))-diffc*(yci*dgwyci+rowi)
+            a(ial+nmat(14))=a(ial+nmat(14))+diffc*(yci*dgwyci+rowi)
+            a(jmia+nmat(15))=a(jmia+nmat(15))-diffc*yci*dgwyai
+            a(ial+nmat(15))=a(ial+nmat(15))+diffc*yci*dgwyai
+         endif
+
+         if(iprtype.eq.4) then
+            if(ico2dis(kb).eq.0) then
+               a(iau+nmat(11))=a(iau+nmat(11))+diffc*yckb*dgwpkb
+               a(jml+nmat(11))=a(jml+nmat(11))-diffc*yckb*dgwpkb
+               a(iau+nmat(12))=a(iau+nmat(12))+diffc*yckb*dgwekb
+               a(jml+nmat(12))=a(jml+nmat(12))-diffc*yckb*dgwekb
+               a(iau+nmat(13))=a(iau+nmat(13))+diffc*(yckb*dgwyckb+
+     &              rowkb)
+               a(jml+nmat(13))=a(jml+nmat(13))-diffc*(yckb*dgwyckb+
+     &              rowkb)
+               a(iau+nmat(14))=a(iau+nmat(14))+diffc*(yckb*dgwyckb+
+     &              rowkb)
+               a(jml+nmat(14))=a(jml+nmat(14))-diffc*(yckb*dgwyckb+
+     &              rowkb)
+               a(iau+nmat(15))=a(iau+nmat(15))+diffc*yckb*dgwyakb
+               a(jml+nmat(15))=a(jml+nmat(15))-diffc*yckb*dgwyakb
+            else
+               a(iau+nmat(11))=a(iau+nmat(11))+diffc*yckb*(dgwpkb+
+     &              dgwyckb*dmol(kb))
+               a(jml+nmat(11))=a(jml+nmat(11))-diffc*yckb*(dgwpkb+
+     &              dgwyckb*dmol(kb))
+               a(iau+nmat(12))=a(iau+nmat(12))+diffc*yckb*(dgwekb+
+     &              dgwyckb*dmol(kb+neq))
+               a(jml+nmat(12))=a(jml+nmat(12))-diffc*yckb*(dgwekb+
+     &              dgwyckb*dmol(kb+neq))
+               a(iau+nmat(13))=a(iau+nmat(13))+diffc*yckb*dgwwkb
+               a(jml+nmat(13))=a(jml+nmat(13))-diffc*yckb*dgwwkb
+               a(iau+nmat(14))=a(iau+nmat(14))+diffc*(yckb*dgwyckb+
+     &              rowkb)
+               a(jml+nmat(14))=a(jml+nmat(14))-diffc*(yckb*dgwyckb+
+     &              rowkb)
+               a(iau+nmat(15))=a(iau+nmat(15))+diffc*yckb*dgwyakb
+               a(jml+nmat(15))=a(jml+nmat(15))-diffc*yckb*dgwyakb
+            endif
+         else
+            a(iau+nmat(11))=a(iau+nmat(11))+diffc*yckb*dgwpkb
+            a(jml+nmat(11))=a(jml+nmat(11))-diffc*yckb*dgwpkb
+            a(iau+nmat(12))=a(iau+nmat(12))+diffc*yckb*dgwekb
+            a(jml+nmat(12))=a(jml+nmat(12))-diffc*yckb*dgwekb
+            a(iau+nmat(13))=a(iau+nmat(13))+diffc*yckb*dgwwkb
+            a(jml+nmat(13))=a(jml+nmat(13))-diffc*yckb*dgwwkb
+            a(iau+nmat(14))=a(iau+nmat(14))+diffc*(yckb*dgwyckb+rowkb)
+            a(jml+nmat(14))=a(jml+nmat(14))-diffc*(yckb*dgwyckb+rowkb)
+            a(iau+nmat(15))=a(iau+nmat(15))+diffc*yckb*dgwyakb
+            a(jml+nmat(15))=a(jml+nmat(15))-diffc*yckb*dgwyakb
+            
+         endif
+
 c     energy balance terms
-         enlkb=wat_prop(5*neq+kb)
-         delkb=wat_prop(6*neq+kb)
-         delekb=wat_prop(7*neq+kb)
+         if(ices(kb).eq.3) then
+            enlkb=co2_prop(12*neq+kb)
+            delkb=co2_prop(14*neq+kb)
+            delekb=co2_prop(13*neq+kb)
+         elseif(ices(kb).eq.1) then
+            enlkb=co2_prop(3*neq+kb)
+            delkb=co2_prop(5*neq+kb)
+            delekb=co2_prop(4*neq+kb)
+         elseif(ices(kb).eq.4) then
+            enlkb=co2_prop(3*neq+kb)
+            delkb=co2_prop(5*neq+kb)
+            delekb=co2_prop(4*neq+kb)
+         endif
          delwkb=0.d0
          delyckb=0.d0
          delyakb=0.d0
-         hfc=fid*enlkb+fid1*enli
-         dhfcp=fid*delkb+fid1*deli
-         dhfct=fid*delekb+fid1*delei
+         if(ices(i).eq.3) then
+            hfc=fid*enlkb+fid1*enci
+            dhfcp=fid*delkb+fid1*deci
+            dhfct=fid*delekb+fid1*decei
+         elseif(ices(i).eq.1) then
+            hfc=fid*enlkb+fid1*enli
+            dhfcp=fid*delkb+fid1*deli
+            dhfct=fid*delekb+fid1*delei
+         elseif(ices(i).eq.4) then
+            hfc=fid*enlkb+fid1*enli
+            dhfcp=fid*delkb+fid1*deli
+            dhfct=fid*delekb+fid1*delei
+         endif
+C     hfc=0.d0
+C     dhfcp=0.d0
+C     dhfct=0.d0	
          dhfcw=0.d0
          dhfcyc=0.d0
          dhfcya=0.d0
          bp(iz+nrhs(4))=bp(iz+nrhs(4))+diffc*hfc*(rowkb*yckb-yci*rowi)
          bp(kz+nrhs(4))=bp(kz+nrhs(4))-diffc*hfc*(rowkb*yckb-yci*rowi)
-         a(jmia+nmat(16))=a(jmia+nmat(16))-diffc*(hfc*yci*dgwpi
-     &        +dhfcp*yci*rowi)
-         a(jmia+nmat(17))=a(jmia+nmat(17))-diffc*(hfc*yci*dgwei
-     &        +dhfct*yci*rowi)
-         a(ial+nmat(16))=a(ial+nmat(16))+diffc*(hfc*yci*dgwpi
-     &        +dhfcp*yci*rowi)
-         a(ial+nmat(17))=a(ial+nmat(17))+diffc*(hfc*yci*dgwei
-     &        +dhfct*yci*rowi)
-         a(iau+nmat(16))=a(iau+nmat(16))+diffc*(hfc*yckb*dgwpkb
-     &        +dhfcp*yckb*rowkb)
-         a(iau+nmat(17))=a(iau+nmat(17))+diffc*(hfc*yckb*dgwpkb
-     &        +dhfcp*yckb*rowkb)
-         a(jml+nmat(16))=a(jml+nmat(16))-diffc*(hfc*yckb*dgwpkb
-     &        +dhfcp*yckb*rowkb)
-         a(jml+nmat(17))=a(jml+nmat(17))-diffc*(hfc*yckb*dgwpkb
-     &        +dhfcp*yckb*rowkb)
-         a(jmia+nmat(18))=a(jmia+nmat(18))-diffc*hfc*yci*dgwwi
-         a(ial+nmat(18))=a(ial+nmat(18))+diffc*hfc*yci*dgwwi
-         a(iau+nmat(18))=a(iau+nmat(18))+diffc*hfc*yckb*dgwwkb
-         a(jml+nmat(18))=a(jml+nmat(18))-diffc*hfc*yckb*dgwwkb
-         a(jmia+nmat(19))=a(jmia+nmat(19))-diffc*hfc*(yci*dgwyci+rowi)
-         a(ial+nmat(19))=a(ial+nmat(19))+diffc*hfc*(yci*dgwyci+rowi)
-         a(iau+nmat(19))=a(iau+nmat(19))+diffc*hfc*(yckb*dgwyckb+rowkb)
-         a(jml+nmat(19))=a(jml+nmat(19))-diffc*hfc*(yckb*dgwyckb+rowkb)
-         a(jmia+nmat(20))=a(jmia+nmat(20))-diffc*hfc*yci*dgwyai
-         a(ial+nmat(20))=a(ial+nmat(20))+diffc*hfc*yci*dgwyai
-         a(iau+nmat(20))=a(iau+nmat(20))+diffc*hfc*yckb*dgwyakb
-         a(jml+nmat(20))=a(jml+nmat(20))-diffc*hfc*yckb*dgwyakb
+         if(iprtype.eq.4) then
+            if(ico2dis(i).eq.0) then
+               a(jmia+nmat(16))=a(jmia+nmat(16))-diffc*(hfc*yci*dgwpi
+     &              +dhfcp*yci*rowi)
+               a(ial+nmat(16))=a(ial+nmat(16))+diffc*(hfc*yci*dgwpi
+     &              +dhfcp*yci*rowi)
+               a(jmia+nmat(17))=a(jmia+nmat(17))-diffc*(hfc*yci*dgwei
+     &              +dhfct*yci*rowi)
+               a(ial+nmat(17))=a(ial+nmat(17))+diffc*(hfc*yci*dgwei
+     &              +dhfct*yci*rowi)
+               a(jmia+nmat(18))=a(jmia+nmat(18))-diffc*hfc*(yci*dgwyci+
+     &              rowi)
+               a(ial+nmat(18))=a(ial+nmat(18))+diffc*hfc*(yci*dgwyci+
+     &              rowi)
+               a(jmia+nmat(19))=a(jmia+nmat(19))-diffc*hfc*(yci*dgwyci+
+     &              rowi)
+               a(ial+nmat(19))=a(ial+nmat(19))+diffc*hfc*(yci*dgwyci+
+     &              rowi)
+               a(jmia+nmat(20))=a(jmia+nmat(20))-diffc*hfc*yci*dgwyai
+               a(ial+nmat(20))=a(ial+nmat(20))+diffc*hfc*yci*dgwyai
+            else
+               a(jmia+nmat(16))=a(jmia+nmat(16))-diffc*(hfc*yci*(dgwpi+
+     &              dgwyci*dmol(i))+dhfcp*yci*rowi)
+               a(ial+nmat(16))=a(ial+nmat(16))+diffc*(hfc*yci*(dgwpi+
+     &              dgwyci*dmol(i))+dhfcp*yci*rowi)
+               a(jmia+nmat(17))=a(jmia+nmat(17))-diffc*(hfc*yci*(dgwei+
+     &              dgwyci*dmol(i+neq))+dhfct*yci*rowi)
+               a(ial+nmat(17))=a(ial+nmat(17))+diffc*(hfc*yci*(dgwei+
+     &              dgwyci*dmol(i+neq))+dhfct*yci*rowi)
+               a(jmia+nmat(18))=a(jmia+nmat(18))-diffc*hfc*yci*dgwwi
+               a(ial+nmat(18))=a(ial+nmat(18))+diffc*hfc*yci*dgwwi
+               a(jmia+nmat(19))=a(jmia+nmat(19))-diffc*hfc*(yci*dgwyci+
+     &              rowi)
+               a(ial+nmat(19))=a(ial+nmat(19))+diffc*hfc*(yci*dgwyci+
+     &              rowi)
+               a(jmia+nmat(20))=a(jmia+nmat(20))-diffc*hfc*yci*dgwyai
+               a(ial+nmat(20))=a(ial+nmat(20))+diffc*hfc*yci*dgwyai
+            endif
+         else
+            a(jmia+nmat(16))=a(jmia+nmat(16))-diffc*(hfc*yci*dgwpi
+     &           +dhfcp*yci*rowi)
+            a(ial+nmat(16))=a(ial+nmat(16))+diffc*(hfc*yci*dgwpi
+     &           +dhfcp*yci*rowi)
+            a(jmia+nmat(17))=a(jmia+nmat(17))-diffc*(hfc*yci*dgwei
+     &           +dhfct*yci*rowi)
+            a(ial+nmat(17))=a(ial+nmat(17))+diffc*(hfc*yci*dgwei
+     &           +dhfct*yci*rowi)
+            a(jmia+nmat(18))=a(jmia+nmat(18))-diffc*hfc*yci*dgwwi
+            a(ial+nmat(18))=a(ial+nmat(18))+diffc*hfc*yci*dgwwi
+            a(jmia+nmat(19))=a(jmia+nmat(19))-diffc*hfc*(yci*dgwyci+
+     &              rowi)
+            a(ial+nmat(19))=a(ial+nmat(19))+diffc*hfc*(yci*dgwyci+
+     &              rowi)
+            a(jmia+nmat(20))=a(jmia+nmat(20))-diffc*hfc*yci*dgwyai
+            a(ial+nmat(20))=a(ial+nmat(20))+diffc*hfc*yci*dgwyai
+         endif
+
+         if(iprtype.eq.4) then
+            if(ico2dis(kb).eq.0) then
+               a(iau+nmat(16))=a(iau+nmat(16))+diffc*(hfc*yckb*dgwpkb
+     &              +dhfcp*yckb*rowkb)
+               a(iau+nmat(17))=a(iau+nmat(17))+diffc*(hfc*yckb*dgwekb
+     &              +dhfct*yckb*rowkb)
+               a(jml+nmat(16))=a(jml+nmat(16))-diffc*(hfc*yckb*dgwpkb
+     &              +dhfcp*yckb*rowkb)
+               a(jml+nmat(17))=a(jml+nmat(17))-diffc*(hfc*yckb*dgwekb
+     &              +dhfct*yckb*rowkb)
+               a(iau+nmat(18))=a(iau+nmat(18))+diffc*hfc*(yckb*dgwyckb+
+     &              rowkb)
+               a(jml+nmat(18))=a(jml+nmat(18))-diffc*hfc*(yckb*dgwyckb+
+     &              rowkb)
+               a(iau+nmat(19))=a(iau+nmat(19))+diffc*hfc*(yckb*dgwyckb+
+     &              rowkb)
+               a(jml+nmat(19))=a(jml+nmat(19))-diffc*hfc*(yckb*dgwyckb+
+     &              rowkb)
+               a(iau+nmat(20))=a(iau+nmat(20))+diffc*hfc*yckb*dgwyakb
+               a(jml+nmat(20))=a(jml+nmat(20))-diffc*hfc*yckb*dgwyakb
+            else
+               a(iau+nmat(16))=a(iau+nmat(16))+diffc*(hfc*yckb*(dgwpkb+
+     &              dgwyckb*dmol(kb))+dhfcp*yckb*rowkb)
+               a(iau+nmat(17))=a(iau+nmat(17))+diffc*(hfc*yckb*(dgwekb+
+     &              dgwyckb*dmol(kb+neq))+dhfct*yckb*rowkb)
+               a(jml+nmat(16))=a(jml+nmat(16))-diffc*(hfc*yckb*(dgwpkb+
+     &              dgwyckb*dmol(kb))+dhfcp*yckb*rowkb)
+               a(jml+nmat(17))=a(jml+nmat(17))-diffc*(hfc*yckb*(dgwekb+
+     &              dgwyckb*dmol(kb+neq))+dhfct*yckb*rowkb)
+               a(iau+nmat(18))=a(iau+nmat(18))+diffc*hfc*yckb*dgwwkb
+               a(jml+nmat(18))=a(jml+nmat(18))-diffc*hfc*yckb*dgwwkb
+               a(iau+nmat(19))=a(iau+nmat(19))+diffc*hfc*(yckb*dgwyckb+
+     &              rowkb)
+               a(jml+nmat(19))=a(jml+nmat(19))-diffc*hfc*(yckb*dgwyckb+
+     &              rowkb)
+               a(iau+nmat(20))=a(iau+nmat(20))+diffc*hfc*yckb*dgwyakb
+               a(jml+nmat(20))=a(jml+nmat(20))-diffc*hfc*yckb*dgwyakb
+            endif
+         else
+            a(iau+nmat(16))=a(iau+nmat(16))+diffc*(hfc*yckb*dgwpkb
+     &           +dhfcp*yckb*rowkb)
+            a(jml+nmat(16))=a(jml+nmat(16))-diffc*(hfc*yckb*dgwpkb
+     &           +dhfcp*yckb*rowkb)
+            a(iau+nmat(17))=a(iau+nmat(17))+diffc*(hfc*yckb*dgwekb
+     &           +dhfct*yckb*rowkb)
+            a(jml+nmat(17))=a(jml+nmat(17))-diffc*(hfc*yckb*dgwekb
+     &           +dhfct*yckb*rowkb)
+            a(iau+nmat(18))=a(iau+nmat(18))+diffc*hfc*yckb*dgwwkb
+            a(jml+nmat(18))=a(jml+nmat(18))-diffc*hfc*yckb*dgwwkb
+            a(iau+nmat(19))=a(iau+nmat(19))+diffc*hfc*(yckb*dgwyckb+
+     &              rowkb)
+            a(jml+nmat(19))=a(jml+nmat(19))-diffc*hfc*(yckb*dgwyckb+
+     &              rowkb)
+            a(iau+nmat(20))=a(iau+nmat(20))+diffc*hfc*yckb*dgwyakb
+            a(jml+nmat(20))=a(jml+nmat(20))-diffc*hfc*yckb*dgwyakb
+         endif
+
  70   continue
 
 c     add accumulation terms
@@ -1197,5 +1385,5 @@ c     add accumulation terms
       a(jmia+nmat(18))=a(jmia+nmat(18))+sx1d*dewf(i)+dqhw(i)
       a(jmia+nmat(19))=a(jmia+nmat(19))+sx1d*deycf(i)+dqhyc(i)
       a(jmia+nmat(20))=a(jmia+nmat(20))+sx1d*deyaf(i)+dqhya(i)
-      r e t u r n
-      e    n    d
+      return
+      end

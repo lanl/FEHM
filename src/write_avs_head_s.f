@@ -62,7 +62,7 @@ C************************************************************************
       implicit none
 
       integer maxscalar
-      parameter (maxscalar = 21)
+      parameter (maxscalar = 22)
       integer neq,nscalar,lu,ifdual
       integer i,j,iolp,iovp,nout,icall,idz,iriver2
       integer size_head, size_pcp, istart, iend, ic1, ic2, length
@@ -97,6 +97,7 @@ C************************************************************************
      &     units(22) /'(no dim)'/,
      &     units(23) /'(no dim)'/,
      &     units(24) /'(no dim)'/,
+     &     units(25) /'(no dim)'/,
      &     units(14) /'(m)'/,
      &     units(15) /'(m)'/,
      &     units(16) /'(m)'/
@@ -157,7 +158,8 @@ c     Header is only written to the first tecplot file
       title(21) = trim(dual_char) // 'Water Fraction'
       title(22) = trim(dual_char) //'Super-Critical/Liquid CO2 Fraction'
       title(23) = trim(dual_char) // 'Gaseous CO2 Fraction'
-      title(24) = trim(dual_char) // 'CO2 Phase State'
+      title(24) = trim(dual_char) // 'Dissolved CO2 Mass Fraction'
+      title(25) = trim(dual_char) // 'CO2 Phase State'
       title(14) = 'X coordinate (m)'
       title(15) = 'Y coordinate (m)'
       title(16) = 'Z coordinate (m)'
@@ -214,6 +216,7 @@ c     Write Z coordinate
             write(lu,200) trim(title(22)), trim(units(22)) 
             write(lu,200) trim(title(23)), trim(units(23)) 
             write(lu,200) trim(title(24)), trim(units(24)) 
+            write(lu,200) trim(title(25)), trim(units(25)) 
          end if
          if (iohead .eq. 1 .and. size_head .ne. 1) then
             write(lu,200) trim(title(5)), trim(units(5))
@@ -343,6 +346,10 @@ c     Write Z coordinate
             length = len_trim(tstring)
             ic2 = ic2 + length
             write(tstring,formstring) trim(title(24))
+            tstring2 = tstring2(ic1:ic2) // tstring
+            length = len_trim(tstring)
+            ic2 = ic2 + length
+            write(tstring,formstring) trim(title(25))
             tstring2 = tstring2(ic1:ic2) // tstring
             length = len_trim(tstring)
             ic2 = ic2 + length

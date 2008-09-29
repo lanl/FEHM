@@ -38,74 +38,48 @@
       use comriv
       implicit none
 
-      integer ndummy,iieosl,mid,mi,ieosd,kq,icesd
-      real*8 dtin,dporpl,dportl,xrl,xrv,drl,drv,drlp,drvp,ela0,elpa1
-      real*8 elpa2,elpa3,elta1,elta2,elta3,elpta,elp2ta,elpt2a
-      real*8 elb0,elpb1,elpb2,elpb3,eltb1,eltb2,eltb3,elptb
-      real*8 elp2tb,elpt2b,dla0,dlpa1,dlpa2,dlpa3,dlta1,dlta2,dlta3
-      real*8 dlpta,dlp2ta,dlpt2a,dlb0,dlpb1,dlpb2,dlpb3,dltb1,dltb2
-      real*8 dltb3,dlptb,dlp2tb,dlpt2b,vla0,vlpa1,vlpa2,vlpa3,vlta1
-      real*8 vlta2,vlta3,vlpta,vlp2ta,vlpt2a,vlb0,vlpb1,vlpb2,vlpb3
-      real*8 vltb1,vltb2,vltb3,vlptb,vlp2tb,vlpt2b,eva0,evpa1,evpa2
-      real*8 evpa3,evta1,evta2,evta3,evpta,evp2ta,evpt2a,evb0,evpb1
-      real*8 evpb2,evpb3,evtb1,evtb2,evtb3,evptb,evp2tb,evpt2b,dva0
-      real*8 dvpa1,dvpa2,dvpa3,dvta1,dvta2,dvta3,dvpta,dvp2ta,dvpt2a
-      real*8 dvb0,dvpb1,dvpb2,dvpb3,dvtb1,dvtb2,dvtb3,dvptb,dvp2tb
-      real*8 dvpt2b,vva0,vvpa1,vvpa2,vvpa3,vvta1,vvta2,vvta3,vvpta
-      real*8 vvp2ta,vvpt2a,vvb0,vvpb1,vvpb2,vvpb3,vvtb1,vvtb2,vvtb3
-      real*8 vvptb,vvp2tb,vvpt2b,tl,pl,x,x2,x3,x4,dpsatt,tl2,tl3
-      real*8 tlx,tl2x,tlx2,enwn1,enwn2,enwn3,enwn,enwd1,enwd2,enwd3
-      real*8 enwd,enw,enl,dhwpn1,dhwpn2,dhwpn,dhwpd,dhwp,dhwtn1
-      real*8 dhwtn2,dhwtn,dhwtd,dhwt,dhlt,dhlp,rnwn1,rnwn2,rnwn3
-      real*8 rnwd1,rnwd2,rnwd3,rnwn,rnwd,rnw,rol,drlpn1,drlpn2
-      real*8 drlpn,drolpd,drolp,drlen1,drlen2,drlen,droled,drolt,viln1
-      real*8 viln2,viln3,viln,vild1,vild2,vild3,vild,vil,xvisl
-      real*8 dvlpn1,dvlpn2,dvlpn,dvilpd,dvislp,dvlen1,dvlen2,dvlen
-      real*8 dviled,dvislt,ensn1,ensn2,ensn3,ensn,ensd1,ensd2,ensd3
-      real*8 ensd,ens,env,dhvp1,dhvp2,dhvpn,dhvpd,dhvt1,dhvt2
-      real*8 dhvtn,dhvtd,dhvt,dhvp,rnsn1,rnsn2,rnsn3,rnsd1,rnsd2
-      real*8 rnsd3,rnsn,rnsd,rns,rov,drspn1,drspn2,drspn,drospd
-      real*8 drsen1,drsen2,drsen,drostd,visn1,visn2,visn3,visn,visd1
-      real*8 visd2,visd3,visd,vis,xvisv,dvspn1,dvspn2,dvspn,dvispd
-      real*8 dvisvp,dvsen1,dvsen2,dvsen,dvised,dvisvt,dtd,sl,qdis
-      real*8 cp,por,vol,pldif,permsd,eskd,eqdum,rag,sig,dtrdp,dtrdt
-      real*8 rop,rop1,damp,daep,daep1,damh,daeh,dragp,dsigp,dsige
-      real*8 den1,roe,dql,hprod,dhprdp,dhprde,htc,tbound,hflux
-      real*8 dhflxp,sbound,cprd,edif,denrd,vfd,rl,dvfp,tfun
-      real*8 tfunn,tfund,dtpsn,dtpsd,dpldt,dpld3,psat,vfcal,rop2,daep2
+      integer ndummy,mid,mi,ieosd,kq,icesd
+      real*8 dtin,dporpl,dportl
+      real*8 tl,pl,dpsatt
+      real*8 enw,enl
+      real*8 dhlt,dhlp
+      real*8 rol
+      real*8 drolp,drolt
+      real*8 xvisl
+      real*8 dvislp
+      real*8 dvislt
+      real*8 env
+      real*8 dhvt,dhvp
+      real*8 rov
+      real*8 xvisv
+      real*8 dvisvp,dvisvt,qdis,dtd
+      real*8 cp,por,vol,pldif,permsd,eskd,eqdum
+      real*8 damp,daep,daep1,damh,daeh
+      real*8 dql,hprod,dhprdp,dhprde,htc,tbound,hflux
+      real*8 dhflxp,sbound,cprd,edif,denrd
+      real*8 dpldt,daep2
       real*8 dqv,dhflxe,dtps,drovp,drovt,permsd1
       real*8 dhflxem,dhflxpm,daeh1,daeh2,pcpww
       real*8, allocatable :: sto1(:)
 
       real*8 psatd
-      real*8 dum1,dum2,dum3,dum4,dum5,dum6,dum7
-      real*8 damm,daem,dsigm,drvm,drlm,dhprdm                        
-      real*8 damw,daew,dsigw,drvw,drlw,dhprdw                        
-      real*8 dhflxew,frac_g,dfrac_gm,dfrac_gw,dfrac_comp2
-      real*8 fracmb,co2term
-      real*8 fco2_l,fco2_g,fco2_s,fco2f
+      real*8 dum1,dum2,dum3,dum5,dum6
+      real*8 damw,daew,dhprdw                        
+      real*8 dhflxew
       real*8 ensc,denscp,densct,rosc,droscp,drosct,xvisc,dviscp,dvisct
-      real*8 rco2sc,drco2scp,drco2sct,drco2sc3,drco2sc4
-      real*8 rco2l,drco2lp,drco2lt,drco2l3,drco2l4
-      real*8 rco2g,drco2gp,drco2gt,drco2g3,drco2g4
-      real*8 rol1,rol2,rov1,rov2,rosc1,rosc2,tl1,dtol
-      real*8 enl1,enl2,env1,env2,ensc1,ensc2
-      real*8 xvisl1,xvisl2,xvisv1,xvisv2,xvisc1,xvisc2
+      real*8 dtol
       parameter(dtol=1.d-10)
 c     
 c     gaz took it out of loop (can be specified source as well)
 c     will over-ride above co2 production
-      real*8 rlwm,drlwm3,drlwm4,drlwmp,drlwmt
-      real*8 rgwm,drgwm3,drgwm4,drgwmp,drgwmt
-      real*8 prf,dprf4                                                
-      real*8 prodfac,dprodfac3,dprodfac4,fracwmin
-      real*8 Kh, frac_co2w,value(9),dumb
+      real*8 fracwmin
+      real*8 value(9),dumb
       
       real*8 frac_cl,frac_cg,frac_c,frac_w, yco2,ywat,yair,xco2,xwat
       real*8 rol_h2o,rol_d,emw,drol_dp,drol_dt,drol_dyc,drol_dya,xair
       real*8 drolyc, drolya, roa, droadp, droadt, ena, denadt,denadp
-      real*8 dvisadp, dvisdt, droat, droap, denvt, denvp, denap, visca
-      real*8 dvisadt, denat, pw, rlw, drlww, drlwg, drlwp, drlwt
+      real*8 dvisadp, denvt, denvp, visca
+      real*8 dvisadt, pw, rlw, drlww, drlwg, drlwp, drlwt
       real*8 rll, drllw, drllg, drllp, drllt
       real*8 drolw, denlt, denlp, denlw, denlya, denlyc
       real*8 visl, dvislya, dvislyc, dvislw
@@ -116,11 +90,9 @@ c     will over-ride above co2 production
       real*8 dhprdyc, dhprdya, rlv, drlvw, drlvg, drlvp, drlvt
       real*8 drovw, drovya, drovyc, denvw, denvya, denvyc, visv, dvisvya
       real*8 dvisvyc, dvisvw, demwyc, denwyc, denwya
-      real*8 mol, fug, dfugdp, dfugdt, mu0, dmu0p, dmu0t
-      real*8 tau, dtaup, dtaut, lam, dlamp, dlamt, rgas
-      real*8 vpartial,dvpardt,cs,dcsdp,dcsdt,co2avail,co2dis
+      real*8 vpartial,dvpardt
       parameter (fracwmin=0.1)
-      integer idum,iflg,duma
+      integer iflg,duma
       
       save dprmya
 

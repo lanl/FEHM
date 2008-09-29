@@ -319,23 +319,51 @@ c
 c     nmatd is size of one subarray
             nmatd=nelm(neqp1)-neqp1
 c     add thermal equations
-            a(nmat(6)+1:nmat(7))   = a(nmat(6)+1:nmat(7)) 
-     &           + a(nmat(16)+1:nmat(17))
-            a(nmat(7)+1:nmat(8))   = a(nmat(7)+1:nmat(8)) 
-     &           + a(nmat(17)+1:nmat(18))
-            a(nmat(8)+1:nmat(9))   = a(nmat(8)+1:nmat(9)) 
-     &           + a(nmat(18)+1:nmat(19))
+		  do i = nmat(6)+1, nmat(7)
+			a(i) = a(i)+a(i+10*nmat(2))
+		  enddo
+		  do i = nmat(7)+1, nmat(8)
+			a(i) = a(i)+a(i+10*nmat(2))
+		  enddo
+		  do i = nmat(8)+1, nmat(9)
+			a(i) = a(i)+a(i+10*nmat(2))
+		  enddo
+
+c            a(nmat(6)+1:nmat(7))   = a(nmat(6)+1:nmat(7)) 
+c     &           + a(nmat(16)+1:nmat(17))
+c            a(nmat(7)+1:nmat(8))   = a(nmat(7)+1:nmat(8)) 
+c     &           + a(nmat(17)+1:nmat(18))
+c            a(nmat(8)+1:nmat(9))   = a(nmat(8)+1:nmat(9)) 
+c     &           + a(nmat(18)+1:nmat(19))
 c     combine for thermal equilibrium
 c     
             bp(nrhs(2)+1:nrhs(3))  = bp(nrhs(2)+1:nrhs(3))   
      &           + bp(nrhs(4)+1:nrhs(5))
 
-            a(nmat(4)+1:nmat(5))   = a(nmat(6)+1:nmat(7))
-            a(nmat(5)+1:nmat(6))   = a(nmat(7)+1:nmat(8))
-            a(nmat(6)+1:nmat(7))   = a(nmat(8)+1:nmat(9)) 
-            a(nmat(7)+1:nmat(8))   = a(nmat(11)+1:nmat(12)) 
-            a(nmat(8)+1:nmat(9))   = a(nmat(12)+1:nmat(13)) 
-            a(nmat(9)+1:nmat(10))  = a(nmat(13)+1:nmat(14)) 
+		  do i = nmat(4)+1, nmat(5)
+			a(i) = a(i+2*nmat(2))
+	      enddo
+		  do i = nmat(5)+1, nmat(6)
+			a(i) = a(i+2*nmat(2))
+	      enddo
+		  do i = nmat(6)+1, nmat(7)
+			a(i) = a(i+2*nmat(2))
+	      enddo
+		  do i = nmat(7)+1, nmat(8)
+			a(i) = a(i+4*nmat(2))
+	      enddo
+		  do i = nmat(8)+1, nmat(9)
+			a(i) = a(i+4*nmat(2))
+	      enddo
+		  do i = nmat(9)+1, nmat(10)
+			a(i) = a(i+4*nmat(2))
+	      enddo
+c            a(nmat(4)+1:nmat(5))   = a(nmat(6)+1:nmat(7))
+c            a(nmat(5)+1:nmat(6))   = a(nmat(7)+1:nmat(8))
+c            a(nmat(6)+1:nmat(7))   = a(nmat(8)+1:nmat(9)) 
+c            a(nmat(7)+1:nmat(8))   = a(nmat(11)+1:nmat(12)) 
+c            a(nmat(8)+1:nmat(9))   = a(nmat(12)+1:nmat(13)) 
+c            a(nmat(9)+1:nmat(10))  = a(nmat(13)+1:nmat(14)) 
 c     
 c     
 c     zero out residual that has been combined so it does not interfere
