@@ -646,8 +646,8 @@ c-----------READ ASCII  format stor file ------------------------------
 
                open(isstor,file=filename ,status='old',form='formatted')
 
-               read (isstor,'(a72)', END=5000) cline
-               read (isstor,'(a72)', END=5000) cline
+               read (isstor,'(a72)', err=5000) cline
+               read (isstor,'(a72)', err=5000) cline
                read (isstor,'(5i10)') iwtotl,neq_old,ncont,sehtemp,
      &              max_con
 
@@ -727,8 +727,8 @@ c-----------READ UNFORMATTED  format stor file ------------------------
                open(isstor,file=filename ,status='old',
      &              form='unformatted')
 
-               read (isstor, END=5000) cline
-               read (isstor, END=5000) cline
+               read (isstor, err=5000) cline
+               read (isstor, err=5000) cline
                read (isstor)  iwtotl, neq_old, ncont, sehtemp, max_con
 c adding possibility that the *.stor file may have less nodes than
 c what was defined in the data file. We assume that means additional
@@ -809,8 +809,8 @@ c        if format not recognized, try old ascii format
 
                open(isstor,file=filename ,status='old',form='formatted')
 
-               read (isstor, '(a80)', END=5000)     input_msg
-               read (isstor, '(a80)', END=5000)     input_msg
+               read (isstor, '(a80)', err=5000)     input_msg
+               read (isstor, '(a80)', err=5000)     input_msg
                read (isstor, '(a80)') input_msg
                call parse_string(input_msg, imsg, msg, xmsg, cmsg, nwds)
                iwtotl=imsg(1)
