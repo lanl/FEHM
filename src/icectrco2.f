@@ -1650,9 +1650,9 @@ c     read restart file (will not work for double porosity)
                phoco2 = pho
                tco2 = toco2
                phico2 = phoco2
-               fow = 1.d0
-               fog = 0.d0
-               fol = 0.d0
+c               fow = 1.d0
+c               fog = 0.d0
+c               fol = 0.d0
                fw = fow
                fg = fog
                fl = fol
