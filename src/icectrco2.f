@@ -503,7 +503,7 @@ c
                
             else
                write(iout,*) 'ERROR IN CO2 INPUT(STOPPING)'
-               write(*,*) 'ERROR IN CO2 INPUT(STOPPING)'
+               write(ierr,*) 'ERROR IN CO2 INPUT(STOPPING)'
             end if
  40         continue
             go to 100
@@ -1193,7 +1193,7 @@ c
                if(.not. it_is_open) then
                   myfile=open_file('co2inout.his','unknown')
                endif
-               write(myfile,'(f19.8,1x,f19.8,1x,f19.8)') days, 
+               write(myfile,'(g19.8,1x,g19.8,1x,g19.8)') days/365.25, 
      &              abs(skmd21), skmd31
                if(days.ge.tims) close(myfile)
                if (ntty.eq.2) write(iout,708) skmd1

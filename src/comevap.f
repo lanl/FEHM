@@ -1,4 +1,4 @@
-      module comsteady
+      module comevap
 !***********************************************************************
 ! Copyright 2008 Los Alamos National Security, LLC  All rights reserved
 ! Unless otherwise indicated,  this information has been authored by an 
@@ -13,15 +13,11 @@
 ! responsibility for the use of this information.       
 !***********************************************************************
 
-      integer snstep, sminstep
-
-      real*8 tolerance, toldp, tolds, toldt, toldc, tolde, toldh
-      real*8 balance_tol, smult, sday
-      real*8 enth_rate, flow_rate
-      real*8 shtl,shtl0,tacc,accmax,ratio,stmch,stmch0,tmch1,tmch2
-      real*8 pdifmax, sdifmax, tdifmax, pcidifmax, hdifmax
-      parameter (tolerance = 1.d20)
-
-      logical svar_flag, sflux_flag
-
-      end module comsteady
+      integer :: num_evap = 0
+      integer, allocatable :: evap_node(:)
+      real*8  evap_trunc, par(4,3), tyr(8)
+      real*8, allocatable  :: area_node(:)
+      logical :: evaporation_flag = .false.
+      logical, allocatable :: evap_flag(:)
+      
+      end module comevap

@@ -1382,7 +1382,6 @@ contains
        call linear_interpolation_factors(psat(isat),psat(isat+1),pp,fac)
        delta_p=psat(isat+1)-psat(isat)
        delta_t=tsat(isat+1)-tsat(isat)
-       write(101,*) psat(isat+1),psat(isat),tsat(isat+1),tsat(isat)
        if(iphase.eq.1)then
           do i=1,ncode
              if(icode(i).ne.0)then

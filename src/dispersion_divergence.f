@@ -94,8 +94,9 @@ c     general tensor
             alamda(2)=dispersivity8(current_model)
             term1=alamda(1)*alamda(1)+alamda(2)*alamda(2)
             if(term1.gt.1.0) then
-       write(*,*)' error in divd_general. sum of direction cosins'
-               write(*,*)' must ne le 1. Check sptr input. STOP.'
+               write(ierr,*)'error in divd_general. sum of direction '
+               write(ierr,*)'cosine must be le 1. Check sptr input.'
+               write(ierr,*)' STOP'
                stop
             endif
             alamda(3)=sqrt(1.-term1)

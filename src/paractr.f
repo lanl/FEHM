@@ -571,8 +571,8 @@ c
          enddo 
 
 c     
-         write (*,*) 'couple BC changes', i2
-         write (iout,*) 'couple BC changes', i2  
+         if (iptty .ne. 0) write (iptty,*) 'couple BC changes', i2
+         if (iout .ne. 0) write (iout,*) 'couple BC changes', i2  
       else if(iflg.eq.6) then
 c     remove head BC on child grid
          

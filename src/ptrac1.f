@@ -855,10 +855,6 @@ c     spacing = 2 * B in Sudicky and Frind solution
 c NOTE: using ggg as scratch storage for saving del+ and del-
 c temporarily
 
-      if(i.eq.945133) then
-         write(*,*)
-      endif
-
       do j=-3,3
          delkb=0.
          if(j.ne.0) then

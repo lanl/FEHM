@@ -347,6 +347,7 @@ c **********************************************************************
 c <<< Subroutine SPECIATE >>>
 
       subroutine speciate(in,info,tol_value)
+      use comai, only : ierr
       use comchem
       use comdi
       use comdti
@@ -557,7 +558,7 @@ c====================================================================
                call sclespec(tkeq,in,info,tol_value)
                return
             Endif
-            write (*,195)
+            write (ierr, 195)
  195        format (5X,'Newton-Raphson iteration limit exceeded ',
      &           'in speciation subroutine!')
 c Added Dec 30, 1999 by GEH
@@ -588,7 +589,7 @@ c====================================================================
                info=0
                GO TO 120
             Endif
-            Write(*,8001)
+            Write(ierr, 8001)
             stop
          Endif
 
@@ -691,6 +692,7 @@ c <<< Subroutine SCLESPEC >>>
 
       subroutine sclespec(tkeq,in,info,tol_value)
 
+      use comai, only : ierr
       use comchem
       use comdti
 
@@ -928,13 +930,13 @@ c====================================================================
                nreset = 4
                GO TO 120               
             Else
-               write (*,8002)
+               write (ierr, 8002)
  8002          format (5X,'Newton-Raphson iteration limit exceeded ',
      &              'in scaled speciation subroutine!')
-               Write(*,8005) in
-               Write(*,*) (totaq(j),j=1,ncpnt)
-               Write(*,*) (cpnt(j),j=1,ncpnt)
-               Write(*,*) (sclfactr(k),k=1,ncpnt2)
+               Write(ierr, 8005) in
+               Write(ierr, *) (totaq(j),j=1,ncpnt)
+               Write(ierr, *) (cpnt(j),j=1,ncpnt)
+               Write(ierr, *) (sclfactr(k),k=1,ncpnt2)
 c Added Dec 30, 1999 by GEH
 c               stop
                tol_value = 3
@@ -971,7 +973,7 @@ c====================================================================
                info=0
                GO TO 120
             Else
-               Write(*,8001)
+               Write(ierr, 8001)
                stop
             Endif
          Endif

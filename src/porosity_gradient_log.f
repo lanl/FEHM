@@ -102,24 +102,27 @@ c     form derivatives
       if(fac1.gt.0.) then
          dpordx(1)=dlog(fac1)/dx
       else
-         write(*,*)'STOP.ERROR in porosity_gradient.porx1/porx2 le 0.'
-         write(*,*)'i,ix,iy,iz=',i,ix,iy,iz
+         write(ierr,*)'STOP.ERROR in porosity_gradient.'
+         write(ierr,*)'porx1/porx2 le 0.'
+         write(ierr,*)'i,ix,iy,iz=',i,ix,iy,iz
          stop
       endif
       fac1=pory1/pory2
       if(fac1.gt.0.) then
          dpordx(2)=dlog(fac1)/dy
       else
-         write(*,*)'STOP.ERROR in porosity_gradient.pory1/pory2 le 0.'
-         write(*,*)'i,ix,iy,iz=',i,ix,iy,iz
+         write(ierr,*)'STOP.ERROR in porosity_gradient.'
+         write(ierr,*)'pory1/pory2 le 0.'
+         write(ierr,*)'i,ix,iy,iz=',i,ix,iy,iz
          stop
       endif
       fac1=porz1/porz2
       if(fac1.gt.0.) then
          dpordx(3)=dlog(fac1)/dz
       else
-         write(*,*)'STOP.ERROR in porosity_gradient.porz1/porz2 le 0.'
-         write(*,*)'i,ix,iy,iz=',i,ix,iy,iz
+         write(ierr,*)'STOP.ERROR in porosity_gradient.'
+         write(ierr,*)'porz1/porz2 le 0.'
+         write(ierr,*)'i,ix,iy,iz=',i,ix,iy,iz
          stop
       endif
       

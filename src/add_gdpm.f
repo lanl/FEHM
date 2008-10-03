@@ -90,7 +90,8 @@ c     4: 1-d column geometry (edge,based on total area)
 c     5: 1-d column geometry (block-centered)
 c     6: 1-d column geometry (block-centered,based on total area)
 
-      neq = neq_primary + ngdpm_actual
+c This has already been done in setparams
+c      neq = neq_primary + ngdpm_actual
 
 c	Determine the sizes of arrays
 
@@ -178,9 +179,11 @@ c     end if
       sx = 0.
 c	reallocate nelmdg
       allocate(nelmdg_primary(neq_primary))
-      nelmdg_primary=nelmdg
-      deallocate(nelmdg)
-      allocate(nelmdg(neq))
+c nelmdg was allocated n0 which was already modified for gdpm nodes in
+c setparams where neq was also set equal to n0
+      nelmdg_primary=nelmdg(1:neq_primary)
+c      deallocate(nelmdg)
+c      allocate(nelmdg(neq))
       nelmdg=0
 
 c	Reconstruct the pointer part of nelm, with new gdpm nodes

@@ -42,6 +42,7 @@
 !D4 
 !***********************************************************************
 
+      use comai, only : ierr
       use comdi
       use comsptr
       use compart
@@ -128,8 +129,8 @@ c     vas = unit vector in velocity direction. dot. axis os symmetry
                sig2=sig*sig
                if((1.-sig2).lt.1.e-20) then
 c     v parallel to axis of symmetry, requires a different formulation
-                  write(*,*)'v parallel to axis of symmetry, '
-                  write(*,*)' requires a different formulation. stop'
+                  write(ierr,*)'v parallel to axis of symmetry, '
+                  write(ierr,*)' requires a different formulation. stop'
                   stop
                else
                   ap=a1+a2+sig2*a3+sig*a4
@@ -139,9 +140,9 @@ c     v parallel to axis of symmetry, requires a different formulation
                   
                   term=(ap-dp)**2.+4.*bp*cp
                   if(term.lt.0.) then
-                     write(*,*)' error, term.le.0 in random_walk.'
-                     write(*,*)' check dispersiv. coeff in sptr macro.'
-                     write(*,*)' STOP'
+                     write(ierr,*)'error, term.le.0 in random_walk.'
+                     write(ierr,*)'check dispersiv coeff in sptr macro.'
+                     write(ierr,*)'STOP'
                      stop
                   endif
                   term=sqrt(term)

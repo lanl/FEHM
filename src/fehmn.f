@@ -446,27 +446,28 @@ CPS END fehmn
 CPS
 C***********************************************************************
 
-      use comci
-      use comdi
-      use comei
-      use davidi
-      use comrxni
-      use comdti
       use comai
-      use comsptr
-      use comsplitts
-      use comxi
-      use comwt
+      use combi
+      use comci
+      use comco2
+      use comdi
+      use comdti
+      use comei
+      use comevap, only : evaporation_flag
+      use comfi, only : qtc, qtotc
+      use comflow, only : a_axy
       use compart
+      use comriv
+      use comrtd, only : maxmix_flag
+      use comrxni
+      use comsplitts
+      use comsptr
+      use comwt
+      use comxi
+      use davidi
+      use property_interpolate
 c     added combi and comflow to get izonef and a_axy arrays
 c     in subroutine computefluxvalues
-      use combi
-      use comflow
-      use comco2
-      use comriv
-      use comfi, only : qtc, qtotc
-      use comrtd, only : maxmix_flag
-      use property_interpolate
 
       implicit none
 
@@ -734,6 +735,9 @@ c
             call porosi(4)
          endif      
 
+c     Call evaporation routine if this is an evaporation problem
+         if (evaporation_flag) call evaporation(1)
+
 c ************** major time step loop ***************************
          do l = 1, nstep
 c
@@ -760,11 +764,14 @@ c*** water table rise modification
 c*** water table rise modification
             call timcrl
 
+c     Call evaporation routine if this is an evaporation problem
+            if (evaporation_flag) call evaporation(2)
+
             if (ichk .ne. 0)  call user (ichk)
 c
 c check for possible source movement
 c
-	   if(move_wt.eq.1) call wtsictr(7)
+            if(move_wt.eq.1) call wtsictr(7)
 
             dtot = day * 86400.0
 c     No longer do this because GoldSim enters with in(1) = 0

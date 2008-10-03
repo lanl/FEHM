@@ -249,49 +249,50 @@
       parameter (temp_conv = 273.16)
 
 !     ***** Variables in COMMON Block readrxn *****
-      integer nrxns
-      real*8  ar_for(10) 
-      real*8  ar_rev(10)
-      real*8  ea_for(10)
-      real*8  ea_rev(10)
-      real*8  fl_mult(10, 10)
-      real*8  rate_power(10, 10)
-      real*8  sb_mult(10, 10)
-      real*8  stoic(10, 10)
+c      integer nrxns
+c      real*8, allocatable ::  ar_for(:) 
+c      real*8, allocatable ::  ar_rev(:)
+c      real*8, allocatable ::  ea_for(:)
+c      real*8, allocatable ::  ea_rev(:)
+c      real*8, allocatable ::  fl_mult(:, :)
+c      real*8, allocatable ::  rate_power(:, :)
+c      real*8, allocatable ::  sb_mult(:, :)
+c      real*8, allocatable ::  stoic(:, :)
 
 !     ***** Pointers in COMMON Block stor *****
       real*8, allocatable ::  avgmolwt(:)
       real*8, allocatable ::  dsccl(:)
       real*8, allocatable ::  dsccv(:)
-      real*8, allocatable :: scl(:)
-      real*8, allocatable :: scv(:)
+      real*8, allocatable ::  scl(:)
+      real*8, allocatable ::  scv(:)
 
 !     ***** Variables in COMMON Block setup *****
-      integer forward_solids(10)
-      integer forward_species(10)
-      integer rxn_array(10, 10)
-      integer rxn_interval
-      integer solid_flag(10)
-      integer solid_rxns(10)
-      integer species_array(10, 10)
-      integer total_rxns(10)
-      integer total_solids(10)
-      integer total_species(10)
+c      integer, allocatable ::  forward_solids(10)
+c      integer, allocatable ::  forward_species(10)
+c      integer, allocatable ::  rxn_array(10, 10)
+c      integer rxn_interval
+c      integer, allocatable ::  solid_flag(10)
+c      integer, allocatable ::  solid_rxns(10)
+c      integer, allocatable ::  species_array(10, 10)
+c      integer, allocatable ::  total_rxns(10)
+c      integer, allocatable ::  total_solids(10)
+c      integer, allocatable ::  total_species(10)
 
 !     ***** Variables in COMMON Block henry *****
+c zvd 02-Sep-08 Make henry model variables allocatable
       integer density_flag(10)
       integer rxn_flag
-      real*8  a_henry(10)
-      real*8  dh_henry(10)
-      real*8  h_mult(10,10)
+      real*8, allocatable ::  a_henry(:)
+      real*8, allocatable ::  dh_henry(:)
+c      real*8, allocatable ::  h_mult(:,:)
 
 !     ***** Pointers in COMMON Block dispersion *****
       real*8, allocatable ::  displx(:)
       real*8, allocatable ::  disply(:)
-      real*8, allocatable :: displz(:)
-      real*8, allocatable :: dispvx(:)
-      real*8, allocatable :: dispvy(:)
-      real*8, allocatable :: dispvz(:)
+      real*8, allocatable ::  displz(:)
+      real*8, allocatable ::  dispvx(:)
+      real*8, allocatable ::  dispvy(:)
+      real*8, allocatable ::  dispvz(:)
 
       end module comrxni
 

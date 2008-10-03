@@ -661,7 +661,8 @@ c**** set time step for tracer solution , call solution            ****c
       real*8 fid,fid1,vxy,divfkb,vxyf,vmag,sehmindays,thetav
       real*8 cord1x,cord1y,cord2x,cord2y,cord2xp,cord2yp
       real*8 cord1z,cord2z,newx,newy,newz,dispzavw,dispyavw,dispxavw
-      real*8 newdiff, concadiff, satr
+      real*8 newdiff, concadiff, satr, ptime
+      real*8 :: last_time = 0.
       integer sia_iter
       integer :: sia_iter_tot = 0
       integer isolute
@@ -669,9 +670,11 @@ c**** set time step for tracer solution , call solution            ****c
       integer im
       integer iv
       integer ix
-      integer iprttrc
+      integer :: iprttrc = 0, last_step = 0
+      integer :: idebug = 0
+      logical :: time2print
       parameter(toldil = 1.d-20)
-      save daytr
+      save daytr, iprttrc, icfin, last_step, last_time
 c seh
 c set velocities here instead of in coneq1
       if (daytr .le. 0) daytr = daycmm
@@ -1284,7 +1287,8 @@ c----------------- phs 9/26/2001 - added (1-s(i)) correction
       daytr=min(daytr,day,daycmx/2.0)
       sehmindays=min(daymin,daycmm)
       nts=0
-      iprttrc = nprttrc-1
+c following causes output whenever a transport time step is initiated
+c      iprttrc = nprttrc-1
 **** Begin Loop through time                         
  1000 continue
 c     Add counter for printout of trc output BAR 11-18-98
@@ -1401,11 +1405,12 @@ c     Add counter for total SIA iterations
 *** convergence
          if(iprttrc.ge.abs(nprttrc).or.icfin.le.0) then
             if (nprttrc .gt. 0) then
-               write(iout,*)'# SIA Iterations ', sia_iter
-     2           ,'(total = ',sia_iter_tot, ' )'
+               if (iout .ne. 0 .and. idebug .eq. 1) 
+     1              write(iout,*)'# SIA Iterations ', sia_iter
+     2              ,'(total = ',sia_iter_tot, ' )'
             endif
          endif
-         if(iptty .ne. 0 ) then
+         if(iptty .ne. 0 .and. idebug .eq. 1) then
             write(iptty,*)'# SIA Iterations ', sia_iter
      2          ,'(total = ',sia_iter_tot, ' )'
          end if
@@ -1455,15 +1460,48 @@ c      PHS 3/28/05 adding integration of sink at each node for Don Neeper
                   cm(nsp)=cm(nsp)+dench(ja)*vdum
                end if
             end do
-	continue
+            continue
             call bcon(3)
 c
 c call plot output
 c
          end do
 c     Only write to trc if it is time BAR 11-18-98
-         if(iprttrc.ge.abs(nprttrc).or.icfin.le.0) then
-            iprttrc = 0
+c     Modify check for time to print ZVD 16-Sep08
+c nhist = 1   : Output every heat and mass time step
+c nprttrc = 1 : Output every tracer time step
+
+         if (time_flag .eq. 1) then
+            ptime = abs(days / 365.25d00)
+         else if (time_flag .eq. 3) then
+            ptime = abs(days * 86400.d00)
+         else if (time_flag .eq. 4) then
+            ptime = abs(days * 24.d00)
+         else
+            ptime = abs(days)
+         end if
+c
+         if (l .eq. 1 .and. iprttrc .eq. 1 .and. last_time .eq. 0.) then
+            time2print = .TRUE.
+         else if (ifinsh .ne. 0) then
+            if (ptime .ne. last_time) then
+               time2print = .TRUE.
+            else
+               time2print = .FALSE.
+            end if
+         else            
+            if (ifinsh .ne. 2 .and. ptime .lt. (last_time + histime)
+     &           .and. l .lt. (last_step + nhist)
+     &           .and. iprttrc .lt. nprttrc) then
+               time2print = .FALSE.
+            else
+               time2print = .TRUE.
+            end if
+         end if
+
+         if (time2print) then
+c     if(iprttrc.ge.abs(nprttrc).or.icfin.le.0) then
+c     iprttrc = 0
             do ii = 1,ncpntprt
                ic = cpntprt(ii)
                nsp = pcpnt(ic)
@@ -1498,6 +1536,9 @@ c     Only write to trc if it is time BAR 11-18-98
 !            if (nprttrc .gt. 0) then
 !               call wrtcon(0)
 !            end if
+            last_time = ptime
+            last_step = l
+            iprttrc = 0
          end if
          nts=nts+1
       end if

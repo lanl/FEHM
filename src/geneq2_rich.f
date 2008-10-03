@@ -171,7 +171,7 @@ c     real*8 sxzc
 	real*8 rlpfree1,df1, rlzf_dum, drlzf_dum
       parameter(dis_tol=1.d-12, tiny = 1.d-20)
 
-      logical bit
+      logical bit, test_bit
 c     integer isl,isw_term
       integer isl
       integer iz4m1
@@ -505,11 +505,12 @@ c water is flowing into node i
           call setbit(nbits,neighc,upwind_v(iz4m1),fid)
       else
 c placeholder if_block:  we should never go here
-           if(.not.bit(nbits,neighc,upwind_v(iz4m1))) then 
+         test_bit = bit(nbits,neighc,upwind_v(iz4m1))
+         if(.not.test_bit) then 
 c placeholder if_block:  we should never go here
-           endif
+         endif
       endif
- 71      continue
+ 71   continue
 c     
 c     form equations
 c     

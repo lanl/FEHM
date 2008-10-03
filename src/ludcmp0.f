@@ -275,6 +275,7 @@ c     This is equation 2.3.12 except for i=j.
           enddo
 c     Initialize for the search for largest pivot element.
 	  aamax = 0.
+          imax = j
 c     This is i=j of equation 2.3.12 and i = j+1...n of equation 2.3.13.
 	  do i = j, n
              sum = A(i,j)

@@ -196,6 +196,8 @@ c     assign defaults
       iokd = 0
       ioflx = 0
       iozid = 0
+c     default output, time in days (for tecplot)
+      timec_flag = 2
       net_flux = .false.
       vol_flux = .false.
       dit_flag = .false.
@@ -221,6 +223,21 @@ c     formatted output, keyword: formatted
          elseif((chdum(1:2) .eq. 'no').or.(chdum(1:2) .eq. 'NO'))then
 c     no output at dits, keyword: nodit
             dit_flag = .TRUE.
+
+c Add time unit option for tecplot output
+         elseif((chdum(1:3) .eq. 'yea').or.(chdum(1:3) .eq. 'YEA').or.
+     &           (chdum(1:3) .eq. 'yrs').or.(chdum(1:3) .eq. 'YRS'))
+     &           then
+            timec_flag = 1
+         elseif((chdum(1:3) .eq. 'day').or.(chdum(1:3) .eq. 'DAY'))then
+            timec_flag = 2
+         elseif((chdum(1:3) .eq. 'sec').or.(chdum(1:3) .eq. 'SEC'))then
+            timec_flag = 3
+         elseif((chdum(1:3) .eq. 'hou').or.(chdum(1:3) .eq. 'HOU').or.
+     &           (chdum(1:3) .eq. 'hrs').or.(chdum(1:3) .eq. 'HRS'))
+     &           then
+            timec_flag = 4
+c End of time unit options
 
          elseif((chdum(1:1) .eq. 'm').or.(chdum(1:1) .eq. 'M'))then
 c     output grid material properties, keyword: material

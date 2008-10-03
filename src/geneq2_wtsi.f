@@ -169,7 +169,7 @@ c     real*8 sxzc
       real*8 rlxyd, drlxyi, drlxykb, dfi, dfkb, tiny
       parameter(dis_tol=1.d-12, cap_fac = 0.0d00, tiny = 1.d-20)
 
-      logical bit
+      logical bit, test_bit
 c     integer isl,isw_term
       integer isl
       integer iz4m1
@@ -480,7 +480,8 @@ c water is flowing into node i
                call setbit(nbits,neighc,upwind_v(iz4m1),fid)
             else
 c placeholder if_block:  we should never go here
-               if(.not.bit(nbits,neighc,upwind_v(iz4m1))) then 
+               test_bit = bit(nbits,neighc,upwind_v(iz4m1))
+               if(.not.test_bit) then 
 c placeholder if_block:  we should never go here
                endif
             endif

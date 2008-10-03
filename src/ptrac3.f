@@ -2340,6 +2340,7 @@ c.......................................................
 
       subroutine  matinv2(aa,aainv)
 
+      use comai , only : ierr
       implicit none
 
       real*8 aa(2,2),aainv(2,2),det,epsilon
@@ -2354,8 +2355,8 @@ c.......................................................
          aainv(2,1)=-aa(2,1)/det
          aainv(2,2)=+aa(1,1)/det
       else
-         write(*,*)'ERROR in matinv2. STOP'
-         write(*,*)aa
+         write(ierr,*)'ERROR in matinv2. STOP'
+         write(ierr,*)aa
          call exit_ptrac_omr
       endif
 
@@ -2370,6 +2371,7 @@ c...................................................
 c calculate the inverse of a 3x3 matrix "a" and return
 c it in "c"
 
+      use comai , only : ierr
       implicit none
 
       integer i,j
@@ -2397,8 +2399,8 @@ c it in "c"
             enddo
          enddo
       else
-         write(*,*)'error in matinv. det=0. stop'
-         write(*,*)a
+         write(ierr,*)'error in matinv. det=0. stop'
+         write(ierr,*)a
          call exit_ptrac_omr
       endif
          

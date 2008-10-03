@@ -94,7 +94,8 @@ C***********************************************************************
       integer i_neigh, max_neigh, neqp1, nx,  nx1,  nx2, ny, ny1, ny2
       integer idummy, iconn, indexa_axy, ifl2, imat, mod_type
       integer open_file, ifile1, ifile2, ifile3, num_nodes, nawt
-      integer counter, dumcyc, readflag, incf, ntimes, node_a, node_b
+      integer counter, dumcyc, readflag, incf, ntimes, nfix
+      integer, allocatable :: node_a(:)
       integer, allocatable :: idum(:)
       integer, allocatable :: idum_b(:)
       integer, allocatable :: izone_awt(:)
@@ -124,6 +125,7 @@ C***********************************************************************
       character*80 water_file, above_wt_file, outside_zone_file
       logical matrix_node, null1, xy, ex
 
+      save ntimes, times, cons, counter, dumcyc, nfix, readflag
       save ntimes, times, cons, counter, dumcyc, readflag, shut_time
 
       select case (k)
@@ -163,28 +165,32 @@ c RJP added 10/17/07 for changing the saturations for goldsim
             endif
          endif
 c      PHS  10/05/05   Adding user option 666 to allow D. Neeper to 
-c-----------------------------------------------------------------------
 c      test the analytical solution
+c      PHS   4/24/08   Updating to allow nfix nodes to be fixed.
+c-----------------------------------------------------------------------
       case (666)
          if(readflag.NE.1) then
             incf = open_file('nodes_conc_fixed.macro','unknown')
-            read(incf,*) ntimes, node_a, node_b
-            allocate(times(ntimes),cons(ntimes,2))
+            read(incf,*) ntimes, nfix
+            allocate(times(ntimes),cons(ntimes,nfix),node_a(nfix))
+            read(incf,*) (node_a(iii), iii = 1,nfix)
             do iii = 1,ntimes
-               read(incf,*) times(iii), cons(iii,1), cons(iii,2)
+               read(incf,*) times(iii), (cons(iii,j), j = 1,nfix)
             end do
             close (incf)
             counter = 1
             dumcyc = 1
             readflag = 1
-            pcnsk(node_a) = -1
-            pcnsk(node_b) = -1
+            do iii = 1,nfix
+               pcnsk(node_a(iii)) = -1
+            end do
          end if
          tdum = days - (dumcyc -1)*times(ntimes)
-         if(tdum.EQ.times(counter+1)) counter = counter + 1
-         cnsk(node_a) = -cons(counter,1)
-         cnsk(node_b) = -cons(counter,2)
-         if(counter.EQ.ntimes) then
+         if(tdum.GE.times(counter+1)) counter = counter + 1
+         do iii = 1,nfix
+            cnsk(node_a(iii)) = -cons(counter,iii)
+         end do
+         if(counter.GE.ntimes) then
             counter = 1
             dumcyc = dumcyc + 1
          end if
@@ -208,7 +214,7 @@ c
             read(ifile1,'(a80)') water_file
             read (ifile1,'(a80)') dum_user
 !            write(*,*) 'Enter coordinates for model boundaries, ',
-!     &           'xw,xe,ys,yn'
+!     &           'xw1,xe,ys,yn'
             read(ifile1,*) xw1,xe,ys,yn
 !            write(*,*) 'Enter distance criteria for boundary search'
             read(ifile1,*) deldist

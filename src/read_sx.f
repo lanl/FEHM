@@ -82,6 +82,7 @@ CD4    FEHM Application Version 2.20
 CD4
 C***********************************************************************
 
+      use comai , only : ierr
       use combi
       implicit none
 c
@@ -119,7 +120,7 @@ c-----read ascii file
 
 c-----read binary file
       elseif(ityp.eq.1) then
-          write(*,*) 'Binary format not implemented.' 
+          write(ierr,*) 'readsx: Binary format not implemented.' 
           goto 999
 
 c-----read old style ascii file

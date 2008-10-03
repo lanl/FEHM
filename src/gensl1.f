@@ -174,7 +174,7 @@ c
       call normal_dof(neq,a,bp,nelm,nmat,nrhs,nelmdg
      &     ,ndex,2,dumn(1),dumn(37),dumn(73),0,fdum2)
       if(ndex(1).lt.0) then
-         write(*,*) 'cannot normalize'
+         write(ierr,*) 'cannot normalize'
          stop
       endif
 

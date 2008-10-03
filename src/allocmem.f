@@ -741,6 +741,9 @@ c     ***** COMMON Block fdd1 *****
       allocate(anl(n7),anlo(n7),anv(n7),betadfl(totcomalloc,totnum))
       allocate(betadfv(totcomalloc,totnum),cm(totcomalloc),
      2     cm0(totcomalloc),cnsk(n7),pcnsk(n7))
+      allocate(henry_model(totcomalloc),hawwa(totcomalloc,5))
+      allocate(a_henry(totcomalloc),dh_henry(totcomalloc))
+      henry_model = 0
       pcnsk = 0
       allocate(cp1f(nrlp),cp2f(nrlp),cp3f(nrlp),cp4f(nrlp))
 

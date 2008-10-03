@@ -59,6 +59,7 @@
       integer, allocatable :: dumlist(:)
       real*8 pwatersat, psat, dpdummy, headdum, ptime, last_time
       real*8 totalflin, totalein, curinflow, cureinflow
+      real*8 dae, dmass, start_ae, start_mass
       real*8, allocatable :: dumv(:)
       character*400 glob_string
       character*80 info_string, title_string, formh_string 
@@ -73,18 +74,27 @@
       character*3 dls
       logical time2print
 
-      save last_step, last_time, dumv
+      save last_step, last_time, dumv, start_ae, start_mass
       save form1_string, form2_string, formh_string
       save formp_string, formcs_string
 
-      if (out_zones .and. ozflag .eq. 0) then
+      if (m .eq. 0 .and. node_azones .eq. 0) then
          write (ierr, 100)
          if (iout .ne. 0) write (iout, 100)
          if (iptty .ne. 0 ) write (iptty, 100)
          stop
+      end if
+      if (out_zones .and. ozflag .eq. 0) then
+         write (ierr, 110)
+         if (iout .ne. 0) write (iout, 110)
+         if (iptty .ne. 0 ) write (iptty, 110)
+         stop
       endif
  100  format ('***** STOPPING *****', /, 
+     &     'nodes and/or zones must be defined for history plot output')
+ 110  format ('***** STOPPING *****', /, 
      &     'node macro for zone averaging must precede hist macro')
+
             
       if (igf .eq. 0)  then
 
@@ -482,6 +492,7 @@ c RJP 04/30/07 added following for outputting time-dependent CO2 mass
          end if
          if (ishiswt .ne. 0) then
 ! output water table elevations
+            formz_string = ''
             info_string = info_string(ic1:ic2) // 'water table '
             ic2 = len_trim(info_string) + 1
             title_string = "Water table"
@@ -527,81 +538,106 @@ c RJP 04/30/07 added following for outputting time-dependent CO2 mass
      &        10x, 'Node', 10x, 'Out node')
          if (ishisg .ne. 0 ) then
 ! Output global variables
+            glob_string = ''
             info_string = info_string(ic1:ic2) // 'global '
+            if (form_flag .eq. 1) then
+               dls = '" "'
+               glob_string = 'VARIABLES = "'
+            else if (form_flag .eq. 2) then
+               dls = ", "
+            else
+               dls = " "
+            end if
             select case (glob_flag)
             case (1)
 ! Global Mass & Energy Balances
-               glob_string = glob_string (1:1) // 
-     &              'Total mass in system (kg) ' //
-     &              'Total mass of steam in system (kg) ' //
-     &              'Water discharge (kg) ' //
-     &              'Water input (kg) ' //
-     &              'Total water discharge (kg) ' //
-     &              'Total water input (kg) ' //
-     &              'Net (kg) water discharge ' //
-     &              'Total enthalpy in system (MJ) ' //
-     &              'Enthalpy discharge (MJ) ' //
-     &              'Enthalpy input (MJ) ' //
-     &              'Total enthalpy discharge (MJ) ' //
-     &              'Total enthalpy input (MJ) ' //
-     &              'Net (MJ) enthalpy discharge '
+               glob_string = trim(glob_string) //
+     &              trim(time_string) // dls //
+     &              'Total mass in system (kg)' // dls //
+     &              'Total mass of steam in system (kg)' // dls //
+     &              'Water discharge (kg)' // dls //
+     &              'Water input (kg)' // dls //
+     &              'Total water discharge (kg)' // dls //
+     &              'Total water input (kg)' // dls //
+     &              'Net water discharge (kg)' // dls //
+     &              'Delta mass (kg)' // dls //
+     &              'Total enthalpy in system (MJ)' // dls //
+     &              'Enthalpy discharge (MJ)' // dls //
+     &              'Enthalpy input (MJ)' //
+     &              'Total enthalpy discharge (MJ)' // dls //
+     &              'Total enthalpy input (MJ)' // dls //
+     &              'Net enthalpy discharge (MJ)' // dls //
+     &              'Delta enthalpy (MJ)'
 
             case (2)
 ! Global Water & Air Balances
-               glob_string = glob_string (1:1) // 
-     &              'Total water in system (kg) ' //
-     &              'Total mass of steam in system (kg) ' //
-     &              'Water discharge (kg) ' //
-     &              'Water input (kg) ' //
-     &              'Net (kg) water discharge ' //
-     &              'Total water discharge (kg) ' //
-     &              'Total water input (kg) ' // 
-     &              'Total air in system (kg) ' //
-     &              'Air discharge (kg) ' // 
-     &              'Air input (kg) ' // 
-     &              'Total air discharge (kg) ' // 
-     &              'Total air input kg (kg/s) ' //
-     &              'Net (kg) air discharge '
+               glob_string = trim(glob_string) //
+     &              trim(time_string) // dls // 
+     &              'Total water in system (kg)' // dls //
+     &              'Total mass of steam in system (kg)' // dls //
+     &              'Water discharge (kg)' // dls //
+     &              'Water input (kg)' // dls //
+     &              'Total water discharge (kg)' // dls //
+     &              'Total water input (kg)' // dls // 
+     &              'Net water discharge (kg)' // dls //
+     &              'Delta mass (kg)' // dls //
+     &              'Total air in system (kg)' // dls //
+     &              'Air discharge (kg)' // dls // 
+     &              'Air input (kg)' // dls // 
+     &              'Total air discharge (kg)' // dls // 
+     &              'Total air input kg (kg/s)' // dls //
+     &              'Net air discharge (kg)' // dls //
+     &              'Delta air mass (kg)'
            case (3)
 ! Output mass or water balances (excluding steam)
-               glob_string = glob_string (1:1) // 
-     &              'Total water in system (kg) ' //
-     &              'Water discharge (kg) ' //
-     &              'Water input (kg) ' //
-     &              'Total water discharge (kg) ' //
-     &              'Total water input (kg) ' //
-     &              'Net (kg) water discharge '
+               glob_string = trim(glob_string) //
+     &              trim(time_string) // dls //
+     &              'Total water in system (kg)' // dls //
+     &              'Water discharge (kg) ' // dls //
+     &              'Water input (kg)' // dls //
+     &              'Total water discharge (kg)' // dls //
+     &              'Total water input (kg)' // dls //
+     &              'Net (kg) water discharge' // dls //
+     &              'Delta mass (kg)'
             case (4)
 ! Output mass or water balances (including steam)
-               glob_string = glob_string (1:1) // 
-     &              'Total water in system (kg) ' //
-     &              'Total mass of steam in system (kg) ' //
-     &              'Water discharge (kg) ' //
-     &              'Water input (kg) ' //
-     &              'Total water discharge (kg) ' //
-     &              'Total water input (kg) ' //
-     &              'Net (kg) water discharge '
+               glob_string = trim(glob_string) //
+     &              trim(time_string) // dls // 
+     &              'Total water in system (kg)' // dls //
+     &              'Total mass of steam in system (kg) ' // dls //
+     &              'Water discharge (kg)' // dls //
+     &              'Water input (kg)' // dls //
+     &              'Total water discharge (kg)' // dls //
+     &              'Total water input (kg)' // dls //
+     &              'Net water discharge (kg)' // dls //
+     &              'Delta mass (kg)'
             case (5)
 ! Output air or vapor balances
-               glob_string = glob_string (1:1) // 
-     &              'Total air in system (kg) ' //
-     &              'Air discharge (kg) ' // 
-     &              'Air input (kg) ' // 
-     &              'Total air discharge (kg) ' // 
-     &              'Total air input kg (kg/s) ' //
-     &              'Net (kg) air discharge '
+               glob_string = trim(glob_string) //
+     &              trim(time_string) // dls // 
+     &              'Total air in system (kg)' // dls //
+     &              'Air discharge (kg)' // dls //
+     &              'Air input (kg)' //  dls //
+     &              'Total air discharge (kg)' // dls // 
+     &              'Total air input kg (kg/s)' // dls //
+     &              'Net air discharge (kg)' // dls //
+     &              'Delta air mass (kg)'
             case (6)
 ! Output energy balances
-               glob_string = glob_string (1:1) // 
-     &              'Total enthalpy in system (MJ) ' //
-     &              'Enthalpy discharge (MJ) ' //
-     &              'Enthalpy input (MJ) ' //
-     &              'Total enthalpy discharge MJ ' //
-     &              'Total enthalpy input (MJ) ' //
-     &              'Net (MJ) enthalpy discharge '
+               glob_string = trim(glob_string) //
+     &              trim(time_string) //  dls //
+     &              'Total enthalpy in system (MJ)' // dls //
+     &              'Enthalpy discharge (MJ)' // dls //
+     &              'Enthalpy input (MJ)' // dls //
+     &              'Total enthalpy discharge MJ' // dls //
+     &              'Total enthalpy input (MJ)' // dls //
+     &              'Net enthalpy discharge (MJ)' // dls //
+     &              'Delta enthalpy (MJ)'
             end select
+            if (form_flag .eq. 1) 
+     &           glob_string = trim(glob_string) // '"'
             length = len_trim (glob_string)
-            write(ishisg, *) time_string, glob_string(1:length)
+            write(ishisg, '(a)') glob_string(1:length)
 
          end if
          write (ishis, 6000) trim(file_format)
@@ -954,28 +990,36 @@ C RJP 08/09/07
 
       if (ishisg .ne. 0 ) then
 ! Output global variables
+         if (l .eq. 0) then
+            start_mass = amass
+            start_ae = aener
+         end if
          if (days .ge. 0) then
+            dmass = amass - start_mass
+            dae = aener - start_ae
             select case (glob_flag)
-            case (1)
-               write(ishisg, *) ptime, amass, asteam, 
-     &              qtoti, curinflow, toutfl, totalflin, qt,
-     &              aener, qtotei, cureinflow, teoutf, totalein, qte
-            case (2)
-               write(ishisg, *) ptime, amass, asteam,  
-     &              qtoti, curinflow, toutfl, totalflin, qt,
-     &              aener, qtotei, cureinflow, teoutf, totalein, qte
-            case (3)
-               write(ishisg, *) ptime, amass, qtoti, curinflow, 
-     &              toutfl, totalflin, qt
-            case (4)
-               write(ishisg, *) ptime, amass, asteam, qtoti, curinflow, 
-     &              toutfl, totalflin, qt
-            case (5)
-               write(ishisg, *) ptime, aener, qtotei, cureinflow, 
-     &              teoutf, totalein, qte
-            case (6)
-               write(ishisg, *) ptime, aener, qtotei, cureinflow, 
-     &              teoutf, totalein, qte
+            case (1) ! Mass & Energy
+               write(ishisg, '(16(g16.9, 1x))') ptime, amass, asteam, 
+     &              qtoti, curinflow, toutfl, totalflin, qt, dmass,
+     &              aener, qtotei, cureinflow, teoutf, totalein, qte,
+     &              dae
+            case (2)  ! Water & Air
+               write(ishisg, '(16(g16.9, 1x))') ptime, amass, asteam,  
+     &              qtoti, curinflow, toutfl, totalflin, qt, dmass,
+     &              aener, qtotei, cureinflow, teoutf, totalein, qte,
+     &              dae
+            case (3)  ! Water (no steam)
+               write(ishisg, '(8(g16.9, 1x))') ptime, amass, qtoti, 
+     &              curinflow, toutfl, totalflin, qt, dmass
+            case (4)  ! Water & Steam
+               write(ishisg, '(9(g16.9, 1x))') ptime, amass, asteam, 
+     &              qtoti, curinflow, toutfl, totalflin, qt, dmass
+            case (5)  ! Air
+               write(ishisg, '(8(g16.9, 1x))') ptime, aener, qtotei, 
+     &              cureinflow, teoutf, totalein, qte, dae
+            case (6)  ! Energy
+               write(ishisg, '(8(g16.9, 1x))') ptime, aener, qtotei,
+     &               cureinflow, teoutf, totalein, qte, dae
             end select
          end if
          call flush(ishisg)

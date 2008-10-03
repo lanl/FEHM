@@ -370,6 +370,7 @@ C *** integers in davidi.h
       ngrad = 0
       nconv = 0
       isteady = 0
+      jswitch = 0
 C from comwt
       irich = 0
 
@@ -468,6 +469,8 @@ C added phi_inc to comai so it only needs to be computed in one place
       vlmax  =   0.0
       vvmax  =   0.0
       vtot   =   0.0
+      tol_phase = 1.e-4
+      strd_iter = 0.99
 
 c zero out include combi
       if(irun.eq.1) then

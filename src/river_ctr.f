@@ -126,7 +126,7 @@ c     RJP 1/9/07 added river_zone
 c RJP 05/21/08 added following
       integer ic1
 c     RJP 1/9/07 changed following
-      save n_ncon, river_zone, iexpfl, neq_new, well_root, iroot
+      save n_ncon, river_zone, iexpfl, neq_new, well_root, iroot, inwel
       maxlay = 300
 c     
 C     

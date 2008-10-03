@@ -56,7 +56,7 @@
       character*14 time_string, units
       character*80 form_string, title_string
       character*14, allocatable :: var_string(:)
-      character*120 fname, root
+      character*150 fname, root
 
       if (null1(root_name)) then
 ! Find root of tracer file name or if not present, output or input file name
@@ -123,61 +123,67 @@ c Standard text
 
       units = 'Moles/kg water'
       do i = 1, ncpntprt
+         fname = ''
          title_string = ''
          ic = cpntprt(i)
          nsp =  pcpnt(ic)
          title_string = cpntnam(ic)
          iunit = ishisc + nsp
          write(spnum, '(i3.3)') nsp
-         fname =  root(1:iroot) // '_aq' // spnum // trcsfx
+         fname =  root(1:iroot) // '_' // trim(cpntnam(ic)) // trcsfx
          open (unit=iunit, file=fname, form='formatted')
          call write_fileheader
       end do
       units = 'Moles/kg rock'
       do i = 1, nimmprt
+         fname = ''
          title_string = ''
          im = immprt(i)
          nsp = pimm(im)
          title_string = immnam(im)  
          iunit = ishisc + nsp
          write(spnum, '(i3.3)') nsp
-         fname =  root(1:iroot) // '_im' // spnum // trcsfx
+         fname =  root(1:iroot) // '_' // trim(immnam(im)) // trcsfx
          open (unit=iunit, file=fname, form='formatted')
          call write_fileheader
       end do
       units = 'Moles/kg vapor'
       do i = 1, nvapprt
+         fname = ''
          title_string = ''
          iv = vapprt(i)
          nsp = pvap(iv)
          title_string = vapnam(iv)     
          iunit = ishisc + nsp
          write(spnum, '(i3.3)') nsp
-         fname =  root(1:iroot) // '_vp' // spnum // trcsfx
+         fname =  root(1:iroot) // '_' // trim(vapnam(iv)) // trcsfx
          open (unit=iunit, file=fname, form='formatted')
          call write_fileheader
       end do
       if(ncplx.ne.0)then
          units = 'Moles/kg water'
          do i = 1,ncpntprt
+            fname = ''
             title_string = ''
             ic = cpntprt(i)
             nsp =  pcpnt(ic)
             title_string = 'Free Ion ' // trim(cpntnam(ic))
             iunit = ishisc + ic + nspeci
             write(spnum, '(i3.3)') nsp
-            fname =  root(1:iroot) // '_fi' // spnum // trcsfx
+            fname =  root(1:iroot) // '_FreeIon_' // trim(cpntnam(ic)) 
+     &            // trcsfx
             open (unit=iunit, file=fname, form='formatted')
             call write_fileheader
          enddo
          do i = 101, ncplxprt+100
+            fname = ''
             title_string = ''
             ix = cplxprt(i) 
             title_string = cplxnam(ix)
             nsp =  ix
             iunit = ishisc + nsp
             write(spnum, '(i3.3)') nsp
-            fname =  root(1:iroot) // '_cplx' // spnum // trcsfx
+            fname =  root(1:iroot) // '_' // trim(cplxnam(ix)) // trcsfx
             open (unit=iunit, file=fname, form='formatted')
             call write_fileheader
          enddo

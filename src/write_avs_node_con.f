@@ -177,7 +177,7 @@ C***********************************************************************
 
       integer add_dual, maxcon, iz, idz, iendz, il, open_file
       integer neq,nspeci,lu,ifdual,icall,length,i1,i2
-      integer icord1, icord2, icord3
+      integer icord1, icord2, icord3, iaq, ivap, isolid
       integer npt(*),nelm2(ns_in)
       parameter (maxcon = 100)
       real*8 an(n0,nspeci)
@@ -335,7 +335,11 @@ c----------------------------------------
 c     PHS 4/27/00   Added new format for avsxpress!!
 c---------------------------------------
          fstring = ''
-         itotal2 = nspeci+iocord+iozid
+         if (altc(1:3) .eq. 'tec') then
+            itotal2 = nspeci+iocord+iozid+1
+         else
+            itotal2 = nspeci+iocord+iozid
+         end if
          allocate (title(itotal2))
          do i = 1, iocord
             if (altc(1:3) .eq. 'avs' .and. altc(4:4) .ne. 'x') then
@@ -344,19 +348,29 @@ c---------------------------------------
                title(i) = trim(cordname(i))
             end if
          end do
+         if (altc(1:3) .eq. 'tec') then
+            title(i) = 'Node'
+            i = i + 1
+         end if
          if (iozid .eq. 1) then
             title(i) = 'Zone'
             i = i + 1
          end if
          j = i
+         iaq = 0
+         ivap = 0
+         isolid = 0
          do i = 1, nspeci
             select case (icns(i))
             case (1, 2, -2)
-               title(j) = trim(dual_char)//trim(cpntnam(i))
+               iaq = iaq + 1
+               title(j) = trim(dual_char)//trim(cpntnam(iaq))
             case (0)
-               title(j) = trim(dual_char)//trim(immnam(i))
+               isolid = isolid + 1
+               title(j) = trim(dual_char)//trim(immnam(isolid))
             case (-1)
-               title(j) = trim(dual_char)//trim(vapnam(i))
+               ivap = ivap + 1
+               title(j) = trim(dual_char)//trim(vapnam(ivap))
             end select
             j = j+ 1
          end do
@@ -370,12 +384,11 @@ c---------------------------------------
          else if (altc(1:3) .eq. 'tec') then
             if (icall .eq. 1) then
                write(lu, 98) verno, jdate, jtime, trim(wdd)
-               write (fstring, 99) itotal2+1
+               write (fstring, 99) itotal2
                write(lu, fstring) 'VARIABLES = ', (trim(title(i)), 
-     &              i=1,iocord), 'node', (trim(title(i)), 
-     &              i=iocord+1,itotal2)
+     &              i=1,itotal2)
             end if
-            if (iozone .ne. 0) write (lu, 97) days
+            if (iozone .ne. 0) write (lu, 97) trim(timec_string)
          end if
 
          do iz = 1, iendz
@@ -385,7 +398,7 @@ c---------------------------------------
             end if
             if (altc(1:3) .eq. 'tec') then
                if (iozone .eq. 0) then
-                  write (lu, 94) days, trim(tecstring)
+                  write (lu, 94) trim(timec_string), trim(tecstring)
                else
                   write (lu, 95) idz, trim(tecstring)
                end if
@@ -601,7 +614,7 @@ c=======================================================
      &              i=1,iocord), 'node', (trim(title(i)), 
      &              i=iocord+1,itotal2)
             end if
-            if (iozone .ne. 0) write (lu, 97) days              
+            if (iozone .ne. 0) write (lu, 97) trim(timec_string)
          end if
 
 c=================================================
@@ -615,7 +628,7 @@ c=================================================
             end if
             if (altc(1:3) .eq. 'tec') then
                if (iozone .eq. 0) then
-                  write (lu, 94) days, trim(tecstring)
+                  write (lu, 94) trim(timec_string), trim(tecstring)
                else
                   write (lu, 95) idz, trim(tecstring)
                end if
@@ -768,10 +781,12 @@ c=================================================
       end if
       if (altc(1:3) .ne. 'sur') close (lu)
 
- 94   format('ZONE T = "Simulation time ',1p,g16.9,' days"', a)
+c 94   format('ZONE T = "Simulation time ',1p,g16.9,' days"', a)
+ 94   format('ZONE T = ', a, a)
  95   format('ZONE T = "',i4.4,'"', a)
  96   format("('node', ", i3, "(', ', a))")
- 97   format('TEXT T = "Simulation time ',1p,g16.9,' days"')
+c 97   format('TEXT T = "Simulation time ',1p,g16.9,' days"')
+ 97   format('TEXT T = ', a)
  98   format ('TITLE = "', a30, 1x, a11, 1x, a8, 1x, a, '"')
  99   format ('(a11, ', i3, "('",' "',"', a, '",'"',"'))")
  104  format ('(1x, ', i3, '(g16.9, 1x), i10.10, ', i3, '(1x, g16.9))')

@@ -112,7 +112,7 @@ c     this formulation allows accumulation
                aiptmp = aiped(i)/distmp(i)*esktmp(i)*rhodvis*1.d06
                ngh = ngh + 1
                if(ngh.gt.max_gh) then
-                  write(*,110) max_gh
+                  if (iptty .ne. 0) write(iptty,110) max_gh
                   write(ierr,110) max_gh   
                endif 
                node_gh(ngh) = i

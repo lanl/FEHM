@@ -475,8 +475,8 @@ c     Try putting in uncoupled normalization
          endif
          deallocate(dum)
       else
-         write(*,*) 'Gencon not yet set for rd1dof.'
-         write(*,*) 'Stop in gencon'
+         write(ierr,*) 'Gencon not yet set for rd1dof.'
+         write(ierr,*) 'Stop in gencon'
          stop
          if (igauss .gt. 1) then
             call rdof_new(neq,a,b,bp,nmat_sol,nb_sol,nrhs_sol,

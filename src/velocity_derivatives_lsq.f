@@ -47,7 +47,7 @@ c s kelkar March 7 05.First derivatives of velocity on a general grid
 c using least squares. Going up to second neighbours of the node i
 c points weighted by inverse of distance.
 
-      use comai, only : neq
+      use comai, only : ierr, neq
       use combi, only : cord, nelm, istrw, isox,isoy,isoz, sx
       use comci, only : rolf
       use comflow, only : a_axy
@@ -205,10 +205,10 @@ c     LU decomposition on the matrix term(8,8)
       call ludsk(term,8,8,indx,dludsk,ludflag)
 c     stop if singular matrix in ludsk
       if(ludflag.gt.0 ) then
-         write(*,*) 'stopvelocity_derivatives_lsq.'  
-         write(*,*)'singular matrix in ludsk'
-         write(*,*)'node #, row # = ',i,ludflag
-         write(*,*) 'irray=', (irray(i,i1), i1=-3,3)
+         write(ierr,*) 'stopvelocity_derivatives_lsq.'  
+         write(ierr,*)'singular matrix in ludsk'
+         write(ierr,*)'node #, row # = ',i,ludflag
+         write(ierr,*) 'irray=', (irray(i,i1), i1=-3,3)
          stop
       endif
 c     back substitute to solve the equation term*Vcoef=rhs for vcoef

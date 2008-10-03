@@ -71,6 +71,7 @@ c     modflow only input variables
       real*8 denom,timeconv,alenconv,conv
       real*8 hdry, wetfct, trpy
       real*8 storitiv,transk,vertk
+      character(7) :: fdm_status = 'unknown'
       character*120 fdm_name
       character*132 modchar      
 c     
@@ -577,13 +578,13 @@ c     mutiply by 1/3(3-D) or 1/2(2-D) to account for isotropy
             deallocate(nelm)
          endif
          allocate(nelm(inelm))
-         nelm = nelm_temp
+         nelm = nelm_temp(1:inelm)
          deallocate(nelm_temp)
          if(allocated(istrw))then
             deallocate(istrw)
          endif
          allocate(istrw(inelm-neq_primary_p1))
-         istrw = istrw_temp
+         istrw = istrw_temp(1:inelm-neq_primary_p1)
          deallocate(istrw_temp)
 
          

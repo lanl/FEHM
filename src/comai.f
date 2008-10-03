@@ -478,8 +478,9 @@ c ZVD 05/01/07 added form_flag, ishisc, ishiswc
 c RJP added for history of carbon mass
       integer             ishiscm, ishiscfz, ishiscs	 
       integer             imbe_ctr, imbet_ctr
-c
+c GAZ 11/
       integer             ich_max,ich_m1,ich_m2,sat_ich
+      integer             jswitch
       integer :: irun = 0
 
       real*8              aener, aiaa, am0, amass, ame, an0, asteam
@@ -499,8 +500,10 @@ c
       real*8              daycs_save, daycf_save, dayhf_save, dayhs_save
       real*8              day_save_ss, fdum_last, aiaa_save, daymax_save
 C gaz 11-06-2007
-      real*8              rho1grav,h_to_p
+	real*8              rho1grav,h_to_p
       real*4              vernum
+
+	real*8              strd_iter, strd_rich, tol_phase
 
       character* 3        header_flag
       character* 4        altc, accm
@@ -512,7 +515,7 @@ C gaz 11-06-2007
 
       integer nmacros
       parameter( nmacros = 60 )
-      logical macroread(nmacros)
+      logical macroread(nmacros) 
 
       logical tpor_flag, compute_flow, hist_flag, reverse_flow
       logical out_zones, spercent, mass_read, pres_read

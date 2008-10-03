@@ -327,7 +327,7 @@ C   ERROR checking:
                   end if
                   tecstring = trim(string)
                end if
-               write (lu, 118) days
+               write (lu, 118) trim(timec_string)
                write (lu, 120) idz, trim(tecstring)
             end if
          else
@@ -354,7 +354,7 @@ C   ERROR checking:
                      write (string, '(a)') ''
                   end select
                   tecstring = trim(string)
-                  write (lu, 130) days, trim(tecstring)
+                  write (lu, 130) trim(timec_string), trim(tecstring)
                   if (ns_in .eq. 0) then
                      if (iozid .eq. 0) then
                         write (string, 125) '1-3', iz
@@ -376,7 +376,7 @@ C   ERROR checking:
                   end if
                   tecstring = trim(tecstring) // trim(string)
                else if (icall .eq. 1 .and. iocord .ne. 0) then
-                  write (lu, 130) days
+                  write (lu, 130) trim(timec_string)
                   if (icnl .eq. 0) then
                      if (iozid .eq. 0) then
                         write (string, 125) '1-3', iz
@@ -392,7 +392,7 @@ C   ERROR checking:
                   end if
                   tecstring = trim(string)
                else
-                  write (lu, 130) days, trim(tecstring) 
+                  write (lu, 130) trim(timec_string), trim(tecstring) 
                end if
             end if
          end if
@@ -709,10 +709,12 @@ c might need help in the
  112  format(a, f10.4)
  115  format(a, i4)
 c 120  format('ZONE T = "',i4.4,' Simulation time ',1p,g16.9,' days"', a)
- 118  format('TEXT T = "Simulation time ',1p,g16.9,' days"')
+c 118  format('TEXT T = "Simulation time ',1p,g16.9,' days"')
+ 118  format('TEXT T = ', a)
  120  format('ZONE T = "',i4.4, '"', a)
  125  format(', VARSHARELIST = ([', a,'] = ', i4, ')')
- 130  format('ZONE T = "Simulation time ',1p,g16.9,' days"', a)
+c 130  format('ZONE T = "Simulation time ',1p,g16.9,' days"', a)
+ 130  format('ZONE T =', a, a) 
  135  format(', N = ', i8, ', E = ', i8, ', DATAPACKING = POINT',
      &     ', ZONETYPE = ', a)
  140  format(', VARSHARELIST = ([', a,'] = ', i4, '), ',

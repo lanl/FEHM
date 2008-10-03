@@ -102,7 +102,7 @@ c
               endif
             enddo
       endif
-      if(irdof.ne.13) then   
+      if(irdof.ne.13.and.jswitch.eq.0) then   
 c     
 c vapour phase calculations
 c
