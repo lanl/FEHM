@@ -125,8 +125,8 @@ C***********************************************************************
       character*80 water_file, above_wt_file, outside_zone_file
       logical matrix_node, null1, xy, ex
 
-      save ntimes, times, cons, counter, dumcyc, nfix, readflag
-      save ntimes, times, cons, counter, dumcyc, readflag, shut_time
+      save ntimes, times, cons, counter, dumcyc, nfix, readflag,
+     &     shut_time
 
       select case (k)
 c RJP added for turning off CO2 injection wells

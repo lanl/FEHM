@@ -574,7 +574,7 @@ c saturations are never zeroed out, report what is in array
                   string(ic1:ic2) = vstring
                   ic1 = ic2 + 1
 ! Dissolved co2 mass fraction
-                   write(vstring,112) dls(1:k), yc(i)
+                  write(vstring,112) dls(1:k), yc(i)
                   ic2 = ic1 + len_trim(vstring)
                   string(ic1:ic2) = vstring
                   ic1 = ic2 + 1                 

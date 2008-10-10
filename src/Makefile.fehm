@@ -18,7 +18,7 @@
 # Edit FC,LIBRARY,FFLAGS for your environment and compiler 
 #***********************************************************************
 
-SRCDIR = /scratch/ymp/zvd/FEHM_V2.30open_CO2/src/
+SRCDIR = /scratch/ymp/zvd/FEHM_V2.30open/src/
 WORKDIR = ./
 INCDIR = ./
 OBJDIR = ./
@@ -78,7 +78,6 @@ endif
 # SUN OS ------------------------------
 
 OBJECTS := $(patsubst ${SRCDIR}%.f,%.o,$(wildcard ${SRCDIR}*.f))
-all: dated xfehm
 OBJECTS_F90 := $(patsubst ${SRCDIR}%.f90,%.o,$(wildcard ${SRCDIR}*.f90))
 
 all: dated xfehm

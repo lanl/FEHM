@@ -436,6 +436,13 @@ c     start SIA loop
          elseif (tol_value .eq. 3) then
             goto 9000 
          endif
+      else
+c zvd 08-Oct-08 : check to ensure all species have converged at node
+         do in = 1,n0
+            if(ndconv(in).lt.(ncpnt+nimm+nvap))then
+               ndconv(in) = 0
+            end if
+         end do
       endif
 
       do igrp = 1, ngroups
