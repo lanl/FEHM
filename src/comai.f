@@ -480,7 +480,7 @@ c RJP added for history of carbon mass
       integer             imbe_ctr, imbet_ctr
 c GAZ 11/
       integer             ich_max,ich_m1,ich_m2,sat_ich
-      integer             jswitch
+      integer             jswitch, joff
       integer :: irun = 0
 
       real*8              aener, aiaa, am0, amass, ame, an0, asteam

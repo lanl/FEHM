@@ -125,20 +125,27 @@ C***********************************************************************
       neq2   =  neq+neq
       neqp1  =  neq+1
       nmat2avw = 2*(nelm(neqp1)-neqp1)
-! Guessed at value for fmkb
+                                ! Guessed at value for fmkb
       fmkb = 1.0
-c
-c zero out transfer terms
-c
+c     
+c     zero out transfer terms
+c     
       do i=1,nmat(2)
-         a(i+nmat(3))=0.
-         a(i+nmat(4))=0.
-         a(i+nmat(7))=0.
-         a(i+nmat(8))=0.
-         a(i+nmat(9))=0.
-         a(i+nmat(10))=0.
-         a(i+nmat(13))=0.
-         a(i+nmat(14))=0.
+         if (jswitch .ne. 0) then
+            a(i+nmat(3))=0.
+            a(i+nmat(4))=0.
+            a(i+nmat(5))=0.
+            a(i+nmat(6))=0.            
+         else
+            a(i+nmat(3))=0.
+            a(i+nmat(4))=0.
+            a(i+nmat(7))=0.
+            a(i+nmat(8))=0.
+            a(i+nmat(9))=0.
+            a(i+nmat(10))=0.
+            a(i+nmat(13))=0.
+            a(i+nmat(14))=0.
+         end if
       enddo
 c     
 c     compute the fracture-matrix transfer terms
@@ -229,16 +236,16 @@ c
          if(iupk.ne.0) then
             axkb=max(pny(idl),zero_t)*pnx(idl)
          else
-          if(idpdp.eq.1) then
-            axkb =  max( pnx(idl),zero_t)       
-          else if(idpdp.eq.2) then
-            axkb =  max( pny(idl),zero_t)       
-          else if(idpdp.eq.3) then
-            axkb =  max( pnz(idl),zero_t)       
-          else
-            axkb =  max( pnx(idl  ),pny(idl  ),
-     *           pnz(idl  ),zero_t )
-          endif
+            if(idpdp.eq.1) then
+               axkb =  max( pnx(idl),zero_t)       
+            else if(idpdp.eq.2) then
+               axkb =  max( pny(idl),zero_t)       
+            else if(idpdp.eq.3) then
+               axkb =  max( pnz(idl),zero_t)       
+            else
+               axkb =  max( pnx(idl  ),pny(idl  ),
+     *              pnz(idl  ),zero_t )
+            endif
          endif
 c     
 c     2-d geometry
@@ -328,12 +335,12 @@ c
             bp(i+nrhs(3))=bp(i+nrhs(3))-axy
             a(idum+nmat(1))=a(idum+nmat(1))+dlapi
             a(idum+nmat(2))=a(idum+nmat(2))+dlaei
-            a(idum+nmat(9))=a(idum+nmat(9))-dlapi
-            a(idum+nmat(10))=a(idum+nmat(10))-dlaei
+            a(idum+nmat(9-joff))=a(idum+nmat(9-joff))-dlapi
+            a(idum+nmat(10-joff))=a(idum+nmat(10-joff))-dlaei
             a(idum+nmat(3))=a(idum+nmat(3))+dlapkb
             a(idum+nmat(4))=a(idum+nmat(4))+dlaekb
-            a(idum+nmat(11))=a(idum+nmat(11))-dlapkb
-            a(idum+nmat(12))=a(idum+nmat(12))-dlaekb
+            a(idum+nmat(11-joff))=a(idum+nmat(11-joff))-dlapkb
+            a(idum+nmat(12-joff))=a(idum+nmat(12-joff))-dlaekb
          endif
 c     
 c     vapour phase calculations
@@ -364,7 +371,7 @@ c     isl=0
          
 c     form equations
 c     
-         if(isl.ne.0) then
+         if(isl.ne.0 .and. jswitch .eq. 0) then
             jm=1
             kb=idl
             kz=kb

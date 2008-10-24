@@ -507,12 +507,18 @@ c
 c     for rich eq make "a" smaller
 c     eliminate a_vxy
 c     
-            if(jswitch.ne.0.and.idpdp.eq.0) then
-               if(allocated(a_vxy)) deallocate(a_vxy)
+            if(jswitch.ne.0) then
+c               if (idpdp .eq. 0 .and. allocated(a_vxy)) 
+c     &              deallocate(a_vxy)
+               if (allocated(a_vxy)) deallocate(a_vxy)
                ndum = nelm(neq+1) - (neq+1)
                if(allocated(a)) deallocate(a)
-               allocate(a(2*ndum))	     
-	    endif
+               if (idpdp .eq. 0) then
+                  allocate(a(2*ndum))
+               else
+                  allocate(a(8*ndum))
+               end if
+            end if
          elseif(iflg.eq.1) then
 c     
 c     determine phase state

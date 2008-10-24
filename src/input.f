@@ -1194,6 +1194,7 @@ c**** these are minimum relative permeabilities *****
          call infrlp        
       else if (macro .eq. 'rich') then
          jswitch = 1
+         if (idpdp .eq. 1) joff = 4
          read (inpt,*) strd_rich,tol_phase 
 
 c**** rock densities, etc ****

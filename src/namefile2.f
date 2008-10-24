@@ -206,10 +206,10 @@ C***********************************************************************
 
       integer i, icall, lund, iformat, idz, open_file
       integer nchar, nchar_tail, c_open, len_char, k1, k2, kl
-      character*140 fname
+      character*165 fname
       character*94 root
       character*40 daychar
-      character*14 tail
+      character*(*) tail
       character*5 ch5
       character*4 ch4
 

@@ -307,7 +307,11 @@ c     generate algebraic equations,load matrices
             if(ico2.gt.0) then
                call gensdp3
             else
+	        if(jswitch.ne.0) then
+               call gensdp_switch
+	        else
                call gensdp
+	        endif
             endif
          else if(iflg.eq.4) then
 c     get variable correction

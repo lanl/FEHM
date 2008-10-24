@@ -47,7 +47,7 @@ C***********************************************************************
       integer nchar_root, nchar_tail, c_open
       character*125 fname
       character*94 root
-      character*14 tail
+      character*(*) tail
       character*5 ch5
 
 c Blank out the file name 

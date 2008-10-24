@@ -371,6 +371,7 @@ C *** integers in davidi.h
       nconv = 0
       isteady = 0
       jswitch = 0
+      joff = 0
 C from comwt
       irich = 0
 
