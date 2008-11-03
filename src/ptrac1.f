@@ -71,12 +71,14 @@
       use comsk
       use comxi, only : nmfil
       use davidi
+      use comwt
 
       implicit none
       integer neqp1,n50
       integer i3,ii1,ii2,i1,i33,ix,iy,iz
       integer ip,is,i5,kbp,kbm,kb,i,np1
       integer current_node
+      integer  n_porosi0,itemp_col,itemp_node, kb2,flag_box,inp1
       real*8 dx,dy,dz,ep,ep5,x60,x33
       real*8 rprime, spacing
       real*8 xcoordw, ycoordw, zcoordw, del_plus, del_minus
@@ -204,6 +206,52 @@ c     Find cell location where particle starts
       if(abs(ist).ge.1) then
 
          call find_particle_cell(npart_ist2,ierr,iptty)
+
+c..............................................................
+c...Oct 15 2008 s kelkar if porosity<=0 move down the column
+c     routine wtsi_column sorts nodes in vertical columns
+c     wcol(node)=column# corresponding to the node
+c     n_col(column#)=# of nodes in the column
+c     col(kb,wcol(node))=node #s in that column
+         n_porosi0= 0 
+         do i=1,num_part
+            if(ps(ijkv(i)).le.0.) then
+               n_porosi0 =  n_porosi0 +1
+               if( n_porosi0.eq.1) then
+                  if(.not.allocated(wcol)) then
+                     call wtsi_column
+                  endif
+               endif
+               inp1=ijkv(i)
+               itemp_col = wcol(inp1)
+               do kb2 = 1, n_col(itemp_col)
+                  itemp_node=col(itemp_col,kb2)
+                  if(inp1.eq.itemp_node) then
+                     do kb = kb2+1, n_col(itemp_col)
+                        itemp_node=col(itemp_col,kb)
+                        if(ps(itemp_node).gt.0.) then
+                           ijkv(i) = itemp_node
+                           z1(i)=cord(itemp_node,3)-corn(itemp_node,3)
+                           goto 96969
+                        endif
+                     enddo
+c     did not find a porosity>0 node in the column. Do a neighbor search
+                     call tree_search_porosity(ijkv(i),5,flag_box)
+                     if(flag_box.gt.0) then
+                        ijkv(i)=flag_box
+                        z1(i) = cord(flag_box,3)
+                     else
+                        write(ierr,*)'error in ptrac1. cant find'
+                        write(ierr,*)'neighbor with porosity>0. STOP.'
+                        stop
+                     endif
+                  endif
+               enddo
+96969          continue
+            endif
+         enddo
+c..............................................................
+
          if (ist .eq. 2) then
             do i = 1, num_part
                part_id(i,1) = i
