@@ -602,7 +602,7 @@ CPS       Find the maximum number of Newton iterations taken ...
 CPS       ... in each grouping
 CPS     ENDFOR each group
 CPS     IF we are leaving csolve
-CPS       Compute average time stepp
+CPS       Compute average time step
 CPS       EXIT
 CPS     ENDIF
 CPS     Adjust the time step
@@ -639,6 +639,7 @@ c**** set time step for tracer solution , call solution            ****c
       real*4 caz(2)
       real*8 dayst
       real*8 daytr
+      real*8 daytr_save
       integer nts
       integer icfin
       integer id
@@ -1284,7 +1285,8 @@ c----------------- phs 9/26/2001 - added (1-s(i)) correction
       dayst=days
       daysi=days-day
       days=daysi
-      daytr=min(daytr,day,daycmx/2.0)
+c      daytr=min(daytr,day,daycmx/2.0)
+      daytr=min(daytr,day,daycmx)
       sehmindays=min(daymin,daycmm)
       nts=0
 c following causes output whenever a transport time step is initiated
@@ -1298,6 +1300,7 @@ c     Add counter for printout of trc output BAR 11-18-98
       if(days.eq.dayst) icfin=0
       if(days.gt.dayst) then
          days = days - daytr
+         daytr_save = daytr
          daytr = dayst - days
          days=dayst
          icfin = -1
@@ -1361,7 +1364,7 @@ c
       daytr=daytrm
       days=daysi+daytrm
       daysi=days
-      if(days.ge.dayst) icfin=0
+      if(days.ge.dayst .and. icfin .gt. 0) icfin=0
 c end change
       iter_counter = 0
       tajj = tyming(caz)
@@ -1552,4 +1555,5 @@ c     iprttrc = 0
       end if
       go to 1000
  4000 continue
+      if (icfin .eq. -1) daytr = daytr_save
       end

@@ -396,6 +396,13 @@ c
       call flow_boundary_conditions(3)
       daysp=days
       days=daysp-day
+      if (nicg .gt.1) then
+         if (daysp .lt. dit(nicg - 1)) then
+            nicg = nicg - 1
+            ditnd =  dit(nicg)
+         end if
+      end if
+         
 
       if (daysp .ge. tims)  then
 c     Took out check for rip changes - need to determine why it was there
