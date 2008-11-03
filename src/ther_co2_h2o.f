@@ -919,16 +919,16 @@ c
 c     if(idof_co2.eq.1) then
 c     heat conduction only
                cprd=cpr(mi)
-               if(kq.lt.0) then
-                  eskd=eflow(mi)
-                  edif=cprd*(tl-eskd)
-                  permsd=wellim(mi)
-                  qh(mi)=permsd*edif
-                  deqh(mi)=permsd*cprd
-                  dqhw(mi)=0.d0
-                  dqhyc(mi)=0.d0
-                  dqhya(mi)=0.d0
-               endif
+c               if(kq.lt.0) then
+c                  eskd=eflow(mi)
+c                  edif=cprd*(tl-eskd)
+c                  permsd=wellim(mi)
+c                  qh(mi)=permsd*edif
+c                  deqh(mi)=permsd*cprd
+c                  dqhw(mi)=0.d0
+c                  dqhyc(mi)=0.d0
+c                  dqhya(mi)=0.d0
+c               endif
                if(kq.ge.0.and.qflux(mi).eq.0.0) deqh(mi)=0.
                dtpae(mi)=1.
                denrd=denr(mi)*cprd
@@ -1423,16 +1423,16 @@ c     dhprde=0.0
 c     heat conduction only
                if(idof_co2.eq.2) then
                   cprd=cpr(mi)
-                  if(kq.lt.0) then
-                     eskd=eflowco2(mi)
-                     edif=cprd*(tl-eskd)
-                     permsd=wellco2(mi)
-                     qh(mi)=permsd*edif
-                     deqh(mi)=permsd*cprd
-                     dqhw(mi)=0.d0
-                     dqhyc(mi)=0.d0
-                     dqhya(mi)=0.d0
-                  endif
+c                  if(kq.lt.0) then
+c                     eskd=eflowco2(mi)
+c                     edif=cprd*(tl-eskd)
+c                     permsd=wellco2(mi)
+c                     qh(mi)=permsd*edif
+c                     deqh(mi)=permsd*cprd
+c                     dqhw(mi)=0.d0
+c                     dqhyc(mi)=0.d0
+c                     dqhya(mi)=0.d0
+c                  endif
                   if(kq.ge.0.and.qflux(mi).eq.0.0) deqh(mi)=0.
                   denrd=denr(mi)*cprd
                   sto1(mi)=0.0

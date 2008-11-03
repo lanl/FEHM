@@ -1047,16 +1047,24 @@ c     only for first iteration
                do ii=1,neq
                   ij=ii+ndummy
                   if(eskco2(ij).lt.0.0) then
+                     if(ps(ij).eq.0.d0) then
+                        eflowco2(ij) = cpr(ij)*(-eskco2(ij))
+                     else
                      call co2_properties(4,ices(ij),phico2(ij),
      &                    -eskco2(ij),dum1,duma,dumb,dumc)
                      eflowco2(ij)=dumc(4)
+                     endif
                   else
                      eflowco2(ij)=eskco2(ij)
                   endif
                   if(esk(ij).lt.0.0) then
+                     if(ps(ij).eq.0.d0) then
+                        eflow(ij) = cpr(ij)*(-eskco2(ij))
+                     else
                      call h2o_properties(9,1,phi(ij),-esk(ij),csalt(ij)
      &                    ,dum3,ensrc,dum4,dum5,dum6,dum7)
                      eflow(ij)=ensrc
+                     endif
                   else
                      eflow(ij)=esk(ij)
                   endif
