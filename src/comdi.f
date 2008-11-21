@@ -255,6 +255,11 @@
 !D4   ipvc1f          pointer  fdd1   pointer to variable array vc1f   
 !D4   ipvc2f          pointer  fdd1   pointer to variable array vc2f   
 !D4   ipvc3f          pointer  fdd1   pointer to variable array vc3f   
+!D4   ipvc4f          pointer  fdd1   pointer to variable array vc4f   
+!D4   ipvc5f          pointer  fdd1   pointer to variable array vc5f   
+!D4   ipvc6f          pointer  fdd1   pointer to variable array vc6f   
+!D4   ipvc7f          pointer  fdd1   pointer to variable array vc7f   
+!D4   ipvc8f          pointer  fdd1   pointer to variable array vc8f   
 !D4
 !D4   a1adfl          REAL*8   fdd1   Alpha1 parameter for each species for
 !D4                                     liquid (nonlinear adsorption)  
@@ -343,6 +348,11 @@
 !D4   vc1f            REAL*8   fdd1   ? 
 !D4   vc2f            REAL*8   fdd1   ?
 !D4   vc3f            REAL*8   fdd1   ? 
+!D4   vc4f            REAL*8   fdd1   ? 
+!D4   vc5f            REAL*8   fdd1   ? 
+!D4   vc6f            REAL*8   fdd1   ? 
+!D4   vc7f            REAL*8   fdd1   ? 
+!D4   vc8f            REAL*8   fdd1   ? 
 !D4
 !D4   ***** COMMON Block fdd1i pointers and associated variables *****
 !D4   ipiadd          pointer  fdd1i  pointer to variable array iadd   
@@ -401,6 +411,9 @@
 !D4   phini           REAL*8   fdd2   Initial pressure at each node 
 !D4   psini           REAL*8   fdd2   Initial porosity at each node 
 !D4   tini            REAL*8   fdd2   Initial temperature at each node 
+!D4
+!D4   porTemp1--4     REAL*8   fdd2   Parameters used to define the temperature
+!D4                                   -dependent porosity at each node
 !D4
 !D4   ***** COMMON Block fdd2r *****
 !D4   phydro          REAL*8   fdd2r  Parameter used in rock deformation model 
@@ -617,6 +630,11 @@
       real*8, allocatable ::  vc1f(:) 
       real*8, allocatable ::  vc2f(:) 
       real*8, allocatable ::  vc3f(:) 
+      real*8, allocatable ::  vc4f(:) 
+      real*8, allocatable ::  vc5f(:) 
+      real*8, allocatable ::  vc6f(:) 
+      real*8, allocatable ::  vc7f(:) 
+      real*8, allocatable ::  vc8f(:) 
 
 !     ***** pointers in COMMON Block fdd1i *****
       integer, allocatable :: iadd(:) 
@@ -641,6 +659,11 @@
       real*8, allocatable ::  dporp(:) 
       real*8, allocatable ::  dport(:)
       real*8, allocatable ::  pgangi(:)
+!     temperature-dependent porosity
+      real*8, allocatable ::  porTemp1(:)
+      real*8, allocatable ::  porTemp2(:)
+      real*8, allocatable ::  porTemp3(:)
+      real*8, allocatable ::  porTemp4(:)
 !     ****   TENMA   ****
       real*8, allocatable ::  wgangi(:)
       real*8, allocatable ::  sgangi(:)

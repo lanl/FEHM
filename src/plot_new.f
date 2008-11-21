@@ -898,11 +898,17 @@ c
       if (ishiss .ne. 0 ) then
 ! Output saturations
          do i = 1, m
-            if (ifree .ne. 0) then
-               dumv(i) = max(s(nskw(i)), rlptol)
-               if (dumv(i) .le. rlptol) dumv(i) = 0.d0
+            if (ps(nskw(i)) .le. 0.) then
+c zero porosity node
+               dumv(i) = 0.d0
+            else if (irdof .ne. 13 .or. ifree .ne. 0) then
+c               dumv(i) = max(s(nskw(i)), rlptol)
+c               if (dumv(i) .le. rlptol) dumv(i) = 0.d0
+c saturations are never zeroed out, report what is in array
+               dumv(i) = s(nskw(i))
             else
-               dumv(i) = max(s(nskw(i)), 1.d-20)
+c water only problem
+               dumv(i) = 1.0d0
             end if
          end do
          write(ishiss, form1_string) ptime, (dumv(i), i= 1, m)

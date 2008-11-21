@@ -145,8 +145,14 @@ CD5 itp          int         Current conductivity model number
 CD5 vc1          real*8      Current thermal conductivity parameter 1
 CD5 vc2          real*8      Current thermal conductivity parameter 2
 CD5 vc3          real*8      Current thermal conductivity parameter 3
+CD5 vc4          real*8      Current thermal conductivity parameter 4
+CD5 vc5          real*8      Current thermal conductivity parameter 5
+CD5 vc6          real*8      Current thermal conductivity parameter 6
+CD5 vc7          real*8      Current thermal conductivity parameter 7
+CD5 vc8          real*8      Current thermal conductivity parameter 8
 CD5 vc12         real*8      vc1 - vc2
 CD5 sqrsat       real*8      Parameter used in calculation
+CD5 tmpPor       real*8      Parameter used in calculation
 CD5 
 CD5 Local Subprograms
 CD5
@@ -242,7 +248,7 @@ C**********************************************************************
       implicit none
       
       integer iz,ndummy,i,ivcnd,mid,mi,it,itp
-      real*8 vc1,vc2,vc3,vc12,sqrsat
+      real*8 vc1,vc2,vc3,vc4, vc5, vc6, vc7, vc8, vc12,sqrsat, tmpPor
       logical null1
 
 
@@ -252,11 +258,19 @@ c read in data
             i=0
  10         continue
             read(inpt,'(a80)') wdd1
-            ivcnd=0
             if(.not. null1(wdd1)) then
                backspace inpt
+               read(inpt,*) ivcnd
+               backspace inpt
+
                i=i+1
-               read(inpt,*) ivcon(i),vc1f(i),vc2f(i),vc3f(i)
+               if(ivcnd .le.  3) then
+                  read(inpt,*) ivcon(i),vc1f(i),vc2f(i),vc3f(i)
+               else if(ivcnd .eq. 4) then
+c                 for crushed salt
+                  read(inpt,*) ivcon(i),vc1f(i),vc2f(i),vc3f(i),
+     &                         vc4f(i),vc5f(i),vc6f(i), vc7f(i),vc8f(i)
+               endif
             else
                if(i.eq.0) ivcond=0
                go to 20
@@ -309,6 +323,51 @@ c     NOTE:no derivatives,used explicity
                   thx(mi)=(vc12*sqrsat +vc2)*1.e-6
                   thy(mi)=thx(mi)
                   thz(mi)=thx(mi)
+
+               else if(itp.eq.3) then
+
+c     Thermal conductivity for intact salt (Munson et al, 1990)
+c     lambda_salt (T) = lambda_300*(300 K/T)^gamma
+c     where lambda_300 is material constant = 5.4 (W/m K)
+c           gamma is material constant = 1.14 (at 300K)
+c           T is temperature in Kelvin
+c     If the reference temperature is 300K, in input file, vc1f= 26.85, vc2f = 5.4, vc3f =1.14
+C     some other values should be used if the reference temperute is different from 300K
+c     NOTE:no derivatives,used explicity
+                  vc1=vc1f(it)+273.15
+                  vc2=vc2f(it)
+                  vc3=vc3f(it)
+                  thx(mi)=vc2*( vc1/(t(mi)+273.15) )**vc3*1.e-6
+                  thy(mi)=thx(mi)
+                  thz(mi)=thx(mi)
+
+               else if(itp.eq.4) then
+
+c     Thermal conductivity for crushed salt (Bechthold et al, 2004)
+c     lambda_salt (T) = lambda_300*(300 K/T)^gamma
+c     where gamma is material constant = 1.14 (at 300K)
+c           T is temperature in Kelvin
+c           lambda_300 (W/m K), depends on porosity (read in as vc2f):
+c              lambda_300 (phi) = 1.08*(-270*phi^4 +370*phi^3-136*phi^2+1.5*phi + 5.0)
+c     If the reference temperature is 300K, in input file, vc1f = 26.85, vc3f =1.14
+C     some other values should be used if the reference temperature is different from 300K
+c     NOTE:no derivatives,used explicity
+                  vc1=vc1f(it) + 273.15
+                  vc2=vc2f(it) 
+                  vc3=vc3f(it) 
+                  vc4=vc4f(it) 
+                  vc5=vc5f(it) 
+                  vc6=vc6f(it) 
+                  vc7=vc7f(it) 
+                  tmpPor=ps(mi)
+                  tmpPor = vc2*(vc3*tmpPor**4 +vc4*tmpPor**3 
+     &                 +vc5*tmpPor**2+vc6*tmpPor + vc7)
+                  vc8=vc8f(it)
+                  thx(mi)=tmpPor*(vc1/(t(mi)+273.15))**vc8*1.e-6
+                  if(thx(mi) < 0.0) thx(mi) =1.0e-12
+                  thy(mi)=thx(mi)
+                  thz(mi)=thx(mi)
+
                endif
             enddo
 

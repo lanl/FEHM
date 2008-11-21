@@ -1153,11 +1153,19 @@ C
 C     time_start = time(abs(time_type(imodel))  ,imodel)
 C     time_end   = time(abs(time_type(imodel))+1,imodel)
 C     time_factor2 = 
-             time_factor2 = 
+             if(days .ge. time(abs(time_type(imodel)),imodel))then
+                time_factor2 = 
      &             (days - time(abs(time_type(imodel)),imodel))/
      &                    (time(abs(time_type(imodel))+1,imodel) - 
      &                     time(abs(time_type(imodel))  ,imodel))
-             time_factor1 = 1.0d0 - time_factor2
+                time_factor1 = 1.0d0 - time_factor2
+             else
+C
+C      No action if the start time of the model has not been reached.
+C
+                time_factor1 = 0.0d0
+                time_factor2 = 0.0d0
+             endif
 C
                   if(ifd.ne.0) then
                      if(drainar_type(imodel).lt.0) then
@@ -1195,11 +1203,16 @@ C
             if(iptty.ne.0) write(iptty,*)' '
             do i=1,mmodel
               if(time_interpolate(i) .ne. 0)then
+                if(days .ge. time(abs(time_type(imodel)),imodel))then
                    time_factor2 = 
      &             (days - time(abs(time_type(i)),  i))/
      &                    (time(abs(time_type(i))+1,i) - 
      &                     time(abs(time_type(i))  ,i))
                    time_factor1 = 1.0d0 - time_factor2
+                else
+                  time_factor1 = 0.0d0
+                  time_factor2 = 0.0d0
+                endif
                 if (iout .ne. 0) then
                 write(iout,20)' ti_linear t=',days,
      *                    ' model #=',i,

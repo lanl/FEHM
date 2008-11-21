@@ -197,8 +197,8 @@ gensdp.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 gensdp.o: comhi.o davidi.o
 gensdp3.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 gensdp3.o: comhi.o davidi.o
-gensdp_switch1.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o 
-gensdp_switch1.o: comgi.o comhi.o davidi.o
+gensdp_switch.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o 
+gensdp_switch.o: comgi.o comhi.o davidi.o
 gensl1.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o comfi.o
 gensl1.o: comflow.o comgi.o comhi.o davidi.o
 gensl2.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o comfi.o

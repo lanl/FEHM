@@ -458,6 +458,11 @@ c bhl_12/8/05
       if(allocated(vc1f)) deallocate(vc1f)
       if(allocated(vc2f)) deallocate(vc2f)
       if(allocated(vc3f)) deallocate(vc3f)
+      if(allocated(vc4f)) deallocate(vc4f)
+      if(allocated(vc5f)) deallocate(vc5f)
+      if(allocated(vc6f)) deallocate(vc6f)
+      if(allocated(vc7f)) deallocate(vc7f)
+      if(allocated(vc8f)) deallocate(vc8f)
       if(allocated(iadd)) deallocate(iadd)
       if(allocated(iaddt)) deallocate(iaddt)
       if(allocated(iadsfl)) deallocate(iadsfl)
@@ -477,6 +482,11 @@ c bhl_12/8/05
       if(allocated(dporp)) deallocate(dporp)
       if(allocated(dport)) deallocate(dport)
       if(allocated(pgangi)) deallocate(pgangi)
+!     temperature-dependent porosity
+      if(allocated(porTemp1)) deallocate(porTemp1)
+      if(allocated(porTemp2)) deallocate(porTemp2)
+      if(allocated(porTemp3)) deallocate(porTemp3)
+      if(allocated(porTemp4)) deallocate(porTemp4)
 ****   TENMA   ****
       if(allocated(wgangi)) deallocate(wgangi)
       if(allocated(sgangi)) deallocate(sgangi)

@@ -841,10 +841,11 @@ c	          Check for submodel BCs
 c
 c gaz added code so counter is correct for restarted time steps
 c
-                  if(icontr.ne.0) then
-                     nicg=nicg-1
-                     ditnd=dit(nicg)
-                  endif
+C zvd commented out, now reset if necessary in timcrl
+c                  if(icontr.ne.0) then
+c                     nicg=nicg-1
+c                     ditnd=dit(nicg)
+c                  endif
                   if (idualp .ne. 0)  then
                      call resetv (neq)
                      call resetv (neq + neq)

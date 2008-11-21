@@ -784,7 +784,8 @@ c     allocate(fc(n7),flx12l(500),flx12v(500))
 ! Conca diffusion model no longer requires thetaresid
 !      allocate(thetaresid(totcomalloc,totnum),thetaresidv(totcomalloc,totnum)) 
       totvnum = max (numvcon, 1)
-      allocate(vc1f(totvnum),vc2f(totvnum),vc3f(totvnum))
+      allocate(vc1f(totvnum),vc2f(totvnum),vc3f(totvnum),vc4f(totvnum),
+     2    vc5f(totvnum),vc6f(totvnum),vc7f(totvnum),vc8f(totvnum))
 c     ***** COMMON Block fdd1i *****
       allocate(iadd(totcomalloc),iaddt(totcomalloc),
      2     iadsfl(totcomalloc,totnum), iadsfv(totcomalloc,totnum))
@@ -813,6 +814,10 @@ c     ***** COMMON Block fdd2 *****
          allocate(nskw3(n8)) 
          allocate(amgang(n8),dporp(n8),dport(n8),pgangi(n8),
      &        wgangi(n8),sgangi(n8),agangi(n8),tenma_ww(n8))
+      else if(iporos.eq.5) then
+c        parameters for temperature-dependent porosity
+         allocate(dporp(n8),dport(n8))
+         allocate(porTemp1(n8),porTemp2(n8),porTemp3(n8),porTemp4(n8))
       else if(iporos.eq.-5) then
          allocate(amgang(n8),dporp(n8),dport(n8),wgangi(n8))
       else 

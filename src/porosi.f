@@ -161,6 +161,7 @@ CD5 md           int         Current node number for output
 CD5 delpsb       real*8      Delta pressure output
 CD5 permsb       real*8      Permeability
 CD5 dsigt        real*8      Stress
+CD5 tmpPor       real*8      porosity
 CD5 
 CD5 Local Subprograms
 CD5 
@@ -318,7 +319,7 @@ c
       integer  yama1, yama2, open_file
 c
       real*8  dpp ,dclost, pso, delp, closur, gt, xrl, dgtp, dgtt, drl
-      real*8  dclosp, delpsb, permsb, dsigt, sy, alength
+      real*8  dclosp, delpsb, permsb, dsigt, sy, alength, tmpPor
       real*8  den_w0, comp_w0,hmid,hmin,hmax,por_ll
       parameter(den_w0=997.808d00,comp_w0=5.687D-4,por_ll=1.d-8)
       save yama1, yama2
@@ -546,6 +547,30 @@ c
 c
                macroread(4) =  .TRUE.
 c
+            else if ( iporos .eq. 5 )  then
+c               this option was added by ZL for temperature-dependent porosity
+
+               narrays    =  4
+               itype  (1) =  8
+               itype  (2) =  8
+               itype  (3) =  8
+               itype  (4) =  8
+               default(1) =  0.2
+               default(2) =  10.0
+               default(3) =  0.0
+               default(4) =  0.0
+               macro      =  "ppor"
+               igroup     =  2
+
+               call  initdata2  ( inpt, ischk, n0, narrays, itype,
+     *              default, macroread(4), macro, igroup, ireturn,
+     1              r8_1=porTemp1(1:n0),
+     2              r8_2=porTemp2(1:n0),
+     3              r8_3=porTemp3(1:n0),
+     4              r8_4=porTemp4(1:n0) )
+
+               macroread(4) =  .TRUE.
+
             end   if
 c
          else if ( iz .eq. 1 )  then
@@ -613,7 +638,21 @@ c
                      endif
                   end if
                enddo
+
+            else if ( iporos .eq. 5 )  then
 c
+****   temperature dependent porosity
+c
+               do jji=1,n
+                  pso = psini(jji)
+                  if(pso > 1.e-6) then
+                    tmpPor =porTemp1(jji)-porTemp2(jji)/(t(jji)+273.15)
+                    dporp(jji) =  0.0
+                    dport(jji) =  porTemp2(jji)
+                    if(tmpPor < ps(jji) )  ps(jji) = tmpPor
+                  endif
+               enddo
+
             else if ( iporos .eq. 1 )  then
 c
 ****   simple aquifer compressibility model   ****
@@ -625,7 +664,7 @@ c
                   if ( pso .gt. 1.e-06 )  then
                      dpp        =  amgang(jji)     
                      delp       =  phi(jji)-phini(jji)
-                     ps   (jji) =  pso+dpp*delp
+                     ps(jji) =  pso+dpp*delp
                      dporp(jji) =  dpp
                      dport(jji) =  0.0
                   end   if
@@ -747,15 +786,11 @@ c
                         rlf  (jji) =  xrl
                         drlpf(jji) =  drl*dgtp
                         drlef(jji) =  drl*dgtt
-c
                      end   if
-c
                   end   if
-c
                end   do
-c
             end   if
-c
+
          else if ( iz .eq. 2 )  then
 c
             if ( iporos .ne. 3 )  then
@@ -784,6 +819,8 @@ c
  6119             format(1x,'  Node', 3x, 'permeability', 3x, 
      &                 'porosity', 7x, 'pressure change')
  6120             format(1x,i7,3(3x,g12.6))
+               else if ( iporos .eq. 5 ) then
+
                else if ( iporos .ne. -4 )  then
 c
 ****   GZ gangi model   ****
@@ -901,6 +938,20 @@ c
                   end   if
                end   do
 c
+            else if ( iporos .eq. 5 )  then
+c              temperature-dependent porosity
+c              added by ZL on 8/15/2008
+               do jji=1,n
+c                 (1) a linear function of temperature
+                  pso = psini(jji)
+                  if(pso > 1.0e-6) then
+                    tmpPor=porTemp1(jji)-porTemp2(jji)/(t(jji)+273.15) 
+                    if(tmpPor < ps(jji) )  ps(jji) = tmpPor
+                  endif
+c                  if ( ps(jji) .ge. 1.0 )  ps (jji) =  1.0
+                  psini(jji) = ps(jji)
+               enddo
+
 ****   Yamashita_Tenma-Gangi model   ****
 c
             else if ( iporos .eq. -4 )  then
@@ -1029,9 +1080,9 @@ c calculate max pressure change for specific yield model -5
                      wgangi(i) = alength*rho1grav
                   endif	                     
                enddo
-            end   if
+            endif
            
-         end   if
+         endif
 c
       end   if
 c
