@@ -958,8 +958,10 @@ c 3-1 full GMRES schemes
          else
             nsbb = nelm(neq_primary+1)-(neq_primary+1)
          end if
-         if (jswitch.eq.1) then
+         if (jswitch.eq.1 .and. idpdp .eq. 0) then
             nbd = nsbb
+         else if (jswitch.eq.1 .and. idpdp .ne. 0) then
+            nbd = 4*nsbb
          else if(irdof.ge.0) then
             nbd = nsbb*mdof**2
          else if(irdof.eq.-3) then
