@@ -258,117 +258,120 @@ C**********************************************************************
 c
 c rlperms as a function of saturation 
 c
+      if(star.lt.0.) then
+         continue
+      endif
       if(iflg.eq.0) then
-c calculate interpolated values
+c     calculate interpolated values
       else if(iflg.ne.0) then
-       dstar = 1.0/(sl2-sl1)
-       if(star.gt.tol_l.and.star.lt.1.0-tol_u) then
+         dstar = 1.0/(sl2-sl1)
+         if(star.gt.tol_l.and.star.lt.1.0-tol_u) then
 c     calculate the relative permeability
-          alamda = 1.0-1.0/beta
-          alamdai = 1.0/alamda
-          term1 = sqrt(star)
-          term2 = star**alamdai
-          term3 = (1.0-term2)**alamda
-          term4 = (1.0-term3)**2
-          dterm1 = 0.5/term1
-          dterm2 = alamdai*star**(alamdai-1.0)
-          dterm3 = -alamda/(1.0-term2)**(1.0-alamda)*dterm2
-          dterm4 = -2.0*(1.0-term3)*dterm3
-          rl=term1*term4
-          drls = (dterm1*term4+term1*dterm4)*dstar
-       else if(star.gt.0.0.and.star.le.tol_l) then
+            alamda = 1.0-1.0/beta
+            alamdai = 1.0/alamda
+            term1 = sqrt(star)
+            term2 = star**alamdai
+            term3 = (1.0-term2)**alamda
+            term4 = (1.0-term3)**2
+            dterm1 = 0.5/term1
+            dterm2 = alamdai*star**(alamdai-1.0)
+            dterm3 = -alamda/(1.0-term2)**(1.0-alamda)*dterm2
+            dterm4 = -2.0*(1.0-term3)*dterm3
+            rl=term1*term4
+            drls = (dterm1*term4+term1*dterm4)*dstar
+         else if(star.gt.0.0.and.star.le.tol_l) then
 c     lower residual cutoff
-          star1= tol_l
-          alamda = 1.0-1.0/beta
-          alamdai = 1.0/alamda
-          term1 = sqrt(star1)
-          term2 = star1**alamdai
-          term3 = (1.0-term2)**alamda
-          term4 = (1.0-term3)**2
-          rlp_l=term1*term4
-          rl = rlp_l/tol_l*star
-          drls= rlp_l/tol_l*dstar
+            star1= tol_l
+            alamda = 1.0-1.0/beta
+            alamdai = 1.0/alamda
+            term1 = sqrt(star1)
+            term2 = star1**alamdai
+            term3 = (1.0-term2)**alamda
+            term4 = (1.0-term3)**2
+            rlp_l=term1*term4
+            rl = rlp_l/tol_l*star
+            drls= rlp_l/tol_l*dstar
 c     upper residual cutoff
-       else if(star.ge.1.0-tol_u.and.star.lt.1.0) then
-          star1= 1.0-tol_u
-          alamda = 1.0-1.0/beta
-          alamdai = 1.0/alamda
-          term1 = sqrt(star1)
-          term2 = star1**alamdai
-          term3 = (1.0-term2)**alamda
-          term4 = (1.0-term3)**2
-          rlp_u=term1*term4
-          rl = (rlp_u-1.0)/(tol_u)*(1.0-star)+1.0
-          drls= -(rlp_u-1.0)/(tol_u)*dstar
-       else if(star.lt.0.0) then
+         else if(star.ge.1.0-tol_u.and.star.le.1.0) then
+            star1= 1.0-tol_u
+            alamda = 1.0-1.0/beta
+            alamdai = 1.0/alamda
+            term1 = sqrt(star1)
+            term2 = star1**alamdai
+            term3 = (1.0-term2)**alamda
+            term4 = (1.0-term3)**2
+            rlp_u=term1*term4
+            rl = (rlp_u-1.0)/(tol_u)*(1.0-star)+1.0
+            drls= -(rlp_u-1.0)/(tol_u)*dstar
+         else if(star.lt.0.0) then
 c     lower residual cutoff
-          rl = 0.0
-          drls= 0.0
+            rl = 0.0
+            drls= 0.0
 c     upper residual cutoff
-       else if(star.gt.1.0) then
-          rl = 1.0
-          drls= 0.0
-       endif
+         else if(star.gt.1.0) then
+            rl = 1.0
+            drls= 0.0
+         endif
       endif
       if(iflg.eq.1) then
-c rv is 1. -rl
-       rv = 1.-rl
-       drvs=-drls
+c     rv is 1. -rl
+         rv = 1.-rl
+         drvs=-drls
       else if(iflg.eq.2) then
-c rv has own vg function
-       dstar = 1.0/(sl2-sl1)
-       starm1 = 1.0-star
-       dstarm1 = -dstar
-       if(starm1.gt.tol_l.and.starm1.lt.1.0-tol_u) then
+c     rv has own vg function
+         dstar = 1.0/(sl2-sl1)
+         starm1 = 1.0-star
+         dstarm1 = -dstar
+         if(starm1.gt.tol_l.and.starm1.lt.1.0-tol_u) then
 c     calculate the relative permeability
-          alamda = 1.0-1.0/beta
-          alamdai = 1.0/alamda
-          alamda2 = 2.0*alamda
-          term1 = sqrt(starm1)
-          term2 = star**alamdai
-          term3 = (1.0-term2)**alamda2
-          dterm1 = -0.5/term1
-          dterm2 = alamdai*star**(alamdai-1.0)
-          if(alamda2-1.0.lt.0.0) then
-           dterm3 = -alamda2/(1.0-term2)**(1.0-alamda2)*dterm2
-          else
-           dterm3 = -alamda2*(1.0-term2)**(alamda2-1.0)*dterm2
-          endif
-          rv=term1*term3
-          drvs = (dterm1*term3+term1*dterm3)*dstar
-       else if(starm1.gt.0.0.and.starm1.le.tol_l) then
+            alamda = 1.0-1.0/beta
+            alamdai = 1.0/alamda
+            alamda2 = 2.0*alamda
+            term1 = sqrt(starm1)
+            term2 = star**alamdai
+            term3 = (1.0-term2)**alamda2
+            dterm1 = -0.5/term1
+            dterm2 = alamdai*star**(alamdai-1.0)
+            if(alamda2-1.0.lt.0.0) then
+               dterm3 = -alamda2/(1.0-term2)**(1.0-alamda2)*dterm2
+            else
+               dterm3 = -alamda2*(1.0-term2)**(alamda2-1.0)*dterm2
+            endif
+            rv=term1*term3
+            drvs = (dterm1*term3+term1*dterm3)*dstar
+         else if(starm1.gt.0.0.and.starm1.le.tol_l) then
 c     lower residual cutoff
-          star1= tol_l
-          alamda = 1.0-1.0/beta
-          alamdai = 1.0/alamda
-          alamda2 = 2.0*alamda
-          term1 = sqrt(star1)
-          term2 = (1.0-star1)**alamdai
-          term3 = (1.0-term2)**alamda2
-          rvp_l=term1*term3
-          rv = rvp_l/tol_l*starm1
-          drvs= rvp_l/tol_l*dstarm1
+            star1= tol_l
+            alamda = 1.0-1.0/beta
+            alamdai = 1.0/alamda
+            alamda2 = 2.0*alamda
+            term1 = sqrt(star1)
+            term2 = (1.0-star1)**alamdai
+            term3 = (1.0-term2)**alamda2
+            rvp_l=term1*term3
+            rv = rvp_l/tol_l*starm1
+            drvs= rvp_l/tol_l*dstarm1
 c     upper residual cutoff
-       else if(starm1.ge.1.0-tol_u.and.starm1.lt.1.0) then
-          star1= 1.0-tol_u
-          alamda = 1.0-1.0/beta
-          alamdai = 1.0/alamda
-          alamda2 = 2.0*alamda
-          term1 = sqrt(star1)
-          term2 = (1.0-star1)**alamdai
-          term3 = (1.0-term2)**alamda2
-          rvp_u=term1*term3
-          rv = rvp_u/tol_u*(1.0-starm1)+1.0       
-          drvs= -rvp_u/tol_u*dstarm1
-       else if(starm1.le.0.0) then
+         else if(starm1.ge.1.0-tol_u.and.starm1.lt.1.0) then
+            star1= 1.0-tol_u
+            alamda = 1.0-1.0/beta
+            alamdai = 1.0/alamda
+            alamda2 = 2.0*alamda
+            term1 = sqrt(star1)
+            term2 = (1.0-star1)**alamdai
+            term3 = (1.0-term2)**alamda2
+            rvp_u=term1*term3
+            rv = rvp_u/tol_u*(1.0-starm1)+1.0       
+            drvs= -rvp_u/tol_u*dstarm1
+         else if(starm1.le.0.0) then
 c     lower residual cutoff
-          rv = 0.0
-          drvs= 0.0
+            rv = 0.0
+            drvs= 0.0
 c     upper residual cutoff
-       else if(starm1.ge.1.0) then
-          rv = 1.0
-          drvs= 0.0
-       endif
+         else if(starm1.ge.1.0) then
+            rv = 1.0
+            drvs= 0.0
+         endif
       endif
       return
       end

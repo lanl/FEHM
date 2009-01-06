@@ -516,15 +516,24 @@ c     check for read from other file
                read(locunitnum,*) idumm,(adumm,ja=1,14)
             elseif(idumm.eq.18) then
                read(locunitnum,*) idumm,(adumm,ja=1,16)
+            elseif(idumm.eq.19) then
+               read(locunitnum,*) idumm,(adumm,ja=1,7)
             elseif(idumm.eq.21) then
                read(locunitnum,*) idumm,(adumm,ja=1,6)
+            else
+c Undefined rlp model, stop
+               write (ierr, 12) nrlp, idumm
+               if (iout .ne. 0) write (iout, 12) nrlp, idumm
+               if (iptty .ne. 0) write (iptty, 12) nrlp, idumm
+               stop
             end if
          else
             go to 21
          endif
          go to 11
+ 12      format ('STOP: Error in rlp macro at entry', i3, 
+     &        'Invalid model specified: ', i3)
  21      continue
-
          call done_macro(locunitnum)
 
       else if (macro.eq.'boun') then

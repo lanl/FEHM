@@ -466,9 +466,9 @@ c     check for read from other file
          i = 0
          j = 0
          ex = .false.
- 10      continue
-         read(inpt,'(a80)') wdd1
-         if(.not. null1(wdd1)) then
+         do
+            read(inpt,'(a80)') wdd1
+            if(null1(wdd1)) exit
             backspace inpt
             read(inpt,*) irlpd
             backspace inpt
@@ -661,11 +661,13 @@ c rp16- Ba
                read(inpt,*) irlpt(i), rp1f(i), rp2f(i), rp3f(i), 
      &              rp4f(i), rp5f(i), rp6f(i), 
      &              rp13f(i), rp14f(i), rp15f(i), rp16f(i) 
+c keating 9/2008
+            else if(irlpd.eq.19) then
+               read(inpt,*) irlpt(i), rp1f(i), rp2f(i), rp3f(i), 
+     &              rp4f(i), rp5f(i), rp6f(i), rp7f(i)
             endif
-            
-            go to 10
-            
-         endif
+                        
+         end do
 c     ****** end of input loop
          
  20      num_models=max(i,j-1)
