@@ -139,6 +139,7 @@
       use comfi
       use comflow
       use comii
+      use commeth
       use compart
       use comco2
       use comriv
@@ -159,6 +160,7 @@
       logical :: write_sat  = .FALSE.
       logical :: write_mass = .FALSE.
       logical :: write_flux = .FALSE.
+      logical :: write_co2  = .FALSE.
 
       call dated (jdate,jtime)
       inquire (isave, opened = ex)
@@ -173,33 +175,30 @@
          return
       endif
 
-      if(icarb.eq.1) then
-         write(isave, 6000)  verno, jdate, jtime, wdd
-         write(isave ,*)  days
-         call icectrco2 (-20,0)
-         return
-      endif
-
-c! For compatibility with previous versions 
-! Liquid fluxes should be written to restart file
+c For compatibility with previous versions 
+c Liquid fluxes should be written to restart file
       if (abs(prnt_rst) .eq. 2) flux_flag = 'liquid flux'
            
-! Determine size of flux arrays
+c Determine size of flux arrays
       if (numflux .ne. 0. .and. .not. compute_flow) then
-! Use value of numflux that was read in
+c Use value of numflux that was read in
       else if (idpdp .ne. 0) then
          numflux = 2*ldna + neq
       else
          numflux = ldna
       end if
 
-      do i = 1, 6
+      do i = 1, 9
          select case (rstw(i))
          case ('all')
-            if (ico2 .ge. 0) write_temp = .TRUE.
-            write_pres = .TRUE.
-            if (irdof .ne. 13 .and. ihead .eq. 0) write_sat  = .TRUE.
-            if (ico2 .gt. 0) write_gasp = .TRUE.
+            if (icarb .eq. 1) then
+               write_co2 = .TRUE.
+            else
+               if (ico2 .ge. 0) write_temp = .TRUE.
+               write_pres = .TRUE.
+               if (irdof .ne. 13 .and. ihead .eq. 0) write_sat  = .TRUE.
+               if (ico2 .gt. 0) write_gasp = .TRUE.
+            end if
             if (iccen .ne. 0) write_trac = .TRUE.
             if (ptrak) write_ptrk = .TRUE.
          case ('temp')
@@ -214,6 +213,8 @@ c! For compatibility with previous versions
             write_ptrk = .TRUE.
          case ('gasp')
             write_gasp = .TRUE.
+         case ('co2')
+            write_co2 = .TRUE.
          case ('mass') 
             write_mass = .TRUE.
          case ('none')
@@ -230,6 +231,7 @@ c Values from the restart file will not be used
       end if
 
       if (cform(7) .eq. 'formatted') then
+c Formatted output
          write(isave, 6000)  verno, jdate, jtime, wdd
  6000    format(a30, 3x, a11, 3x, a8, /, a80)
          write(isave ,*)  days
@@ -255,6 +257,22 @@ c Values from the restart file will not be used
             write(isave, '(a11)') 'gaspressure'
             write(isave ,6002)  (max(pcio(mi),tolw), mi=1,n )
          else
+         end if
+         if (write_co2) then
+            write(isave, '(a11)') 'co2temperat'
+            write(isave ,6002)  (max(toco2(mi),tolw),   mi=1,n )
+            write(isave, '(a11)') 'co2pressure'
+            write(isave ,6002)  (max(phoco2(mi),tolw),  mi=1,n )
+            write(isave, '(a11)') 'wsaturation'
+            write(isave ,6002)  (max(fow(mi),tolw),    mi=1,n )
+            write(isave, '(a11)') 'lco2saturat'
+            write(isave ,6002)  (max(fol(mi),tolw),    mi=1,n )
+            write(isave, '(a11)') 'dissolvdco2'
+            write(isave ,6002)  (max(yc(mi),tolw),    mi=1,n )
+            write(isave, '(a11)') 'eoswater   '
+            write(isave ,6003)  (ieoso(mi),    mi=1,n )
+            write(isave, '(a11)') 'eosco2     '
+            write(isave ,6003)  (iceso(mi),    mi=1,n )
          end if
          if (write_mass) then
             if (.not. allocated(mass_var)) allocate(mass_var(n))
@@ -319,9 +337,10 @@ c Values from the restart file will not be used
          end if
 
  6002    format(4g25.16)
+ 6003    format(30i3)
         
       else
-
+c Unformatted output
          write(isave)  verno, jdate, jtime, wdd
          write(isave)  days
          write(isave) n, dum_type
@@ -331,13 +350,13 @@ c Values from the restart file will not be used
             write(isave)  (max(to(mi),tolw),   mi=1,n )
          end if
          if (write_sat .and. irdof .ne. 13 .and. ihead .eq. 0) then
-            dummy_string = 'saturation'
+            dummy_string = 'saturation '
             write(isave) dummy_string
             write(isave)  (max(s(mi),tolw),    mi=1,n )
          else
          end if
          if (write_pres) then
-            dummy_string = 'pressure'
+            dummy_string = 'pressure   '
             write(isave) dummy_string
             if (ico2 .lt. 0) then
                write(isave) (pho(mi)-phi_inc,  mi=1,n )
@@ -350,6 +369,28 @@ c Values from the restart file will not be used
             write (isave) dummy_string
             write(isave)  (max(pcio(mi),tolw), mi=1,n )
          else
+         end if
+         if (write_co2) then
+            dummy_string = 'co2temperat'
+            write (isave) dummy_string
+            write(isave)  (max(toco2(mi),tolw),   mi=1,n )
+            dummy_string = 'co2pressure'
+            write (isave) dummy_string
+            write(isave)  (max(phoco2(mi),tolw),  mi=1,n )
+            dummy_string = 'wsaturation'
+            write (isave) dummy_string
+            write(isave)  (max(fow(mi),tolw),    mi=1,n )
+            dummy_string = 'lco2saturat'
+            write (isave) dummy_string
+            write(isave)  (max(fol(mi),tolw),    mi=1,n )
+            dummy_string = 'dissolvdco2'
+            write (isave) dummy_string
+            write(isave)  (max(yc(mi),tolw),    mi=1,n )
+            dummy_string = 'eoswater   ' 
+            write (isave) dummy_string
+            write(isave)  (ieoso(mi),    mi=1,n )
+            dummy_string ='eosco2      '
+            write(isave)  (iceso(mi),    mi=1,n )
          end if
 
          if (flux_flag(1:2) .eq. 'no') then

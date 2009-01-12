@@ -444,7 +444,7 @@ c	RJP 03/09/08 removed qhflxco2 present in earlier versions.
                call initdata2( inpt, ischk, n0, narrays,itype, default,
      &              macroread(8), macro, igroup, ireturn,
      &              r8_1 = fw(1:n0),r8_2 = fl(1:n0),
-     &              r8_3 = xc(1:n0),r8_4 = csalt(1:n0),
+     &              r8_3 = yc(1:n0),r8_4 = csalt(1:n0),
      &              i4_1 = inico2flg(1:n0))
                
                do i = 1, n0
@@ -523,17 +523,18 @@ c
          elseif(iflg.eq.-2) then
 c     
 c     set tempertures of components equal for certain equilibrium conditions
-c     
-            do i=1,n0
-               to(i) = tco2(i)
-               t(i) = tco2(i)
-            enddo         
+c
+            if (.not. co2_read) then
+               do i=1,n0
+                  to(i) = tco2(i)
+                  t(i) = tco2(i)
+               enddo         
 c     set phase of water to 1 (liquid)
-            do i=1,n0
-               ieos(i) = 1
-               ieoso(i)  = ieos(i)
-            enddo
-            
+               do i=1,n0
+                  ieos(i) = 1
+                  ieoso(i)  = ieos(i)
+               enddo
+            end if
          else if(iflg.eq.-1) then
 c     
 c     determine phase state for water solid-liquid-gas system
@@ -805,7 +806,7 @@ c     calculate phase-change pressure and dp/dt
      &              1,xc_prime,tem)
                xc(ij) = xc_prime
                xw(ij) = 1.d0 - xc(ij)
-               if(yc(ij).ge.tem(1)) then
+               if(dabs(yc(ij)-tem(1)).le.1.d-12) then
                   ico2dis(ij)=1
                   yc(ij) = tem(1)
                endif
@@ -1050,9 +1051,14 @@ c     only for first iteration
                      if(ps(ij).eq.0.d0) then
                         eflowco2(ij) = cpr(ij)*(-eskco2(ij))
                      else
-                     call co2_properties(4,ices(ij),phico2(ij),
-     &                    -eskco2(ij),dum1,duma,dumb,dumc)
-                     eflowco2(ij)=dumc(4)
+                        if(abs(kaco2(ij)).gt.0) then
+                        call co2_properties(4,ices(ij),pflowco2(ij),
+     &                       -eskco2(ij),dum1,duma,dumb,dumc)
+                        else
+                        call co2_properties(4,ices(ij),phico2(ij),
+     &                       -eskco2(ij),dum1,duma,dumb,dumc)
+                        endif
+                        eflowco2(ij)=dumc(4)
                      endif
                   else
                      eflowco2(ij)=eskco2(ij)
@@ -1061,9 +1067,9 @@ c     only for first iteration
                      if(ps(ij).eq.0.d0) then
                         eflow(ij) = cpr(ij)*(-eskco2(ij))
                      else
-                     call h2o_properties(9,1,phi(ij),-esk(ij),csalt(ij)
-     &                    ,dum3,ensrc,dum4,dum5,dum6,dum7)
-                     eflow(ij)=ensrc
+                        call h2o_properties(9,1,phi(ij),-esk(ij),
+     &                       csalt(ij),dum3,ensrc,dum4,dum5,dum6,dum7)
+                        eflow(ij)=ensrc
                      endif
                   else
                      eflow(ij)=esk(ij)
@@ -1246,65 +1252,104 @@ c
             endif
          elseif(iflg.eq.6) then
 c     initialize variables
-            do i=1,n
-               if(ices(i).eq.2) then
-                  call co2_properties(2,ices(i),pl,dumb,dum1,duma,
-     &                 tliquid,dumc)
-                  tco2(i)=tliquid
-               else
-                  tco2(i)= toco2(i)
-               endif
-               phoco2(i) = phico2(i)
-               fog(i)= fg(i)
-               if(iprtype.eq.1) then
-                  xc(i)=0.d0
-                  yw(i)=1.d0
-                  xw(i)=1.d0
-                  yc(i)=0.d0
-               elseif(iprtype.eq.2) then
-                  xc(i)=1.d0
-                  yw(i)=0.d0
-                  xw(i)=0.d0
-                  yc(i)=1.d0
-               elseif(abs(iprtype).eq.3) then
-                  xc(i)=1.d0
-                  yw(i)=1.d0
-                  xw(i)=0.d0
-                  yc(i)=0.d0
-               else
-                  if(iwatdis.eq.1) then
-c     calculate phase-change pressure and dp/dt
-                     call h2o_properties(5,2,tco2(i),dum1,dum2,dum3,
-     &                    psatd,dum4,dpsatt,dum5,dum6)
-                     xwp = psatd/phico2(i)
-                     xcp = 1.d0-xwp		  
+            if (.not. co2_read) then
+               do i=1,n
+                  if(ices(i).eq.2) then
+                     call co2_properties(2,ices(i),pl,dumb,dum1,duma,
+     &                    tliquid,dumc)
+                     tco2(i)=tliquid
                   else
-                     xwp = 0.d0
-                     xcp = 1.d0-xwp		  
+                     tco2(i)= toco2(i)
                   endif
-                  xcpb=(xcp/mwc)+(xwp/mww)
-                  xc_prime = xcp/(mwc*xcpb)
-                  xc(i) = xc_prime
-               endif				
-               xw(i) = 1.d0 - xc(i)
-               yw(i) = 1.d0 - yc(i)
-            enddo
-            do i=1,n
-               if(ieos(i).eq.-2) then
-                  call h2o_properties(4,1,pl,dum1,dum2,dum3,
-     &                 tsolid,dtps,dum4,dum5,dum6)
-                  t(i)=tsolid
-               else if(ieos(i).eq.2) then
-                  call h2o_properties(4,2,pl,dum1,dum2,dum3,
-     &                 tliquid,dtps,dum4,dum5,dum6)
-                  t(i)=tliquid
-               else
-                  t(i)= to(i)
-               endif
-               phi(i) = pho(i)
-               so(i)= s(i)
-            enddo
-            
+                  phoco2(i) = phico2(i)
+                  fog(i)= fg(i)
+                  if(iprtype.eq.1) then
+                     xc(i)=0.d0
+                     yw(i)=1.d0
+                     xw(i)=1.d0
+                     yc(i)=0.d0
+                  elseif(iprtype.eq.2) then
+                     xc(i)=1.d0
+                     yw(i)=0.d0
+                     xw(i)=0.d0
+                     yc(i)=1.d0
+                  elseif(abs(iprtype).eq.3) then
+                     xc(i)=1.d0
+                     yw(i)=1.d0
+                     xw(i)=0.d0
+                     yc(i)=0.d0
+                  else
+                     if(iwatdis.eq.1) then
+c     calculate phase-change pressure and dp/dt
+                        call h2o_properties(5,2,tco2(i),dum1,dum2,dum3,
+     &                       psatd,dum4,dpsatt,dum5,dum6)
+                        xwp = psatd/phico2(i)
+                        xcp = 1.d0-xwp		  
+                     else
+                        xwp = 0.d0
+                        xcp = 1.d0-xwp		  
+                     endif
+                     xcpb=(xcp/mwc)+(xwp/mww)
+                     xc_prime = xcp/(mwc*xcpb)
+                     xc(i) = xc_prime
+                  endif				
+                  xw(i) = 1.d0 - xc(i)
+                  yw(i) = 1.d0 - yc(i)            
+               enddo
+               do i=1,n
+                  if(ieos(i).eq.-2) then
+                     call h2o_properties(4,1,pl,dum1,dum2,dum3,
+     &                    tsolid,dtps,dum4,dum5,dum6)
+                     t(i)=tsolid
+                  else if(ieos(i).eq.2) then
+                     call h2o_properties(4,2,pl,dum1,dum2,dum3,
+     &                    tliquid,dtps,dum4,dum5,dum6)
+                     t(i)=tliquid
+                  else
+                     t(i)= to(i)
+                  endif
+                  phi(i) = pho(i)
+                  so(i)= s(i)
+               enddo
+            else
+               do i=1,n
+                  if(ices(i).eq.2) then
+                     call co2_properties(2,ices(i),pl,dumb,dum1,duma,
+     &                    tliquid,dumc)
+                     tco2(i)=tliquid
+                  else
+                     tco2(i)= toco2(i)
+                  endif
+                  phoco2(i) = phico2(i)
+                  fog(i)= fg(i)
+                  if(iprtype.eq.1) then
+                     xc(i)=0.d0
+                     xw(i)=1.d0
+                  elseif(iprtype.eq.2) then
+                     xc(i)=1.d0
+                     xw(i)=0.d0
+                  elseif(abs(iprtype).eq.3) then
+                     xc(i)=1.d0
+                     xw(i)=0.d0
+                  else
+                     if(iwatdis.eq.1) then
+c     calculate phase-change pressure and dp/dt
+                        call h2o_properties(5,2,tco2(i),dum1,dum2,dum3,
+     &                       psatd,dum4,dpsatt,dum5,dum6)
+                        xwp = psatd/phico2(i)
+                        xcp = 1.d0-xwp		  
+                     else
+                        xwp = 0.d0
+                        xcp = 1.d0-xwp		  
+                     endif
+                     xcpb=(xcp/mwc)+(xwp/mww)
+                     xc_prime = xcp/(mwc*xcpb)
+                     xc(i) = xc_prime
+                  endif				
+                  xw(i) = 1.d0 - xc(i)
+                  yw(i) = 1.d0 - yc(i)
+               end do               
+            end if 
          elseif(iflg.eq.7) then
             
 c     calulate initial mass and energy of co2

@@ -209,7 +209,7 @@ c  now we're doing the co2 part
                if(sl.ge.rp2) then
 c co2 properties, if we're above min co2 sat
                   b2=1.D0/(1.d0-rp1-rp2)
-                  s_hat=min(1.,(sw-rp1)*b2)
+                  s_hat=min(1.d0,(sw-rp1)*b2)
                   prop2=(1.d0-s_hat)**2.d0*(1.d0-s_hat**2.D0)
                   dprop21=-b2
                   dprop22=0.

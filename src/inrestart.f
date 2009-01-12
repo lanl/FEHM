@@ -48,9 +48,9 @@
       use comxi
       implicit none
 
-      integer i, imsg(5), msg(5), nwds
-      real*8  xmsg(5)
-      character*32 cmsg(5)
+      integer i, imsg(8), msg(8), nwds
+      real*8  xmsg(8)
+      character*32 cmsg(8)
       character*80 chdum
       logical null1
 
@@ -125,8 +125,12 @@
 ! old - restart file will be written using old header format
          case ('old ', 'OLD ')
             header_flag = 'old'
+         case default
+            write (ierr, 100) chdum
          end select flags
       enddo
 
+ 100  format ('WARNING: Unrecognized restart option: ', a, /, 
+     &     'Check input deck')
       end
       

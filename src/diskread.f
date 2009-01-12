@@ -193,16 +193,18 @@
       use comfi
       use comflow
       use comii
+      use commeth
       use compart
       use comriv
       use comxi
       use davidi
       implicit none
 
+      real*8 pl, tl, dum1, dumb, dumc(9)
       real*8 dummyreal,tolw,sat_dum,satr
       parameter(tolw=1.d-99,sat_dum= 1.d00)
       integer jx,mi,ncount,nc,nc1,nc2,nc3,nd1,nd2,nd3,j,nx,ny,ii,i
-      integer modneq, rerr
+      integer modneq, modneq_primary, rerr, dummyint, duma
       character*80 dumtitle
       character*30 dumver
       character*11 dumdate, dumflag
@@ -216,8 +218,10 @@
       logical, dimension (2) :: read_sat  = .FALSE.
       logical, dimension (2) :: read_flux = .FALSE.
       logical, dimension (2) :: read_mass = .FALSE.
+      logical, dimension (2) :: read_co2 = .FALSE.
 
       mass_read = .FALSE.
+      co2_read = .FALSE.
       inquire (iread, opened = ex)
       if (ex) close (iread)
       open (iread,file=nmfil(6),status=cstats(6),form=cform(6))
@@ -226,14 +230,18 @@
       if (iptty .ne. 0) write (iptty, 10) trim(nmfil(6))
  10   format ('Reading initial condition data from file ', a)
 
-      do i = 1, 6
+      do i = 1, 9 
          select case (rstr(i))
          case ('all')
-            if (ico2 .ge. 0) read_temp(1) = .TRUE.
-            read_pres(1) = .TRUE.
-            pres_read = .TRUE.
-            if (irdof .ne. 13) read_sat(1)  = .TRUE.
-            if (ico2 .gt. 0) read_gasp(1) = .TRUE.
+            if (icarb .eq. 1) then 
+               read_co2(1) = .TRUE.
+            else
+               if (ico2 .ge. 0) read_temp(1) = .TRUE.
+               read_pres(1) = .TRUE.
+               pres_read = .TRUE.
+               if (irdof .ne. 13) read_sat(1)  = .TRUE.
+               if (ico2 .gt. 0) read_gasp(1) = .TRUE.
+            end if
             if (iccen .ne. 0) read_trac(1) = .TRUE.
             if (ptrak) read_ptrk(1) = .TRUE.
          case ('temp')
@@ -249,6 +257,8 @@
             read_ptrk(1) = .TRUE.
          case ('gasp')
             read_gasp(1) = .TRUE.
+         case ('co2')
+            read_co2(1) = .TRUE.
          case ('mass')
              read_mass(1) = .TRUE.
              mass_read = .TRUE.
@@ -266,6 +276,7 @@ c Values from the restart file will not be used
 
       rewind  iread
       if (cform(6) .eq. 'formatted') then
+c Reading formatted file
          read (iread ,   *) dumver, dumdate, dumtime
          read (iread ,   *) dumtitle
          read (iread ,   *)  days
@@ -275,17 +286,14 @@ c Values from the restart file will not be used
             return
          endif
 
-         if(icarb.eq.1) then
-            call icectrco2 (20,0)
-            return
-         endif
-
 c     
 c     read descriptors
 c     
          read(iread,'(a4)') wdd1(1:4)
-         if (wdd1(1:4) .eq. 'h20 ' .or. wdd1(1:4) .eq. 'air ' .or.
-     &      wdd1(1:4) .eq. 'ngas') then 
+         if (wdd1(1:4) .eq. 'h20 ' .or. wdd1(1:4) .eq. 'wh20' .or.
+     &        wdd1(1:4) .eq. 'air ' .or. wdd1(1:4) .eq. 'wair' .or.
+     &        wdd1(1:4) .eq. 'ngas' .or. wdd1(1:4) .eq. 'wnga' .or.
+     &        wdd1(1:4) .eq. 'carb' .or. wdd1(1:4) .eq. 'wcar') then 
 c this is old style input
             read(iread,'(a4)') wdd1(5:8)
             read(iread,'(a4)') wdd1(9:12)
@@ -349,10 +357,11 @@ c
 		  enddo
                end if
 
-            else if(wdd1(1:4).eq.'h20 ' .or. wdd1(1:4).eq.'nh20') then
-               if(iriver.ne.0 .and. wdd1(1:4) .eq. 'h2o ') 
-     &              ncount = ncount - npoint_riv
-               if (read_temp(1)) then
+            else if(wdd1(1:4).eq.'h20 ' .or. wdd1(1:4).eq.'wh20' .or.
+     &              wdd1(1:4).eq.'carb' .or. wdd1(1:4).eq.'wcar') then
+               if (iriver .ne. 0 .and. (wdd1(1:4) .eq. 'h20 ' .or. 
+     &              wdd1(1:4).eq.'carb')) ncount = ncount - npoint_riv
+               if (read_temp(1) .or. read_co2(1)) then
                   read(iread ,*)  ( t   (mi) , mi=1,ncount )
                   read_temp(2) = .TRUE.
                else
@@ -368,27 +377,94 @@ c
                   if (iout .ne. 0) write (iout, 400) 'saturations'
                   if (iptty .ne. 0) write (iptty, 400) 'saturations'
                end if
-               if (read_pres(1)) then
+               if (read_pres(1) .or. read_co2(1)) then
                   read(iread ,*)  ( phi (mi) , mi=1,ncount )
+                  pres_read = .TRUE.
                   read_pres(2) = .TRUE.
                else
                   read (iread, *) ( dummyreal, mi = 1,ncount )
                   if (iout .ne. 0) write (iout, 400) 'pressures'
                   if (iptty .ne. 0) write (iptty, 400) 'pressures'
                end if
-               if (iriver .ne. 0 .and. wdd1(1:4) .eq. 'h2o ') then
+               if (wdd1(1:4).eq.'carb' .or. wdd1(1:4) .eq. 'wcar') then
+                  read(iread ,*) ( tco2 (mi), mi = 1,ncount )
+                  read(iread ,*) ( phico2 (mi), mi = 1,ncount )
+                  read(iread ,*) ( fow (mi), mi = 1,ncount )
+                  read(iread ,*) ( fog (mi), mi = 1,ncount )
+                  read(iread ,*) ( fol (mi), mi = 1,ncount )
+                  read(iread ,*) ( ieoso (mi),  mi = 1,ncount )
+                  read(iread ,*) ( iceso (mi),  mi = 1,ncount )
+                  read_co2(2) = .TRUE.
+                  do i = 1, ncount
+                     if(inico2flg(i).eq.1) then
+c Use values from input
+                        fow(i) = fw(i)
+                        fol(i) = fl(i)
+                        fog(i) = fg(i)
+                     endif
+                  enddo
+                  fw = fow
+                  fl = fol
+                  fg = fog
+                  ieos = ieoso
+                  ices = iceso
+               else
+                  if (icarb .eq. 1) then
+                     do i = 1, ncount + npoint_riv
+                        if(inico2flg(i).ne.1) then
+                           fw(i) = 1.d0
+                           fg(i) = 0.d0
+                           fl(i) = 0.d0
+                        endif
+                     enddo
+                  end if
+               end if
+               if (iriver .ne. 0 .and. (wdd1(1:4) .eq. 'h20 ' .or. 
+     &              wdd1(1:4).eq.'carb')) then
                   do i = ncount+1,ncount+npoint_riv
                      j = iriver_con_node(i-ncount)
-                     if (read_temp(1)) 
+                     if (read_temp(1) .or. read_co2(1)) 
      &                    t(i) = t(iriver_con_node(i-ncount))
                      if (read_sat(1)) 
      &                    s(i) = s(iriver_con_node(i-ncount))
-                     if (read_pres(1)) 
+                     if (read_pres(1) .or. read_co2(1)) 
      &                    phi(i) = phi(iriver_con_node(i-ncount))
+                     if (wdd1(1:4).eq.'carb') then
+                        tco2(i) = tco2(iriver_con_node(i-ncount))
+                        phico2(i) = phico2(iriver_con_node(i-ncount))
+                        fw(i) = fw(iriver_con_node(i-ncount))
+                        fg(i) = fg(iriver_con_node(i-ncount))
+                        fl(i) = fl(iriver_con_node(i-ncount))
+                        ieoso(i) = ieoso(iriver_con_node(i-ncount))
+                        iceso(i) = iceso(iriver_con_node(i-ncount))
+                     end if
 		  enddo
                end if
+               if (icarb .eq. 1) then
+                  if (wdd1(1:4).eq.'h20 ' .or. wdd1(1:4).eq.'nh20') then
+                     tco2 = t
+                     phico2 = phi
+                     do i = 1, ncount + npoint_riv
+                        pl = phico2(i)
+                        tl = tco2(i)
+                        call co2_properties(1,duma,pl,tl,dum1,
+     &                       ices(i),dumb,dumc)
+                     enddo
+                     iceso = ices
+                     ieos = 1
+                     ieoso = ieos
+                  else
+                     ieos = ieoso
+                     ices = iceso
+                  end if
+                  toco2 = tco2
+                  phoco2 = phico2
+                  fow = fw
+                  fog = fg
+                  fol = fl                
+               end if
 
-            else if(wdd1(1:4).eq.'air ' .or. wdd1(1:4).eq.'nair') then
+            else if(wdd1(1:4).eq.'air ' .or. wdd1(1:4).eq.'wair') then
                if(iriver.ne.0 .and. wdd1(1:4) .eq. 'air ') 
      &              ncount = ncount - npoint_riv
                if (read_sat(1) .and. irdof .ne. 13) then
@@ -417,18 +493,19 @@ c
 		  enddo
                end if
             endif
-
+            
          else
             rerr = 0
             backspace (iread)
             read (iread, *) ncount, geom_type
             modneq = mod(ncount,neq)
-            if (modneq .ne. 0) goto 2000
+            modneq_primary = mod(ncount,neq_primary)
+            if (modneq .ne. 0 .or. modneq_primary .ne. 0) goto 2000
              do
                read (iread ,'(a11)', end = 100) dumflag
                select case (dumflag(1:4))
                case ('temp')
-                  if (read_temp(1)) then
+                  if (read_temp(1) .or. read_co2(1)) then
                      read (iread, *) ( t(mi), mi = 1,ncount )
                      read_temp(2) = .TRUE.
                   else
@@ -437,8 +514,9 @@ c
                      if (iptty .ne. 0) write (iptty, 400) 'temperatures'
                   end if
                case ('pres')
-                  if (read_pres(1)) then
+                  if (read_pres(1) .or. read_co2(1)) then
                      read (iread, *) ( phi(mi), mi = 1,ncount )
+                     pres_read = .TRUE.
                      read_pres(2) = .TRUE.
                   else
                      read (iread, *) ( dummyreal, mi = 1,ncount )
@@ -463,7 +541,85 @@ c
                      if (iout .ne. 0) write (iout, 400) 'gas pressures'
                      if (iptty .ne. 0)write (iptty, 400) 'gas pressures'
                   end if
-               case ('mass')
+c CO2 variables
+               case ('co2t')
+c CO2 temperature
+                  if (read_co2(1)) then
+                     read (iread, *) (tco2(mi), mi = 1,ncount )
+                     read_co2(2) = .TRUE.
+                  else
+                     read (iread, *) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write(iout, 400)'co2 temperatures'
+                     if (iptty .ne. 0) write (iptty, 400)
+     &                    'co2 temperatures'
+                     read_co2(2) = .FALSE.
+                  end if
+                  
+               case ('co2p')
+c CO2 pressure
+                  if (read_co2(1)) then
+                     read (iread, *) (phico2(mi), mi = 1,ncount )
+                  else
+                     read (iread, *) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 'co2 pressures'
+                     if (iptty .ne. 0)write (iptty, 400) 'co2 pressures'
+                     read_co2(2) = .FALSE.
+                  end if
+               case ('wsat')
+c Water saturation
+                  if (read_co2(1)) then
+                     read (iread, *) (fow(mi), mi = 1,ncount )
+                  else
+                     read (iread, *) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 'co2 water sats'
+                     if (iptty .ne. 0)write (iptty, 400)'co2 water sats'
+                     read_co2(2) = .FALSE.
+                  end if
+               case ('lco2')
+c Liquid CO2 saturation
+                  if (read_co2(1)) then
+                     read (iread, *) (fol(mi), mi = 1,ncount )
+                  else
+                     read (iread, *) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write(iout, 400) 'liquid co2 sats'
+                     if (iptty .ne. 0)write(iptty, 400)'liquid co2 sats'
+                     read_co2(2) = .FALSE.
+                  end if
+               case ('diss')
+c Dissolved CO2
+                  if (read_co2(1)) then
+                     read (iread, *) (yc(mi), mi = 1,ncount )
+                  else
+                     read (iread, *) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write(iout, 400) 'dissolvled co2'
+                     if (iptty .ne. 0)write(iptty, 400) 'dissolved co2'
+                     read_co2(2) = .FALSE.
+                  end if
+               case ('eosw')
+c Phase-state of water
+                  if (read_co2(1)) then
+                     read (iread, *) (ieoso(mi), mi = 1,ncount )
+                  else
+                     read (iread, *) ( dummyint, mi = 1,ncount )
+                     if (iout .ne. 0) write(iout, 400)
+     &                    'phase-state of water'
+                     if (iptty .ne. 0)write(iptty, 400)
+     &                    'phase-state of water'
+                     read_co2(2) = .FALSE.
+                  end if
+               case ('eosc')
+c Phase-state of CO2
+                  if (read_co2(1)) then
+                     read (iread, *) (iceso(mi), mi = 1,ncount )
+                  else
+                     read (iread, *) ( dummyint, mi = 1,ncount )
+                     if (iout .ne. 0) write(iout, 400)
+     &                    'phase-state of co2'
+                     if (iptty .ne. 0)write(iptty, 400)
+     &                    'phase-state of co2'
+                     read_co2(2) = .FALSE.
+                  end if
+              case ('mass')
                   if (dumflag(1:9) .ne. 'mass flux') then
                      if (read_mass(1)) then
                         if (.not. allocated(mass_var)) 
@@ -533,14 +689,17 @@ c***  add water table rise subroutine
  6001    format(5g15.8)
  6002    format(4g25.16)
       else
+c Reading unformatted file
          read (iread) dumver, dumdate, dumtime, dumtitle
          read (iread)  days
 c     
 c     read descriptors
 c     
          read(iread) wdd1(1:4)
-         if (wdd1(1:4) .eq. 'h20 ' .or. wdd1(1:4) .eq. 'air ' .or.
-     &        wdd1(1:4) .eq. 'ngas') then 
+         if (wdd1(1:4) .eq. 'h20 ' .or. wdd1(1:4) .eq. 'wh20' .or.
+     &        wdd1(1:4) .eq. 'air ' .or. wdd1(1:4) .eq. 'wair' .or.
+     &        wdd1(1:4) .eq. 'ngas' .or. wdd1(1:4) .eq. 'wnga' .or.
+     &        wdd1(1:4) .eq. 'carb' .or. wdd1(1:4) .eq. 'wcar') then 
             read(iread) wdd1(5:8)
             read(iread) wdd1(9:12)
             read(iread) wdd1(13:16)
@@ -604,9 +763,9 @@ c
                end if
 
             else if(wdd1(1:4).eq.'h20 ' .or. wdd1(1:4).eq.'nh20') then
-               if(iriver.ne.0 .and. wdd1(1:4) .eq. 'h2o ') 
+               if(iriver.ne.0 .and. wdd1(1:4) .eq. 'h20 ') 
      &              ncount = ncount - npoint_riv
-               if (read_temp(1)) then
+               if (read_temp(1) .or. read_co2(1)) then
                   read(iread)  ( t   (mi) , mi=1,ncount )
                   read_temp(2) = .TRUE.
                else
@@ -622,23 +781,91 @@ c
                   if (iout .ne. 0) write (iout, 400) 'saturations'
                   if (iptty .ne. 0) write (iptty, 400) 'saturations'
                end if
-               if (read_pres(1)) then
+               if (read_pres(1) .or. read_co2(1)) then
                   read(iread)  ( phi (mi) , mi=1,ncount )
+                  pres_read = .TRUE.
+                  read_pres(2) = .TRUE.
                else
                   read (iread) ( dummyreal, mi = 1,ncount )
                   if (iout .ne. 0) write (iout, 400) 'pressures'
                   if (iptty .ne. 0) write (iptty, 400) 'pressures'
                end if
-               if (iriver .ne. 0 .and. wdd1(1:4) .eq. 'h2o ') then
+               if (wdd1(1:4).eq.'carb' .or. wdd1(1:4) .eq. 'wcar') then
+                  read(iread) ( tco2 (mi), mi = 1,ncount )
+                  read(iread) ( phico2 (mi), mi = 1,ncount )
+                  read(iread) ( fow (mi), mi = 1,ncount )
+                  read(iread) ( fog (mi), mi = 1,ncount )
+                  read(iread) ( fol (mi), mi = 1,ncount )
+                  read(iread) ( ieoso (mi),  mi = 1,ncount )
+                  read(iread) ( iceso (mi),  mi = 1,ncount )
+                  read_co2(2) = .TRUE.
+                  do i = 1, ncount
+                     if(inico2flg(i).eq.1) then
+c Use values from input
+                        fow(i) = fw(i)
+                        fol(i) = fl(i)
+                        fog(i) = fg(i)
+                     endif
+                  enddo
+                  fw = fow
+                  fl = fol
+                  fg = fog
+                  ieos = ieoso
+                  ices = iceso
+               else
+                  if (icarb .eq. 1) then
+                     do i = 1, ncount + npoint_riv
+                        if(inico2flg(i).ne.1) then
+                           fw(i) = 1.d0
+                           fg(i) = 0.d0
+                           fl(i) = 0.d0
+                        endif
+                     enddo
+                  end if
+               end if
+               if (iriver .ne. 0 .and. (wdd1(1:4) .eq. 'h20 ' .or. 
+     &              wdd1(1:4).eq.'carb')) then
                   do i = ncount+1,ncount+npoint_riv
                      j = iriver_con_node(i-ncount)
-                     if (read_temp(1)) 
+                     if (read_temp(1) .or. read_co2(1)) 
      &                    t(i) = t(iriver_con_node(i-ncount))
                      if (read_sat(1)) 
      &                    s(i) = s(iriver_con_node(i-ncount))
-                     if (read_pres(1)) 
+                     if (read_pres(1) .or. read_co2(1)) 
      &                    phi(i) = phi(iriver_con_node(i-ncount))
+                     if (wdd1(1:4).eq.'carb') then
+                        tco2(i) = tco2(iriver_con_node(i-ncount))
+                        phico2(i) = phico2(iriver_con_node(i-ncount))
+                        fw(i) = fw(iriver_con_node(i-ncount))
+                        fg(i) = fg(iriver_con_node(i-ncount))
+                        fl(i) = fl(iriver_con_node(i-ncount))
+                        ieoso(i) = ieoso(iriver_con_node(i-ncount))
+                        iceso(i) = iceso(iriver_con_node(i-ncount))
+                     end if
 		  enddo
+               end if
+               if (icarb .eq. 1) then
+                  if (wdd1(1:4).eq.'h20 ' .or. wdd1(1:4).eq.'nh20') then
+                     tco2 = t
+                     phico2 = phi
+                     do i = 1, ncount + npoint_riv
+                        pl = phico2(i)
+                        tl = tco2(i)
+                        call co2_properties(1,duma,pl,tl,dum1,
+     &                       ices(i),dumb,dumc)
+                     enddo
+                     iceso = ices
+                     ieos = 1
+                     ieoso = ieos
+                  else
+                     ieos = ieoso
+                     ices = iceso
+                   end if
+                  toco2 = tco2
+                  phoco2 = phico2
+                  fow = fw
+                  fog = fg
+                  fol = fl
                end if
 
             else if(wdd1(1:4).eq.'air ' .or. wdd1(1:4).eq.'nair') then
@@ -687,7 +914,7 @@ c
                read (iread , end = 100) dumflag
                select case (dumflag(1:4))
                case ('temp')
-                  if (read_temp(1)) then
+                  if (read_temp(1) .or. read_co2(1)) then
                      read (iread) ( t(mi), mi = 1,ncount )
                      read_temp(2) = .TRUE.
                   else
@@ -696,8 +923,9 @@ c
                      if (iptty .ne. 0) write (iptty, 400) 'temperatures'
                   end if
                case ('pres')
-                  if (read_pres(1)) then
+                  if (read_pres(1) .or. read_co2(1)) then
                      read (iread) ( phi(mi), mi = 1,ncount )
+                     pres_read = .TRUE.
                      read_pres(2) = .TRUE.
                   else
                      read (iread) ( dummyreal, mi = 1,ncount )
@@ -721,6 +949,84 @@ c
                      read (iread) ( dummyreal, mi = 1,ncount )
                      if (iout .ne. 0) write (iout, 400) 'gas pressures'
                      if (iptty .ne. 0)write (iptty, 400) 'gas pressures'
+                  end if
+c CO2 variables
+               case ('co2t')
+c CO2 temperature
+                  if (read_co2(1)) then
+                     read (iread) (tco2(mi), mi = 1,ncount )
+                     read_co2(2) = .TRUE.
+                  else
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write(iout, 400)'co2 temperatures'
+                     if (iptty .ne. 0) write (iptty, 400)
+     &                    'co2 temperatures'
+                     read_co2(2) = .FALSE.
+                  end if
+                  
+               case ('co2p')
+c CO2 pressure
+                  if (read_co2(1)) then
+                     read (iread) (phico2(mi), mi = 1,ncount )
+                  else
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 'co2 pressures'
+                     if (iptty .ne. 0)write (iptty, 400) 'co2 pressures'
+                     read_co2(2) = .FALSE.
+                  end if
+               case ('wsat')
+c Water saturation
+                  if (read_co2(1)) then
+                     read (iread) (fow(mi), mi = 1,ncount )
+                  else
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 'co2 water sats'
+                     if (iptty .ne. 0)write (iptty, 400)'co2 water sats'
+                     read_co2(2) = .FALSE.
+                  end if
+               case ('lco2')
+c Liquid CO2 saturation
+                  if (read_co2(1)) then
+                     read (iread) (fol(mi), mi = 1,ncount )
+                  else
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write(iout, 400) 'liquid co2 sats'
+                     if (iptty .ne. 0)write(iptty, 400)'liquid co2 sats'
+                     read_co2(2) = .FALSE.
+                  end if
+               case ('diss')
+c Dissolved CO2
+                  if (read_co2(1)) then
+                     read (iread) (yc(mi), mi = 1,ncount )
+                  else
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write(iout, 400) 'dissolvled co2'
+                     if (iptty .ne. 0)write(iptty, 400) 'dissolved co2'
+                     read_co2(2) = .FALSE.
+                  end if
+               case ('eosw')
+c Phase-state of water
+                  if (read_co2(1)) then
+                     read (iread, *) (ieoso(mi), mi = 1,ncount )
+                  else
+                     read (iread, *) ( dummyint, mi = 1,ncount )
+                     if (iout .ne. 0) write(iout, 400)
+     &                    'phase-state of water'
+                     if (iptty .ne. 0)write(iptty, 400)
+     &                    'phase-state of water'
+                     read_co2(2) = .FALSE.
+                  end if
+               case ('eosc')
+c Phase-state of CO2
+                  if (read_co2(1)) then
+                     read (iread) (iceso(mi), mi = 1,ncount )
+                  else
+                     read (iread) ( dummyint, mi = 1,ncount )
+                     if (iout .ne. 0) write(iout, 400)
+     &                    'phase-state of co2'
+                     if (iptty .ne. 0)write(iptty, 400)
+     &                    'phase-state of co2'
+                     read_co2(2) = .FALSE.
                   end if
                case ('mass')
                   if (read_mass(1)) then
@@ -767,6 +1073,57 @@ c
  500  format (a, ' not found in restart file')
  600  format (a, ' found in restart file will be used')
  100  continue
+      if (icarb .eq. 1 .and. .not. read_co2(2)) then
+c Set CO2 parameters using t and phi
+         tco2 = t
+         phico2 = phi
+         do i = 1, ncount + npoint_riv
+            pl = phico2(i)
+            tl = tco2(i)
+            call co2_properties(1,duma,pl,tl,dum1,
+     &           ices(i),dumb,dumc)
+         enddo
+         iceso = ices
+         ieos = 1
+         ieoso = ieos
+         do i = 1, ncount + npoint_riv
+            if(inico2flg(i).ne.1) then
+               fw(i) = 1.d0
+               fg(i) = 0.d0
+               fl(i) = 0.d0
+            endif
+         enddo
+         fow = fw
+         fog = fg
+         fol = fl
+         toco2 = tco2
+         phoco2 = phico2
+      end if
+      if (read_co2(2)) then
+         co2_read = .TRUE.
+         do i = 1, n0
+            if(inico2flg(i).eq.1) then
+               fow(i) = fw(i)
+               fol(i) = fl(i)
+               fog(i) = fg(i)
+            else
+               fog(i) = max(1.d0-fow(i)-fol(i), 0.d0)
+            end if
+         end do
+         fw = fow
+         fl = fol
+         fg = fog
+         toco2 = tco2
+         phoco2 = phico2
+         if (.not. read_temp(2)) then
+            t = tco2
+            to = tco2
+         end if
+         if (.not. read_pres(2)) then
+            phi = phico2
+            pho = phico2
+         end if
+      end if
       if (read_temp(1) .and. .not. read_temp(2)) then
          if (iout .ne. 0) write (iout, 500) 'Temperatures'
          if (iptty .ne. 0) write (iptty, 500) 'Temperatures'
@@ -803,6 +1160,10 @@ c   and set mass_read flag to false
       if (read_sat(1) .and. .not. read_sat(2)) then
          if (iout .ne. 0) write (iout, 500) 'Saturations'
          if (iptty .ne. 0) write (iptty, 500) 'Saturations'
+      end if
+      if (read_co2(1) .and. .not. read_co2(2)) then
+         if (iout .ne. 0) write (iout, 500) 'CO2 parameters'
+         if (iptty .ne. 0) write (iptty, 500) 'CO2 parameters'         
       end if
       if (read_flux(1) .and. .not. read_flux(2)) then
          if (iout .ne. 0) write (iout, 500) 'Fluxes'

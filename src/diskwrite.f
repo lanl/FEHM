@@ -133,15 +133,16 @@
 
       use comai
       use combi
+      use comco2
       use comdi
       use comdti
       use comfi
       use comflow
       use comii
+      use commeth
       use compart
-      use comxi
-      use comco2
       use comriv
+      use comxi
       use davidi
       implicit none
 
@@ -170,13 +171,6 @@
          return
       endif
 
-      if(icarb.eq.1) then
-         write(isave, 6000)  verno, jdate, jtime, wdd
-         write(isave ,*)  days
-         call icectrco2 (-20,0)
-         return
-      endif
-
 cc
 c if necessary, correct for head increment before saving
 c only converted here for 'write' density not denfined on
@@ -201,18 +195,27 @@ c      endif
       end if
 
       if (cform(7) .eq. 'formatted') then
+c Formatted output
          write(isave, 6000)  verno, jdate, jtime, wdd
  6000    format(a30, 3x, a11, 3x, a8, /, a80)
          write(isave ,*)  days
 c     write descriptors
          if (iriver .ne. 0) then
-            if (ico2.gt.0) write(isave,'(a4)') 'wnga'
-            if (ico2.lt.0) write(isave,'(a4)') 'wair'
-            if (ico2.eq.0) write(isave,'(a4)') 'wh20'
+            if (icarb .eq. 1) then
+                write(isave,'(a4)') 'wcar'
+            else
+               if (ico2.gt.0) write(isave,'(a4)') 'wnga'
+               if (ico2.lt.0) write(isave,'(a4)') 'wair'
+               if (ico2.eq.0) write(isave,'(a4)') 'wh20'
+            end if
          else
-            if (ico2.gt.0) write(isave,'(a4)') 'ngas'
-            if (ico2.lt.0) write(isave,'(a4)') 'air '
-            if (ico2.eq.0) write(isave,'(a4)') 'h20 '
+            if (icarb .eq. 1) then
+               write(isave,'(a4)') 'carb'
+            else
+               if (ico2.gt.0) write(isave,'(a4)') 'ngas'
+               if (ico2.lt.0) write(isave,'(a4)') 'air '
+               if (ico2.eq.0) write(isave,'(a4)') 'h20 '
+            end if
          end if
          if ((iccen.eq.0).and..not.ptrak) write(isave,'(a4)') 'ntra'
          if (iccen.ne.0) write(isave,'(a4)') 'trac'
@@ -236,7 +239,7 @@ c     write descriptors
             else
                write(isave ,6002)  (max(pho(mi),tolw),  mi=1,n )
             endif
-         else if(ico2.eq.0) then
+         else if(ico2.eq.0 .or. icarb .eq. 1) then
             write(isave ,6002)  (max(to(mi),tolw),   mi=1,n )
             if (irdof .ne. 13 .or. ifree .ne. 0) then
                write(isave ,6002)  (max(s(mi),tolw),    mi=1,n )
@@ -244,6 +247,15 @@ c     write descriptors
                write(isave ,6002)  (sat_dum,    mi=1,n )
             endif
             write(isave ,6002)  (max(pho(mi),tolw),  mi=1,n )
+            if (icarb .eq. 1) then
+               write(isave ,6002)  (max(toco2(mi),tolw),   mi=1,n )
+               write(isave ,6002)  (max(phoco2(mi),tolw),  mi=1,n )
+               write(isave ,6002)  (max(fow(mi),tolw),    mi=1,n )
+               write(isave ,6002)  (max(fog(mi),tolw),    mi=1,n )
+               write(isave ,6002)  (max(fol(mi),tolw),    mi=1,n )
+               write(isave ,6003)  (ieoso(mi),    mi=1,n )
+               write(isave ,6003)  (iceso(mi),    mi=1,n )
+            end if
          else if(ico2.lt.0) then
             if(ihead.ne.0 .or. (irdof .eq. 13 .and. 
      &           abs(ifree) .ne. 1)) then
@@ -310,20 +322,29 @@ c     write(isave ,6002) (max(pho(mi)-phi_inc,tolw),  mi=1,n )
          end if
 
  6002    format(4g25.16)
+ 6003    format(30i3)    
         
       else
-
+c Unformatted output
          write(isave)  verno, jdate, jtime, wdd
          write(isave)  days
 c     write descriptors
          if (iriver .ne. 0) then
-            if (ico2.gt.0) write(isave) 'wnga'
-            if (ico2.lt.0) write(isave) 'wair'
-            if (ico2.eq.0) write(isave) 'wh20'
+            if (icarb .eq. 1) then
+               write(isave) 'wcar'
+            else
+               if (ico2.gt.0) write(isave) 'wnga'
+               if (ico2.lt.0) write(isave) 'wair'
+               if (ico2.eq.0) write(isave) 'wh20'
+            end if
          else
-            if (ico2.gt.0) write(isave) 'ngas'
-            if (ico2.lt.0) write(isave) 'air '
-            if (ico2.eq.0) write(isave) 'h20 '
+            if (icarb .eq. 1) then
+               write(isave) 'carb'
+            else
+               if (ico2.gt.0) write(isave) 'ngas'
+               if (ico2.lt.0) write(isave) 'air '
+               if (ico2.eq.0) write(isave) 'h20 '
+            end if
          end if
          if ((iccen.eq.0).and..not.ptrak) write(isave) 'ntra'
          if (iccen.ne.0) write(isave) 'trac'
@@ -347,7 +368,7 @@ c     write descriptors
             else
                write(isave)  (max(pho(mi),tolw),  mi=1,n )
             endif
-         else if(ico2.eq.0) then
+         else if(ico2.eq.0 .or. icarb .eq. 1) then
             write(isave)  (max(to(mi),tolw),   mi=1,n )
             if (irdof .ne. 13 .or. ifree .ne. 0) then
                write(isave)  (max(s(mi),tolw),    mi=1,n )
@@ -355,6 +376,15 @@ c     write descriptors
                write(isave)  (sat_dum,    mi=1,n )
             endif
             write(isave)  (max(pho(mi),tolw),  mi=1,n )
+            if (icarb .eq. 1) then
+               write(isave)  (max(toco2(mi),tolw),   mi=1,n )
+               write(isave)  (max(phoco2(mi),tolw),  mi=1,n )
+               write(isave)  (max(fow(mi),tolw),    mi=1,n )
+               write(isave)  (max(fog(mi),tolw),    mi=1,n )
+               write(isave)  (max(fol(mi),tolw),    mi=1,n )
+               write(isave)  (ieoso(mi),    mi=1,n )
+               write(isave)  (iceso(mi),    mi=1,n )
+            end if
          else if(ico2.lt.0) then
             if(ihead.ne.0 .or. (irdof .eq. 13 .and. 
      &           abs(ifree) .ne. 1)) then

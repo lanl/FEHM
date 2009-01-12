@@ -313,7 +313,7 @@ C     the length of each component.
      >     +iotemperature+iosaturation+iohead+ioporosity
      >     +iosource+(ioliquid+iovapor)*iodensity
      >     +iopermeability*3+iozid+(ioliquid+iovapor)*ioflx
-     >     +iocapillary+ioco2*2
+     >     +iocapillary+ioco2*5
       nscalar_dual    = nscalar * iodual
       nvector         = (ioliquid+iovapor)*iovelocity
       nvector_dual    = nvector * iodual

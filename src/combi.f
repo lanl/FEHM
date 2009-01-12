@@ -338,7 +338,7 @@ c
       real*8 val_conh, val_cont
 
 c arrays for parameter designation in restart files
-      character*4 rstr(6), rstw(6)
+      character*4 rstr(9), rstw(9)
 c array for designating which flux variables will be output
       logical, dimension(5) :: prnt_flxzvar = .TRUE.
 

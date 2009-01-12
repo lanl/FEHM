@@ -500,10 +500,10 @@ c GAZ 11/
       real*8              daycs_save, daycf_save, dayhf_save, dayhs_save
       real*8              day_save_ss, fdum_last, aiaa_save, daymax_save
 C gaz 11-06-2007
-	real*8              rho1grav,h_to_p
+      real*8              rho1grav,h_to_p
       real*4              vernum
 
-	real*8              strd_iter, strd_rich, tol_phase
+      real*8              strd_iter, strd_rich, tol_phase
 
       character* 3        header_flag
       character* 4        altc, accm
@@ -518,7 +518,7 @@ C gaz 11-06-2007
       logical macroread(nmacros) 
 
       logical tpor_flag, compute_flow, hist_flag, reverse_flow
-      logical out_zones, spercent, mass_read, pres_read
+      logical out_zones, spercent, mass_read, pres_read, co2_read
 
       end module comai
 
