@@ -1090,8 +1090,14 @@ c
 c     organize differing amounts of output for dpdp and dual solutions
 c     
                if(m.gt.0) then
-                  write(iout,803)
-                  if(iatty.ne.0) write(iatty,803)
+                  if (iout .ne. 0) then
+                     write(iout,802)
+                     write(iout,803)
+                  end if
+                  if(iatty.ne.0) then
+                     write(iatty,802)
+                     write(iatty,803)
+                  end if
 
 		  if(idualp.ne.0) then
                      ilev=3
@@ -1115,20 +1121,24 @@ c
                         skmd = skco2(md)
                         qhmd = qhco2(md)
                         write(iout,804) 
-     &                       md,phico2(md),tco2(md),fg(md),fl(md),
-     &                       fw(md),ices(md),skmd,qhmd       
+     &                       md,phico2(md),tco2(md),fw(md),fl(md),
+     &                       fg(md),yc(md),ices(md),skmd,qhmd       
                         if(iatty.ne.0)
      &                       write(iatty,804) 
-     &                       md,phico2(md),tco2(md),fg(md),fl(md),
-     &                       fw(md),ices(md),skmd,qhmd       
+     &                       md,phico2(md),tco2(md),fw(md),fl(md),
+     &                       fg(md),yc(md),ices(md),skmd,qhmd       
                      enddo
                   enddo
- 803              format(/,20x,'Nodal Information (CO2)  ',//,2x,'Node'
-     &                 ,3x,'    pres',4x,'tco2',1x,'       gas',1x,
-     &                 '       liq',1x,'        water',1x,
-     &                 '    phase     src/snk    E src/snk')
- 804              format(i6,2x,f9.3,1x,f8.3,1x,f10.3,2x,f10.3,2x,f10.3,
-     &                 2x,i3,1x,g11.3,2x,g11.3)
+ 802              format(/,20x,'Nodal Information (CO2)  ', /, 32x,
+     &                'Volume  Fraction', 7x, 'Mass Frac',
+     &                 1x,'FreeCO2', 2x, 'source/sink',
+     &                 1x,'E source/sink' )
+ 803              format(3x, 'Node',1x,'Pco2(MPa)',2x,'Tco2(C)',2x, 
+     &                 'Water   ',1x,'Liq CO2 ',1x,'Gas CO2 ',1x,
+     &                 'Diss CO2 ',
+     &                 ' phase    (kg/s)      (MJ/s)')
+ 804              format(i7,1x,g9.4,1x,f8.3,1x,4(f6.3, 3x),1x,
+     &                 i5,3x,g11.3,2x,g11.3)
                endif
 c     
 c**** printout global mass and energy flows ****

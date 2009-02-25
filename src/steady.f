@@ -213,7 +213,7 @@ C***********************************************************************
       implicit none
 
       integer i, iflg, itt
-      real*8 divisor, divisore, inflow, inflowe
+      real*8 divisor, divisore, inflow, inflowe, btol_save, tolde_save
       character*20 dummy
       logical null1
 
@@ -485,7 +485,9 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
          endif
          if(days.ge.time_ss.and.itt.eq.1) then
             isteady = 2
+            btol_save = balance_tol
             balance_tol = tolerance
+            tolde_save = tolde
             tolde = tolerance
             go to 20
          endif
@@ -588,6 +590,8 @@ c     time limit, make sure we output information
             else
                if (iout .ne. 0) write(iout,52) time_ss, days
                if(iptty.ne.0) write(iptty,52) time_ss, days
+               balance_tol = btol_save
+               tolde = tolde_save
             endif
             if (toldh .ne. tolerance)
      &           hdifmax = pdifmax /( 997. * 9.8d-6)               
