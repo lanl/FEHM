@@ -650,7 +650,16 @@ c might need help in the
             if (ioflx .eq. 1 .and. ioliquid .eq. 1) then
                if (.not. net_flux) then
                   iaxy = nelmdg (i) - (neq + 1) + nadd
-                  write(vstring,110) dls(1:k), a_axy(iaxy)
+                  if (vol_flux) then
+                     if (sx1(i) .gt. 0.) then
+                        flxdum = a_axy(iaxy) / sx1(i)
+                     else
+                        flxdum = 0.d0
+                     end if
+                  else
+                     flxdum = a_axy(iaxy)
+                  end if
+                  write(vstring,110) dls(1:k), flxdum
                else
                   i1 = nelm(i) + 1
                   i2 = nelm(i+1)
