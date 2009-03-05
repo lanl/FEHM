@@ -403,6 +403,7 @@ c
       use comdti
       use comai
       use comxi
+	use comco2 , only : icarb, diwc 
       implicit none
 
 
@@ -464,6 +465,7 @@ c         nrhs_sol(1)=nrhs(2)
          itr=i+npn
          sx1d=sx1(i)
          dili=dil(i)
+	   if(icarb.EQ.1) dili = diwc(i)
          anli=anl(itr)
          danli=danl(itr)
          anlri=anli*rolf(i)
@@ -558,11 +560,13 @@ c
                   fid=dnwgta
                   fid1 = 1.-fid
                   t7(neighc) = fid*dil(kb)
+	            if(icarb.EQ.1)t7(neighc) = fid*diwc(kb)
                   t9(neighc) = fid1*dili
                elseif(t8(neighc).gt.0.) then
                   fid=upwgta
                   fid1 = 1.-fid
                   t7(neighc) = fid*dil(kb)
+	            if(icarb.EQ.1)t7(neighc) = fid*diwc(kb)
                   t9(neighc) = fid1*dili
                else
                   t7(neighc) = toldil

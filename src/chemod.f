@@ -351,6 +351,7 @@ c <<< Subroutine SPECIATE >>>
       use comchem
       use comdi
       use comdti
+	use comco2
       implicit none
       integer itrmxnr
       parameter(itrmxnr=100)
@@ -363,7 +364,7 @@ c <<< Subroutine SPECIATE >>>
       real*8 err,dum,denom
       real*8 gas_const
       parameter (gas_const=8.314)
-      real*8 temp_conv,stemp
+      real*8 temp_conv,stemp, disco2_flow
       parameter (temp_conv=273.16)
       character*1 trans
 
@@ -414,8 +415,14 @@ c====================================================================
             totaq(j) = 0.d0
             cpnt(j) = 0.d0
             NSOLVE = NSOLVE + 1
-         Else If (ifxconc(j).eq.1) then
-            cpnt(j)=totaq(j)
+c         Else If (ifxconc(j).eq.1) then
+c            cpnt(j)=totaq(j)
+	   Else if (ifxconc(j).eq.1.and.icarb.eq.1) then
+CHari convert mass fraction co2 (yc) to moles co2/kg water
+CHari if mass fraction is x and mole fraction y they are 
+CHari related by: x = y/(1-y)*1/MW
+	       disco2_flow = (yc(in)/(1-yc(in)))/0.044
+		   cpnt(j) = max(totaq(j), disco2_flow)
          Else
             cpnt(j)=cpntsv(j,in)
             if((ifxconc(j).eq.0).and.((cpnt(j).gt.totaq(j)).or.

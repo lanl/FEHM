@@ -51,7 +51,7 @@
       use davidi
 
       implicit none
-      integer addnode, iconn, idummy, i1, i2
+      integer addnode, iconn, idummy, i1, i2, ishisfzz, ishiscfzz
       integer :: ipr_vapor = 0
       integer flxz_flag, indexa_axy, inneq, inode, izone, md
       real*8 ptime, sumfout, sumsink, sumsource, sumboun, sum_vap
@@ -266,57 +266,35 @@ c     Fluxes are written to flux history file
                write (flux_string(izone), 1056) sumsource, sumsink, 
      &              sumfout, sum_vap, sumboun
             end if
-            if (prnt_flxzvar(2)) then
-               write(value_string, form_string) sumsink
-               flux_string(izone) = trim(flux_string(izone)) //
-     &              trim(value_string)
-            end if
-            if (prnt_flxzvar(3)) then
-               write(value_string, form_string) sumfout
-               flux_string(izone) = trim(flux_string(izone)) //
-     &              trim(value_string)
-            end if
-            if (prnt_flxzvar(4)) then
-               write(value_string, form_string) sumboun
-               flux_string(izone) = trim(flux_string(izone)) //
-     &              trim(value_string)
-            end if
-            if ((ipr_vapor .ne. 0) .and. prnt_flxzvar(5)) then
-               write(value_string, form_string) sum_vap
-               flux_string(izone) = trim(flux_string(izone)) //
-     &              trim(value_string)
-            end if
          end if
       end do
 
  1045 format(1x,i4,' (',i6,')',2x,1p,4(1x,e12.5))
  1046 format(1x,i4,' (',i6,')',2x,1p,5(1x,e12.5))
  1047 format('(g16.9, ', i3, '(a))')
- 1050 format(4(g16.9, 1x), g16.9)
- 1051 format(g16.9, 1x, i4, 1x, a)
+ 1050 format(5(g16.9, 1x), g16.9)
+ 1051 format(g16.9, 1x, a)
  1055 format(3(g16.9, ", "), g16.9)
- 1056 format(4(g16.9, ", "), g16.9)
- 1057 format(g16.9, ", ", i4, ", ", a)
+ 1056 format(5(g16.9, ", "), g16.9)
+ 1057 format(g16.9, a)
 
 c     Write to flux history file
       if (flxz_flag .eq. 2) then
          do i1 = 1, nflxz
+            ishisfzz = ishisfz + i1
             if (form_flag .le. 1) then
-               write (ishisfz, 1051) ptime, iflxz(i1), 
-     &              trim(flux_string(i1))
+               write (ishisfzz, 1051) ptime, trim(flux_string(i1))
             else
-               write (ishisfz, 1057) ptime, iflxz(i1), 
-     &              trim(flux_string(i1))
+               write (ishisfzz, 1057) ptime, trim(flux_string(i1))
             end if
          end do
       elseif (flxz_flag .eq. 3) then
          do i1 = 1, nflxz
+            ishiscfzz = ishiscfz + i1
             if (form_flag .le. 1) then
-               write (ishiscfz, 1051) ptime, iflxz(i1),
-     &              trim(flux_string(i1))
+               write (ishiscfzz, 1051) ptime, trim(flux_string(i1))
             else
-               write (ishiscfz, 1057) ptime, iflxz(i1),
-     &              trim(flux_string(i1))
+               write (ishiscfzz, 1057) ptime, trim(flux_string(i1))
             end if
          end do
       end if

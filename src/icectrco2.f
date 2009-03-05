@@ -188,6 +188,7 @@ c
             allocate(deycf(n0))
             allocate(deyaf(n0))
             allocate(diw(n0))
+	      allocate(diwc(n0))
             allocate(diwp(n0))
             allocate(diwe(n0))
             allocate(diww(n0))
@@ -990,6 +991,8 @@ c     calculate phase-change pressure and dp/dt
                   xc(i) = xc_prime
                   xw(i) = 1.d0 - xc(i)
                   yw(i) = 1.d0 - yc(i)
+CHari 
+                  s(i) = fw(i)
                enddo
             elseif(iprtype.eq.5) then
                nr1=nrhs(1)
@@ -1582,6 +1585,8 @@ c
                phoco2(i) = phico2(i)
                toco2(i) = tco2(i)
                fow(i) = fw(i)
+CHari
+               so(i) = fw(i)
                fog(i) = fg(i)
                fol(i) = fl(i)
                denco2h(i) = denco2h(i) + denco2i(i)*dtot

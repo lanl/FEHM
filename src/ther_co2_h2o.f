@@ -322,6 +322,7 @@ c     modify derivatives for 2-phase (should now depend on p, not t)
                endif
 
                wat_prop(mi) = rol
+	         rolf(mi) = rol
                wat_prop(neq+mi) = drolp
                wat_prop(2*neq+mi) = drolt
                wat_prop(3*neq+mi) = drolyc
@@ -748,6 +749,7 @@ c zvd 07-Aug-08 added following line
 c zvd 07-Aug-08
                dstm(mi)=por*rov*sv*vol
                diw(mi)=0.0
+	         diwc(mi)=0.0
                diwp(mi)=0.0
                diwe(mi)=0.0
                diww(mi)=0.0
@@ -944,6 +946,8 @@ c     endif
             deni(mi)=(sto1(mi)-denh(mi))*dtin
             denei(mi)=(sto1(mi+neq)-deneh(mi))*dtin
          enddo    
+cHari store diw in diwc for tracer solution   
+	   diwc = diw 
          
 c     ****************************************************************
       else if(iflg.eq.2) then

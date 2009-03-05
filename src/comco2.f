@@ -178,6 +178,7 @@ c      real*8, allocatable ::  dqhxc(:)
       real*8, allocatable :: dmol(:)
 
       real*8, allocatable :: diw(:)
+	real*8, allocatable :: diwc(:)
       real*8, allocatable :: diwp(:)
       real*8, allocatable :: diwe(:)
       real*8, allocatable :: diww(:)
