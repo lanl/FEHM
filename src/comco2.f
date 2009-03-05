@@ -142,6 +142,7 @@ c      real*8, allocatable ::  dmxcf(:)
 c      real*8, allocatable ::  dexcf(:)
 
       real*8, allocatable ::  skco2(:)
+      real*8, allocatable ::  skco2d(:)
       real*8, allocatable ::  dskco2w(:)
       real*8, allocatable ::  dskco2ya(:)
       real*8, allocatable ::  dskco2yc(:)
@@ -228,6 +229,8 @@ c      real*8, allocatable :: yoa(:)
       real*8, allocatable :: con_prop(:)
       integer, allocatable :: ico2dis(:)
       integer, allocatable :: ico2diso(:)
+
+	real*8, allocatable :: strd_arr(:)
 
       real*8  amco20,aeco20,amco2,aeco2
       real*8  qco2_in,qeco2_in,balco2,baleco2

@@ -46,11 +46,12 @@
       implicit none
 
       integer iflg,ndummy,i,nr1,nr2,nr3,nr4,nr5,mi      
-      integer i1,i2,i3,i4,i5,i6,ilev,mlev,il,md,k,j
+      integer i1,i2,i3,i4,i5,i6,ilev,mlev,il,md,k,j,iphase
       integer ii,ij,icedc,iced,ieosd,icesd,idco2,duma,neqp1,ncont
       real*8, allocatable :: aiped(:)
       real*8, allocatable :: sktmp(:)
       real*8, allocatable :: esktmp(:)
+      real*8, allocatable :: skcdtmp(:)
 
       real*8 tliquid,dummyreal
       real*8 pw,tw,pc,tc,ensrc,delsrc,phase_frac,skmd,qhmd
@@ -174,6 +175,7 @@ c
             allocate(ya(n0))
             allocate(xa(n0))
             allocate(skco2(n0))
+            allocate(skco2d(n0))
             allocate(eskco2(n0))
             allocate(qhco2(n0))
             allocate(wellco2(n0))
@@ -236,7 +238,7 @@ c
             allocate(deqyc(n0))
             allocate(deqya(n0))
 
-            allocate(wat_prop(n0*13))
+            allocate(wat_prop(n0*15))
             allocate(co2_prop(n0*18))
             allocate(dmol(n0*14))
             allocate(diff(n0))
@@ -249,6 +251,7 @@ c
             allocate(fg_tmp(n0))
             allocate(inico2flg(n0))
 
+	 	  allocate(strd_arr(n0))
 c
 c zero out arrays for co2        
 c
@@ -470,21 +473,25 @@ c	RJP 03/09/08 removed qhflxco2 present in earlier versions.
                itype(1) = 8
                itype(2) = 8
                itype(3) = 8
+c               itype(4) = 8
                default(1) = 0.0d00
                default(2) = 0.0d00
                default(3) = 0.0d00
+c               default(4) = 0.0d00
 c     
 c     read in initial CO2 flow and boundary data
 c     
-               allocate(aiped(n0),esktmp(n0),sktmp(n0))
+               allocate(aiped(n0),esktmp(n0),sktmp(n0),skcdtmp(n0))
                
                call initdata2( inpt, ischk, n0, narrays, itype, default,
      &              macroread(8), macro, igroup, ireturn,  r8_1 = 
      &             sktmp(1:n0),r8_2=esktmp(1:n0),r8_3=aiped(1:n0))
+c     &			 ,r8_4=skcdtmp(1:n0))
                do i=1,n0
                   if(sktmp(i).ne.default(1).or.esktmp(i).ne.default(2)
      &                 .or. aiped(i). ne. default(3)) then
                      eskco2(i) = esktmp(i)
+c     if (abs(skcdtmp(i)) .eq. 0.d0) then
                      if (abs(aiped(i)) .lt. zero_t) then
                         skco2(i) = sktmp(i)
                         kaco2(i) = 1
@@ -497,10 +504,14 @@ c
                         wellco2(i) = abs(aiped(i)) * 1.0e+06
                         pflowco2(i) = sktmp(i)
                      end if
+c     else
+c     kaco2(i) = 3
+c     skco2d(i) = skcdtmp(i)
+c     endif
                   endif
                enddo
                
-               deallocate(sktmp,esktmp,aiped)
+               deallocate(sktmp,esktmp,aiped,skcdtmp)
                
             else
                write(iout,*) 'ERROR IN CO2 INPUT(STOPPING)'
@@ -523,7 +534,7 @@ c
             
          elseif(iflg.eq.-2) then
 c     
-c     set tempertures of components equal for certain equilibrium conditions
+c     set temperatures of components equal for certain equilibrium conditions
 c
             if (.not. co2_read) then
                do i=1,n0
@@ -660,7 +671,7 @@ c
      &                          tliquid,dumc)
                            if(fw(ij).lt.1.d0) then
                               icedc=2
-                              fg(ij) = fg(ij) - eostol
+                              fg(ij) = fg(ij)*0.9d0
                               fl(ij)=1.d0-fg(ij)-fw(ij)
                               tco2(ij)=tliquid
                            else
@@ -699,9 +710,12 @@ c     liquid only conditions
      &                          tliquid,dumc)
                            if(fw(ij).lt.1.d0) then
                               icedc=2
-                              fg(ij)=fg(ij) + eostol
-                              fl(ij)=1.d0-fg(ij)-fw(ij)
+                              fl(ij)=fl(ij)*0.9d0
+                              fg(ij)=1.d0-fl(ij)-fw(ij)
                               tco2(ij)=tliquid
+                           else
+                              fl(ij) = 0.d0
+                              fg(ij)=1.d0-fl(ij)-fw(ij)
                            endif
                         endif
                      endif
@@ -730,13 +744,16 @@ c     calculate phase-change pressure and dp/dt
                      ico2dis(ij)=1
                      yc(ij) = ycmax
                      yw(ij) = 1.d0 - yc(ij)
-                     if(iced.ne.2) then
-                        fl(ij) = 0.000001d0
-                        fw(ij) = fw(ij) - 0.000001d0
-                     else
+                     if(icedc.eq.2) then
                         fg(ij) = 0.000001d0
                         fw(ij) = fw(ij) - 0.000001d0
                         fl(ij) = 1.d0 - fw(ij) - fg(ij)
+                     elseif(icedc.eq.3) then
+                        fg(ij) = 0.000001d0
+                        fw(ij) = fw(ij) - 0.000001d0
+                     else
+                        fl(ij) = 0.000001d0
+                        fw(ij) = fw(ij) - 0.000001d0
                      endif
                      dmol(ij) = tem(2)
                      dmol(ij+neq) = tem(3)
@@ -746,6 +763,8 @@ c     calculate phase-change pressure and dp/dt
                      if(fw(ij).lt.1.d0) then
                         yc(ij) = ycmax
                         yw(ij) = 1.d0 - yc(ij)
+                        dmol(ij) = tem(2)
+                        dmol(ij+neq) = tem(3)
                      else
                         ico2dis(ij) = 0
 c     fw(ij)= 1.d0
@@ -765,6 +784,7 @@ c     fl(ij)= 0.d0
                else
                   strd = strd1
                endif
+               strd_arr(ij) = strd
                ices(ij)=icedc
             enddo
 c     check initial phase state and saturation, this is only called in 
@@ -807,10 +827,23 @@ c     calculate phase-change pressure and dp/dt
      &              1,xc_prime,tem)
                xc(ij) = xc_prime
                xw(ij) = 1.d0 - xc(ij)
-               if(dabs(yc(ij)-tem(1)).le.1.d-12) then
-                  ico2dis(ij)=1
-                  yc(ij) = tem(1)
-               endif
+               if(iprtype.ge.4) then
+                  if(iread.ne.0) then
+                     if(dabs(yc(ij)-tem(1)).le.1.d-12) then
+                        ico2dis(ij)=1
+                        yc(ij) = tem(1)
+                        dmol(ij) = tem(2)
+                        dmol(ij+neq) = tem(3)
+                     endif
+                  else
+                     if(fw(ij).lt.1.d0) then
+                        yc(ij) = tem(1)
+                        dmol(ij) = tem(2)
+                        dmol(ij+neq) = tem(3)
+                        ico2dis(ij)=1
+                     endif
+                  endif
+               endif				
                yw(ij)=1-yc(ij)
                yoc(ij)=yc(ij)
                yow(ij)=yw(ij)
@@ -941,6 +974,7 @@ c     state.
                   i3=i+nr3
                   icesd=ices(i)
                   ico2d=ico2dis(i)
+                  strd = strd_arr(i)
                   if(ps(i).eq.0.0) then
                      tco2(i)=tco2(i)-bp(i2)*strd
                   elseif(icesd.ne.2)then
@@ -963,11 +997,11 @@ c     state.
                      fg(i) = fg(i) - bp(i2)*strd
                      if(ico2d.eq.1) then
                         fw(i) = fw(i) - bp(i3)*strd
-                        if (icesd.eq.3) then
-                           fg(i) = 1.d0-fw(i)
-                        else
-                           fl(i) = 1.d0-fw(i)
-                        endif
+c     if (icesd.eq.3) then
+c     fg(i) = 1.d0-fw(i)
+c     else
+c     fl(i) = 1.d0-fw(i)
+c     endif
                      else
                         yc(i) = yc(i) - bp(i3)*strd
                      endif
@@ -1055,11 +1089,11 @@ c     only for first iteration
                         eflowco2(ij) = cpr(ij)*(-eskco2(ij))
                      else
                         if(abs(kaco2(ij)).gt.0) then
-                        call co2_properties(4,ices(ij),pflowco2(ij),
-     &                       -eskco2(ij),dum1,duma,dumb,dumc)
+                           call co2_properties(4,ices(ij),pflowco2(ij),
+     &                          -eskco2(ij),dum1,duma,dumb,dumc)
                         else
-                        call co2_properties(4,ices(ij),phico2(ij),
-     &                       -eskco2(ij),dum1,duma,dumb,dumc)
+                           call co2_properties(4,ices(ij),phico2(ij),
+     &                          -eskco2(ij),dum1,duma,dumb,dumc)
                         endif
                         eflowco2(ij)=dumc(4)
                      endif
@@ -1093,8 +1127,6 @@ c
 c     organize differing amounts of output for dpdp and dual solutions
 c     
                if(m.gt.0) then
-                  write(iout,803)
-                  if(iatty.ne.0) write(iatty,803)
 
 		  if(idualp.ne.0) then
                      ilev=3
@@ -1106,33 +1138,73 @@ c
                      ilev=1
                      mlev=m
                   endif
-                  
+c     Water                  
+                  write(iout,800)
+                  if(iatty.ne.0) write(iatty,800)
                   do il=1,ilev
                      if(il.ne.1) then
                         write(iout,600) il
                         if (iatty.gt.0) write(iatty,600) il
- 600                    format(2x,'Matrix Level = ',i1)
+                     endif
+                     do i=1,mlev
+                        md=  nskw(i+(il-1)*mlev)
+                        if (ico2dis(md) .eq. 1) then
+                           if (ices(md) .eq. 2) then
+                              iphase = 3
+                           else
+                              iphase = 2
+                           end if
+                        else
+                           iphase = 1
+                        end if
+                           
+                        write(iout, 801)  md , pho(md), tco2(md),
+     &                       fw(md), yc(md), iphase, sk(md) , qh(md) 
+                        if ( iatty .gt. 0 )  write(iatty, 801) md ,
+     &                       pho(md), tco2(md), fw(md), yc(md), iphase, 
+     &                       sk(md), qh(md)  
+                     enddo
+                  enddo
+c     CO2
+                  write(iout,802)
+                  write(iout,803)
+                  if(iatty.ne.0) then
+                     write(iatty,802)
+                     write(iatty,803)
+                  end if
+                  do il=1,ilev
+                     if(il.ne.1) then
+                        write(iout,600) il
+                        if (iatty.gt.0) write(iatty,600) il
                      endif
                      do i=1,mlev
                         md=  nskw(i+(il-1)*mlev)
                         skmd = skco2(md)
                         qhmd = qhco2(md)
-                        write(iout,804) 
-     &                       md,phico2(md),tco2(md),fg(md),fl(md),
-     &                       fw(md),ices(md),skmd,qhmd       
+                       write(iout,804) md, phico2(md),  fl(md),
+     &                       fg(md), ices(md), skmd, qhmd       
                         if(iatty.ne.0)
-     &                       write(iatty,804) 
-     &                       md,phico2(md),tco2(md),fg(md),fl(md),
-     &                       fw(md),ices(md),skmd,qhmd       
+     &                       write(iatty,804) md, phico2(md), fl(md), 
+     &                       fg(md), ices(md), skmd, qhmd       
                      enddo
                   enddo
- 803              format(/,20x,'Nodal Information (CO2)  ',//,2x,'Node'
-     &                 ,3x,'    pres',4x,'tco2',1x,'       gas',1x,
-     &                 '       liq',1x,'        water',1x,
-     &                 '    phase     src/snk    E src/snk')
- 804              format(i6,2x,f9.3,1x,f8.3,1x,f10.3,2x,f10.3,2x,f10.3,
-     &                 2x,i3,1x,g11.3,2x,g11.3)
                endif
+ 600           format(2x,'Matrix Level = ',i1)
+ 800           format(/,20x,'Nodal Information (Water)', /,
+     &              28x, 'Vol Frac', 2x, 'Mass Frac', 2x, 'Phase', 
+     &              2x, 'W source/sink',2x,'E source/sink',/,
+     &              3x,'Node',1x,'P(MPa)',4x,'Tco2(C)',3x,'Water',
+     &              5x,'Diss CO2',3x,'State',5x,'(kg/s)',9x,'(MJ/s)')
+ 801           format(i7, 1x, g9.4, 1x, g9.3, 1x, g9.3, 3x, g9.3, 2x,
+     &              i1, 5x, g11.3, 4x, g11.3)
+ 802           format(/, 20x, 'Nodal Information (CO2)', /, 21x,
+     &              'Volume  Fraction', 6x, 'CO2', 4x, 
+     &              'CO2 source/sink', 1x, 'E source/sink' )
+ 803           format(3x, 'Node', 1x, 'Pco2(MPa)', 1x, 'Liquid CO2',
+     &              1x, 'Gaseous CO2', 2x, 'phase', 7x, '(kg/s)', 9x,
+     &              '(MJ/s)')
+ 804           format(i7, 1x, g9.4, 1x, g9.3, 2x, g9.3, 6x, i1, 7x,
+     &              g11.3, 4x, g11.3)
 c     
 c**** printout global mass and energy flows ****
 c**** printout global mass and energy balances ****
@@ -1537,7 +1609,7 @@ c     correct mass and energy for water in combining equations
      &                 (aeh2o0+aeco20) + (qeh2o+qeco2)) / amaxflx
                else if(aeh2o0+aeco20.gt.0.0) then
                   baleh2o = ((aeh2o+aeco2) - (aeh2o0+aeco20)
-     &                  + (qeh2o+qeco2)) / (aeh2o0+aeco20)
+     &                 + (qeh2o+qeco2)) / (aeh2o0+aeco20)
                else 
 c     set h2o energy balance to n/a
                   baleh2o = -999999.0
@@ -1708,9 +1780,9 @@ c     read restart file (will not work for double porosity)
                phoco2 = pho
                tco2 = toco2
                phico2 = phoco2
-c               fow = 1.d0
-c               fog = 0.d0
-c               fol = 0.d0
+c     fow = 1.d0
+c     fog = 0.d0
+c     fol = 0.d0
                fw = fow
                fg = fog
                fl = fol

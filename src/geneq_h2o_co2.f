@@ -481,19 +481,33 @@ c     derivatives wrt co2 mass fraction in water-rich phase (yc)
                   dlawi=dlayci
                   dlewi=dleyci
                else
-                  dlapi=dlapi+dlayci*dmol(i)
-                  dlaei=dlaei+dlayci*dmol(i+neq)
-                  dlepi=dlepi+dleyci*dmol(i)
-                  dleei=dleei+dleyci*dmol(i+neq)
+				if(ices(i).eq.2) then
+					dlapi=dlapi+dlayci*dmol(i)
+     &				+dlayci*dmol(i+neq)
+					dlepi=dlepi+dleyci*dmol(i)
+     &				+dleyci*dmol(i+neq)
+				else
+					dlapi=dlapi+dlayci*dmol(i)
+					dlaei=dlaei+dlayci*dmol(i+neq)
+					dlepi=dlepi+dleyci*dmol(i)
+					dleei=dleei+dleyci*dmol(i+neq)
+				endif
                endif
                if(ico2dis(kb).eq.0) then
                   dlawkb=dlayckb
                   dlewkb=dleyckb
                else
-                  dlapkb=dlapkb+dlayckb*dmol(kb)
-                  dlaekb=dlaekb+dlayckb*dmol(kb+neq)
-                  dlepkb=dlepkb+dleyckb*dmol(kb)
-                  dleekb=dleekb+dleyckb*dmol(kb+neq)
+				if(ices(kb).eq.2) then
+					dlapkb=dlapkb+dlayckb*dmol(kb)
+     &				+dlayckb*dmol(kb+neq)
+					dlepkb=dlepkb+dleyckb*dmol(kb)
+     &				+dleyckb*dmol(kb+neq)
+				else
+					dlapkb=dlapkb+dlayckb*dmol(kb)
+					dlaekb=dlaekb+dlayckb*dmol(kb+neq)
+					dlepkb=dlepkb+dleyckb*dmol(kb)
+					dleekb=dleekb+dleyckb*dmol(kb+neq)
+				endif
                endif
             endif
 c     derivatives wrt air mass fraction in water-rich phase (ya)
@@ -701,19 +715,33 @@ c     derivatives wrt co2 mass fraction in water-rich phase (yc)
                   dvawi=dvayci
                   dvewi=dveyci
                else
-                  dvapi=dvapi+dvayci*dmol(i)
-                  dvaei=dvaei+dvayci*dmol(i+neq)
-                  dvepi=dvepi+dveyci*dmol(i)
-                  dveei=dveei+dveyci*dmol(i+neq)
+				if(ices(i).eq.2) then
+					dvapi=dvapi+dvayci*dmol(i)
+     &				+dvayci*dmol(i+neq)
+					dvepi=dvepi+dveyci*dmol(i)
+     &				+dveyci*dmol(i+neq)
+				else
+					dvapi=dvapi+dvayci*dmol(i)
+					dvaei=dvaei+dvayci*dmol(i+neq)
+					dvepi=dvepi+dveyci*dmol(i)
+					dveei=dveei+dveyci*dmol(i+neq)
+				endif
                endif
                if(ico2dis(kb).eq.0) then
                   dvawkb=dvayckb
                   dvewkb=dveyckb
                else
-                  dvapkb=dvapkb+dvayckb*dmol(kb)
-                  dvaekb=dvaekb+dvayckb*dmol(kb+neq)
-                  dvepkb=dvepkb+dveyckb*dmol(kb)
-                  dveekb=dveekb+dveyckb*dmol(kb+neq)
+				if(ices(kb).eq.2) then
+					dvapkb=dvapkb+dvayckb*dmol(kb)
+     &				+dvayckb*dmol(kb+neq)
+					dvepkb=dvepkb+dveyckb*dmol(kb)
+     &				+dveyckb*dmol(kb+neq)
+				else
+					dvapkb=dvapkb+dvayckb*dmol(kb)
+					dvaekb=dvaekb+dvayckb*dmol(kb+neq)
+					dvepkb=dvepkb+dveyckb*dmol(kb)
+					dveekb=dveekb+dveyckb*dmol(kb+neq)
+				endif
                endif
             endif
 c     derivatives wrt air mass fraction in water-rich phase (ya)

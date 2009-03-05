@@ -91,6 +91,7 @@ c     will over-ride above co2 production
       real*8 drovw, drovya, drovyc, denvw, denvya, denvyc, visv, dvisvya
       real*8 dvisvyc, dvisvw, demwyc, denwyc, denwya
       real*8 vpartial,dvpardt
+	real*8 xs, dxsw, dxsg, denwfw, denwfg
       parameter (fracwmin=0.1)
       integer iflg,duma
       
@@ -356,7 +357,9 @@ c
 
                icesd=ices(mi)
                tl=tco2(mi)
-
+			 xs = fg(mi)/(fg(mi)+fl(mi))
+			 dxsg = 1.d0/(fg(mi)+fl(mi))
+			 dxsw = fg(mi)/((1-fw(mi))*(1-fw(mi)))
                if(icesd.eq.2) then
 c     two phase (gas/liquid) conditions
 c     calculate phase-change temperature and dt/dp
@@ -364,6 +367,10 @@ c     calculate phase-change temperature and dt/dp
      &                 value)
                   dtps=value(1)
                   dtpsc(mi)=dtps
+c RJP 01/22/09 added following for modifying derivatives for
+c dissolved CO2 mass fraction for two phase
+				dmol(mi) = dmol(mi)+dmol(mi+neq)*dtps
+				dmol(mi+neq) = 0.d0
 c     tco2(mi) = tl
                endif
                
@@ -436,10 +443,14 @@ C     RJP 04/08/07 assumed density of co2-rich phase is independent of mixed wat
 c     RJP 03/02/08 added mixture enthalpy for water
                   wat_prop(11*neq+mi) = value(4)-wat_prop(5*neq+mi)
                   wat_prop(12*neq+mi) = -wat_prop(5*neq+mi)
+				wat_prop(13*neq+mi) = dxsg*yco2*
+     &				(value(4)-co2_prop(3*neq+mi))
+				wat_prop(14*neq+mi) = dxsw*yco2*
+     &				(value(4)-co2_prop(3*neq+mi))
                   wat_prop(5*neq+mi) = ywat*wat_prop(5*neq+mi)+yco2*
-     &                 value(4)
+     &                 (value(4)*xs+(1.d0-xs)*co2_prop(3*neq+mi))
                   wat_prop(6*neq+mi) = ywat*wat_prop(6*neq+mi)+yco2*
-     &                 value(6)
+     &                 (value(6)*xs+(1.d0-xs)*co2_prop(5*neq+mi))
                   wat_prop(7*neq+mi) = ywat*wat_prop(7*neq+mi)+yco2*0.d0
                   wat_prop(neq+mi) = wat_prop(neq+mi)+
      &                 wat_prop(2*neq+mi)*dtpsc(mi)
@@ -587,6 +598,9 @@ c
             dviswt=wat_prop(10*neq+mi)
             denwyc=wat_prop(11*neq+mi)
             denwya=wat_prop(12*neq+mi)
+            denwfg=wat_prop(13*neq+mi)
+            denwfw=wat_prop(14*neq+mi)
+
 c     source terms and its derivatives
 c     sk : water mass production rate, originally declared in comdi, old variable
 c     dq : derivative of sk wrt P, originally declared in comci, old variable
@@ -673,8 +687,13 @@ c     be greater than zero.
                   if(ico2dis(mi).eq.0) then
                      dqw(mi)=dqyc(mi)
                   else
-                     dq(mi)=dq(mi)+dqyc(mi)*dmol(mi)
-                     dqt(mi)=dqt(mi)+dqyc(mi)*dmol(mi+neq)
+					if(icesd.eq.2) then
+						dq(mi)=dq(mi)+dqyc(mi)*dmol(mi)
+     &					+dqyc(mi)*dmol(mi+neq)
+					else
+	                    dq(mi)=dq(mi)+dqyc(mi)*dmol(mi)
+						dqt(mi)=dqt(mi)+dqyc(mi)*dmol(mi+neq)
+					endif
                   endif
                endif
             endif
@@ -701,7 +720,8 @@ c     compressed liquid
             daeh=dtin*(dportl*eqdum+
      &           por*(frac_c*xwat*(drolt*enl+rol*denlt)+
      &           frac_w*ywat*(drowt*enw+row*denwt)))
-            if(icesd.eq.2) daeh=por*dtin*xwat*(rol*enl-pl)
+            if(icesd.eq.2) daeh=por*dtin*(xwat*(rol*enl-pl)+
+     &			frac_w*row*denwfg*ywat)
             if(iprtype.eq.1) then
 c     RJP For water-only problem, add heat capacity of rock
                dene = dene+(1.-por)*cp*tl
@@ -711,7 +731,8 @@ c     RJP For water-only problem, add heat capacity of rock
             endif
             daew=por*dtin*(-xwat*(rol*enl-pl)+
      &           ywat*(row*enw-pl))
-            if(icesd.eq.2) daew=por*dtin*ywat*(row*enw-pl)
+            if(icesd.eq.2) daew=por*dtin*ywat*((row*enw-pl)+
+     &			frac_w*row*denwfw)
 c     daeyc=por*dtin*frac_w*(ywat*(drowyc*enw+row*denwyc)-(row*enw-pl))
             daeyc=por*dtin*frac_w*(ywat*(drowyc*enw+row*denwyc)
      &           -(row*enw-pl))
@@ -734,10 +755,17 @@ c     store derivatives of accumulation terms
                      dmwf(mi)=damyc
                      dewf(mi)=daeyc
                   else
-                     dmpf(mi)=dmpf(mi)+damyc*dmol(mi)
-                     dmef(mi)=dmef(mi)+damyc*dmol(mi+neq)
-                     depf(mi)=depf(mi)+daeyc*dmol(mi)
-                     deef(mi)=deef(mi)+daeyc*dmol(mi+neq)
+					if(icesd.eq.2) then
+						dmpf(mi)=dmpf(mi)+damyc*dmol(mi)+
+     &					damyc*dmol(mi+neq)
+						depf(mi)=depf(mi)+daeyc*dmol(mi)+
+     &					daeyc*dmol(mi+neq)
+					else
+						dmpf(mi)=dmpf(mi)+damyc*dmol(mi)
+						dmef(mi)=dmef(mi)+damyc*dmol(mi+neq)
+						depf(mi)=depf(mi)+daeyc*dmol(mi)
+						deef(mi)=deef(mi)+daeyc*dmol(mi+neq)
+					endif
                   endif
                endif
                t(mi)=tl
@@ -800,10 +828,17 @@ c
                      diww(mi)=diwyc(mi)
                      divw(mi)=divyc(mi)
                   else
-                     diwp(mi)=diwp(mi)+diwyc(mi)*dmol(mi)
-                     diwe(mi)=diwe(mi)+diwyc(mi)*dmol(mi+neq)
-                     divp(mi)=divp(mi)+divyc(mi)*dmol(mi)
-                     dive(mi)=dive(mi)+divyc(mi)*dmol(mi+neq)
+					if(icesd.eq.2) then
+						diwp(mi)=diwp(mi)+diwyc(mi)*dmol(mi)
+     &					+diwyc(mi)*dmol(mi+neq)
+						divp(mi)=divp(mi)+divyc(mi)*dmol(mi)
+     &					+divyc(mi)*dmol(mi+neq)
+					else
+	                    diwp(mi)=diwp(mi)+diwyc(mi)*dmol(mi)
+						diwe(mi)=diwe(mi)+diwyc(mi)*dmol(mi+neq)
+						divp(mi)=divp(mi)+divyc(mi)*dmol(mi)
+						dive(mi)=dive(mi)+divyc(mi)*dmol(mi+neq)
+					endif
                   endif
                endif
 
@@ -814,8 +849,9 @@ c     organize source terms and derivatives
 c     hprod=enl+enw
                   dhprdp=denlp*xwat+ywat*denwp
                   dhprde=denlt*xwat+ywat*denwt
-                  if(icesd.eq.2) dhprde=0.d0
+                  if(icesd.eq.2) dhprde=ywat*denwfg
                   dhprdw=0.d0
+				if(icesd.eq.2) dhprdw = ywat*denwfw
                   dhprdyc=-enw+ywat*denwyc
                   dhprdya=-enw+ywat*denwya
                   qh(mi)=hprod*qdis
@@ -828,8 +864,13 @@ c     hprod=enl+enw
                      if(ico2dis(mi).eq.0) then
                         dqhw(mi)=dqhyc(mi)
                      else
-                        dqh(mi)=dqh(mi)+dqhyc(mi)*dmol(mi)
-                        deqh(mi)=deqh(mi)+dqhyc(mi)*dmol(mi+neq)
+						if(icesd.eq.2) then
+							dqh(mi)=dqh(mi)+dqhyc(mi)*dmol(mi)
+     &						+dqhyc(mi)*dmol(mi+neq)
+						else
+	                        dqh(mi)=dqh(mi)+dqhyc(mi)*dmol(mi)
+							deqh(mi)=deqh(mi)+dqhyc(mi)*dmol(mi+neq)
+						endif
                      endif
                   endif
                endif
@@ -845,8 +886,13 @@ c     hprod=enl+enw
                      if(ico2dis(mi).eq.0) then
                         dqhw(mi)=dqhyc(mi)
                      else
-                        dqh(mi)=dqh(mi)+dqhyc(mi)*dmol(mi)
-                        deqh(mi)=deqh(mi)+dqhyc(mi)*dmol(mi+neq)
+						if(icesd.eq.2) then
+							dqh(mi)=dqh(mi)+dqhyc(mi)*dmol(mi)
+     &						+dqhyc(mi)*dmol(mi+neq)
+						else
+							dqh(mi)=dqh(mi)+dqhyc(mi)*dmol(mi)
+							deqh(mi)=deqh(mi)+dqhyc(mi)*dmol(mi+neq)
+						endif
                      endif
                   endif
                endif
@@ -1059,6 +1105,8 @@ c
             dviswt=wat_prop(10*neq+mi)
             denwyc=wat_prop(11*neq+mi)
             denwya=wat_prop(12*neq+mi)
+            denwfg=wat_prop(13*neq+mi)
+            denwfw=wat_prop(14*neq+mi)
 
 c     if(iriver.ne.1) then
             dq(mi)=0.0
@@ -1082,13 +1130,13 @@ c     gaz 2-19-04 added gas relative perms
                skco2(mi)=0.0
                permsd=wellco2(mi)
                pldif=pl-pflowco2(mi)
-               if(kq.eq.-1) then
-                  permsd1=permsd
-                  dprmp=0.d0
-                  dprmt=0.d0
-                  dprmw=0.d0
-                  dprmyc=0.d0
-               else
+c               if(kq.eq.-1) then
+c                  permsd1=permsd
+c                  dprmp=0.d0
+c                  dprmt=0.d0
+c                  dprmw=0.d0
+c                  dprmyc=0.d0
+c               else
                   if(icesd.ne.2) then
                      if(icesd.eq.3) then
                         permsd1=permsd*(rlw*row*yco2/visw+
@@ -1131,7 +1179,7 @@ c     gaz 2-19-04 added gas relative perms
                      dprmyc=permsd*rlw*(row+yco2*drowyc)/visw
                      dprmya=0.0
                   endif
-               endif
+c               endif
                if((pldif.le.0.0d00).and.(kq.eq.-2)) then
                   permsd1=0.d0
                   dprmp=0.d0
@@ -1159,8 +1207,13 @@ c     gaz 2-19-04 added gas relative perms
                   if(ico2dis(mi).eq.0) then
                      dqw(mi)=dqyc(mi)
                   else
-                     dq(mi)=dq(mi)+dqyc(mi)*dmol(mi)
-                     dqt(mi)=dqt(mi)+dqyc(mi)*dmol(mi+neq)
+					if(icesd.eq.2) then
+						dq(mi)=dq(mi)+dqyc(mi)*dmol(mi)
+     &					+dqyc(mi)*dmol(mi+neq)
+					else
+	                    dq(mi)=dq(mi)+dqyc(mi)*dmol(mi)
+						dqt(mi)=dqt(mi)+dqyc(mi)*dmol(mi+neq)
+					endif
                   endif
                endif
             endif
@@ -1186,8 +1239,10 @@ c     two phase condition
      &              (drolp*enl+rol*denlp-1.d0))
                daep2=(-dporpl*cp*tl+(1-por)*cp*dtps)*dtin
                daep=daep1+daep2
-               daeh=dtin*por*(xco2*(rov*env-pl)-(rol*enl-pl))
-               daew=dtin*por*(yco2*(row*enw-pl)-(rol*enl-pl))
+               daeh=dtin*por*((xco2*(rov*env-pl)-(rol*enl-pl))+
+     &			yco2*frac_w*row*denwfg)
+               daew=dtin*por*(yco2*(frac_w*row*denwfw+(row*enw-pl))
+     &			-(rol*enl-pl))
                daeyc=dtin*por*frac_w*((row*enw-pl)+yco2*(drowyc*enw+
      &              row*denwyc))
                daeya=0.0
@@ -1260,10 +1315,17 @@ c     store derivatives of accumulation terms
                      dmwf(mi)=damyc
                      dewf(mi)=daeyc
                   else
-                     dmpf(mi)=dmpf(mi)+damyc*dmol(mi)
-                     dmef(mi)=dmef(mi)+damyc*dmol(mi+neq)
-                     depf(mi)=depf(mi)+daeyc*dmol(mi)
-                     deef(mi)=deef(mi)+daeyc*dmol(mi+neq)
+					if(icesd.eq.2) then
+						dmpf(mi)=dmpf(mi)+damyc*dmol(mi)
+     &					+damyc*dmol(mi+neq)
+						depf(mi)=depf(mi)+daeyc*dmol(mi)
+     &					+daeyc*dmol(mi+neq)
+					else
+						dmpf(mi)=dmpf(mi)+damyc*dmol(mi)
+						dmef(mi)=dmef(mi)+damyc*dmol(mi+neq)
+						depf(mi)=depf(mi)+daeyc*dmol(mi)
+						deef(mi)=deef(mi)+daeyc*dmol(mi+neq)
+					endif
                   endif
                endif
 c     save accumulation terms for possible volume changes
@@ -1352,43 +1414,37 @@ c     transport in CO2-rich phase.
                      dilw(mi)=dilyc(mi)
                      divw(mi)=divyc(mi)
                   else
+					if(icesd.eq.2) then
                      diwp(mi)=diwp(mi)+diwyc(mi)*dmol(mi)
-                     diwe(mi)=diwe(mi)+diwyc(mi)*dmol(mi+neq)
+     &				+diwyc(mi)*dmol(mi+neq)
                      dilp(mi)=dilp(mi)+dilyc(mi)*dmol(mi)
-                     dile(mi)=dile(mi)+dilyc(mi)*dmol(mi+neq)
+     &				+dilyc(mi)*dmol(mi+neq)
                      divp(mi)=divp(mi)+divyc(mi)*dmol(mi)
-                     dive(mi)=dive(mi)+divyc(mi)*dmol(mi+neq)
+     &				+divyc(mi)*dmol(mi+neq)
+					else
+						diwp(mi)=diwp(mi)+diwyc(mi)*dmol(mi)
+						diwe(mi)=diwe(mi)+diwyc(mi)*dmol(mi+neq)
+						dilp(mi)=dilp(mi)+dilyc(mi)*dmol(mi)
+						dile(mi)=dile(mi)+dilyc(mi)*dmol(mi+neq)
+						divp(mi)=divp(mi)+divyc(mi)*dmol(mi)
+						dive(mi)=dive(mi)+divyc(mi)*dmol(mi+neq)
+					endif
                   endif
                endif
 
                if(qdis.gt.0.0) then
 c     organize source terms and derivatives
-                  if(icesd.eq.2) then
-c     hprod=yco2*enw+xco2*env+enl
-c     dhprdp=yco2*denwp+xco2*denvp+denlp
-c     dhprde=0.0
-                     hprod=frac_w*yco2*enw+frac_cg*xco2*env+frac_cl*enl
-                     dhprdp=yco2*denwp*frac_w+frac_cg*xco2*denvp+
-     &                    denlp*frac_cl
-                     dhprde=-yco2*enw+xco2*env-enl
-                     dhprdw=yco2*enw-enl
-                     dhprdyc=enw*frac_w+frac_w*(enw+yco2*denwyc)
-                     dhprdya=0.0
-                  elseif(icesd.eq.3) then
-                     hprod=yco2*enw+xco2*env
-                     dhprdp=yco2*denwp+xco2*denvp
-                     dhprde=yco2*denwt+xco2*denvt
-                     dhprdw=0.0
-                     dhprdyc=enw+yco2*denwyc
-                     dhprdya=0.0
-                  elseif(icesd.eq.4) then
-                     hprod=yco2*enw+xco2*enl
-                     dhprdp=yco2*denwp+xco2*denlp
-                     dhprde=yco2*denwt+xco2*denlt
-                     dhprdw=0.
-                     dhprdyc=enw+yco2*denwyc
-                     dhprdya=0.0
-                  endif
+				hprod = frac_cg*env+frac_cl*enl+frac_w*enw*yco2
+                  dhprdp=frac_cg*denvp+denlp*frac_cl+frac_w*denwp*yco2
+                  dhprde=frac_cg*denvt+denlt*frac_cl+frac_w*denwt*yco2
+                  dhprdw= -env-enl+yco2*enw
+				if(icesd.eq.2) then
+					dhprde=env-enl
+					dhprdw=-enl+enw*yco2
+				endif
+                  dhprdyc=frac_w*(enw+denwyc*yco2)
+                  dhprdya=0.0
+
                   qhco2(mi)=hprod*skco2(mi)
                   dqh(mi)=dhprdp*skco2(mi)+hprod*dq(mi)
                   deqh(mi)=dhprde*skco2(mi)+hprod*dqt(mi)
@@ -1399,8 +1455,13 @@ c     dhprde=0.0
                      if(ico2dis(mi).eq.0) then
                         dqhw(mi)=dqhyc(mi)
                      else
-                        dqh(mi)=dqh(mi)+dqhyc(mi)*dmol(mi)
-                        deqh(mi)=deqh(mi)+dqhyc(mi)*dmol(mi+neq)
+						if(icesd.eq.2) then
+							dqh(mi)=dqh(mi)+dqhyc(mi)*dmol(mi)
+     &						+dqhyc(mi)*dmol(mi+neq)
+						else
+	                        dqh(mi)=dqh(mi)+dqhyc(mi)*dmol(mi)
+							deqh(mi)=deqh(mi)+dqhyc(mi)*dmol(mi+neq)
+						endif
                      endif
                   endif
                endif
@@ -1416,8 +1477,13 @@ c     dhprde=0.0
                      if(ico2dis(mi).eq.0) then
                         dqhw(mi)=dqhyc(mi)
                      else
-                        dqh(mi)=dqh(mi)+dqhyc(mi)*dmol(mi)
-                        deqh(mi)=deqh(mi)+dqhyc(mi)*dmol(mi+neq)
+						if(icesd.eq.2) then
+							dqh(mi)=dqh(mi)+dqhyc(mi)*dmol(mi)
+     &						+dqhyc(mi)*dmol(mi+neq)
+						else
+	                        dqh(mi)=dqh(mi)+dqhyc(mi)*dmol(mi)
+							deqh(mi)=deqh(mi)+dqhyc(mi)*dmol(mi+neq)
+						endif
                      endif
                   endif							
                endif

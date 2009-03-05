@@ -418,7 +418,7 @@ c     volume weighted net flux
                   net_flux = .true.
                   vol_flux = .true.
 c     volume weighted boundary flux
-               else if (cmsg(2) .eq. 'vwg' .or. cmsg(2) .eq. 'vwg') then
+               else if (cmsg(2) .eq. 'vwg' .or. cmsg(2) .eq. 'VWG') then
                   vol_flux = .true.
                end if
             end if

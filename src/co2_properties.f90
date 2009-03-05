@@ -214,15 +214,15 @@ subroutine co2_properties(iflg,iphase,var1,var2,var3,istate,var4,var5)
           + (-0.0907301486*p/(630.d0-t))   &
           + (9.32713393d-4*p*p/((630.d0-t)**2.d0))
 
-     dliq_cpdp = 9.040374d-3-1.14934031d-3*dlog(t)-(0.307405726/t) &
+     dliq_cpdp = 9.0403714d-3-1.14934031d-3*dlog(t)-(0.307405726/t) &
           -0.0907301486/(630.d0-t)+ (2.d0*9.32713393d-4*p/((630.d0-t)**2.d0))
 
      dliq_cpdt = -0.0354581768d0 + (4770.67077d0/(t*t))  &
           +(2.d0*1.02782768d-5*t) + (33.8126098/(630-t)**2)  &
           +(-1.14934031d-3*p/t) + (0.307405726*p/(t*t))  &
           + (-0.0907301486*p/(630.d0-t)**2)   &
-          + (9.32713393d-4*p*p/((630.d0-t)**3.d0))
-
+          + (2.d0*9.32713393d-4*p*p/((630.d0-t)**3.d0))
+! changed the above line not multiplied by 2 before
      lambdaco2_na = -0.411370585d0 + (6.07632013d-4*t) &
           + (97.5347708d0/t) + (-0.0237622469d0*p/t)  &
           + (0.0170656236*p/(630.d0-t)) + (1.41335834d-5*t*dlog(p))
@@ -254,11 +254,14 @@ subroutine co2_properties(iflg,iphase,var1,var2,var3,istate,var4,var5)
 
 !     drhsdp = drhsdp*10.d0
 
-     dvar4dp = var5(2)
-     dvar4dt = var5(3)
+!     dvar4dp = var5(2)
+!     dvar4dt = var5(3)
+     dvar4dp = 0.d0
+     dvar4dt = 0.d0
+
      mco21 = 	var4*fg*p*44.d-3
      mco22 = var4*fg*p*dexp(-rhs)
-     dmco21dp = 44.d-3*(var4*(fg+dfgdp)+fg*p*dvar4dp)
+     dmco21dp = 44.d-3*(var4*(fg+p*dfgdp)+fg*p*dvar4dp)
      dmco21dt = 44.d-3*p*(var4*dfgdt+fg*dvar4dt)
      dmco21dxc = fg*p*44.d-3
      mco2 = mco21/(mco21+dexp(rhs))
