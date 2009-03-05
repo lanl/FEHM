@@ -51,12 +51,13 @@
       use davidi
       implicit none
 
+      character*5 flxzone
       character*8 hissfx, trcsfx
       character*32 cmsg(4), cdum
       character*80 chdum
       character*120 fname, root
       logical null1, opend
-      integer i, iroot, msg(4), imsg(4), nwds
+      integer i, iroot, msg(4), imsg(4), nwds, ishisfzz, ishiscfzz
       real*8 xmsg(4)
 
       hist_flag = .TRUE.
@@ -457,16 +458,22 @@
                      end if
                   end do
                end if
-               fname =  root(1:iroot) // '_flxz' // hissfx
-               ishisfz = ishis + 170
-               open (unit=ishisfz, file=fname, form='formatted')
-               open (unit=ishisfz, file=fname, form='formatted')
-               select case (form_flag)
-               case (0)
-                  write(ishisfz, 6000) verno, jdate, jtime, trim(wdd)
-               case (1)
-                  write(ishisfz, 6005) verno, jdate, jtime
-               end select
+               ishisfz = ishis + 500
+               do i = 1, nflxz
+                  fname = ''
+                  flxzone = ''
+                  write (flxzone, '(i5.5)') iflxz(i)
+                  fname =  root(1:iroot) // '_flxz' // flxzone // hissfx
+                  ishisfzz = ishisfz +i
+                  open (unit=ishisfzz, file=fname, form='formatted')
+                  select case (form_flag)
+                  case (0)
+                     write(ishisfzz, 6000) verno, jdate, jtime, 
+     &                    trim(wdd)
+                  case (1)
+                     write(ishisfzz, 6005) verno, jdate, jtime
+                  end select
+               end do
             else
                if (iout .ne. 0) write(iout, 6050)
                if (iptty .ne. 0) write(iptty, 6050)
@@ -510,7 +517,7 @@
             end if
 ! RJP 08/09/07 added below for outputing CO2 related states
 ! RJP added below for outputing CO2 mass
-        case ('co2', 'CO2')
+         case ('co2', 'CO2')
 ! Output CO2 mass in kg
             fname =  root(1:iroot) // '_co2m' // hissfx
             ishiscm = ishis + 210
@@ -526,18 +533,31 @@
                carbflag = ozflag
             end if
 ! RJP 07/05/07 added below for outputing CO2 flux
-        case ('cfl', 'CFL')
+         case ('cfl', 'CFL')
 ! Output CO2 zone fluxes in kg/s
-            fname =  root(1:iroot) // '_co2flx' // hissfx
-            ishiscfz = ishis + 220
-            open (unit=ishiscfz, file=fname, form='formatted')
-            select case (form_flag)
-            case (0)
-               write(ishiscm, 6000) verno, jdate, jtime, trim(wdd)
-            case (1)
-               write(ishiscm, 6005) verno, jdate, jtime
-            end select
-        case ('sco', 'SCO')
+            if (nflxz .ne. 0) then
+               ishiscfz = ishis + 700
+               do i = 1, nflxz
+                  fname = ''
+                  flxzone = ''
+                  write (flxzone, '(i5.5)') iflxz(i)
+                  fname =  root(1:iroot) // '_co2flx' // flxzone // 
+     &                 hissfx
+                  ishiscfzz = ishiscfz + i
+                  open (unit=ishiscfzz, file=fname, form='formatted')
+                  select case (form_flag)
+                  case (0)
+                     write(ishiscfzz, 6000) verno, jdate, jtime, 
+     &                    trim(wdd)
+                  case (1)
+                     write(ishiscfzz, 6005) verno, jdate, jtime
+                  end select
+               end do
+            else
+               if (iout .ne. 0) write(iout, 6050)
+               if (iptty .ne. 0) write(iptty, 6050)
+            end if
+         case ('sco', 'SCO')
 ! Output CO2 mass in kg
             fname =  root(1:iroot) // '_co2s' // hissfx
             ishiscs = ishis + 230

@@ -121,7 +121,7 @@ C***********************************************************************
       real*8 totalflin,totalein,curinflow,cureinflow
       real*8 phod, dummyreal, dumconv, dumconv1, rolconv
       real*8 aiter, aminkt, years, dayold, sl, eqd, rhomd
-      real*8 hmd, rqd, tas, tassem, tdum, pdum, pres_out
+      real*8 hmd, rqd, tas, tassem, tdum, pdum, pres_out, qtmp
       integer ilev, mlev, il, i, md
       integer dummyint, m2lev
       integer izone, inode, inneq, iconn, indexa_axy
@@ -270,29 +270,46 @@ c
          endif
          
          if ( ntty .eq. 2 )  then
-            if ( m .gt. 0 )  then
+            if ( m .gt. 0 .and. icarb .ne. 1)  then
+c zvd 02-27-09 Output nodal water information in icectrco2 for CO2 problems
                write(iout,779)
                if (iatty.gt.0) write(iatty,779)
  779           format(/,20x,'Nodal Information (Water)')
-               if(ico2.lt.0.and.ihead.eq.0.and.ice.eq.0) then
-                  write(iout,6230)
-                  if (iatty.gt.0)  write(iatty,6230)
-               elseif(ihead.eq.0.and.ichead.eq.0) then
-                  write(iout,6030)
-                  if (iatty.gt.0)  write(iatty,6030)
-               else                  
-                  write(iout,6130)
-                  if (iatty.gt.0)  write(iatty,6130)
+c Isothermal
+               if(ico2.lt.0) then
+                  if(ihead.eq.0.and.ice.eq.0.and.ichead.eq.0) then
+                     write(iout,6230)
+                     if (iatty.gt.0)  write(iatty,6230)
+                  else
+                     write(iout,6130)
+                     if (iatty.gt.0)  write(iatty,6130)
+                  end if
+               else
+                  if(ichead.eq.0) then
+                     write(iout,6030)
+                     if (iatty.gt.0)  write(iatty,6030)
+                  else
+                     write(iout,6330)
+                     if (iatty.gt.0)  write(iatty,6330)
+                  end if
                endif
- 6030          format(46x,'source/sink',2x,'source/sink',/,
-     &              3x,'Node',2x,' p(MPa)',4x,' e(MJ)',5x,
-     &              'l sat',2x,'temp(c)',3x,'(kg/s)',7x,'(MJ/s)')
- 6130          format(56x,'source/sink',2x,'air source/sink',/,
-     &              3x,'Node',1x,' head(m)',4x,' p(MPa)',4x,' e(MJ)',5x,
-     &              'l sat',2x,'temp(c)',3x,'(kg/s)',7x,'(kg/s)')
- 6230          format(46x,'source/sink',2x,'source/sink',/,
-     &              3x,'Node',2x,' p(MPa) ',4x,' e(MJ)',5x,
-     &              'l sat',2x,'temp(c)',3x,'(kg/s)',7x,'(kg/s)')
+c Heat and mass w/o head output
+ 6030          format(50x, 'source/sink', 2x, 'E source/sink', /, 3x,
+     &              'Node', 2x, ' P (MPa)', 3x, ' E (MJ)', 4x, 'L sat',
+     &              5x, 'Temp (C)', 4x, '(kg/s)', 7x, '(MJ/s)')
+c Heat and mass w/ head output
+ 6330          format(61x, 'source/sink', 2x, 'E source/sink', /,
+     &              3x, 'Node', 2x, 'Head (m)', 3x, 'P (MPa)', 4x,
+     &              'E (MJ)', 4x, 'L sat', 5x, 'Temp (C)', 5x,
+     &              '(kg/s)', 7x, '(MJ/s)')
+c Isothermal output w/ head
+ 6130          format(59x,'source/sink', /, 3x, 'Node', 2x, 'Head (m)',
+     &              4x, 'P (MPa)', 4x, 'E (MJ)', 4x, 'L sat',3x,
+     &              'Temp (C)', 4x, '(kg/s)')
+c Isothermal output w/o head
+ 6230          format(52x, 'source/sink', /, 3x,'Node',2x,' P (MPa) ',
+     &              3x, ' E (MJ)', 4x, 'L sat', 5x, 'Temp (C)', 5x,
+     &              '(kg/s)')
                
 c     
 c     organize differing amounts of output for dpdp and dual solutions
@@ -346,10 +363,17 @@ c     CHANGE ABOVE TO JUST PRINT OUT qh ARRAY
                      endif
                      if(ihead.eq.0.and.ichead.eq.0) then
                         phod=pho(md)
-                        write(iout, 6031)  md ,
-     *                       phod , eqd , sl , t(md) , rqd , qh(md) 
-                        if ( iatty .gt. 0 )  write(iatty ,6031)  md ,
-     *                       phod , eqd , sl , t(md) , rqd , qh(md)
+                        if (ico2.lt.0) then
+                           write(iout, 6031)  md ,
+     *                          phod , eqd , sl , t(md) , rqd 
+                           if ( iatty .gt. 0 )  write(iatty ,6031) md ,
+     *                          phod , eqd , sl , t(md) , rqd
+                        else
+                           write(iout, 6031)  md ,
+     *                          phod , eqd , sl , t(md) , rqd , qh(md) 
+                           if ( iatty .gt. 0 )  write(iatty ,6031) md ,
+     *                          phod , eqd , sl , t(md) , rqd , qh(md)
+                        end if
                      else
                         if(ichead.eq.0) then
                            call headctr(4,md,pho(md),phod)
@@ -369,17 +393,23 @@ c     CHANGE ABOVE TO JUST PRINT OUT qh ARRAY
                            ihead=0
                         endif
 c     phod is head with offset removed
-                        write(iout, 6032)  md , phod , pres_out , eqd , 
-     &                       sl , t(md) , rqd , qh(md) 
+                        if (ico2 .lt. 0) then
+                           write(iout, 6032)  md , phod , pres_out ,
+     &                          eqd , sl , t(md) , rqd 
                         if ( iatty .gt. 0 )  write(iatty ,6032)  md ,
-     *                       phod, pres_out , eqd , sl , t(md) , rqd ,
-     *                       qh(md)
-                        
+     *                       phod, pres_out , eqd , sl , t(md) , rqd 
+                        else
+                           write(iout, 6032)  md , phod , pres_out ,
+     &                          eqd , sl , t(md) , rqd , qh(md) 
+                           if ( iatty .gt. 0 )  write(iatty ,6032) md ,
+     *                          phod, pres_out , eqd , sl , t(md) , 
+     &                          rqd , qh(md)
+                        end if
                      endif
  6031                format(i7,2x,g11.4,1x,g9.3,1x,g9.3,1x,f8.3,2x,
-     *                    g11.3,2x,g11.3)
- 6032                format(i7,2x,g11.4,2x,g9.3,1x,g9.3,1x,f5.3,1x,f8.3,
-     *                    2x,g11.3,1x,g11.3)
+     *                    g11.4,2x,g11.4)
+ 6032                format(i7,1x,g11.4,1x,g9.3,1x,g9.3,1x,g9.3,1x,
+     *                    f8.3,3x,g11.4,1x,g11.4)
                   enddo
                enddo
 c     
@@ -389,10 +419,6 @@ c
 c     
 c**** output for co2 ****
 c     
-               if(icarb.eq.1) then
-                  call icectrco2(5,0)
-                  call icectrco2(-5,0)
-               endif	
                if (ico2.gt.0) call  co2ctr  ( 5 )
                if (ico2.lt.0.and.ice.eq.0) then
                   call  airctr  ( 5,0 )
@@ -400,6 +426,11 @@ c
                   call  icectr  ( 5,0 )
                   call  icectr  (-5,0 )
                endif
+            else if(icarb.eq.1) then
+             
+               call icectrco2(5,0)
+               call icectrco2(-5,0)      
+
             endif
 c     
 c     compute and printout fluxes

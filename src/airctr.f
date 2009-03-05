@@ -772,10 +772,11 @@ c     two-phase solution
                      endif
                   enddo
                enddo
- 803           format(/,20x,'Nodal Information (Vapor)',/,2x,'Node',3x,
-     *              'air(vp) pres',3x,'cap pres ',3x,'liquid pres '
-     *              ,3x,'source/sink(kg/s)')
- 804           format(i7,5x,f8.3,1x,f10.3,4x,f10.3,5x,g12.4)
+ 803           format(/,20x,'Nodal Information (Vapor)',/, 9x, 
+     &              'Air(Vapor)',26x, 'source/sink', /, 3x,'Node',1x,
+     *              '  P (MPa)',3x,'Cap P (MPa)',1x,'Liq P (MPa)'
+     *              ,1x,'Air(vp) (kg/s)')
+ 804           format(i7,1x,g11.4,1x,g11.4,1x,g11.4,1x,g11.4)
 c     calculate global mass and energy flows
                if (iout .ne. 0) then
                   write(iout,703) 

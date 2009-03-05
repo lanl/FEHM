@@ -55,22 +55,23 @@
       implicit none
 
       integer i, ic1, ic2, igf, mi, length, last_step, j, k
-      integer count, start, end, var_num
+      integer count, start, end, var_num, ishisfzz, ishiscfzz
       integer, allocatable :: dumlist(:)
       real*8 pwatersat, psat, dpdummy, headdum, ptime, last_time
       real*8 totalflin, totalein, curinflow, cureinflow
       real*8 dae, dmass, start_ae, start_mass
       real*8, allocatable :: dumv(:)
       character*400 glob_string
-      character*80 info_string, title_string, formh_string 
+      character*80 title_string, formh_string 
       character*80 form1_string, form2_string, formp_string
       character*110 formz_string
-      character*90, allocatable :: formf_string(:)
+      character*200 info_string
+      character*90 :: formf_string
       character*28 vt_string
       character*80 formcs_string
       character*14 time_string, file_format, dumv_string
       character*14, allocatable :: var_string(:), var_tmp(:)
-      character*8 zone_string
+      character*10 zone_string
       character*3 dls
       logical time2print
 
@@ -417,8 +418,6 @@ c RJP 04/30/07 added following for outputting time-dependent CO2 mass
  240        format ('(a, ', i3, '(a))')
             info_string = info_string(ic1:ic2) // 'zone flux '
             ic2 = len_trim(info_string) + 1
-            title_string = 'Zone Flux (kg/s)'
-            allocate (formf_string(nflxz))
             formz_string = ''
             if (form_flag .eq. 1) then
                dls = '" "'
@@ -430,60 +429,70 @@ c RJP 04/30/07 added following for outputting time-dependent CO2 mass
                dls = " "
                vt_string = trim(time_string)
             end if
+            formf_string = ''
+            if (prnt_flxzvar(1)) formf_string = 
+     &           trim(formf_string) // dls //  'Source'
+            if (prnt_flxzvar(2)) formf_string = 
+     &           trim(formf_string) // dls // 'Sink'
+            if (prnt_flxzvar(3)) formf_string = 
+     &           trim(formf_string) // dls // 'Net'
+            if (prnt_flxzvar(4)) formf_string = 
+     &           trim(formf_string) // dls // 'Boundary'
+            if ((irdof .ne. 13 .or. ifree .ne. 0) .and.
+     &           prnt_flxzvar(5)) formf_string = 
+     &           trim(formf_string) // dls //  'Vapor'
+            if (form_flag .eq. 1) 
+     &           formf_string = trim(formf_string) // '"'
             write(formz_string, 240) nflxz
             do i = 1, nflxz
-               write(zone_string, '("Zone", i3.3, 1x)') iflxz(i)
-               formf_string(i) = ''
-               if (prnt_flxzvar(1)) formf_string(i) = 
-     &              trim(formf_string(i)) // dls // zone_string //
-     &              'Source'
-               if (prnt_flxzvar(2)) formf_string(i) = 
-     &              trim(formf_string(i)) // dls // zone_string //
-     &              'Sink'
-               if (prnt_flxzvar(3)) formf_string(i) = 
-     &              trim(formf_string(i)) // dls // zone_string //
-     &              'Net'
-               if (prnt_flxzvar(4)) formf_string(i) = 
-     &              trim(formf_string(i)) // dls // zone_string //
-     &              'Boundary'
-               if ((irdof .ne. 13 .or. ifree .ne. 0) .and.
-     &              prnt_flxzvar(5)) formf_string(i) = 
-     &              trim(formf_string(i)) // dls // zone_string //
-     &              'Vapor'
-               if (form_flag .eq. 1 .and. i .eq.  nflxz) 
-     &              formf_string(i) = trim(formf_string(i)) // '"'
+               ishisfzz = ishisfz + i
+               write(zone_string, '("Zone ", i5.5, 1x)') iflxz(i)
+               title_string = trim (zone_string) // ' Flux (kg/s)'
+               if (form_flag .eq. 0)
+     &              write(ishisfzz, '(a)') trim(title_string)
+               if (form_flag .eq. 2) then
+                  write(ishisfzz, '(a, 1x, a, a)') trim(zone_string), 
+     &                 trim(vt_string), trim(formf_string)
+               else
+                  write(ishisfzz, formz_string) trim(vt_string), 
+     &                 trim(formf_string)
+               end if
+               if (form_flag .eq. 1) then
+                  write(ishisfzz, 230) 50., 95., trim(wdd)
+                  write(ishisfzz, 230) 50., 90., trim(title_string)
+               endif
             end do
-            if (form_flag .eq. 0)
-     &           write(ishisfz, '(a)') trim(title_string)
-            write(ishisfz, formz_string) trim(vt_string), 
-     &           (trim(formf_string(i)), i = 1, nflxz)
-            if (form_flag .eq. 1) then
-               write(ishisfz, 230) 50., 95., trim(wdd)
-               write(ishisfz, 230) 50., 90., trim(title_string)
-            endif
          end if
          if (ishiscfz .ne. 0) then
 ! Output CO2 zone fluxes
             info_string = info_string(ic1:ic2) // 'zone CO2 flux '
             ic2 = len_trim(info_string) + 1
-            title_string = 'Zone CO2 Flux (kg/s)'
             formz_string = ''
-            if (form_flag .eq. 1) then
-               formz_string = 'variables = "' // trim(time_string) //
-     &              '"' // ' "Zone" "Source" "Sink" "Net" "Boundary"'
-               write(ishiscfz, '(a)') trim(formz_string)
-               write(ishiscfz, 230) 50., 95., trim(wdd)
-               write(ishiscfz, 230) 50., 90., trim(title_string)
-            else if (form_flag .eq. 2) then
-               formz_string = trim(time_string) //
-     &              ", Zone, Source, Sink, Net, Boundary"
-               write(ishiscfz, '(a)') trim(formz_string)
-            else
-               formz_string = trim(time_string) //
-     &              " Zone Source Sink Net Boundary"
-               write(ishiscfz, '(a)') trim(title_string)
-               write(ishiscfz, '(a)') trim(formz_string)
-            end if             
+            do i = 1, nflxz
+               ishiscfzz = ishiscfz + i
+               zone_string = ''
+               write(zone_string, '("Zone ", i5.5, 1x)') iflxz(i)
+               title_string = trim(zone_string) // ' CO2 Flux (kg/s)'
+               if (form_flag .eq. 1) then
+                  formz_string = 'variables = "' // trim(time_string) //
+     &                 '"' // 
+     &                 ' "Source" "Sink" "Net" "Vapor " "Boundary"'
+                  write(ishiscfzz, '(a)') trim(formz_string)
+                  write(ishiscfzz, 230) 50., 95., trim(wdd)
+                  write(ishiscfzz, 230) 50., 90., trim(title_string)
+               else if (form_flag .eq. 2) then
+                  formz_string = trim(zone_string) // " " //
+     &                 trim(time_string) // 
+     &                 ", Source, Sink, Net, Vapor, Boundary"
+                  write(ishiscfzz, '(a)') trim(formz_string)
+               else
+                  formz_string = trim(time_string) //
+     &                 " Zone Source Sink Net Boundary"
+                  write(ishiscfzz, '(a)') trim(title_string)
+                  write(ishiscfzz, '(a)') trim(formz_string)
+               end if
+               
+            end do
          end if
          if (ishisc .ne. 0) then
 ! Output concentrations
@@ -985,13 +994,19 @@ C RJP 08/09/07
       if (ishisfz .ne. 0) then
 ! Output zone fluxes
          call flxz (2, ptime)
-         call flush(ishisfz)
+         do i = 1, nflxz
+            ishisfzz = ishisfz + i
+            call flush(ishisfzz)
+         end do
       end if
 ! RJP 7/5/07 added following for co2 zone fluxes
       if (ishiscfz .ne. 0) then
 ! Output zone fluxes
          call flxz (3, ptime)
-         call flush(ishiscfz)
+         do i = 1, nflxz
+            ishiscfzz = ishiscfz + i
+            call flush(ishiscfzz)
+         end do
       end if
 
       if (ishisg .ne. 0 ) then

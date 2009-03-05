@@ -726,11 +726,13 @@ c gaz 5-3-2001 need to output air source/sink
                   if (iatty .ne. 0) write(iatty,804)
      &                 mdd,pci(md),pcp(md),phi(md)-pcp(md),qcd,bpd
                enddo
- 803           format(' ','gas output information',//,'  node ',
-     &              'gas par pres',3x,'cap pres ',3x,'liquid pres '
-     &              ,3x,'air src',6x,'residual')
- 804           format(1x,i7,5x,f8.3,1x,f10.3,5x,f10.3,3x,
-     &              g12.4,1x,g9.3)
+ 803           format(/, 20x, 'Nodal Information (Gas)', /, 8x, 
+     &              'Partial P', 3x, 'Capillary', 3x, 'Liquid', 6x, 
+     &              'Gas source/sink', /, 3x, 'Node', 1x, 'Gas (MPa)', 
+     &              3x, 'Pres (MPa)', 2x, 'Pres (MPa)', 5x, '(kg/s)', 
+     &              7x, 'Residual')
+ 804           format(i7, 1x, g11.4, 1x, g11.4, 1x, g11.4, 1x,
+     &              g11.4, 5x, g11.4)
 c     calculate global mass and energy flows
                if (iout .ne. 0) then
                   write(iout,689) qtc,difc

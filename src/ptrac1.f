@@ -632,8 +632,9 @@ c ZVD added option to write initial position to abbreviated output file
          end do
          sptr_prop_values = ''
 
-         sptr_heading(1:58) = 
-     2      ' particle_number  x         y         z         time      '
+         sptr_heading(1:58) =
+     2      ' particle_number  x(m)      y(m)      z(m)      time(days)'
+c     2      ' particle_number  x         y         z         time      '
          position_in_string = 60
 c     Determine how many property columns are being written
 

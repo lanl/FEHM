@@ -428,6 +428,9 @@ c**** read startup parameters ****
       else if (macro .eq. 'flxz') then
          call start_macro(inpt, locunitnum, macro)
          read (locunitnum, *) nflxz
+c Read zones to name flxz output files in inhist if necessary
+         if(.not.allocated(iflxz)) allocate(iflxz(max(1,nflxz)))
+         read (locunitnum, *)(iflxz(i),i=1,nflxz)
          call done_macro(locunitnum)
       else if (macro .eq. 'iter') then
          call start_macro(inpt, locunitnum, macro)
