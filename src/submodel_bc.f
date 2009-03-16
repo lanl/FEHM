@@ -219,50 +219,54 @@ c     set pressure boundary conditions
             enddo
             write(isubm,*)
             write(isubm,'(a4)') 'stop'
-         else if(izone2.ne.0) then
+         else if (keyword.eq.'flux') then
+c zvd 16-Mar-09 remove sum over a_axy, just want boundary source/sink
+c     and don't need to consider if neighbor is in excluded zone
+c         else if(izone2.ne.0) then
 c     code when submodel zone and other domain is specified
-            do i=1,neq
-               if(izonesubm(i).eq.izone1) then
+c            do i=1,neq
+c               if(izonesubm(i).eq.izone1) then
 c     first add existing flux(recharge)
 c     gaz    subflux = sk(i)
-                  subflux = 0.0d00
-                  ibnd = 0
-                  i1=nelm(i)+1
-                  i2=nelm(i+1)
-                  do ii=i1,i2
-                     kb=nelm(ii)
-                     if(izonesubm(kb).eq.izone2) then
-                        subflux = subflux+a_axy(ii-neqp1)
-                        ibnd = 1
-                     endif
-                  enddo
-                  if(ibnd.ne.0) then
-                     write(isubm,2000) i,i,subflux,0.0d00,
-     &                    cord(i,1),cord(i,2),cord(i,3)
-                  endif
-               endif
-            enddo
-            write(isubm,*)
-            write(isubm,'(a4)') 'stop'
-         else if(izone2.eq.0) then
+c                  subflux = 0.0d00
+c                  ibnd = 0
+c                  i1=nelm(i)+1
+c                  i2=nelm(i+1)
+c                  do ii=i1,i2
+c                     kb=nelm(ii)
+c                     if(izonesubm(kb).eq.izone2) then
+c                        subflux = subflux+a_axy(ii-neqp1)
+c                        ibnd = 1
+c                     endif
+c                  enddo
+c                  if(ibnd.ne.0) then
+c                     write(isubm,2000) i,i,subflux,0.0d00,
+c     &                    cord(i,1),cord(i,2),cord(i,3), izone1
+c                  endif
+c               endif
+c            enddo
+c            write(isubm,*)
+c            write(isubm,'(a4)') 'stop'
+c         else if(izone2.eq.0) then
 c     code when only submodel zone is specified
             do i=1,neq
                if(izonesubm(i).eq.izone1) then
 c     first add existing flux(recharge)
-                  ibnd = 0
+c                  ibnd = 0
+                  ibnd = 1
                   subflux = sk(i)
-                  i1=nelm(i)+1
-                  i2=nelm(i+1)
-                  do ii=i1,i2
-                     kb=nelm(ii)
-                     if(izonesubm(kb).ne.izone1) then
-                        subflux = subflux+a_axy(ii-neqp1)
-                        ibnd = 1
-                     endif
-                  enddo
+c                  i1=nelm(i)+1
+c                  i2=nelm(i+1)
+c                  do ii=i1,i2
+c                     kb=nelm(ii)
+c                     if(izonesubm(kb).ne.izone1) then
+c                        subflux = subflux+a_axy(ii-neqp1)
+c                        ibnd = 1
+c                     endif
+c                  enddo
                   if(ibnd.ne.0) then
                      write(isubm,2000) i,i,subflux,0.0d00,
-     &                    cord(i,1),cord(i,2),cord(i,3)
+     &                    cord(i,1),cord(i,2),cord(i,3), izone1
                   endif
                endif
             enddo
