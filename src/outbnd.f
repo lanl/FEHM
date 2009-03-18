@@ -358,6 +358,7 @@ c
             enddo
          else
 c     isothermal air water
+            tl = t(1)
             do i=1,n
 
                if(ps(i).ne.0.0.and.idof.gt.1) then

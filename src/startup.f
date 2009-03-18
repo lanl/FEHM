@@ -26,6 +26,7 @@ CD2
 CD2 07-DEC-93    Z. Dash        22      Initial implementation.
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/startup.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:44:00   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -394,6 +395,7 @@ C***********************************************************************
       use comzone
       use commeth
       use comco2
+      use comsi, only : idof_stress
       implicit none
 
       integer icall, dummyint, j, iconv_tmp
@@ -414,8 +416,8 @@ C***********************************************************************
       integer, allocatable :: nop_temp(:)      
       integer i1,i2,ipiv,icnt
       integer count, num_zone
-      integer nsbb
-      real*8 very_small
+      integer nsbb,idofdum
+      real*8 very_small, fac_nop, fac_mult
       parameter (very_small= 1.d-30)
 
 c     Calculate rho1grav
@@ -448,7 +450,7 @@ c**** also insure gravity direction is correct ****
       end if
 
 c**** set idof = 3 if stress solution enabled and icnl = 0 (3-d) ****
-      if (icnl .eq. 0 .and. istrs .ne. 0)  idof = 3
+      if (icnl .eq. 0 .and. idof_stress .lt. 0)  idof = 3
 
       if (n0 .lt. neq)  then
          write(ierr, 6000)  n0, neq
@@ -458,10 +460,26 @@ c**** set idof = 3 if stress solution enabled and icnl = 0 (3-d) ****
      *        'check parameter statements ****')
          stop
       end if
+c**** set idof = 3 if air-water-heat
+      if (ico2 .gt. 0) idof = max(idof,3)
+      if (idof_co2 .gt. 0) idof = max(idof,idof_co2)
+      if (icnl.eq.0) i1 = 3
+      if (icnl.ne.0) i1 = 2
+      if (idof_stress.gt.3) idof = max(idof + i1,5)
+      if (istrs.ne.0) idof = max(idof,i1)
+c**** 
 
-c**** set idof = 3 if co2 solution is enabled ****
-      if (ico2 .gt. 0) idof = 3
-
+      if(idpdp.ne.0.and.idof_stress.ne.0) then
+        if(iptty.ne.0) then
+         write(iptty,*) '>>>>> dpdp not implemented with stress <<<<'
+         write(iptty,*) 'stopping in startup'
+        endif
+        if(iout.ne.0) then
+         write(iout,*) '>>>>> dpdp not implemented with stress <<<<'
+         write(iout,*) 'stopping in startup'
+        endif
+        stop
+      endif
 c********* Make dpdp, two-phase work properly
 c check for dpdp(ngas or 2dof)
       if(idpdp .ne. 0) then    
@@ -767,7 +785,15 @@ c  estimate parameters for LU arrays
       do i=1,neq
          igmax=max(igmax,nar(i))
       enddo
-      nnop = neq*(ldna/neq+1)*igmax**2.1 +neqp1
+c      nnop = neq*(ldna/neq+1)*igmax**2.1 +neqp1
+c new estimate GAZ 080707
+       if(igmax.le.1) then
+	  nnop = ncont
+	 else
+	  fac_nop = 1.5
+	  fac_mult = 2.2
+        nnop = fac_nop*ldna*fac_mult**(igmax-1) + neqp1
+	 endif
       if(ncont.gt.nnop) nnop=ncont
       nbd  = nnop*mdof**2
       if(irdof.gt.0) then
@@ -983,10 +1009,33 @@ c 3-1 full GMRES schemes
          if (compute_flow .or. iccen .eq. 1) then
             if (ice .eq.0) then
                allocate(bp(max((mdof*n0),(idof*n0),2*n0)))
+               bp = 0.0
             else
                allocate(bp(max((mdof*n0),((idof+1)*n0),2*n0)))
+               bp = 0.0
             end if
-            bp = 0
+c 
+c  make sure size for stress solution is at least 6*neq 
+c  for CO2 app (hopefully less for sequentially coupled)
+c
+c             if (istrs.ne.0) then
+c             if(icnl.ne.0.and.idof_co2.ge.2) idofdum = 5
+c             if(icnl.eq.0.and.idof_co2.ge.2) idofdum = 6
+c             if(icnl.eq.0.and.ico2.eq.0) idofdum = 5
+c             if(icnl.eq.0.and.ico2.ge.1) idofdum = 6            
+c             if(idof_stress.le.3)then
+c              idofdum = max(idof_stress,idof_co2)
+c             endif
+c             if (max((mdof*n0),2*n0).lt.idofdum*n0) then
+c	        deallocate(bp)
+c	        allocate(bp(n0*idofdum))
+c             endif
+c             idof = idofdum
+c	      endif
+c
+c            bp = 0
+c
+         
          end if
       end if
 c     New allocation of bigblock
@@ -1094,8 +1143,22 @@ c**** initialize coefficients adjust volumes in dpdp calcs ****
          iconv = iconv_tmp
       end if
 
-c  initialize pressure dependent porosity
-      call porosi(4)      
+c  initialize pressure pressures and temperatures
+      if(ipini.eq.0.or.iread.eq.0) then
+        i = iporos
+	  iporos = 1    
+        call porosi(4)
+	 iporos = i
+	else
+c phini and tini have be read in from disk, just set pressure
+       psini = ps
+	endif
+	call stressctr(2,0)
+c this call handled in call to porosi above
+c
+c  find permeability nodes
+c
+	call stressctr(16,0)    	 
 c
 c   combine multiple generalzed head BCs
 c
@@ -1237,7 +1300,11 @@ c**** initialize some variables ****
          am0 = 0.0
          ame = 0.0
          astmo = 0.0
-
+c
+c change volumes so mass and energy comes out correct (GAZ 1-29-09)
+c
+      call vboun(1,0)
+c      
 c**** calculate initial mass and energy ****
          do i = 1, n
             if(irdof.ne.13) then

@@ -27,6 +27,7 @@ CD2 22-DEC-93    Z. Dash        22      Add prolog/major cleanup.
 CD2              G. Zyvoloski           Initial implementation.
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/input.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:43:22   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -1260,7 +1261,7 @@ c         isteady = -1
       else if (macro .eq. 'strs') then
 c**** stress solution data ****
          istrs = 1
-         call stress (0)
+         call stressctr (0,0)
 
       else if (macro .eq. 'szna' .or. macro .eq. 'napl') then
 c**** isothermal NAPL - water transport ****
@@ -1311,6 +1312,11 @@ c**** enable vapor pressure lowering ****
 c**** read in nonlinear thermal conductivity information ****
          ivcond = 1
          call vcon (0, 0)
+         
+      else if (macro .eq. 'vbou') then
+c**** read in nonlinear thermal conductivity information ****
+         ivcond = 1
+         call vboun (0, 0)
 
       else if (macro .eq. 'dvel') then
 c**** calculate intermode velocities ****
@@ -1321,7 +1327,7 @@ c**** calculate intermode velocities ****
 c**** output for parameter estimation routine PEST ****
          ipest = 1
          call pest(0)
-
+         
       else if (macro .eq. 'rive'.or. macro .eq. 'well') then
 c RJP 12/13/06 modification to read wellbore/river specific data
 c**** river and wellbore model input ****
@@ -1330,18 +1336,25 @@ c**** river and wellbore model input ****
          call river_ctr(1)
          call river_ctr(5)
          read (inpt, '(a80)') wdd1
+
          if (.not. null1(wdd1)) backspace inpt
+
+      else if (macro .eq. 'phys'.or. macro .eq. 'ndph') then
+c GAZ 11/04/08 modification to read wellbore/river specific data
+c**** wellbore physics or non darcy flow
+
+         call wellphysicsctr(0, 0)
 
       else if (macro .eq. 'wlbr') then
 c**** wellbore input ****
-        iwelb = 1
-        write(ierr,*) 'This option (welbor) not supported.'
-        write(ierr,*) 'Stop in input'
-        stop
+         iwelb = 1
+         write(ierr,*) 'This option (welbor) not supported.'
+         write(ierr,*) 'Stop in input'
+         stop
 c        call welbor (0)
 
 c**** return to main program because all data is read ****
-        go to 210
+         go to 210
 
       else if (macro .eq. 'zeol') then
 c**** Zeolite water balance input

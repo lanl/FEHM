@@ -26,6 +26,7 @@ CD2
 CD2 13-JAN-94    Z. Dash        22      Initial implementation.
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/scanin.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:43:50   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -306,6 +307,7 @@ C***********************************************************************
       use comsptr
       use comwt
       use comsplitts
+      use comwellphys
 c RJP 12/14/06 added following
       use comriv
 c RJP 04/17/06 added following
@@ -356,14 +358,14 @@ c**** read startup parameters ****
       irlp_fac = 0
       iflxc = 0 
       iflux_ts = 0
-
+      istrs = 0
       iread_rcoll = 0           
       total_colloids = 0
       total_daughters = 0
       total_irrev = 0
       total_rev = 0
       maxprobdivs = 0
-
+      ivboun = 0
       nflxt = 0
       nspeci = 0
       numd = 0
@@ -465,6 +467,32 @@ c Read zones to name flxz output files in inhist if necessary
             goto 5
          end if
          call done_macro(locunitnum)
+      else if (macro .eq. 'phys'.or. macro .eq. 'ndph') then
+c     find number of wellphysics or non darcy models models 
+c     eg drift flux
+         iwellp_flag = 1
+         call start_macro(inpt, locunitnum, macro)
+
+         nwellphy = 0
+ 111     continue
+         read(locunitnum,'(a80)') wdd1
+         if(.not. null1(wdd1)) then
+            backspace locunitnum
+            read(locunitnum,*) idumm
+            backspace locunitnum
+            nwellphy = nwellphy + 1
+            if(idumm.eq.1.or.idumm.eq.2) then
+               read(locunitnum,*) idumm,(adumm,ja=1,6)
+            elseif(idumm.eq.-1) then
+
+            end if
+         else
+            go to 211
+         endif
+         go to 111
+ 211     continue
+
+         call done_macro(locunitnum)              
       else if (macro.eq.'rlp ') then
 c     find number of relative perm models 
 c     use nrlp (comai.h) to transfer size of rlp arrays
@@ -480,6 +508,7 @@ c     check for read from other file
             backspace locunitnum
             read(locunitnum,*) idumm
             backspace locunitnum
+            ichng=ichng+1
             nrlp = nrlp + 1
             if(idumm.eq.1) then
                read(locunitnum,*) idumm,(adumm,ja=1,6)
@@ -509,20 +538,41 @@ c     check for read from other file
                read(locunitnum,*) idumm,(adumm,ja=1,10)
             elseif(idumm.eq.13) then
                read(locunitnum,*) idumm,(adumm,ja=1,10)
+c            elseif(idumm.eq.14) then
+c               read(locunitnum,*) idumm,(adumm,ja=1,6)
+c            elseif(idumm.eq.15) then
+c               read(locunitnum,*) idumm,(adumm,ja=1,6)
+c    temma add 2005/11/07
             elseif(idumm.eq.14) then
-               read(locunitnum,*) idumm,(adumm,ja=1,6)
+                read(locunitnum,*) idumm,(adumm,ja=1,12)
             elseif(idumm.eq.15) then
-               read(locunitnum,*) idumm,(adumm,ja=1,6)
+                read(locunitnum,*) idumm,(adumm,ja=1,12)
             elseif(idumm.eq.16) then
-               read(locunitnum,*) idumm,(adumm,ja=1,14)
+               read(locunitnum,*) idumm,(adumm,ja=1,12)
             elseif(idumm.eq.17) then
                read(locunitnum,*) idumm,(adumm,ja=1,14)
             elseif(idumm.eq.18) then
+                read(locunitnum,*) idumm,(adumm,ja=1,14)
+             elseif(idumm.eq.19) then
+                read(locunitnum,*) idumm,(adumm,ja=1,14)
+             elseif(idumm.eq.20) then
                read(locunitnum,*) idumm,(adumm,ja=1,16)
+c
             elseif(idumm.eq.19) then
                read(locunitnum,*) idumm,(adumm,ja=1,7)
             elseif(idumm.eq.21) then
                read(locunitnum,*) idumm,(adumm,ja=1,6)
+c    temma add 2005/11/07
+c            elseif(idumm.eq.14) then
+c                read(locunitnum,*) idumm,(adumm,ja=1,12)
+c            elseif(idumm.eq.15) then
+c                read(locunitnum,*) idumm,(adumm,ja=1,12)
+c            elseif(idumm.eq.18) then
+c               read(locunitnum,*) idumm,(adumm,ja=1,14)
+c            elseif(idumm.eq.19) then
+c               read(locunitnum,*) idumm,(adumm,ja=1,14)
+c            elseif(idumm.eq.20) then
+c               read(locunitnum,*) idumm,(adumm,ja=1,16)
             else
 c Undefined rlp model, stop
                write (ierr, 12) nrlp, idumm
@@ -806,8 +856,12 @@ c     parameters
       else if(macro .eq. 'rive'.or. macro .eq. 'well') then
          
          call start_macro(inpt, locunitnum, macro)
+785         read (locunitnum, '(a9)') dumstring(1:9)
+         if (dumstring(1:1) .eq. '#') go to 785
+         if (dumstring(1:9) .eq. 'wellmodel') then
+          read (locunitnum, *) nriver,iriver
 
-         read (locunitnum, *) nriver
+	 if(iriver.eq.1) then
          npoint_riv = 0
          do i = 1,nriver
             read (locunitnum, *) idum1,ii,jj		      
@@ -827,7 +881,37 @@ c     parameters
             enddo
  441        continue
          enddo
-
+	 else if(iriver.eq.2) then
+c	 
+	    allocate(coor_dum(nriver,3))
+	    do i = 1,nriver
+           read (locunitnum, *) ii, 
+     &	   coor_dum(ii,1),coor_dum(ii,2),coor_dum(ii,3)   	      
+	    enddo
+             read(inpt,*) n_well_seg
+	       allocate(iwell_seg(n_well_seg,2))
+	       allocate(well_rad(n_well_seg))
+	       allocate(well_dz(n_well_seg))
+             do i = 1,n_well_seg
+	        read(inpt,*) j,iwell_seg(j,1),iwell_seg(j,2),
+     &			well_rad(j),well_dz(j)	       
+             enddo
+	    npoint_riv = 0
+	    max_seg_div = 0
+	    do j = 1,n_well_seg
+	      ii = iwell_seg(j,1)
+	      kk = iwell_seg(j,2)
+            adumm = (coor_dum(ii,1)-coor_dum(kk,1))**2 +
+     &         (coor_dum(ii,2)-coor_dum(kk,2))**2 + 
+     &         (coor_dum(ii,3)-coor_dum(kk,3))**2 
+	      adumm = sqrt(adumm)
+            jj = adumm/well_dz(j) + 1 
+            max_seg_div = max(max_seg_div,jj)
+	      npoint_riv = npoint_riv + jj
+	    enddo
+	   deallocate(coor_dum,iwell_seg,well_rad,well_dz)
+	  endif
+        endif
          call done_macro(locunitnum) 	        
          
       else if (macro .eq. 'itfc') then
@@ -1899,9 +1983,12 @@ c need porosity model
          enddo
 
          call done_macro(locunitnum)
-
+      else if (macro .eq. 'vbou') then
+         ivboun = 1
       else if (macro .eq. 'zeol') then
          izeolites = 1
+      else if (macro .eq. 'strs') then
+         read(locunitnum,*) istrs
          
       end if
       

@@ -650,6 +650,7 @@
       integer, allocatable :: itc(:) 
       integer, allocatable :: ivcn(:) 
       integer, allocatable :: ivcon(:) 
+      integer, allocatable :: ivbounf(:) 
       integer, allocatable :: mflagl(:,:)
       integer, allocatable :: mflagv(:,:)
       integer, allocatable :: npt(:) 

@@ -153,9 +153,19 @@
       logical log_flag
 
       if (header_flag .eq. 'new' .and. iriver .eq. 0) then
-! Force old style output if wellbore macro is invoked for now
+c Force old style output if wellbore macro is invoked for now
          call diskwrite_new
          return
+      else
+c Look at rstw array to determine if initial pressures and temperatures
+c should be output. All original variables will be output for 'old'
+         if (.not. allocated(rstw)) rstw_num = 0
+         do i = 1, rstw_num
+            if (rstw(i) .eq. 'pini') then
+               ipini = 1
+               exit
+            end if
+         end do
       end if
 
       call dated (jdate,jtime)
@@ -455,8 +465,18 @@ c     write(isave) (max(pho(mi)-phi_inc,tolw),  mi=1,n )
       log_flag = .TRUE.
       if (iccen.eq.1) call diskc(log_flag)
       if (ptrak) call diskp(log_flag)
-      if (istrs.ne.0) call  stress  ( 4 )
 
+c     if (istrs.ne.0) call  stressctr  (16,0 )
+c write initial pressures and temperatures if enabled via restart macro
+      if(ipini .ne. 0) then
+         if (cform(7) .eq. 'formatted') then
+            write(isave,*)  ( tini (mi) , mi=1,n )
+            write(isave,*)  ( phini (mi) , mi=1,n )
+         else
+            write(isave)  ( tini (mi) , mi=1,n )
+            write(isave)  ( phini (mi) , mi=1,n )
+         endif
+      endif
       close  ( isave )
       
       return

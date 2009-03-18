@@ -268,6 +268,7 @@ C**********************************************************************
       use comdti
       use comai
       use comco2
+      use comsi
       use comsplitts
       implicit none
 
@@ -311,9 +312,17 @@ c     strd=0.95
       endif
 c     
 c     update variable states
-c     
-      if(ice.eq.0) then
+c   
+      if(istrs_coupl.le.-99) then	 
+c  istrs_coupl.le.-99 means only a stress solution (like calculating initial lithoststic stress)  
+c (4,0) is nonlinear (if any) material properties)   
+         call stressctr(4,0)        
+      elseif(ice.eq.0) then
          call varchk(0,0)
+c the following is for fully coupled model         
+         if(idof_stress.ge.4) then
+	    call stressctr(4,0)
+         endif
 c     RJP 04/10/07 added 
          if(icarb.eq.1) then
             call icectrco2(-1,0)
@@ -330,7 +339,14 @@ c     if (mlz.eq.-1) goto 2000
       endif
 
 c     call appropriate sub to generate equations
-      if(idof.le.1) then
+      if(idof_stress.ge.5) then
+c 3d coupled THM
+         call gensl_stress_coupled_3D
+      else if(istrs_coupl.le.-99) then	
+c add stress equations and derivatives
+c uncoupled stress equations
+         call  stressctr(8,0)
+      else if(idof.le.1) then
          call gensl3
       else
          if(ico2.gt.0) then
@@ -388,12 +404,20 @@ c     RJP 04/17/07 changed following
 c     
 c     apply nr corrections
 c     
-      if(ice.eq.0) then
+      if(idof_stress.ge.5) then
+c     3d coupled THM 
+         call stressctr(9,0)
+      else if(istrs_coupl.le.-99) then
+	 call stressctr(9,0) 
+      else if(ice.eq.0) then
 c     RJP 04/10/07 added following
          if(icarb.eq.1) then
             call icectrco2(2,0)
          else
             call varchk(1,0)
+            if(idof_stress.ge.4) then
+               call stressctr(9,0)            
+            endif
          end if
       else
          call icectr(2,0)

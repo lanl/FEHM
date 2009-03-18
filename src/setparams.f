@@ -317,6 +317,7 @@ C***********************************************************************
       use comdti
       use comai
       use combi
+      use comwellphys
       use comxi, only : cform
 c RJP12/13/06 ADDED following
       use comriv
@@ -341,7 +342,8 @@ c set some parameters
 c	gdpm nodes
       ngdpmnodes = 0
       gdpm_flag = 0
-
+      iwellp_flag = 0
+      nwellphy = 0
 
       call scanin
 
@@ -510,7 +512,7 @@ c**** calculate parameters ****
        ne13 = 23 * n5
        ne14 = 2 * n6 + 1
        ne15 = n6
-       maxor = 41
+       maxor = 201
        zero_t = 1.e-30
        ldn2 = n0*28+1       
        ldn1 = 0

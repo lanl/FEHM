@@ -932,7 +932,7 @@ c
       if(lda.le.0) then
          if(irun.eq.1.and.ianpe.eq.0) then
             call check_sx(neq,ianpe,nr,nelm,istrw,nelmdg,ischk,iptty,
-     &           iout,ierr,min_nr,isox,isoy,isoz,sx1,sx)
+     &           iout,ierr,min_nr,isox,isoy,isoz,intg,sx1,sx)
             if (ischk .ne. 0) then
                write(ischk,9000) min_nr,nr
                write(ischk,*) ' '

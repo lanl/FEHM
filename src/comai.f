@@ -28,59 +28,6 @@
 !D2              G. Zyvoloski           Initial implementation.
 !D2
 !D2 $Log:   /pvcs.config/fehm90/src/comai.f_a  $
-!D2 
-!D2    Rev 2.5   06 Jan 2004 10:42:26   pvcs
-!D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
-!D2 
-!D2    Rev 2.4   29 Jan 2003 08:56:00   pvcs
-!D2 FEHM Version 2.20, STN 10086-2.20-00
-!D2 
-!D2    Rev 2.3   14 Nov 2001 13:05:18   pvcs
-!D2 FEHM Version 2.12, STN 10086-2.12-00
-!D2 
-!D2    Rev 2.2   06 Jun 2001 13:22:18   pvcs
-!D2 FEHM Version 2.11, STN 10086-2.11-00
-!D2 
-!D2    Rev 2.1   30 Nov 2000 11:56:28   pvcs
-!D2 FEHM Version 2.10, STN 10086-2.10-00
-!D2 
-!D2    Rev 2.0   Fri May 07 14:39:24 1999   pvcs
-!D2 FEHM Version 2.0, SC-194 (Fortran 90)
-!D2 
-!D2    Rev 1.10   Fri May 17 13:00:36 1996   hend
-!D2 Added optional parameter to time macro for initial time
-!D2 
-!D2    Rev 1.9   Wed Feb 07 12:19:52 1996   gaz
-!D2 added parameters icons inapl to common 
-!D2 
-!D2    Rev 1.8   08/16/95 12:32:56   robinson
-!D2 Changed name of variable to set print out interval
-!D2 
-!D2    Rev 1.7   04/27/95 18:40:02   llt
-!D2 added iad_up for macro itup
-!D2 
-!D2    Rev 1.6   03/24/95 09:46:06   llt
-!D2 added macro iupk, increased nmacros
-!D2 
-!D2    Rev 1.5   02/21/95 16:43:08   llt
-!D2 jdate length corrected
-!D2 
-!D2    Rev 1.4   01/28/95 14:06:58   llt
-!D2 water balance equation was modified
-!D2 
-!D2 12/14/94 gaz added ithic,imdnode
-!D2    
-!D2    Rev 1.3   11/29/94 18:24:28   llt
-!D2 Changed length of jdate to 11 characters for ibm
-!D2 
-!D2    Rev 1.2   06/20/94 11:03:10   zvd
-!D2 Added ierr unit number for error output.
-!D2 
-!D2    Rev 1.1   03/18/94 16:22:52   gaz
-!D2 Added solve_new and cleaned up memory management.
-!D2 
-!D2    Rev 1.0   01/20/94 10:21:50   pvcs
-!D2 original version in process of being certified
 !D2
 !***********************************************************************
 !D3
@@ -478,9 +425,15 @@ c ZVD 05/01/07 added form_flag, ishisc, ishiswc
 c RJP added for history of carbon mass
       integer             ishiscm, ishiscfz, ishiscs	 
       integer             imbe_ctr, imbet_ctr
-c GAZ 11/
+c GAZ 11/02/08 
+      integer             ishisstrx,ishisstry,ishisstrz
+      integer             ishisdisx,ishisdisy,ishisdisz
       integer             ich_max,ich_m1,ich_m2,sat_ich
       integer             jswitch, joff
+      integer             iwellp_flag
+      integer             istrs_coupl, iax_b, ipini
+      integer             ivboun
+      
       integer :: irun = 0
 
       real*8              aener, aiaa, am0, amass, ame, an0, asteam

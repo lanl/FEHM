@@ -87,7 +87,12 @@
       ishiscm = 0
       ishiscfz = 0
       ishiscs = 0
-
+      ishisdisx = 0
+      ishisdisy = 0
+      ishisdisz = 0
+      ishisstrx = 0
+      ishisstry = 0
+      ishisstrz = 0
       wt_flag = 0
 
       if (null1(root_name)) then

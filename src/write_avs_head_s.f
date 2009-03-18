@@ -62,7 +62,7 @@ C************************************************************************
       implicit none
 
       integer maxscalar
-      parameter (maxscalar = 22)
+      parameter (maxscalar = 29)
       integer neq,nscalar,lu,ifdual
       integer i,j,iolp,iovp,nout,icall,idz,iriver2
       integer size_head, size_pcp, istart, iend, ic1, ic2, length
@@ -89,6 +89,9 @@ C************************************************************************
      &     units(11) /'(log m**2)'/,
      &     units(12) /'(log m**2)'/,
      &     units(13) /'(log m**2)'/,
+     &     units(14) /'(m)'/,
+     &     units(15) /'(m)'/,
+     &     units(16) /'(m)'/,     
      &     units(17) /'(no dim)'/,
      &     units(18) /'(kg/s)'/,
      &     units(19) /'(kg/s)'/,
@@ -98,9 +101,15 @@ C************************************************************************
      &     units(23) /'(no dim)'/,
      &     units(24) /'(no dim)'/,
      &     units(25) /'(no dim)'/,
-     &     units(14) /'(m)'/,
-     &     units(15) /'(m)'/,
-     &     units(16) /'(m)'/
+     &     units(26) /'(m)'/,
+     &     units(27) /'(m)'/,    
+     &     units(28) /'(m)'/  
+     &     units(29) /'(MPa)'/           
+     &     units(30) /'(MPa)'/
+     &     units(31) /'(MPa)'/
+     &     units(32) /'(no dim)'/     
+     
+
 
 C     BEGIN
       size_head = size(head)
@@ -141,6 +150,9 @@ c     Header is only written to the first tecplot file
       title(11) = trim(dual_char) // 'X Permeability (log m**2)'
       title(12) = trim(dual_char) // 'Y Permeability (log m**2)'
       title(13) = trim(dual_char) // 'Z Permeability (log m**2)'
+      title(14) = 'X coordinate (m)'
+      title(15) = 'Y coordinate (m)'
+      title(16) = 'Z coordinate (m)'      
       title(17) = trim(dual_char) // 'Zone'
       if (vol_flux .and. net_flux) then
          title(18) = trim(dual_char) // 'Net Liquid Flux (kg/s/m**3)'
@@ -160,12 +172,17 @@ c     Header is only written to the first tecplot file
       title(23) = trim(dual_char) // 'Gaseous CO2 Fraction'
       title(24) = trim(dual_char) // 'Dissolved CO2 Mass Fraction'
       title(25) = trim(dual_char) // 'CO2 Phase State'
-      title(14) = 'X coordinate (m)'
-      title(15) = 'Y coordinate (m)'
-      title(16) = 'Z coordinate (m)'
+      title(26) = 'X displacement (m)'
+      title(27) = 'Y displacement (m)'
+      title(28) = 'Z displacement (m)'     	          
+      title(29) = 'X stress (MPa)'
+      title(30) = 'Y stress (MPa)'
+      title(31) = 'Z stress (MPa)'  
+      title(32) = 'Volume Strain'      
+
       
       if(altc(1:3).eq.'avs' .and. altc(4:4) .ne. 'x') then
-C---  Max number of scalars is 9 + 3 coordinates
+C---  Max number of scalars is number of parameters + 3 coordinates
          string = ''
          write (string, '(i2.2)') nout
          ic1 = 3
@@ -244,7 +261,19 @@ c     Write Z coordinate
          if (ioflx .eq. 1 .and. iovapor .eq. 1) then
             write(lu,200) trim(title(19)), trim(units(19))
          end if         
-         
+         if (iodisp .eq. 1) then
+            write(lu,200) trim(title(26)), trim(units(26))
+            write(lu,200) trim(title(27)), trim(units(27))
+            write(lu,200) trim(title(28)), trim(units(28))
+         end if 
+         if (iostress .eq. 1) then
+            write(lu,200) trim(title(29)), trim(units(29))
+            write(lu,200) trim(title(30)), trim(units(30))
+            write(lu,200) trim(title(31)), trim(units(31))
+         end if  	    
+         if (iostrain .eq. 1) then
+            write(lu,200) trim(title(32)), trim(units(32))
+         end if  	               
       else
 C--   altc is 'avsx', 'tec', 'sur'
          tstring = ''
@@ -410,6 +439,40 @@ c     Write Z coordinate
             length = len_trim(tstring)
             ic2 = ic2 + length
          end if
+         if (iodisp .eq. 1) then
+            write(tstring,formstring) trim(title(26))
+            tstring2 = tstring2(ic1:ic2) // tstring
+            length = len_trim(tstring)
+            ic2 = ic2 + length
+            write(tstring,formstring) trim(title(27))
+            tstring2 = tstring2(ic1:ic2) // tstring
+            length = len_trim(tstring)
+            ic2 = ic2 + length
+            write(tstring,formstring) trim(title(28))
+            tstring2 = tstring2(ic1:ic2) // tstring
+            length = len_trim(tstring)
+            ic2 = ic2 + length
+         end if 
+         if (iostress .eq. 1) then
+            write(tstring,formstring) trim(title(29))
+            tstring2 = tstring2(ic1:ic2) // tstring
+            length = len_trim(tstring)
+            ic2 = ic2 + length
+            write(tstring,formstring) trim(title(30))
+            tstring2 = tstring2(ic1:ic2) // tstring
+            length = len_trim(tstring)
+            ic2 = ic2 + length
+            write(tstring,formstring) trim(title(31))
+            tstring2 = tstring2(ic1:ic2) // tstring
+            length = len_trim(tstring)
+            ic2 = ic2 + length
+         end if 
+         if (iostrain .eq. 1) then
+            write(tstring,formstring) trim(title(32))
+            tstring2 = tstring2(ic1:ic2) // tstring
+            length = len_trim(tstring)
+            ic2 = ic2 + length
+	 endif         
          if (altc(1:3) .eq. 'tec') then
             write(lu, 400) verno, jdate, jtime, trim(wdd)
          end if

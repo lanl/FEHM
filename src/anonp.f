@@ -1,4 +1,4 @@
-      subroutine anonp 
+      subroutine anonp
 !***********************************************************************
 !  Copyright, 1993, 2004,  The  Regents of the University of California.
 !  This program was prepared by the Regents of the University of 
@@ -28,6 +28,7 @@ CD2 07-JAN-94    Z. Dash        22      Add prolog.
 CD2              G. Zyvoloski           Initial implementation.
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/anonp.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:42:18   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -721,6 +722,7 @@ C***********************************************************************
       use combi
       use comdi
       use comei
+      use comsi
       use comdti
       use comai
       implicit none
@@ -737,7 +739,7 @@ C***********************************************************************
       integer iortho, ipiv, is1, is2, isx, iu, j, je, jj, k, kb, kc, kj
       integer kk, korth(8,8), lei, mm, n1, ncont, ned, neibr, nel, nele
       integer nelu, neluc, nelucd, neqp1, neu, nfd, nfu, node, nodeu
-      integer nj, nsc, nsl, nslu, nt, numgb(8)
+      integer nj, nsc, nsl, nslu, nt, ncoef, numgb(8)
       integer ii, ipivkb, neq_total, n0_save, ipmax, lcnt, lcnt2
 
 c using storage for a matrix
@@ -877,7 +879,7 @@ c     sort elements into ascending order
       end do
 
 c group elements(volume, area, moment of inertia)
-      do 100 ie = 1, nei
+      do ie = 1, nei
          nsl = nsf(ie)
          if(icnl.eq.0) then
 c     procedure for 3-d problems
@@ -1137,7 +1139,7 @@ cc     new element type (ie. we had no match )
  7001    neluc = neluc+1
          neluf(ie) = neluc
          ineluf(neluc) = ie
- 100  continue
+      end do
 c     
 c     find sum of element types connected to node
 c     
@@ -1227,7 +1229,7 @@ c     loop on elements connected with node i
 c     
          i5 = 1
          i6 = iplace(i)
-         do 11 jj = i5, i6
+         do jj = i5, i6
             nele = nopdum(i,jj)
 c     find position of node i in element nele
             k = noodum(i,jj)
@@ -1258,8 +1260,8 @@ c     coding for 2-d elements
                      endif
                   endif
                enddo
-             endif
-11      continue
+            endif
+      end do
 c gaz 11-09-2001 comment out mdnode , call after     `
 c     
 c     call md_nodes to add multiply defined nodes
@@ -1320,7 +1322,7 @@ c     search for connection
                      if(kc.eq.id) go to 2005
                   enddo
                   write(ierr, *) 'failed in anonp:stop'
-                  if (iout .ne. 0)write(iout, *) 'failed in anonp:stop'
+                  if(iout .ne. 0) write(iout, *) 'failed in anonp:stop'
                   if(iptty.gt.0) write(iptty, *) 'failed in anonp:stop'
  2005             continue
 c     found match
@@ -1391,8 +1393,42 @@ c     add one more position for possible BC to BC or mdnodes
       nr=isx+1
 c     
 c     allocate memory for fe coefficients
+c    
+      if(istrs.ne.0) then	
+
 c     
-      allocate(sx(nr,3))
+c     define pointer for stress coefficients 
+c     
+         i3 = ncon(neqp1)-neqp1
+         if(.not.allocated(istrws)) allocate(istrws(i3))
+         if(allocated(sxs)) deallocate(sxs)
+         if(icnl.eq.0) then
+            ncoef = 12
+         else
+            ncoef = 8
+         endif
+	 allocate(sxs(i3,ncoef))
+c     GAZ 011109 new storage for finv flow simulations	 
+	 allocate(sx(nr,3))
+	 sxs = 0.0d0
+	 sx = 0.0d0 
+	 sx1 = 0.0d0
+c     
+         i3 = 0
+         do i = 1,neq
+            i1 = ncon(i)+1
+            i2 = ncon(i+1)
+            do jj = i1,i2
+               kb = ncon(jj)
+               i3 = i3+1
+               istrws(jj-neqp1) = i3
+            enddo
+	 enddo
+      else 
+         allocate(sx(nr,3))
+	 sx = 0.0d0 
+	 sx1 = 0.0d0
+      endif
 c     
 c     call geometric coefficients routine
 c     
@@ -1427,20 +1463,20 @@ c
 c     insure isotropy for non stress solutions
 c     
       if(isoy.eq.2) then
-        call sx_combine(-1)
-c done now in startup.f
-c       call sx_combine(1)
-        call sx_combine(2)
+         call sx_combine(-1)
+c     done now in startup.f
+c     call sx_combine(1)
+         call sx_combine(2)
       else if(isoy.eq.1) then
-        call sx_combine(-2)
-c done now in startup.f
-c       call sx_combine(1)
-        call sx_combine(3)
+         call sx_combine(-2)
+c     done now in startup.f
+c     call sx_combine(1)
+         call sx_combine(3)
       endif
-c
-c GAZ 02-08-01
-c setting neq back 
-c
+c     
+c     GAZ 02-08-01
+c     setting neq back 
+c     
       if(gdpm_flag.ne.0 .or. nriver.ne.0) then
          neq = neq_total
          n0=n0_save

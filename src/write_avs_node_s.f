@@ -31,6 +31,7 @@ CD2
 CD2 10-SEP-93    Carl Gable     22      Initial implementation.
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/write_avs_node_s.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:44:30   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -219,13 +220,14 @@ c----------------------------------------------------------------------
 
       use avsio
       use comai, only : altc, days, iadif, icnl, idof, nei_in,
-     &     ns_in, phi_inc
+     &     ns_in, phi_inc, istrs
       use combi, only : corz, izonef, nelm, nelmdg, sx1
       use comci, only : rolf, rovf
       use comdi
       use comfi, only : pci
       use comflow, only : a_axy, a_vxy
       use comwt, only : sattol, head_id, rlptol
+      use comsi
       use davidi
 c RJP 1/12/07 added following
       use comco2
@@ -233,7 +235,7 @@ c RJP 1/12/07 added following
       implicit none
 
       integer maxscalar
-      parameter (maxscalar = 22)
+      parameter (maxscalar = 29)
       integer neq,nscalar,lu,ifdual,icall,open_file,offset,iriver2
       integer i,j,iolp,iovp,nout,iz,iendz,il,idz, i1, i2, index, iaxy, k
       integer size_head, size_pcp, istart, iend, ic1, ic2, length, nadd
@@ -690,8 +692,50 @@ c might need help in the
                string(ic1:ic2) = vstring
                ic1 = ic2 + 1                  
             end if
+            if (iodisp .eq. 1) then
+               write(vstring,110) dls(1:k), du(i)
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+               write(vstring,110) dls(1:k), dv(i)
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+               write(vstring,110) dls(1:k), dw(i)
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+            endif 
+            if (iostress .eq. 1) then
+               write(vstring,110) dls(1:k), str_x(i)
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+               write(vstring,110) dls(1:k), str_y(i)
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+c put shear stress (str_xy) in z stress slot for 2-D                              
+               if(icnl.eq.0) then
+                write(vstring,110) dls(1:k), str_z(i)
+                ic2 = ic1 + len_trim(vstring)
+                string(ic1:ic2) = vstring
+                ic1 = ic2 + 1
+               else
+                write(vstring,110) dls(1:k), str_xy(i)
+                ic2 = ic1 + len_trim(vstring)
+                string(ic1:ic2) = vstring
+                ic1 = ic2 + 1   
+               endif            
+            endif 
+            if (iostrain .eq. 1) then
+               write(vstring,110) dls(1:k), vol_strain(i)
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+            endif  
             length = len_trim(string)
-            write(lu,'(a)') string(1:length)
+            write(lu,'(a)') string(1:length)           
  200     enddo
          call flush(lu)
          if (altc(1:3) .eq. 'sur') close (lu)

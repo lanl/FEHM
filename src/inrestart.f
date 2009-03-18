@@ -44,14 +44,14 @@
 !***********************************************************************
 
       use comai
-      use combi, only : rstr, rstw
+      use combi, only : rstr, rstr_num, rstw, rstw_num
       use comxi
       implicit none
 
-      integer i, imsg(8), msg(8), nwds
-      real*8  xmsg(8)
-      character*32 cmsg(8)
-      character*80 chdum
+      integer i, imsg(12), msg(12), nwds, ir
+      real*8  xmsg(12)
+      character*32 cmsg(12)
+      character*200 chdum
       logical null1
 
 ! Default will be to read or write all variables from/to restart file 
@@ -95,14 +95,32 @@
          case ('read')
 ! List parameters to be read from restart file
             call parse_string(chdum,imsg,msg,xmsg,cmsg,nwds)
+            rstr_num = 0
             do i = 2, nwds
-               if (msg(i) .eq. 3) rstr(i-1) = cmsg(i)(1:4)
+               if (msg(i) .eq. 3) rstr_num = rstr_num + 1
+            end do
+            allocate (rstr(rstr_num))
+            ir = 0
+            do i = 2, nwds
+               if (msg(i) .eq. 3) then
+                  ir = ir + 1
+                  rstr(ir) = cmsg(i)(1:4)
+               end if
             end do
          case ('writ')
 ! List parameters to be written to restart file
             call parse_string(chdum,imsg,msg,xmsg,cmsg,nwds)
+            rstw_num = 0
             do i = 2, nwds
-               if (msg(i) .eq. 3) rstw(i-1) = cmsg(i)(1:4)
+               if (msg(i) .eq. 3) rstw_num = rstw_num + 1
+            end do
+            allocate (rstw(rstw_num))
+            ir = 0
+            do i = 2, nwds
+               if (msg(i) .eq. 3) then
+                  ir = ir + 1
+                  rstw(ir) = cmsg(i)(1:4)
+               end if
             end do
 ! noflux - no flux output
 ! flux - both liquid and vapor

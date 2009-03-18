@@ -309,7 +309,6 @@ c ico2 set in scanin.f
       ireord = 0
       irpd   = 0
       interface_flag = 0
-      istrs  = 0
       isubbc = 0
       iter   = 0
       itert  = 0
@@ -370,6 +369,7 @@ C *** integers in davidi.h
       ngrad = 0
       nconv = 0
       isteady = 0
+      ipini = 0
       jswitch = 0
       joff = 0
 C from comwt
@@ -504,10 +504,6 @@ c zero out include combi
          yt=0
          zd=0
          zt=0
-         rstr = ''
-         rstr(1) = 'all'
-         rstw = ''
-         rstw(1) = 'all'
       end if
 c zero out include comci
       akc=0

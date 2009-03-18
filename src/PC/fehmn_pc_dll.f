@@ -27,6 +27,7 @@ CD2 06-DEC-93    Z. Dash        22      Add prolog.
 CD2 1980         G. Zyvoloski           Initial implementation.
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/fehmn.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:42:58   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -505,7 +506,7 @@ c     run of fehm. It is initialized to 0 in comai
 c*** water table rise modification
       real*8 water_table_old
 c*** water table rise modification
-      logical it_is_open
+      logical it_is_open, intfile_ex
       integer im, ja, mi, i
       integer :: ichk = 0, tscounter = 0, flowflag = 0
       integer number_of_outbuffers, jpr
@@ -519,8 +520,8 @@ c*** water table rise modification
 c	When run from Goldsim, the normal fehm screen output gets
 c	written to fehmn.log instead by opening unit 6 as a file
 c	with this name
-        inquire(file = 'fehmn.log',opened=it_is_open)
-        if(.not.it_is_open) then
+         inquire(file = 'fehmn.log',opened=it_is_open)
+         if(.not.it_is_open) then
             iptty = open_file('fehmn.log', 'unknown')
          end if
 c     Version number (updated in subroutine dated)
@@ -541,6 +542,7 @@ c     Cleanup - close all files before starting a new realization
             end if
          end do
 c     Release all dynamic array memory at the end of a GoldSim simulation
+
          call releasemem
 
       elseif(method.eq.3) then
@@ -675,6 +677,11 @@ c**** call to set up area coefficients for md nodes
          call md_nodes(6,0,0)
 c**** call data checking routine ****
          call datchk
+c
+c calculate initial stress field and displacements
+c 
+         call stress_uncoupled(1)
+c         
 	 if(ico2.lt.0) then
             if (iout .ne. 0) write(iout,834) ifree1
             if (iptty .ne. 0) write(iptty,834) ifree1
@@ -718,6 +725,8 @@ c  change to 4 in new version of rip
             call generate_flow
          end if
 
+c  stop simulation after stress calc for certain stress input
+         if(istrs.ne.0.and.istrs_coupl.eq.0) go to 170
 c Before the time step loop create the partitions for zones
 
          call paractr(1)
@@ -784,7 +793,7 @@ c     Call evaporation routine if this is an evaporation problem
 c
 c check for possible source movement
 c
-	   if(move_wt.eq.1) call wtsictr(7)
+            if(move_wt.eq.1) call wtsictr(7)
 
             dtot = day * 86400.0
 c     No longer do this because GoldSim enters with in(1) = 0
@@ -918,10 +927,10 @@ c**** solve for heat and mass transfer solution ****
 
                if (tas .gt. rnmax)  then
 
-                  if (iout .ne. 0) write(iout, 6030)
-                  if (iptty .gt. 0)  write(iptty, 6030)
+                  if (iout .ne. 0) write(iout, 6030) trim(nmfil(7))
+                  if (iptty .gt. 0)  write(iptty, 6030) trim(nmfil(7))
  6030             format(/, 1x, '**** allotted time gone, terminating ',
-     *                 'run : restart = save file (or fehm5j.mis) ****')
+     *                 'run : restart = ', a, ' ****')
 
                   go  to  170
                
@@ -988,7 +997,12 @@ c
                   endif
                enddo
                is_ch_t = is_ch_t + is_ch
-
+c
+c call thermo because the solver is overwriting the deni and denei arrays
+c    
+               if(istrs_coupl.gt.0.and.ico2.eq.0) then
+                  call thermw(0)
+               endif
 
 c dtotdm is the current time step size in seconds
                do ja = 1, n
@@ -1026,7 +1040,7 @@ c there is inflow of energy at this node
                      inen_thstime=inen_thstime+qh(ja)*dtotdm
                   end if
                   denht = denh(ja)
-                  to (ja) = t(ja)
+c                  to (ja) = t(ja)
                   denh (ja) = denh (ja) + deni (ja) * dtot
 c asteam = kg of steam in system
 c amass = kg of mass in system
@@ -1040,7 +1054,7 @@ c aener = energy in system
                      aener = aener + deneh(ja) * volume(ja)
                      denei(ja) = 0.0
                   endif
-                  pho (ja) = phi(ja)
+c                  pho (ja) = phi(ja)
                   if(abs(irdof).eq.14) then
                      denej (ja) = denj(ja)
                   else
@@ -1056,7 +1070,33 @@ c aener = energy in system
                   end if
     
                end do
-
+               if(istrs_coupl.gt.0.or.istrs_coupl.eq.-3) then
+c save flow residuals
+                  call stressctr(17,0) 
+c**** update stress arrays ****
+c displacements
+                  if(istrs_coupl.eq.-3) then
+                     call stress_uncoupled(3)
+c update volume strains
+                     call stressctr(6,0)
+c update porosity
+                     call stressctr(-7,0)
+                  endif
+c add displacements to total displacements	        
+                  call stressctr(10,0)
+c update displacements
+                  call stressctr(12,0)
+c update volume strains
+                  call stressctr(-6,0)
+c calculate stresses
+                  call stressctr(13,0)	
+c update permeabilities (explicit)
+                  call stress_perm(1,0)			            
+               endif 
+               do ja = 1,n
+                  to (ja) = t(ja)
+                  pho (ja) = phi(ja)
+               enddo
 c**** update co2 arrays ****
                call co2ctr (3)
 
@@ -1088,7 +1128,7 @@ c**** obtain concentration solution ****
          
             call concen (1,tscounter,in)
             in(3) = in3save
-
+         
 c compute kg out of system this time step
             qtoti = qtot - qtoti
 c compute MJ out of system this time step
@@ -1145,10 +1185,17 @@ c material balance for component mixtures
 
 c**** call output routine ****
             if (ntty .gt. 0 .and. iout .ne. 0)  then
-            
+c retrieve flow residuals
+               if(istrs_coupl.gt.0.or.istrs_coupl.eq.-3) then
+                  call stressctr(18,0) 
+               endif            
                call wrtout(tassem,tas,dabs(tinfl),dabs(teinfl),
      &              dabs(inflow_thstime),dabs(inen_thstime),
      &              is_ch,is_ch_t)
+               if(istrs_coupl.gt.0.or.istrs_coupl.eq.-3) then
+c output  displacements and stresses 
+                  call stressctr(11,0) 
+               endif 
 
             end if
 
@@ -1158,6 +1205,7 @@ c**** call history plot ****
                call plot_new (1, dabs(tinfl), dabs(teinfl),
      &              dabs(inflow_thstime), dabs(qtoti))
 c     &           dabs(inflow_thstime), dabs(inen_thstime))
+                if(istrs.ne.0) call  stressctr(14,0)
             else
                call plot (1, tmavg, pravg)
             end if
@@ -1188,209 +1236,222 @@ c**** call contour plot ****
      *           dayscn .ge. abs(contim))  then
 
 !               if(contim.ge.0) then
-                  call contr (1)
-                  call contr (-1)
+               call contr (1)
+               call contr (-1)
+               call river_ctr(6)
 !               else
 !                  call contr_days (1)
 !                  call contr_days (-1)
 !               endif
                if (allocated(itc) .and. nicg .gt. 1) then
-               if (itc(nicg-1).gt.0) then
+                  if (itc(nicg-1).gt.0) then
 !                 call disk (1)
+                     if (isave .ne. 0) call diskwrite
+                     if (iflxn .eq. 1) call flxn
+                  endif
+               else
+!              call disk (1)
                   if (isave .ne. 0) call diskwrite
                   if (iflxn .eq. 1) call flxn
-               endif
-            else
-!              call disk (1)
-               if (isave .ne. 0) call diskwrite
-               if (iflxn .eq. 1) call flxn
+               end if
+               call pest(1)
+               if (ifinsh .ne. 0)  ex = .TRUE.
+               if (dayscn .ge. abs(contim)) dayscn = 0.
+
             end if
-            call pest(1)
-            if (ifinsh .ne. 0)  ex = .TRUE.
-            if (dayscn .ge. abs(contim)) dayscn = 0.
-
-         end if
 
 
-         if (ifinsh .eq. 1) then
+            if (ifinsh .eq. 1) then
 c standard simulation finish
-            istea_pest = 0
+               istea_pest = 0
 	         
-            go  to  170
-         else if (ifinsh .eq. 2) then
+               go  to  170
+            else if (ifinsh .eq. 2) then
 
 ! Make sure last steady state time step is output
-            if (hist_flag) then
-               call plot_new (1, dabs(tinfl), dabs(teinfl),
-     &              dabs(inflow_thstime), dabs(qtoti))
-            end if
-            call contr (1)
-            call contr (-1)
-
+               if (hist_flag) then
+                  call plot_new (1, dabs(tinfl), dabs(teinfl),
+     &                 dabs(inflow_thstime), dabs(qtoti))
+               end if
+               call contr (1)
+               call contr (-1)
+               call river_ctr(6)
 c finished the steady state simulation, now doing transient
-            days = 0.0
-            istea_pest = 0
-            call pest(1)
-            istea_pest = 1
-            call flow_boundary_conditions(4)
-            go to 999
-         endif
+               days = 0.0
+               istea_pest = 0
+               call pest(1)
+               istea_pest = 1
+               call flow_boundary_conditions(4)
+               go to 999
+            endif
 
-      end do
+         end do
 
 c ******************* end major time step loop ****************
 
 c**** write solution to plot tapes ****
 
-      l = l - 1
+         l = l - 1
 
- 170  continue
+ 170     continue
 
 c     check for steady state solution
-      if(isteady.ne.0) then
-         ntty = 2
-         call steady(3,dabs(inflow_thstime),dabs(inen_thstime))
-      endif
+         if(isteady.ne.0) then
+            ntty = 2
+            call steady(3,dabs(inflow_thstime),dabs(inen_thstime))
+         endif
 
 c......     s kelkar nov 13, 02........
 c if freez_time is gt.0, then ptrac3 is called only at the end of the 
 c flow calculations, and for a velocity frozen at that time,  
 c particle tracks are calculated for freez_time days
-      if(sptrak) then
-         if(freez_time.gt.0.) then
-            call ptrac3
+         if(sptrak) then
+            if(freez_time.gt.0.) then
+               call ptrac3
+            endif
          endif
-      endif
 c................................................
 
-      if(sptrak) then
-        close(isptr1)
-        close(isptr2)
-        close(isptr3)
-        if (pod_flag) then
+         if(sptrak) then
+            close(isptr1)
+            close(isptr2)
+            close(isptr3)
+            if (pod_flag) then
 ! Call to write out derivatives for model reduction basis functions
-           call pod_derivatives
-        end if
-      endif
+               call pod_derivatives
+            end if
+         endif
 
-      nsave = 1
+         nsave = 1
 
-      if (.not. ex) then
-         if(in(1).eq.0) then
-            if( tscounter .eq. 1 .or. in(1) .eq. 0
-     2           .or. tims .eq. tims_save) then
-               if (allocated(itc) .and. nicg .gt. 1) then
-                  if (itc(nicg-1).gt.0) then
+         if (.not. ex) then
+            if(in(1).eq.0) then
+               if( tscounter .eq. 1 .or. in(1) .eq. 0
+     2              .or. tims .eq. tims_save) then
+                  if (allocated(itc) .and. nicg .gt. 1) then
+                     if (itc(nicg-1).gt.0) then
 !                    call disk (nsave)
+                        if (isave .ne. 0) call diskwrite
+                        if (iflxn .eq. 1) call flxn
+                     endif
+                  else
+!                 call disk (nsave)
                      if (isave .ne. 0) call diskwrite
                      if (iflxn .eq. 1) call flxn
-                  endif
-               else
-!                 call disk (nsave)
-                  if (isave .ne. 0) call diskwrite
-                  if (iflxn .eq. 1) call flxn
-               end if
+                  end if
 !               if(contim.ge.0) then
-               call contr (1)
-               call contr (-1)
+                  if(istrs_coupl.ne.-2.and.istrs_coupl.ne.-1) then
+! contr will be called below in stress_uncoupled for a stress solution
+                     call contr (1)
+                     call contr (-1)
+                  end if
+                  call river_ctr(6)               
 !               else
 !                  call contr_days (1)
 !                  call contr_days (-1)
 !               endif
-               istea_pest = 0
-               call pest(1)
+                  istea_pest = 0
+                  call pest(1)
 c     **** call pest to calculate sensitivities if necessary
-               call pest(2)
+                  call pest(2)
+               end if
             end if
          end if
-      end if
 c     
 c     gaz 1-6-2002
 c     printout submodel boundary conditions if necessary
 c     
-      if(isubbc.ne.0) call submodel_bc(2)
+         if(isubbc.ne.0) call submodel_bc(2)
 c     
 c     For a rip simulation, write avs output info every
 c     contim_rip days
-      if(tims.ge.contr_riptot .and. ripfehm .ne. 0) then
-         contr_riptot = contr_riptot + contim_rip
+         if(tims.ge.contr_riptot .and. ripfehm .ne. 0) then
+            contr_riptot = contr_riptot + contim_rip
 !         if(contim.ge.0) then
             call contr (1)
             call contr (-1)
+            call river_ctr(6)
 !         else
 !            call contr_days (1)
 !            call contr_days (-1)
 !         endif
-      end if
+         end if
 
-      if (iout .ne. 0) write(iout, 6040)  days, l
-      if (iptty .gt. 0)  write(iptty, 6040)  days, l
- 6040 format(//, 1x, 'simulation ended: days ', 1pg30.23, 
-     *     ' timesteps ', i5)
+         if (iout .ne. 0) write(iout, 6040)  days, l
+         if (iptty .gt. 0)  write(iptty, 6040)  days, l
+ 6040    format(//, 1x, 'simulation ended: days ', 1pg30.23, 
+     *        ' timesteps ', i5)
       
+c
+c calculate final stress field and displacements
+c output contour information
+c 
+         call stress_uncoupled(2)
+
 c     New convention is to make days the - of its value to
 c     write to the output history file, then change it back
 c     after calling plot. days needs to be correct if the
 c     code is being called in "rip" mode
 
-      days = -days
-
-      if (hist_flag) then
-         call plot_new (1, dabs(tinfl), dabs(teinfl),
-     &        dabs(inflow_thstime), dabs(inen_thstime))
+         days = -days
+c      
+         if (hist_flag) then
+            call plot_new (1, dabs(tinfl), dabs(teinfl),
+     &           dabs(inflow_thstime), dabs(inen_thstime))
 ! Add call to plot_new so all dummy variables will be deallocated
 ! after final history data is output
-         call plot_new (2, dabs(tinfl), dabs(teinfl),
+            call plot_new (2, dabs(tinfl), dabs(teinfl),
      &           dabs(inflow_thstime), dabs(inen_thstime))
-      else
-         call plot (1, tmavg, pravg)
-      end if
+            if(istrs.ne.0) call  stressctr(14,0)
+         else
+            call plot (1, tmavg, pravg)
+         end if
 
 c     Change it back
 
-      days = -days
+         days = -days
 
-      if (iout .ne. 0) write(iout, 6041) itotal,itotals
-      if (iptty .gt. 0) write(iptty, 6041)  itotal,itotals
- 6041 format(//, 1x, 'total N-R iterations = ', i10
-     &     ,/,1x, 'total solver iterations = ', i10)
+         if (iout .ne. 0) write(iout, 6041) itotal,itotals
+         if (iptty .gt. 0) write(iptty, 6041)  itotal,itotals
+ 6041    format(//, 1x, 'total N-R iterations = ', i10
+     &        ,/,1x, 'total solver iterations = ', i10)
 
-      if (iout .ne. 0) write(iout, 6042) tyming(caz) - tasii 
-      if (iptty .gt. 0) write(iptty, 6042) tyming(caz) - tasii
- 6042 format(//, 1x, 'total code time(timesteps) = ', f13.6)
+         if (iout .ne. 0) write(iout, 6042) tyming(caz) - tasii 
+         if (iptty .gt. 0) write(iptty, 6042) tyming(caz) - tasii
+ 6042    format(//, 1x, 'total code time(timesteps) = ', f13.6)
 
-      call dated (jdate, jtime)
+         call dated (jdate, jtime)
 
-      if (iout .ne. 0) write(iout, 6052)  verno, jdate, jtime
-      if (iptty .gt. 0) write(iptty, 6052)  verno, jdate, jtime
-      if (ripfehm .eq. 0) then
-         close (inpt)
-         if (iout .ne. 0) close (iout)
-      end if
- 6052 format(//, 1x, '****-------------------------------------------', 
-     *     '--------------****', 
-     *     /, 1x, '**** This program for ', 35x, '    ****', 
-     *     /, 1x, '****   Finite Element Heat and Mass Transfer in ', 
-     *     'porous media ****', 
-     *     /, 1x, '****----------------------------------------------', 
-     *     '-----------****', 
-     *     /, 1x, '**** ', 12x, '  Version  : ', a30, ' ****', 
-     *     /, 1x, '**** ', 12x, '  End Date : ', a11, 17x, '   ****', 
-     *     /, 1x, '**** ', 12x, '      Time : ', a8, 20x, '   ****', 
-     *     /, 1x, '****----------------------------------------------',
-     *     '-----------****')
+         if (iout .ne. 0) write(iout, 6052)  verno, jdate, jtime
+         if (iptty .gt. 0) write(iptty, 6052)  verno, jdate, jtime
+         if (ripfehm .eq. 0) then
+            close (inpt)
+            if (iout .ne. 0) close (iout)
+         end if
+ 6052    format(//, 1x, '****----------------------------------------', 
+     *        '-----------------****', 
+     *        /, 1x, '**** This program for ', 35x, '    ****', 
+     *        /, 1x, '****   Finite Element Heat and Mass Transfer ', 
+     *        'in porous media ****', 
+     *        /, 1x, '****-------------------------------------------', 
+     *        '--------------****', 
+     *        /, 1x, '**** ', 12x, '  Version  : ', a30, ' ****', 
+     *        /, 1x, '**** ', 12x, '  End Date : ', a11, 18x, '  ****', 
+     *        /, 1x, '**** ', 12x, '      Time : ', a8, 20x, '   ****', 
+     *        /, 1x, '****-------------------------------------------',
+     *        '--------------****')
 
 c     Add call to routine to transfer particle information to out(i)
 c     array for rip simulations
 
-      if(n_input_arguments .ne. 0) then
-         if(int(in(n_input_arguments+1)).ne.0
-     2        .and.int(in(n_input_arguments+4)).ne.0)
-     3        call loadoutarray
-      end if
+         if(n_input_arguments .ne. 0) then
+            if(int(in(n_input_arguments+1)).ne.0
+     2           .and.int(in(n_input_arguments+4)).ne.0)
+     3           call loadoutarray
+         end if
 
 c RJP 04/10/07 this is for co2 properties table look-up
-      call interpolation_arrays_deallocate()
+         call interpolation_arrays_deallocate()
 
 c     no more method = 4
 c     elseif(method.eq.4) then
@@ -1484,6 +1545,7 @@ c     number and rewind file
                rewind (iread)
             else
 
+
                do i = 1,80
                   filename(i:i) = ' '
                end do
@@ -1492,13 +1554,14 @@ c     number and rewind file
                end do
                iread = open_file(filename,'old')
 
+
             end if
             nmfil(6) = ''
             nmfil(6) = ffname
 
             daystmp = days
 !            call disk(0)
-            if (iread .gt. 0) then
+            if (iread .gt. 0)  then
                write(iptty,*) 
      2              'Reading a new restart file: ', ffname
                call diskread
@@ -1558,6 +1621,8 @@ c     file name for #1 is ff00001.ini, etc.
 
             if (iptty .gt. 0) write(iptty,*) 
      2           'Reading a new restart file: ', ffname
+            write(iptty,*) 
+     2           'Reading a new restart file: ', ffname
 
 
 c     Check to see if file is already open, if so get file
@@ -1570,6 +1635,7 @@ c     number and rewind file
                rewind (iread)
             else
 
+
                do i = 1,80
                   filename(i:i) = ' '
                end do
@@ -1578,17 +1644,17 @@ c     number and rewind file
                end do
                iread = open_file(filename,'old')
 
+
             end if
             nmfil(6) = ''
             nmfil(6) = ffname
 
-
             daystmp = days
 !            call disk(0)
             if (iread .gt. 0) then
-               call diskread
                write(iptty,*) 
      2              'Reading a new restart file: ', ffname
+               call diskread
             end if
             days = daystmp
 ! zvd 22-Mar-02

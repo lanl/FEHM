@@ -31,7 +31,8 @@
 !***********************************************************************
 
       integer npoint_riv,iriver,maxlay,nbc_riv,npoint_riv_old,nic_old
-      integer maxriver_nodes
+      integer maxriver_nodes, n_well_prod,n_well_seg, nodes_well2_added
+      integer iwell_phy_all, max_seg_div
       integer, allocatable :: isriverf(:) 
       integer, allocatable :: ifriverf(:)
       integer, allocatable :: iriverf(:)
@@ -51,7 +52,7 @@
       integer, allocatable :: mdnode_riv(:,:)
       integer, allocatable :: rivbegin(:)
       integer, allocatable :: rivend(:) 
-      
+
       real*8, allocatable ::  wgt_river(:)
       real*8, allocatable ::  bc_river(:,:)
       real*8, allocatable ::  coor_riv(:,:)
@@ -63,7 +64,35 @@
       real*8, allocatable ::  river02(:)
       real*8, allocatable ::  river03(:)
       real*8, allocatable  :: vol1(:)
-      real*8, allocatable :: mod_dis(:,:)
+      real*8, allocatable ::  mod_dis(:,:)
+c arrays for welltype = 2
+	integer, allocatable :: iwell_geom(:)
+	integer, allocatable :: iwell_phys(:) 
+	integer, allocatable :: iwell_prod(:) 
+	integer, allocatable :: iwell_seg(:,:) 
+	integer, allocatable :: nwell2_prim(:) 
+	integer, allocatable :: new_node_well2_segid(:) 
+	integer, allocatable :: new_node_well2(:) 
+	integer, allocatable :: neigh_well2(:,:)
+	integer, allocatable :: neigh_well2_count(:) 
+	integer, allocatable :: neigh_well2_new(:,:) 
+	integer, allocatable :: nwell2_int(:) 
+	integer, allocatable :: iwell2_int(:,:) 
+	integer, allocatable :: izone_well2(:)		
+	integer, allocatable :: izlabelp(:)
+	integer, allocatable :: izlabels(:) 	 								 						
+	
+	real*8, allocatable ::  coor_well2(:,:)	
+	real*8, allocatable ::  coor_new_well2(:,:)	
+	real*8, allocatable ::  well_rad(:)	
+	real*8, allocatable ::  well_dz(:)
+	real*8, allocatable ::  well_connect_fac(:)
+
+	real*8, allocatable ::  vel_v_well2(:)	  
+	real*8, allocatable ::  vel_l_well2(:)	
+	real*8, allocatable ::  vel_m_well2(:)	
+	real*8, allocatable ::  sx_w(:,:)				 
+      
       
       parameter (maxriver_nodes = 100000)
 

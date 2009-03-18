@@ -1,5 +1,6 @@
       subroutine check_sx(neq,ianpe,ndim_sx,ncon,istrw,
-     &     nelmdg,ischk,iptty,iout,ierr,min_nr,isox,isoy,isoz,sx1,sx)
+     &     nelmdg,ischk,iptty,iout,ierr,min_nr,isox,isoy,isoz,intg,
+     &     sx1,sx)
 !***********************************************************************
 !  Copyright, 1995, 2004,  The  Regents of the University of California.
 !  This program was prepared by the Regents of the University of 
@@ -92,10 +93,11 @@ c-------------------------------------------------------------------
       implicit none
       integer neq,ndim_sx,min_nr,ncon(*),istrw(*),nelmdg(*)
       integer i,j,i2,iout,iptty,num_neg,isx,ipiv,ischk,max_num
-      integer ianpe
+      integer ianpe,intg
       real*8 sx1(*)
       real*8 sx(ndim_sx,*),sumsx,zero_sx,vol_max,vol_min
       real*8 sum_area_coef
+      character*5 pintg
       parameter (zero_sx=-1.d-10)
       integer ierr,isox,isoy,isoz
 
@@ -228,14 +230,18 @@ c            sx(isx,3)=0.0
             write(ischk,*) 'minimum area divided by length = ',vol_min
          end if
       endif
-c     
+c 
+      if(intg.le.0) pintg = 'node '
+      if(intg.gt.0) pintg = 'gauss'     
       if (iptty .ne. 0) then
-         write(iptty,*) 'volumes and fe coefficients checked '
+         write(iptty,*) 
+     &    'volumes and fe coefficients checked intg = ', pintg
          write(iptty,*) 'Sum of area/dis for control volumes = ',
      &        sum_area_coef
       end if
       if (ischk .ne. 0) then
-         write(ischk,*) 'volumes and fe coefficients checked '
+         write(ischk,*)
+     &     'volumes and fe coefficients checked intg = ', pintg
          write(ischk,*) 'Sum of area/dis for control volumes = ',
      &        sum_area_coef
       end if

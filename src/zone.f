@@ -27,6 +27,7 @@ CD2 03-JAN-94    Z. Dash        22      Add prolog/major cleanup.
 CD2              G. Zyvoloski           Initial implementation.
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/zone.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:44:32   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -312,7 +313,7 @@ C***********************************************************************
       use comai
       implicit none
 
-      logical null1, null_new
+      logical null1, null_new, cdum
       integer cnum, i, infile, izone, izonel, nin, nodez, nsl
       integer nxy,icnl_old,nin_old,i_old
       character* 4 macro, cmacro
@@ -359,7 +360,7 @@ c     Determine if zone_dpadd needs to be increased to 1000
 c check if list or nnum occurs
             read(infile, '(a4)') macro
             if (macro .ne. 'list' .and. macro .ne. 'nnum' .and.
-     &          macro .ne. 'xyli' ) then
+     &          macro .ne. 'xyli'.and. macro.ne. 'all ' ) then
                backspace  infile
                if (izone .ne. izonel) nin = 0
                read (infile, *) (xz(i), i = 1, nsl)
@@ -454,6 +455,10 @@ c read in nodes belonging to zone
                      izonef(ncord(i)) = izone
                   end if
                end do
+             else if(macro .eq. 'all ') then     
+              do i = 1, n0
+               izonef(i) = izone
+              enddo         
             endif
  6008       format (' **** Invalid input: macro ', a4, ' ****')
  6009       format(' **** Invalid node specified, ', i8, 

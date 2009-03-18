@@ -191,7 +191,7 @@
       parameter(nmmax = 14)
 
       integer nmmaxa
-      parameter(nmmaxa = 15)
+      parameter(nmmaxa = 16)
 
       integer isw(nmmax+nmmaxa), nufilb(nmmax+nmmaxa)
 

@@ -21,6 +21,7 @@ CD2
 CD2  REVISION HISTORY 
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/gncf2.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:43:12   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -391,7 +392,7 @@ c     nk*njz
             enddo
             
          endif
-         if(nrq.eq.2) then
+         if(nrq.eq.2.or.nrq.eq.15) then
 c     (d(nk/dx)*(dnjz/dx)
 c     recall jacobian information
             a11=aj(neu,1)
@@ -407,7 +408,7 @@ c     recall jacobian information
                enddo
             enddo
          endif
-         if(nrq.eq.3) then
+         if(nrq.eq.3.or.nrq.eq.16) then
 c     (d(nk/dy)*(dnjz/dy)
 c     recall jacobian information
             a21=aj(neu,4)
@@ -423,36 +424,7 @@ c     recall jacobian information
                enddo
             enddo
          endif
-         if(nrq.eq.5) then
-c     nk*(dnjz/dx)
-c     recall jacobian information
-            a11=aj(neu,1)
-            a12=aj(neu,2)
-            detja=aj(neu,10)
-            do k=1,nsl
-               knum=(k-1)*nsl
-               do jz=1,nsl
-                  ij=knum+jz
-                  bcoef(neu,ij)=bcoef(neu,ij)+
-     *                 wr(nga,k)*(a11*wxr(nga,jz)+a12*wyr(nga,jz))*dnga
-               enddo
-            enddo
-         endif
-         if(nrq.eq.6) then
-c     nk*(dnjz/dy)
-c     recall jacobian information
-            a21=aj(neu,4)
-            a22=aj(neu,5)
-            detja=aj(neu,10)
-            do k=1,nsl
-               knum=(k-1)*nsl
-               do jz=1,nsl
-                  ij=knum+jz
-                  bcoef(neu,ij)=bcoef(neu,ij)+
-     *                 wr(nga,k)*(a21*wxr(nga,jz)+a22*wyr(nga,jz))*dnga
-               enddo
-            enddo
-         endif
+
 c     c for 2-d stress
          if(istrs.ne.0) then
             if(nrq.eq.11) then
@@ -491,6 +463,38 @@ c     recall jacobian information
                   enddo
                enddo
             endif
+         if(nrq.eq.13) then
+c     
+c     (dnk/dx)*nj
+c     recall jacobian information
+            a11=aj(neu,1)
+            a12=aj(neu,2)
+            detja=aj(neu,10)
+            do k=1,nsl
+               knum=(k-1)*nsl
+               do jz=1,nsl
+                  ij=knum+jz
+                  bcoef(neu,ij)=bcoef(neu,ij)+
+     *                 wr(nga,jz)*(a11*wxr(nga,k)+a12*wyr(nga,k))*dnga
+               enddo
+            enddo
+         endif
+         if(nrq.eq.14) then
+c     
+c     (dnk/dy)*nj
+c     recall jacobian information
+            a21=aj(neu,4)
+            a22=aj(neu,5)
+            detja=aj(neu,10)
+            do k=1,nsl
+               knum=(k-1)*nsl
+               do jz=1,nsl
+                  ij=knum+jz
+                  bcoef(neu,ij)=bcoef(neu,ij)+
+     *                 wr(nga,jz)*(a21*wxr(nga,k)+a22*wyr(nga,k))*dnga
+               enddo
+            enddo
+         endif
          endif
       endif
 c     

@@ -198,7 +198,14 @@
       integer, allocatable :: it10a(:) 
       integer, allocatable :: it11a(:)     
       integer, allocatable :: it12a(:)     
-      integer, allocatable :: it13a(:)     
+      integer, allocatable :: it13a(:)   
+      
+      integer, allocatable :: its21(:,:)     
+      integer, allocatable :: its22(:,:)      
+      integer, allocatable :: its31(:,:)   
+      integer, allocatable :: its32(:,:)      
+      integer, allocatable :: its41(:,:)      
+      integer, allocatable :: its42(:,:)            
 
 !     ***** Pointers in COMMON Block t *****
       real*8, allocatable ::  t1(:) 
@@ -217,6 +224,17 @@
       real*8, allocatable ::  t15(:)
       real*8, allocatable ::  t16(:)
       real*8, allocatable ::  t17(:)
+      
+      real*8, allocatable :: ts21(:,:)     
+      real*8, allocatable :: ts22(:,:)      
+      real*8, allocatable :: ts31(:,:)   
+      real*8, allocatable :: ts32(:,:)      
+      real*8, allocatable :: ts41(:,:)      
+      real*8, allocatable :: ts42(:,:) 
+	
+      real*8, allocatable :: ts51(:)
+      real*8, allocatable :: ts52(:) 
+      real*8, allocatable :: ts53(:) 	      
 
 !     ***** Pointers in COMMON Block eq2 *****
       real*8, allocatable ::  upwind_l(:)

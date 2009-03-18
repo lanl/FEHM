@@ -30,6 +30,7 @@ CD2                                     the current version differs
 CD2                                     from these in minor ways.  
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/gensl2.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:43:06   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -388,6 +389,7 @@ c
       use comdti
       use comai
       use comwt
+      use comwellphys
       implicit none
 
       real*8, allocatable :: sto5(:,:)
@@ -400,6 +402,7 @@ c
       integer nsizea1
       integer nmat_save,dry_nodes,jm
       integer np, i1, i2, ij, ijj, ibp_max
+      integer iwellp_chk
       real*8 aij, apiv
       real*8 fdum2
       real*8 facr
@@ -451,15 +454,25 @@ c
 c		write(*,*) dry_nodes, ' nodes are dry'
 c	if(ifree.ne.0) write(*,*) nsat,' dry nodes are frozen'
       endif
-
+c GAZ 11/01/08 get drift flux info (must be call after rel perms)
+      call wellphysicsctr(1,0) 
       do 101 id=1,neq
 c     
 c     decide on equation type
 c     
+         if (nwellphy .ne. 0) then
+            iwellp_chk = iwellp(id)
+         else
+            iwellp_chk = 0
+         end if
+
          if(ps(id).gt.0.0) then
             if(iwt_uz.ne.0) then
                call geneq2_uz_wt(id)
-               call add_accumulation(id)	
+               call add_accumulation(id)
+            else if(iwellp_chk.ne.0) then
+c no accumulation term in the wellbore            
+               call geneq2_wellphysics(id)	
             else if(ianpe.ne.0) then
                call geneq2_ani(id)
             else if(irich.ne.0) then

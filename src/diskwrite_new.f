@@ -161,6 +161,7 @@
       logical :: write_mass = .FALSE.
       logical :: write_flux = .FALSE.
       logical :: write_co2  = .FALSE.
+      logical :: write_pini = .FALSE.
 
       call dated (jdate,jtime)
       inquire (isave, opened = ex)
@@ -188,7 +189,13 @@ c Use value of numflux that was read in
          numflux = ldna
       end if
 
-      do i = 1, 9
+      if (.not. allocated(rstw)) then
+         allocate(rstw(1)) 
+         rstw(1) = 'all'
+         rstw_num = 1
+      end if
+
+      do i = 1, rstw_num
          select case (rstw(i))
          case ('all')
             if (icarb .eq. 1) then
@@ -217,6 +224,8 @@ c Use value of numflux that was read in
             write_co2 = .TRUE.
          case ('mass') 
             write_mass = .TRUE.
+         case ('pini')
+            write_pini = .TRUE.
          case ('none')
 c Values from the restart file will not be used
          end select
@@ -234,7 +243,7 @@ c Values from the restart file will not be used
 c Formatted output
          write(isave, 6000)  verno, jdate, jtime, wdd
  6000    format(a30, 3x, a11, 3x, a8, /, a80)
-         write(isave ,*)  days
+         write(isave, *)  days
          write(isave, '(i9, 1x, a4)') n, dum_type
          if (write_temp) then
             write(isave, '(a11)') 'temperature'
@@ -248,40 +257,46 @@ c Formatted output
          if (write_pres) then
             write(isave, '(a11)') 'pressure   '
             if (ico2 .lt. 0) then
-               write(isave ,6002) (pho(mi)-phi_inc,  mi=1,n )
+               write(isave, 6002) (pho(mi)-phi_inc,  mi=1,n )
             else
-               write(isave ,6002)  (max(pho(mi),tolw),  mi=1,n )
+               write(isave, 6002)  (max(pho(mi),tolw),  mi=1,n )
             end if
          end if
          if (write_gasp .and. irdof .ne. 13) then
             write(isave, '(a11)') 'gaspressure'
-            write(isave ,6002)  (max(pcio(mi),tolw), mi=1,n )
+            write(isave, 6002)  (max(pcio(mi),tolw), mi=1,n )
          else
          end if
          if (write_co2) then
             write(isave, '(a11)') 'co2temperat'
-            write(isave ,6002)  (max(toco2(mi),tolw),   mi=1,n )
+            write(isave, 6002)  (max(toco2(mi),tolw),   mi=1,n )
             write(isave, '(a11)') 'co2pressure'
-            write(isave ,6002)  (max(phoco2(mi),tolw),  mi=1,n )
+            write(isave, 6002)  (max(phoco2(mi),tolw),  mi=1,n )
             write(isave, '(a11)') 'wsaturation'
-            write(isave ,6002)  (max(fow(mi),tolw),    mi=1,n )
+            write(isave, 6002)  (max(fow(mi),tolw),    mi=1,n )
             write(isave, '(a11)') 'lco2saturat'
-            write(isave ,6002)  (max(fol(mi),tolw),    mi=1,n )
+            write(isave, 6002)  (max(fol(mi),tolw),    mi=1,n )
             write(isave, '(a11)') 'dissolvdco2'
-            write(isave ,6002)  (max(yc(mi),tolw),    mi=1,n )
+            write(isave, 6002)  (max(yc(mi),tolw),    mi=1,n )
             write(isave, '(a11)') 'eoswater   '
-            write(isave ,6003)  (ieoso(mi),    mi=1,n )
+            write(isave, 6003)  (ieoso(mi),    mi=1,n )
             write(isave, '(a11)') 'eosco2     '
-            write(isave ,6003)  (iceso(mi),    mi=1,n )
+            write(isave, 6003)  (iceso(mi),    mi=1,n )
          end if
          if (write_mass) then
             if (.not. allocated(mass_var)) allocate(mass_var(n))
-             write(isave, '(a11)') 'mass       '
-             do mi = 1, n
-                mass_var(mi) = sx1(mi) * ps(mi) * rolf(mi)
-             end do
-             write(isave ,6002) ( mass_var(mi), mi=1,n ) 
-          end if
+            write(isave, '(a11)') 'mass       '
+            do mi = 1, n
+               mass_var(mi) = sx1(mi) * ps(mi) * rolf(mi)
+            end do
+            write(isave, 6002) ( mass_var(mi), mi=1,n ) 
+         end if
+         if (write_pini) then
+            write(isave, '(a11)') 'initemperat'
+            write(isave, 6002)  ( tini (mi) , mi=1,n )
+            write(isave, '(a11)') 'inipressure'            
+            write(isave, 6002)  ( phini (mi) , mi=1,n )
+         end if
          if (flux_flag(1:2) .eq. 'no') then
             write (isave, '(a11)') flux_flag
          else
@@ -389,8 +404,25 @@ c Unformatted output
             dummy_string = 'eoswater   ' 
             write (isave) dummy_string
             write(isave)  (ieoso(mi),    mi=1,n )
-            dummy_string ='eosco2      '
+            dummy_string = 'eosco2      '
             write(isave)  (iceso(mi),    mi=1,n )
+         end if
+         if (write_mass) then
+            dummy_string = 'mass       '           
+            write(isave) dummy_string
+            if (.not. allocated(mass_var)) allocate(mass_var(n))
+            do mi = 1, n
+               mass_var(mi) = sx1(mi) * ps(mi) * rolf(mi)
+            end do
+            write(isave) ( mass_var(mi), mi=1,n ) 
+         end if
+         if (write_pini) then
+            dummy_string = 'initemperat'
+            write (isave) dummy_string
+            write(isave)  ( tini (mi) , mi=1,n )
+            dummy_string = 'inipressure'            
+            write (isave) dummy_string
+            write(isave)  ( phini (mi) , mi=1,n )
          end if
 
          if (flux_flag(1:2) .eq. 'no') then

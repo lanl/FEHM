@@ -817,7 +817,9 @@ c     dqwp = 0.0
                if(svd.gt.0.0) then
                   qadis=qdis*(1.0-esk(mi))
                else
-                  qadis=0.0           
+                  qadis=0.0   
+c     GAZ 11-10-08                  
+                  qadis=qdis*(1.0-esk(mi))        
                endif
             else
                qwdis=qdis

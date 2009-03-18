@@ -152,6 +152,7 @@
       integer iofw,iofh,ioporosity,iosource,iodensity,iocord
       integer iopermeability,iogeo,iozone,iowt,iokd,iozid
       integer iocapillary,ioco2
+      integer iodisp, iostrain, iostress      
 
       integer iaroot, timec_flag
       real*8  contour_time

@@ -167,10 +167,10 @@ c     print out all generalized head bc
             do i=1,neq
                if(izonesubm(i).eq.izone1) then
                   if(ihead.ne.0) then
-                     write(isubm,1999) i,i,head(i),20.,
+                     write(isubm,1999) i,i,head(i),t(i),
      &                    cord(i,1),cord(i,2),cord(i,3),izone1
                   else 
-                     write(isubm,1999) i,i,phi(i),20.,
+                     write(isubm,1999) i,i,phi(i),t(i),
      &                    cord(i,1),cord(i,2),cord(i,3),izone1
                   end if
                end if
@@ -209,11 +209,18 @@ c     set pressure boundary conditions
                      write(isubm,2000) i,i,head(i),aiped,
      &                    cord(i,1),cord(i,2),cord(i,3),izone1
                   else if(keyword.eq.'pres') then
+                    if(ico2.lt.0) then
                      write(isubm,2000) i,i,phi(i),aiped,
      &                    cord(i,1),cord(i,2),cord(i,3),izone1
+                    else
+                     write(isubm,2001) i,i,phi(i),-t(i),aiped,
+     &                    cord(i,1),cord(i,2),cord(i,3),izone1  
+                    endif
                   end if
  2000             format(2i10,' 1 ',1x,1pg18.9,' 1. ',g9.2,'  # ',
      &                 3(g12.6,x), 'z ',i5)
+ 2001             format(2i10,' 1 ',1x,1pg18.9,1x,g11.4,1x,g9.2,' # ',
+     &                 3(g12.6,x), 'z ',i5)    
                endif
  40            continue
             enddo

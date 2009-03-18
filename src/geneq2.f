@@ -440,6 +440,7 @@ c
       use comci
       use combi
       use comdti
+      use comwellphys
       use comai
       implicit none
 
@@ -548,8 +549,12 @@ c     real*8 sxzc
       logical bit
       integer isl
       integer iz4m1
-      integer imd,iwd    
-
+      integer imd,iwd   
+c following variables are associated with the drift flux nodel    
+      real*8 mdrifti,dmdriftpi,dmdriftei,mdrift_part
+      real*8 mdriftkb,dmdriftpkb,dmdriftekb
+      real*8 area_face,dmdrpkb,dmdrekb,dmdrpi,dmdrei
+      
 c changed by avw -- entered here by seh
       neqp1=neq+1
       if(i.gt.neq) then
@@ -562,7 +567,6 @@ c changed by avw -- entered here by seh
       else
          grav_air=grav
       endif
-
 c
 c storage for upwind
 c
@@ -687,6 +691,8 @@ c
             t2(neighc)=pxyh
             t3(neighc)=pxy
             t4(neighc)=pxy
+c added area term GAZ (11-12-08)      
+            t5(neighc)=sx2c*sqrt(dis2)           
             t6(neighc)=-grav*t3(neighc)
             t7(neighc)=-grav_air*t4(neighc)
  59      continue
@@ -803,7 +809,10 @@ c
  63         continue
 c     
 c     determine upwind nodes and if vapour phase exists
-c     
+c  
+c  assumption- upwind direction for vdrift is the same as vtotal
+c  can be different that liquid velocity   
+c   
             isl=1
             do 64 jm=1,iq
                kb=it8(jm)
@@ -829,6 +838,18 @@ cc               endif
  64         continue
 c
 c form equations
+c
+c
+c identifty drift flux mass flows (and derivatives) at node i
+c
+            if(nwellphy.ne.0) then
+               mdrifti = mdriftf(i)
+               dmdriftpi = dmdriftp(i)
+               dmdriftei = dmdrifte(i)
+            else
+               mdrift_part = 0.0
+            endif  
+c                       
 c
             if(isl.ne.0) then
                do 65 jm=1,iq
@@ -861,19 +882,38 @@ c
                   dvaei=dvei*vxyf+vxyd*fid1*divei
                   dvaekb=dvekb*vxyf+vxyd*fid*divekb
 c     
-                  a_vxy(iau+nmatavw)=vxy
-                  a_vxy(ial+nmatavw)=-vxy
+c drift flux contribution (in terms of mass flux calculated in wellphysics.f)            
+c 
+                  if(nwellphy.ne.0) then
+c face area of CV needed for drift mass flux                  
+                     area_face = t5(neighc)          
+                     mdriftkb = mdriftf(kb)
+                     dmdriftpkb = dmdriftp(kb)
+                     dmdriftekb = dmdrifte(kb)                 
+                     mdrift_part = (fid*mdriftkb+fid1*mdrifti)*area_face
+                     dmdrpkb = fid*dmdriftpkb*area_face
+                     dmdrpi = fid1*dmdriftpi*area_face
+                     dmdrekb = fid*dmdriftekb*area_face
+                     dmdrei = fid1*dmdriftei*area_face
+                  else
+                     dmdrpi = 0.d0
+                     dmdrei = 0.d0
+                     dmdrpkb = 0.d0
+                     dmdrekb = 0.d0
+                  endif                           
+                  a_vxy(iau+nmatavw)=vxy + mdrift_part
+                  a_vxy(ial+nmatavw)=-(vxy + mdrift_part)
 
-                  bp(iz+nrhs(2))=bp(iz+nrhs(2))+vxy
-                  bp(kz+nrhs(2))=bp(kz+nrhs(2))-vxy
-                  a(jmia+nmat(3))=a(jmia+nmat(3))+dvapi
-                  a(jmia+nmat(4))=a(jmia+nmat(4))+dvaei
-                  a(ial+nmat(3))=a(ial+nmat(3))-dvapi
-                  a(ial+nmat(4))=a(ial+nmat(4))-dvaei
-                  a(iau+nmat(3))=a(iau+nmat(3))+dvapkb
-                  a(iau+nmat(4))=a(iau+nmat(4))+dvaekb
-                  a(jml+nmat(3))=a(jml+nmat(3))-dvapkb
-                  a(jml+nmat(4))=a(jml+nmat(4))-dvaekb
+                  bp(iz+nrhs(2))=bp(iz+nrhs(2))+(vxy + mdrift_part)
+                  bp(kz+nrhs(2))=bp(kz+nrhs(2))-(vxy + mdrift_part)
+                  a(jmia+nmat(3))=a(jmia+nmat(3))+dvapi+dmdrpi
+                  a(jmia+nmat(4))=a(jmia+nmat(4))+dvaei+dmdrei
+                  a(ial+nmat(3))=a(ial+nmat(3))-dvapi-dmdrpi
+                  a(ial+nmat(4))=a(ial+nmat(4))-dvaei-dmdrei
+                  a(iau+nmat(3))=a(iau+nmat(3))+dvapkb+dmdrpkb
+                  a(iau+nmat(4))=a(iau+nmat(4))+dvaekb+dmdrekb
+                  a(jml+nmat(3))=a(jml+nmat(3))-dvapkb-dmdrpkb
+                  a(jml+nmat(4))=a(jml+nmat(4))-dvaekb-dmdrekb
  65            continue
             endif
          endif
@@ -920,6 +960,8 @@ c
             t2(neighc)=pxyh
             t3(neighc)=pxy
             t4(neighc)=pxy
+c added area term GAZ (11-12-08)      
+            t5(neighc)=sx2c*sqrt(dis2)                  
             t6(neighc)=-grav*t3(neighc)
             t7(neighc)=-grav_air*t4(neighc)
  69      continue

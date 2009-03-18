@@ -150,7 +150,7 @@ CPS
 C***********************************************************************
 
       use avsio
-      use comai, only : altc, ihead, ierr, iptty, icnl
+      use comai, only : altc, ihead, ierr, iptty, icnl, istrs
       use combi, only : izonef
       use comco2, only : icarb
       use comdi, only : nsurf, izone_surf, izone_surf_nodes, ifree
@@ -196,6 +196,9 @@ c     assign defaults
       iokd = 0
       ioflx = 0
       iozid = 0
+      iodisp = 0
+      iostrain = 0
+      iostress = 0
 c     default output, time in days (for tecplot)
       timec_flag = 2
       net_flux = .false.
@@ -272,6 +275,12 @@ c     output densities, keyword: density
                if (iptty .ne. 0) 
      &              write(iptty, *) ' iodensity       ', iodensity
                
+            else if ((chdum(2:2) .eq. 'i').or.
+     1           (chdum(2:2) .eq. 'I'))then
+c     output displacements, keyword: displacement
+               iodisp = 1
+               if (iptty .ne. 0) 
+     &              write(iptty, *) ' iodisp          ', iodisp   
             else
                goto 99
             end if
@@ -321,7 +330,16 @@ c     output source, keyword: source
                iosource = 1
                if (iptty .ne. 0) 
      &              write(iptty, *) ' iosource        ', iosource
-
+            else if ((chdum(2:4).eq.'tra').or.(chdum(2:4).eq.'TRA'))then
+c     output source, keyword: strain
+               iostrain = 1
+               if (iptty .ne. 0) 
+     &              write(iptty, *) ' iostrain        ', iostrain
+            else if ((chdum(2:4).eq.'tre').or.(chdum(2:4).eq.'TRE'))then
+c     output source, keyword: stress
+               iostress = 1
+               if (iptty .ne. 0) 
+     &              write(iptty, *) ' iostress        ', iostress
             else
 c     output saturation, keyword: saturation 
                iosaturation = 1
@@ -650,7 +668,45 @@ c     illegal character found
             write(iptty, 100)
          end if
       end if
-
+      if ((istrs .eq. 0) .and. iodisp .eq. 1) then
+         iodisp = 0
+         write(ierr, 100)
+         write(ierr, 110) 'disp requested for non stress proplem'
+         write(ierr, 120) 'disp'
+         write(ierr, 100)
+         if (iptty .ne. 0) then
+            write(iptty, 100)
+            write(iptty, 110) 'disp requested for non stress problem'
+            write(iptty, 120) 'disp'
+            write(iptty, 100)
+         end if
+      endif
+      if ((istrs .eq. 0) .and. iostrain .eq. 1) then
+         iostrain = 0
+         write(ierr, 100)
+         write(ierr, 110) 'strain requested for non stress problem'
+         write(ierr, 120) 'strain'
+         write(ierr, 100)
+         if (iptty .ne. 0) then
+            write(iptty, 100)
+            write(iptty, 110) 'strain requested for non stress problem'
+            write(iptty, 120) 'strain'
+            write(iptty, 100)
+         end if
+      end if
+      if ((istrs .eq. 0) .and. iostress .eq. 1) then
+         iostress = 0
+         write(ierr, 100)
+         write(ierr, 110) 'stress requested for non stress problem'
+         write(ierr, 120) 'stress'
+         write(ierr, 100)
+         if (iptty .ne. 0) then
+            write(iptty, 100)
+            write(iptty, 110) 'stress requested for non stress problem'
+            write(iptty, 120) 'stress'
+            write(iptty, 100)
+         end if
+      end if      
       if(iovapor.eq.1.and.ioliquid.eq.1.and.ioconcentration.eq.1) then
          chdum = 'Cannot output both liquid and vapor concentrations'
      &        // 'of the same solute.'
@@ -685,7 +741,9 @@ c     illegal character found
      .     , /, ' (va)por         or (VA)POR  '
      .     , /, ' (ve)locity      or (VE)LOCITY  '
      .     , /, ' (dp)            or (DP) - note: do not use dual!'
-     .     , /, ' (p)ressure      or (P)RESSURE  '
+     .     , /, ' (di)splacement  or (DI)SPLACEMENT'
+     .     , /, ' (stre)ss        or (STRE)SS'     
+     .     , /, ' (stra)in        or (STRA)IN'
      .     , /, ' (ca)pillary     or (CA)PILLARY '
      .     , /, ' (he)ad          or (HE)AD  '
      .     , /, ' (t)emperature   or (T)EMPERATURE   '

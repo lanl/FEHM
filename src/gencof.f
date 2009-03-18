@@ -17,12 +17,14 @@ CD1  PURPOSE
 CD1
 CD1  To generate finite element coefficients (mixed elements) and 
 CD1  perform numerical integration of the elements.
+CD1  stress coefficients are assumed non symmetric
 CD1
 C***********************************************************************
 CD2
 CD2  REVISION HISTORY 
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/gencof.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:43:04   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -268,12 +270,15 @@ C***********************************************************************
       integer noodum(ndimnoo,*),nopdum(ndimnoo,*),iplace(*),ns2dum
       integer nsf(*),ncon(*),inoduf(*),ineluf(*),neluf(*),nodeuf(*)
       integer i, i1, i2, i7, i8, icsh, ij, intgo, ipiv, iq, isx, iw0
-      integer j, jset, k, kb, knum, kset, lz, nele, nelu, neu
+      integer j, jset, k, kb, knum, kset, lz, nele, nelu, neu, ns1, ns2
       integer nga, noder, nsl, nrq, nrqd, nrs, nterm, numkset
-	integer icrem
-      real*8 tenth, arem, rneu
+      integer icrem
+      integer neqp1,jj
+      real*8 tenth, arem
       real*8, allocatable ::  aj(:,:)
       real*8, allocatable :: dumm(:)
+      real*8 sxx, syy, szz
+      logical printc
       logical proc
 
       if(icnl.eq.0.and.ns.eq.4) then
@@ -290,29 +295,22 @@ C***********************************************************************
          enddo
       enddo
 
-c     zero sx arrays
-c     
-      if(istrs.eq.0) then
-         numkset=3
-      else
-         numkset=6
-      endif
-      do jset=1,n0
-         sx1(jset)=0.0
-      enddo
-      do jset=1,maxisx
-         do kset=1,numkset
-            sx(jset,kset)=0.0
-         enddo
-      enddo
-
 c     note repeated element types
 c     note repeated nodal geometries
 c     
       if (istrs.ne.0) then
-         nterm=16
+         nterm=22
+         if(icnl.eq.0) then
+            ns1 = 11
+            ns2 = 22
+         else
+            ns1 = 11
+            ns2 = 16
+         endif
       else
          nterm=04
+         ns1 = 0
+         ns2 = 0
       endif
 c     
 c     determine maximum number of integration points
@@ -328,8 +326,13 @@ c
       endif
 c     save integration type
       intgo=intg
-      tenth = max(neluc/10,1)
+      tenth = max(neluc/10.d0,1.d0)
       icrem = 0
+c     
+c     start out with intg = -1  (close to finv)  
+c     changed later as necessary (to intgo)
+c     
+      intg = -1
 c     
 c     loop on equation coefficient types
 c     
@@ -345,8 +348,20 @@ c
                   intg=-1
                   icsh=1
                else
-                  icsh=0
+                  icsh=1
                endif
+            endif
+            if ( nrq.eq.7 )  then
+               if (intgo.gt.0)  then
+                  intg=intgo
+                  icsh=1
+               else
+                  icsh=1
+               endif
+            endif
+            if(nrq.eq.20) then
+               icsh = 1
+               intg = intgo
             endif
 c     
 c     zero out bcoef for next geometric type
@@ -358,23 +373,30 @@ c
                   bcoef(i,j)=0.0
                enddo
             enddo
-
 c     
 c     loop on integration points
 c     
+            printc = .false.
+            if(nrq.eq.1)printc = .true. 
+            if(nrq.eq.3.and.icnl.ne.0)printc = .true. 
+            if(nrq.eq.4.and.icnl.eq.0)printc = .true. 
+            if(nrq.eq.ns1.and.istrs.ne.0)printc = .true. 
+            if(nrq.eq.ns2.and.istrs.ne.0)printc = .true. 
             do nga=1,ni
 c     
 c     loop on unique elements
 c     
+               icrem = 0
                do neu=1,neluc
-                  rneu = float(neu)
-                  arem = mod(rneu,tenth)
-                  if(arem.eq.0.and.nga.eq.1.and.nrqd.eq.1) then
+                  arem = mod(dble(neu),tenth) 
+                  if(arem.eq.0.and.nga.eq.ni.and.printc) then
                      icrem = icrem + 10
                      if (iout.ne.0) write(iout,*)
-     &                    'area coefs., percent complete = ', icrem
+     &                    'calcs for coef number = ',nrq  ,' 
+     &                    percent complete = ', icrem
                      if (iptty.ne.0) write(iptty,*)
-     &                    'area coefs., percent complete = ', icrem
+     &                    'calcs for coef number = ',nrq  ,' 
+     &                    percent complete = ', icrem
                   endif
                   nele=ineluf(neu)
 c     calculate number of nodes
@@ -401,7 +423,8 @@ c     two dimensional elements
             enddo
             
 c     set integration type back to old one
-            intg=intgo
+c     should be taken care of above
+c     intg=intgo
 
 c     assemble sx(lz,nrq) from bcoef(nele,ij)
 c     loop on unique node groups
@@ -450,18 +473,43 @@ c     use mass lumping for capacitance term
                      sx1(i)=sx1(i)+dumm(kb)
                   enddo
                endif
-               if ( nrq.ne.1.and.nrq.le.7 )  then
+               if ( nrq.ne.1.and.nrq.le.4 )  then
 c     rest of terms
                   do iq=ipiv+1,i2
                      kb=ncon(iq)
                      isx=isx+1
                      sx(isx,nrq-1)=sx(isx,nrq-1)+dumm(kb)
                   enddo
+                  
+                  go to  777
+                  if(nga.ge.ni) then
+                     write(iout,*) 'nga ', nga, 'nrq ', nrq
+                     write(iout,*) 'i,kb, iq, sz (kb) '
+                     
+                     i1 = ncon(i)+1
+                     i2 = ncon(i+1)
+                     do jj = i1,i2
+                        kb = ncon(jj)
+                        write(iout,*) i, kb,  nrq, dumm(kb) 
+                     enddo
+
+                  endif
+ 777              continue
                endif
-               if ( nrq.gt.10 )  then
-c     geometric coefficients for stress equations
+
+               if ( nrq.ge.ns1.and.nrq.le.ns2-3 )  then
+c     geometric coefficients (xy,xz,yz) for stress equations
                   nrs=nrq-10
-                  do iq=ipiv+1,i2
+                  do iq=i1,i2
+                     kb=ncon(iq)
+                     isx=isx+1
+                     sxs(isx,nrs)=sxs(isx,nrs)+dumm(kb)
+                  enddo
+               endif
+               if ( nrq.ge.ns2-2.and.nrq.le.ns2 )  then
+c     geometric coefficients (xy,xz,yz) for stress equations
+                  nrs=nrq-10
+                  do iq=i1,i2
                      kb=ncon(iq)
                      isx=isx+1
                      sxs(isx,nrs)=sxs(isx,nrs)+dumm(kb)
@@ -476,6 +524,8 @@ c
       do i=1,neq
          sx1(i)=sx1(inoduf(nodeuf(i)))
       enddo
+
+
 
       deallocate(bcoef,dumm,aj)
       

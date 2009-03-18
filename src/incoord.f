@@ -238,8 +238,18 @@ C***********************************************************************
       implicit none
 
       logical null1
-      integer i, j, nodi, mb, mc, istat 
+      integer i, j, nodi, mb, mc, istat, ielemorder 
+      integer ic, nc1, nc2, nc3, nc4
       character*4 macro
+      character*4 elem_order
+      character*80 dum_char
+c parser variables
+      character*80 input_msg
+      integer msg(2)
+      integer nwds,sehtemp
+      real*8 xmsg(2)
+      integer imsg(2)
+      character*32 cmsg(2)
 
 ! Is it an unformatted file?
          
@@ -308,6 +318,20 @@ c**** node coordinate data ****
          else if (macro .eq. 'elem') then
 c**** element node data ****
 
+            backspace incoor
+            read (incoor,'(a80)') input_msg
+            call parse_string(input_msg, imsg, msg, xmsg, cmsg, nwds)
+            macro = cmsg(1)
+            if (nwds .lt. 2) then
+               elem_order = '    '
+            else
+               if (msg(2) .ne. 3) then
+                  elem_order = '    '
+               else
+                  elem_order = cmsg(2)
+               end if
+            end if
+
             if (iout .ne. 0) write(iout, 6010) macro, 'incoor', incoor
             if (iptty .gt. 0) write(iptty, 6010) macro, 'incoor', 
      *           incoor
@@ -323,6 +347,12 @@ c**** element node data ****
                ns = iabs(ns)
             end if
 
+            if(elem_order.eq.'trad'.or.ns.ne.8) then
+             ielemorder = 0
+            else
+             ielemorder = 1
+            endif
+            
  30         continue
 
             read (incoor, '(a80)') wdd1
@@ -335,7 +365,27 @@ c**** element node data ****
             mc = iabs(mb)
             go  to  30
  35         continue
-
+c reverse order for non traditional hexes
+c exclude mixed in prisms (nelm(ic+7)=0)
+            if(ielemorder.eq.1) then
+             do j = 1,nei              
+               ic = (j-1)*ns 
+               if(nelm(ic+7).ne.0) then
+                nc1 = nelm(ic+1)
+                nc2 = nelm(ic+2)
+                nc3 = nelm(ic+3)
+                nc4 = nelm(ic+4)
+                nelm(ic+1) = nelm(ic+5)
+                nelm(ic+2) = nelm(ic+6)
+                nelm(ic+3) = nelm(ic+7)
+                nelm(ic+4) = nelm(ic+8)
+                nelm(ic+5) = nc1
+                nelm(ic+6) = nc2
+                nelm(ic+7) = nc3
+                nelm(ic+8) = nc4
+               endif 
+             enddo
+            endif         
          else if (macro .eq. 'alti') then
 c**** alternate element input ****
 

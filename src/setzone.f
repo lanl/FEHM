@@ -337,8 +337,8 @@ C***********************************************************************
 
       maxitz = 10
       i_warn = 0
-      tols = 1.0e-07
-      tolt = 1.0e-07
+      tols = 1.0e-05
+      tolt = 1.0e-05
 
       if (icnl .eq. 0)  then
 c**** 3-d calculation ****
@@ -594,10 +594,12 @@ c**** if correction small end iteration ****
             end do
 
 c**** iteration did not converge so stop ****
-            write(ierr, 6000)  izone
-            if (iout .ne. 0) write(iout, 6000)  izone
-            if (iptty .gt. 0)  write(iptty, 6000)  izone
-            
+            write(ierr, 6010)  izone
+            if (iout .ne. 0) write(iout, 6010)  izone
+            if (iptty .gt. 0)  write(iptty, 6010)  izone
+ 6010       format(/, 1x, 'zone calcs did not converge',
+     *           ' izone = ', i10, ' please check',
+     *           ' coordinates ')            
             stop
             
  20         continue

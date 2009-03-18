@@ -18,7 +18,7 @@
 # Edit FC,LIBRARY,FFLAGS for your environment and compiler 
 #***********************************************************************
 
-SRCDIR = /scratch/ymp/zvd/FEHM_V2.30open/src/
+SRCDIR = /scratch/ymp/zvd/FEHM_V3.00open/src/
 WORKDIR = ./
 INCDIR = ./
 OBJDIR = ./
@@ -61,6 +61,22 @@ STATIC = -Bstatic
 endif
 # Linux OS ------------------------------
 
+# MAC OS  ------------------------------
+ifeq (${OPSYS}, Darwin)
+OSTAG = mac
+FC = /Applications/Absoft10.1/bin/f95
+LIBRARY = -L/Applications/Absoft10.1/lib -lm -lU77 -lV77
+DFLAG =
+LD = /usr/bin/ld
+ifeq (${DEBUG}, ON)
+FFLAGS = -g
+else
+FFLAGS = -O2 -B18
+endif
+STATIC = 
+endif
+# MAC OS  ------------------------------
+
 # SUN OS ------------------------------
 ifeq (${OPSYS}, SunOS)
 OSTAG = sun
@@ -87,7 +103,7 @@ dated:
 	sed s/OS\ DATE/${OSTAG}\ ${DATETAG}/ ${SRCDIR}dated.template >  ${SRCDIR}dated.f
 
 xfehm : ${OBJECTS} ${OBJECTS_F90}
-	${FC} ${FFLAGS} ${OBJECTS} ${OBJECTS_F90} ${LIBRARY} ${STATIC} -o xfehm_v2.30${OSTAG}${DATE}
+	${FC} ${FFLAGS} ${OBJECTS} ${OBJECTS_F90} ${LIBRARY} ${STATIC} -o xfehm_v3.00${OSTAG}${DATE}
 
 test:
 	echo ${OSTAG} ${FFLAGS} ${DATETAG} ${DATE}

@@ -86,6 +86,10 @@ c
       integer jj,kb,neqp1,icon
       integer icode
 c
+c  return if stress solution enabled
+c
+      if(istrs.ne.0) return
+c      
       neqp1=neq+1
       if(iflg.eq.-3) then
 c     isotropic minimun storage case

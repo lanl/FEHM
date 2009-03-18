@@ -33,6 +33,7 @@ C***********************************************************************
       use comdti
       use comcouple
       use comco2
+      use comwellphys
       implicit none
 
       integer nmatd, index(6)
@@ -85,6 +86,10 @@ c Generate water specific equation
 c follwoing is modified form of original geneq2_h2o subroutine for 
 c CO2-water-air problem. 
 c
+c
+c GAZ 11/01/08 get drift flux info (must be call after rel perms)
+      call wellphysicsctr(2,0)
+c
       do id = 1,neq
           call geneq_h2o_co2(id)
       enddo
@@ -100,7 +105,11 @@ c
 c     Generate CO2 specific equation
 c     
       do id = 1,neq
+         if(nwellphy.ne.0) then
+          call geneq_co2_wellphysics(id)
+         else
           call geneq_co2(id)
+         endif
       enddo
 c  
 c     air component: add heat-mass contribution of air            

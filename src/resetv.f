@@ -246,6 +246,9 @@ c**** RJP 04/10/07 reset co2 solution ****
       if ( icarb .eq. 1 )  then
          call icectrco2(11,0)
       end if
-
+c**** reset stress solution ****
+      if ( istrs .ne. 0 )  then
+         call stressctr(-10,0)
+      end if
       return
       end

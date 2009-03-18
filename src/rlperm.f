@@ -485,7 +485,7 @@ c     check for read from other file
                endif
                icapp = 1
                icapt(i)=1
-            else if (irlpd .eq. 12.or.irlpd .eq. 13) then
+            else if (irlpd .eq. 12 .or. irlpd .eq. 13) then
 c linear with residual saturations as function of hydrate fraction
 c for use with methane hydrate 
 c rp1f is constant term for irreducible water saturation
@@ -508,7 +508,7 @@ c specifying rp7f(i) and rp8f(i) respectively.
                endif
                icapp = 1
                icapt(i)=1
-            else if (irlpd .eq.14) then
+            else if (irlpd .eq. 14) then
 c linear with residual saturations as function of hydrate fraction
 c for use with methane hydrate 
 c rp1f is constant term for irreducible water saturation
@@ -525,7 +525,7 @@ c rp4f is maximum vapor rv perm
                endif
                icapp = 1
                icapt(i)=1
-            else if (irlpd .eq.15) then
+            else if (irlpd .eq. 15) then
 c linear with residual saturations as function of hydrate fraction
 c for use with methane hydrate 
 c rp1f is constant term for irreducible water saturation
@@ -543,7 +543,7 @@ c rp4f is maximum vapor rv perm
                icapp = 1
                icapt(i)=1
 c RJP 04/19/07 Introduced new rel-perm model for CO2.  
-            elseif ((irlpd .eq. 16).or.(irlpd.eq.17)) then
+            elseif (irlpd .eq. 16 .or. irlpd .eq. 17) then
                read(inpt,*) irlpt(i),rp1f(i),rp2f(i),rp3f(i),
      &              rp4f(i),rp5f(i),rp6f(i),rp7f(i), rp8f(i),
      &              rp9f(i),rp10f(i),rp11f(i),rp12f(i), rp13f(i),
@@ -553,7 +553,7 @@ c RJP 04/19/07 Introduced new rel-perm model for CO2.
      &              rp4f(i),rp5f(i),rp6f(i),rp7f(i), rp8f(i),
      &              rp9f(i),rp10f(i),rp11f(i),rp12f(i), rp13f(i),
      &              rp14f(i),rp15f(i),rp16f(i)
-            else if (irlpd .eq.21) then
+            else if (irlpd .eq. 21) then
 c Thomeer capillary pressure and Corey relative perms
 c rp1f is irreducible water saturation
 c rp2f is irreducible gas saturation
@@ -564,7 +564,7 @@ c cp2f is maximum saturation cutoff for Thomeer formulation
                read(inpt,*) irlpt(i),rp1f(i),rp2f(i),rp3f(i),
      &              rp4f(i),cp1f(i),cp2f(i)
                
-            else if (irlpd .eq.10) then
+            else if (irlpd .eq. 10) then
 c linear with mim and max l and v saturations
                read(inpt,*) irlpt(i),rp1f(i),rp2f(i),rp3f(i),
      &              rp4f(i),rp5f(i),rp6f(i),cp1f(i),cp3f(i)
@@ -576,7 +576,7 @@ c linear with mim and max l and v saturations
                endif
                icapp = 1
                icapt(i)=1
-            else if (irlpd .eq.11) then
+            else if (irlpd .eq. 11) then
 c Brooks-Corey capillary and rlperms
                read(inpt,*) irlpt(i),rp1f(i),rp2f(i),rp3f(i),
      &              rp4f(i),cp1f(i),cp3f(i)
@@ -643,13 +643,13 @@ c allocate memory for f-m interaction and check for errors
                call rlp_frac(0,0,0.0d00,0.0d00,0.0d00,
      &              0.0d00,0.0d00,0.0d00,0.0d00,0.0d00,
      &              rp24f(i))
-            else if (irlpd .eq.8) then
+            else if (irlpd .eq. 8) then
 c     van Genutchen capillary pressure and relative perms
 c with rlp(h) 
 c with relative perm of gas phase governed by VG parameters
                read(inpt,*) irlpt(i), rp1f(i), rp2f(i), rp3f(i), 
      &              rp4f(i), rp5f(i), rp6f(i)
-            else if (irlpd .eq.9) then
+            else if (irlpd .eq. 9) then
 c     van Genutchen capillary pressure and relative perms
 c with rlp(h) 
 c with relative perm of gas phase governed by VG parameters
@@ -662,7 +662,7 @@ c rp16- Ba
      &              rp4f(i), rp5f(i), rp6f(i), 
      &              rp13f(i), rp14f(i), rp15f(i), rp16f(i) 
 c keating 9/2008
-            else if(irlpd.eq.19) then
+            else if (irlpd .eq. 19) then
                read(inpt,*) irlpt(i), rp1f(i), rp2f(i), rp3f(i), 
      &              rp4f(i), rp5f(i), rp6f(i), rp7f(i)
             endif
@@ -1097,7 +1097,7 @@ c     set capillary pressures
                   pcp(mi) = 9.8e-3 * hp
                   dpcef(mi) = 9.8e-3 * dhp
 
-               elseif(irpd.eq.6.or.irpd.eq.7) then
+               elseif(irpd .eq. 6 .or. irpd .eq. 7) then
 c     
 c     akf-fracture saturated permeability(rp15)
 c     akm-matrix saturated permeability(rp16)

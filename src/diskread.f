@@ -219,6 +219,7 @@
       logical, dimension (2) :: read_flux = .FALSE.
       logical, dimension (2) :: read_mass = .FALSE.
       logical, dimension (2) :: read_co2 = .FALSE.
+      logical, dimension (2) :: read_pini = .FALSE.
 
       mass_read = .FALSE.
       co2_read = .FALSE.
@@ -230,7 +231,13 @@
       if (iptty .ne. 0) write (iptty, 10) trim(nmfil(6))
  10   format ('Reading initial condition data from file ', a)
 
-      do i = 1, 9 
+      if (.not. allocated(rstr)) then
+         allocate(rstr(1))
+         rstr(1) = 'all'
+         rstr_num = 1
+      end if
+
+      do i = 1, rstr_num
          select case (rstr(i))
          case ('all')
             if (icarb .eq. 1) then 
@@ -260,8 +267,11 @@
          case ('co2')
             read_co2(1) = .TRUE.
          case ('mass')
-             read_mass(1) = .TRUE.
-             mass_read = .TRUE.
+            read_mass(1) = .TRUE.
+            mass_read = .TRUE.
+         case ('pini')
+            read_pini(1) = .TRUE.
+            ipini = 1
          case ('none')
 c Values from the restart file will not be used
          end select
@@ -634,6 +644,20 @@ c Phase-state of CO2
                   else
                      backspace (iread)
                      exit
+                  end if
+               case ('pini')
+c Initial pressures and temps 
+                  if (read_pini(1)) then
+                     read(iread, *)  ( tini (mi) , mi=1,ncount )
+                     read(iread, *)  ( phini (mi) , mi=1,ncount )
+                     read_pini(2) = .TRUE.
+                  else
+                     read (iread, *) ( dummyreal, mi = 1,ncount )
+                     read (iread, *) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 
+     &                    'initial pressure and temperature'
+                     if (iptty .ne. 0)write (iptty, 400) 
+     &                    'initial pressure and temperature'
                   end if
                case default
                   backspace (iread)
@@ -1037,6 +1061,20 @@ c Phase-state of CO2
                      if (iout .ne. 0) write (iout, 400) 'masses'
                      if (iptty .ne. 0)write (iptty, 400) 'masses'
                   endif
+               case ('pini')
+c Initial pressures and temps 
+                  if (read_pini(1)) then
+                     read(iread)  ( tini (mi) , mi=1,ncount )
+                     read(iread)  ( phini (mi) , mi=1,ncount )
+                     read_pini(2) = .TRUE.
+                  else
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400)  
+     &                    'initial pressure and temperature'
+                     if (iptty .ne. 0)write (iptty, 400)  
+     &                    'initial pressure and temperature'
+                  end if
                case default
                   exit
                end select
@@ -1306,7 +1344,17 @@ c
             if (iptty .ne. 0) write (iptty, 1001)
         end if
       end if     
-      if(wdd1(9:12).eq.'strs') call  stress  ( 4 )
+c      if(wdd1(9:12).eq.'strs') call  stress  ( 4 )
+c**** save initial pressures and temps to restart file ****
+      if (read_pini(1) .and. .not. read_pini(2) ) then
+         if (cform(6) .eq. 'formatted') then
+            read(iread, *, END=3000)  ( tini (mi) , mi=1,ncount )
+            read(iread, *, END=3000)  ( phini (mi) , mi=1,ncount )
+         else
+            read(iread, END=3000)  ( tini (mi) , mi=1,ncount )
+            read(iread, END=3000)  ( phini (mi) , mi=1,ncount )
+         endif
+      endif     
 
  1000 format (1x, 'Tracer data found in restart file for non-trac',
      &     ' problem, data will not be used')
@@ -1327,5 +1375,13 @@ c
  1004 format(1x,a, 'Problem has ', i7, ' data elements for grid with ', 
      &     i10, ' nodes', /, 'Stopping')
       stop
+
+ 3000 continue
+      if (iout .ne. 0) write (iout, 500) 
+     &     'Initial pressures and temperatures'
+      if (iptty .ne. 0) write (iptty, 500) 
+     &     'Initial pressures and temperatures'
+      stop
+
       end
       

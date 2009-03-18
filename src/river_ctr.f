@@ -98,7 +98,8 @@ c
       real*8  vol0, vol2, pi, pi2, disa, raddif,disr,rad2,amult,rad02
       real*8  mult_well,sx_max,area_dum,sx_dum,outrad,outarea,ht
       real*8 area_new, rads
-
+      character*10 macro1
+      character*4 macro
       integer i4
       integer neqpi, iexpfl
       real*8, allocatable  :: sx_new(:,:)
@@ -123,6 +124,7 @@ c
 c     RJP 1/9/07 added river_zone
       integer iroot, river_zone(maxiriver), icdum
       character*120 well_file_name, well_root
+	character*80 dum_string
 c RJP 05/21/08 added following
       integer ic1
 c     RJP 1/9/07 changed following
@@ -133,7 +135,7 @@ C
 C#######################################################################
 C     
 C     
-c     return if no rivers
+c     return if no rivers or wells 
       if(nriver.eq.0) return
       if(iflg.eq.0) then
 c     
@@ -188,13 +190,61 @@ c     zvd 06/14/07 Added root_name selection
 c     open(1001, file = well_file_name, status='unknown',
 c     *           form = 'formatted')
 
-         if(iriver.eq.0) then
+c         if(iriver.eq.0) then
 c     
 c     iflg = 0 and iflg = 1 called from incoord
 c     at this point neq_primary has been set in scanin
 c     n0 = neq_primary + npoint_riv
 c     npoint_riv has been estimated in scanin
 c     
+
+c            isriver = 0
+            nbc_riv = 0
+            iriver = 1
+            macro = "well"
+c
+c read in "sub macros" for well
+      
+100     continue
+        read (inpt, '(a80)') wdd1
+        if (wdd1(1:9) .eq. 'wellend') go to 200 
+        if (wdd1(1:1) .eq. '#') go to 40 
+        read (wdd1, '(a10)') macro1
+     	  write(iout, 50) macro1
+	  if (iptty .gt. 0) write(iptty, 50) macro1 
+50         format(3x, '**** well sub macro : ', a10,' **** ' ) 
+        if(macro1.eq.'text      ') then
+c     
+c     read text here     
+c
+        else if(macro1.eq.'wellmodel ') then           
+
+c     nriver is the number of models for this call (all have to be of the same type)
+            read(inpt,'(a80)') dum_string
+	      read(dum_string,*,end = 140) nriver, iriver
+	      go to 141
+140         iriver = 1
+141         continue
+            allocate(iwell_geom(nriver))
+            do i = 1,nriver
+	       iwell_geom(i) = iriver
+	      enddo
+            nall = n0
+
+            if(.not.allocated(izone_river)) then
+               allocate(izone_river(max(1,nriver)))
+               allocate(iriverf(max(1,nriver)))
+            end if
+c         endif
+c         npoint_riv calculated in scanin
+c         npoint_riv = 0  
+         nmodels = 0
+c     
+c     "i" is the river or well number
+c 
+       if(iriver.eq.1) then 
+c	    
+          if(.not.allocated(isriverf)) then   
             allocate(isriverf(maxiriver))
             allocate(ifriverf(maxiriver))
             allocate(inriverf(maxiriver))
@@ -205,29 +255,13 @@ c
             allocate(rivend(maxiriver))
 c     allocate(wgt_river(n0))
             allocate(isriver(maxriver_nodes))
+            isriver = 0
             allocate(coor_riv(maxriver_nodes,3))
             allocate(area_riv(maxriver_nodes,2))
 c     RJP 07/20/07 added a new array to specify casing & cement thickness
             allocate(csg_th(maxriver_nodes,2))
             allocate(perm_riv(maxriver_nodes,2))
-            isriver = 0
-            nbc_riv = 0
-c     nriver is the number of models for this call
-            read(inpt,*) nriver
-            iriver = 1
-            nall = n0
-
-            ifriverf(iriver)=nriver
-            if(.not.allocated(izone_river)) then
-               allocate(izone_river(max(1,nriver)))
-               allocate(iriverf(max(1,nriver)))
-            end if
-         endif
-         npoint_riv = 0  
-         nmodels = 0
-c     
-c     "i" is the river or well number
-c     
+          endif
 c     
 c     zone number rules
 c     
@@ -255,7 +289,7 @@ c
 c     can skip nodes (with a negative number as in other macros)
 c     
 c     read a list of node numbers and weights
-            if(iriver.eq.1) then
+
 c     well type simple
 c     read for all section points: x,y,z, radius of well, radius of largest layer,
                ic = npoint_riv - ifriverf(i) +1 
@@ -285,19 +319,79 @@ c     mc = mc + iabs(mb)
 
                isriver(ic:npoint_riv) = isriverf(i)
                continue
+         enddo
             else if(iriver.eq.2) then
-c     simplest river. defined bed parameters
-
+c
+c simple list of nodes defined - then filled in
+c
+c input production coordinates.
+c
+c n_well_prod 
+c iwell_prod
+c coor_well2 coordinates for simple wells
+c n_well_seg pipe lengths (length connected to iwell_prod nodes)
+c
+c  well_rad(n_well_seg)-well_radius for each segment
+c  well_dz(n_well_seg)- distance increment for gridblock along well segment
+c  well_connect_fac - multiplier of well to primary grid 
+c      
+             n_well_prod = nriver
+	       allocate(iwell_prod(n_well_prod))
+	       allocate(coor_well2(n_well_prod,3))
+	       allocate(well_connect_fac(n_well_prod))
+	       allocate(izlabelp(n_well_prod))	       
+             do i = 1,n_well_prod
+	        read(inpt,*) ii,
+     &			coor_well2(ii,1),coor_well2(ii,2),coor_well2(ii,3),izlabelp(ii)	   
+              iwell_prod(i) = ii   
+             enddo
+             read(inpt,*) n_well_seg
+	       allocate(iwell_seg(n_well_seg,2))
+	       allocate(well_rad(n_well_seg))
+	       allocate(well_dz(n_well_seg))
+	       allocate(izlabels(n_well_seg))		       
+             do i = 1,n_well_seg
+	        read(inpt,*) j,iwell_seg(j,1),iwell_seg(j,2),
+     &			well_rad(j),well_dz(j),well_connect_fac(j),izlabels(i)	       
+             enddo
+            continue
             else if(iriver.eq.3) then
-c     this river could be a well with turbulent flow     
+c high resolution 3D embedded patch of cells 
+            else if(iriver.eq.4) then
+c surface grid nodes     
             else
             endif
 c     
 c     finished reading  river section and attributes      
 c     end loop on sections 
 c     
-         enddo
+        else if(macro1.eq.'wellphysi ') then 
+c
+c  read in well identification
+c
+         read(inpt,'(a80)') dum_string(1:80)
+	   if(dum_string(1:8).eq.'allwells') then
+	    
+c apply to all well nodes
+	     iwell_phy_all = 0
+	     read (inpt,*) iwell_phy_all
+	    else if(dum_string(1:8).eq.'wellzone') then
+c identify wells
+         endif
+	     
+        else
+         write(iout,*) 'ERROR IN WELL INPUT(STOPPING)'
+         write(*,*) 'ERROR IN WELL INPUT(STOPPING)'
+	   stop
+        end if
+40     continue
+      go to 100
+200   continue         
       else if(iflg.eq.1) then  
+c
+c  need a loop on the number of types of wells
+c
+	  if(iriver.eq.1) then
 c     
 c     add nodes to fehm list (connectivity will be established later)
 c     called after have coordinates (in startup)
@@ -522,13 +616,21 @@ c     write(*,*) "Here 2"
          cord = coor_dum
 c     release  memory         
          deallocate (coor_dum,coor_riv)
+c
+       else if(iriver.eq.2) then
+c      generate connectivity for implicit well system
+        call implicit_well (1)
+c
+	 endif
+
       else if(iflg.eq.2) then
 c     
 c     redefine mdnodes to global
 c     
-C     
-c     mdnodes is local to river or well nodes
 c     
+c     mdnodes is local to river or well nodes
+c    
+        if(iriver.eq.1) then 
          neq_new =  neq
          neqp1 = neq_primary + 1
          allocate(mdnodes_riv(neq_new))
@@ -556,6 +658,8 @@ c     special case where abs(ij) is the primary node
             enddo
          enddo
          n_ncon = 2*ii +nelm(neqp1) + npoint_riv
+       else if(iriver.eq.2) then
+       endif
       else if(iflg.eq.3) then
 c     
 c     resize volumes
@@ -566,7 +670,8 @@ c
 c     fill in volumes and areas (really areas divided by distance)
 c     
 c     
-
+       if(iriver.eq.1) then
+c
          allocate(river01(neq_new))
          allocate(river02(neq_new)) 
          allocate(river03(neq_new)) 
@@ -737,12 +842,17 @@ c     subtract river volume from primary node volume
          sx1 = dum
          close(inwel)
          deallocate(dum,vol1)
-
+       else if(iriver.eq.2) then
+c
+c  
+c	   
+	 endif
       else if(iflg.eq.-3) then
 c     
 c     printout some well or river properties
 c     RJP 11/21/05
 c     
+       if(iriver.eq.1) then
          well_file_name = ''
          well_file_name(1:iroot) = well_root(1:iroot)
          well_file_name(iroot+1:iroot+4)='.wel'
@@ -759,6 +869,9 @@ c
          enddo
          close (inwel)
  666     FORMAT(I5,2x,I5,2x,I8,2x,g12.6,2x,g12.6)
+       else if(iriver.eq.2) then
+        call implicit_well(-3)
+       endif
       else if(iflg.eq.4) then
 C     
 C     modify connectivity
@@ -769,7 +882,8 @@ C     are the additional connections
 c     
 c     add total number of connections (ii +ii) due to new connections in primary and river nodes
 c     
-
+        if(iriver.eq.1) then
+c
          neqp1_old = neq_primary + 1
          neqp1 =  neq_new +1  
          allocate(istrw_new(n_ncon-neqp1))
@@ -1068,6 +1182,10 @@ c Added a new array to store the distances
          neq_primary = neq
          deallocate(idum,dum,istrw_new,ncon_new,sx_new)
          deallocate (river01,river02,river03)
+       elseif(iriver.eq.2) then
+c simple peaceman type wellbore
+        call implicit_well(4)
+       endif
       else if(iflg.eq.-4) then
 c     
 c     printout connectivities
@@ -1077,7 +1195,9 @@ c
          
 c     
 c     assign zones to well or river plus layers
-c     
+c       
+       if(iriver.eq.1) then
+c
          ic = neq-npoint_riv
          do i = 1,nriver
             i1 = inriverf(i)
@@ -1118,6 +1238,11 @@ c
          do i = 1, npoint_riv
             river_zone(i) = izonef(neq-npoint_riv+i)
          enddo
+	 else if(iriver.eq.2) then
+c
+	  call implicit_well(5)
+c
+	 endif
 
       else if(iflg.eq.-5) then  
 c     
@@ -1128,6 +1253,8 @@ c
 c     printout zonation
 c     
 c     n = neq-npoint_riv
+c
+	 if(iriver.eq.1) then
          do i = neq-npoint_riv+1, neq
             if(pnx(i).eq.zero_t) then
                pnx(i) = pnx(iriver_con_node(i-neq+npoint_riv))
@@ -1143,7 +1270,16 @@ c     n = neq-npoint_riv
             endif
          enddo
 
+	 else if(iriver.eq.2) then
+c
+	  call implicit_well(33)
+c
+	 endif
+
       elseif (iflg.eq.-33) then
+c
+	 if(iriver.eq.1) then
+c
          n = neq-npoint_riv
          do i = n+1, n+npoint_riv
             pnx(i) = -9999
@@ -1153,15 +1289,24 @@ c     n = neq-npoint_riv
             denr(i) = -9999
             cpr(i) = -9999
          enddo
-
+	 else if(iriver.eq.2) then
+c
+	  call implicit_well(-33)
+c
+	 endif
       else if(iflg.eq.6) then
 c     
 c     output well or river information
 c     timesteps
 c     
 c     implement later
+       if(iriver.eq.1) then
 c     
-         
+	 else if(iriver.eq.2) then
+c
+	  call implicit_well(6)
+c
+	 endif        
 
 C     *******************************************************
       endif
