@@ -518,10 +518,10 @@ c     check for read from other file
                read(locunitnum,*) idumm,(adumm,ja=1,4)
             elseif(idumm.eq.3) then
                read(locunitnum,*) idumm,(adumm,ja=1,6)
-            elseif(idumm.eq.5) then
-               read(locunitnum,*) idumm,(adumm,ja=1,6)
             elseif(idumm.eq.4) then
                read(locunitnum,*) idumm,(adumm,ja=1,15)
+            elseif(idumm.eq.5) then
+               read(locunitnum,*) idumm,(adumm,ja=1,6)
             elseif(idumm.eq.6) then
                read(locunitnum,*) idumm,(adumm,ja=1,15)
             elseif(idumm.eq.7) then
@@ -553,13 +553,10 @@ c    temma add 2005/11/07
                read(locunitnum,*) idumm,(adumm,ja=1,14)
             elseif(idumm.eq.18) then
                 read(locunitnum,*) idumm,(adumm,ja=1,14)
-             elseif(idumm.eq.19) then
-                read(locunitnum,*) idumm,(adumm,ja=1,14)
-             elseif(idumm.eq.20) then
-               read(locunitnum,*) idumm,(adumm,ja=1,16)
-c
             elseif(idumm.eq.19) then
                read(locunitnum,*) idumm,(adumm,ja=1,7)
+            elseif(idumm.eq.20) then
+               read(locunitnum,*) idumm,(adumm,ja=1,16)
             elseif(idumm.eq.21) then
                read(locunitnum,*) idumm,(adumm,ja=1,6)
 c    temma add 2005/11/07
