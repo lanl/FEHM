@@ -105,7 +105,8 @@ c     form derivatives
          write(ierr,*)'STOP.ERROR in porosity_gradient.'
          write(ierr,*)'porx1/porx2 le 0.'
          write(ierr,*)'i,ix,iy,iz=',i,ix,iy,iz
-         stop
+         write(ierr,*)'porx1=', porx1, 'porx2=', porx2
+         stop 
       endif
       fac1=pory1/pory2
       if(fac1.gt.0.) then
@@ -114,6 +115,7 @@ c     form derivatives
          write(ierr,*)'STOP.ERROR in porosity_gradient.'
          write(ierr,*)'pory1/pory2 le 0.'
          write(ierr,*)'i,ix,iy,iz=',i,ix,iy,iz
+         write(ierr,*)'pory1=', pory1, 'pory2=', pory2
          stop
       endif
       fac1=porz1/porz2
@@ -123,6 +125,7 @@ c     form derivatives
          write(ierr,*)'STOP.ERROR in porosity_gradient.'
          write(ierr,*)'porz1/porz2 le 0.'
          write(ierr,*)'i,ix,iy,iz=',i,ix,iy,iz
+         write(ierr,*)'porz1=', porz1, 'porz2=', porz2
          stop
       endif
       
