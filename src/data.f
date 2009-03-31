@@ -258,6 +258,7 @@ c initialize character and boolean variables in comai
       accm = '    '
       hist_flag = .FALSE.
       out_zones = .FALSE.
+      boun_out  = .TRUE.
 
 c initialize scalar integers in comai
 
