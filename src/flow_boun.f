@@ -249,6 +249,7 @@ c node_ch_model_type - specified model number change
 c
 c node_model - model number for each node
 c
+      use comai, only : boun_out
       use combi
       use comci
       use comdi
@@ -624,23 +625,23 @@ c        daym1=days
                         timchar = '   years '
                      endif
 	             if(tunit_type(i).ne.3) then
-                        if (iout .ne. 0) then
+                        if (iout .ne. 0 .and. boun_out) then
                            write(iout ,*) ' '
                            write(iout ,10) i,days0,timchar,tmdum
                            write(iout ,*) ' '
                         end if
-                        if(iptty.ne.0) then
+                        if(iptty.ne.0 .and. boun_out) then
                            write(iptty ,*) ' '
                            write(iptty,10) i,days0,timchar,tmdum
                            write(iptty ,*) ' '
                         endif
                      else
-                        if (iout .ne. 0) then
+                        if (iout .ne. 0 .and. boun_out) then
                            write(iout ,*) ' '
                            write(iout ,11) i,days0
                            write(iout ,*) ' '
                         end if
-                        if(iptty.ne.0) then
+                        if(iptty.ne.0 .and. boun_out) then
                            write(iptty ,*) ' '
                            write(iptty,11) i,days0
                            write(iptty ,*) ' '
@@ -1199,11 +1200,11 @@ C
                endif
               endif
             enddo
-            if(iout.ne.0) write(iout,*)' '
-            if(iptty.ne.0) write(iptty,*)' '
+            if(iout.ne.0 .and. boun_out) write(iout,*)' '
+            if(iptty.ne.0 .and. boun_out) write(iptty,*)' '
             do i=1,mmodel
               if(time_interpolate(i) .ne. 0)then
-                if(days .ge. time(abs(time_type(imodel)),imodel))then
+                if(days .ge. time(abs(time_type(i)),i))then
                    time_factor2 = 
      &             (days - time(abs(time_type(i)),  i))/
      &                    (time(abs(time_type(i))+1,i) - 
@@ -1213,7 +1214,7 @@ C
                   time_factor1 = 0.0d0
                   time_factor2 = 0.0d0
                 endif
-                if (iout .ne. 0) then
+                if (iout .ne. 0 .and. boun_out) then
                 write(iout,20)' ti_linear t=',days,
      *                    ' model #=',i,
      *                    ' t1=',time(abs(time_type(i))  ,i),
@@ -1221,7 +1222,7 @@ C
      *                    ' f1=',time_factor1,
      *                    ' f2=',time_factor2
                 endif
-               if(iptty.ne.0) then
+               if(iptty.ne.0 .and. boun_out) then
                   write(iptty,20)' ti_linear t=',days,
      *                 ' model #=',i,
      *                 ' t1=',time(abs(time_type(i))  ,i),

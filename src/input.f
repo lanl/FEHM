@@ -821,6 +821,15 @@ c**** switch varables, limited now to pressure-enthalpy ****
       else if (macro .eq. 'boun') then
 c**** read in sources and sinks - time dependent mode **** 
          iboun=1
+         backspace (inpt)
+         read(inpt,'(a80)') input_msg
+         call parse_string(input_msg,imsg,msg,xmsg,cmsg,nwds)
+         if (nwds .ge. 2) then
+            if (msg(2) .eq. 3) then
+               if (cmsg(2) .eq. 'nout' .or. cmsg(2) .eq. 'NOUT')
+     &              boun_out = .false.
+            end if
+         end if
          call flow_boundary_conditions(0)
          call flow_boundary_conditions(1)
 

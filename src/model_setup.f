@@ -63,6 +63,7 @@ c
 c read in model parameters
 c
 c
+      use comai, only : boun_out
       use comdti
       use comdi
 
@@ -94,13 +95,13 @@ c
          time_type(imod)=-ntimes
          if(key(1:9).eq.'ti_linear') then
             time_interpolate(imod) = 1
-            if (iout .ne. 0) then
+            if (iout .ne. 0 .and. boun_out) then
                write(iout,*)
      &              'Linear interpolation between time intervals'
                write(iout,*) 'Set time_interpolate = 1'
                write(iout,*) imod, time_interpolate(imod)
             end if
-            if (iptty .ne. 0) then
+            if (iptty .ne. 0 .and. boun_out) then
                write(iptty,*)
      &              'Linear interpolation between time intervals'
                write(iptty,*) 'Set time_interpolate = 1'
@@ -108,12 +109,12 @@ c
             end if
          else
             time_interpolate(imod) = 0
-            if (iout .ne. 0) then
+            if (iout .ne. 0 .and. boun_out) then
                write(iout,*) 'Constant between time intervals'
                write(iout,*) 'Set time_interpolate = 0'
                write(iout,*) imod, time_interpolate(imod)
             end if
-            if (iptty .ne. 0) then
+            if (iptty .ne. 0 .and. boun_out) then
                write(iptty,*) 'Constant between time intervals'
                write(iptty,*) 'Set time_interpolate = 0'
                write(iptty,*) imod, time_interpolate(imod)
@@ -135,13 +136,13 @@ c
          time_type(imod)=ntimes
          if(key(1:9).eq.'cy_linear') then
             time_interpolate(imod) = 1
-            if (iout .ne. 0) then
+            if (iout .ne. 0 .and. boun_out) then
                write(iout,*) 
      &              'Linear interpolation between time intervals'
                write(iout,*) 'Set time_interpolate = 1'
                write(iout,*) imod, time_interpolate(imod)
             end if
-            if (iptty .ne. 0) then
+            if (iptty .ne. 0 .and. boun_out) then
                write(iptty,*) 
      &              'Linear interpolation between time intervals'
                write(iptty,*) 'Set time_interpolate = 1'
@@ -149,12 +150,12 @@ c
             end if
          else
             time_interpolate(imod) = 0
-            if (iout .ne. 0) then
+            if (iout .ne. 0 .and. boun_out) then
                write(iout,*) 'Constant between time intervals'
                write(iout,*) 'Set time_interpolate = 0'
                write(iout,*) imod, time_interpolate(imod)
             end if
-            if (iptty .ne. 0) then
+            if (iptty .ne. 0 .and. boun_out) then
                write(iptty,*) 'Constant between time intervals'
                write(iptty,*) 'Set time_interpolate = 0'
                write(iptty,*) imod, time_interpolate(imod)

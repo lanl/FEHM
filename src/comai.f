@@ -470,7 +470,7 @@ C gaz 11-06-2007
       parameter( nmacros = 60 )
       logical macroread(nmacros) 
 
-      logical tpor_flag, compute_flow, hist_flag, reverse_flow
+      logical tpor_flag, compute_flow, hist_flag, reverse_flow, boun_out
       logical out_zones, spercent, mass_read, pres_read, co2_read
 
       end module comai
