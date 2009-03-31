@@ -1145,20 +1145,17 @@ c**** initialize coefficients adjust volumes in dpdp calcs ****
 
 c  initialize pressure pressures and temperatures
       if(ipini.eq.0.or.iread.eq.0) then
-        i = iporos
-	  iporos = 1    
-        call porosi(4)
-	 iporos = i
-	else
+         call porosi(4)
+      else
 c phini and tini have be read in from disk, just set pressure
-       psini = ps
-	endif
-	call stressctr(2,0)
+         psini = ps
+      endif
+      call stressctr(2,0)
 c this call handled in call to porosi above
 c
 c  find permeability nodes
 c
-	call stressctr(16,0)    	 
+      call stressctr(16,0)    	 
 c
 c   combine multiple generalzed head BCs
 c
