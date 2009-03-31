@@ -1290,10 +1290,10 @@ c
                   satr = sat_dum
                end if
                if (idof .eq. 1) then
-                  if (s(ii+ny) .lt. 1.0) then
+c                  if (s(ii+ny) .lt. 1.0) then
 ! heat conduction only
-                     if(ico2.ge.0) to(ii+nx)=t(ii+ny) 
-                  end if
+                  if(ico2.ge.0) to(ii+nx)=t(ii+ny) 
+c                  end if
                else
                   if(ico2.ge.0) to(ii+nx)=t(ii+ny)
                   pho(ii+nx)=phi(ii+ny)
