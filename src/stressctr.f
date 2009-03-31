@@ -257,6 +257,7 @@ c
       if(icnl.ne.0.and.ihms.lt.0) then
 c not fully coupled  2D solution    
         idof_stress = 2
+        istrs_coupl = ihms
       else if(icnl.eq.0.and.ihms.lt.0) then
 c not fully coupled          
         idof_stress = 3
