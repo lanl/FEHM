@@ -66,6 +66,7 @@ coneq1_gdpm.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o
 coneq1_gdpm.o: comfi.o comflow.o comgi.o comji.o comrxni.o comxi.o davidi.o
 coneq1mdnode.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o
 coneq1mdnode.o: comfi.o comflow.o comgi.o comji.o comrxni.o davidi.o
+connections_list.o: comai.o combi.o
 contr.o: avsio.o comai.o combi.o comci.o comdi.o comdti.o comhi.o comii.o
 contr.o: compart.o comwt.o comxi.o davidi.o
 contrc.o: comai.o combi.o comdi.o comdti.o comxi.o
