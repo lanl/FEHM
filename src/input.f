@@ -675,6 +675,10 @@ c**** node coordinate data, read in incoord subroutine ****
 c**** thermal conductivity data ****
          call incond
 
+      else if (macro .eq. 'conn') then
+c**** thermal conductivity data ****
+         connect_out = .true.
+
       else if (macro .eq. 'cont') then
          icont = 1
 c**** contour plot information ****
