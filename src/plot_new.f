@@ -49,6 +49,8 @@
       use comdi
       use comdti
       use comfi
+      use comsi, only : du, dv , dw, str_x, str_y, str_z, str_xy,
+     &     str_xz, str_yz, vol_strain
       use comwt
       use comzone
       use davidi
@@ -498,6 +500,76 @@ c RJP 04/30/07 added following for outputting time-dependent CO2 mass
 ! Output concentrations
             info_string = info_string(ic1:ic2) // 'concentration '
             ic2 = len_trim(info_string) + 1
+         end if
+         if (ishisdisx .ne. 0) then
+! Output x displacement
+            info_string = info_string(ic1:ic2) // 'x displacement '
+            ic2 = len_trim(info_string) + 1
+            title_string = 'X Displacement (m)'
+            call plot_header(ishisdisx,var_num,form2_string)
+         end if
+         if (ishisdisy .ne. 0) then
+! Output y displacement
+            info_string = info_string(ic1:ic2) // 'y displacement '
+            ic2 = len_trim(info_string) + 1
+            title_string = 'Y Displacement (m)'
+            call plot_header(ishisdisy,var_num,form2_string)
+         end if
+         if (ishisdisz .ne. 0) then
+! Output z displacement
+            info_string = info_string(ic1:ic2) // 'z displacement '
+            ic2 = len_trim(info_string) + 1
+            title_string = 'Z Displacement (m)'
+            call plot_header(ishisdisz,var_num,form2_string)
+         end if
+         if (ishisstr .ne. 0) then
+! Output strain
+            info_string = info_string(ic1:ic2) // 'volume strain  '
+            ic2 = len_trim(info_string) + 1
+            title_string = 'Volume Strain'
+            call plot_header(ishisstr,var_num,form2_string)
+         end if
+         if (ishisstrx .ne. 0) then
+! Output x stress
+            info_string = info_string(ic1:ic2) // 'x stress '
+            ic2 = len_trim(info_string) + 1
+            title_string = 'X Stress (MPa)'
+            call plot_header(ishisstrx,var_num,form2_string)
+         end if
+         if (ishisstry .ne. 0) then
+! Output y stress
+            info_string = info_string(ic1:ic2) // 'y stress '
+            ic2 = len_trim(info_string) + 1
+            title_string = 'Y Stress (MPa)'
+            call plot_header(ishisstry,var_num,form2_string)
+         end if
+         if (ishisstrxy .ne. 0) then
+! Output xy stress
+            info_string = info_string(ic1:ic2) // 'xy stress '
+            ic2 = len_trim(info_string) + 1
+            title_string = 'XY Stress (MPa)'
+            call plot_header(ishisstrxy,var_num,form2_string)
+         end if
+         if (ishisstrz .ne. 0) then
+! Output z stress
+               info_string = info_string(ic1:ic2) // 'z stress '
+               title_string = 'Z Stress (MPa)'
+               call plot_header(ishisstrz,var_num,form2_string)
+            ic2 = len_trim(info_string) + 1
+         end if
+         if (ishisstrxz .ne. 0) then
+! Output xz stress
+            info_string = info_string(ic1:ic2) // 'xy stress '
+            ic2 = len_trim(info_string) + 1
+            title_string = 'XZ Stress (MPa)'
+            call plot_header(ishisstrxz,var_num,form2_string)
+         end if
+         if (ishisstryz .ne. 0) then
+! Output yz stress
+            info_string = info_string(ic1:ic2) // 'y stress '
+            ic2 = len_trim(info_string) + 1
+            title_string = 'YZ Stress (MPa)'
+            call plot_header(ishisstryz,var_num,form2_string)
          end if
          if (ishiswt .ne. 0) then
 ! output water table elevations
@@ -1007,6 +1079,63 @@ C RJP 08/09/07
             ishiscfzz = ishiscfz + i
             call flush(ishiscfzz)
          end do
+      end if
+      if (ishisdisx .ne. 0 ) then
+! Output x displacement
+         write(ishisdisx, form1_string) ptime, (du(nskw(i)), i= 1, m) 
+         call flush(ishisdisx)
+      end if
+      if (ishisdisy .ne. 0 ) then
+! Output y displacement
+         write(ishisdisy, form1_string) ptime, (dv(nskw(i)), i= 1, m) 
+         call flush(ishisdisy)
+      end if
+      if (ishisdisz .ne. 0 ) then
+! Output z displacement
+         write(ishisdisz, form1_string) ptime, (dw(nskw(i)), i= 1, m) 
+         call flush(ishisdisz)
+      end if
+      if (ishisstr .ne. 0 ) then
+! Output strain
+         write(ishisstr, form1_string) ptime, (vol_strain(nskw(i)), 
+     &        i= 1, m) 
+         call flush(ishisstr)
+      end if
+      if (ishisstrx .ne. 0 ) then
+! Output x stress
+         write(ishisstrx, form1_string) ptime, (str_x(nskw(i)), 
+     &        i= 1, m) 
+         call flush(ishisstrx)
+      end if
+      if (ishisstry .ne. 0 ) then
+! Output y stress
+         write(ishisstry, form1_string) ptime, (str_y(nskw(i)), 
+     &        i= 1, m) 
+         call flush(ishisstry)
+      end if
+      if (ishisstrx .ne. 0 ) then
+! Output xy stress
+         write(ishisstrxy, form1_string) ptime, (str_xy(nskw(i)), 
+     &        i= 1, m) 
+         call flush(ishisstrxy)
+      end if
+      if (ishisstrz .ne. 0 ) then
+! Output z stress
+         write(ishisstrz, form1_string) ptime, (str_z(nskw(i)), 
+     &        i= 1, m)
+         call flush(ishisstrz)
+      end if
+      if (ishisstrxz .ne. 0 ) then
+! Output xz stress
+         write(ishisstrxz, form1_string) ptime, (str_xz(nskw(i)), 
+     &        i= 1, m) 
+         call flush(ishisstrxz)
+      end if
+      if (ishisstryz .ne. 0 ) then
+! Output yz stress
+         write(ishisstryz, form1_string) ptime, (str_yz(nskw(i)), 
+     &        i= 1, m) 
+         call flush(ishisstryz)
       end if
 
       if (ishisg .ne. 0 ) then

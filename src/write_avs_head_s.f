@@ -62,7 +62,7 @@ C************************************************************************
       implicit none
 
       integer maxscalar
-      parameter (maxscalar = 29)
+      parameter (maxscalar = 32)
       integer neq,nscalar,lu,ifdual
       integer i,j,iolp,iovp,nout,icall,idz,iriver2
       integer size_head, size_pcp, istart, iend, ic1, ic2, length
@@ -73,7 +73,7 @@ C************************************************************************
       character*40 title(maxscalar+3)
       character*20 units(maxscalar+3)
       character*1200 tstring2
-      character*280 string
+      character*400 string
       character*50 tstring
 
       data units( 1) /'(MPa)'/,
@@ -108,6 +108,9 @@ C************************************************************************
      &     units(30) /'(MPa)'/
      &     units(31) /'(MPa)'/
      &     units(32) /'(no dim)'/     
+     &     units(33) /'(MPa)'/           
+     &     units(34) /'(MPa)'/
+     &     units(35) /'(MPa)'/
      
 
 
@@ -179,6 +182,9 @@ c     Header is only written to the first tecplot file
       title(30) = 'Y stress (MPa)'
       title(31) = 'Z stress (MPa)'  
       title(32) = 'Volume Strain'      
+      title(33) = 'XY stress (MPa)'
+      title(34) = 'XZ stress (MPa)'
+      title(35) = 'YZ stress (MPa)'  
 
       
       if(altc(1:3).eq.'avs' .and. altc(4:4) .ne. 'x') then
@@ -264,12 +270,20 @@ c     Write Z coordinate
          if (iodisp .eq. 1) then
             write(lu,200) trim(title(26)), trim(units(26))
             write(lu,200) trim(title(27)), trim(units(27))
-            write(lu,200) trim(title(28)), trim(units(28))
+            if (icnl .eq. 0) 
+     &           write(lu,200) trim(title(28)), trim(units(28))
          end if 
-         if (iostress .eq. 1) then
+         if (iostress .ne. 0) then
             write(lu,200) trim(title(29)), trim(units(29))
             write(lu,200) trim(title(30)), trim(units(30))
-            write(lu,200) trim(title(31)), trim(units(31))
+            if (icnl .eq. 0) then
+               write(lu,200) trim(title(31)), trim(units(31))
+            end if
+            write(lu,200) trim(title(33)), trim(units(33))
+            if (icnl .eq. 0) then
+               write(lu,200) trim(title(34)), trim(units(34))
+               write(lu,200) trim(title(35)), trim(units(35))
+            end if
          end if  	    
          if (iostrain .eq. 1) then
             write(lu,200) trim(title(32)), trim(units(32))
@@ -448,12 +462,14 @@ c     Write Z coordinate
             tstring2 = tstring2(ic1:ic2) // tstring
             length = len_trim(tstring)
             ic2 = ic2 + length
-            write(tstring,formstring) trim(title(28))
-            tstring2 = tstring2(ic1:ic2) // tstring
-            length = len_trim(tstring)
-            ic2 = ic2 + length
+            if (icnl .eq. 0) then
+               write(tstring,formstring) trim(title(28))
+               tstring2 = tstring2(ic1:ic2) // tstring
+               length = len_trim(tstring)
+               ic2 = ic2 + length
+            end if
          end if 
-         if (iostress .eq. 1) then
+         if (iostress .ne. 0) then
             write(tstring,formstring) trim(title(29))
             tstring2 = tstring2(ic1:ic2) // tstring
             length = len_trim(tstring)
@@ -462,10 +478,26 @@ c     Write Z coordinate
             tstring2 = tstring2(ic1:ic2) // tstring
             length = len_trim(tstring)
             ic2 = ic2 + length
-            write(tstring,formstring) trim(title(31))
+            if (icnl .eq. 0) then
+               write(tstring,formstring) trim(title(31))
+               tstring2 = tstring2(ic1:ic2) // tstring
+               length = len_trim(tstring)
+               ic2 = ic2 + length
+            end if
+            write(tstring,formstring) trim(title(33))
             tstring2 = tstring2(ic1:ic2) // tstring
             length = len_trim(tstring)
             ic2 = ic2 + length
+            if (icnl .eq. 0) then
+               write(tstring,formstring) trim(title(34))
+               tstring2 = tstring2(ic1:ic2) // tstring
+               length = len_trim(tstring)
+               ic2 = ic2 + length
+               write(tstring,formstring) trim(title(35))
+               tstring2 = tstring2(ic1:ic2) // tstring
+               length = len_trim(tstring)
+               ic2 = ic2 + length
+           end if
          end if 
          if (iostrain .eq. 1) then
             write(tstring,formstring) trim(title(32))

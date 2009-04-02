@@ -45,6 +45,7 @@
       use comai
       use combi, only : prnt_flxzvar
       use comdi
+      use comsi, only : ihms
       use comxi
       use comzone
       use comwt, only : wt_flag
@@ -90,6 +91,7 @@
       ishisdisx = 0
       ishisdisy = 0
       ishisdisz = 0
+      ishisstr = 0
       ishisstrx = 0
       ishisstry = 0
       ishisstrz = 0
@@ -153,18 +155,25 @@
          if (null1(chdum) .or. chdum(1:3) .eq. 'end' .or. 
      &        chdum(1:3) .eq. 'END') exit
          fname = ''
+         if ((chdum(1:3) .eq. 'dis' .or. chdum(1:3) .eq. 'DIS' .or.
+     &        chdum(1:3) .eq. 'str' .or. chdum(1:3) .eq. 'STR') 
+     &        .and. ihms .ne. -3) then
+            if (iout .ne. 0) write(iout, 6080) istrs_coupl, 
+     &           trim(chdum)
+            if (iptty .ne. 0) write(iptty, 6080) istrs_coupl, 
+     &           trim(chdum)
+            chdum = ''
+         end if
+
          flags : select case (chdum(1:3))
-         case ('tec','sur')
-            if  (chdum(1:3) .eq. 'tec' .or. chdum(1:3) .eq. 'TEC') then
+         case ('tec', 'TEC')
 ! Output using tecplot format
                form_flag = 1
                hissfx = '_his.dat'
-            else if (chdum(1:3) .eq. 'sur' .or. chdum(1:3) .eq. 'SUR') 
-     &              then
-! Output using sufer (csv) format
+         case ('sur', 'SUR', 'csv', 'CSV')
+! Output using surfer (csv) format
                form_flag = 2
                hissfx = '_his.csv'
-            end if      
          case ('yea','day','sec','hrs','YEA','DAY','SEC','HRS')
             if (chdum(1:3) .eq. 'yea' .or. chdum(1:3) .eq. 'YEA') then
 ! Output time in years
@@ -193,7 +202,7 @@
                   histime = xmsg(3)
                endif
             end if
-         case ('mpa', 'MPa', 'MPA')
+         case ('mpa', 'MPa', 'MPA','pre','PRE')
 ! Output pressures in MPa
             fname =  root(1:iroot) // '_pres' // hissfx
             ishisp = ishis + 100
@@ -293,7 +302,7 @@
                   end if
                end if
             end if
-         case ('deg', 'DEG')
+         case ('deg', 'DEG', 'tem', 'TEM')
 ! Output temperature in degrees C
             fname =  root(1:iroot) // '_temp' // hissfx
             ishist = ishis + 110
@@ -308,7 +317,7 @@
                ozflag = ozflag + 1
                tflag = ozflag
             end if
-         case ('met', 'MET')
+         case ('met', 'MET', 'hea', 'HEA')
 ! Output heads in m
             if (ihead .ne. 0 ) then
                if (ishishd .ne. 0) then
@@ -401,7 +410,7 @@
                if (iout .ne. 0) write(iout, 6010)
                if (iptty .ne. 0) write(iptty, 6010)
             end if 
-         case ('kgs ', 'KGS ')
+         case ('kgs ', 'KGS ', 'flo', 'FLO')
 ! Output flow in kg/s
             fname =  root(1:iroot) // '_flow' // hissfx
             ishisf = ishis + 140
@@ -503,7 +512,7 @@
                if (iptty .ne. 0) write(iptty, 6060)
             end if               
          case ('wt ', 'WT ')
-! Output water table
+! Output water table in m
             fname =  root(1:iroot) // '_wt' // hissfx
             ishiswt = ishis + 190
             open (unit=ishiswt, file=fname, form='formatted')
@@ -577,6 +586,208 @@
                ozflag = ozflag + 1
                carbflag2 = ozflag
             end if
+         case ('dis', 'DIS')
+! Output displacements in m
+            select case (chdum(4:4))
+            case ('x', 'X')
+               ishisdisx = ishis + 240
+               fname =  root(1:iroot) // '_disx' // hissfx
+               open (unit=ishisdisx, file=fname, form='formatted')
+               select case (form_flag)
+               case (0)
+                  write(ishisdisx, 6000) verno, jdate, jtime, trim(wdd)
+               case (1)
+                  write(ishisdisx, 6005) verno, jdate, jtime
+               end select
+            case ('y', 'Y')
+               ishisdisy = ishis + 241
+               fname =  root(1:iroot) // '_disy' // hissfx
+               open (unit=ishisdisy, file=fname, form='formatted')
+               select case (form_flag)
+               case (0)
+                  write(ishisdisy, 6000) verno, jdate, jtime, trim(wdd)
+               case (1)
+                  write(ishisdisy, 6005) verno, jdate, jtime
+               end select
+             case ('z', 'Z')
+               if (icnl .eq. 0 ) then
+                  ishisdisz = ishis + 242
+                  fname =  root(1:iroot) // '_disz' // hissfx
+                  open (unit=ishisdisz, file=fname, form='formatted')
+                  select case (form_flag)
+                  case (0)
+                     write(ishisdisz, 6000) verno, jdate, jtime, 
+     &                    trim(wdd)
+                  case (1)
+                     write(ishisdisz, 6005) verno, jdate, jtime
+                  end select
+               else
+                  if (iout .ne. 0) write(iout, 6070) 'Z displacement'
+                  if (iptty .ne. 0) write(iptty, 6070) 'Z displacement'
+               end if
+            case default
+! All displacements will be output
+               ishisdisx = ishis + 240
+               fname =  root(1:iroot) // '_disx' // hissfx
+               open (unit=ishisdisx, file=fname, form='formatted')
+               ishisdisy = ishis + 241
+               fname =  root(1:iroot) // '_disy' // hissfx
+               open (unit=ishisdisy, file=fname, form='formatted')
+               if (icnl .eq. 0) then
+                  ishisdisz = ishis + 242
+                  fname =  root(1:iroot) // '_disz' // hissfx
+                  open (unit=ishisdisz, file=fname, form='formatted')
+               end if
+               select case (form_flag)
+               case (0)
+                  write(ishisdisx, 6000) verno, jdate, jtime, trim(wdd)
+                  write(ishisdisy, 6000) verno, jdate, jtime, trim(wdd)
+                  if (ishisdisz .ne. 0) write(ishisdisz, 6000) 
+     &                    verno, jdate, jtime, trim(wdd)
+               case (1)
+                  write(ishisdisx, 6005) verno, jdate, jtime
+                  write(ishisdisy, 6005) verno, jdate, jtime
+                  if (ishisdisz .ne. 0) write(ishisdisz, 6005) 
+     &                 verno, jdate, jtime
+               end select
+            end select
+         case ('str', 'STR')
+! Output stress / strain
+            select case (chdum(4:5))
+            case ('ai', 'AI')
+               ishisstr = ishis + 250
+               fname =  root(1:iroot) // '_strain' // hissfx
+               open (unit=ishisstr, file=fname, form='formatted')
+               select case (form_flag)
+               case (0)
+                  write(ishisstr, 6000) verno, jdate, jtime, trim(wdd)
+               case (1)
+                  write(ishisstr, 6005) verno, jdate, jtime
+               end select
+            case ('x ', 'X ')
+               ishisstrx = ishis + 251
+               fname =  root(1:iroot) // '_strx' // hissfx
+               open (unit=ishisstrx, file=fname, form='formatted')
+               select case (form_flag)
+               case (0)
+                  write(ishisstrx, 6000) verno, jdate, jtime, trim(wdd)
+               case (1)
+                  write(ishisstrx, 6005) verno, jdate, jtime
+               end select
+            case ('y ', 'Y ')
+               ishisstry = ishis + 252
+               fname =  root(1:iroot) // '_stry' // hissfx
+               open (unit=ishisstry, file=fname, form='formatted')
+               select case (form_flag)
+               case (0)
+                  write(ishisstry, 6000) verno, jdate, jtime, trim(wdd)
+               case (1)
+                  write(ishisstry, 6005) verno, jdate, jtime
+               end select
+            case ('xy', 'XY')
+               ishisstrxy = ishis + 253
+               fname =  root(1:iroot) // '_strxy' // hissfx
+               open (unit=ishisstrxy, file=fname, form='formatted')
+               select case (form_flag)
+               case (0)
+                  write(ishisstrxy, 6000) verno, jdate, jtime, trim(wdd)
+               case (1)
+                  write(ishisstrxy, 6005) verno, jdate, jtime
+               end select
+            case ('z ', 'Z ')
+               if (icnl .eq. 0) then
+                  ishisstrz = ishis + 254
+                  fname =  root(1:iroot) // '_strz' // hissfx
+                  open (unit=ishisstrz, file=fname, form='formatted')
+                  select case (form_flag)
+                  case (0)
+                     write(ishisstrz, 6000) verno, jdate, jtime, 
+     &                    trim(wdd)
+                  case (1)
+                     write(ishisstrz, 6005) verno, jdate, jtime
+                  end select
+               else
+                  if (iout .ne. 0) write(iout, 6070) 'Z stress'
+                  if (iptty .ne. 0) write(iptty, 6070) 'Z stress'
+               end if
+            case ('xz', 'XZ')
+               if (icnl .eq. 0) then
+                  ishisstrxz = ishis + 255
+                  fname =  root(1:iroot) // '_strxz' // hissfx
+                  open (unit=ishisstrxz, file=fname, form='formatted')
+                  select case (form_flag)
+                  case (0)
+                     write(ishisstrxz, 6000) verno, jdate, jtime, 
+     &                    trim(wdd)
+                  case (1)
+                     write(ishisstrxz, 6005) verno, jdate, jtime
+                  end select
+               else
+                  if (iout .ne. 0) write(iout, 6070) 'XZ stress'
+                  if (iptty .ne. 0) write(iptty, 6070) 'XZ stress'
+               end if
+            case ('yz', 'YZ')
+               if (icnl .eq. 0) then
+                  ishisstryz = ishis + 256
+                  fname =  root(1:iroot) // '_stryz' // hissfx
+                  open (unit=ishisstryz, file=fname, form='formatted')
+                  select case (form_flag)
+                  case (0)
+                     write(ishisstryz, 6000) verno, jdate, jtime, 
+     &                    trim(wdd)
+                  case (1)
+                     write(ishisstryz, 6005) verno, jdate, jtime
+                  end select
+               else
+                  if (iout .ne. 0) write(iout, 6070) 'YZ stress'
+                  if (iptty .ne. 0) write(iptty, 6070) 'YZ stress'
+               end if
+            case default
+! All stresses will be output
+               ishisstrx = ishis + 251
+               fname =  root(1:iroot) // '_strx' // hissfx
+               open (unit=ishisstrx, file=fname, form='formatted')
+               ishisstry = ishis + 252
+               fname =  root(1:iroot) // '_stry' // hissfx
+               open (unit=ishisstry, file=fname, form='formatted')
+               ishisstrxy = ishis + 253
+               fname =  root(1:iroot) // '_strxy' // hissfx
+               open (unit=ishisstrxy, file=fname, form='formatted')
+               if (icnl .eq. 0) then
+                  ishisstrz = ishis + 254
+                  fname =  root(1:iroot) // '_strz' // hissfx
+                  open (unit=ishisstrz, file=fname, form='formatted')
+                  ishisstrxz = ishis + 255
+                  fname =  root(1:iroot) // '_strxz' // hissfx
+                  open (unit=ishisstrxz, file=fname, form='formatted')
+                  ishisstryz = ishis + 256
+                  fname =  root(1:iroot) // '_stryz' // hissfx
+                  open (unit=ishisstryz, file=fname, form='formatted')
+               end if
+               select case (form_flag)
+               case (0)
+                  write(ishisstrx, 6000) verno, jdate, jtime, trim(wdd)
+                  write(ishisstry, 6000) verno, jdate, jtime, trim(wdd)
+                  write(ishisstrxy, 6000) verno, jdate, jtime, trim(wdd)
+                  if (icnl .eq. 0) then
+                     write(ishisstrz, 6000) verno, jdate, jtime, 
+     &                    trim(wdd)
+                     write(ishisstrxz, 6000) verno, jdate, jtime,  
+     &                    trim(wdd)
+                     write(ishisstryz, 6000) verno, jdate, jtime,  
+     &                    trim(wdd)
+                  end if
+               case (1)
+                  write(ishisstrx, 6005) verno, jdate, jtime
+                  write(ishisstry, 6005) verno, jdate, jtime
+                  write(ishisstrxy, 6000) verno, jdate, jtime
+                  if (icnl .eq. 0) then
+                     write(ishisstrz, 6005) verno, jdate, jtime
+                     write(ishisstrxz, 6005) verno, jdate, jtime
+                     write(ishisstryz, 6005) verno, jdate, jtime
+                  end if
+               end select
+            end select
          case ('glo', 'GLO')
 ! Output global variables
             fname =  root(1:iroot) // '_glob' // hissfx
@@ -637,8 +848,8 @@
 ! Total enthalpy discharge MJ (MJ/s)
 ! Total enthalpy input MJ (MJ/s)
 
-            end select flags
-         enddo
+         end select flags
+      enddo
 
  6000 format(a30, 2x, a10, 2x, a8, /, a)
  6005 format('TITLE = "', a30, 2x, a10, 2x, a8,'"')
@@ -652,5 +863,8 @@
      &     'will not be output')
  6060 format('Transport not specified for the problem,',      
      &     'will not be output')
+ 6070 format('2-D problem, ', a, ' will not be output')
+ 6080 format('ihms =', i3, ' Time history for ', a, 
+     & ' will not be output')
 
       end

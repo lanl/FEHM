@@ -426,9 +426,10 @@ c RJP added for history of carbon mass
       integer             ishiscm, ishiscfz, ishiscs	 
       integer             imbe_ctr, imbet_ctr
 c GAZ 11/02/08 
-      integer             ishisstrx,ishisstry,ishisstrz
-      integer             ishisdisx,ishisdisy,ishisdisz
-      integer             ich_max,ich_m1,ich_m2,sat_ich
+      integer             ishisstr, ishisstrx, ishisstry, ishisstrz
+      integer             ishisstrxy, ishisstrxz, ishisstryz
+      integer             ishisdisx, ishisdisy, ishisdisz
+      integer             ich_max, ich_m1, ich_m2, sat_ich
       integer             jswitch, joff
       integer             iwellp_flag
       integer             istrs_coupl, iax_b, ipini

@@ -235,7 +235,7 @@ c RJP 1/12/07 added following
       implicit none
 
       integer maxscalar
-      parameter (maxscalar = 29)
+      parameter (maxscalar = 32)
       integer neq,nscalar,lu,ifdual,icall,open_file,offset,iriver2
       integer i,j,iolp,iovp,nout,iz,iendz,il,idz, i1, i2, index, iaxy, k
       integer size_head, size_pcp, istart, iend, ic1, ic2, length, nadd
@@ -244,8 +244,8 @@ c RJP 1/12/07 added following
       real*8 hdum, sdum, px, py, pz, flxdum
       character*80 title(2*maxscalar+3)
       character*150 :: tecstring = ''
-      character*420 tstring2
-      character*420 string
+      character*500 tstring2
+      character*500 string
       character*20 vstring
       character*43 tstring
       character*5 char_type
@@ -268,7 +268,6 @@ C   ERROR checking:
          write(lu,*)'ERROR: WRITE_AVS_NODE_S'
          write(lu,*)'nscalar   = ',nscalar,' is greater than '
          write(lu,*)'maxscalar = ',maxscalar
-         write(lu,*)'Subroutine only able to handle up to 13 scalars'
          write(lu,*)'--------------------------------------------'
          return
       endif
@@ -701,12 +700,14 @@ c might need help in the
                ic2 = ic1 + len_trim(vstring)
                string(ic1:ic2) = vstring
                ic1 = ic2 + 1
-               write(vstring,110) dls(1:k), dw(i)
-               ic2 = ic1 + len_trim(vstring)
-               string(ic1:ic2) = vstring
-               ic1 = ic2 + 1
+               if (icnl .eq. 0) then
+                  write(vstring,110) dls(1:k), dw(i)
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+               end if
             endif 
-            if (iostress .eq. 1) then
+            if (iostress .ne. 0) then
                write(vstring,110) dls(1:k), str_x(i)
                ic2 = ic1 + len_trim(vstring)
                string(ic1:ic2) = vstring
@@ -715,17 +716,25 @@ c might need help in the
                ic2 = ic1 + len_trim(vstring)
                string(ic1:ic2) = vstring
                ic1 = ic2 + 1
-c put shear stress (str_xy) in z stress slot for 2-D                              
                if(icnl.eq.0) then
-                write(vstring,110) dls(1:k), str_z(i)
-                ic2 = ic1 + len_trim(vstring)
-                string(ic1:ic2) = vstring
-                ic1 = ic2 + 1
-               else
-                write(vstring,110) dls(1:k), str_xy(i)
-                ic2 = ic1 + len_trim(vstring)
-                string(ic1:ic2) = vstring
-                ic1 = ic2 + 1   
+                  write(vstring,110) dls(1:k), str_z(i)
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+               end if
+               write(vstring,110) dls(1:k), str_xy(i)
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1   
+               if(icnl.eq.0) then
+                  write(vstring,110) dls(1:k), str_xz(i)
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+                  write(vstring,110) dls(1:k), str_yz(i)
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
                endif            
             endif 
             if (iostrain .eq. 1) then
