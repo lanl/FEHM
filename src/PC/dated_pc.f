@@ -30,6 +30,7 @@ CD2                                     the current version differs
 CD2                                     from these in minor ways.  
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/dated.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:42:48   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -240,8 +241,8 @@ c      write(jtimex,'(i2.2,1h:,i2.2,1h:,i2.2)')  jjtime
       idatex(7:8) = current_date(1:2)
       idatex(9:11) = current_date(3:4)
 ! Version number passed to GoldSim
-      vernum = 3.00
+      vernum = 2.30
 ! Code version identifier
-      verno = "FEHM V3.00pc 09-03-30 QA:NA"
+      verno = "FEHM V3.00pc 2009-04-07  QA:NA"
 
       end
