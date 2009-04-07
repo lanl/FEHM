@@ -469,6 +469,7 @@ c..................................
          allocate(yo(num_part))
          allocate(zo(num_part))
          allocate(ttpo(num_part))
+         allocate(lastnode(num_part))
          allocate(ijkvss(num_part))
          allocate(vx(num_part))
          allocate(vy(num_part))
@@ -546,7 +547,7 @@ c***  allocate memory to all arrays in combi ***
       allocate(nelmdg(n0))
 c     ***** COMMON Block fbc *****
       allocate(sx1(n0))
-c      if(compute_flow) allocate(sxs(nq,9))
+      if(compute_flow) allocate(sxs(nq,6))
 c     ***** COMMON Block fbs *****
       allocate(cord(n0,3))
       allocate(dp(6))

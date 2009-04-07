@@ -179,5 +179,7 @@ c
 
 ! ZVD - 08/11/05 Added for tracking time particle reaches a btc zone
       real*8, allocatable :: ttbtc(:,:)
+! ZVD - 04/06/09 Added for output location of particles that have been removed from system dure to bad location
+      integer, allocatable :: lastnode(:)
 
       end module comsptr

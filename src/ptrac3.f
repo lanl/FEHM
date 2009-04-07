@@ -389,6 +389,10 @@ c     Set velocities and time steps needed to perform calculations
             do np1 = 1, num_part
                if (axyzm(np1) .gt. 1.e-28) then
                   x61(np1)=x60/axyzm(np1)
+                  if (x61(np1) .eq. 0.d0) then
+c If our time step for this particle is 0 stop it
+                     istop(np1) = 10
+                  end if
                else
                   x61(np1)=1.e28
                end if
@@ -840,7 +844,8 @@ c     use the upcoming or new node to get the correct coordinate
 ! If this time and location have already been output, return
       if (path_done .and. ttpo(np1) .eq. ttp1(np1) .and.
      &     xcoordw .eq. xo(np1) .and. ycoordw .eq. yo(np1)
-     &     .and. zcoordw .eq. zo(np1)) return
+     &     .and. zcoordw .eq. zo(np1) .and. 
+     &     current_node .eq. lastnode(np1)) return
       
       if (iprto .eq. -1) then
          if(upcoming_node.ne.current_node) then
@@ -988,6 +993,11 @@ c     s_print = s(current_node)
             write (sptr_prop_values(position_in_string:
      &           position_in_string+18), '(i8,2x,sp,i8)')
      &           current_node, ijkv(np1)
+         else if (istop(np1) .eq. 10) then
+! Stopped in system at current_node 
+            write (sptr_prop_values(position_in_string:
+     &           position_in_string+18), '(i8,2x,sp,i9)')
+     &           current_node, ijkv(np1)*(-10)
          else
 ! Left at flowing boundary or capture node
             write (sptr_prop_values(position_in_string:
@@ -1005,6 +1015,7 @@ c     s_print = s(current_node)
          xo(np1) = xcoordw
          yo(np1) = ycoordw
          zo(np1) = zcoordw
+         lastnode(np1) = current_node
 
       end if
 
@@ -1576,9 +1587,23 @@ c     Not yet implemented
       ddxv(np1)=ddx(ijkvnp)
       ddyv(np1)=ddy(ijkvnp)
       ddzv(np1)=ddz(ijkvnp)
-      axv(np1)=(vx2bv(np1)-vx1bv(np1))/ddxv(np1)
-      ayv(np1)=(vy2bv(np1)-vy1bv(np1))/ddyv(np1)
-      azv(np1)=(vz2bv(np1)-vz1bv(np1))/ddzv(np1)
+c If dx, dy, or dz is zero we don't have enough neighbors
+c so set stop for this particle
+      if (ddxv(np1) .eq. 0.d0) then
+         istop(np1) = 10
+      else
+         axv(np1)=(vx2bv(np1)-vx1bv(np1))/ddxv(np1)
+      end if
+      if (ddxv(np1) .eq. 0.d0) then
+         istop(np1) = 10         
+      else
+         ayv(np1)=(vy2bv(np1)-vy1bv(np1))/ddyv(np1)
+      end if
+      if (ddxv(np1) .eq. 0.d0) then
+         istop(np1) = 10
+      else
+         azv(np1)=(vz2bv(np1)-vz1bv(np1))/ddzv(np1)
+      end if
       axyzm(np1)= abs(axv(np1))+1.e-28
       if(ayv(np1).gt.axyzm(np1)) axyzm(np1)=abs(ayv(np1))
       if(azv(np1).gt.axyzm(np1)) axyzm(np1)=abs(azv(np1))
@@ -1649,6 +1674,10 @@ c               edtmax(np1) = courant_factor*min(edtx,edty,edtz,
 c     $              ddtx,ddty,ddtz)
 
                edtmax(np1) = courant_factor*min(edtx,edty,edtz)
+               if (edtmax(np1) .eq. 0.d0) then
+c There is a problem with this particle so stop it
+                  istop(np1) = 10
+               end if
 
             else
 c...s kelkar  april 7 04............................................
