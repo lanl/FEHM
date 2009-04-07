@@ -87,18 +87,26 @@
 !PS None
 !PS
 !*******************************************************************************
-      integer icycs,ipsps,iinp,minks,inst,ipchng,nnx,ihms,nvfc
+      integer icycs,ipsps,iinp,minks,inst,ipchng,nnx,ihms,nvfc 
       integer nomass,noheat,noydis,localx,localy,ifrac,idof_stress
-	integer ibp_stress, ibodyforce, ipermstr, initcalc, istrshis 
+      integer ibp_stress, ibodyforce, ipermstr, initcalc, istrshis 
+      integer ispmd,ipermstr1,ipermstr2,ipermstr3
+      integer ipermstr4,ipermstr5,ipermstr6
+      integer istresscall, ilitho
 
       real*8 daystr,fpor,fric,wo,fwght,fupwt,fdnwt,tol_stress
       real*8 tptch,pchmin,pchmax,tchmin,tchmax,coftol,bp_stress
 	real*8 bpx,bpy,bpz,tol_stress1,abs_tol_stress,bp_update
-	real*8 vol_tot_change
-	real*8 stry_min,strx_min,e10_fac,str_mult
+	real*8 vol_tot_change, daystress, timestress, timestress0
+	real*8 strx_min,stry_min,strz_min,perx_m,pery_m,perz_m
+	real*8 e10_facx,e10_facy,e10_facz
+	real*8 tenslie_str_fac
+	parameter (tensile_str_fac = 10.d0)
       integer, allocatable :: kr(:,:)
       integer, allocatable :: npbn(:)
       integer, allocatable :: nvfcl(:)
+      integer, allocatable :: ispmt(:)
+      integer, allocatable :: ispm(:)
       integer, allocatable :: nskw_stress(:,:)
 
       real*8, allocatable ::  elastic_mod(:)
@@ -272,13 +280,24 @@ c     dimension a12mpf(n0),a12mef(n0),a12eef(n0)
 
       integer, allocatable ::  idum_str(:,:)  
       real*8, allocatable ::   dum_str(:,:)   
-	integer, allocatable ::  idum_str1(:)  
+      integer, allocatable ::  idum_str1(:)  
 	
-	integer, allocatable :: ipermx(:,:)
+      integer, allocatable :: ipermx(:,:)
       integer, allocatable :: ipermy(:,:)
       integer, allocatable :: ipermz(:,:)      
       real*8, allocatable ::  bp_flow1(:) 
-      real*8, allocatable ::  bp_flow2(:)     	   
+      real*8, allocatable ::  bp_flow2(:)  
+      
+      real*8, allocatable ::  spm1f(:) 
+      real*8, allocatable ::  spm2f(:)  
+      real*8, allocatable ::  spm3f(:)  
+      real*8, allocatable ::  spm4f(:)  
+      real*8, allocatable ::  spm5f(:)
+      real*8, allocatable ::  spm6f(:)  
+      real*8, allocatable ::  spm7f(:)  
+      real*8, allocatable ::  spm8f(:) 
+      real*8, allocatable ::  spm9f(:) 
+      real*8,  allocatable ::  flitho(:,:)   
 
       end module comsi
 
