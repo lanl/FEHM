@@ -29,9 +29,6 @@
 !D4   FEHM Application Version 2.20
 !D4 
 !**********************************************************************
-c notes gaz
-c many arrays can be eliminated or combined force and displacement
-c
       use comdti
       use comai
       use combi
@@ -176,8 +173,8 @@ c set to constant permeability
 	initcalc = 0
 	istrshis = 0
       kr= 0   
-      npbn = 0
-      nvfcl = 0
+c      npbn = 0
+c      nvfcl = 0
 	tol_stress = 0.0d0
 
       elastic_mod = 0.0d0
@@ -240,17 +237,21 @@ c
       
 c     read in input when stress is present
           read (inpt  ,   *) istrs, ihms
+          if(ihms.eq.-4) then
+           backspace inpt
+           read (inpt  ,   *) istrs, ihms, daystress
+          endif         
 c istrs = 0 - skip stress solution
 c istrs = 1 - plain strain and 3-D (hookean) solution
 c istrs = 2 - plain stess (hookean) solution (must be 2-D)
-c ihms - identifies the processes (see below)
-c ihms = 0 no coupling or sequential 
-c ihms ne 0 fully coupled
-c istrs_coupl - identifies when the stress solution is called
-c istrs_coupl = -2 beginning and end of simulation
-c istrs_coupl = -3 end of each time step
-c istrs_coupl = -1 at the end of the simulation
-c with the exception of istrs_coupl = -3 tini and pini
+c ihms - identifies the coupling and when the stress solution is called
+c ihms gt 0 fully coupled
+c ihms = -1 only at the end of the simulation
+c ihms = -2 beginning and end of simulation
+c ihms = -3 end of each time step
+c ihms = -4 end of each time segment(or less) requires addtional input daystress
+c this parameter will not change the flow time step size
+c with the exception of ihms = -3 tini and pini
 c will not be updated after each iteration
 c
 c
@@ -323,30 +324,74 @@ c
 c
 c enable permeability model
 c ipermstr = 1 is the default
-c ex stry_min= 0.05, strx_min0.05, e10_fac 0.1, str_mult = 100.
-	   read(wdd1,*) macro1, ipermstr
-	    if(ipermstr.eq.2.or.ipermstr.eq.4) then
-c  	    
-	     read(wdd1,*,end = 599) 
-     &	     macro1, ipermstr, stry_min, strx_min, e10_fac, str_mult
-	    go to 560
-599       continue
-          if(iout.ne.0) then
-           write(iout,*)'>>> perm model needs more parameters(stopping)'
-          endif
-          if(iptty.ne.0) then
-           write(iptty,*)'>>>perm model needs more parameters(stopping)'
-          endif
-          stop	
-560       continue  
-          endif          
 c
+         if(.not.allocated(ispm)) then
+          allocate(ispm(n0))
+c set default to model 1          
+          ispm = 1
+         endif
+         
+         i = 0
+         j = 0
+         ex = .false.
+         do
+            read(inpt,'(a80)') wdd1
+            if(null1(wdd1)) exit
+            backspace inpt
+            read(inpt,*) ispmd
+            backspace inpt
+            i = i+1
+            
+            if(ispmd .eq.1) then
+c default and no input            
+             read(inpt,*) ispmt(i)
+            else if(ispmd .eq.3) then
+c displacement based formulation and no input              
+             read(inpt,*) ispmt(i)             
+            else if (ispmd .eq. 2. or. ispmd .eq. 4) then
+c model 1 default            
+c model 2 (linear perm variation with stress)
+c model 4 (cubic perm variation with stress)        
+c simple explicit tensile stress model
+c spm3f,spm6f,spm9f are ignored for a 2D problem
+c spm1f is strx_min, min tensile stress (x direction) for damage to occur
+c spm2f is stry_min, min tensile stress (y direction) for damage to occur
+c spm3f is stry_min, min tensile stress (z direction) for damage to occur
+c spm4f is e10_facx, damage factor (maximum x) for elastic modulus
+c spm5f is e10_facy, damage factor (maximum y) for elastic modulus
+c spm6f is e10_facz, damage factor (maximum z) for elastic modulus
+c spm7f is str_multx, maximum change in permeability (x direction) allowed 
+c spm8f is str_multy, maximum change in permeability (y direction) allowed 
+c spm9f is str_multz, maximum change in permeability (z direction) allowed 
+c model 3 and model 5 are fully coupled
+c model 6 is simple directional plasticity
+c
+              read(inpt,*) ispmt(i),spm1f(i),spm2f(i),spm3f(i),spm4f(i),
+     &                     spm5f(i),spm6f(i),spm7f(i),spm8f(i),spm9f(i)
+            endif
+                 
+               if(ispmt(i).eq.1) ipermstr1 = ispmt(i)
+               if(ispmt(i).eq.2.or.ispmt(i).eq.4) ipermstr2 = ispmt(i)
+               if(ispmt(i).eq.3.or.ispmt(i).eq.5) ipermstr3 = ispmt(i)
+               if(ispmt(i).eq.6) ipermstr6 = ispmt(i)
+         end do
+c set default         
+                ispm = 1
+                narrays = 1
+	          itype(1) = 4
+	          default(1) = 1
+	          igroup = 1
+	          call initdata2( inpt, ischk, n0, narrays,
+	2           itype, default, macroread(8), macro, igroup, ireturn,
+	3           i4_1=ispm(1:n0))	        
+	          
+	          
+c     ****** end of input loop
         else if(macro1.eq.'initial  ') then
 c     
 c     read in initial stress state
 c 
-	 
-	   
+	 	   
             igroup = 1
             narrays = 3
             itype(1) = 8
@@ -361,10 +406,19 @@ c
      &        r8_1=duo(1:n0),r8_2=dvo(1:n0),r8_3 = dwo(1:n0))
 
    
+        else if(macro1.eq.'ipini     ') then 
+c         
+c use read-in initial pressure and temperature differences 
+c if they exist (from restart file)
+c
+         ipini = 1
+               
         else if(macro1.eq.'stressboun') then
 	   read (inpt, '(a80)') wdd1
 	   if (wdd1(1:11) .eq. 'distributed') then
 	    iforce = 1
+	   else if (wdd1(1:11) .eq. 'lithostatic') then
+	    ilitho = 1
 	   else
 	    backspace inpt
 	    iforce = 0
@@ -602,14 +656,47 @@ c
 
       else if(iflg.eq.3) then
 c
-c    store initial temperatures, pressures, and porosities
-c   
-       i = iporos
-	 iporos = 1    
-        call porosi(4)
-	 iporos = i
+c calculate boundary conditions based on lithostatic stresses
+c need to be called after the stress calculation
+c 
+c remove fixed zero displacement
+c
       
-
+       if(ilitho.ne.0) then
+        if(icnl.eq.0) then
+         do i = 1,n0
+          if(kr(i,1).eq.1.or.kr(i,2).eq.2.or.kr(i,3).eq.3) then
+           call geneq_stress_uncoupled_3D(i)
+           if(flitho(i,1).ne.0.0) then
+            kr(i,1) = -1
+            forc(i,1) = -bp(i+nrhs(1))
+           endif
+           if(flitho(i,2).ne.0.0) then
+            kr(i,1) = -2
+            forc(i,2) = -bp(i+nrhs(2))
+           endif
+           if(flitho(i,3).ne.0.0) then
+            kr(i,1) = -3
+            forc(i,3) = -bp(i+nrhs(3))
+           endif
+          endif
+         enddo 
+        else
+          do i = 1,n0
+          if(kr(i,1).eq.1.or.kr(i,2).eq.2) then
+           call geneq_stress_uncoupled_2D(i)
+           if(flitho(i,1).ne.0.0) then
+            kr(i,1) = -1
+            forc(i,1) = -bp(i+nrhs(1))
+           endif
+           if(flitho(i,2).ne.0.0) then
+            kr(i,1) = -2
+            forc(i,2) = -bp(i+nrhs(2))
+           endif
+          endif
+         enddo        
+        endif
+       endif     
 c iflg=4 calculate nonlinear material properties
       else if(iflg.eq.4) then 
        call stress_mech_props(0,0)
@@ -1192,10 +1279,12 @@ c
 c ****   printout average stress information   ****
 c
               if(ntty.eq.2) write(iout,*) ' ' 
-              if(ntty.eq.2) write(iout,*) 'Stresses ' 
+              if(ntty.eq.2) write(iout,*) 
+     &          'Stresses (Convention:Compression Positive)' 
               if(ntty.eq.2) write(iout,7119) 
 	        if(iptty.gt.0) write(iptty,*) ' ' 
-              if(iptty.gt.0) write(iptty,*) 'Stresses ' 
+              if(iptty.gt.0) write(iptty,*) 
+     &          'Stresses (Convention:Compression Positive)' 
               if(iptty.gt.0) write(iptty,7119) 
               do   i=1,m
                 md     =  nskw(i)               
@@ -1264,10 +1353,12 @@ c
 c ****   printout average stress information   ****
 c
               if(ntty.eq.2) write(iout,*) ' ' 
-              if(iptty.gt.0) write(iout,*) 'Stresses ' 
+              if(iptty.gt.0) write(iout,*)
+     &         'Stresses (Convention: Compression is Positive (sign)) ' 
               if(ntty.eq.2) write(iout,7119) 
 	        if(iptty.gt.0) write(iptty,*) ' ' 
-              if(iptty.gt.0) write(iptty,*) 'Stresses ' 
+              if(iptty.gt.0) write(iptty,*)
+     &         'Stresses (Convention: Compression is Positive (sign)) '  
               if(iptty.gt.0) write(iptty,7119) 
               do   i=1,m
                 md     =  nskw(i)               
