@@ -1130,13 +1130,13 @@ c     gaz 2-19-04 added gas relative perms
                skco2(mi)=0.0
                permsd=wellco2(mi)
                pldif=pl-pflowco2(mi)
-c               if(kq.eq.-1) then
-c                  permsd1=permsd
-c                  dprmp=0.d0
-c                  dprmt=0.d0
-c                  dprmw=0.d0
-c                  dprmyc=0.d0
-c               else
+               if(kq.eq.-1) then
+                  permsd1=permsd
+                  dprmp=0.d0
+                  dprmt=0.d0
+                  dprmw=0.d0
+                  dprmyc=0.d0
+               else
                   if(icesd.ne.2) then
                      if(icesd.eq.3) then
                         permsd1=permsd*(rlw*row*yco2/visw+
@@ -1179,7 +1179,7 @@ c               else
                      dprmyc=permsd*rlw*(row+yco2*drowyc)/visw
                      dprmya=0.0
                   endif
-c               endif
+               endif
                if((pldif.le.0.0d00).and.(kq.eq.-2)) then
                   permsd1=0.d0
                   dprmp=0.d0
