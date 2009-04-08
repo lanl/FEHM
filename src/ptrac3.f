@@ -844,8 +844,8 @@ c     use the upcoming or new node to get the correct coordinate
 ! If this time and location have already been output, return
       if (path_done .and. ttpo(np1) .eq. ttp1(np1) .and.
      &     xcoordw .eq. xo(np1) .and. ycoordw .eq. yo(np1)
-     &     .and. zcoordw .eq. zo(np1) .and. 
-     &     current_node .eq. lastnode(np1)) return
+     &     .and. zcoordw .eq. zo(np1) .and. (current_node .eq. 
+     &     lastnode(np1) .or. current_node .eq. 0)) return
       
       if (iprto .eq. -1) then
          if(upcoming_node.ne.current_node) then
