@@ -864,6 +864,7 @@ c
          if(ianpe.eq.0) then
             call   simplify_ncon
      &           (0,nelm,nelmdg,nop,istrw,ib,neq,idof,ka,ps,i)
+            if (connect_out) call connections_list
             if (igauss .le. 1) then
                deallocate (nop)
             else
@@ -1143,9 +1144,11 @@ c**** initialize coefficients adjust volumes in dpdp calcs ****
          iconv = iconv_tmp
       end if
 
-c  initialize pressure pressures and temperatures
-      if(ipini.eq.0.or.iread.eq.0) then
+c  initialize pressures and temperatures
+      if(ipini.eq.0.or.iread.eq.0.or.iporos.eq.-5) then
+         if (iporos .eq. 0) iporos = 10
          call porosi(4)
+         if (iporos .eq. 10) iporos = 0
       else
 c phini and tini have be read in from disk, just set pressure
          psini = ps
