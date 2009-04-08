@@ -1049,13 +1049,20 @@ c
 c
             end   if
 c
-         else  if ( iz .eq. 4 )  then
+         else if(iz.eq.4) then
+c 
+c set inital pressures and temperatures (only)
+c         
+           phini = pho
+           psini = ps
+           tini = to        
+         else  if ( iz .eq. 5 )  then
 
-c   set initial pressures and porosities and temperatures
-            phini = pho
-            psini = ps
-            tini = to
-c calculate intial quantities
+c 
+c calculate intial quantities for model -5 if enabled
+c
+c must call iz= 4 first to set up phini and tini
+c
             if ( iporos .eq. -5 )  then
 c calculate max pressure change for specific yield model -5 
                pho = phini
@@ -1080,8 +1087,7 @@ c calculate max pressure change for specific yield model -5
                      wgangi(i) = alength*rho1grav
                   endif	                     
                enddo
-            endif
-           
+            endif 
          endif
 c
       end   if

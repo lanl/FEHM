@@ -342,14 +342,15 @@ c   xy term
          sixsjy=sxs(iws,1) 
 c   yx term
          siysjx=sxs(iws,2)
+c these z-affected cross terms may be good only for hexes         
 c   xz term
-         sixsjz=sxs(iws,3)
+         sixsjz=-sxs(iws,3)
 c   zx term
-         sizsjx=sxs(iws,4)
+         sizsjx=-sxs(iws,4)
 c   yz term
-         siysjz=sxs(iws,5)
+         siysjz=-sxs(iws,5)
 c   zy term
-         sizsjy=sxs(iws,6)
+         sizsjy=-sxs(iws,6)
         
                       
             e1kb = e1(kb)
@@ -476,7 +477,9 @@ c x term for pore pressure and thermal expansion term
 c y term for pore pressure and thermal expansion term
          sjsiy=sxs(iws,8)
 c z term for pore pressure and thermal expansion term
-         sjsiz=sxs(iws,9)        
+c sign is due to internal non-traditional numbering of hex grid
+c need to check things on other grids.
+         sjsiz=-sxs(iws,9)        
             e1kb = e1(kb)
             e2kb = e2(kb)
             e3kb = e3(kb)

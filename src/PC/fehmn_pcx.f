@@ -11,7 +11,7 @@
 !  nor the University makes any warranty, express or implied, or 
 !  assumes any liability or responsibility for the use of this software.
 C***********************************************************************
-CD1
+CD1 
 CD1 PURPOSE
 CD1
 CD1 Finite Element Heat and Mass Transfer in porous media.
@@ -465,6 +465,7 @@ C***********************************************************************
       use comsptr
       use comwt
       use comxi
+      use comsi
       use davidi
       use property_interpolate
 c     added combi and comflow to get izonef and a_axy arrays
@@ -714,6 +715,11 @@ c  change to 4 in new version of rip
 
 c  stop simulation after stress calc for certain stress input
          if(istrs.ne.0.and.istrs_coupl.eq.0) go to 170
+c set up time-spaced coupling         
+         if(istrs_coupl.eq.-4) then
+           timestress0 = days
+           timestress = timestress0 + daystress
+         endif
 c Before the time step loop create the partitions for zones
 
          call paractr(1)
@@ -763,6 +769,7 @@ c**** time step control via iteration count ****
 
  100        continue
             call riptime
+            
 c
 c     Set current index for flow field catalog number (rip option)
 c
@@ -770,9 +777,23 @@ c
 cHari 3/1/07
 c*** water table rise modification
             water_table_old = in(7)
-c*** water table rise modification
+c*** adjust timestep size
             call timcrl
-
+c
+c  manage the stress calls when ihms = istrs_coupl = -4
+c
+           istresscall = 0
+c           
+           if(ihms.eq.-4) then
+            if(days.ge.timestress) then
+             istrs_coupl = -3
+             timestress0 = timestress
+             timestress = timestress0 + daystress
+            else
+             istrs_coupl = ihms
+            endif
+           endif
+           
 c     Call evaporation routine if this is an evaporation problem
             if (evaporation_flag) call evaporation(2)
 
@@ -1061,8 +1082,9 @@ c                  pho (ja) = phi(ja)
 c save flow residuals
                   call stressctr(17,0) 
 c**** update stress arrays ****
-c displacements
+c solve for displacements
                   if(istrs_coupl.eq.-3) then
+                     istresscall = 1
                      call stress_uncoupled(3)
 c update volume strains
                      call stressctr(6,0)
@@ -1373,6 +1395,9 @@ c
 c calculate final stress field and displacements
 c output contour information
 c 
+         if(istresscall.eq.0.and.ihms.eq.-4)then
+           istrs_coupl = -2
+         endif 
          call stress_uncoupled(2)
 
 c     New convention is to make days the - of its value to
