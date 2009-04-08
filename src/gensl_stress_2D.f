@@ -509,7 +509,7 @@ c	 fdum1 = 1.0
 	endif
 c      iax_b=1
 c      if (iax_b.ne.0) call ax_b(1)
-c     
+ 
          allocate(dumn(100))
 	   ndex(1) = 1
 c         
