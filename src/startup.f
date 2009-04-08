@@ -864,6 +864,7 @@ c
          if(ianpe.eq.0) then
             call   simplify_ncon
      &           (0,nelm,nelmdg,nop,istrw,ib,neq,idof,ka,ps,i)
+            if (connect_out) call connections_list
             if (igauss .le. 1) then
                deallocate (nop)
             else
@@ -1144,21 +1145,21 @@ c**** initialize coefficients adjust volumes in dpdp calcs ****
       end if
 c  initialize pressures and temperatures
       if(ipini.eq.0.or.iread.eq.0) then      
-           phini = pho
-           psini = ps
-           tini = to           
+         phini = pho
+         psini = ps
+         tini = to           
       else
 c phini and tini have be read in from disk, just set pressure
-        psini = ps
+         psini = ps
       endif
 c initialize porosity model -5 if necessary
       call porosi(5)
-	call stressctr(2,0)
+      call stressctr(2,0)
 c this call handled in call to porosi above
 c
 c  find permeability nodes and startup operations(allocate memory)
 c
-	call stressctr(16,0)    	 
+      call stressctr(16,0)
 c
 c   combine multiple generalzed head BCs
 c
