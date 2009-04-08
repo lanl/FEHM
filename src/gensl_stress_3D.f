@@ -458,7 +458,25 @@ c write our AX=B for testing
 c
 c      iax_b=1
 c      if (iax_b.ne.0) call ax_b(1)
-
+c
+c some testing
+c 
+      go to 501
+      open(unit=55,file='test_cube3.txt',status='unknown')
+      do i = 1,27
+       write(55,*) 'node = ', i,(bp(i+nrhs(id)),id=1,3)
+       i1 = nelm(i)+1
+       i2 = nelm(i+1)
+       write(55,'(5i14)') (nelm(id),id= i1,i2)
+       do j = 1,9
+        write (55,*) 'submatrix = ',j
+        write(55,'(5g14.3)') (a(id+nmat(j)-neqp1),id = i1,i2)
+       enddo
+      enddo
+      close(55)
+      write(*,*) 'stopping in gensl_stress_3D.f-see file test_cube3.txt'
+      stop
+501   continue
        fdum2=0.0d0
 
 	if(tol_stress.ne.0.0d0) then
@@ -539,7 +557,6 @@ c
       endif
 c
          fdum=sqrt(fdum2)
-
 c     
          if(fdum.gt.f0.or.iad.eq.0) then
             facr=1.0

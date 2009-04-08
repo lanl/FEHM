@@ -256,7 +256,7 @@ c
 c
       iz4m1 = 4*(iz-1)+1
 c
-      idg=nelmdg(i-icd)-ii1+1
+
       neqp1=neq+1
 c define diagonal term for connectivity
       jmi=nelmdg(i-icd)
@@ -311,8 +311,8 @@ c
           
 c recall geometric integrals, calculated in gencof.
 c might be 7 8 9 gaz 11-2-2006
-      sisjx=-sxs(iws,7)
-      sisjy=-sxs(iws,8)
+      sisjx=sxs(iws,7)
+      sisjy=sxs(iws,8)
       sisjz=-sxs(iws,9)
 c average material properties                     
             e1kb = e1(kb)
@@ -367,12 +367,12 @@ c
       tauzx=tauzx+zxx+zxz 
 
       enddo
-      str_x(i)=(shpi+shti+termx/vol)
-      str_y(i)=(shpi+shti+termy/vol)
-      str_z(i)=(shpi+shti+termz/vol)
-      str_xy(i)=+tauxy/vol
-      str_yz(i)=+tauyz/vol
-      str_xz(i)=+tauzx/vol
+      str_x(i)=(shpi+shti-termx/vol)
+      str_y(i)=(shpi+shti-termy/vol)
+      str_z(i)=(shpi+shti-termz/vol)
+      str_xy(i)=tauxy/vol
+      str_yz(i)=tauyz/vol
+      str_xz(i)=tauzx/vol
 
       
       return
