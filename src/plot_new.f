@@ -72,7 +72,7 @@
       character*28 vt_string
       character*80 formcs_string
       character*14 time_string, file_format, dumv_string
-      character*14, allocatable :: var_string(:), var_tmp(:)
+      character*15, allocatable :: var_string(:), var_tmp(:)
       character*10 zone_string
       character*3 dls
       logical time2print
