@@ -243,6 +243,6 @@ c      write(jtimex,'(i2.2,1h:,i2.2,1h:,i2.2)')  jjtime
       vernum = 3.00
 ! Code version identifier
 ! Date format yy-mm-dd
-      verno = "FEHM V3.00pc 09-04-08 QA:NA"
+      verno = "FEHM V3.00pc 09-04-09 QA:NA"
 
       end
