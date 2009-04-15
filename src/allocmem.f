@@ -547,7 +547,7 @@ c***  allocate memory to all arrays in combi ***
       allocate(nelmdg(n0))
 c     ***** COMMON Block fbc *****
       allocate(sx1(n0))
-      if(compute_flow) allocate(sxs(nq,6))
+c      if(compute_flow) allocate(sxs(nq,6))
 c     ***** COMMON Block fbs *****
       allocate(cord(n0,3))
       allocate(dp(6))

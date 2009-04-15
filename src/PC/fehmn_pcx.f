@@ -672,8 +672,12 @@ c**** call data checking routine ****
 c
 c calculate initial stress field and displacements
 c 
-         call stress_uncoupled(1)
-c         
+         call stress_uncoupled(1) 
+c 
+c reset boundary conditions for principal stresses (fraction of lithostatic)
+c
+         call stressctr(3,0) 
+c               
 	 if(ico2.lt.0) then
             if (iout .ne. 0) write(iout,834) ifree1
             if (iptty .ne. 0) write(iptty,834) ifree1
@@ -769,7 +773,6 @@ c**** time step control via iteration count ****
 
  100        continue
             call riptime
-            
 c
 c     Set current index for flow field catalog number (rip option)
 c
