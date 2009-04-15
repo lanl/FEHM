@@ -489,9 +489,9 @@ c
         permx_max = 0.0
         permy_max = 0.0
         permz_max = 0.0
-        ipermx_max = 0
-        ipermy_max = 0
-        ipermz_max = 0
+        ipermx_max = 1
+        ipermy_max = 1
+        ipermz_max = 1
         sxx_min = 0.0
         syy_min = 0.0
         szz_min = 0.0

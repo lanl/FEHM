@@ -94,7 +94,7 @@
 	 character*24 hist_str
 	 character*4 stype
 	 character*6 ptype
-	 integer nodestress, icount
+	 integer nodestress, icount, ilithod
 	 logical null1
 	 
 	save isstr_temp
@@ -414,11 +414,23 @@ c
          ipini = 1
                
         else if(macro1.eq.'stressboun') then
+         ilithod = 0
 	   read (inpt, '(a80)') wdd1
 	   if (wdd1(1:11) .eq. 'distributed') then
 	    iforce = 1
 	   else if (wdd1(1:11) .eq. 'lithostatic') then
+c if lithostatic then must use initcalc	   
 	    ilitho = 1
+	    ilithod = 1
+	    initcalc = 1
+	    if(iout.ne.0) 	    
+     &    write(iout,*)'initcalc set because lithostatic chosen'
+     	    if(iptty.ne.0) 	    
+     &    write(iptty,*)'initcalc set because lithostatic chosen'
+	    if(.not.allocated(flitho)) then
+	     allocate(flitho(n0,3))
+	     flitho = 0.0d0
+	    endif
 	   else
 	    backspace inpt
 	    iforce = 0
@@ -435,52 +447,69 @@ c
  
             call initdata2( inpt, ischk, n0, narrays,
      &        itype, default, macroread(8), macro, igroup, ireturn,
-     &        r8_1 = stressboun(1:n0),i4_1 = kq_dum(1:n0))     
-           do i = 1,n0
+     &        r8_1 = stressboun(1:n0),i4_1 = kq_dum(1:n0)) 
+           if(ilithod.eq.0) then    
+            do i = 1,n0
             if(kq_dum(i).eq.1) then
 c         displacement
-	       kr(i,1) = 1
-	       disp(i,1) = stressboun(i)
+	        kr(i,1) = 1
+	        disp(i,1) = stressboun(i)
             else if(kq_dum(i).eq.-1) then
 c         force
              if(iforce.eq.0) then
-	        kr(i,1) = -1
-             else
-	        kr(i,1) = -1
-	        idum_str(i,1) = izonef(i)
-	       endif
-	        forc(i,1) = stressboun(i)
-		  endif		      
-            if(kq_dum(i).eq.2) then
+	         kr(i,1) = -1
+              else
+	         kr(i,1) = -1
+	         idum_str(i,1) = izonef(i)
+	        endif
+	         forc(i,1) = stressboun(i)
+		    endif		      
+             if(kq_dum(i).eq.2) then
 c         displacement
-	       kr(i,2) = 2
-	       disp(i,2) = stressboun(i)
-            else if(kq_dum(i).eq.-2) then
+	        kr(i,2) = 2
+	        disp(i,2) = stressboun(i)
+             else if(kq_dum(i).eq.-2) then
 c         force
-             if(iforce.eq.0) then
-	        kr(i,2) = -2
-             else
-	        kr(i,2) = -2
-		    idum_str(i,2) = izonef(i)
-	       endif
-	       forc(i,2) = stressboun(i)
-            endif   
-            if(kq_dum(i).eq.3) then
+              if(iforce.eq.0) then
+	         kr(i,2) = -2
+              else
+	         kr(i,2) = -2
+		       idum_str(i,2) = izonef(i)
+	        endif
+	        forc(i,2) = stressboun(i)
+             endif   
+             if(kq_dum(i).eq.3) then
 c         displacement
-	       kr(i,3) = 3
-	       disp(i,3) = stressboun(i)
-            else if(kq_dum(i).eq.-3) then
+	        kr(i,3) = 3
+	        disp(i,3) = stressboun(i)
+             else if(kq_dum(i).eq.-3) then
 c         force
-             if(iforce.eq.0) then
-	        kr(i,3) = -3
-             else
-	        kr(i,3) = -3
-			idum_str(i,3) = izonef(i)
-	       endif
-	       forc(i,3) = stressboun(i)
-            endif      		    		       
-           enddo
-
+              if(iforce.eq.0) then
+	         kr(i,3) = -3
+              else
+	         kr(i,3) = -3
+			   idum_str(i,3) = izonef(i)
+	        endif
+	        forc(i,3) = stressboun(i)
+             endif      		    		       
+            enddo
+           else 
+c new code for lithostatic and principal stresses           
+            do i = 1,n0
+             if(kq_dum(i).eq.1) then
+c    multiplier for lithostatic load
+	        flitho(i,1) = stressboun(i)
+		     endif		      
+             if(kq_dum(i).eq.2) then
+c    multiplier for lithostatic load
+	        flitho(i,2) = stressboun(i)
+             endif   
+             if(kq_dum(i).eq.3) then
+c    multiplier for lithostatic load
+	        flitho(i,3) = stressboun(i)
+             endif      		    		       
+            enddo          
+           endif
          deallocate(stressboun,kq_dum)
         else if(macro1.eq.'elastic   ') then
 
@@ -660,43 +689,44 @@ c calculate boundary conditions based on lithostatic stresses
 c need to be called after the stress calculation
 c 
 c remove fixed zero displacement
-c
-      
+c      
        if(ilitho.ne.0) then
         if(icnl.eq.0) then
          do i = 1,n0
-          if(kr(i,1).eq.1.or.kr(i,2).eq.2.or.kr(i,3).eq.3) then
+          if(flitho(i,1).ne.0.0.or.flitho(i,2).ne.0.0
+     &     .or.flitho(i,3).ne.0.0) then
            call geneq_stress_uncoupled_3D(i)
            if(flitho(i,1).ne.0.0) then
             kr(i,1) = -1
-            forc(i,1) = -bp(i+nrhs(1))
+            forc(i,1) = bp(i+nrhs(1))*flitho(i,1)
            endif
            if(flitho(i,2).ne.0.0) then
             kr(i,1) = -2
-            forc(i,2) = -bp(i+nrhs(2))
+            forc(i,2) = bp(i+nrhs(2))*flitho(i,2)
            endif
            if(flitho(i,3).ne.0.0) then
             kr(i,1) = -3
-            forc(i,3) = -bp(i+nrhs(3))
+            forc(i,3) = bp(i+nrhs(3))*flitho(i,3)
            endif
           endif
          enddo 
         else
           do i = 1,n0
-          if(kr(i,1).eq.1.or.kr(i,2).eq.2) then
+          if(flitho(i,1).ne.0.0.or.flitho(i,2).ne.0.0) then
            call geneq_stress_uncoupled_2D(i)
            if(flitho(i,1).ne.0.0) then
             kr(i,1) = -1
-            forc(i,1) = -bp(i+nrhs(1))
+            forc(i,1) = bp(i+nrhs(1))*flitho(i,1)
            endif
            if(flitho(i,2).ne.0.0) then
             kr(i,1) = -2
-            forc(i,2) = -bp(i+nrhs(2))
+            forc(i,2) = bp(i+nrhs(2))*flitho(i,2)
            endif
           endif
          enddo        
         endif
-       endif     
+       endif   
+       deallocate(flitho)  
 c iflg=4 calculate nonlinear material properties
       else if(iflg.eq.4) then 
        call stress_mech_props(0,0)
