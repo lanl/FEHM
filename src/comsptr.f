@@ -173,7 +173,7 @@ c s kelkar sep 17 05 - sptrx_flag
 !      real*8, allocatable :: time_sptr(:)
       
       logical btc_flag, alt_btc, pod_flag, xyz_flag, ip_flag 
-      logical sptr_flag, sptr_snode, sptrx_flag
+      logical sptr_flag, sptr_snode, sptrx_flag, trans_flag
 c
       real*8, allocatable :: well_radius(:) 
 

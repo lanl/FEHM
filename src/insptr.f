@@ -275,6 +275,7 @@ c order) ZVD 16-Oct-2006
       sptrx_flag = .false.
       xyz_flag = .false.
       ip_flag = .false.
+      trans_flag = .false.
       itensor = -999
       nzbtc = 0
       part_mult = 2.
@@ -751,6 +752,10 @@ c     Keywords to specify which parameters to output along the particle path
          case('ip', 'IP')
 ! Flag to indicate initial position should be included for abbreviated output
             ip_flag = .true.
+            done = .false.
+         case('tr', 'TR')
+! Flag to indicate particle start time should be included for abbreviated output -- the initial node will be set to 0 if this option is used
+            trans_flag = .true.
             done = .false.
          case('po', 'PO')
             done = .false.

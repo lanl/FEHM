@@ -610,11 +610,17 @@ c ZVD modified minimal write option to include coordinates 12-08-2005
      &                 xcoordw, ycoordw, zcoordw 
                end if
             end do
-         else if (ip_flag) then
+         else if (ip_flag .or. trans_flag) then
 c ZVD added option to write initial position to abbreviated output file
             if (iprto .eq. -1) write(isptr2,110)
             do np1 = 1, num_part
-               current_node = ijkv(np1)
+c ZVD added option for transient where particle start time is saved but
+c     initial node is set to 0 
+               if (trans_flag) then
+                  current_node = 0
+               else
+                  current_node = ijkv(np1)
+               end if
                sptr_time = ttp1(np1)
                if (iprto .eq. -1) then
                   write(isptr2,105) np1,sptr_time,current_node
