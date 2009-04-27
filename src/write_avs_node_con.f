@@ -167,7 +167,7 @@ C***********************************************************************
 
       use avsio
       use comai, only : altc, days, icnl, jdate, jtime, nei_in,
-     &     ns_in, verno, wdd
+     &     ns_in, verno, wdd, neq_primary
       use combi, only : corz, izonef, nelm
       use comchem
       use comdi, only : nsurf, izone_surf, izone_surf_nodes, icns
@@ -645,7 +645,7 @@ c=================================================
                write(lu, fstring) (trim(title(i)), i=1,itotal2)
             end if
             do in = 1,neq
-               if (iozone .eq. 1) then
+               if (iozone .ne. 0) then
                   if (izone_surf_nodes(in).ne.idz) goto 299
                end if               
                j=0
@@ -770,6 +770,9 @@ c=================================================
      &     then
 ! Read the element connectivity and write to tec file
          il = open_file(geoname,'old')
+! avsx geometry file has an initial line that starts with neq_primary
+         read(il,*) i
+         if (i .ne. neq_primary) backspace il
          do i = 1, neq
             read(il,*)
          end do

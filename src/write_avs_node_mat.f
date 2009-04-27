@@ -488,6 +488,9 @@ c------------------------------------------------------------------------------
          if (altc(1:3) .eq. 'tec' .and. iogeo .eq. 1) then
 ! Read the element connectivity and write to tec file
             il = open_file(geoname,'old')
+! avsx geometry file has an initial line that starts with neq_primary
+            read(il,*) i
+            if (i .ne. neq_primary) backspace il
             do i = 1, neq
                read(il,*)
             end do

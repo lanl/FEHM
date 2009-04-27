@@ -379,7 +379,7 @@ c     &        (trim(title(i)), j = 1, nout)
          end if
          do i = 1,neq
 ! Node loop
-            if (iozone .eq. 1) then
+            if (iozone .ne. 0) then
                if (izone_surf_nodes(i).ne.idz) goto 199
             end if
             if (iocord .ne. 0) then

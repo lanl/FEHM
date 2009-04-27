@@ -220,7 +220,7 @@ c----------------------------------------------------------------------
 
       use avsio
       use comai, only : altc, days, iadif, icnl, idof, nei_in,
-     &     ns_in, phi_inc, istrs
+     &     ns_in, phi_inc, istrs, neq_primary
       use combi, only : corz, izonef, nelm, nelmdg, sx1
       use comci, only : rolf, rovf
       use comdi
@@ -754,6 +754,9 @@ c might need help in the
      &     then
 ! Read the element connectivity and write to tec file
          il = open_file(geoname,'old')
+! avsx geometry file has an initial line that starts with neq_primary
+         read(il,*) i
+         if (i .ne. neq_primary) backspace il
          do i = 1, neq
             read(il,*)
          end do
