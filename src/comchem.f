@@ -414,6 +414,10 @@
 
       real*8, allocatable :: sarea(:)
 
+      real*8, allocatable :: mw_mineral(:), rho_mineral(:)
+
+	real*8, allocatable :: ps_rxn(:,:), ps_delta_rxn(:)
+
       real*8, allocatable :: pdstic(:,:)
 
       real*8 pdstim

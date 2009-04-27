@@ -618,6 +618,8 @@ c     ***** COMMON Block biopara *****
          allocate(icbio(numrxn,(ncpnt+ncplx)))
 c     ***** COMMON Block precdis *****
          allocate(sarea(numrxn),pdstic(numrxn,ncpnt),pd_flag(nimm,n0))
+	   allocate(mw_mineral(nimm), rho_mineral(nimm))
+	   allocate(ps_delta_rxn(n0))
 c     ***** COMMON Block concs *****
          allocate(totaq(ncpnt),cpnt(ncpnt),cplx(101:ncplx+100))
 c     ***** COMMON Block rates *****

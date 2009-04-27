@@ -209,6 +209,7 @@ C**********************************************************************
       real*8 xmsg(11)
       integer imsg(11)
       character*32 cmsg(11)
+	character*4 por_change
       logical null1
       
 c ----Users can write codes below----
@@ -717,12 +718,22 @@ c read in the solubility product
                enddo
                ckeqlb(j)=tcoeff(j,1)+tcoeff(j,2)*25+tcoeff(j,3)*25**2
             endif
+c read in the molecular weight and density of the mineral for the optional 
+c porosity change due to precip/diss reaction
+	      read(inpt,'(a1)')por_change
+		  if(por_change.eq.'p')then
+	         read(inpt,*)
+	         read(inpt,*) mw_mineral(irxnim(j,1)), rho_mineral(irxnim(j,1))
+	      else
+	         backspace(inpt)
+		  endif
 c read in the rate of reaction in moles/(m^2*sec)
             read(inpt,*)
             read(inpt,*)ckmtrn(j)
 c read in the surface area of the mineral in m^2
             read(inpt,*)
             read(inpt,*)sarea(j)
+		  
          endif
       enddo
  999  return

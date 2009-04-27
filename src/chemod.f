@@ -105,6 +105,7 @@ C**********************************************************************
       use comdi
       use comrxni
       use comdti
+	use comco2
       use davidi, only : irdof
       implicit none
       integer info, tol_value
@@ -112,7 +113,7 @@ C**********************************************************************
       integer irxn,i,j,isp,itemp,itemp2,matnum,mat
       integer isolute
       real*8 dt,dum
-      real*8 danl_subst,danv_subst,stemp
+      real*8 danl_subst,danv_subst,stemp,disco2_flow
 
 
       do in=1,n0
@@ -143,6 +144,26 @@ c.......Proceed if complexation is involved.
                   mi = in+(pcpnt(ic)-1)*n0
                   totaq(ic)=an(mi)
                enddo
+
+c .... Handle dissolved CO2 case
+               if(icarb.eq.1)then
+                 do ic = 1,ncpnt
+	              mi = in+(pcpnt(ic)-1)*n0
+		          if (ifxconc(ic).eq.2.and.cpntnam(ic).eq.'H2CO3')then
+ 	                  disco2_flow = (yc(in)/(1-yc(in)))/0.044
+		              totaq(ic) = max(totaq(ic), disco2_flow)
+	                  ifxconc(ic)=1
+	                  call speciate(in,info,tol_value)
+	                  ifxconc(ic)=2
+                        dum = cpnt(ic)
+                        Do i=101,ncplx+100
+                           dum = dum + cplx(i)*spstoic(i,ic)
+                        Enddo
+                        totaq(ic) = dum
+		          endif 
+	            enddo
+	          endif
+
 
 c.........Speciation
                call speciate(in,info,tol_value)
@@ -417,15 +438,18 @@ c====================================================================
             totaq(j) = 0.d0
             cpnt(j) = 0.d0
             NSOLVE = NSOLVE + 1
-c         Else If (ifxconc(j).eq.1) then
-c            cpnt(j)=totaq(j)
-	   Else if (ifxconc(j).eq.1.and.icarb.eq.1) then
+	   Else If (ifxconc(j).eq.1) then
+
+            cpnt(j)=totaq(j)
+c	   Else if (ifxconc(j).eq.1.and.icarb.eq.1.and.ico2dis(in).eq.1) then
+c         Else if (ifxconc(j).eq.0.and.icarb.eq.1) then
 CHari convert mass fraction co2 (yc) to moles co2/kg water
 CHari if mass fraction is x and mole fraction y they are 
 CHari related by: x = y/(1-y)*1/MW
-	       disco2_flow = (yc(in)/(1-yc(in)))/0.044
-		   cpnt(j) = max(totaq(j), disco2_flow)
-         Else
+
+            
+
+         Else 
             cpnt(j)=cpntsv(j,in)
             if((ifxconc(j).eq.0).and.((cpnt(j).gt.totaq(j)).or.
      &           (cpnt(j).le.0.d0))) 
@@ -1043,7 +1067,7 @@ c 1999 by GEH
 	      num_ifx2 = num_ifx2 + 1
 	      ifxconc2_id(num_ifx2) = j
             dum = totaq(j)
-            totaq(j)=10.0d0**(-dum)
+	      totaq(j)=10.0d0**(-dum)
             ifxconc(j) = 1
          Endif
       Enddo
@@ -2253,7 +2277,7 @@ c  results in mols/kgh20/hr
      2          mol_kgshr_conv
 
          rrimm(im) = -prod*(1-eqcheck)
-
+        
          drimm(im) = 0.0
 
       endif

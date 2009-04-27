@@ -634,6 +634,8 @@ c gaz 040606 to hopefully correct usage
          temp_model = ' '
          temp_model_kin = ' '
          tcoeff = 0
+	   ps_delta_rxn = 0
+
       endif
          
 c zero out include comdi

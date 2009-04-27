@@ -46,13 +46,12 @@
       implicit none
 
       integer iflg,ndummy,i,nr1,nr2,nr3,nr4,nr5,mi      
-      integer i1,i2,i3,i4,i5,i6,ilev,mlev,il,md,k,j,iphase
+      integer i1,i2,i3,i4,i5,i6,ilev,mlev,il,md,k,j, kb, iphase
       integer ii,ij,icedc,iced,ieosd,icesd,idco2,duma,neqp1,ncont
       real*8, allocatable :: aiped(:)
       real*8, allocatable :: sktmp(:)
       real*8, allocatable :: esktmp(:)
-      real*8, allocatable :: skcdtmp(:)
-
+      integer, allocatable :: iflg_flowmac(:)
       real*8 tliquid,dummyreal
       real*8 pw,tw,pc,tc,ensrc,delsrc,phase_frac,skmd,qhmd
       real*8 skmd1,skmd10,skmd2,skmd3,amco2w,amco2w1,amco21
@@ -93,7 +92,7 @@
 
          if(iflg.eq.0) then
 
-c RJP 04/15/07 Changed the dof definitions
+c     RJP 04/15/07 Changed the dof definitions
             idof=5
             if(iprtype.eq.1) then
                
@@ -139,20 +138,21 @@ c RJP 04/15/07 Changed the dof definitions
      &           'P and T (1-phase CO2) ****') 
  22         format(3x,'**** water-CO2 problem: ',
      &           'P, T and fw (2-phase CO2, with-out dissolution) ****')
- 222         format(3x,'**** water-CO2 isothermal problem: ',
+ 222        format(3x,'**** water-CO2 isothermal problem: ',
      &           'P and fw (water-CO2, with-out dissolution) ****') 
  23         format(3x,'**** water-CO2 problem: ',
-     &            'P, T and fw (2-phase CO2, with dissolution) ****') 
+     &           'P, T and fw (2-phase CO2, with dissolution) ****') 
  24         format(3x,'**** water-CO2-air problem: ',
      &           'P, T, fw, xco2 (2-phase CO2, dissolution)  ****') 
-c
-c allocate memory for co2 arrays
-c
+c     
+c     allocate memory for co2 arrays
+c     
             allocate(denco2i(n0))
             allocate(denco2h(n0))
             allocate(deneco2i(n0))
             allocate(deneco2h(n0))
             allocate(pflowco2(n0))
+            allocate(flowco2s(n0))
             allocate(eflowco2(n0))
             allocate(phico2(n0))
             allocate(phoco2(n0))
@@ -175,7 +175,6 @@ c
             allocate(ya(n0))
             allocate(xa(n0))
             allocate(skco2(n0))
-            allocate(skco2d(n0))
             allocate(eskco2(n0))
             allocate(qhco2(n0))
             allocate(wellco2(n0))
@@ -190,7 +189,7 @@ c
             allocate(deycf(n0))
             allocate(deyaf(n0))
             allocate(diw(n0))
-	      allocate(diwc(n0))
+            allocate(diwc(n0))
             allocate(diwp(n0))
             allocate(diwe(n0))
             allocate(diww(n0))
@@ -251,10 +250,10 @@ c
             allocate(fg_tmp(n0))
             allocate(inico2flg(n0))
 
-	 	  allocate(strd_arr(n0))
-c
-c zero out arrays for co2        
-c
+            allocate(strd_arr(n0))
+c     
+c     zero out arrays for co2        
+c     
             stowat = 0.d0
             denco2i = 0.0d00
             denco2h = 0.0d00
@@ -274,38 +273,39 @@ c
             qhco2 = 0.0d00
             eskco2 = 0.0d00
             eflowco2 = 0.0d00
-c            rovfco2 = 0.0d00
-c            envfco2 = 0.0d00
+            rovfco2 = 0.0d00
+            envfco2 = 0.0d00
             wellco2 = 0.0d00
-c            rolfco2 = 0.0d00
-c            enlfco2 = 0.0d00
-c            dpcpco22 = 0.0d00
-c            dmmf = 0.0d00
-c            demf = 0.0d00
-c            dilm = 0.0d00
-c            divm = 0.0d00
-c            deqm = 0.0d00
-c            deqpm = 0.0d00
+            rolfco2 = 0.0d00
+            enlfco2 = 0.0d00
+            dpcpco22 = 0.0d00
+            dmmf = 0.0d00
+            demf = 0.0d00
+            dilm = 0.0d00
+            divm = 0.0d00
+            deqm = 0.0d00
+            deqpm = 0.0d00
             dmwf = 0.0d00
             dewf = 0.0d00
             dilw = 0.0d00
             divw = 0.0d00
             deqw = 0.0d00
-c            deqpw = 0.0d00
+            deqpw = 0.0d00
             fw = 0.0d00
             fow = 0.0d00
             qhflxco2 = 0.0d00
             dtpaco2 = 0.0d00
             dtpaeco2 = 0.0d00
             skmd1 = 0.0d00
-c            dq3 = 0.d00
-c            dq4 = 0.d00
+            dq3 = 0.d00
+            dq4 = 0.d00
             csalt = 0.d00
             co2_prop = 0.d00
             wat_prop = 0.d00
             diltrac = 0.d00
-c            dpcp4 = 0.00
-c            dtpsc = 0.00
+            dpcp3 = 0.00
+            dpcp4 = 0.00
+            dtpsc = 0.00
             kaco2 = 0
             iceso = 0
             ieoso = 0
@@ -321,17 +321,17 @@ c            dtpsc = 0.00
             xow = 0.0
             inico2flg = 0
             macro = "carb "
-c
-c read in "sub macros" for CO2
-c
+c     
+c     read in "sub macros" for CO2
+c     
 
-      
+            
  100        continue
             read (inpt, '(a80)') wdd1
             if (wdd1(1:7) .eq. 'co2end') go to 200 
             if (wdd1(1:1) .eq. '#') go to 40 
             read (wdd1, '(a8)') macro1
-            write(iout, 50) macro1
+            if (iout .ne. 0) write(iout, 50) macro1
             if (iptty .gt. 0) write(iptty, 50) macro1 
  50         format(3x, '**** CO2 sub macro : ', a8,' **** ' ) 
             if(macro1.eq.'co2pres') then
@@ -369,7 +369,7 @@ c
                      end if
                   end if
                end do
-           
+               
                deallocate(sktmp)
             elseif (macro1.eq.'co2diff') then
                ico2diff_flg = 1
@@ -422,16 +422,16 @@ c     Next read brine properties with derivatives
                con_prop(17) = viswp
                con_prop(18) = viswt
             else if(macro1.eq.'co2frac') then
-           
+               
 c     
 c     read in initial CO2, air, water/brine saturation. fw represents water-rich
 c     liquid saturation (volume fraction), fg represents CO2/air-rich gas
 c     saturation (volume fraction), fl represent CO2-rich super-critical/liquid  
 c     phase saturation (volume fraction). In addition, brine salt concentration 
-c	is also specified in ppm.
+c     is also specified in ppm.
 c     RJP 01/11/08 modified following to specify initial CO2 mass fraction in
-c	CO2 dominant phase, xc.
-c	RJP 03/09/08 removed qhflxco2 present in earlier versions.
+c     CO2 dominant phase, xc.
+c     RJP 03/09/08 removed qhflxco2 present in earlier versions.
                igroup = 1
                narrays = 5
                itype(1) = 8
@@ -468,52 +468,74 @@ c	RJP 03/09/08 removed qhflxco2 present in earlier versions.
  25            format(3x,'**** brine option invoked  ****') 
             else if(macro1.eq.'co2flow') then
                igroup = 4
-               narrays = 3
+               narrays = 4
                itype(1) = 8
                itype(2) = 8
                itype(3) = 8
-c               itype(4) = 8
+               itype(4) = 4
                default(1) = 0.0d00
                default(2) = 0.0d00
                default(3) = 0.0d00
-c               default(4) = 0.0d00
+               default(4) = 0
+
 c     
 c     read in initial CO2 flow and boundary data
 c     
-               allocate(aiped(n0),esktmp(n0),sktmp(n0),skcdtmp(n0))
+               allocate(aiped(n0),esktmp(n0),sktmp(n0),iflg_flowmac(n0))
                
                call initdata2( inpt, ischk, n0, narrays, itype, default,
      &              macroread(8), macro, igroup, ireturn,  r8_1 = 
-     &             sktmp(1:n0),r8_2=esktmp(1:n0),r8_3=aiped(1:n0))
-c     &			 ,r8_4=skcdtmp(1:n0))
+     &              sktmp(1:n0),r8_2=esktmp(1:n0),r8_3=aiped(1:n0),
+     &              i4_1 = iflg_flowmac)
                do i=1,n0
-                  if(sktmp(i).ne.default(1).or.esktmp(i).ne.default(2)
-     &                 .or. aiped(i). ne. default(3)) then
+                  if(iflg_flowmac(i).eq.1) then
+c     constant pressure boundary condition with inflow allowed. aiped is user specified
+                     kaco2(i) = -1
+                     pflowco2(i) = sktmp(i)
                      eskco2(i) = esktmp(i)
-c     if (abs(skcdtmp(i)) .eq. 0.d0) then
-                     if (abs(aiped(i)) .lt. zero_t) then
-                        skco2(i) = sktmp(i)
-                        kaco2(i) = 1
-                     else
-                        if (aiped(i) .lt. 0.) then
-                           kaco2(i) = -2
-                        else
-                           kaco2(i) = -1
-                        end if
-                        wellco2(i) = abs(aiped(i)) * 1.0e+06
-                        pflowco2(i) = sktmp(i)
-                     end if
-c     else
-c     kaco2(i) = 3
-c     skco2d(i) = skcdtmp(i)
-c     endif
+                     wellco2(i) = abs(aiped(i)) * 1.e+6
+                  elseif(iflg_flowmac(i).eq.2) then
+c     constant pressure boundary condition with only outflow allowed. aiped is user specified
+                     kaco2(i) = -2
+                     pflowco2(i) = sktmp(i)
+                     eskco2(i) = esktmp(i)
+                     wellco2(i) = abs(aiped(i)) * 1.e+6
+                  elseif(iflg_flowmac(i).eq.3) then
+c     constant pressure boundary condition. aiped is calculated in the code based on block geometric params
+                     kaco2(i) = -3
+                     pflowco2(i) = sktmp(i)		
+                     eskco2(i) = esktmp(i)
+                  elseif(iflg_flowmac(i).eq.4) then
+c     constant pressure and constant saturation boundary condition. aiped is user specified
+                     kaco2(i) = -4
+                     pflowco2(i) = sktmp(i)
+                     flowco2s(i) = esktmp(i)
+                     wellco2(i) = abs(aiped(i)) * 1.e+6
+                  elseif(iflg_flowmac(i).eq.5) then
+c     constant pressure and constant saturation boundary condition. aiped is calculated in the code based
+c     on block geometric params
+                     kaco2(i) = -5
+                     pflowco2(i) = sktmp(i)
+                     flowco2s(i) = esktmp(i)
+                  elseif(iflg_flowmac(i).eq.6) then
+c     constant co2 mass flow rate boundary condition
+                     kaco2(i) = 1
+                     skco2(i) = sktmp(i)
+                     eskco2(i) = esktmp(i)
+                  elseif(iflg_flowmac(i).eq.7) then
+c     constant dissolved co2 mass flow rate boundary condition
+                     kaco2(i) = 2
+                     skco2(i) = sktmp(i)
+                     eskco2(i) = esktmp(i)
+                     flowco2s(i) = aiped(i)
                   endif
                enddo
                
-               deallocate(sktmp,esktmp,aiped,skcdtmp)
+               deallocate(sktmp,esktmp,aiped,iflg_flowmac)
                
             else
-               write(iout,*) 'ERROR IN CO2 INPUT(STOPPING)'
+               if (iout .ne. 0) write(iout,*) 
+     &              'ERROR IN CO2 INPUT(STOPPING)'
                write(ierr,*) 'ERROR IN CO2 INPUT(STOPPING)'
             end if
  40         continue
@@ -533,8 +555,8 @@ c     endif
             
          elseif(iflg.eq.-2) then
 c     
-c     set temperatures of components equal for certain equilibrium conditions
-c
+c     set tempertures of components equal for certain equilibrium conditions
+c     
             if (.not. co2_read) then
                do i=1,n0
                   to(i) = tco2(i)
@@ -1088,27 +1110,65 @@ c     only for first iteration
                         eflowco2(ij) = cpr(ij)*(-eskco2(ij))
                      else
                         if(abs(kaco2(ij)).gt.0) then
-                           call co2_properties(4,ices(ij),pflowco2(ij),
-     &                          -eskco2(ij),dum1,duma,dumb,dumc)
+                           if(kaco2(ij).eq.2) then
+                              call co2_properties(4,ices(ij),phico2(ij),
+     &                             -eskco2(ij),dum1,duma,dumb,dumc)
+                              call h2o_properties(9,1,phi(ij),
+     &                             -eskco2(ij),csalt(ij),
+     &                             dum3,ensrc,dum4,dum5,dum6,dum7)
+                              eflow(ij)=ensrc
+                              if(iwatdis.eq.1) then
+c     calculate phase-change pressure and dp/dt
+                                 call h2o_properties(5,2,tl,dum1,dum2,
+     &                                dum3,psatd,dum4,dpsatt,dum5,dum6)
+                                 xwp = psatd/pl
+                              else
+                                 xwp = 0.d0
+                              endif
+                              xcp = 1.d0-xwp		  
+                              xcpb=(xcp/mwc)+(xwp/mww)
+                              xc_prime = xcp/(mwc*xcpb)
+                              call co2_properties(10,1,phico2(ij),
+     &                             -eskco2(ij),csalt(ij),1,xc_prime,tem)
+                              if((flowco2s(ij).lt.tem(1)).and.
+     &                             (flowco2s(ij).ne.0d0))then
+                                 sk(ij) = skco2(ij)*(1-flowco2s(ij))
+                                 skco2(ij) = skco2(ij)*flowco2s(ij)
+                              else
+                                 sk(ij) = skco2(ij)*(1-tem(1))
+                                 skco2(ij) = skco2(ij)*tem(1)
+                              endif
+                           else
+                              call co2_properties(4,ices(ij),
+     &                             pflowco2(ij),
+     &                             -eskco2(ij),dum1,duma,dumb,dumc)
+                           endif
                         else
                            call co2_properties(4,ices(ij),phico2(ij),
      &                          -eskco2(ij),dum1,duma,dumb,dumc)
                         endif
                         eflowco2(ij)=dumc(4)
                      endif
-                  else
+                  elseif((kaco2(ij).eq.-4).or.(kaco2(ij).eq.-5)) then
+                     call co2_properties(4,ices(ij),phico2(ij),
+     &                    tco2(ij),dum1,duma,dumb,dumc)
+                     eflowco2(ij)=dumc(4)
+                  else						
                      eflowco2(ij)=eskco2(ij)
                   endif
-                  if(esk(ij).lt.0.0) then
-                     if(ps(ij).eq.0.d0) then
-                        eflow(ij) = cpr(ij)*(-eskco2(ij))
+                  if(kaco2(ij).ne.2) then
+                     if(esk(ij).lt.0.0) then
+                        if(ps(ij).eq.0.d0) then
+                           eflow(ij) = cpr(ij)*(-eskco2(ij))
+                        else
+                           call h2o_properties(9,1,phi(ij),-esk(ij),
+     &                          csalt(ij),dum3,ensrc,dum4,dum5,dum6,
+     &                          dum7)
+                           eflow(ij)=ensrc
+                        endif
                      else
-                        call h2o_properties(9,1,phi(ij),-esk(ij),
-     &                       csalt(ij),dum3,ensrc,dum4,dum5,dum6,dum7)
-                        eflow(ij)=ensrc
+                        eflow(ij)=esk(ij)
                      endif
-                  else
-                     eflow(ij)=esk(ij)
                   endif
                enddo
             endif                
@@ -1138,11 +1198,11 @@ c
                      mlev=m
                   endif
 c     Water                  
-                  write(iout,800)
+                  if (iout .ne. 0) write(iout,800)
                   if(iatty.ne.0) write(iatty,800)
                   do il=1,ilev
                      if(il.ne.1) then
-                        write(iout,600) il
+                        if (iout .ne. 0) write(iout,600) il
                         if (iatty.gt.0) write(iatty,600) il
                      endif
                      do i=1,mlev
@@ -1157,7 +1217,8 @@ c     Water
                            iphase = 1
                         end if
                            
-                        write(iout, 801)  md , pho(md), tco2(md),
+                        if (iout .ne. 0) write(iout, 801)  md , pho(md),
+     &                       tco2(md),
      &                       fw(md), yc(md), iphase, sk(md) , qh(md) 
                         if ( iatty .gt. 0 )  write(iatty, 801) md ,
      &                       pho(md), tco2(md), fw(md), yc(md), iphase, 
@@ -1165,22 +1226,25 @@ c     Water
                      enddo
                   enddo
 c     CO2
-                  write(iout,802)
-                  write(iout,803)
+                  if (iout .ne. 0) then
+                     write(iout,802)
+                     write(iout,803)
+                  end if
                   if(iatty.ne.0) then
                      write(iatty,802)
                      write(iatty,803)
                   end if
                   do il=1,ilev
                      if(il.ne.1) then
-                        write(iout,600) il
+                        if (iout .ne. 0) write(iout,600) il
                         if (iatty.gt.0) write(iatty,600) il
                      endif
                      do i=1,mlev
                         md=  nskw(i+(il-1)*mlev)
                         skmd = skco2(md)
                         qhmd = qhco2(md)
-                       write(iout,804) md, phico2(md),  fl(md),
+                       if (iout .ne. 0) 
+     &                       write(iout,804) md, phico2(md),  fl(md),
      &                       fg(md), ices(md), skmd, qhmd       
                         if(iatty.ne.0)
      &                       write(iatty,804) md, phico2(md), fl(md), 
@@ -1208,74 +1272,61 @@ c
 c**** printout global mass and energy flows ****
 c**** printout global mass and energy balances ****
 c     
-               if (ntty.eq.2) write(iout,700)
-               if (iatty.gt.0) write(iatty,700)
- 700           format(/,20x,'Global Mass & Energy for CO2')
-               
-               if (ntty.eq.2) write(iout,709) amco20
-               if (iatty.gt.0) write(iatty,709) amco20
- 709           format(/,1x,'Initial Total CO2 (kg) in the System: ',
-     &              e14.6)
-               
-               if (ntty.eq.2) write(iout,729) amco2f0
-               if (iatty.gt.0) write(iatty,729) amco2f0
- 729           format(/,1x,'Initial Free CO2 (kg) in the System: ',
-     &              e14.6)
-               
-               if (ntty.eq.2) write(iout,719) amco2w0
-               if (iatty.gt.0) write(iatty,719) amco2w0
- 719           format(/,1x,'Initial Dissolved CO2 (kg) in the System: ',
-     &              e14.6)
-               
-               if (ntty.eq.2) write(iout,701) amco2
-               if (iatty.gt.0) write(iatty,701) amco2
- 701           format(1x,'Total CO2 (kg) at this time:      ',
-     &              e14.6,' kg')
-               
-               if (ntty.eq.2) write(iout,722) amco2f
-               if (iatty.gt.0) write(iatty,722) amco2f
- 722           format(1x,'Total Free CO2 (kg) at this time:      ',
-     &              e14.6,' kg')
-               
-               if (ntty.eq.2) write(iout,712) amco2w
-               if (iatty.gt.0) write(iatty,712) amco2w
- 712           format(1x,'Dissolved CO2 (kg) in system at this time: ',
-     &              e14.6)
-               
-               if (ntty.eq.2) write(iout,711) amco21
-               if (iatty.gt.0) write(iatty,711) amco21
- 711           format(1x,'Total CO2 (kg) in system at last time step:',
-     &              e14.6)
-               
-               if (ntty.eq.2) write(iout,732) amco2f1
-               if (iatty.gt.0) write(iatty,732) amco2f1
- 732           format(1x,'Free CO2 (kg) in system at last time step:',
-     &              e14.6)
-               
-               if (ntty.eq.2) write(iout,713) amco2w1
-               if (iatty.gt.0) write(iatty,713) amco2w1
- 713           format(1x,'Dissolved CO2(kg) in system at last time ',
-     &              'step: ', e14.6)
-               
-               if (ntty.eq.2) write(iout,707) (skmd3)
-               if (iatty.gt.0) write(iatty,707) (skmd3)
- 707           format(1x,'Total co2 produced (kg) at This Time Step ',
-     &              e14.6)
-               
-               if (ntty.eq.2) write(iout,717) abs(skmd2)
-               if (iatty.gt.0) write(iatty,717) abs(skmd2)
- 717           format(1x,'Total co2 injected (kg) at This Time Step '
-     &              ,e14.6)
-               
-               if (ntty.eq.2) write(iout,727) (skmd31)
-               if (iatty.gt.0) write(iatty,727) (skmd31)
- 727           format(1x,'Total co2 produced (kg) '
-     &              ,e14.6)
-               
-               if (ntty.eq.2) write(iout,737) abs(skmd21)
-               if (iatty.gt.0) write(iatty,737) abs(skmd21)
- 737           format(1x,'Total co2 injected (kg) '
-     &              ,e14.6)
+               if (iout .ne. 0) then
+                  write(iout,700)
+                  write(iout,709) amco20
+                  write(iout,729) amco2f0
+                  write(iout,719) amco2w0
+                  write(iout,701) amco2
+                  write(iout,722) amco2f
+                  write(iout,712) amco2w
+                  write(iout,711) amco21
+                  write(iout,732) amco2f1
+                  write(iout,713) amco2w1
+                  write(iout,707) (skmd3)
+                  write(iout,717) abs(skmd2)
+                  write(iout,727) (skmd31)
+                  write(iout,737) abs(skmd21)
+                  write(iout,708) skmd1
+                  write(iout,702)
+                  write(iout,703) 
+     &                 qco2,abs(qco2ts-qco2ts_in)/dtotdm,
+     &                 abs(qco2ts_in)/dtotdm,
+     &                 qeco2,abs(qeco2ts-qeco2ts_in)/dtotdm,
+     &                 abs(qeco2ts_in)/dtotdm
+                  write(iout,704)
+               end if
+               if (iatty.gt.0) then
+                  write(iatty,700)
+                  write(iatty,709) amco20
+                  write(iatty,729) amco2f0
+                  write(iatty,719) amco2w0
+                  write(iatty,701) amco2
+                  write(iatty,722) amco2f
+                  write(iatty,712) amco2w
+                  write(iatty,711) amco21
+                  write(iatty,732) amco2f1
+                  write(iatty,713) amco2w1
+                  write(iatty,707) (skmd3)
+                  write(iatty,717) abs(skmd2)
+                  write(iatty,727) (skmd31)
+                  write(iatty,737) abs(skmd21)
+                  write(iatty,708) skmd1
+                  write(iatty,702)
+                  write(iatty,703) 
+     &                 qco2,abs(qco2ts-qco2ts_in)/dtotdm,
+     &                 abs(qco2ts_in)/dtotdm,
+     &                 qeco2,abs(qeco2ts-qeco2ts_in)/dtotdm,
+     &                 abs(qeco2ts_in)/dtotdm
+                  write(iatty,704)
+               end if
+               if(baleco2.ne.-999999.) then
+                  if (iout.ne.0) write(iout,705) balco2,baleco2
+                  if (iatty.gt.0) write(iatty,705) balco2,baleco2
+               else 
+                  if (iout.ne.0) write(iout,706) balco2   
+                  if (iatty.gt.0) write(iatty,706) balco2   
+               endif
 
                inquire(file='co2inout.his',opened=it_is_open)
                if(.not. it_is_open) then
@@ -1284,24 +1335,52 @@ c
                write(myfile,'(g19.8,1x,g19.8,1x,g19.8)') days/365.25, 
      &              abs(skmd21), skmd31
                if(days.ge.tims) close(myfile)
-               if (ntty.eq.2) write(iout,708) skmd1
-               if (iatty.gt.0) write(iatty,708) skmd1
+
+ 700           format(/,20x,'Global Mass & Energy for CO2')
+
+ 709           format(/,1x,'Initial Total CO2 (kg) in the System: ',
+     &              e14.6)
+
+ 729           format(/,1x,'Initial Free CO2 (kg) in the System: ',
+     &              e14.6)
+
+ 719           format(/,1x,'Initial Dissolved CO2 (kg) in the System: ',
+     &              e14.6)
+
+ 701           format(1x,'Total CO2 (kg) at this time:      ',
+     &              e14.6,' kg')
+               
+ 722           format(1x,'Total Free CO2 (kg) at this time:      ',
+     &              e14.6,' kg')
+               
+ 712           format(1x,'Dissolved CO2 (kg) in system at this time: ',
+     &              e14.6)
+               
+ 711           format(1x,'Total CO2 (kg) in system at last time step:',
+     &              e14.6)
+               
+ 732           format(1x,'Free CO2 (kg) in system at last time step:',
+     &              e14.6)
+               
+ 713           format(1x,'Dissolved CO2(kg) in system at last time ',
+     &              'step: ', e14.6)
+               
+ 707           format(1x,'Total co2 produced (kg) at This Time Step ',
+     &              e14.6)
+               
+ 717           format(1x,'Total co2 injected (kg) at This Time Step '
+     &              ,e14.6)
+               
+ 727           format(1x,'Total co2 produced (kg) '
+     &              ,e14.6)
+               
+ 737           format(1x,'Total co2 injected (kg) '
+     &              ,e14.6)
+
  708           format(/,1x,'Net kg co2 discharge (total out-total in): '
      &              ,e14.6)
                
-               if (ntty.eq.2) write(iout,702)
-               if (iatty.gt.0) write(iatty,702)
  702           format(/,20x,'Global Mass & Energy flows for CO2')
-               if (ntty.eq.2) write(iout,703) 
-     &              qco2,abs(qco2ts-qco2ts_in)/dtotdm,
-     &              abs(qco2ts_in)/dtotdm,
-     &              qeco2,abs(qeco2ts-qeco2ts_in)/dtotdm,
-     &              abs(qeco2ts_in)/dtotdm
-               if (iatty.gt.0) write(iatty,703) 
-     &              qco2,abs(qco2ts-qco2ts_in)/dtotdm,
-     &              abs(qco2ts_in)/dtotdm,
-     &              qeco2,abs(qeco2ts-qeco2ts_in)/dtotdm,
-     &              abs(qeco2ts_in)/dtotdm
  703           format(1x,
      &              'Mass flux:       Total      Time Step(in)',
      &              '       Time Step(out) ',/,
@@ -1309,16 +1388,7 @@ c
      &              'Energy  flux:    Total      Time Step(in)',
      &              '       Time Step(out) ',/,
      &              9x,e14.6,5x,e14.6,7x,e14.6,' MJ/s')      
-               if (ntty.eq.2) write(iout,704)
-               if (iatty.gt.0) write(iatty,704)
  704           format(/,20x,'Global Mass & Energy balances for CO2')
-               if(baleco2.ne.-999999.) then
-                  if (ntty.eq.2) write(iout,705) balco2,baleco2
-                  if (iatty.gt.0) write(iatty,705) balco2,baleco2
-               else 
-                  if (ntty.eq.2) write(iout,706) balco2   
-                  if (iatty.gt.0) write(iatty,706) balco2   
-               endif
  705           format(1x,'Mass balance:',1x,e14.6,
      &              5x,'Energy balance:',1x,e14.6)
  706           format(1x,'Mass balance:',1x,e14.6,
@@ -1326,6 +1396,22 @@ c
             endif
          elseif(iflg.eq.6) then
 c     initialize variables
+            
+            do i = 1, neq
+               i1 = nelm(i)+1
+               i2 = nelm(i+1)
+               do j = i1, i2
+                  kb = nelm(j)
+                  if((ka(i).eq.0).or.(kaco2(i).eq.0))then
+                     if((kaco2(kb).eq.-3).or.(kaco2(kb).eq.-5))then
+                        ii = istrw(j-neq-1)
+                        wellim(kb) = abs(sx(ii,isox)+sx(ii,isoy)+
+     &                       sx(ii,isoz))*(pnx(kb)+pny(kb)+pnz(kb))/3.d0
+                        wellco2(kb) = wellim(kb)
+                     endif
+                  endif
+               enddo
+            enddo
             if (.not. co2_read) then
                do i=1,n
                   if(ices(i).eq.2) then

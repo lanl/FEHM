@@ -1418,6 +1418,20 @@ c     Add counter for total SIA iterations
      2          ,'(total = ',sia_iter_tot, ' )'
          end if
          reset_tracer = .FALSE.
+c calculate porosity change due to mineral reactions
+c         ps_delta_rxn = 0.
+	   do im = 1, nimm
+	      nsp = pimm(im)
+	      npn = npt(nsp)
+	      if(mw_mineral(im).ne.0)then
+  	        do i = 1, n0
+	           ja = i + npn
+		       ps_delta_rxn(i) = ps_delta_rxn(i) - ((an(ja)-anlo(ja))*
+	2              mw_mineral(im)*denr(i))/
+     3              (rho_mineral(im)*100*100*100)
+              enddo
+	      endif
+         enddo
       end if
  3011 format ('*****************************************************')
 
