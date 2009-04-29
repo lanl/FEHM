@@ -1020,7 +1020,7 @@ c water only problem
             endif
          end do
          write(ishisf, form1_string) ptime, (dumv(i), i= 1, m)
-c         call flush(ishisf)
+         call flush(ishisf)
       end if
       if (ishise .ne. 0 ) then
 ! Output enthalpy in MJ/kg
