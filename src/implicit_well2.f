@@ -78,13 +78,14 @@ c
       integer neqp1,iii,node,neq_new, id, nbc, kk, ic, icsx, nsize_sx
       integer imr,ipr,imrl,iprl,kb2,j1,j2,i3, ncont, ipiv, iskp1, iskp2
       integer neqpi, iexpfl, icoef,nr_old,kbmin,kbmax, npiv, iowell
-      integer open_file, inwel,max_con,max_well_con
+      integer open_file, inwel,max_con,max_well_con,n_ncon_old
       integer maxiarea,iareap, jj, n_ncon, irnode, isnode, nseg
 
       real*8  vol0, vol2, pi, pi2, disa, raddif,disr,rad2,amult,area_tol
       real*8  sx_max,area_dum,area_new,sx_dum,vol_well_dum,sx_well_seg
       real*8  seg,seg2,dis,xc,yc,zc,segx,segy,segz,segx2,segy2,segz2
 	real*8  disx,disy,disz,sx_well_to_grid,sx_well,rad,pd
+	real*8  x_last,y_last,z_last
 
       real*8, allocatable  :: sx_new(:,:)
       real*8, allocatable  :: dum(:)
@@ -162,6 +163,7 @@ c
 	 allocate(neigh_well2_new(npoint_riv,max_con))
 	 allocate(idum2(npoint_riv))
 	 allocate(idum(npoint_riv))
+       allocate(nelm_riv(nnelm_riv,2))
 c idum2 is a counter used in adding connections	 
 	 idum2 = 3
 	 idum = 3
@@ -169,6 +171,7 @@ c idum2 is a counter used in adding connections
        iwell_prod = 0 
 	 ntot2 = neq_primary
        ic1 = 0 
+       nnelm_riv = 0
 	 do i = 1, n_well_seg
 	  j1 = iwell_seg(i,1)
 c
@@ -226,7 +229,7 @@ c found match - don't add node at end of segment
 	  segz2 = segz**2
 	  seg = sqrt(segx2 + segy2 + segz2)
 	  dis = well_dz(i)
-	  node_seg = seg/dis + 1
+	  node_seg = seg/dis
 c "1" insures spacing is le than desired spacing
 	  disx = segx/node_seg
 	  disy = segy/node_seg
@@ -242,29 +245,49 @@ c
 	   coor_new_well2(ic1,1) = coor_well2(j1,1)
 	   coor_new_well2(ic1,2) = coor_well2(j1,2)
 	   coor_new_well2(ic1,3) = coor_well2(j1,3)
+	   x_last = coor_new_well2(ic1,1)
+	   y_last = coor_new_well2(ic1,2)
+	   z_last = coor_new_well2(ic1,3)
 	   new_node_well2_segid(ic1) = i
          neigh_well2_new(ic1,2) = 0
 	   neigh_well2_new(ic1,3) = ic1 + neq_primary
 	   neigh_well2_new(ic1,4) = ic1+1 + neq_primary
 c identify zone of node with seqment i	   	   
 	   izonef(ic1+neq_primary) = izlabels(i)
-	  else if(iwell_prod(j1).eq.0.and.iskp1.eq.1) then 
-	    neigh_well2_new(ic1+1,2) = ii + neq_primary       
+	   nnelm_riv = nnelm_riv + 1
+	   nelm_riv(nnelm_riv,1) = ic1 + neq_primary
+	   nelm_riv(nnelm_riv,2) = ic1 + 1 + neq_primary
+c	  else if(iwell_prod(j1).eq.0.and.iskp1.eq.1) then 
+	  else if(iskp1.eq.1) then 
+	    neigh_well2_new(ic1+1,2) = ii + neq_primary   
+	    nnelm_riv = nnelm_riv + 1	    
+	    nelm_riv(nnelm_riv,1) =  ii + neq_primary
+	    nelm_riv(nnelm_riv,2) = ic1 + 1 + neq_primary
+	    x_last = coor_new_well2(ii,1)
+	    y_last = coor_new_well2(ii,2)
+	    z_last = coor_new_well2(ii,3) 
 	  endif
-        do j = 2,node_seg-1
+        do j = 2,node_seg
 	   ic1 = ic1 + 1
          new_node_well2(ic1) = ic1 + ntot2
 	   ps(ic1 + ntot2) = 1.0         
-	   coor_new_well2(ic1,1) = coor_new_well2(ic1-1,1) + disx
-	   coor_new_well2(ic1,2) = coor_new_well2(ic1-1,2) + disy
-	   coor_new_well2(ic1,3) = coor_new_well2(ic1-1,3) + disz
+	   coor_new_well2(ic1,1) = x_last + disx
+	   coor_new_well2(ic1,2) = y_last + disy
+	   coor_new_well2(ic1,3) = z_last + disz
+	    x_last = coor_new_well2(ic1,1)
+	    y_last = coor_new_well2(ic1,2)
+	    z_last = coor_new_well2(ic1,3)
 	   new_node_well2_segid(ic1) = i
+	   nnelm_riv = nnelm_riv + 1
+	   nelm_riv(nnelm_riv,1) =  ic1 + neq_primary
+	   nelm_riv(nnelm_riv,2) =  ic1 + 1 + neq_primary
 	   if(iskp1.eq.0) then
           neigh_well2_new(ic1,2) = ic1-1 + neq_primary
          else
           iskp1 = 0
          endif 
 	   neigh_well2_new(ic1,3) = ic1 + neq_primary
+
 	 	 if(iskp2.eq.0.or.j.ne.node_seg-1) then
 	    neigh_well2_new(ic1,4) = ic1+1 + neq_primary
          else 
@@ -275,7 +298,10 @@ c identify zone of node with seqment i
 	   izonef(ic1+neq_primary) = izlabels(i)
 	  enddo  
         if(iwell_prod(j2).eq.0.and.iskp2.eq.0) then   
-	   ic1 = ic1 +1   
+	   ic1 = ic1 +1  
+c	   nnelm_riv = nnelm_riv + 1
+c	   nelm_riv(nnelm_riv,1) =  ic1 + neq_primary
+c	   nelm_riv(nnelm_riv,2) =  ic1 + 1 + neq_primary	  
 	   iwell_prod(j2) = ic1   
 	   new_node_well2(ic1) = ic1 + ntot2
 	   ps(ic1 + ntot2) = 1.0	   
@@ -287,16 +313,28 @@ c identify zone of node with seqment i
 	   neigh_well2_new(ic1,3) = ic1 + neq_primary
 	   neigh_well2_new(ic1,4) = 0	  
 c identify zone of node with seqment i	   	   
-	   izonef(ic1+neq_primary) = izlabels(i)	
+	   izonef(ic1+neq_primary) = izlabels(i)	  
 	  else if(iwell_prod(j2).eq.0.and.iskp2.eq.1) then 
+c	    nnelm_riv = nnelm_riv + 1
+	    nelm_riv(nnelm_riv,1) =  ic1 + neq_primary
+	    nelm_riv(nnelm_riv,2) =  jj + neq_primary	  
 	    neigh_well2_new(ic1,4) = jj + neq_primary 
-	    neigh_well2_new(jj,4) = jj + neq_primary       	         
+	    neigh_well2_new(jj,4) = jj + neq_primary         	         
 	  endif   
        enddo
        deallocate(idum2,idum)
 c
 c resize arrays
 c
+       npoint_riv = ic1
+       n = neq_primary + npoint_riv
+       n0 = neq_primary + npoint_riv
+       if(iout.ne.0) then
+        write(iout,*)'n0 adjusted for river nodes to ', n0 
+       endif
+       if(iptty.ne.0) then
+        write(iptty,*)'n0 adjusted for river nodes to ', n0 
+       endif
        allocate (idum(ic1))
        idum = 0
 	 idum(1:ic1) = new_node_well2(1:ic1)
@@ -348,7 +386,10 @@ c
 	   zc = coor_new_well2(i,3)  
 	   cord(i+neq_primary,1)= xc   
 	   cord(i+neq_primary,2)= yc 
-	   cord(i+neq_primary,3)= zc        
+	   cord(i+neq_primary,3)= zc   
+         corz(i+neq_primary,1)= xc   
+	   corz(i+neq_primary,2)= yc 
+	   corz(i+neq_primary,3)= zc        	        
         enddo
 c allocate space for well coefficients        
         allocate(sx_w(ic1,max_con))
@@ -409,12 +450,13 @@ c identify segment and radius
 c	   
 c
 c this estimate for n_ncon is too large - can improve
-c	   
-         n_ncon = neq_new*7 + neq_new+1
+c  
+         n_ncon_old= nelm(neq_primary)  
+         n_ncon = n_ncon_old + nodes_well2_added*7 
          neqp1 =  neq_new +1  
          allocate(istrw_new(n_ncon-neqp1))
 c estimate for size of sx_new is n_ncon/2-neqp1
-         nsize_sx = n_ncon/2-neqp1
+         nsize_sx = max(n_ncon-neqp1, nr-1)
          allocate(sx_new(nsize_sx,3)) 
          sx_new = 0.0        
          allocate(ncon_new(n_ncon))
@@ -599,7 +641,8 @@ c  -99999999  below indicates last position
          istrw_itfc  = 0
          
          nr = icoef + 1
-         neq_primary = neq
+c gaz 060209 be careful         
+c         neq_primary = neq
          deallocate(idum,dum,istrw_new,ncon_new,sx_new)     
 	else if(iflg.eq.5) then
 c

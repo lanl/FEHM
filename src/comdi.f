@@ -806,6 +806,11 @@
       real*8, allocatable :: cordg(:)
       real*8, allocatable :: grad1(:)
       real*8, allocatable :: var0(:)
+      character*80, allocatable :: gradmod_filename(:)
+      integer, allocatable :: igradmodelfile(:)
+      integer, allocatable :: igradmodnamlen(:)
+ 
+      integer igradmd,idgradmc
 
       integer nconv, iconv, nconv0, nall
       integer, allocatable :: isconv(:)  

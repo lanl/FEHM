@@ -433,7 +433,7 @@ c GAZ 11/02/08
       integer             jswitch, joff
       integer             iwellp_flag
       integer             istrs_coupl, iax_b, ipini
-      integer             ivboun
+      integer             ivboun, itert_s,itotal_s,itotals_s
       
       integer :: irun = 0
 

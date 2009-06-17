@@ -126,7 +126,7 @@ C***********************************************************************
 
       integer ndex(2)
       integer i, id, neqp1, nsizea, nsizea1 
-      real*8 dumn(100)
+      real*8 dumn(100),term
       real*8, allocatable :: sto5(:,:)
       real*8, allocatable :: dum(:)
       real*8  facr, fdum2, tollr, tolls, tmch_new, tmch_old, bp_max
@@ -165,12 +165,9 @@ c
 c
       if(islord.ne.0) call switch(nmat,nmatb,islord,2,1,nsizea1)
       if(islord.ne.0) call switchb(bp,nrhs,nrhsb,islord,2,1,neq)
-
-c
-c     
+c    
 c normalize equations 
 c     
-
       call normal_dof(neq,a,bp,nelm,nmat,nrhs,nelmdg
      &     ,ndex,2,dumn(1),dumn(37),dumn(73),0,fdum2)
       if(ndex(1).lt.0) then

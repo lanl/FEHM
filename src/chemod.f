@@ -319,21 +319,19 @@ cHari 3/26/08
                   rc(mi)=rc(mi)+rrimm(im)*denr(in)*sx1(in)/3600
                enddo
                
-               if (nivsp(irxn) .gt. 0) then
-                  do isp=1,nivsp(irxn)
-                     iv=irxniv(irxn,isp)
-                     mi=in+(pvap(iv)-1)*n0
-                     drdcvap(iv,in)=drdcvap(iv,in)+drvap(iv)
+               do isp=1,nivsp(irxn)
+                  iv=irxniv(irxn,isp)
+                  mi=in+(pvap(iv)-1)*n0
+                  drdcvap(iv,in)=drdcvap(iv,in)+drvap(iv)
 cHari 3/26/08
-                     stemp = min(strac_max,s(in))
-                     danv_subst = max( rovf(in)*(1-stemp),rtol)
-                     rc(mi)=rc(mi)-(ps_trac(in)*danv_subst*sx1(in)*
-     2                    rrvap(iv)/3600)
-                     drdcvap(iv,in)=drdcvap(iv,in)-(ps_trac(in)*
-     2                    danv_subst*sx1(in)*drvap(iv)/3600)
+                  stemp = min(strac_max,s(in))
+                  danv_subst = max( rovf(in)*(1-stemp),rtol)
+                  rc(mi)=rc(mi)-(ps_trac(in)*danv_subst*sx1(in)*
+     2                 rrvap(iv)/3600)
+                  drdcvap(iv,in)=drdcvap(iv,in)-(ps_trac(in)*
+     2                 danv_subst*sx1(in)*drvap(iv)/3600)
 
-                  enddo
-               end if
+               enddo
 
 c.......End of loop w.r.t. IRXN
             enddo

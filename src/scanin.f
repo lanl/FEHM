@@ -26,6 +26,7 @@ CD2
 CD2 13-JAN-94    Z. Dash        22      Initial implementation.
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/scanin.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:43:50   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -292,24 +293,26 @@ CPS END scanin
 CPS
 C***********************************************************************
 
-      use comai
-      use combi
-      use comchem
-      use comco2
-      use comcouple
-      use comdi
-      use comdti
-      use compart
-      use comriv
-      use comrxni
-      use comsi
-      use comsk
-      use comsplitts
-      use comsptr
-      use comwellphys
-      use comwt
-      use comxi, only : nmfil, cform
       use comzeoli
+      use compart
+      use comcouple
+      use comrxni
+      use combi
+      use comdi
+      use comchem
+      use comdti
+      use comai
+      use comsk
+      use comxi, only : nmfil, cform
+      use comsptr
+      use comwt
+      use comsi
+      use comsplitts
+      use comwellphys
+c RJP 12/14/06 added following
+      use comriv
+c RJP 04/17/06 added following
+      use comco2
       use davidi
 
       implicit none
@@ -381,6 +384,8 @@ c**** read startup parameters ****
       ipermstr4 = 0
       ipermstr5 = 0
       ipermstr6 = 0
+      ipermstr8 = 0
+      ipermstr11 = 0
       if(allocated(izone_free_nodes)) izone_free_nodes = 0
       if(allocated(move_type)) move_type=0
       compute_flow = .true.
@@ -399,61 +404,22 @@ c**** read startup parameters ****
 ! Read filename to ensure we skip this line and don't interpret start
 ! of filename as a macro
          read (inpt, '(a100)') filename
-      else if (macro .eq. 'cont') then
+      else if(macro(1:3) .eq. 'avs') then
          call start_macro(inpt, locunitnum, macro)
-! Read over keywords if avs, tecplot or surfer
-         read (locunitnum, '(a3)', END = 50) macro
-         if(macro(1:3) .eq. 'avs' .or. macro(1:3) .eq. 'tec' .or.
-     &        macro(1:3) .eq. 'sur' .or. macro .eq. 'csv') then
-            ok = .false.
-            do
-               read (locunitnum, *, END = 60) dumstring
-               if (dumstring(1:1) .eq. 'e' .or. dumstring(1:1) .eq. 
-     &              'E') then
-                  ok = .true.
-                  exit
-! Check for other macros that may use 'end' keyword
-               else if (dumstring(1:4) .eq. 'boun' .or. dumstring(1:4)
-     &                 .eq. 'hist' .or. dumstring(1:4) .eq. 'rest' .or.
-     &                 dumstring(1:4) .eq. 'stea') then
-                  exit
-               end if
-            end do
- 60         if (.not. ok) then
-               write (ierr, 55) 'ENDAVS'
-               write (ierr, 56) 'cont'
-               if (iptty .ne. 0) then 
-                  write (iptty, 55) 'ENDAVS'
-                  write (iptty, 56) 'cont'
-               end if
-               stop
-            end if
-         end if
-         call done_macro(locunitnum)
-      else if(macro .eq. 'hist') then
-         call start_macro(inpt, locunitnum, macro)
-! Read through keywords so no conflict with actual macro names
+! Read over keywords
          ok = .false.
          do
-            read (locunitnum, '(a3)', END = 70) dumstring
-            if (dumstring(1:3) .eq. 'end' .or. dumstring(1:3) .eq. 
-     &           'END') then
+            read (locunitnum, *, END = 60) dumstring
+            if (dumstring(1:1) .eq. 'e' .or. dumstring(1:1) .eq. 'E') 
+     &           then
                ok = .true.
-               exit
-! Check for other macros that may use 'end' keyword
-            else if (dumstring(1:4) .eq. 'boun' .or. dumstring(1:4)
-     &              .eq. 'cont' .or. dumstring(1:4) .eq. 'rest' .or.
-     &              dumstring(1:4) .eq. 'stea') then
                exit
             end if
          end do
- 70      if (.not. ok) then
-            write (ierr, 55) 'END'
-            write (ierr, 56) 'hist'
-            if (iptty .ne. 0) then 
-               write (iptty, 55) 'END'
-               write (iptty, 56) 'hist'
-            end if
+ 60      if (.not. ok) then
+            write (ierr, *) "Missing 'ENDAVS' statement in input"
+            if (iptty .ne. 0) 
+     &           write (iptty, *) "Missing 'ENDAVS' statement in input"
             stop
          end if
          call done_macro(locunitnum)
@@ -545,63 +511,63 @@ c     check for read from other file
          call start_macro(inpt, locunitnum, macro)
 
          nrlp = 0
- 11      continue
-         read(locunitnum,'(a80)') wdd1
-         if(.not. null1(wdd1)) then
-            backspace locunitnum
-            read(locunitnum,*) idumm
-            backspace locunitnum
-            ichng=ichng+1
-            nrlp = nrlp + 1
-            if(idumm.eq.1) then
-               read(locunitnum,*) idumm,(adumm,ja=1,6)
-            elseif(idumm.eq.-1) then
-               read(locunitnum,*) idumm,(adumm,ja=1,4)
-            elseif(idumm.eq.2) then
-               read(locunitnum,*) idumm,(adumm,ja=1,4)
-            elseif(idumm.eq.3) then
-               read(locunitnum,*) idumm,(adumm,ja=1,6)
-            elseif(idumm.eq.4) then
-               read(locunitnum,*) idumm,(adumm,ja=1,15)
-            elseif(idumm.eq.5) then
-               read(locunitnum,*) idumm,(adumm,ja=1,6)
-            elseif(idumm.eq.6) then
-               read(locunitnum,*) idumm,(adumm,ja=1,15)
-            elseif(idumm.eq.7) then
-               read(locunitnum,*) idumm,(adumm,ja=1,16)
-            elseif(idumm.eq.8) then
-               read(locunitnum,*) idumm,(adumm,ja=1,6)
-            elseif(idumm.eq.9) then
-               read(locunitnum,*) idumm,(adumm,ja=1,10)
-            elseif(idumm.eq.10) then
-               read(locunitnum,*) idumm,(adumm,ja=1,8)
-            elseif(idumm.eq.11) then
-               read(locunitnum,*) idumm,(adumm,ja=1,6)
-            elseif(idumm.eq.12) then
-               read(locunitnum,*) idumm,(adumm,ja=1,10)
-            elseif(idumm.eq.13) then
-               read(locunitnum,*) idumm,(adumm,ja=1,10)
+  11      continue
+          read(locunitnum,'(a80)') wdd1
+          if(.not. null1(wdd1)) then
+             backspace locunitnum
+             read(locunitnum,*) idumm
+             backspace locunitnum
+             ichng=ichng+1
+             nrlp = nrlp + 1
+             if(idumm.eq.1) then
+                read(locunitnum,*) idumm,(adumm,ja=1,6)
+             elseif(idumm.eq.-1) then
+                read(locunitnum,*) idumm,(adumm,ja=1,4)
+             elseif(idumm.eq.2) then
+                read(locunitnum,*) idumm,(adumm,ja=1,4)
+             elseif(idumm.eq.3) then
+                read(locunitnum,*) idumm,(adumm,ja=1,6)
+             elseif(idumm.eq.4) then
+                read(locunitnum,*) idumm,(adumm,ja=1,15)
+             elseif(idumm.eq.5) then
+                read(locunitnum,*) idumm,(adumm,ja=1,6)
+             elseif(idumm.eq.6) then
+                read(locunitnum,*) idumm,(adumm,ja=1,15)
+             elseif(idumm.eq.7) then
+                read(locunitnum,*) idumm,(adumm,ja=1,16)
+             elseif(idumm.eq.8) then
+                read(locunitnum,*) idumm,(adumm,ja=1,6)
+             elseif(idumm.eq.9) then
+                read(locunitnum,*) idumm,(adumm,ja=1,10)
+             elseif(idumm.eq.10) then
+                read(locunitnum,*) idumm,(adumm,ja=1,8)
+             elseif(idumm.eq.11) then
+                read(locunitnum,*) idumm,(adumm,ja=1,6)
+             elseif(idumm.eq.12) then
+                read(locunitnum,*) idumm,(adumm,ja=1,10)
+             elseif(idumm.eq.13) then
+                read(locunitnum,*) idumm,(adumm,ja=1,10)
 c            elseif(idumm.eq.14) then
 c               read(locunitnum,*) idumm,(adumm,ja=1,6)
 c            elseif(idumm.eq.15) then
 c               read(locunitnum,*) idumm,(adumm,ja=1,6)
 c    temma add 2005/11/07
-            elseif(idumm.eq.14) then
+             elseif(idumm.eq.14) then
+                 read(locunitnum,*) idumm,(adumm,ja=1,12)
+             elseif(idumm.eq.15) then
+                 read(locunitnum,*) idumm,(adumm,ja=1,12)
+             elseif(idumm.eq.16) then
                 read(locunitnum,*) idumm,(adumm,ja=1,12)
-            elseif(idumm.eq.15) then
-                read(locunitnum,*) idumm,(adumm,ja=1,12)
-            elseif(idumm.eq.16) then
-               read(locunitnum,*) idumm,(adumm,ja=1,12)
-            elseif(idumm.eq.17) then
-               read(locunitnum,*) idumm,(adumm,ja=1,14)
-            elseif(idumm.eq.18) then
+             elseif(idumm.eq.17) then
                 read(locunitnum,*) idumm,(adumm,ja=1,14)
-            elseif(idumm.eq.19) then
-               read(locunitnum,*) idumm,(adumm,ja=1,7)
-            elseif(idumm.eq.20) then
-               read(locunitnum,*) idumm,(adumm,ja=1,16)
-            elseif(idumm.eq.21) then
-               read(locunitnum,*) idumm,(adumm,ja=1,6)
+             elseif(idumm.eq.18) then
+                 read(locunitnum,*) idumm,(adumm,ja=1,14)
+             elseif(idumm.eq.19) then
+                read(locunitnum,*) idumm,(adumm,ja=1,7)
+             elseif(idumm.eq.20) then
+                read(locunitnum,*) idumm,(adumm,ja=1,16)
+             elseif(idumm.eq.21) then
+                read(locunitnum,*) idumm,(adumm,ja=1,6)
 c    temma add 2005/11/07
 c            elseif(idumm.eq.14) then
 c                read(locunitnum,*) idumm,(adumm,ja=1,12)
@@ -896,62 +862,63 @@ c     parameters
       else if(macro .eq. 'rive'.or. macro .eq. 'well') then
          
          call start_macro(inpt, locunitnum, macro)
- 785     read (locunitnum, '(a9)') dumstring(1:9)
+785         read (locunitnum, '(a9)') dumstring(1:9)
          if (dumstring(1:1) .eq. '#') go to 785
          if (dumstring(1:9) .eq. 'wellmodel') then
-            read (locunitnum, *) nriver,iriver
+          read (locunitnum, *) nriver,iriver
 
-            if(iriver.eq.1) then
-               npoint_riv = 0
-               do i = 1,nriver
-                  read (locunitnum, *) idum1,ii,jj		      
-                  idum = ii 
-                  do kk = 1,jj
-                     npoint_riv = npoint_riv + 1
-                     do j = 1,idum
-                        npoint_riv = npoint_riv + 1
-                     enddo
-                  enddo
-                  do ii = 1,jj+1
-                     read(locunitnum,'(a80)') wdd1
-                     if(null1(wdd1)) goto 441
-                     backspace inpt
-                     read (inpt, *) idum1
-                     if (idum1 .lt. 0) goto 441
-                  enddo
- 441              continue
+	 if(iriver.eq.1) then
+         npoint_riv = 0
+         do i = 1,nriver
+            read (locunitnum, *) idum1,ii,jj		      
+            idum = ii 
+	    do kk = 1,jj
+               npoint_riv = npoint_riv + 1
+               do j = 1,idum
+                  npoint_riv = npoint_riv + 1
                enddo
-            else if(iriver.eq.2) then
+            enddo
+            do ii = 1,jj+1
+               read(locunitnum,'(a80)') wdd1
+               if(null1(wdd1)) goto 441
+               backspace inpt
+               read (inpt, *) idum1
+               if (idum1 .lt. 0) goto 441
+            enddo
+ 441        continue
+         enddo
+	 else if(iriver.eq.2) then
 c	 
-               allocate(coor_dum(nriver,3))
-               do i = 1,nriver
-                  read (locunitnum, *) ii, 
-     &                 coor_dum(ii,1),coor_dum(ii,2),coor_dum(ii,3)
-               enddo
-               read(inpt,*) n_well_seg
+	    allocate(coor_dum(nriver,3))
+	    do i = 1,nriver
+           read (locunitnum, *) ii, 
+     &	   coor_dum(ii,1),coor_dum(ii,2),coor_dum(ii,3)   	      
+	    enddo
+             read(inpt,*) n_well_seg
 	       allocate(iwell_seg(n_well_seg,2))
 	       allocate(well_rad(n_well_seg))
 	       allocate(well_dz(n_well_seg))
-               do i = 1,n_well_seg
-                  read(inpt,*) j,iwell_seg(j,1),iwell_seg(j,2),
-     &                 well_rad(j),well_dz(j)	       
-               enddo
-               npoint_riv = 0
-               max_seg_div = 0
-               do j = 1,n_well_seg
-                  ii = iwell_seg(j,1)
-                  kk = iwell_seg(j,2)
-                  adumm = (coor_dum(ii,1)-coor_dum(kk,1))**2 +
-     &                 (coor_dum(ii,2)-coor_dum(kk,2))**2 + 
-     &                 (coor_dum(ii,3)-coor_dum(kk,3))**2 
-                  adumm = sqrt(adumm)
-                  jj = adumm/well_dz(j) + 1 
-                  max_seg_div = max(max_seg_div,jj)
-                  npoint_riv = npoint_riv + jj
-               enddo
-               deallocate(coor_dum,iwell_seg,well_rad,well_dz)
-            endif
-         endif
+             do i = 1,n_well_seg
+	        read(inpt,*) j,iwell_seg(j,1),iwell_seg(j,2),
+     &			well_rad(j),well_dz(j)	       
+             enddo
+	    npoint_riv = 0
+	    max_seg_div = 0
+	    do j = 1,n_well_seg
+	      ii = iwell_seg(j,1)
+	      kk = iwell_seg(j,2)
+            adumm = (coor_dum(ii,1)-coor_dum(kk,1))**2 +
+     &         (coor_dum(ii,2)-coor_dum(kk,2))**2 + 
+     &         (coor_dum(ii,3)-coor_dum(kk,3))**2 
+	      adumm = sqrt(adumm)
+            jj = adumm/well_dz(j) + 1 
+            max_seg_div = max(max_seg_div,jj)
+	      npoint_riv = npoint_riv + jj
+	      nnelm_riv = nnelm_riv + (jj-1)
+	    enddo
+	   deallocate(coor_dum,iwell_seg,well_rad,well_dz)
+	  endif
+        endif
          call done_macro(locunitnum) 	        
          
       else if (macro .eq. 'itfc') then
@@ -2028,32 +1995,36 @@ c need porosity model
       else if (macro .eq. 'zeol') then
          izeolites = 1
       else if (macro .eq. 'strs') then
-         call start_macro(inpt, locunitnum, macro)
          read(locunitnum,*) istrs
          i = 0
          do
-            read(locunitnum,'(a80)') dumstring
-            if (null1(dumstring)) exit
-            if(dumstring(1:9).eq.'permmodel') then
-               do 
-                  read(locunitnum,'(a80)') dumstring
-                  if (null1(dumstring)) exit
-                  read(dumstring,*) idumm
+           read(locunitnum,'(a80)') dumstring
+             if(dumstring(1:9).eq.'permmodel')then
+              do 
+               read(locunitnum,'(a80)') dumstring
+               if (null1(dumstring)) exit
+               read(dumstring,*) idumm
 	          backspace locunitnum
 	          i = i + 1
-	          if (idumm .eq. 2 .or. idumm .eq. 4) then
-                     read(locunitnum,*) idumm, (adumm, ja = 1, 9) 
-                  else
-                     read(locunitnum,*) idumm             
-                  endif
+	          if(idumm.eq.1) then
+	           read(locunitnum,*) idumm
+	          else if(idumm.eq.2.or.idumm.eq.4) then
+                 read(locunitnum,*) idumm,(adumm,ja=1,9) 
+	          else if(idumm.eq.6) then
+                 read(locunitnum,*) idumm,(adumm,ja=1,11)   
+                else if(idumm.eq.11) then
+                 read(locunitnum,*) idumm,(adumm,ja=1,3)                  
+                else
+                 read(locunitnum,*) idumm             
+                endif
                enddo
-            endif
+              endif
+             if (null1(dumstring)) exit
          enddo
          allocate(ispmt(i))
          allocate(spm1f(i),spm2f(i),spm3f(i),spm4f(i),spm5f(i))
-         allocate(spm6f(i),spm7f(i),spm8f(i),spm9f(i))
-         call done_macro(locunitnum)
-         
+         allocate(spm6f(i),spm7f(i),spm8f(i),spm9f(i),spm10f(i))
+         allocate(spm11f(i))
       end if
       
       go to 10
@@ -2080,20 +2051,19 @@ c need porosity model
       if ((iccen.eq.1).and.ptrak) then
          write(ierr,*) 'ERROR: Can not have both particle tracking' 
          write(ierr,*) '(ptrk) and tracer input (trac).'
-         write(ierr,*) 'Code Aborted in scanin'
+         write(ierr,*) 'Code Aborted in concen.f'
          if (iatty.ne.0) then
             write(iatty,*) 'ERROR: Can not have both particle tracking'
             write(iatty,*) '(ptrk) and tracer input (trac).'
-            write(iatty,*) 'Code Aborted in scanin'
+            write(iatty,*) 'Code Aborted in concen.f'
          endif
          stop
       endif
       return
 
- 50   write (ierr, 55) 'STOP'
+ 50   write (ierr, *) "Missing 'STOP' statement in input"
       if (iptty .ne. 0) 
-     &     write (iptty, 55) 'STOP'
+     &     write (iptty, *) "Missing 'STOP' statement in input"
       stop
- 55   format ("Missing '", a, "' statement in input. STOPPING")
- 56   format ("Check macro: ", a)
+      
       end

@@ -236,14 +236,13 @@ c     nriver is the number of models for this call (all have to be of the same t
                allocate(iriverf(max(1,nriver)))
             end if
 c         endif
-c         npoint_riv calculated in scanin
-c         npoint_riv = 0  
          nmodels = 0
 c     
 c     "i" is the river or well number
 c 
        if(iriver.eq.1) then 
-c	    
+c	
+          npoint_riv = 0      
           if(.not.allocated(isriverf)) then   
             allocate(isriverf(maxiriver))
             allocate(ifriverf(maxiriver))
@@ -266,6 +265,7 @@ c
 c     zone number rules
 c     
          mc = 0
+         
          do i = 1, nriver
 c     RJP 07/21/07 added a new flag stored in 'iwsp' array, to specify 
 c     whether details of casing thickness and cement thickness behind 
@@ -352,7 +352,8 @@ c
 	       allocate(izlabels(n_well_seg))		       
              do i = 1,n_well_seg
 	        read(inpt,*) j,iwell_seg(j,1),iwell_seg(j,2),
-     &			well_rad(j),well_dz(j),well_connect_fac(j),izlabels(i)	       
+     &			well_rad(j),well_dz(j),well_connect_fac(j),izlabels(i)	  
+               well_connect_fac(j) = -abs(well_connect_fac(j))    
              enddo
             continue
             else if(iriver.eq.3) then
@@ -1179,7 +1180,7 @@ c Added a new array to store the distances
          enddo
          nr = ic + 1
          istrw = istrw_new
-         neq_primary = neq
+c         neq_primary = neq
          deallocate(idum,dum,istrw_new,ncon_new,sx_new)
          deallocate (river01,river02,river03)
        elseif(iriver.eq.2) then

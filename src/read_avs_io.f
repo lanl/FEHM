@@ -337,12 +337,7 @@ c     output source, keyword: strain
      &              write(iptty, *) ' iostrain        ', iostrain
             else if ((chdum(2:4).eq.'tre').or.(chdum(2:4).eq.'TRE'))then
 c     output source, keyword: stress
-c zvd 02-Apr-09 modified iostress to be number of stress components being output
-               if (icnl .eq. 0) then
-                  iostress = 6
-               else
-                  iostress = 3
-               end if
+               iostress = 1
                if (iptty .ne. 0) 
      &              write(iptty, *) ' iostress        ', iostress
             else
@@ -699,7 +694,7 @@ c     illegal character found
             write(iptty, 100)
          end if
       end if
-      if ((istrs .eq. 0) .and. iostress .ne. 0) then
+      if ((istrs .eq. 0) .and. iostress .eq. 1) then
          iostress = 0
          write(ierr, 100)
          write(ierr, 110) 'stress requested for non stress problem'

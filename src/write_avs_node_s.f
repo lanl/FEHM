@@ -231,27 +231,28 @@ c----------------------------------------------------------------------
       use davidi
 c RJP 1/12/07 added following
       use comco2
-      use comriv, only : npoint_riv
+      use comriv
       implicit none
 
       integer maxscalar
-      parameter (maxscalar = 32)
+      parameter (maxscalar = 29)
       integer neq,nscalar,lu,ifdual,icall,open_file,offset,iriver2
       integer i,j,iolp,iovp,nout,iz,iendz,il,idz, i1, i2, index, iaxy, k
       integer size_head, size_pcp, istart, iend, ic1, ic2, length, nadd
-      integer icord1, icord2, icord3
+      integer icord1, icord2, icord3, ns_in0, irivp 
       integer nelm2(ns_in)
       real*8 hdum, sdum, px, py, pz, flxdum
       character*80 title(2*maxscalar+3)
       character*150 :: tecstring = ''
-      character*500 tstring2
-      character*500 string
+      character*150 :: tecstring_riv = ''
+      character*420 tstring2
+      character*420 string
       character*20 vstring
       character*43 tstring
       character*5 char_type
       character*3 dls
 
-      save tecstring
+      save tecstring, tecstring_riv
 C BEGIN
       size_head = size(head)
       size_pcp = size(pcp)
@@ -268,10 +269,11 @@ C   ERROR checking:
          write(lu,*)'ERROR: WRITE_AVS_NODE_S'
          write(lu,*)'nscalar   = ',nscalar,' is greater than '
          write(lu,*)'maxscalar = ',maxscalar
+         write(lu,*)'Subroutine only able to handle up to 13 scalars'
          write(lu,*)'--------------------------------------------'
          return
       endif
-
+      irivp = 0
       if(ifdual .ne. 0)then
          istart = neq + 1
          iend = neq * 2
@@ -279,20 +281,28 @@ C   ERROR checking:
          offset = neq
       else 
          if (iriver2 .ne. 0) then
-! Output for river/well nodes         
-            istart = neq - npoint_riv + 1
+! Output for river/well nodes   
+c neq is really neq_primary     
+            istart = neq + 1
+            iend = neq + npoint_riv
+            nadd = 0
+            offset = 0
+            if(iriver2.eq.2) then
+             irivp = 2
+             ns_in0 = ns_in
+             ns_in = 2
+            endif
+         else
+            istart = 1
             iend = neq
             nadd = 0
             offset = 0
-         else
-            istart = 1
-            iend = neq - npoint_riv
-            nadd = 0
-            offset = 0
+            irivp = 0
          end if
       endif
     
-      if (icall .eq. 1) tecstring = ''
+      if (icall .eq. 1.and.irivp.eq.0) tecstring = ''
+      if (icall .eq. 1.and.irivp.ne.0) tecstring_riv = ''
 
 ! Surfer headers need to be written to each zone file
       if (altc(1:3) .ne. 'sur') then
@@ -326,10 +336,18 @@ C   ERROR checking:
                         write (string, 125) '1-2, 4', iz
                      end if
                   end if
-                  tecstring = trim(string)
+                  if(irivp.eq.0) then
+                   tecstring = trim(string)
+                  else
+                   tecstring_riv = trim(string)
+                  endif
                end if
                write (lu, 118) trim(timec_string)
-               write (lu, 120) idz, trim(tecstring)
+               if(irivp.eq.0) then
+                write (lu, 120) idz, trim(tecstring)
+               else
+                write (lu, 120) idz, trim(tecstring_riv)
+               endif
             end if
          else
             if (altc(1:3) .eq. 'tec') then
@@ -349,13 +367,26 @@ C   ERROR checking:
                   case (3)
                      write (string, 135) neq, nei_in, 'FETRIANGLE'
                   case (2)
+                   if(irivp.eq.0) then
                      write (string, 135) neq, nei_in, 'FELINESEG'
+                     ns_in=ns_in0
+                   else if(irivp.eq.2)then                    
+                     write (string, 135) npoint_riv, npoint_riv-1,
+     &                'FELINESEG'
+                     ns_in=ns_in0
+                   endif
                   case (0)
 ! fdm grid
                      write (string, '(a)') ''
                   end select
-                  tecstring = trim(string)
-                  write (lu, 130) trim(timec_string), trim(tecstring)
+                  if(irivp.eq.0) then
+                   tecstring = trim(string)
+                  write (lu, 130) trim(timec_string), trim(tecstring) 
+                  else
+                   tecstring_riv = trim(string)
+                   write (lu, 130) trim(timec_string),
+     &                     trim(tecstring_riv)
+                  endif                  
                   if (ns_in .eq. 0) then
                      if (iozid .eq. 0) then
                         write (string, 125) '1-3', iz
@@ -375,7 +406,11 @@ C   ERROR checking:
                         write (string, 140) '1-2, 4', iz
                      end if
                   end if
+                 if(irivp.eq.0) then
                   tecstring = trim(tecstring) // trim(string)
+                 else
+                 tecstring_riv = trim(tecstring_riv) // trim(string)
+                 endif
                else if (icall .eq. 1 .and. iocord .ne. 0) then
                   write (lu, 130) trim(timec_string)
                   if (icnl .eq. 0) then
@@ -391,9 +426,21 @@ C   ERROR checking:
                         write (string, 125) '1-2, 4', iz
                      end if
                   end if
-                  tecstring = trim(string)
-               else
+                  if(irivp.eq.0) then
+                   tecstring = trim(string)
                   write (lu, 130) trim(timec_string), trim(tecstring) 
+                  else
+                   tecstring_riv = trim(string)
+                   write (lu, 130) trim(timec_string),
+     &                     trim(tecstring_riv)
+                  endif                             
+               else
+                 if(irivp.eq.0) then
+                  write (lu, 130) trim(timec_string), trim(tecstring) 
+                 else
+                  write (lu, 130) trim(timec_string),
+     &                     trim(tecstring_riv)
+                 endif
                end if
             end if
          end if
@@ -691,7 +738,20 @@ c might need help in the
                string(ic1:ic2) = vstring
                ic1 = ic2 + 1                  
             end if
-            if (iodisp .eq. 1) then
+            if (iodisp .eq. 1.and.idisp_rel.ne.0) then
+               write(vstring,110) dls(1:k), du(i)-du_ini(i)
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+               write(vstring,110) dls(1:k), dv(i)-dv_ini(i)
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+               write(vstring,110) dls(1:k), dw(i)-dw_ini(i)
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+            else if (iodisp .eq. 1) then
                write(vstring,110) dls(1:k), du(i)
                ic2 = ic1 + len_trim(vstring)
                string(ic1:ic2) = vstring
@@ -700,14 +760,12 @@ c might need help in the
                ic2 = ic1 + len_trim(vstring)
                string(ic1:ic2) = vstring
                ic1 = ic2 + 1
-               if (icnl .eq. 0) then
-                  write(vstring,110) dls(1:k), dw(i)
-                  ic2 = ic1 + len_trim(vstring)
-                  string(ic1:ic2) = vstring
-                  ic1 = ic2 + 1
-               end if
-            endif 
-            if (iostress .ne. 0) then
+               write(vstring,110) dls(1:k), dw(i)
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+            endif             
+            if (iostress .eq. 1) then
                write(vstring,110) dls(1:k), str_x(i)
                ic2 = ic1 + len_trim(vstring)
                string(ic1:ic2) = vstring
@@ -716,25 +774,17 @@ c might need help in the
                ic2 = ic1 + len_trim(vstring)
                string(ic1:ic2) = vstring
                ic1 = ic2 + 1
+c put shear stress (str_xy) in z stress slot for 2-D                              
                if(icnl.eq.0) then
-                  write(vstring,110) dls(1:k), str_z(i)
-                  ic2 = ic1 + len_trim(vstring)
-                  string(ic1:ic2) = vstring
-                  ic1 = ic2 + 1
-               end if
-               write(vstring,110) dls(1:k), str_xy(i)
-               ic2 = ic1 + len_trim(vstring)
-               string(ic1:ic2) = vstring
-               ic1 = ic2 + 1   
-               if(icnl.eq.0) then
-                  write(vstring,110) dls(1:k), str_xz(i)
-                  ic2 = ic1 + len_trim(vstring)
-                  string(ic1:ic2) = vstring
-                  ic1 = ic2 + 1
-                  write(vstring,110) dls(1:k), str_yz(i)
-                  ic2 = ic1 + len_trim(vstring)
-                  string(ic1:ic2) = vstring
-                  ic1 = ic2 + 1
+                write(vstring,110) dls(1:k), str_z(i)
+                ic2 = ic1 + len_trim(vstring)
+                string(ic1:ic2) = vstring
+                ic1 = ic2 + 1
+               else
+                write(vstring,110) dls(1:k), str_xy(i)
+                ic2 = ic1 + len_trim(vstring)
+                string(ic1:ic2) = vstring
+                ic1 = ic2 + 1   
                endif            
             endif 
             if (iostrain .eq. 1) then
@@ -753,6 +803,7 @@ c might need help in the
       if (icall .eq. 1 .and. altc(1:3) .eq. 'tec' .and. iogeo .eq. 1)
      &     then
 ! Read the element connectivity and write to tec file
+       if(irivp.eq.0) then
          il = open_file(geoname,'old')
          do i = 1, neq
             read(il,*)
@@ -762,6 +813,13 @@ c might need help in the
             write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
          end do
          close (il)
+        else
+c river segments (2 node elements)
+          do i = 1,nnelm_riv
+           write(lu,'(2(i8))') nelm_riv(i,1)-neq,
+     &        nelm_riv(i,2)-neq
+          enddo
+         endif
       end if
       if (altc(1:3) .ne. 'sur') close (lu)
 

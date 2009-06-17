@@ -487,6 +487,7 @@ C***********************************************************************
       use comsplitts
       use comsptr
       use comwt
+      use comsi
       use davidi
       implicit none
 
@@ -675,10 +676,6 @@ c**** node coordinate data, read in incoord subroutine ****
 c**** thermal conductivity data ****
          call incond
 
-      else if (macro .eq. 'conn') then
-c**** thermal conductivity data ****
-         connect_out = .true.
-
       else if (macro .eq. 'cont') then
          icont = 1
 c**** contour plot information ****
@@ -825,15 +822,6 @@ c**** switch varables, limited now to pressure-enthalpy ****
       else if (macro .eq. 'boun') then
 c**** read in sources and sinks - time dependent mode **** 
          iboun=1
-         backspace (inpt)
-         read(inpt,'(a80)') input_msg
-         call parse_string(input_msg,imsg,msg,xmsg,cmsg,nwds)
-         if (nwds .ge. 2) then
-            if (msg(2) .eq. 3) then
-               if (cmsg(2) .eq. 'nout' .or. cmsg(2) .eq. 'NOUT')
-     &              boun_out = .false.
-            end if
-         end if
          call flow_boundary_conditions(0)
          call flow_boundary_conditions(1)
 
@@ -1259,6 +1247,11 @@ c**** print out sub model boundary conditions
        isubbc = 1
        call submodel_bc(0)
        call submodel_bc(1)
+      else if (macro .eq. 'wflo') then
+c**** print out sub model boundary conditions
+       isubbc = 2
+       call submodel_bc(0)
+       call submodel_bc(1)       
 
       else if (macro .eq. 'exuz') then
 c**** explicit solution of UZ problems ****
@@ -1274,7 +1267,9 @@ c         isteady = -1
       else if (macro .eq. 'strs') then
 c**** stress solution data ****
          istrs = 1
+         cnum_stress = cnum
          call stressctr (0,0)
+         cnum = cnum_stress
 
       else if (macro .eq. 'szna' .or. macro .eq. 'napl') then
 c**** isothermal NAPL - water transport ****

@@ -258,8 +258,6 @@ c initialize character and boolean variables in comai
       accm = '    '
       hist_flag = .FALSE.
       out_zones = .FALSE.
-      boun_out  = .TRUE.
-      connect_out = .FALSE.
 
 c initialize scalar integers in comai
 
@@ -323,6 +321,7 @@ c ico2 set in scanin.f
       ivfcal = 0
       ithic  = 0
       imdnode= 0
+      isubmodel = 0
       iw     = 0
       iwelb  = 0
       l      = 0

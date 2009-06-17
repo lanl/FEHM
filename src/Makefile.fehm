@@ -29,7 +29,6 @@ BIT = 32
 STATIC =
 OPSYS_FULL = $(shell uname -a )
 OPSYS = $(shell uname -s )
-OPSYS_PROCESSOR = $(shell uname -p )
 DATETAG = $(shell date '+%y-%m-%d')
 
 ifeq (${DEBUG}, ON)
@@ -65,19 +64,14 @@ endif
 # MAC OS  ------------------------------
 ifeq (${OPSYS}, Darwin)
 OSTAG = mac
-ifeq (${OPSYS_PROCESSOR}, i386)
 FC = /Applications/Absoft10.1/bin/f95
 LIBRARY = -L/Applications/Absoft10.1/lib -lm -lU77 -lV77
-else
-FC = /Applications/Absoft/bin/f95
-LIBRARY = -L/Applications/Absoft/lib -lm -lU77 -lV77
-endif
 DFLAG =
 LD = /usr/bin/ld
 ifeq (${DEBUG}, ON)
 FFLAGS = -g
 else
-FFLAGS = -O2 -B18 -w
+FFLAGS = -O2 -B18
 endif
 STATIC = 
 endif

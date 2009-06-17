@@ -57,8 +57,14 @@ CD4
       use commeth
       implicit none
 
-      integer iflg,icode, izone, inode, idir
-      integer mi,neqp1,i,i1,i2,j,jj,ja
+      integer iflg,icode, izone, inode, idir,iroot
+      integer mi,neqp1,i,i1,i2,j,jj,ja,ngrad_max
+      integer open_file,igradm
+      character*80 gradm_name
+      character*5 dgradm
+      character*80 gradmod_root
+
+      parameter(ngrad_max= 50)
       real*8 dist 
 
 c================================================================
@@ -80,46 +86,79 @@ c zg1 is z coordinate at reference point
 c var0 is variable at cordg
 c grad1 is the linear gradient
 c
-         read(inpt,*) ngrad
          if(.not.allocated(izone_grad)) then
-            allocate(izone_grad(max(1,ngrad)))
-            allocate(igradf(max(1,ngrad)))
-            allocate(cordg(max(1,ngrad)))
-            allocate(var0(max(1,ngrad)))
-            allocate(grad1(max(1,ngrad)))
-            allocate(idirg(max(1,ngrad)))
-            allocate(izone_grad_nodes(n0))   
+            allocate(izone_grad(ngrad_max))
+            allocate(igradf(ngrad_max)) 
+            allocate(cordg(ngrad_max))
+            allocate(var0(ngrad_max))
+            allocate(grad1(ngrad_max))
+            allocate(idirg(ngrad_max))
+            allocate(gradmod_filename(ngrad_max))
+            allocate(igradmodnamlen(ngrad_max))
+            allocate(igradmodelfile(ngrad_max))
+            igradmd = 0  
          end if
-
+         iroot = 8
+         gradmod_root(1:8)='gradtemp'
+         read(inpt,*) ngrad
          read(inpt,*) 
      &        (izone_grad(i),cordg(i),idirg(i),
      &        igradf(i),var0(i),grad1(i),i=1,ngrad)
-c     Loop over each zone for determining izone_grad array
-           
-         izone_grad_nodes = 0
-         do izone = 1, ngrad
-	      if(izone_grad(izone).lt.0) then
-             do inode = 1, n0
-c if negative set all nodes               
-                  izone_grad_nodes(inode) = izone_grad(izone)              
-             end do
-	      else
-             do inode = 1, n0
-               if(izonef(inode).eq.izone_grad(izone)) then
-                  izone_grad_nodes(inode) = izone_grad(izone)
-               end if
-             end do
-	      endif
-         end do
-
-      else if(iflg.eq.1) then
+c       
+c     save zone file and parameters
+c 
+         igradmd = igradmd + 1   
+         idgradmc = 10000+igradmd
+         write(dgradm,'(i5)')idgradmc 
+         gradm_name(1:iroot) = gradmod_root(1:iroot)
+         gradm_name(iroot+1:iroot+1) ='.'
+         gradm_name(iroot+2:iroot+5) = dgradm(2:5)
+         gradm_name(iroot+6:iroot+11) = '.gradf'
+         gradmod_filename(igradmd)(1:iroot+11) 
+     &   = gradm_name(1:iroot+11)
+         igradmodnamlen(igradmd)= iroot+11
+c         
+c complete name here
+c
+         igradmodelfile(igradmd) = open_file(gradm_name, 'unknown')             
+         j = igradmodelfile(igradmd)
+         write(j,'(a4,i9)') 'grad',ngrad       
+         do i = 1, ngrad
+         write(j,*) 
+     &        izone_grad(i),cordg(i),idirg(i),
+     &        igradf(i),var0(i),grad1(i)
+         enddo
+        write(j,'(a4)') 'end '
+        write(j,'(8(1x,i9))') (izonef(i),i=1,n0)
+        close (j)
+      else if(iflg.eq.1) then 
 c
 c modify initial values and BC's
 c
+        do jj = 1,igradmd
+c
+c read gradient info from auxillary files 
+c and zone list for that request
+c    
+         j = igradmodelfile(jj)
+         i1=igradmodnamlen(jj)
+         open(j,file=gradmod_filename(jj)(1:i1),
+     &    status ='unknown')
+         
+         read(j,*)dgradm(1:4) ,ngrad      
+         do i = 1, ngrad
+         read(j,*) 
+     &        izone_grad(i),cordg(i),idirg(i),
+     &        igradf(i),var0(i),grad1(i)
+         enddo
+        read(j,'(a4)') dgradm(1:4)
+        read(j,*) (izonef(i),i=1,n0)
+c    
          if(iread.le.0) then
+c code with no restart file is present                 
             do izone=1,ngrad
                do inode=1,n0
-                  if(izone_grad_nodes(inode).eq.izone_grad(izone)) then
+                  if(izonef(inode).eq.izone_grad(izone)) then
                      idir = idirg(izone)
                      dist = cord(inode,idir)-cordg(izone)
                      if(igradf(izone).eq.1) then
@@ -152,7 +191,7 @@ c RJP 04/10/07 added the following part for CO2
          else
             do izone=1,ngrad
                do inode=1,n0
-                  if(izone_grad_nodes(inode).eq.izone_grad(izone)) then
+                  if(izonef(inode).eq.izone_grad(izone)) then
                      idir = idirg(izone)
                      dist = cord(inode,idir)-cordg(izone)
                      if(igradf(izone).eq.4) then
@@ -173,6 +212,10 @@ c RJP 04/10/07 added following for CO2
                enddo
             enddo
          endif
+        rewind j
+        write(j,*) 'gradctr file ', jj, ' read'
+        close(j)         
+       enddo
          if(allocated(izone_grad)) then
             deallocate(izone_grad)
             deallocate(igradf)
@@ -180,7 +223,9 @@ c RJP 04/10/07 added following for CO2
             deallocate(grad1)
             deallocate(cordg)
             deallocate(idirg)
-            deallocate(izone_grad_nodes)   
+            deallocate(gradmod_filename)
+            deallocate(igradmodnamlen)
+            deallocate(igradmodelfile)
          end if
 
       else if(iflg.eq.2) then

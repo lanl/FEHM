@@ -589,6 +589,7 @@ c     Sets up output of particle tracking info
 
 c     Robinson added minimal write option 3-11-02
       if(iprto.lt.0) then
+         sptr_time = ttp1(np1)
          if (xyz_flag) then
 c ZVD modified minimal write option to include coordinates 12-08-2005
             if (iprto .eq. -1) then
@@ -601,7 +602,6 @@ c ZVD modified minimal write option to include coordinates 12-08-2005
                xcoordw = x1(np1) + corn(current_node,1)
                ycoordw = y1(np1) + corn(current_node,2)
                zcoordw = z1(np1) + corn(current_node,3)
-               sptr_time = ttp1(np1)
                if (iprto .eq. -1) then
                   write(isptr2,105) np1,sptr_time,current_node,
      &                 xcoordw, ycoordw, zcoordw
@@ -615,7 +615,6 @@ c ZVD added option to write initial position to abbreviated output file
             if (iprto .eq. -1) write(isptr2,110)
             do np1 = 1, num_part
                current_node = ijkv(np1)
-               sptr_time = ttp1(np1)
                if (iprto .eq. -1) then
                   write(isptr2,105) np1,sptr_time,current_node
                else

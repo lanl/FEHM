@@ -526,6 +526,7 @@ c------------------------------------------------------------------------------
             end if
 ! Porosity, bulk density, and specific heat will be written
             write (temp_string, '(3(a,1p,g14.6))') dls, ps(i), 
+c     &           dls, denr(i), dls, pcp(i)
      &           dls, denr(i)
             ic2 = ic2 + len_trim(temp_string)
             vstring(ic1:ic2) = temp_string
