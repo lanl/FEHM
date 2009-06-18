@@ -337,7 +337,14 @@ c zvd 10-Sep-07 added check for particles in dry cells that shouldn't be moved
                if(tt1.gt.ttp1(np1) .and. istop(np1).eq.0
      &              .and. ioutt(np1).ne.-1) then
 
-                  if (.not. omr_flag) then
+                  current_node = ijkv(np1)
+                  current_model = itrc(current_node)
+c zvd 13-May-09 Skip the following if dispersion is not invoked
+                  if(tprpflag(current_model).eq.2.or.
+     $                 tprpflag(current_model).eq.4.or.
+     $                 tprpflag(current_model).eq.13.or.
+     $                 tprpflag(current_model).eq.14) then
+                     if (.not. omr_flag) then
 c...s kelkar  april 7 04............................................
 c the following are for dispersion/random-walk and not fixed for OMR
 c hence skipped if omr flag is "TRUE"
@@ -345,29 +352,28 @@ cc...8/29/01 s kelkar ...................
 cc find which quadrant of the control volume corresponding
 cc to current_node does the particle reside in
 cc note that x2,y2,z2=x1,y1,z1 at this stage
-                     current_node = ijkv(np1)
-                     call find_quadrant(np1,current_node,ix,iy,iz,
-     $                    xp,yp,zp, vjx,vjy,vjz)
+                        call find_quadrant(np1,current_node,ix,iy,iz,
+     $                       xp,yp,zp, vjx,vjy,vjz)
 
 cc       divd is calculated in dispersion_divergence 
 cc       and grad(ps) in porosity_gradient
-                     call dispersion_divergence(current_node,ix,iy,iz,
-     1                    xp,yp,zp)
-                     call porosity_gradient_log(current_node,ix,iy,iz)
+                        call dispersion_divergence(current_node,ix,iy,
+     &                       iz,xp,yp,zp)
+                        call porosity_gradient_log(current_node,ix,iy,
+     &                       iz)
 
-                  else
+                     else
 c for OMR grids, use least squares interpolation routine to estimate
 c velocity derivatives. s kelkar march 30,05
 c do this calculation only if the node has not seen a particle before
 c use divd_omr(node,1)=-1.e+20 as a flag
-                     current_node = ijkv(np1)
-                     if(divd_omr(current_node,1).le.-1.e+20) then
-                        call dispersion_divergence_omr(current_node)
-! 10/26/2006 zvd Remove call until correctly implemented
-!                        call porosity_gradient_omr(current_node)
-                     endif
+                        if(divd_omr(current_node,1).le.-1.e+20) then
+                           call dispersion_divergence_omr(current_node)
+c 10/26/2006 zvd Remove call until correctly implemented
+c                        call porosity_gradient_omr(current_node)
+                        endif
+                     end if
                   end if
-                  
 c     Set velocities and time steps needed to perform calculations
                   
                   if(.not.unstruct_sptr) then
@@ -391,6 +397,7 @@ c     Set velocities and time steps needed to perform calculations
                   x61(np1)=x60/axyzm(np1)
                   if (x61(np1) .eq. 0.d0) then
 c If our time step for this particle is 0 stop it
+                     write (ierr,*) 'Particle ', np1, ' has 0 time'
                      istop(np1) = 10
                   end if
                else
@@ -409,7 +416,14 @@ c     diffusion
                if(tt1.gt.ttp1(np1).and.istop(np1).eq.0
      &              .and. ioutt(np1).ne.-1) then
                   
-                  if (.not. omr_flag) then
+                  current_node = ijkv(np1)
+                  current_model = itrc(current_node)
+c zvd 13-May-09 Skip the following if dispersion is not invoked
+                  if(tprpflag(current_model).eq.2.or.
+     $                 tprpflag(current_model).eq.4.or.
+     $                 tprpflag(current_model).eq.13.or.
+     $                 tprpflag(current_model).eq.14) then
+                     if (.not. omr_flag) then
 c...s kelkar  april 7 04............................................
 c the following are for dispersion/random-walk and not fixed for OMR
 c hence skipped if omr flag is "TRUE"
@@ -418,23 +432,23 @@ cc...8/29/01 s kelkar ...................
 cc find which quadrant of the control volume corresponding
 cc to current_node does the particle reside in
 cc note that x2,y2,z2=x1,y1,z1 at this stage
-                     current_node = ijkv(np1)
-                     call find_quadrant(np1,current_node,ix,iy,iz,
-     $                    xp,yp,zp, vjx,vjy,vjz)
+                        call find_quadrant(np1,current_node,ix,iy,iz,
+     $                       xp,yp,zp, vjx,vjy,vjz)
 
 cc       divd is calculated in dispersion_divergence 
 cc       and grad(ps) in porosity_gradient
-                     call dispersion_divergence(current_node,ix,iy,iz,
-     1                    xp,yp,zp)
-                     call porosity_gradient_log(current_node,ix,iy,iz)
-                  else
+                        call dispersion_divergence(current_node,ix,iy,
+     &                    iz,xp,yp,zp)
+                        call porosity_gradient_log(current_node,ix,iy,
+     &                       iz)
+                     else
 c for OMR grids, use least squares interpolation routine to estimate
 c velocity derivatives. s kelkar march 30,05
-                        current_node=ijkv(np1)
                         if(divd_omr(current_node,1).le.-1.e+20) then
                            call dispersion_divergence_omr(current_node)
                            call porosity_gradient_omr(current_node)
                         endif
+                     end if
                   end if
 cc.............................................
 cc****
@@ -1590,17 +1604,20 @@ c     Not yet implemented
 c If dx, dy, or dz is zero we don't have enough neighbors
 c so set stop for this particle
       if (ddxv(np1) .eq. 0.d0) then
-         istop(np1) = 10
+         axv(np1)=0.d0
+c         istop(np1) = 10
       else
          axv(np1)=(vx2bv(np1)-vx1bv(np1))/ddxv(np1)
       end if
       if (ddxv(np1) .eq. 0.d0) then
-         istop(np1) = 10         
+         ayv(np1)=0.d0
+c         istop(np1) = 10         
       else
          ayv(np1)=(vy2bv(np1)-vy1bv(np1))/ddyv(np1)
       end if
       if (ddxv(np1) .eq. 0.d0) then
-         istop(np1) = 10
+         ayv(np1)=0.d0
+c         istop(np1) = 10
       else
          azv(np1)=(vz2bv(np1)-vz1bv(np1))/ddzv(np1)
       end if
@@ -1672,10 +1689,22 @@ c
 c     Find minimum ts, apply Courant condition
 c               edtmax(np1) = courant_factor*min(edtx,edty,edtz,
 c     $              ddtx,ddty,ddtz)
-
-               edtmax(np1) = courant_factor*min(edtx,edty,edtz)
+c zvd 13-May-09 If there is a zero velocity in x, y, or z ignore it when
+c calculating time step
+               if (edtx .ne. 0 .and. edty .ne. 0 .and. edtz .ne.0) then
+                  edtmax(np1) = courant_factor*min(edtx,edty,edtz)
+               else if (edtx .ne. 0 .and. edty .ne. 0) then
+                  edtmax(np1) = courant_factor*min(edtx,edty)
+               else if (edtx .ne. 0 .and. edtz .ne. 0) then
+                  edtmax(np1) = courant_factor*min(edtx,edtz)
+               else if (edty .ne. 0 .and. edtz .ne. 0) then
+                  edtmax(np1) = courant_factor*min(edty,edtz)
+               else
+                  edtmax(np1) = courant_factor*max(edtx,edty,edtz)
+               end if
                if (edtmax(np1) .eq. 0.d0) then
 c There is a problem with this particle so stop it
+                  write (ierr, *) 'Particle ', np1, ' time problem'
                   istop(np1) = 10
                end if
 
@@ -2529,19 +2558,24 @@ c...................................
       integer iparticle, izone, upcoming_node
       real*8 px, py, pz
 
-      if (xyz_flag) then
+c Instead of using the coordinate of the  upcoming_node, use the position where the particle enters the zone
+      if (xyz_flag2) then
          if (write_prop(3) .ne. 0) then
             px = log10(1.d-6*pnx(upcoming_node))
-!            py = log10(1.d-6*pny(upcoming_node))
-!            pz = log10(1.d-6*pnz(upcoming_node))
-            write (isptr3, 445) cord(upcoming_node,1),
-     &           cord(upcoming_node,2), cord(upcoming_node,3),
+c            py = log10(1.d-6*pny(upcoming_node))
+c            pz = log10(1.d-6*pnz(upcoming_node))
+c            write (isptr3, 445) cord(upcoming_node,1),
+c     &           cord(upcoming_node,2), cord(upcoming_node,3),
+            write (isptr3, 445) x3(iparticle), y3(iparticle),
+     &           z3(iparticle),
      &           ttbtc(izone,iparticle), part_id(iparticle,1), 
      &           part_id(iparticle,2), izonef(upcoming_node), 
      &           upcoming_node, px
          else
-            write (isptr3, 445) cord(upcoming_node,1),
-     &           cord(upcoming_node,2), cord(upcoming_node,3),
+c            write (isptr3, 445) cord(upcoming_node,1),
+c     &           cord(upcoming_node,2), cord(upcoming_node,3),
+            write (isptr3, 445) x3(iparticle), y3(iparticle),
+     &           z3(iparticle),
      &           ttbtc(izone,iparticle), part_id(iparticle,1), 
      &           part_id(iparticle,2), izonef(upcoming_node), 
      &           upcoming_node
@@ -2593,7 +2627,7 @@ c     downward until a node with S>Smin is encountered.
          yp=y1(np1)
          newnode=inp1
          call wtsi_find_water(inp1,np1,xp,yp,zp,newnode)
-         if (newnode .ne. 0) then
+         if (newnode .gt. 0) then
             call wtsi_displace_node(inp1,np1,xp,yp,zp,newnode)
             ijkv(np1)=newnode
             x1(np1)=xp

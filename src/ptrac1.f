@@ -84,7 +84,6 @@
       real*8 xcoordw, ycoordw, zcoordw, del_plus, del_minus
       real*8 ps_print
       real*8 s_print
-      real*8 denominator
       integer connect_flag, upper_limit
       integer iprcount, iprint
       real*8 tol_c
@@ -104,8 +103,6 @@ c......dec 4 01 s kelkar insert omr changes ...................
       real*8 gotcord
 
       integer npart_ist2
-
-      logical sptr_exists
 
       real*8 epsilonwt
 c
@@ -283,16 +280,18 @@ c
       end if
 
 c     Subroutine to initialize particle tracking transport parameters
+c s kelkar may 28 09 moved call to fehmn.f where ptrac1 used to be called
 
-      call init_sptr_params
+c      call init_sptr_params
       
-      if (.not. compute_flow) then
-         if (.not. sptr_exists) call load_omr_flux_array
-         if(.not.random_flag) then
-            if(allocated(sx)) deallocate(sx)
-            if(allocated(istrw)) deallocate(istrw)
-         end if
-      end if
+c s kelkar may 20 09 moved call to fehmn.f where ptrac1 used to be called
+c      if (.not. compute_flow) then
+c         if (.not. sptr_exists) call load_omr_flux_array
+c         if(.not.random_flag) then
+c            if(allocated(sx)) deallocate(sx)
+c            if(allocated(istrw)) deallocate(istrw)
+c         end if
+c      end if
 
 ! Added to save static arrays for calculations once they have been computed zvd 20-Apr-04
       if (.not. sptr_exists .and. save_omr) call sptr_save (1)
@@ -397,10 +396,14 @@ c     number in the correct slot of irray
                    endif
                 enddo
 c s kelkar, may 25,04, check for -ve porosity at kb, these are treated 
-c as no flow connections
+c as no flow connections. Flag these with -ve sign
 ! Use rock matirx pososity here to account for nodes that have been
 ! eliminated using negative porosities
-                if(ps(kb).gt.0.) irray(i,i33)=kb
+                if(ps(kb).gt.0.) then
+                   irray(i,i33)=+kb
+                else
+                   irray(i,i33)=-kb
+                endif
              endif
              
              if(connect_flag.gt.1) then
@@ -439,9 +442,9 @@ c     isave_omr(face#,komr_count(k))
                       iomr_flag=1
                       node_count=node_count+1
                       if(node_count.gt.omr_nodes) then
-                         write (ierr, 1001) omr_nodes, node_count
+                         write (ierr, 1001) node_count, omr_nodes
                          if (iptty .ne. 0) 
-     .                        write (iptty, 1001) omr_nodes, node_count 
+     .                        write (iptty, 1001) node_count, omr_nodes
                          call exit_ptrac1
                       endif
  1001                 format ( 'ERROR in PTRAC1: count ', i8, 
@@ -612,7 +615,15 @@ c ZVD modified minimal write option to include coordinates 12-08-2005
             end do
          else if (ip_flag .or. trans_flag) then
 c ZVD added option to write initial position to abbreviated output file
-            if (iprto .eq. -1) write(isptr2,110)
+            if (iprto .eq. -1) then
+               if (ip_flag) then
+                  write(isptr2, 110) ''
+               else
+                  write(isptr2, 110) 'TRA : '
+               end if
+            else
+               if (trans_flag) write (isptr2) 'TRA'
+            end if
             do np1 = 1, num_part
 c ZVD added option for transient where particle start time is saved but
 c     initial node is set to 0 
@@ -632,7 +643,7 @@ c     initial node is set to 0
  100     format ('XYZ : Part_no    time_days     cell_leaving',
      &        '       X             Y             Z')
  105     format(1x,i8,1x,g21.14,1x,i8,3(1x,g16.9))
- 110     format ('Part_no    time_days     cell_leaving')
+ 110     format (a, 'Part_no    time_days     cell_leaving')
       elseif(iprto.eq.1) then
          do iprint = 1, 200
             sptr_heading(iprint:iprint) = ' '
@@ -823,79 +834,6 @@ c               if (sptr_time .gt. days) sptr_time = days
 ******************************************************************
 ******************************************************************
 
-      subroutine init_sptr_params
-      implicit none
-c     Subroutine to initialize particle tracking parameters
-
-      if(nzbtc.gt.0) then
-         izonebtc = 0
-      end if
-cHari 01-Nov-06 include colloid diversity model (tprpflag=11)
-      do i = 1, neq
-         if(tprpflag(itrc(i)).eq.1.or.tprpflag(itrc(i)).eq.2.or.
-     2        tprpflag(itrc(i)).eq.11) then
-
-c     Compute denominator, make sure no divide by 0
-
-            if (irdof .ne. 13 .or. ifree .ne. 0) then
-               denominator = rolf(i)*s(i)*ps_trac(i)
-            else
-               denominator = rolf(i)*ps_trac(i)
-            endif
-            denominator = max(1.d-30, denominator)
-            omega_partial(i) = 1.+kd(itrc(i),1)*
-     2           denr(i)/denominator
-
-         elseif(tprpflag(itrc(i)).eq.3.or.tprpflag(itrc(i)).eq.4) then
-            if (irdof .ne. 13 .or. ifree .ne. 0) then
-               denominator = rolf(i)*s(i)*matrix_por(itrc(i))
-            else
-               denominator = rolf(i)*matrix_por(itrc(i))
-            endif
-            denominator = max(1.d-30, denominator)
-            rprime = 1.+kd(itrc(i),1)*
-     2           denr(i)/denominator
-
-c     aperture = 2 * b in Sudicky and Frind solution
-c     spacing = 2 * B in Sudicky and Frind solution
-
-            if(aperture(itrc(i)).lt.0.) then
-               if (irdof .ne. 13 .or. ifree .ne. 0) then
-                  omega_partial(i) = (matrix_por(itrc(i))*s(i))**2*
-     2                 diffmfl(1,itrc(i))*rprime
-               else
-                  omega_partial(i) = (matrix_por(itrc(i)))**2*
-     2                 diffmfl(1,itrc(i))*rprime
-               endif
-               sigma_partial(i) = aperture(itrc(i))
-            else
-               if (secondary(itrc(i)) .ne. 0.) then
-                  spacing = secondary(itrc(i))
-               else
-                  spacing = abs(aperture(itrc(i)))/max(1.d-30,
-     &                 ps_trac(i))
-               end if
-               if (irdof .ne. 13 .or. ifree .ne. 0) then
-                  omega_partial(i) = s(i)*matrix_por(itrc(i))*
-     2                 sqrt(rprime*diffmfl(1,itrc(i)))/(0.5*
-     3                 abs(aperture(itrc(i))))
-               else
-                  omega_partial(i) = matrix_por(itrc(i))*
-     2                 sqrt(rprime*diffmfl(1,itrc(i)))/(0.5*
-     3                 abs(aperture(itrc(i))))
-               endif
-               sigma_partial(i) = sqrt(rprime/diffmfl(1,itrc(i)))*0.5*
-     3              (spacing-abs(aperture(itrc(i))))
-            end if
-         end if
-      end do
-
-      return
-      end subroutine init_sptr_params
-
-******************************************************************
-******************************************************************
-
 
       subroutine struct_geom_array(i)
       
@@ -935,7 +873,13 @@ c     becomes value of kb_omr, that del is recalculated and the
 c     greater value is used.
 
                   ggg(i,j)=del
-                  if(irray(i,j).eq.0) irray(i,j)=kb_omr
+                  if(irray(i,j).eq.0 .and. kb_omr .gt. 0) then
+                     if (ps(kb_omr).gt.0.) then
+                        irray(i,j)=+kb_omr
+                     else
+                        irray(i,j)=-kb_omr
+                     endif
+                  endif
 
 c               if(kb_omr.gt.0) then 
 c                  delkb=ggg(kb_omr,-j)
@@ -953,7 +897,7 @@ c               endif
 c            elseif(ggg(i,j).eq.0.) then
 c     non-OMR node.
 c     there is no need to recalculate ggg if it is already nonzero
-               kb_omr=kb
+               kb_omr=abs(kb)
                call getcord(i,kb_omr,j,gotcord)
                del = 0.5*abs((gotcord-cord(i,jab)))
                ggg(i,j)=del
@@ -1281,7 +1225,7 @@ c     arrays and kb can be retrieved from nelm(ikb)
          ikb=iomr_neighbour(i1)
          kb=nelm(ikb)
          do k=1,3            
-            ia=irray(i,k)
+c            ia=abs(irray(i,k))
             d=cord(kb,k)-cord(i,k)
             if(d.gt.epsilon) then
                komr_count(k)=komr_count(k)+1
@@ -1303,7 +1247,7 @@ c     arrays and kb can be retrieved from nelm(ikb)
                isave_omr(k,komr_count(k))=ikb
             endif
             
-            ia=irray(i,-k)
+c            ia=abs(irray(i,-k))
             d=cord(kb,k)-cord(i,k)
             if(d.lt.-(epsilon)) then
                komr_count(-k)=komr_count(-k)+1
@@ -1327,7 +1271,7 @@ c     arrays and kb can be retrieved from nelm(ikb)
       enddo
       
       return
-      
+
       end
       
 c.......................................................................
@@ -1401,7 +1345,7 @@ c la direction (these are saved in isave_omr)
             jtemp_count=0
             do j=0,komrmax,1
                if(j.eq.0) then
-                  jkb=irray(i,la)
+                  jkb=abs(irray(i,la))
                else
                   jkb=0
                   jk=isave_omr(la,j)
@@ -1564,8 +1508,9 @@ c..................................................................
       subroutine flag_boundry(i,i1,i2,i3,iflag_boundry)
 
       use combi
+      use comdi, only : ps
       use comsk
-
+      
       implicit none
 
       integer i,i1,i2,i3,iflag_boundry,i3ab,i3sign,kb,ksign
@@ -1583,14 +1528,16 @@ c of the axis. If not, then it is a boundry node.
       i3sign=isign(1,i3)
       do k=i1,i2
          kb=nelm(k)
-         dist=cord(kb,i3ab)-cord(i,i3ab)
-         ksign=dsign(1.d0,dist)
-         if(ksign.eq.i3sign .and. abs(dist).gt.1.e-20) then
+         if (ps(kb) .gt. 0.d0) then
+            dist=cord(kb,i3ab)-cord(i,i3ab)
+            ksign=dsign(1.d0,dist)
+            if(ksign.eq.i3sign .and. abs(dist).gt.1.e-20) then
 c found a neighbour node on the same side as the missing
 c node. So i is not a boundry node. set flag and return
-            iflag_boundry = 0
-            goto 9999
-         endif
+               iflag_boundry = 0
+               goto 9999
+            endif
+         end if
       enddo
 c did not find any neighbour nodes on the same side as the 
 c missing node, so node i must be on an exterior boundry.
@@ -1601,7 +1548,7 @@ c set flag
 
       return
 
-      end
+      end subroutine flag_boundry
 
 c...................................................................
 
@@ -1612,7 +1559,7 @@ c...................................................................
 
       return
 
-      end
+      end subroutine  exit_ptrac1
 
 c...........................................................
 
@@ -1650,7 +1597,7 @@ c s kelkar sep 12 05 volume output for plumecalc
 
       return
 
-      end
+      end subroutine ddx_corn_array
 
 c....................................................................
 
@@ -1697,7 +1644,7 @@ c
 
       do i3=1,upper_limit
          iflag_boundry=0
-         if(irray(i,+i3).eq.0) then
+         if(irray(i,+i3).le.0) then
             call flag_boundry(i,ii1,ii2,+i3,iflag_boundry)
          endif
          if(iflag_boundry.eq.1) then
@@ -1718,7 +1665,7 @@ c
             if (omr_flag) iboulist(i,ibou)=i3
          endif
          iflag_boundry=0
-         if(irray(i,-i3).eq.0) then
+         if(irray(i,-i3).le.0) then
             call flag_boundry(i,ii1,ii2,-i3,iflag_boundry)
          endif
          if(iflag_boundry.eq.1) then
@@ -1792,7 +1739,7 @@ c     a connection node is missing. Use the sign of the difference
 c     in the l coordinate as an indicator
             
             do k=1,3            
-               ia=irray(i,k)
+               ia=abs(irray(i,k))
                if(ia.eq.0) then
                   d=cord(kb,k)-cord(i,k)
                   if(d.gt.epsilon) then
@@ -1819,7 +1766,7 @@ c                     goto 9191
                   endif
                endif
                
-               ia=irray(i,-k)
+               ia=abs(irray(i,-k))
                if(ia.eq.0) then
                   d=cord(kb,k)-cord(i,k)
                   if(d.lt.-(epsilon)) then
@@ -1850,7 +1797,7 @@ c     plane
 c     
             do k=1,3
                xkb=cord(kb,k)
-               ia=irray(i,k)
+               ia=abs(irray(i,k))
                if(ia.gt.0) then
                   xia=cord(ia,k)
                   d=abs(xkb-xia)
@@ -1874,7 +1821,7 @@ c                     goto 9191
                   endif
                endif
                
-               ia=irray(i,-k)
+               ia=abs(irray(i,-k))
                if(ia.gt.0) then
                   xia=cord(ia,k)
                   d=abs(xkb-xia)
@@ -2377,4 +2324,87 @@ c unformatted
       
       end subroutine sptr_volume_out
 
-c...........................................................
+******************************************************************
+
+      subroutine init_sptr_params
+
+      use comai, only : neq
+      use comci, only : rolf
+      use comdi, only : denr, diffmfl, ifree, itrc, ps_trac, s
+      use compart, only : aperture, kd, matrix_por, secondary
+      use comsptr
+      use davidi, only : irdof
+      implicit none
+
+      integer i
+      real*8 denominator, rprime, spacing
+     
+c     Subroutine to initialize particle tracking parameters
+
+      if(nzbtc.gt.0) then
+         izonebtc = 0
+      end if
+cHari 01-Nov-06 include colloid diversity model (tprpflag=11)
+      do i = 1, neq
+         if(tprpflag(itrc(i)).eq.1.or.tprpflag(itrc(i)).eq.2.or.
+     2        tprpflag(itrc(i)).eq.11) then
+
+c     Compute denominator, make sure no divide by 0
+
+            if (irdof .ne. 13 .or. ifree .ne. 0) then
+               denominator = rolf(i)*s(i)*ps_trac(i)
+            else
+               denominator = rolf(i)*ps_trac(i)
+            endif
+            denominator = max(1.d-30, denominator)
+            omega_partial(i) = 1.+kd(itrc(i),1)*
+     2           denr(i)/denominator
+
+         elseif(tprpflag(itrc(i)).eq.3.or.tprpflag(itrc(i)).eq.4) then
+            if (irdof .ne. 13 .or. ifree .ne. 0) then
+               denominator = rolf(i)*s(i)*matrix_por(itrc(i))
+            else
+               denominator = rolf(i)*matrix_por(itrc(i))
+            endif
+            denominator = max(1.d-30, denominator)
+            rprime = 1.+kd(itrc(i),1)*
+     2           denr(i)/denominator
+
+c     aperture = 2 * b in Sudicky and Frind solution
+c     spacing = 2 * B in Sudicky and Frind solution
+
+            if(aperture(itrc(i)).lt.0.) then
+               if (irdof .ne. 13 .or. ifree .ne. 0) then
+                  omega_partial(i) = (matrix_por(itrc(i))*s(i))**2*
+     2                 diffmfl(1,itrc(i))*rprime
+               else
+                  omega_partial(i) = (matrix_por(itrc(i)))**2*
+     2                 diffmfl(1,itrc(i))*rprime
+               endif
+               sigma_partial(i) = aperture(itrc(i))
+            else
+               if (secondary(itrc(i)) .ne. 0.) then
+                  spacing = secondary(itrc(i))
+               else
+                  spacing = abs(aperture(itrc(i)))/max(1.d-30,
+     &                 ps_trac(i))
+               end if
+               if (irdof .ne. 13 .or. ifree .ne. 0) then
+                  omega_partial(i) = s(i)*matrix_por(itrc(i))*
+     2                 sqrt(rprime*diffmfl(1,itrc(i)))/(0.5*
+     3                 abs(aperture(itrc(i))))
+               else
+                  omega_partial(i) = matrix_por(itrc(i))*
+     2                 sqrt(rprime*diffmfl(1,itrc(i)))/(0.5*
+     3                 abs(aperture(itrc(i))))
+               endif
+               sigma_partial(i) = sqrt(rprime/diffmfl(1,itrc(i)))*0.5*
+     3              (spacing-abs(aperture(itrc(i))))
+            end if
+         end if
+      end do
+
+      return
+      end subroutine init_sptr_params
+
+******************************************************************

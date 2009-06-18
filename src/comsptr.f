@@ -172,8 +172,9 @@ c s kelkar sep 17 05 - sptrx_flag
 ! Use ttp1 instead of time_sptr
 !      real*8, allocatable :: time_sptr(:)
       
-      logical btc_flag, alt_btc, pod_flag, xyz_flag, ip_flag 
-      logical sptr_flag, sptr_snode, sptrx_flag, trans_flag
+      logical btc_flag, alt_btc, pod_flag, xyz_flag, xyz_flag2  
+      logical ip_flag, sptr_flag, sptr_snode, sptrx_flag, trans_flag
+      logical sptr_exists
 c
       real*8, allocatable :: well_radius(:) 
 

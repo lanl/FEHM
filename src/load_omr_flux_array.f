@@ -48,7 +48,7 @@
       integer k,ikb,kb,ipos,iwsk,ij,ij2,i3,i,list_max
       integer icnl_subst,lower_limit,upper_limit,ism
       integer find_index, numomr, open_file, ifile, iir
-      integer irray0
+      integer irray0, flag_por
 
 c FOR WTSI problems
 c       flag_sat_wtsi=1, use average saturation for area calculations
@@ -68,6 +68,10 @@ c       flag_sat_wtsi=2, use upstream saturation for area calculations
 c...s kelkar 3/4/04 3d omr.....
       integer ibou,n6lsq
       real*8 b6(6),b5(5),b4(4),b3(3),dmass_6lsq,taxy,sqaxy
+
+c s kelkar may 13 2009
+      real*8 facex1,facex2,facey1,facey2,facez1,facez2
+
 c............................
 
 c....s kelkar  march 10, 04, 3D ORM stuff............
@@ -172,14 +176,14 @@ c The default is superseded by specification in the sptr macro
                   if(reverse_flow) then
                      irray(i,0) = -i-2000000                        
                   else
-                     if(irray(i,0).ne.-(i+2000000)) irray(i,0) = -i
+                     if(irray(i,0).ne.-i) irray(i,0) = -(i+2000000)
                   endif
                endif
                if(a_axy(nelmdg(i)-1-neq).gt.1.e-20)then
                   if(reverse_flow) then
                      irray(i,0) = -i-2000000                        
                   else
-                     if(irray(i,0).ne.-(i+2000000)) irray(i,0) = -i
+                     if(irray(i,0).ne.-i) irray(i,0) = -(i+2000000)
                   endif
                endif
 
@@ -224,6 +228,38 @@ c     ************done putting sinks on bdry ********
             face1=ddy(i)*ddz(i)
             face2=ddz(i)*ddx(i)
             face3=ddx(i)*ddy(i)
+c            facex1=ddy(i)*ddz(i)
+c            facey1=ddz(i)*ddx(i)
+c            facez1=ddx(i)*ddy(i)
+c            facex2=0.
+c            facey2=0.
+c            facez2=0.
+c--------------------------------------------------------------------
+c s kelkar 5/13/09 
+c zero cross-areas can erroneously result from 
+c the ddx,y,z calculated in struct_geom_array(ptrac1) being zero
+c when both + and - neighbours on an axis have been removed as 
+c porosity <=0 nodes. In this case use area-values stored in sx()
+c for OMR nodes, this may give wrong areas
+c            if(ism.lt.6) then
+c               if(ddx(i).le.0.) then
+c                  call area_normal(i,2,facey1)
+c                  call area_normal(i,3,facez1)
+c               endif
+c               if(ddy(i).le.0.) then
+c                  call area_normal(i,3,facez2)
+c                  call area_normal(i,1,facex1)
+c               endif
+c               if(ddz(i).le.0.) then
+c                  call area_normal(i,1,facex2)
+c                  call area_normal(i,2,facey2)
+c               endif
+c               face1=dmax(facex1,facex2)
+c               face2=dmax(facey1,facey2)
+c               face3=dmax(facez1,facez2)
+c            endif
+c--------------------------------------------------------------------
+
 c s kelkar dec 15, 05
 c define saturation factors for WTSI problems
             fxr=1.
@@ -385,14 +421,21 @@ c if wtsi option is being used, for nodes with Sw>Sw-min, call find_v
 c but for nodes with Sw<Smin, set ggg=0.
             if(ifree.ne.0) then
                if(s(i).ge.smin) then
-                  call find_v_lsq(i,xxx)
+                  if (ps(i) .gt. 0.d0) call find_v_lsq(i,xxx)
                else
                   do i3=-3,3
                      if(i3.ne.0) ggg(i,i3)=0.
                   enddo
                endif
             else
-               call find_v_lsq(i,xxx)
+               if (ps(i) .gt. 0.d0) then
+                  flag_por=0
+                  do i3=-3,3
+                     if(i3.ne.0.and.irray(i,i3).gt.0) 
+     1                    flag_por=flag_por+1
+                  enddo
+                  if(flag_por.gt.0) call find_v_lsq(i,xxx)
+               endif
             endif
 
 c for debugging, output mass balance error
@@ -591,7 +634,7 @@ c point into eachother's control volume.
                   if(irray(i,0).eq.0) 
      $                 call ggg_modify_omr(i,j,neq,flag_change_ggg) 
                   if(irray(i,0).eq.-(i+1000)) 
-     $               call ggg_modify_omr_boun(i,j,neq,flag_change_ggg) 
+     $                 call ggg_modify_omr_boun(i,j,neq,flag_change_ggg)
                elseif(kb.gt.0) then
                   vkb=-ggg(kb,-j)
                   if(vkb.lt.0.) then
@@ -891,3 +934,62 @@ c...........................................................................
       end
 
 c.......................................................................
+
+      subroutine area_normal(i,idir,face)
+
+c s kelkar 5/13/09 
+c Zero cross-areas can erroneously result from 
+c the ddx,y,z calculated in struct_geom_array(ptrac1) being zero
+c when both + and - neighbours on an axis have been removed as 
+c porosity <=0 nodes. In this case use area-values stored in sx()
+c for OMR nodes, this may give wrong areas
+      
+      use comai, only : ierr, iptty, neq
+      use combi, only : cord, isox, isoy, isoz, istrw, nelm, sx
+      use comsptr, only: irray
+
+      implicit none
+
+      integer i,i1,i2,ii1,ii2,j,iwskj, idir, k
+
+      real*8 face,face1,face2
+
+      face1=0.
+      face2=0.
+      i1=irray(i,-idir)
+      i2=irray(i,+idir)
+      ii1=nelm(i)+1
+      ii2=nelm(i+1)
+c     area normal to axis
+      if(i1.gt.0) then
+         do k=ii1,ii2 
+            if(nelm(k).eq.i1) goto 9991
+         enddo 
+         if (iptty .ne. 0) then
+            write(iptty,*)'Error in area_normal. Stop.'
+            write(iptty,*)' Cant find nelm(k)=i1'
+            write(iptty,*)'i,ii1,ii2,i1,idir=',i,ii1,ii2,i1,idir
+         end if
+         stop
+ 9991    iwskj=istrw(k-neq-1)
+         face1=sx(iwskj,isox)+sx(iwskj,isoy)+sx(iwskj,isoz)
+         face1=abs(face1*(cord(i,-idir)-cord(i1,-idir)))
+      endif
+      if(i2.gt.0) then
+         do k=ii1,ii2 
+            if(nelm(k).eq.i2) goto 9992
+         enddo 
+         if (iptty .ne. 0) then
+            write(iptty,*)'Error in area_normal. Stop.'
+            write(iptty,*)' Cant find nelm(k)=i2'
+            write(iptty,*)'i,ii1,ii2,i2,idir=',i,ii1,ii2,i2,idir
+         end if
+         stop
+ 9992    iwskj=istrw(k-neq-1)
+         face2=sx(iwskj,isox)+sx(iwskj,isoy)+sx(iwskj,isoz)
+         face2=abs(face2*(cord(i,+idir)-cord(i1,+idir)))
+      endif
+      face=max(face1,face2)
+      
+      end subroutine area_normal
+c---------------------------------------------------------------------

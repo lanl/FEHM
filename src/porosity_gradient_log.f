@@ -70,64 +70,78 @@ c............................
       real*8 length_factor, fac1
       parameter(length_factor=1.)
       
-c reacll neighbouring node numbers
-      ix=irray(i,i1)
-c account for boundary nodes, s kelkar, 12/19 02
-      if(ix.le.0) ix =i 
-      iy =irray(i ,2*j1)
-      if(iy.le.0) iy = i
-      iz =irray(i ,3*k1)
-      if(iz.le.0) iz = i
-c
-c     form distances between the neighbours of node i
-      dx=(cord(i,1)-cord(ix,1))/length_factor
-      dy=(cord(i,2)-cord(iy,2))/length_factor
-      dz=(cord(i,3)-cord(iz,3))/length_factor
-c account for boundary nodes, s kelkar, 12/19 02
-      if(i.eq.ix) dx=(cord(irray(i,-i1),1)-cord(i,1))/length_factor
-      if(i.eq.iy) dy=(cord(irray(i,-2*j1),2)-cord(i,2))/length_factor
-      if(i.eq.iz) dz=(cord(irray(i,-3*k1),3)-cord(i,3))/length_factor
-            
-c     recall porosities
 c zvd 13-May-08 change ps(*) to ps_trac(*)      
       porx1=ps_trac(i)
-      porx2=ps_trac(ix)
       pory1=ps_trac(i)
-      pory2=ps_trac(iy)
       porz1=ps_trac(i)
-      porz2=ps_trac(iz)
+
+c recall neighbouring node numbers and
+c account for boundary nodes, s kelkar, 12/19/02
+
+      ix=irray(i,i1)
+      if(ix.le.0) then
+         ix=irray(i,-i1)
+         if (ix.le.0) then
+         end if
+      end if
+      iy =irray(i ,2*j1)
+      if(iy.le.0) then
+         iy = irray(i,-2*j1)
+         if(iy.le.0) then
+         end if
+      end if
+      iz =irray(i ,3*k1)
+      if(iz.le.0) then
+         iz = i
+         if(iz.le.0) then
+         end if
+      end if
+c
+c     form distances between the neighbours of node i
+c     recall porosities and form derivatives
+      if (ix .gt. 0) then
+         dx=(cord(i,1)-cord(ix,1))/length_factor
+         porx2=ps_trac(ix)
+         fac1=porx1/porx2
+         if(fac1.gt.0.) then
+            dpordx(1)=dlog(fac1)/dx
+         else
+            write(ierr,*)'STOP.ERROR in porosity_gradient.'
+            write(ierr,*)'porx1/porx2 le 0.'
+            write(ierr,*)'i,ix,iy,iz=',i,ix,iy,iz
+            write(ierr,*)'porx1=', porx1, 'porx2=', porx2
+            stop 
+         endif
+      end if
+      if (iy .gt. 0) then
+         dy=(cord(i,2)-cord(iy,2))/length_factor
+         pory2=ps_trac(iy)
+         fac1=pory1/pory2
+         if(fac1.gt.0.) then
+            dpordx(2)=dlog(fac1)/dy
+         else
+            write(ierr,*)'STOP.ERROR in porosity_gradient.'
+            write(ierr,*)'pory1/pory2 le 0.'
+            write(ierr,*)'i,ix,iy,iz=',i,ix,iy,iz
+            write(ierr,*)'pory1=', pory1, 'pory2=', pory2
+            stop
+         endif
+      end if
+      if (iz .gt. 0) then
+         dz=(cord(i,3)-cord(iz,3))/length_factor
+         porz2=ps_trac(iz)
+         fac1=porz1/porz2
+         if(fac1.gt.0.) then
+            dpordx(3)=dlog(fac1)/dz
+         else
+            write(ierr,*)'STOP.ERROR in porosity_gradient.'
+            write(ierr,*)'porz1/porz2 le 0.'
+            write(ierr,*)'i,ix,iy,iz=',i,ix,iy,iz
+            write(ierr,*)'porz1=', porz1, 'porz2=', porz2
+            stop
+         endif
+      end if
       
-c     form derivatives
-      fac1=porx1/porx2
-      if(fac1.gt.0.) then
-         dpordx(1)=dlog(fac1)/dx
-      else
-         write(ierr,*)'STOP.ERROR in porosity_gradient.'
-         write(ierr,*)'porx1/porx2 le 0.'
-         write(ierr,*)'i,ix,iy,iz=',i,ix,iy,iz
-         write(ierr,*)'porx1=', porx1, 'porx2=', porx2
-         stop 
-      endif
-      fac1=pory1/pory2
-      if(fac1.gt.0.) then
-         dpordx(2)=dlog(fac1)/dy
-      else
-         write(ierr,*)'STOP.ERROR in porosity_gradient.'
-         write(ierr,*)'pory1/pory2 le 0.'
-         write(ierr,*)'i,ix,iy,iz=',i,ix,iy,iz
-         write(ierr,*)'pory1=', pory1, 'pory2=', pory2
-         stop
-      endif
-      fac1=porz1/porz2
-      if(fac1.gt.0.) then
-         dpordx(3)=dlog(fac1)/dz
-      else
-         write(ierr,*)'STOP.ERROR in porosity_gradient.'
-         write(ierr,*)'porz1/porz2 le 0.'
-         write(ierr,*)'i,ix,iy,iz=',i,ix,iy,iz
-         write(ierr,*)'porz1=', porz1, 'porz2=', porz2
-         stop
-      endif
       
       return
       

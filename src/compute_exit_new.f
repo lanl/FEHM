@@ -479,12 +479,19 @@ c     location and indices
                      call update_newnode(inp1,np1,ipc,newnode,
      $                    dtc,xc,yc,zc)                     
                      call seek_btczone(np1, newnode)
-                  else
+                  elseif(newnode .le. 0) then
 c     if newnode=0, particle has exited the model domain
                      call update_exit(inp1,np1,ipc,newnode,
      $                    dtc,xc,yc,zc)
-                     call seek_btczone(np1, inp1)
-                 endif         
+                     if(newnode.lt.0) then
+c particle has entered a -ve or 0 porosity node. Not allowed
+c Flag and remove particle
+                        istop(np1) = 10
+                        write(ierr, 9998), inp1,np1,ipc,newnode
+                        if (iptty .ne. 0) 
+     &                       write(iptty, 9998), inp1,np1,ipc,newnode
+                     end if
+                  endif         
                endif
                
             endif
@@ -492,7 +499,9 @@ c     if newnode=0, particle has exited the model domain
          endif
          
  9999    continue
-         
+ 9998    format ('STOP In compute_exit_new.', 
+     &        ' Particle has entered a -ve porosity node', /,
+     &        'inp1, np1, ipc, newnode =', 3(1x, i8), /)
       else
          write(ierr,*)'stop. ijkv(np1) = 0 on entry to compute_exit_new'
         write(iptty,*)'stop. ijkv(np1) = 0 on entry to compute_exit_new'
@@ -3299,13 +3308,15 @@ c...........................................................
 c search all connecting nodes on the ipc side for the nearest
 c neighbour to xc,yc,zc
 
+      use comai, only : ierr, iptty
       use combi, only : cord, nelm
+      use comdi, only : ps
       use comsptr
       use comsk
       
       implicit none
 
-      integer i, newnode,i1,i2,ik,ipsign,ipab,kb,np1,ipc
+      integer i,newnode,i1,i2,ik,ipsign,ipab,kb,np1,ipc
 
       real*8 epsilon,diff,d,dmin,xc,yc,zc,xp,yp,zp
       real*8 xmin,xmax,ymin,ymax,zmin,zmax
@@ -3343,16 +3354,24 @@ c     &        (zp-cord(kb,3))**2.
                if (ymin.le.yp.and.ymax.ge.yp) then
                   if (zmin.le.zp.and.zmax.ge.zp) then
                      newnode=kb
-                     goto 9999
+                     if(ps(kb).le.0.) newnode=-kb
+                     if(newnode.lt.0) then
+c particle has entered a -ve or 0 porosity node. Not allowed
+                        if (iptty .ne. 0)
+     &                       write(iptty, 9999) i,np1,ipc,newnode
+                        write(ierr, 9999) i,np1,ipc,newnode
+                        istop(np1) = 10
+                     endif
                   endif
                endif
             endif
-         endif
-
+         end if
       enddo
-      
- 9999 return
-      
+ 9999 format ('STOP In nearest_node(compute_exit_new).', /,
+     &     'particle has entered a -ve porosity node', /,
+     &     'inp1,np1,ipc,newnode=', 4(1x, i8))
+      return
+
       end subroutine nearest_node
       
 c......................................................
@@ -3516,8 +3535,9 @@ c     find exit point(xc,yc,zc with reference to corn(inp1,))
 c     and exit plane(ipc), and the new neighbour
 c     xc is taken to be the intersection of the STRAIGHT line xp1-xp2
 c     with the plane ipc- this is an approximation of the 
-c     Pollock trajectory
-      
+c     Pollock trajectory      
+
+      use comai, only: ierr, iptty
       use comsptr
       use comsk
       
@@ -3557,11 +3577,21 @@ c     if nplanes > 0 then particle has entered a new cc
 c     if there is a nonzero newnode and 
 c     if the point lands on a face,
 c     fix xc,yc,zc, to be slightly inside the new control volume 
-      if(newnode.gt.0) call shift_xc_inside(inp1,newnode,np1,
-     2     vomrx,vomry,vomrz,ipc,xc,yc,zc)
+      if(newnode.gt.0) then
+         call shift_xc_inside(inp1,newnode,np1,
+     2        vomrx,vomry,vomrz,ipc,xc,yc,zc)
+      elseif(newnode.lt.0) then
+c     particle has entered a -ve or 0 porosity node. Not allowed
+         if (iptty .ne. 0) write(iptty, 9999) inp1,np1,ipc,newnode
+         write(ierr, 9999)inp1,np1,ipc,newnode
+         istop(np1) = 10
+      endif
       
       return
       
+ 9999 format ('STOP In find_exit_point(compute_exit_new).', /,
+     &     'particle has entered a -ve porosity node', /,
+     &     'inp1,np1,ipc,newnode=', 4(1x, i8))
       end subroutine find_exit_point
 
 c...........................................................
