@@ -666,6 +666,11 @@ c keating 9/2008
                read(inpt,*) irlpt(i), rp1f(i), rp2f(i), rp3f(i), 
      &              rp4f(i), rp5f(i), rp6f(i), rp7f(i)
             endif
+c     If the permeability was entered as a negative value, use log permeability
+            if (rp17f(i) .lt. 0.d0) 
+     &           rp17f(i) =  1.0d00/10.0d00**(abs(rp17f(i)))
+            if (rp18f(i) .lt. 0.d0) 
+     &           rp18f(i) =  1.0d00/10.0d00**(abs(rp18f(i)))
                         
          end do
 c     ****** end of input loop

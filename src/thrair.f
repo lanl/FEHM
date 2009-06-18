@@ -533,7 +533,7 @@ c
          por=ps(mi)
          kq=ka(mi)
 c     form flow terms
-         if(kq.eq.-1 .and. compute_flow) then
+         if(kq.eq.-1.or.kq.eq.-2.and.compute_flow) then
 c     flow in or out
             sflux=esk(mi)
             permsd=abs(wellim(mi))
@@ -566,19 +566,19 @@ c     flow in or out
                dqws= drl*permsdl*(pl-pflowd) 
             endif
             
-            if(wellim(mi).lt.0.and.sflux.lt.0.0) then 
+            if(kq.eq.-2.and.sflux.lt.0.0) then 
                qadis = permsd*(pl-pflowd)
                dqap  = permsd 
                dqas = 0.0
                qwdis = permsd*(sl)
                dqws = permsd
                dqwp = 0.0d00     
-            else if(wellim(mi).lt.0.and.pl-pflowd.lt.0.0) then
+            else if(kq.eq.-2.and.qwdis.lt.0.0) then
                qwdis = 0.0d00
                dqws = 0.0d00
                dqwp = 0.0d00
             endif
-         else if(kq.eq.-2) then
+         else if(kq.eq.-23) then
 c     ===Free drainage condition for water flow at the lower boundary
 c     ===(each node at the free drainage boundary needs to be specified
 c     ===explicitly, also the area or length associated with that node).

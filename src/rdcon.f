@@ -646,7 +646,7 @@ c read in optional tracer porosity
             narrays=1
             itype(1) = 8
             macro = "trac"
-            igroup = 99
+            igroup = 5
             default(1) = 10.
             call initdata2( inpt, ischk, n0, narrays,
      2           itype, default, macroread(5), macro, igroup, ireturn,
@@ -839,7 +839,7 @@ CC for all liquid / vapor calculations
             itype(1)=4
             default(1)=1
             macro="trac"
-            igroup=99
+            igroup=10
             call initdata2(inpt,ischk,n0,narrays,itype,default,
      +           macroread(5),macro,igroup,ireturn,i4_1=itrcdsp(1:n0)) 
          else
@@ -1200,7 +1200,7 @@ c
                itype(1) = 4
                default(1) = 1
                macro = "trac"
-               igroup = 7
+               igroup = 13
 
                call initdata2( inpt, ischk, n0, narrays,
      2              itype, default, macroread(5), macro, igroup, 
@@ -1245,7 +1245,7 @@ CPS       ENDIF
             itype(1) = 8
             default(1) = an0
             macro = "trac"
-            igroup = 9
+            igroup = 15
             call initdata2( inpt, ischk, n0, narrays,
      2           itype, default, macroread(5), macro, igroup, 
      3           ireturn, r8_1=an(1+(nsp-1)*n0:nsp*n0) )
@@ -1260,7 +1260,7 @@ CPS       ENDIF
             default(2) = 0.
             default(3) = 0.
             macro = "trac"
-            igroup = 10
+            igroup = 16
             call initdata2( inpt, ischk, n0, narrays,
      2           itype, default, macroread(5), macro, igroup, 
      3           ireturn, r8_1=cnsk(1+(nsp-1)*n0:nsp*n0),
@@ -1415,7 +1415,8 @@ c     square of dispersivity used in alpha calculation
                         ipivt=nelmdg(iz2p)
                         do jj=ipivt+1,i2
                            iw=istrw(jj-neqp1)
-                           if (sx(iw,1)+sx(iw,2)+sx(iw,3).ne.0.) then
+                           if (sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz)
+     &                          .ne. 0.) then
                               kz=nelm(jj)
                               cord1x=cord(iz2p,1)
                               cord1y=cord(iz2p,2)

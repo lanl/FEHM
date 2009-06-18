@@ -478,18 +478,18 @@ c RJP 04/30/07 added following for outputting time-dependent CO2 mass
                if (form_flag .eq. 1) then
                   formz_string = 'variables = "' // trim(time_string) //
      &                 '"' // 
-     &                 ' "Source" "Sink" "Net" "Vapor " "Boundary"'
+     &                 ' "Source" "Sink" "Net" "Boundary"'
                   write(ishiscfzz, '(a)') trim(formz_string)
                   write(ishiscfzz, 230) 50., 95., trim(wdd)
                   write(ishiscfzz, 230) 50., 90., trim(title_string)
                else if (form_flag .eq. 2) then
                   formz_string = trim(zone_string) // " " //
      &                 trim(time_string) // 
-     &                 ", Source, Sink, Net, Vapor, Boundary"
+     &                 ", Source, Sink, Net, Boundary"
                   write(ishiscfzz, '(a)') trim(formz_string)
                else
                   formz_string = trim(time_string) //
-     &                 " Zone Source Sink Net Boundary"
+     &                 " Source Sink Net Boundary"
                   write(ishiscfzz, '(a)') trim(title_string)
                   write(ishiscfzz, '(a)') trim(formz_string)
                end if

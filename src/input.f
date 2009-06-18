@@ -484,6 +484,7 @@ C***********************************************************************
       use compart
       use comriv
       use comrxni
+      use comsi, only : cnum_stress
       use comsplitts
       use comsptr
       use comwt
@@ -1256,9 +1257,15 @@ c**** Steady state solution  ****
          
       else if (macro .eq. 'subm') then
 c**** print out sub model boundary conditions
-       isubbc = 1
-       call submodel_bc(0)
-       call submodel_bc(1)
+         isubbc = 1
+         call submodel_bc(0)
+         call submodel_bc(1)
+
+      else if (macro .eq. 'wflo') then
+c**** print out sub model boundary conditions
+         isubbc = 2
+         call submodel_bc(0)
+         call submodel_bc(1)       
 
       else if (macro .eq. 'exuz') then
 c**** explicit solution of UZ problems ****

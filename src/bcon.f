@@ -344,18 +344,13 @@ c  only perform calcs with with isotropic permeability
 c  need to modify fluxnet for clathrate simulation
             if(ico2.lt.0.and.idpdp.eq.0.and.idualp.eq.0) then
                do i=1,n
-                  if(wellim(i).gt.aiped_big) then
+                  if(wellim(i).gt.aiped_big.and.ka(i).ne.-2) then
                      bp1_save=bp(i+nrhs(1))
                      bp2_save=bp(i+nrhs(2))
                      bp(i+nrhs(1))=0.0
                      bp(i+nrhs(2))=0.0
-                     call flux_net(i)
-                     if (ka(i) .eq. -2 .and. bp(i+nrhs(1)) .gt. 0.d0) 
-     &                    then
-c If flow should only be leaving the system we don't want a coorection that will move fluid into the system
-                     else
-                        sk(i)=-bp(i+nrhs(1))
-                     end if
+                     call flux_net(i)  
+                     sk(i)=-bp(i+nrhs(1))
                      if(irdof.ne.13) then
                         qh(i)=-bp(i+nrhs(2))
                      end if

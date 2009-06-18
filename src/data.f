@@ -512,13 +512,14 @@ c zero out include comci
       danl=0
       danv=0
 c Don't do here because they are not allocated yet
+c zvd - Initalize dil, div, rolf, rovf, denci - now allocated in allocmem
 c      ddvac=0
 c      ddvae=0
 c      ddvap=0
 c      deef=0
 c      delef=0
 c      delf=0
-c      denci=0
+      denci=0
 c      denei=0
 c      deni=0
 c      denvac=0
@@ -532,10 +533,10 @@ c      dgle=0
 c      dglp=0
 c      dgve=0
 c      dgvp=0
-c      dil=0
+      dil=0
 c      dile=0
 c      dilp=0
-c      div=0
+      div=0
 c      dive=0
 c      divp=0
 c      dmef=0
@@ -552,8 +553,8 @@ c      dva=0
 c      enlf=0
 c      enva=0
 c      envf=0
-c      rolf=0
-c      rovf=0
+      rolf=0
+      rovf=0
 c zero out include comchem
       pcpnt=0
       pimm=0

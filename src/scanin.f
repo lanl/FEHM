@@ -648,6 +648,9 @@ c     check for read from other file
          its=0
          ifd=0
          isf=0
+         ixperm = 0
+         iyperm = 0
+         izperm = 0
 c new initial value stuff 12/3/98 GAZ
          itempb_ini=0
          ipresa_ini=0
@@ -667,8 +670,12 @@ c            backspace locunitnum
             read(locunitnum,*) idumm
             maxtimes=max(maxtimes,idumm)
          else if(wdd1(1:2).eq.'ti') then
-            read(locunitnum,*) idumm
-            maxtimes=max(maxtimes,idumm)
+            read(locunitnum,*) idumm, rdum1
+            if (rdum1 .ne. 0.0) then
+               maxtimes=max(maxtimes,idumm+1)
+            else
+               maxtimes=max(maxtimes,idumm)
+            end if
          else if(wdd1(1:3).eq.'chm') then
             icm=1
          else if(wdd1(1:2).eq.'sa') then
@@ -739,6 +746,12 @@ c            backspace locunitnum
             ienth=1
          else if(wdd1(1:2).eq.'ft') then
             ienth=1
+         else if(wdd1(1:2).eq.'kx') then
+            ixperm=1
+         else if(wdd1(1:2).eq.'ky') then
+            iyperm=1
+         else if(wdd1(1:2).eq.'kz') then
+            izperm=1
          else if(wdd1(1:20).eq.'                    ') then
             if(null1(wdd1)) go to 41
          else if(wdd1(1:3).eq.'end') then
@@ -801,7 +814,8 @@ c**** We need to know number of elements  if elem is in inpt ****
          
       else if (macro  .eq.  'ctrl')  then
          call start_macro(inpt,locunitnum, macro)
-         read (locunitnum, *) idumm
+         read (locunitnum, *) idumm, idumm, north
+         maxor = north + 1
          igauss = 1
          
  20      continue
@@ -1845,6 +1859,8 @@ c Read past the itrc group (model assignment)
                done = .false.
             case ('ip', 'IP') 
                done = .false.
+            case ('tr', 'TR') 
+               done = .false.
             case('zb','ZB')
                done = .false.
                read(locunitnum,*) ireaddum
@@ -2043,6 +2059,8 @@ c need porosity model
 	          i = i + 1
 	          if (idumm .eq. 2 .or. idumm .eq. 4) then
                      read(locunitnum,*) idumm, (adumm, ja = 1, 9) 
+	          else if(idumm.eq.6) then
+                     read(locunitnum,*) idumm,(adumm,ja=1,11)
                   else
                      read(locunitnum,*) idumm             
                   endif
@@ -2051,7 +2069,8 @@ c need porosity model
          enddo
          allocate(ispmt(i))
          allocate(spm1f(i),spm2f(i),spm3f(i),spm4f(i),spm5f(i))
-         allocate(spm6f(i),spm7f(i),spm8f(i),spm9f(i))
+         allocate(spm6f(i),spm7f(i),spm8f(i),spm9f(i),spm10f(i))
+         allocate(spm11f(i))
          call done_macro(locunitnum)
          
       end if

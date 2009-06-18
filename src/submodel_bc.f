@@ -63,18 +63,323 @@
       use comci
       use combi
       use comdti
+      use comki  
       use comai
 
       implicit none
 
-      integer i,j,ii,jj,kb,i1,i2,neqp1
-      integer izone1,izone2,iflg,ibnd,iroot     
+      integer, allocatable :: kq_dum(:), icount(:)
+      integer i,j,ii,jj,kb,i1,i2,neqp1,max_subboun
+      integer izone1,izone2,iflg,ibnd,iroot,idsubm 
+      integer idsubmc,isubmd,isubmodel0,open_file   
+      integer mi,ik,ityps,itemp,ic
+      integer nmatavw,izik
       real*8 subflux,aiped, flux_gh, tref, pres_gh
-      character*4 keyword
+      real*8 head_value, parm1, parm2, parm3
       logical null1
+      character*4 keyword
+      character*9 temp_name
+      character*4 dsubm
+      character*100 submod_root
+      character*120 submod_name
       save keyword,izone1,izone2
-      parameter(aiped=1.d02)
-c     
+      parameter(aiped=1.d02,max_subboun = 50)
+      parameter(temp_name = 'subm_temp')
+c
+
+      save submod_root, iroot, icount
+      if(isubbc.eq.2) then
+         if(iflg.eq.0) then
+c
+c create filenamne
+c  
+            if (.not. allocated(submodfile)) then
+c 
+c this should be the fist time called
+c
+               allocate (submodfile(max_subboun))
+               allocate (isubmodelfile(max_subboun))
+               allocate (isubmodnamlen(max_subboun))
+               allocate (submod_filename(max_subboun))
+               allocate (izonesub1(max_subboun))
+               allocate (itypsd(max_subboun))         
+               allocate (keyms1(max_subboun),keyms2(max_subboun))
+               allocate (keyms3(max_subboun),keyms4(max_subboun))
+               allocate (iflux_list(n0))
+               allocate (icount(max_subboun))
+               icount = 0
+               isubmodel = 0
+               submodfile = 0
+               isubmodelfile = 0
+               isubmodnamlen = 0
+               submod_filename = ''
+               if (null1(root_name)) then
+! Use  file root name
+                  if (nmfil(9) .ne. nmfily(3) .and. nmfil(9) .ne. ' ') 
+     &                 then
+                     call file_prefix(nmfil(9), iroot)
+                     if (iroot .gt. 100) iroot = 100
+                     submod_root(1:iroot) = nmfil(9)(1:iroot)
+                  else
+                     if (nmfil(5) .ne. nmfily(3) .and. nmfil(5) 
+     &                    .ne. ' ') then
+                        call file_prefix(nmfil(5), iroot)
+                        if (iroot .gt. 100) iroot = 100
+                        submod_root(1:iroot) = nmfil(5)(1:iroot)
+                     else
+                        if (nmfil(2)(1:1) .eq. ' ' ) then
+                           write (ierr, *) 'FILE ERROR: nmfil2 file: ', 
+     &                          nmfil(2), ' unable to ',
+     &                          'determine submod file prefix'
+                           stop
+                        else
+                           call file_prefix(nmfil(2), iroot)
+                           if (iroot .gt. 100) iroot = 100
+                           submod_root(1:iroot) = nmfil(2)(1:iroot)
+                        end if
+                     end if
+                  endif
+               else
+                  iroot = len_trim (root_name)
+                  if (iroot .gt. 100) iroot = 100
+                  submod_root(1:iroot) = root_name(1:iroot)
+               end if        
+            endif
+c
+c          
+c        read input parameters
+c
+            isubmd = 0
+            isubmodel0 = isubmodel
+            itypsd = 0
+            keyms1 = ''
+            keyms2 = ''
+            keyms3 = ''
+            keyms4 = ''
+
+            do
+               read(inpt,'(a80)') wdd1
+               if(null1(wdd1)) exit
+c create a file for each submodel type         
+               isubmd = isubmd + 1
+               isubmodel = isubmodel + 1
+               write(dsubm,'(i4.4)') isubmodel
+               submod_name = ''
+               submod_name(1:iroot) = submod_root(1:iroot)
+               submod_name(iroot+1:iroot+1) ='.'
+               submod_name(iroot+2:iroot+5) = dsubm(1:4)
+               submod_name(iroot+6:iroot+11) = '.wflow'
+               isubmodnamlen(isubmodel)= iroot+11
+               submod_filename(isubmodel) = 
+     &              submod_name(1:isubmodnamlen(isubmodel))
+c         
+c complete name here
+c
+               isubmodelfile(isubmodel) = 
+     &              open_file(submod_filename(isubmodel), 'unknown')
+               write(isubmodelfile(isubmodel),*) ' '
+               read(wdd1,*) keyms1(isubmd),keyms2(isubmd),
+     &              keyms3(isubmd),keyms4(isubmd)
+               if(keyms4(isubmd).eq.'type') then
+                  read(wdd1,*) keyms1(isubmd),keyms2(isubmd),
+     &                 keyms3(isubmd),keyms4(isubmd),itypsd(isubmd)
+               endif
+            end do
+            
+	    allocate (kq_dum(n0))
+            kq_dum = 0
+            igroup = 1
+            narrays = 1
+            itype(1) = 4
+            default(1) = 0
+            igroup = 1
+            call initdata2( inpt, ischk, n0, narrays,
+     &           itype, default, macroread(8), macro, igroup, ireturn,
+     &           i4_1 = kq_dum(1:n0)) 
+c 
+c  write out information to the opened file 
+c
+            do i = 1, n0
+               isubmd = kq_dum(i)  
+               if(isubmd.ne.0) then
+                  j = isubmodel0 + isubmd
+c icount > 0 will indicate that this model has been used
+                  icount(j)  = icount(j) + 1
+                  if(keyms4(isubmd).ne.'type') then
+                     write(isubmodelfile(j),301) i,isubmd,keyms1(isubmd)
+     &                   ,keyms2(isubmd),keyms3(isubmd),keyms4(isubmd)
+                  else
+                     write(isubmodelfile(j),301) i,isubmd,
+     &                    keyms1(isubmd),keyms2(isubmd),keyms3(isubmd),
+     &                    keyms4(isubmd),itypsd(isubmd)
+                  endif
+               endif
+            enddo
+            do j = isubmodel0+1,isubmodel 
+               write(isubmodelfile(j),'(a4)') 'end '
+               write(isubmodelfile(j),'(8(1x,i9))') (izonef(ik),ik=1,n0)
+               close (isubmodelfile(j))
+            enddo
+ 301        format(1x,i9,1x,i4,4(1x,a5),1x,2i5)       
+c close file
+            deallocate(kq_dum)
+
+         else if(iflg.eq.2) then
+c
+c read data type and printout new flow macros
+c 
+            neqp1 = neq+1
+            nmatavw=ldna
+            isubmd = 1 
+            do mi = 1, isubmodel
+               isubmodelfile(mi) = open_file(submod_filename(mi), 'old')
+               if (icount(mi) .eq. 0) then
+c The model wasn't used, close and delete file
+                  close (isubmodelfile(mi), status = 'DELETE')
+                  write (ierr, 320) mi
+                  if (iout .ne. 0) write (iout, 320) mi
+                  if (iptty .ne. 0) write (iptty, 320) mi
+ 320              format (/, ' WARNING : wflow model ', i2, 
+     &                 ' was not assigned to any nodes - file deleted') 
+               else
+c Can't use file identifiers from before
+c               open(isubmodelfile(mi), 
+c     &              file = subm_name(1:j),status = 'unknown')  
+c
+c read zonefile
+c   
+                  ityps = 0
+                  j = 0
+                  read(isubmodelfile(mi),'(a4)') keyword
+                  read(isubmodelfile(mi),301)  i,isubmd,keyms1(1),
+     &                 keyms2(1),keyms3(1),keyms4(1)
+                  if(keyms4(1).eq.'type') then
+                     read(isubmodelfile(mi),301) i,isubmd,keyms1(1),
+     &                    keyms2(1),keyms3(1),keyms4(1),ityps
+                  endif
+                  rewind isubmodelfile(mi)
+                  do
+                     read(isubmodelfile(mi),'(a4)') keyword
+                     if(keyword.eq.'end ') then
+                        read (isubmodelfile(mi),'(8(1x,i9))') 
+     &                       (izonef(ik),ik=1,n0)
+                        exit
+                     endif
+                  enddo
+                  rewind isubmodelfile(mi)     
+                  itemp = open_file(temp_name, 'unknown') 
+                  read(isubmodelfile(mi),'(a4)') keyword
+                  if(ityps.eq.0) then
+                     write(itemp,'(a4)')'flow'
+                  else if(ityps.ne.0) then
+                     write(itemp,'(a4)')'flo3'
+                  endif
+                  ic = 1
+                  do       
+                     read(isubmodelfile(mi),'(a4)') keyword
+                     if(keyword.eq.'end ') then
+                        exit
+                     else
+                        backspace isubmodelfile(mi)
+                        if(ityps.eq.0) then
+                           read(isubmodelfile(mi),301) ik,isubmd,
+     &                          keyms1(isubmd),keyms2(isubmd),
+     &                          keyms3(isubmd),keyms4(isubmd)
+                        else
+                           read(isubmodelfile(mi),301) ik,isubmd,
+     &                          keyms1(isubmd),keyms2(isubmd),
+     &                          keyms3(isubmd),keyms4(isubmd),ityps
+                        endif
+c     Key words may be identified by a unique subset of the string
+                        if(keyms1(isubmd)(1:1).eq.'p' .or. 
+     &                       keyms1(isubmd)(1:1).eq.'P') then
+c     Pressure
+                           parm1 = phi(ik)
+                        else if(keyms1(isubmd)(1:1).eq.'h' .or.
+     &                          keyms1(isubmd)(1:1).eq.'H') then
+c     Head
+                           call headctr(4,ik,phi(ik),head_value)
+                           parm1 = head_value
+                        else if(keyms1(isubmd)(1:1).eq.'f' .or.
+     &                          keyms1(isubmd)(1:1).eq.'F') then
+c     Flux
+                           if(ka(ik).eq.0) then
+                              izik = izonef(ik)
+                              i1 = nelm(ik)+1
+                              i2 = nelm(ik+1)
+                              parm1 = 0.0
+                              do jj = i1,i2
+                                 kb = nelm(jj)
+                                 if(izonef(kb).ne.izik) then
+                                    parm1 = parm1 + 
+     &                                   a_axy(jj-neqp1+nmatavw)
+                                 endif
+                              enddo
+                           else
+                              parm1 = sk(ik)
+                           endif
+                        endif
+                        if(keyms2(isubmd)(1:1).eq.'s' .or.
+     &                       keyms2(isubmd)(1:1).eq.'S') then
+c     Saturation
+                           if(ifree.eq.0.and.irdof.eq.13) then
+                              parm2 = 1.0
+                           else
+                              parm2 = s(ik)
+                           endif
+                        else if(keyms2(isubmd)(1:1).eq.'t' .or.
+     &                          keyms2(isubmd)(1:1).eq.'T') then
+c     Temperature
+                           parm2 = -t(ik)
+                        else if(keyms2(isubmd)(1:1).eq.'e' .or.
+     &                          keyms2(isubmd)(1:1).eq.'E') then
+c     Enthalpy
+                           parm2 = enlf(ik)
+                        else
+                           write(ierr, 350) 2, trim(keyms2(isubmd)), mi
+                           if (iout .ne. 0) write(iout, 350) 2, 
+     &                          trim(keyms2(isubmd)), mi
+                           if (iptty .ne. 0) write(iptty, 350) 2, 
+     &                          trim(keyms2(isubmd)), mi
+c The model wasn't used, close and delete file
+                           close (isubmodelfile(mi), status = 'DELETE')
+                           go to 399
+                        endif
+c     Impedance key words need 4 characters, to identify type 
+                        if (keyms1(isubmd).eq.'flux') then
+                           parm3 = 0.e0
+                        else if(keyms3(isubmd).eq.'imph') then
+                           parm3 = 1.e00
+                        else if(keyms3(isubmd).eq.'impl') then
+                           parm3 = 1.e-4
+                        else if(keyms3(isubmd).eq.'impn') then
+                           parm3 = -1.e00
+                        else
+                           parm3 = 1.e02
+                        endif    
+                        ic = ic+1
+                        write(itemp,401)ik,ik,1,parm1,parm2,parm3,ityps
+                     endif
+                  enddo
+ 350              format (/, ' WARNING : Invalid Keyword ', i1, ' "', 
+     &                 a, '", output not written for wflow model ', i2)
+                  write(itemp,*)
+                  ic = ic+1
+                  rewind isubmodelfile(mi)
+                  rewind itemp
+                  do i = 1,ic
+                     read(itemp,'(a80)') wdd1(1:80)
+                     write(isubmodelfile(mi),'(a80)') wdd1(1:80)
+                  enddo
+                  close(isubmodelfile(mi))
+ 399              close(itemp, status = 'DELETE')
+               endif
+            enddo 
+         endif
+ 401     format(2(1x,i8),1x,i3,1p,1x,g15.7,0p,f10.4,1p,g12.4,i5)
+         return
+      endif
+c tradional submodel code      
       if(iflg.eq.0) then
 c     
 c     set up output files and unit numbers

@@ -55,10 +55,13 @@
       integer :: ipr_vapor = 0
       integer flxz_flag, indexa_axy, inneq, inode, izone, md
       real*8 ptime, sumfout, sumsink, sumsource, sumboun, sum_vap
+      real*8 out_tol
       character*18 value_string
       character*24 form_string
       character*90, allocatable :: flux_string(:)
       logical matrix_node
+
+      parameter (out_tol = 1.e-30)
 
       if(irdof.ne.13 .or. ifree.ne.0) ipr_vapor = 1
       if (flxz_flag .eq. 1) then
@@ -166,7 +169,7 @@ c     the value is a sink term
      2                       .ne.izone.or.nelm(iconn)
      3                       .eq.inneq) then
                            sumfout = sumfout + c_axy(indexa_axy)
-                           sum_vap = sum_vap + c_vxy(indexa_axy)
+c                           sum_vap = sum_vap + c_vxy(indexa_axy)
                            if(nelm(iconn).eq.inneq) then
                               sumsink = sumsink + c_axy(indexa_axy)
                            end if
@@ -259,12 +262,17 @@ c     Fluxes are written to flux history file
             end if
          elseif (flxz_flag.eq.3) then
 c     Fluxes are written to flux history file
+            if (abs(sumsource) .lt. out_tol) sumsource = 0.d0
+            if (abs(sumsink) .lt. out_tol) sumsink = 0.d0
+            if (abs(sumfout) .lt. out_tol) sumfout = 0.d0
+            if (abs(sum_vap) .lt. out_tol) sum_vap = 0.d0
+            if (abs(sumboun) .lt. out_tol) sumboun = 0.d0
             if (form_flag .le. 1) then
                write (flux_string(izone), 1050) sumsource, sumsink, 
-     &              sumfout, sum_vap, sumboun
+     &              sumfout, sumboun
             else
                write (flux_string(izone), 1056) sumsource, sumsink, 
-     &              sumfout, sum_vap, sumboun
+     &              sumfout, sumboun
             end if
          end if
       end do
@@ -272,10 +280,10 @@ c     Fluxes are written to flux history file
  1045 format(1x,i4,' (',i6,')',2x,1p,4(1x,e12.5))
  1046 format(1x,i4,' (',i6,')',2x,1p,5(1x,e12.5))
  1047 format('(g16.9, ', i3, '(a))')
- 1050 format(5(g16.9, 1x), g16.9)
+ 1050 format(4(g16.9, 1x), g16.9)
  1051 format(g16.9, 1x, a)
  1055 format(3(g16.9, ", "), g16.9)
- 1056 format(5(g16.9, ", "), g16.9)
+ 1056 format(4(g16.9, ", "), g16.9)
  1057 format(g16.9, a)
 
 c     Write to flux history file

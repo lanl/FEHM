@@ -1,12 +1,24 @@
       module comsi
-!*******************************************************************************
+!***********************************************************************
+! Copyright 2008 Los Alamos National Security, LLC  All rights reserved
+! Unless otherwise indicated,  this information has been authored by an 
+! employee or employees of the Los Alamos National Security, LLC (LANS),
+! operator of the  Los  Alamos National  Laboratory  under Contract  No.
+! DE-AC52-06NA25396  with  the U. S. Department  of  Energy.  The  U. S.
+! Government   has   rights  to  use,  reproduce,  and  distribute  this
+! information.  The  public may copy  and  use this  information without
+! charge, provided that this  Notice and any statement of authorship are
+! reproduced on all copies.  Neither  the  Government nor LANS makes any
+! warranty,   express   or   implied,   or   assumes  any  liability  or
+! responsibility for the use of this information.       
+!***********************************************************************
 !D1
 !D1 PURPOSE
 !D1
-!D1 Global include file for array variables and pointers (FEHMN application).
+!D1 Global include file for array variables (FEHMN application).
 !D1 Coupled Fluid Stress application
 !D1
-!*******************************************************************************
+!***********************************************************************
 !D2
 !D2 REVISION HISTORY
 !D2
@@ -15,93 +27,23 @@
 !D2
 !D2 06-June_2002  G. Zyvoloski           Initial implementation.
 !D2
-!*******************************************************************************
-!D3
-!D3 INTERFACES
-!D3
-!D3 None
-!D3
-!*******************************************************************************
-!D4
-!D4 GLOBAL OBJECTS
-!D4
-!D4 Global Constants
-!D4
-!D4   None
-!D4
-!D4 Global Types
-!D4
-!D4   None
-!D4
-!D4 Global Variables
-!D4
-!D4                            COMMON
-!D4   Identifier      Type     Block  Description
-!D4
-!D4   ***** COMMON Block fdd pointers and associated variables *****
-!D4
-!D4 Global Subprograms
-!D4
-!D4   None
-!D4
-!*******************************************************************************
-!D5
-!D5 LOCAL IDENTIFIERS
-!D5
-!D5 None
-!D5
-!*******************************************************************************
-!D6
-!D6 FUNCTIONAL DESCRIPTION
-!D6
-!D6 None
-!D6
-!*******************************************************************************
-!D7
-!D7 ASSUMPTIONS AND LIMITATIONS
-!D7
-!D7 None
-!D7
-!*******************************************************************************
-!D8
-!D8 SPECIAL COMMENTS
-!D8
-!D8 None
-!D8
-!*******************************************************************************
-!D9
-!D9 REQUIREMENTS TRACEABILITY
-!D9
-!D9 N/A
-!D9
-!*******************************************************************************
-!DA
-!DA REFERENCES
-!DA
-!DA None
-!DA
-!*******************************************************************************
-!PS
-!PS PSEUDOCODE
-!PS
-!PS None
-!PS
-!*******************************************************************************
+!***********************************************************************
+
       integer icycs,ipsps,iinp,minks,inst,ipchng,nnx,ihms,nvfc 
       integer nomass,noheat,noydis,localx,localy,ifrac,idof_stress
       integer ibp_stress, ibodyforce, ipermstr, initcalc, istrshis 
       integer ispmd,ipermstr1,ipermstr2,ipermstr3
       integer ipermstr4,ipermstr5,ipermstr6
-      integer istresscall, ilitho
+      integer istresscall, ilitho, cnum_stress
 
       real*8 daystr,fpor,fric,wo,fwght,fupwt,fdnwt,tol_stress
       real*8 tptch,pchmin,pchmax,tchmin,tchmax,coftol,bp_stress
-	real*8 bpx,bpy,bpz,tol_stress1,abs_tol_stress,bp_update
-	real*8 vol_tot_change, daystress, timestress, timestress0
-	real*8 strx_min,stry_min,strz_min,perx_m,pery_m,perz_m
-	real*8 e10_facx,e10_facy,e10_facz
-	real*8 tenslie_str_fac
-	parameter (tensile_str_fac = 10.d0)
+      real*8 bpx,bpy,bpz,tol_stress1,abs_tol_stress,bp_update
+      real*8 vol_tot_change, daystress, timestress, timestress0
+      real*8 strx_min,stry_min,strz_min,perx_m,pery_m,perz_m
+      real*8 e10_facx,e10_facy,e10_facz
+      real*8 tenslie_str_fac
+      parameter (tensile_str_fac = 10.d0)
       integer, allocatable :: kr(:,:)
       integer, allocatable :: npbn(:)
       integer, allocatable :: nvfcl(:)
@@ -174,17 +116,17 @@
       real*8, allocatable ::  dflv(:)
       real*8, allocatable ::  dvfdv(:,:)
       real*8, allocatable ::  vol_strain(:)
-	real*8, allocatable ::  vol_strain0(:)
-	real*8, allocatable ::  dvol_strainu(:)
-	real*8, allocatable ::  dvol_strainv(:)
-	real*8, allocatable ::  dvol_strainw(:)
+      real*8, allocatable ::  vol_strain0(:)
+      real*8, allocatable ::  dvol_strainu(:)
+      real*8, allocatable ::  dvol_strainv(:)
+      real*8, allocatable ::  dvol_strainw(:)
       real*8, allocatable ::  vol_temp(:)
-	real*8, allocatable ::  pnx0(:)
-	real*8, allocatable ::  pny0(:)
-	real*8, allocatable ::  pnz0(:)
-	real*8, allocatable ::  e10(:)
-	real*8, allocatable ::  e20(:)
-	real*8, allocatable ::  e30(:)
+      real*8, allocatable ::  pnx0(:)
+      real*8, allocatable ::  pny0(:)
+      real*8, allocatable ::  pnz0(:)
+      real*8, allocatable ::  e10(:)
+      real*8, allocatable ::  e20(:)
+      real*8, allocatable ::  e30(:)
 
 
       real*8 ftoll
@@ -198,7 +140,7 @@
       real*8, allocatable ::  dsx(:) 
       real*8, allocatable ::  dsy(:) 
 
-c      common/fracturex/dla(n0),dlb(n0),dmpm(n0),dmtm(n0),
+c     common/fracturex/dla(n0),dlb(n0),dmpm(n0),dmtm(n0),
 c     $    dmu(n0), dmv(n0),depm(n0),detm(n0),deu(n0),dev(n0),
 c     $    akkx(n0),akky(n0), aiio(n0),biio(n0),
 c     $    ffx(n0),ffy(n0)
@@ -281,7 +223,7 @@ c     dimension a12mpf(n0),a12mef(n0),a12eef(n0)
       integer, allocatable ::  idum_str(:,:)  
       real*8, allocatable ::   dum_str(:,:)   
       integer, allocatable ::  idum_str1(:)  
-	
+      
       integer, allocatable :: ipermx(:,:)
       integer, allocatable :: ipermy(:,:)
       integer, allocatable :: ipermz(:,:)      
@@ -297,7 +239,9 @@ c     dimension a12mpf(n0),a12mef(n0),a12eef(n0)
       real*8, allocatable ::  spm7f(:)  
       real*8, allocatable ::  spm8f(:) 
       real*8, allocatable ::  spm9f(:) 
-      real*8,  allocatable ::  flitho(:,:)   
+      real*8, allocatable ::  spm10f(:) 
+      real*8, allocatable ::  spm11f(:) 
+      real*8, allocatable ::  flitho(:,:)   
 
       end module comsi
 

@@ -246,7 +246,7 @@ c     Take care of source/sink term by putting it into empty slot (from
 c     same node to same node).
 c     If this is an isothermal air-water simulation
 c     RJP 6/29/04 Took out a_axy and a_vxy assignment for now
-c     a_axy(jmia+nmatavw)=skco2(i)*sco2(i)
+      c_axy(jmia+nmatavw)=skco2(i)
 c     Take care of souce/sink term
 c     If this is an isothermal air-water simulation
 c     a_vxy(jmia+nmatavw)=skco2(i)*(1-sco2(i))

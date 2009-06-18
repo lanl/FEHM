@@ -512,7 +512,8 @@ c**** calculate parameters ****
        ne13 = 23 * n5
        ne14 = 2 * n6 + 1
        ne15 = n6
-       maxor = 201
+c zvd - 28-May-09, set in scanin based on north
+c       maxor = 201
        zero_t = 1.e-30
        ldn2 = n0*28+1       
        ldn1 = 0

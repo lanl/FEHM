@@ -518,6 +518,11 @@ c*** water table rise modification
       integer is_ch
       integer :: is_ch_t = 0
       integer :: out_flag = 0
+
+      save flowflag, ichk, tassem, tasii, tscounter,
+     &     contr_riptot, tims_save, day_saverip, in3save,
+     &     water_table_old
+
       inquire(unit=6,opened=it_is_open)
       if(method.eq.2) then
 c	When run from Goldsim, the normal fehm screen output gets
@@ -586,6 +591,9 @@ c     Initialize
 c*** water table rise modification
          water_table_old = -1.d+10
 c*** water table rise modification
+c bhl_5/15/08
+         ipmbal = 0
+c bhl_5/15/08
 
 c     Increase counter for simulation number
 
@@ -704,7 +712,18 @@ c     rip avs output flag  - initialize
 !        open(isptr1, file = nmfil(17), status = cstats(17))
 !        open(isptr2, file = nmfil(18), status = cstats(18))
 !        open(isptr3, file = nmfil(19), status = cstats(19))
-            call ptrac1
+c s kelkar may 20 09 moved call to load_omr_flux_array from ptrac1 here
+c s kelkar may 28 09 moved call to init_sptr_params from ptrac1 here
+c where ptrac1 used to be called
+            call init_sptr_params
+            if (.not. compute_flow) then
+               if (.not. sptr_exists) call load_omr_flux_array
+               if(.not.random_flag) then
+c                  if(allocated(sx)) deallocate(sx)
+c                  if(allocated(istrw)) deallocate(istrw)
+               end if
+            end if
+c            call ptrac1
          endif
 
 c     If block only entered if the code is being called to 
@@ -1502,6 +1521,8 @@ c     Subroutine riptime - scope is local to fehmn
       character*23 string_call
       character*10 ffname
       character*5 ch5
+
+      wtrise_flag = .false.
       if(in(1).ne.0.) then
          tims = abs(in(1))*365.25
 
@@ -1520,12 +1541,10 @@ c     flow field is being read in
             tscounter = -tscounter
 
 c*** water table rise modification
-            if(abs(in(7)-water_table_old).gt.1.d-6) then
-               water_table = in(7)
-               wtrise_flag = .true.
-            else
-               wtrise_flag = .false.
-            end if
+c zvd 21-Jul-08 Always make water table adjustment when a new flow 
+c field is read
+            water_table = in(7)
+            wtrise_flag = .true.
 c*** water table rise modification
 
 c     Define file name except for the number

@@ -130,9 +130,9 @@
          end do
          string2 = '# Time (days) Zones:'
          is = 21
-         ie = 25
+         ie = 26
          do i = 1, cflxz
-            write (string2(is:ie), '(x, i3)') icflxz(i)
+            write (string2(is:ie), '(1x, i5)') icflxz(i)
             is = ie + 1
             ie = ie + 4
          end do
@@ -144,6 +144,7 @@
             write(icfile(nsp), '(a)') trim(string)
             write(icfile(nsp), '(a)') trim(string2)
          end do
+         formstring = ''
          write (formstring, 200) cflxz
       end if
 
@@ -266,8 +267,11 @@ c     Write results
          end do
          
 ! Write to flux history file
-         write (icfile(nsp), formstring) ptime, 
+c         write (icfile(nsp), formstring) ptime, 
+c     &        (trim(flux_string(izone)), izone = 1, cflxz)
+         write (icfile(nsp), '(g16.9, 2(1x, a))') ptime, 
      &        (trim(flux_string(izone)), izone = 1, cflxz)
+         call flush(icfile(nsp))
       end do
 
       if (days .ge. tims) deallocate (icfile)

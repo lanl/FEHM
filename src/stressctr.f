@@ -736,7 +736,7 @@ c
                enddo        
             endif
          endif   
-         deallocate(flitho)  
+         if (allocated (flitho)) deallocate(flitho)  
 c     iflg=4 calculate nonlinear material properties
       else if(iflg.eq.4) then 
          call stress_mech_props(0,0)

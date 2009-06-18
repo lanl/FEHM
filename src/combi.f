@@ -344,5 +344,20 @@ c arrays for parameter designation in restart files
 c array for designating which flux variables will be output
       logical, dimension(5) :: prnt_flxzvar = .TRUE.
 
+c
+c submodel boundary conditions 
+c
+      character*4 keywordsub1,keywordsub2,keywordsub3
+      integer isubmodel
+      integer, allocatable :: submodfile(:)
+      integer, allocatable :: isubmodelfile(:)
+      integer, allocatable :: isubmodnamlen(:)
+      integer, allocatable ::izonesub1(:)
+      integer, allocatable ::itypsd(:) 
+      integer, allocatable ::iflux_list(:)     
+      character*4, allocatable :: keyms1(:), keyms2(:)
+      character*4, allocatable :: keyms3(:), keyms4(:) 
+      character*120, allocatable :: submod_filename(:)
+
       end module combi
 

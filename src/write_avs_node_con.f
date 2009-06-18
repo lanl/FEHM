@@ -189,14 +189,14 @@ C***********************************************************************
       character*5 char_type
       character*60 fstring
       character*30 cordname(3)
-      character*150 :: string = '', tecstring = ''
+      character*150 :: string = '', tecstring = '', sharestring = ''
       real*8 write_array(maxcon)
       integer i, ic, im, in, iv, ix, istep, j, n
       integer t1(maxcon),itotal2,write_total
       integer irxn_title
       real*8 complex_conc
 
-      save tecstring
+      save tecstring, sharestring
 
       data cordname(1) / 'X (m)' /, 
      &     cordname(2) / 'Y (m)' /,
@@ -306,8 +306,10 @@ C***********************************************************************
                   string = '1-2, 4'
                end if
             end if
+            if (iozone .ne. 0) sharestring = string
          else if (icall .eq. 1 .and. iozid .ne. 0) then
             string = '2'
+            if (iozone .ne. 0) sharestring = string
          end if
       end if
 
@@ -392,7 +394,7 @@ c---------------------------------------
          end if
 
          do iz = 1, iendz
-                                ! Zone loop
+c     Zone loop
             if (iozone .ne. 0) then
                idz = izone_surf(iz)
             end if
@@ -400,9 +402,12 @@ c---------------------------------------
                if (iozone .eq. 0) then
                   write (lu, 94) trim(timec_string), trim(tecstring)
                else
+                  if (icall .gt. 1 .and. iozone .ne. 0) then
+                     write (tecstring, 125) trim(sharestring), iz
+                  end if
                   write (lu, 95) idz, trim(tecstring)
                end if
-               if (icall .eq. 1) then
+               if (icall .eq. 1 .and. iz .eq. iendz) then
                   if (iogeo .eq. 1) then
                      tecstring = trim(tecstring) // trim(string)
                   else if (iocord .ne. 0 .or. iozid .ne. 0) then
@@ -630,9 +635,12 @@ c=================================================
                if (iozone .eq. 0) then
                   write (lu, 94) trim(timec_string), trim(tecstring)
                else
+                  if (icall .gt. 1 .and. iozone .ne. 0) then
+                     write (tecstring, 125) trim(sharestring), iz
+                  end if
                   write (lu, 95) idz, trim(tecstring)
                end if
-               if (icall .eq. 1) then
+               if (icall .eq. 1 .and. iz .eq. iendz) then
                   if (iogeo .eq. 1) then
                      tecstring = trim(tecstring) // trim(string)
                   else if (iocord .ne. 0 .or. iozid .ne. 0) then

@@ -119,13 +119,14 @@ c     read triangles defined by 3 nodes
       do ii=1,num_element
          read(icliff1,*)nelm,junk,dumm,(ne(nelm,jj),jj=1,3)
       enddo
+c     skip line for formatting
       read(icliff1,*)
       idum=1
-!     skip 6 more lines for formating
+c identify column with idnode0 attribute
       do ii=1,node_att
          read(icliff1,4147) dumm7
  4147    format(a7)
-         if(dumm7.eq.'id_node') inodecol=ii
+         if(dumm7.eq.'idnode0') inodecol=ii
       enddo
 c     read the node numbering in the original 3-D mesh corrosponding
 c     to the surface numbering.
@@ -138,6 +139,7 @@ c     skip line for formatting
       read(icliff1,*)
       allocate (relemcol(nelem_att))
       allocate (tri_med(num_element,3),tri_norm(num_element,3))
+c identify columns with needed element attributes attribute
       do ii=1,nelem_att
          read(icliff1,4142) dumm5
  4142    format(a5)

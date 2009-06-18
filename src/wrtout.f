@@ -691,6 +691,7 @@ c     if(iptty.gt.0) write(iptty ,6044)  ichng
       call  stress  ( 2 )
       call  paractr (3)
 
+      call flush (iout)
       return
       end
       

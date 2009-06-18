@@ -692,6 +692,8 @@ c
          if(idof_co2.gt.0) then
             allocate(c_axy(ldna))
             allocate(c_vxy(ldna))
+            c_axy = 0.d0
+            c_vxy = 0.d0
          endif
 
          if (idoff .gt. 0) then
@@ -858,6 +860,13 @@ C
          endif
          if_debug = 0
 c
+c s kelkar may 20 09 moved call to ptrac1 here to do the geometry
+c before simplify_ncon for -ve porosities. But moved the call to 
+c load_omr_flux_array from ptrac1 to fehmn.f where ptrac1 used to be called
+         if(sptrak) then
+            call ptrac1
+         endif
+
 c simplify connectivity based on porosity=0.0
 c only for isotropic problems (ianpe=0)
 c
