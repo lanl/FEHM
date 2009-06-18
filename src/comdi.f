@@ -715,6 +715,9 @@
       integer, allocatable ::  node_ch_model_type(:)
       integer, allocatable ::  steady_type(:)
       integer, allocatable ::  weight_type(:)
+      integer, allocatable ::  permx_type(:)
+      integer, allocatable ::  permy_type(:)
+      integer, allocatable ::  permz_type(:)
 
       integer, allocatable ::  saturation_ini_type(:)
       integer, allocatable ::  pressurew_ini_type(:)
@@ -725,6 +728,7 @@
       integer imped,its,imod,isubmod,iqf,icm,isf,ifd
       integer isatb_ini,ipresa_ini,ipresw_ini,itempb_ini
       integer isteady, istdy, isty, iwght, lchange
+      integer ixperm,iyperm,izperm
       real*8 fac_sec_days, fac_min_days, fac_year_days
       real*8, allocatable ::  qa(:) 
       real*8, allocatable ::  qw(:) 
@@ -758,6 +762,9 @@
       real*8, allocatable :: enthalpy(:,:)
       real*8, allocatable :: timestep(:,:)
       real*8, allocatable :: temperature(:,:)
+      real*8, allocatable :: permx(:,:)
+      real*8, allocatable :: permy(:,:)
+      real*8, allocatable :: permz(:,:)
       real*8, allocatable :: vtotw(:),vtota(:),vtote(:)
       real*8, allocatable :: atotd(:)
       real*8, allocatable :: steady_time(:)

@@ -107,6 +107,7 @@
       use compfrac
       use comrtd
       use comsk
+      use comuserc
       implicit none
 
       if(allocated(igdpm)) deallocate(igdpm)
@@ -843,6 +844,22 @@ cHari 01-Nov-06 release arrays for colloid diversity model
       if(allocated(k_rev)) deallocate(k_rev)
       if(allocated(slope_kf)) deallocate(slope_kf)
       if(allocated(cint_kf)) deallocate(cint_kf)
+c zvd 29-Feb-2008 arrays for boun permeabilty and userc models
+      if(allocated(permx)) deallocate(permx)
+      if(allocated(permx_type)) deallocate(permx_type)
+      if(allocated(permy)) deallocate(permy)
+      if(allocated(permy_type)) deallocate(permy_type)
+      if(allocated(permz)) deallocate(permz)
+      if(allocated(permz_type)) deallocate(permz_type)
+      if(allocated(prodzones)) deallocate(prodzones)
+      if(allocated(inflzones)) deallocate(inflzones)
+      if(allocated(userconc)) deallocate(userconc)
+      if(allocated(userconc3)) deallocate(userconc3)
+      if(allocated(usertime)) deallocate(usertime)
+      if(allocated(moles_recycle)) deallocate(moles_recycle)
+cbhl  6/4/08      
+      if(allocated(bconf_sav)) deallocate(bconf_sav)
+cbhl  6/4/08      
                             
       return
       end

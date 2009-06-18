@@ -161,6 +161,14 @@ C     Begin subroutine decay
             lstart=lsport(lns)
             do 200 i2=1,ingrow
                if(box(lstart,ip).gt.0)box(lstart,ip)=0
+c bhl_6/4/08
+c zvd 7/1/08 Only change the filtered box if mass will be output
+               if (abs(prnt_rst) .ge. 40 .and. ripfehm .eq. 1) then
+                  if(box(lstart,ip).lt.0 .and. abs(box(lstart,ip)) .lt. 
+     &                 ibox_offset) box(lstart,ip)=box(lstart,ip) 
+     &                 - ibox_offset
+               end if
+c bhl_6/4/08
                lstart=lstart+1
  200        continue	  
             lsport(lns)=lstart
@@ -209,6 +217,14 @@ c bhl_12/8/05
          if(ingrow.gt.0)then
             lstart=lsport(lns)
             do 200 i2=1,ingrow
+c bhl_6/4/08
+c zvd 7/1/08 Only change the filtered box if mass will be output
+               if (abs(prnt_rst) .ge. 40 .and. ripfehm .eq. 1) then
+                  if(box(lstart,ip).lt.0 .and. abs(box(lstart,ip)) .lt. 
+     &                 ibox_offset) box(lstart,ip)=box(lstart,ip) 
+     &                 - ibox_offset
+               end if
+c bhl_6/4/08
                if(box(lstart,ip).gt.0)then
                   itmp=itmp+1
 c bhl_12/8/05
@@ -218,6 +234,12 @@ c bhl_12/8/05
                   start_time(itmp,id)=start_time(lstart,ip)
                   frac_done(itmp,id)=frac_done(lstart,ip)
                   box(itmp,id)=box(lstart,ip)
+c bhl_5/5/08
+c zvd 6/9/08 changed prnt_rst flag to >= 40
+                  if (abs(prnt_rst) .ge. 40 .and. ripfehm .eq. 1) then
+                     bconf_sav(itmp,id)=bconfactor(lns)
+                  endif
+c bhl_5/5/08
                   timeleft(itmp,id)=timeleft(lstart,ip)
                   if(ncolsizes.gt.0) then
                      if(sizes(id).ne.0) then

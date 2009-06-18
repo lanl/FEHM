@@ -86,14 +86,28 @@ C***********************************************************************
       implicit none
 
       integer i, i2, ith, mdd, num, mdd1, iroot, is, ie, n1
+c bhl_5/15/08
+      integer imbl1,ipart
+c bhl_5/15/08
       integer open_file, inode, num_current, isptrk, isptrk1
       integer varlen, itmp
       real*8 num_enter, num_leave, num_decay, num_filtered, ret_wght
       real*8, allocatable :: num_in(:,:), num_left(:)
+c bhl_5/15/08
+      real*8 mass_enter,mass_leave,mass_decay,mass_filtered,mass_current
+      real*8 mass_dout, mass_dfilt
+c bhl_5/15/08
       character*120 ptrk_name, ptrk_root
       character*21 tstring, fstring
       character*66, allocatable :: string(:)
+c bhl_5/15/08
+      character*21 tstring2, fstring2
+      character*112, allocatable :: string2(:)
+c bhl_5/15/08
       logical end_flag, null1, opnd
+c bhl_5/15/08
+      logical imbl
+c bhl_5/15/08
       save ptrk_root, iroot, isptrk1, num_left, varlen, fstring
 
       dtotc=dtotc/8.64e4
@@ -316,6 +330,97 @@ c output for all nodes specified in macro node
          deallocate (num_in)
          close(isptrk)
       end if
+
+c bhl_6/4/08
+
+      if (abs(prnt_rst) .ge. 40 .and. ripfehm .eq. 1) then
+         if (.not. allocated (string2)) allocate (string2(nspeci))
+      
+         imbl = .false.
+         inquire (file = "FEHM_GSM_Mass_balance.txt", opened=imbl)
+         if (.not. imbl) imbl1 = 
+     &        open_file("FEHM_GSM_Mass_balance.txt",'unknown')
+
+         do ith = 1,nspeci
+            string2(ith) = ''
+            is = 1
+            ie = 16
+            do i = 1, 7
+               write(string2(ith)(is:ie), 201) ith, i
+               is = ie + 1
+               ie = ie + 16
+            end do
+         end do
+         fstring2 = ''
+         write (fstring2,204) nspeci
+         if (ipmbal.le.0) then
+            write (imbl1,205)
+            write (imbl1,fstring2) 'VARIABLES="Time (years)"',
+     &           (string2(ith),ith = 1,nspeci)
+            ipmbal=ipmbal+1
+         end if
+             
+ 201     format ('      "Sp', i3.3, ' V', i1, '"')
+ 202     format (7(x,e15.8))
+ 203     format (g21.14)
+ 204     format ('(1x, a24,', i3, '(a112))')
+ 205     format (x,'TITLE="V1=Mass Having Entered System, ',
+     &        'V2=Mass Currently In System, ',
+     &        'V3=Mass Having Left System, ',
+     &        'V4=Mass Having Decayed, ',
+     &        'V5=Mass Having Been Filtered, ',
+     &        'V6=Mass Having Decayed Outside The UZ, ',
+     &        'V7=Filtered Mass Having Decayed"')
+c bhl_5/15/08
+
+         write(tstring2,203) days/365.25
+         do ith=1,nspeci
+            string2(ith) = ''
+            mass_enter=0
+            mass_leave=0
+            mass_decay=0
+            mass_filtered=0
+            mass_current=0
+            mass_dout=0
+            mass_dfilt=0
+            do ipart=1,num_particles(ith)
+               if (start_time(ipart,ith).le.86400.*days) 
+     &              mass_enter=mass_enter+gmol(ith)*bconf_sav(ipart,ith)
+               if (box(ipart,ith).lt.0)then
+                  if(timeleft(ipart,ith).ge.0.)then
+                     mass_leave=mass_leave+gmol(ith)*
+     &                    bconf_sav(ipart,ith)
+                     if(abs(box(ipart,ith)).ge.ibox_offset)then
+                        mass_dout=mass_dout+gmol(ith)*
+     &                       bconf_sav(ipart,ith)
+                     endif
+                  else
+                     mass_filtered=mass_filtered+gmol(ith)*
+     &                    bconf_sav(ipart,ith)
+                     if(abs(box(ipart,ith)).ge.ibox_offset)then
+                        mass_dfilt=mass_dfilt+gmol(ith)*
+     &                       bconf_sav(ipart,ith)
+                     endif
+                  end if
+               
+               else if (box(ipart,ith) .gt. 0. and.
+     &                 start_time(ipart,ith).le.86400.*days) then
+                  mass_current=mass_current+gmol(ith)*
+     &                 bconf_sav(ipart,ith)
+               else
+                  mass_decay=mass_decay+gmol(ith)*bconf_sav(ipart,ith)
+               end if
+            enddo
+            write(string2(ith),202) mass_enter, mass_current, 
+     &           mass_leave, mass_decay, mass_filtered,
+     &           mass_dout, mass_dfilt
+         enddo
+     
+         write (imbl1,fstring2) tstring2,(string2(ith),ith = 1,nspeci) 
+          
+      end if
+
+c bhl_6/4/08
 
       return
 

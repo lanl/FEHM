@@ -140,7 +140,7 @@ c                  George Zyvoloski, EES-5
       integer:: dump10,idummy,max1d2,isimnum,irfile,set_value
       integer:: failed_nodes,itmp_shrink,numparams,temp_aidex
       integer:: temp_aidex_1,total_1d_size,max1d, n_col_irv, ithn
-      integer:: np_temp, lns, lns1, li 
+      integer:: np_temp, lns, lns1, li, rseed_old
       integer::  np_temp_max = 0
       integer:: lnwds, nwds, ii   !cli
       integer:: icount, colloid_counter, rev_count, irrev_count
@@ -401,6 +401,10 @@ c        read in data if used
       lnwds=0
       read(inpt1,'(a132)') input_line
       call parse_string(input_line,imsg,msg,xmsg,cmsg,nwds)
+c     zvd 02-May-08
+c     Save rseed if GoldSim has passed in a value since  we need to use
+c     it for particle size distribution
+      if (ripfehm == 1) rseed_old = rseed
       rseed = imsg(1)+xmsg(1)
       if (nwds .eq. 2) then
          rseed_release=imsg(2)+xmsg(2)
@@ -410,7 +414,7 @@ c        read in data if used
 ! If this a GoldSIM simulation
       if (ripfehm == 1) then
 ! Set random seeds to zero since seeds will be set by GoldSIM
-         rseed = 0
+         rseed = rseed_old
          rseed_release = 0
       end if
       
@@ -735,7 +739,6 @@ c     Interpolate to get exact size
      4              (probsize(j,sizes(ith))-probsize(j-1,sizes(ith)))
 
             end do
-            
          else
             backspace inpt1
          end if
@@ -1262,6 +1265,10 @@ c     cli added to make sure we do not have cases with mass but no particle
       npt(ith+1)=ith*n0
          
       npt(1)=0
+c     zvd 02-May-08
+c     For GoldSim reset the random seed to zero for start of simulation
+c     It will be set in part_track from the value passed through in(4)
+      if (ripfehm == 1) rseed = 0
          
       !check the size of max1d vs. the sum of astep to make sure
       !enough space is allocated for the 1-D arrays, lsport,nprevd,

@@ -274,6 +274,8 @@ c order) ZVD 16-Oct-2006
       flag_count = 0
       sptrx_flag = .false.
       xyz_flag = .false.
+      alt_btc = .false.
+      xyz_flag2 = .false.
       ip_flag = .false.
       trans_flag = .false.
       itensor = -999
@@ -814,8 +816,11 @@ c     model reduction POD basis functions
             if (nwds .gt. 1) then
                if (msg(2) .eq. 3 .and. cmsg(2) .eq. 'alt') then
                   alt_btc = .true.
-               else
-                  alt_btc = .false.
+                  if (nwds .gt. 2) then
+                     if (msg(3) .eq. 3 .and. cmsg(3) .eq. 'xyz') then
+                        xyz_flag2 = .true.
+                     end if
+                  end if
                end if
             end if
             

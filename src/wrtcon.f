@@ -271,11 +271,12 @@ CPS END wrtcon
 CPS 
 C**********************************************************************
 
+      use comai
       use combi
       use comdi
-      use comgi
       use comdti
-      use comai
+      use comgi
+      use comrxni, only : scl, scv
       use comxi
 
       implicit none
@@ -312,58 +313,74 @@ c         end if
                   write(iatty,6000) nsp 
                end if
             else if( iz. eq. 1 ) then
-               if (iout .ne. 0) then
-                  write(iout,777) 
-                  write(iout,778) nsp
-c                  write(iout,779)
-c                  write(iout,6010)
-                  write(iout,679) 
-                  write(iout,6610)
-               end if
- 777           format(/,20x,'Nodal Information (Tracer)')
-               if ( iatty .gt. 0 )  then
-                  write(iatty,777)
-                  write(iatty,6000) nsp
-c                  write(iatty,779) 
-c                  write(iatty,6010)
-                  write(iatty,679) 
-                  write(iatty,6610)
-               end if
-               idp=0
-               idq=0
-               do i=1,m
-                  mdd    =  nskw(i)
-c     write headings for matrix levels
-                  if(mdd.gt.neq.and.mdd.le.neq+neq.and.idp.eq.0) then
-                     if (iout .ne. 0) write(iout,*) ' matrix level = 1'
-                     if(iatty.ne.0) write(iatty,*) ' matrix level = 1'
-                     idp=1
-                  else if(mdd.gt.neq+neq.and.idq.eq.0) then
-                     if (iout .ne. 0) write(iout,*) ' matrix level = 2'
-                     if(iatty.ne.0) write(iatty,*) ' matrix level = 2'
-                     idq=1
-                  endif
-                  md     =  mdd+npn
-                  rcd    =  rc(md)
-                  rcdss = rcss(md)
-                  rcc    =  0.0
-                  if(icns(nsp).gt.0) then                                 
-                     if(ico2.lt.0) then
-                        srmim=sk(mdd)
+c If there are nodes to output
+               if (m .gt. 0) then
+                  if (iout .ne. 0) then
+                     write(iout,777) 
+                     write(iout,778) nsp
+c     write(iout,6010)
+                     if (iadsfl(nsp,itrc(nskw(1))).ne.0.or.
+     &                    iadsfv(nsp,itrc(nskw(1))).ne.0) then
+                        write(iout,779)
+                        write(iout,6012)
                      else
-                        srmim=sk(mdd)*s(mdd)
-                     endif
-                  else
-c     gas phase tracer
-                     if( ico2 .lt. 0 ) then
-                        srmim=qh(mdd)
-                     else
-                        srmim=sk(mdd)*(1.0-s(mdd))
-                     endif
-                  endif
-                  if ( abs( srmim ) .gt. 1.0d-15 )  then
-                     rcc  =  rc(md)/(sk(mdd)+1e-30)
+                        write(iout,679) 
+                        write(iout,6610)
+                     end if
                   end if
+                  if ( iatty .gt. 0 )  then
+                     write(iatty,777)
+                     write(iatty,6000) nsp
+c     write(iatty,6010)
+                     if (iadsfl(nsp,itrc(nskw(1))).ne.0.or.
+     &                    iadsfv(nsp,itrc(nskw(1))).ne.0) then 
+                        write(iatty,779) 
+                        write(iatty,6012)
+                     else
+                        write(iatty,679) 
+                        write(iatty,6610)
+                     end if
+                  end if
+ 777              format(/,20x,'Nodal Information (Tracer)')
+                  idp=0
+                  idq=0
+                  do i=1,m
+                     mdd    =  nskw(i)
+c     write headings for matrix levels
+                     if(mdd.gt.neq.and.mdd.le.neq+neq.and.idp.eq.0) then
+                        if (iout .ne. 0) write(iout,*) 
+     &                       ' matrix level = 1'
+                        if(iatty.ne.0) write(iatty,*) 
+     &                       ' matrix level = 1'
+                        idp=1
+                     else if(mdd.gt.neq+neq.and.idq.eq.0) then
+                        if (iout .ne. 0) write(iout,*) 
+     &                       ' matrix level = 2'
+                        if(iatty.ne.0) write(iatty,*) 
+     &                       ' matrix level = 2'
+                        idq=1
+                     endif
+                     md     =  mdd+npn
+                     rcd    =  rc(md)
+                     rcdss = rcss(md)
+                     rcc    =  0.0
+                     if(icns(nsp).gt.0) then
+                        if(ico2.lt.0) then
+                           srmim=sk(mdd)
+                        else
+                           srmim=sk(mdd)*s(mdd)
+                        endif
+                     else
+c     gas phase tracer
+                        if( ico2 .lt. 0 ) then
+                           srmim=qh(mdd)
+                        else
+                           srmim=sk(mdd)*(1.0-s(mdd))
+                        endif
+                     endif
+                     if ( abs( srmim ) .gt. 1.0d-15 )  then
+                        rcc  =  rc(md)/(sk(mdd)+1e-30)
+                     end if
                   
 c                  if (iout .ne. 0) 
 c     &                 write(iout  ,6011)  mdd, an(md), anl(md),
@@ -371,13 +388,30 @@ c     &                 anv(md), rcdss, bp(mdd)
 c                  if ( iatty .gt. 0 )
 c     &                 write(iatty ,6011)  mdd, an(md), anl(md), 
 c     &                 anv(md), rcdss, bp(mdd)
-                  if (iout .ne. 0) 
-     &                 write(iout  ,6611)  mdd, an(md), anl(md),
-     &                 anv(md), rcdss, sinkint(md), bp(mdd)
-                  if ( iatty .gt. 0 )
-     &                 write(iatty ,6611)  mdd, an(md), anl(md), 
-     &                 anv(md), rcdss, sinkint(md), bp(mdd)
-               end do
+                     if (iout .ne. 0) then
+                        if (iadsfl(nsp,itrc(mdd)).ne.0.or.
+     &                       iadsfv(nsp,itrc(mdd)).ne.0) then
+                           write(iout  ,6013)  mdd , an(md) , anl(md),
+     &                          anv(md), scl(md), scv(md), rcdss,bp(mdd)
+                        else
+                           write(iout  ,6611)  mdd, an(md), anl(md),
+     &                          anv(md), rcdss, sinkint(md), bp(mdd)
+                        end if
+                     end if
+                     if ( iatty .gt. 0 ) then
+                        if (iadsfl(nsp,itrc(mdd)).ne.0.or.
+     &                       iadsfv(nsp,itrc(mdd)).ne.0) then
+                           write(iatty  ,6013)  mdd , an(md) , anl(md),
+     &                          anv(md), scl(md), scv(md), rcdss,bp(mdd)
+                        else
+                           write(iatty ,6611)  mdd, an(md), anl(md), 
+     &                          anv(md), rcdss, sinkint(md), bp(mdd)
+                        end if
+                     end if
+                  end do
+                  if ( iout .ne. 0 ) write(iout, *)
+                  if ( iatty .gt. 0 ) write(iatty, *)
+               end if
             end if
 
 c            if( iz .eq. 0 ) then
@@ -413,6 +447,8 @@ c            if( iz .eq. 0 ) then
  6001 format(1x,'Average step size = ',e14.6,4x,'Iter = ',i5)
  6010 format(4x,'Node',5x,'an',9x,'anl',7x,'anv',
      *     8x,'mol/s',5x,'residual')
+ 6012 format(4x,'Node',5x,'an',9x,'anl',7x,'anv',7x,'scl',7x,'scv',
+     *     8x,'mol/s',5x,'residual')
  6610 format(4x,'Node',6x,'an',10x,'anl',10x,'anv',
      *     9x,'mol/s',19x,'residual')
  779  format(42x,'src/sink',3x,'equation')
@@ -420,6 +456,7 @@ c            if( iz .eq. 0 ) then
 c6011 format(1x,i5,1x,g10.3,1x,g10.3,1x,g10.3,1x,f9.2,1x,g10.3,1x,g10.3)
  6011 format(1x,i7,1x,g10.3,1x,g10.3,1x,g10.3,1x,g10.3,1x,g10.3)
  6611 format(1x,i7,6(1x,g12.5))
+ 6013 format(1x,i7, 7(1x,g12.5))
  6020 format(3x,'initial mass =',20x,e14.6,' mol',/,3x,
      &     'current mass = ',19x,e14.6,' mol',/,3x,
      &     'total injected mass = ',12x,e14.6,' mol (',

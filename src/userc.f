@@ -29,7 +29,7 @@ CD2 $Log:   /pvcs.config/fehm90/src/userc.f_a  $
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:44:24   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
-!!D2 
+!D2 
 !D2    Rev 2.4   29 Jan 2003 09:21:42   pvcs
 !D2 FEHM Version 2.20, STN 10086-2.20-00
 !D2 
@@ -73,45 +73,33 @@ C***********************************************************************
       use comai
       use comci
       use compart
+      use comrxni, only : scl, dsccl
+      use comuserc
       implicit  none
 
-      integer n_points,jl,ju,jm,iz,iuserc,ichk,i2,usroption
-      real*8 slope,getconc,timein,timeCl36start,getflux
+      integer jl,ju,jm,iz,i2
+      real*8 slope,getconc,timein,getflux
       integer, optional :: i
       real(8), optional :: rc_ss, drc_ss
       integer ispecies, j, k, k1, curcolumn
-c      pointer(ipuserconc,userconc)
-c      real*8 userconc(99999)
-      real(8), allocatable :: userconc(:,:)
-      real(8), allocatable :: userconc3(:,:,:)
-c      pointer(ipusertime,usertime)
-c      real*8 usertime(99999)
-      real(8), allocatable :: usertime(:)
       integer, allocatable :: nsindex(:)
-      integer, allocatable :: nodeindex(:)
-c      pointer(ipsrcnodes,srcnodes)
-c      integer srcnodes(99999)
       integer nsnodes, iread1, nszones, mi, mim
-      real*8 srmiml
+      real*8 srmiml, rc_ss_erosion, drc_ss_erosion
+      real*8 inflrate, molesin, molesout
       logical used
-      integer icount, open_file, flag_user
+      integer icount, open_file
       character*100 filename
 
-      save timeCl36start,iuserc,ichk,usroption,n_points
-      save usertime, userconc, userconc3
-      save nodeindex, nsindex
-
       if ((iz.eq.0).and.(iuserc.ne.-9324)) then
+C Initialization
          iuserc=-9324
-         if (iout .ne. 0) 
-     &      write (iout,*) 'Solute transport user subroutine is invoked'
-         if (iatty.gt.0) 
-     &      write(iatty,*)'Solute transport user subroutine is invoked'
+         if (iout .ne. 0) write (iout,*)
+     &        'Solute transport user subroutine is invoked'
+         if (iatty.gt.0) write(iatty,*)
+     &        'Solute transport user subroutine is invoked'
          
 
-         do icount = 1, 100
-            filename(icount:icount) = ' '
-         end do
+         filename = ''
 c zvd 04/26/2007 Allow user to enter name of file for data
          read (inpt,'(a100)') filename
          if (filename(1:4) .eq. 'file') then
@@ -123,172 +111,181 @@ c zvd 04/26/2007 Allow user to enter name of file for data
          end if
          iread1 = open_file(trim(filename),'old')
 
-         
-c-------------------------------------------------------------
-c-------  temp change to allow list of nodes then time conc
-c-------  that applies to entire list, for NTS tritium 
-c-------   phs  2/19/2004 
-c-------------------------------------------------------------
-            read(iread1,*) usroption
-            if(usroption.eq.3) then
-               read(iread1,*) n_points, nsnodes
-               if(.not.allocated(nodeindex)) then
-                  allocate(nodeindex(n0), nsindex(nsnodes))
-               end if
-               nodeindex = 0
-               read(iread1,*)(nsindex(j),j=1,nsnodes)
-               do j = 1, nsnodes
-                  nodeindex(nsindex(j)) = j
-               end do
-               if(.not.allocated(userconc3)) then
-                  allocate(userconc3(nspeci,nsnodes,n_points),
-     2                 usertime(n_points))
-               end if
-               do k = 1, nspeci
-                  do k1 = 1, n_points
-                     read(iread1,*) usertime(k1),
-     2                    userconc3(k,1,k1)                  ! phs
-                     do j = 2,nsnodes                        ! phs
-                       userconc3(k,j,k1) = userconc3(k,1,k1) ! phs
-                     enddo                                   ! phs
-                  end do
-               end do
-            elseif(usroption.eq.4) then
-               read(iread1,*) n_points, nszones
-               if(.not.allocated(nodeindex)) then
-                  allocate(nodeindex(n0), nsindex(nszones))
-               end if
-               nodeindex = 0
-               read(iread1,*)(nsindex(j),j=1,nszones)
-               do j = 1, nszones
-                  do k = 1, n0
-                     if(izonef(k).eq.nsindex(j)) then
-                        nodeindex(k) = j
-                     end if
-                  end do
-               end do
-               if(.not.allocated(userconc3)) then
-                  allocate(userconc3(nspeci,nszones,n_points),
-     2                 usertime(n_points))
-               end if
-               do k = 1, nspeci
-                  do k1 = 1, n_points
-                     read(iread1,*) usertime(k1),
-     2                    (userconc3(k,j,k1),j=1,nszones)
-                  end do
-               end do
-            else
-               read(iread1,*) n_points
-               if(.not.allocated(userconc)) then
-                allocate(userconc(nspeci,n_points), usertime(n_points))
-               end if
-               read(iread1,*)
-               do i2=1,n_points
-                  read(iread1,*) (userconc(j,i2),j=1,nspeci)
-               enddo
-               read(iread1,*)
-               do i2=1,n_points
-                  read(iread1,*) usertime(i2)
-               enddo
+         read(iread1,*) usroption
+         select case (usroption)
+         case (1,2)
+c usroption = 2 Time-varying solute mass flux input at prescribed nodes
+            read(iread1,*) nu_points
+            if(.not.allocated(userconc)) then
+               allocate(userconc(nspeci,nu_points), usertime(nu_points))
             end if
-            close(iread1)
-         else if (iuserc.eq.-9324) then
-            if ((iz.eq.1).and.(usroption.eq.1)) then
-               if (l.ne.0) then
-                  if (ichk.ne.-9876) then 
-                     do i2=1,n0
-                        if (cnsk(i2).lt.0.) timeCl36start=-cnsk(i2)
-                     enddo
-                     ichk=-9876
-                     timeCl36start=timeCl36start*365.25*8.64e4
-                  endif
-                  timein=timeCl36start-days*8.64e4
-                  if (timein.le.0.) then 
-                     getconc=userconc(1,1)
-                     goto 1
-                  else if (timein.ge.usertime(n_points)) then
-                     i2=n_points
-                     goto 2
-                  endif
-                  
-                  jl=0
-                  ju=n_points+1
- 10               if (ju-jl.gt.1) then
-                     jm=(ju+jl)/2
-                     if(timein.gt.usertime(jm))then
-                        jl=jm
-                     else
-                        ju=jm
-                     endif
-                     goto 10
-                  endif
-                  i2=jl+1
-                  
- 2                if(i2.eq.1) then
-                     getconc=userconc(1,1)
-                  else
-                     slope=userconc(1,i2)-userconc(1,i2-1)
-                     slope=slope/(usertime(i2)-usertime(i2-1))
-                     getconc=userconc(1,i2-1)+slope*
-     2                    (timein-usertime(i2-1))
-                  endif
-                  
- 1                do i2=1,n0
-                     if (cnsk(i2).lt.0.) cnsk(i2)=-getconc
+            read(iread1,*)
+            do i2=1,nu_points
+               read(iread1,*) (userconc(j,i2),j=1,nspeci)
+            enddo
+            read(iread1,*)
+            do i2=1,nu_points
+               read(iread1,*) usertime(i2)
+            enddo
+         case (3)
+            read(iread1,*) nu_points, nsnodes
+            if(.not.allocated(nodeindex)) then
+               allocate(nodeindex(n0), nsindex(nsnodes))
+            end if
+            nodeindex = 0
+            read(iread1,*)(nsindex(j),j=1,nsnodes)
+            do j = 1, nsnodes
+               nodeindex(nsindex(j)) = j
+            end do
+            if(.not.allocated(userconc3)) then
+               allocate(userconc3(nspeci,nsnodes,nu_points),
+     2              usertime(nu_points))
+            end if
+            do k = 1, nspeci
+               do k1 = 1, nu_points
+                  read(iread1,*) usertime(k1),
+     2                 (userconc3(k,j,k1),j=1,nsnodes)
+               end do
+            end do
+         case (4)
+            read(iread1,*) nu_points, nszones
+            if(.not.allocated(nodeindex)) then
+               allocate(nodeindex(n0), nsindex(nszones))
+            end if
+            nodeindex = 0
+            read(iread1,*)(nsindex(j),j=1,nszones)
+            do j = 1, nszones
+               do k = 1, n0
+                  if(izonef(k).eq.nsindex(j)) then
+                     nodeindex(k) = j
+                  end if
+               end do
+            end do
+            if(.not.allocated(userconc3)) then
+               allocate(userconc3(nspeci,nszones,nu_points),
+     2              usertime(nu_points))
+            end if
+            do k = 1, nspeci
+               do k1 = 1, nu_points
+                  read(iread1,*) usertime(k1),
+     2                 (userconc3(k,j,k1),j=1,nszones)
+               end do
+            end do
+         case(5)
+c usroption = 5 Solute recirculation model
+c read number of production/infiltration zones
+            read (iread1, *) erosion_factor
+            if (.not. allocated(recycle_factor)) then
+               allocate (recycle_factor(nspeci))
+            end if
+            read (iread1, *) (recycle_factor(j), j = 1, nspeci)
+            read (iread1, *) nu_zones
+            if (.not. allocated(prodzones)) then
+               allocate (prodzones(nu_zones) , inflzones(nu_zones))
+               allocate (moles_recycle(nu_zones,nspeci))
+            end if
+            read (iread1, *) (prodzones(j), j = 1, nu_zones)
+            read (iread1, *) (inflzones(j), j = 1, nu_zones)
+c convert erosion factor fromm 1/yr to 1/s
+            erosion_factor = erosion_factor / (365.25 * 86400.)
+         end select
+         close(iread1)
+      else if (iuserc.eq.-9324) then
+C transient changes
+         if ((iz.eq.1).and.(usroption.eq.1)) then
+            if (l.ne.0) then
+               if (iuchk.ne.-9876) then 
+                  do i2=1,n0
+                     if (cnsk(i2).lt.0.) timeCl36start=-cnsk(i2)
                   enddo
+                  iuchk=-9876
+                  timeCl36start=timeCl36start*365.25*8.64e4
+               endif
+               timein=timeCl36start-days*8.64e4
+               if (timein.le.0.) then 
+                  getconc=userconc(1,1)
+                  goto 1
+               else if (timein.ge.usertime(nu_points)) then
+                  i2=nu_points
+                  goto 2
                endif
                
-            else if ((iz.eq.2).and.(usroption.eq.2)) then
-               if (l.ne.0) then
-                  if (ichk.ne.-9876) then
-                     ispecies = 1 + npn/n0
-                     if(cnsk(i+npn) .eq. -9876) then
-                        timein=days*8.64e4
-                        if (timein.le.usertime(1)) then 
-                           getflux=userconc(ispecies,1)
-                           goto 13
-                        else if (timein.ge.usertime(n_points)) then
-                           i2=n_points
-                           goto 23
-                        endif
-                        
-                        jl=0
-                        ju=n_points+1
- 103                    if (ju-jl.gt.1) then
-                           jm=(ju+jl)/2
-                           if(timein.gt.usertime(jm))then
-                              jl=jm
-                           else
-                              ju=jm
-                           endif
-                           goto 103
-                        endif
-                        i2=jl+1
-                        
- 23                     if (i2.eq.1) then
-                           getflux=userconc(ispecies,1)
-                        else
-                           slope=userconc(ispecies,i2)-
-     2                          userconc(ispecies,i2-1)
-                           slope=slope/(usertime(i2)-usertime(i2-1))
-                           getflux=userconc(ispecies,i2-1)+slope*
-     2                          (timein-usertime(i2-1))
-                        endif
- 13                     continue
-                        rc_ss = -getflux
-                        drc_ss = 0.
-                     end if
+               jl=0
+               ju=nu_points+1
+ 10            if (ju-jl.gt.1) then
+                  jm=(ju+jl)/2
+                  if(timein.gt.usertime(jm))then
+                     jl=jm
+                  else
+                     ju=jm
                   endif
-                  
-                  
-                  
+                  goto 10
                endif
-            else if ((iz.eq.2).and.(usroption.eq.3)) then
+               i2=jl+1
+               
+ 2             if(i2.eq.1) then
+                  getconc=userconc(1,1)
+               else
+                  slope=userconc(1,i2)-userconc(1,i2-1)
+                  slope=slope/(usertime(i2)-usertime(i2-1))
+                  getconc=userconc(1,i2-1)+slope*
+     2                 (timein-usertime(i2-1))
+               endif
+               
+ 1             do i2=1,n0
+                  if (cnsk(i2).lt.0.) cnsk(i2)=-getconc
+               enddo
+            endif
+            
+         else if ((iz.eq.2).and.(usroption.eq.2)) then
+            if (l.ne.0) then
+               if (iuchk.ne.-9876) then
+                  ispecies = 1 + npn/n0
+                  if(cnsk(i+npn) .eq. -9876) then
+                     timein=days*8.64e4
+                     if (timein.le.usertime(1)) then 
+                        getflux=userconc(ispecies,1)
+                        goto 13
+                     else if (timein.ge.usertime(nu_points)) then
+                        i2=nu_points
+                        goto 23
+                     endif
+                     
+                     jl=0
+                     ju=nu_points+1
+ 103                 if (ju-jl.gt.1) then
+                        jm=(ju+jl)/2
+                        if(timein.gt.usertime(jm))then
+                           jl=jm
+                        else
+                           ju=jm
+                        endif
+                        goto 103
+                     endif
+                     i2=jl+1
+                     
+ 23                  if (i2.eq.1) then
+                        getflux=userconc(ispecies,1)
+                     else
+                        slope=userconc(ispecies,i2)-
+     2                       userconc(ispecies,i2-1)
+                        slope=slope/(usertime(i2)-usertime(i2-1))
+                        getflux=userconc(ispecies,i2-1)+slope*
+     2                       (timein-usertime(i2-1))
+                     endif
+ 13                  continue
+                     rc_ss = -getflux
+                     drc_ss = 0.
+                  end if
+               endif               
+            endif
+
+         else if ((iz.eq.2).and.(usroption.eq.3)) then
 C---------------------------------------------------------
-c------- phil added fix to bypass nodes not in the nodeindex
-c                       2/18/04
+c-------phil added fix to bypass nodes not in the nodeindex
+c     2/18/04
 c---------------------------------------------------------
-              if(nodeindex(i).NE.0) then
+            if(nodeindex(i).NE.0) then
                if (l.ne.0) then
                   ispecies = 1 + npn/n0
                   curcolumn = nodeindex(i)
@@ -297,13 +294,13 @@ c---------------------------------------------------------
                      if (timein.le.usertime(1)) then 
                         getflux=userconc3(ispecies,curcolumn,1)
                         goto 43
-                     else if (timein.ge.usertime(n_points)) then
-                        i2=n_points
+                     else if (timein.ge.usertime(nu_points)) then
+                        i2=nu_points
                         goto 33
                      endif
-               
+                  
                      jl=0
-                     ju=n_points+1
+                     ju=nu_points+1
  303                 if (ju-jl.gt.1) then
                         jm=(ju+jl)/2
                         if(timein.gt.usertime(jm))then
@@ -314,7 +311,7 @@ c---------------------------------------------------------
                         goto 303
                      endif
                      i2=jl+1
-                     
+                  
  33                  if (i2.eq.1) then
                         getflux=userconc3(ispecies,curcolumn,1)
                      else
@@ -327,114 +324,178 @@ c---------------------------------------------------------
  43                  continue
                      cnsk(i+npn) = -getflux
                   end if
+               end if               
+            endif
+c     (nodeindex.NE.0)  phs 2/18/04  
+             
+         else if ((iz.eq.2).and.(usroption.eq.4)) then
+            if (l.ne.0) then
+               ispecies = 1 + npn/n0
+               curcolumn = nodeindex(i)
+               if(pcnsk(i+npn) .lt. 0.) then
+                  timein=days
+                  if (timein.le.usertime(1)) then 
+                     getflux=userconc3(ispecies,curcolumn,1)
+                     goto 143
+                  else if (timein.ge.usertime(nu_points)) then
+                     i2=nu_points
+                     goto 133
+                  endif
                   
-               endif
-              endif   ! (nodeindex.NE.0)  phs 2/18/04
-            else if ((iz.eq.2).and.(usroption.eq.4)) then
-               if (l.ne.0) then
-                  ispecies = 1 + npn/n0
-                  curcolumn = nodeindex(i)
-                  if(pcnsk(i+npn) .lt. 0.) then
-                     timein=days
-                     if (timein.le.usertime(1)) then 
-                        getflux=userconc3(ispecies,curcolumn,1)
-                        goto 143
-                     else if (timein.ge.usertime(n_points)) then
-                        i2=n_points
-                        goto 133
-                     endif
-                     
-                     jl=0
-                     ju=n_points+1
- 403                 if (ju-jl.gt.1) then
-                        jm=(ju+jl)/2
-                        if(timein.gt.usertime(jm))then
-                           jl=jm
-                        else
-                           ju=jm
-                        endif
-                        goto 403
-                     endif
-                     i2=jl+1
-                     
- 133                 if (i2.eq.1) then
-                        getflux=userconc3(ispecies,curcolumn,1)
+                  jl=0
+                  ju=nu_points+1
+ 403              if (ju-jl.gt.1) then
+                     jm=(ju+jl)/2
+                     if(timein.gt.usertime(jm))then
+                        jl=jm
                      else
-                        slope=userconc3(ispecies,curcolumn,i2)-
-     2                       userconc3(ispecies,curcolumn,i2-1)
-                        slope=slope/(usertime(i2)-usertime(i2-1))
-                        getflux=userconc3(ispecies,curcolumn,i2-1)+
-     2                       slope*(timein-usertime(i2-1))
+                        ju=jm
                      endif
- 143                 continue
+                     goto 403
+                  endif
+                  i2=jl+1
+                  
+ 133              if (i2.eq.1) then
+                     getflux=userconc3(ispecies,curcolumn,1)
+                  else
+                     slope=userconc3(ispecies,curcolumn,i2)-
+     2                    userconc3(ispecies,curcolumn,i2-1)
+                     slope=slope/(usertime(i2)-usertime(i2-1))
+                     getflux=userconc3(ispecies,curcolumn,i2-1)+
+     2                    slope*(timein-usertime(i2-1))
+                  endif
+ 143              continue
 c     
-c   IF this is an isothermal air-water simualtion
-c
-                     mi = i+npn
-                     mim=mi-npn
-                     if( ico2 .lt. 0 ) then
-c
+c     IF this is an isothermal air-water simualtion
+c     
+                  mi = i+npn
+                  mim=mi-npn
+                  if( ico2 .lt. 0 ) then
+c     
 c     Set liquid and vapor source/sink flow rates
 c     
-                        srmiml = sk(mim)
-                        
+                     srmiml = sk(mim)
+                     
 c     ELSE
 c     
-                     elseif( ico2 .gt. 0 ) then
+                  elseif( ico2 .gt. 0 ) then
 c     
 c     Set liquid and vapor source/sink flow rates
 c     
-                        srmiml = sk(mim)
-                        
-                     else
-                        srmiml = sk(mim) * s(mim)
-                        
-c     
-c   ENDIF
-c     
-                     end if
-c     
-c     IF liquid is entering the system
-c     
-                     if( srmiml .lt. 0. ) then
-c     
-c     IF solute can enter with the liquid
-c     
-                        if( icns(nsp) .gt. 0 ) then
-c     
-c     IF the current time is during the solute injection period
-c     
-                           if( days .gt. abs(t1sk(mi)) .and.
-     2                          days .le. abs(t2sk(mi)) ) then
-c     
-c     Compute contribution to solute source term
-c     
-                              
-                              rcss(mi) = getflux * srmiml
-                              rc_ss = rcss(mi)
-                              drc_ss = 0.
+                     srmiml = sk(mim)
+                     
+                  else
+                     srmiml = sk(mim) * s(mim)
+                     
 c     
 c     ENDIF
 c     
-                           end if
+                  end if
+c     
+c     IF liquid is entering the system
+c     
+                  if( srmiml .lt. 0. ) then
+c     
+c     IF solute can enter with the liquid
+c     
+                     if( icns(nsp) .gt. 0 ) then
+c     
+c     IF the current time is during the solute injection period
+c     
+                        if( days .gt. abs(t1sk(mi)) .and.
+     2                       days .le. abs(t2sk(mi)) ) then
+c     
+c     Compute contribution to solute source term
+c     
+                           
+                           rcss(mi) = getflux * srmiml
+                           rc_ss = rcss(mi)
+                           drc_ss = 0.
 c     
 c     ENDIF
 c     
                         end if
-                        
+c     
+c     ENDIF
+c     
                      end if
-                  endif
-                      
-                      
-               
+                     
+                  end if
                endif
+               
+               
+               
             endif
-            
+         else if ((iz.eq.2).and.(usroption.eq.5)) then
+c Recirculation option
+            if (l .ne. 0) then
+               mi = i + npn
+               ispecies = 1 + npn/n0
+               do k = 1, nu_zones
+                  if (izonef(i) .eq. inflzones(k)) then
+                     if (abs(sk(i)) .gt. zero_t) then
+                        rc_ss = rc_ss + moles_recycle(k, ispecies) 
+     &                       * sk(i)
+                     end if
+c     Erosion model
+                     if (erosion_factor .ne. 0 .and. scl(mi) .gt.
+     &                    zero_t) then
+C Using rate/s 
+                        rc_ss_erosion = 1.d-3 * erosion_factor 
+     &                       * sx1(i) * rolf(i) * scl(mi)
+                        drc_ss_erosion = 1.d-3 * erosion_factor 
+     &                       * sx1(i) * rolf(i) * dsccl(mi)
+                        rc_ss = rc_ss + rc_ss_erosion
+                        drc_ss = drc_ss + drc_ss_erosion
+                     end if
+c                     if (mi .eq. 7022) then
+c                         write(iptty,*) 'userc 7022:', rc_ss
+c                     end if
+                     exit
+                  end if
+               end do
+            end if
 
-         end if
-             
-         return
-         end
-
-
-
+         else if ((iz.eq.3).and.(usroption.eq.5)) then
+c usroption = 5 Solute recirculation model
+c foreach production zone
+            moles_recycle = 0.
+            do k = 1, nu_zones
+c    determine if the zone is currently producing
+c    if producing
+               inflrate = 0.
+               do ispecies = 1, nspeci
+                  molesout = 0.
+                  npn = npt(ispecies)
+                  do j = 1, n0
+                     mi = j + npn
+                     if (izonef(j) .eq. prodzones(k)) then
+c       get the solute production rate (molesout -> moles/s)
+                        if (sk(j) .gt. zero_t) then
+                           molesout = molesout + sk(j) * anlo(mi)
+                        end if
+                     end if
+                  end do
+                  if (molesout .gt. zero_t .and. ispecies .eq. 1) then
+c determine infiltration for zone (not dependent on species)
+                     do j = 1, n0
+                        if (izonef(j) .eq. inflzones(k)) then
+                           if (abs(sk(j)) .gt. zero_t) then
+                              inflrate = inflrate + abs(sk(j))
+                           end if
+                        end if
+                     end do
+                  end if
+c       molesin -> moles/kg
+                  if (inflrate .gt. zero_t) then
+                     moles_recycle(k, ispecies) = (molesout / inflrate)
+     &                    * recycle_factor(ispecies)
+                  end if
+               end do
+            end do
+         endif
+         
+      end if
+      
+      return
+      end

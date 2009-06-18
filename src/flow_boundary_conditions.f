@@ -285,6 +285,30 @@ c new initial value capability 12/03/98 GAZ
             temperature_ini = 0.0d00
             temperature_ini_type = 0
          endif
+         if(ixperm.ne.0) then
+            if (.not. allocated (permx)) 
+     &           allocate(permx(maxtimes,maxmodel))
+            if (.not. allocated (permx_type))
+     &           allocate(permx_type(maxmodel))
+            permx = 0.0d00
+            permx_type = 0
+         endif
+         if(iyperm.ne.0) then
+            if (.not. allocated (permy)) 
+     &           allocate(permy(maxtimes,maxmodel))
+            if (.not. allocated (permy_type))
+     &           allocate(permy_type(maxmodel))
+            permy = 0.0d00
+            permy_type = 0
+         endif
+         if(izperm.ne.0) then
+            if (.not. allocated (permz)) 
+     &           allocate(permz(maxtimes,maxmodel))
+            if (.not. allocated (permz_type))
+     &           allocate(permz_type(maxmodel))
+            permz = 0.0d00
+            permz_type = 0
+         endif
          if(iwght.ne.0) then
             if (.not. allocated (weight_type)) 
      .           allocate(weight_type(maxmodel))   
@@ -828,7 +852,7 @@ c GAZ(4-8-2001)            satb(i)=1.e-6
                         sk(i)=qw(i)
                         qwat =qw(i)
                         ka(i)=1
-c set specified air pres when flowing
+c     set specified air pres when flowing
                         if(ipresa.ne.0) then
                            if(presa(i).gt.0.0) esk(i)=-presa(i)
                            if(wellim(i).eq.0.0) wellim(i)=sx1(i)*1.d06
@@ -848,128 +872,128 @@ c set specified air pres when flowing
                   endif
                endif
             enddo
-         
+            
 	 else if(ico2 .lt. 0 .and. ice .eq. 2 ) then
-c meth tenma 4/6/2005
-       call flow_boun(3
+c     meth tenma 4/6/2005
+            call flow_boun(3
 c     & ,n,ico2,idof
-     & ,n,0,idof
-     & ,days0,days,day,daynew,sx1
-     & ,inpt,iptty,iout,ierr,l,igrav,ihead)
-        do i=1,n
-         if(idum(i).ne.0) then
-         if(iqenth.ne.0) then
-          if(qenth(i).ne.0.0) then
-            qflux(i)=qenth(i)
-            qflxm(i)= 0.0
-          endif
-         else if(itempb.ne.0) then
-          if(tempb(i).gt.0.0) then
-            qflux(i)=tempb(i)
-            qflxm(i)= sx1(i)
-            if(wellim(i).ne.0.0) qflxm(i)=wellim(i)
-          endif
-         else if(isatb.ne.0) then
-          if(satb(i).gt.0.0) then
-            qflux(i)=satb(i)
-            qflxm(i)= -sx1(i)
-            if(wellim(i).ne.0.0) qflxm(i)=-wellim(i)
-          endif
-         endif
-         endif
-        enddo
-        do i=1,n
-         if(idum(i).ne.0) then
-         if(ipresw_ini.ne.0) then
-          if(presw_ini(i).gt.0.0d00) then
-            phi(i) = presw_ini(i)
-            pho(i) = phi(i)
-            presw_ini(i) = 0.0d00
-          endif
-         endif
-         endif
-        enddo
-        do i=1,n
-         if(idum(i).ne.0) then
-         if(itempb_ini.ne.0) then
-          if(tempb_ini(i).gt.0.0) then
-            t(i) = tempb_ini(i)
-            to(i) = t(i)
-            tempb_ini(i) = 0.0d00
-          endif
-         endif
-         endif
-        enddo
-        do i=1,n
-         if(idum(i).ne.0) then
-         if(isatb_ini.ne.0) then
-          if(satb_ini(i).gt.0.0) then
-            s(i) = satb_ini(i)
-            so(i) = s(i)
-            ieos(i) = 2
-            if(s(i).le.0.0d00) ieos(i) = 1
-            if(s(i).ge.1.0d00) ieos(i) = 3
-            satb_ini(i) = 0.0d00
-          endif
-         endif
-         endif
-        enddo
-        do i=1,n
-         if(idum(i).ne.0) then
-         if(ipresw.ne.0) then
-          if(presw(i).ne.0.0) then
-           pflow(i)=presw(i)
-            if(pflow(i).eq.0.0) then
-             pflow(i)=phini(i)
-            endif
-            if(wellim(i).eq.0.0) wellim(i)=sx1(i)*1.d06
-           ka(i)=-1
-          endif
-         endif
-         endif
-        enddo
-        do i=1,n
-         if(idum(i).ne.0) then
-         if(ipresa.ne.0) then
-          if(presa(i).ne.0.0) then
-          pflow(i)=presa(i)
-            if(pflow(i).eq.0.0) then
-             pflow(i)=phini(i)
-            endif
-           if(wellim(i).eq.0.0) wellim(i)=sx1(i)*1.d06
-          ka(i)=-1
-          endif
-         endif
-         endif
-        enddo
-        do i=1,n
-         if(idum(i).ne.0) then
-         if(ienth.ne.0) then
-          if(enth(i).ne.0.0) then
-           esk(i)=enth(i)
-          endif
-         endif
-         endif
-        enddo
-        do i=1,n
-         if(idum(i).ne.0) then
-         if(iqw.ne.0.or.iqf.ne.0) then
-          if(qw(i).ne.0.0) then
-           sk(i)=qw(i)
-           ka(i)=1
-          endif
-         endif
-         endif
-        enddo
-c meth 4/6/2005
-       endif           
-c added call to adjust boundary heads if necessary(GAZ 4-8-2001)
-        if(ihead.ne.0) call airctr(10,0)
-        deallocate(idum)
+     &           ,n,0,idof
+     &           ,days0,days,day,daynew,sx1
+     &           ,inpt,iptty,iout,ierr,l,igrav,ihead)
+            do i=1,n
+               if(idum(i).ne.0) then
+                  if(iqenth.ne.0) then
+                     if(qenth(i).ne.0.0) then
+                        qflux(i)=qenth(i)
+                        qflxm(i)= 0.0
+                     endif
+                  else if(itempb.ne.0) then
+                     if(tempb(i).gt.0.0) then
+                        qflux(i)=tempb(i)
+                        qflxm(i)= sx1(i)
+                        if(wellim(i).ne.0.0) qflxm(i)=wellim(i)
+                     endif
+                  else if(isatb.ne.0) then
+                     if(satb(i).gt.0.0) then
+                        qflux(i)=satb(i)
+                        qflxm(i)= -sx1(i)
+                        if(wellim(i).ne.0.0) qflxm(i)=-wellim(i)
+                     endif
+                  endif
+               endif
+            enddo
+            do i=1,n
+               if(idum(i).ne.0) then
+                  if(ipresw_ini.ne.0) then
+                     if(presw_ini(i).gt.0.0d00) then
+                        phi(i) = presw_ini(i)
+                        pho(i) = phi(i)
+                        presw_ini(i) = 0.0d00
+                     endif
+                  endif
+               endif
+            enddo
+            do i=1,n
+               if(idum(i).ne.0) then
+                  if(itempb_ini.ne.0) then
+                     if(tempb_ini(i).gt.0.0) then
+                        t(i) = tempb_ini(i)
+                        to(i) = t(i)
+                        tempb_ini(i) = 0.0d00
+                     endif
+                  endif
+               endif
+            enddo
+            do i=1,n
+               if(idum(i).ne.0) then
+                  if(isatb_ini.ne.0) then
+                     if(satb_ini(i).gt.0.0) then
+                        s(i) = satb_ini(i)
+                        so(i) = s(i)
+                        ieos(i) = 2
+                        if(s(i).le.0.0d00) ieos(i) = 1
+                        if(s(i).ge.1.0d00) ieos(i) = 3
+                        satb_ini(i) = 0.0d00
+                     endif
+                  endif
+               endif
+            enddo
+            do i=1,n
+               if(idum(i).ne.0) then
+                  if(ipresw.ne.0) then
+                     if(presw(i).ne.0.0) then
+                        pflow(i)=presw(i)
+                        if(pflow(i).eq.0.0) then
+                           pflow(i)=phini(i)
+                        endif
+                        if(wellim(i).eq.0.0) wellim(i)=sx1(i)*1.d06
+                        ka(i)=-1
+                     endif
+                  endif
+               endif
+            enddo
+            do i=1,n
+               if(idum(i).ne.0) then
+                  if(ipresa.ne.0) then
+                     if(presa(i).ne.0.0) then
+                        pflow(i)=presa(i)
+                        if(pflow(i).eq.0.0) then
+                           pflow(i)=phini(i)
+                        endif
+                        if(wellim(i).eq.0.0) wellim(i)=sx1(i)*1.d06
+                        ka(i)=-1
+                     endif
+                  endif
+               endif
+            enddo
+            do i=1,n
+               if(idum(i).ne.0) then
+                  if(ienth.ne.0) then
+                     if(enth(i).ne.0.0) then
+                        esk(i)=enth(i)
+                     endif
+                  endif
+               endif
+            enddo
+            do i=1,n
+               if(idum(i).ne.0) then
+                  if(iqw.ne.0.or.iqf.ne.0) then
+                     if(qw(i).ne.0.0) then
+                        sk(i)=qw(i)
+                        ka(i)=1
+                     endif
+                  endif
+               endif
+            enddo
+c     meth 4/6/2005
+         endif           
+c     added call to adjust boundary heads if necessary(GAZ 4-8-2001)
+         if(ihead.ne.0) call airctr(10,0)
+         deallocate(idum)
       elseif(iflg.eq.4) then
-c 
-c set models for transient simulation
-c      
+c     
+c     set models for transient simulation
+c     
          if(isty.ne.0) then
             lchange = 0
             do i=1,mmodel
@@ -977,6 +1001,6 @@ c
             enddo
          endif
       endif      
-c      
+c     
       return
       end

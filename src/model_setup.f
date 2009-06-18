@@ -348,6 +348,19 @@ c     new initial value input here 12/3/98 GAZ
          enddo
          enthalpy_type(imod)=1
          if(isubmod.le.1) go to 30
+! Add permeability change model (from FEHM V2.26)
+      else if(key(1:2) .eq. 'kx') then
+         read(inpt,*) (permx(i,imod),i=1,ntimes)
+         permx_type(imod)=1
+         if(isubmod.le.1) go to 30
+      else if(key(1:2) .eq. 'ky') then
+         read(inpt,*) (permy(i,imod),i=1,ntimes)
+         permy_type(imod)=1
+         if(isubmod.le.1) go to 30
+      else if(key(1:2) .eq. 'kz') then
+         read(inpt,*) (permz(i,imod),i=1,ntimes)
+         permz_type(imod)=1
+         if(isubmod.le.1) go to 30
       else if(key(1:len_trim(key)).eq.'wgtp') then
          weight_type(imod)=2
       else if(key(1:len_trim(key)).eq.'wgtr') then
@@ -374,12 +387,12 @@ c     new initial value input here 12/3/98 GAZ
          mmodel=imod
          go to 40 
       else 
-         if(iptty.ne.0) write(iptty, 100) 
-         if(iout.ne.0) write(iout, 100) 
-         write(ierr, 100) 
+         if(iptty.ne.0) write(iptty, 100) trim(key)
+         if(iout.ne.0) write(iout, 100) trim(key) 
+         write(ierr, 100) trim(key)
          stop
       endif
- 100  format ('illegal keyword in macro boun, stopping')
+ 100  format ('illegal keyword in macro boun, stopping:', /, a)
 
       go to 10
  20   continue

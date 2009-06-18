@@ -198,9 +198,10 @@ c     fix data
          endif
          
       else if ((isave.gt.0)) then
+c zvd 6/9/08 prnt_rst values of 41, 42 for GoldSim mass output option
          if (bin_flag .eq. 1 .or. bin_flag .eq. 3) then
             select case (prnt_rst)
-            case (1, 2, 11, 12, 21, 22, 31, 32)
+            case (1, 2, 11, 12, 21, 22, 31, 32, 41, 42)
                if (header_flag .eq. 'new') write(isave) 'ptrk'
                write(dummy_string, *)  num_particles(1), rseed, 
      &              rseed_release
@@ -209,7 +210,7 @@ c     fix data
                write(isave) (frac_done(i,1),i=1,num_particles(1))
                write(isave) (theta(i,1),i=1,num_particles(1))
                write(isave) (timeleft(i,1),i=1,num_particles(1))
-            case (-1, -2, -11, -12, -21, -22, -31, -32)
+            case (-1, -2, -11, -12, -21, -22, -31, -32, -41, -42)
                if (header_flag .eq. 'new') write(isave,*) 'ptrk'
                write(dummy_string, *) num_particles(1), -rseed
                write(isave) dummy_string
@@ -220,14 +221,14 @@ c     fix data
             end select
          else
             select case (prnt_rst)
-            case (1, 2, 11, 12, 21, 22, 31, 32)
+            case (1, 2, 11, 12, 21, 22, 31, 32, 41, 42)
                if (header_flag .eq. 'new') write(isave,*) 'ptrk'
                write(isave,*) num_particles(1), rseed, rseed_release
                write(isave,*) (box(i,1),i=1,num_particles(1))
                write(isave,*) (frac_done(i,1),i=1,num_particles(1))
                write(isave,*) (theta(i,1),i=1,num_particles(1))
                write(isave,*) (timeleft(i,1),i=1,num_particles(1))
-            case (-1, -2, -11, -12, -21, -22, -31, -32)
+            case (-1, -2, -11, -12, -21, -22, -31, -32 -41, -42)
                if (header_flag .eq. 'new') write(isave,*) 'ptrk'
                write(isave,*) num_particles(1), -rseed
                write(isave,*) (box(i,1),i=1,num_particles(1))

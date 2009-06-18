@@ -253,6 +253,7 @@ c
       use combi
       use comci
       use comdi
+      use comdti, only : zero_t
       use comsplitts, only : dtot_next
       use comwt
 
@@ -262,44 +263,43 @@ c
       integer inpt,iptty,iout,ierr,l,ihead
       integer iimodel,istea,pump_node(1000),zmax(1000)
       integer igrav
- 
+      
       real*8 day,days0,days,daynew,daym1,vfac,tmdum
       real*8 time_factor1, time_factor2, if_time_interpolate
-c             
+c     
       real*8 vol_nd(*)
       real*8 perm_tot,dd,rldum,sf, v11norm
-c
+c     
       logical checkpa,checkpw,checke,checks,checkt,checkqa,checkqw
       character key_word*4,timchar*9
       zmax=-1000
       sf = 1.0d0
       v11norm = 0.0d0
-c
+c     
       if(iz.eq.0) then
-c
-c read model        
-c
+c     
+c     read model        
+c     
          read(inpt,'(a4)') key_word
          if(key_word.ne.'    ') then         
             backspace inpt
-c
-c increment model number
-c
+c     
+c     increment model number
+c     
             call model_setup(inpt,iptty,iout,ierr)
          else
             return
          endif
-c_________________________________________________________________________________________  
+c_______________________________________________________________________
       else if(iz.eq.1) then           
-c
-c adjust times so ending time is very long
-c
+c     
+c     adjust times so ending time is very long
+c     
          do imod=1,mmodel
             ntimes=abs(time_type(imod))
-c gaz 9-18-00
+c     gaz 9-18-00
             ntimes=ntimes+1
             if(time(1,imod).ne.0.0) then
-c        ntimes=ntimes+1
                do i=ntimes,2,-1
                   time(i,imod)=time(i-1,imod)
                   if(iqa.ne.0) sourcea(i,imod)=sourcea(i-1,imod)
@@ -325,9 +325,13 @@ c        ntimes=ntimes+1
      &                 temperature(i,imod)=temperature(i-1,imod)
                   if(itempb_ini.ne.0) 
      &                 temperature_ini(i,imod)=temperature(i-1,imod)
+                  if(ixperm.ne.0) permx(i,imod)= permx(i-1,imod)
+                  if(iyperm.ne.0) permy(i,imod)= permy(i-1,imod)
+                  if(izperm.ne.0) permz(i,imod)= permz(i-1,imod)
                   if(icm.ne.0) 
      &                 node_ch_model(i,imod)=node_ch_model(i-1,imod)
                enddo
+               ntimes=ntimes+1
                if(iqa.ne.0) sourcea(1,imod)=0.0
                if(iqw.ne.0) sourcew(1,imod)=0.0
                if(isf.ne.0) seepfac(1,imod)=0.0
@@ -341,6 +345,9 @@ c        ntimes=ntimes+1
                if(ienth.ne.0) enthalpy(1,imod)=0.0
                timestep(1,imod)=day
                if(itempb.ne.0) temperature(1,imod)=0.0
+               if(ixperm.ne.0) permx(1,imod)= 0.
+               if(iyperm.ne.0) permy(1,imod)= 0.
+               if(izperm.ne.0) permz(1,imod)= 0.
                if(icm.ne.0) node_ch_model(i,imod)=0   
             endif
             if(time_type(imod).gt.0) then
@@ -367,6 +374,9 @@ c        ntimes=ntimes+1
      &              temperature(ntimes,imod)=temperature(1,imod)
                if(itempb_ini.ne.0) 
      &              temperature_ini(ntimes,imod)=temperature(1,imod)
+               if(ixperm.ne.0) permx(ntimes,imod)=permx(1,imod) 
+               if(iyperm.ne.0) permy(ntimes,imod)=permy(1,imod)
+               if(izperm.ne.0) permz(ntimes,imod)=permz(1,imod) 
                if(icm.ne.0) 
      &              node_ch_model(ntimes,imod)=node_ch_model(1,imod)
             endif
@@ -374,29 +384,29 @@ c        ntimes=ntimes+1
                timestep(1,imod)=day
             endif
             if(time_type(imod).lt.0) then
-c       time(ntimes+1,imod)=1.e30
-c GAZ 2-23-00
+c     time(ntimes+1,imod)=1.e30
+c     GAZ 2-23-00
                time(ntimes,imod)=1.e30
                time_cycle(imod)=1.e30 
             endif
             if(time_type(imod).lt.0) then
                time_type(imod)=-1
-c         time(1,imod)=0.0
-c GAZ 2-23-00
-c         time(1,imod)=days
+c     time(1,imod)=0.0
+c     GAZ 2-23-00
+c     time(1,imod)=days
                time(1,imod)=0.0
             else
                time_type(imod)=1
                time(1,imod)=time_cycle(imod)
             endif
          enddo
-c
-c initialize lchange
-c
+c     
+c     initialize lchange
+c     
          lchange=0
-c         
-c first set check parameters false for compatibility check
-c
+c     
+c     first set check parameters false for compatibility check
+c     
          checke=.false.
          checks=.false.
          checkt=.false.
@@ -404,33 +414,33 @@ c
          checkqw=.false.
          checkpa=.false.
          checkpw=.false.
-c
-c check for consistency
-c         
+c     
+c     check for consistency
+c     
          if(idof.eq.1) then
-c
-c heat only conduction solution
-c
-c
-c check for consistency
-  
+c     
+c     heat only conduction solution
+c     
+c     
+c     check for consistency
+            
             if(itempb.ne.0) then
                checkt=.true.      
             endif
             if(checkt) then
             else
-               if (iout .ne. 0) write(iout,100)
-               if(iptty.ne.0) write(iptty,100)
+               if (iout .ne. 0) write(iout, 100)
+               if (iptty .ne. 0) write(iptty, 100)
  100           format(1x,'>> Warning: boundary conditions incompatible'
-     *              ,' with heat conduction')
-c       stop        
+     &              ,' with heat conduction')
+c     stop        
             endif      
          else if(ico2.lt.0 ) then
-c
-c air water isothermal solution                     
-c
-c check for consistency
-c 
+c     
+c     air water isothermal solution                     
+c     
+c     check for consistency
+c     
             if(isatb.ne.0) then
                checks=.true.
             endif
@@ -440,8 +450,8 @@ c
             if(ipresw.ne.0) then
                checkpw=.true.
             endif
-c head info is contained in temperature arrays for this physics
-c module
+c     head info is contained in temperature arrays for this physics
+c     module
             if(itempb.ne.0) then
                checkt=.true.      
             endif
@@ -449,17 +459,18 @@ c module
             else if(checkpw.or.checks) then
             else if(checkt.or.checks) then
             else
-               if (iout .ne. 0) write(iout ,101)
+               if (iout .ne. 0) write(iout, 101)
+               if (iptty .ne. 0) write(iptty, 101)
  101           format(1x, '>> Warning: boundary conditions ',
      &              'incompatible with iso air/water <<')
-c       stop        
+c     stop        
             endif
          else if(ico2.eq.0 ) then
-c
-c water(liquid and vapor) and heat
-c
-c check for consistency
-c 
+c     
+c     water(liquid and vapor) and heat
+c     
+c     check for consistency
+c     
             if(isatb.ne.0) then
                checks=.true.
             endif
@@ -480,17 +491,17 @@ c
             else if(checkpa.and.checks) then
             else
                if (iout .ne. 0) write(iout ,102)
-               if(iptty.ne.0) write(iptty,102)
+               if (iptty .ne. 0) write(iptty, 102)
  102           format(1x, '>> Warning: boundary conditions ',
      &              'incompatible with vapor/water <<')
             endif
          else if(ico2.gt.0) then
-c
-c air and water(liquid and vapor) and heat
-c
-c
-c check for consistency
-c 
+c     
+c     air and water(liquid and vapor) and heat
+c     
+c     
+c     check for consistency
+c     
             if(isatb.ne.0) then
                checks=.true.
             endif
@@ -512,39 +523,39 @@ c
             else if(checkpa.and.checkpw.and.checkt) then
             else
                if (iout .ne. 0) write(iout ,103)
-               if(iptty.ne.0) write(iptty,103)
- 103           format(1x, '>> Warning: boundary conditions',
-     &              ' incompatible with noniso air/water <<')
-c       stop        
+               if (iptty .ne. 0) write(iptty, 103)
+ 103           format(1x, '>> Warning: boundary conditions ',
+     &              'incompatible with noniso air/water <<')
+c     stop        
             endif
          endif
-c_________________________________________________________________________________________       
+c_______________________________________________________________________
       else if (iz.eq.3) then
-c
-c apply model
-c
-c find minumum time
-c
-c before the first timestep is a special case
+c     
+c     apply model
+c     
+c     find minumum time
+c     
+c     before the first timestep is a special case
          if(l.gt.0.and.lchange.eq.0) then
             call time_adjust(mmodel,modmin,time_type,time_cycle,
      *           time,days0,day,days,daynew,maxtimes,iptty,iout,l,   
      *           lchange,node_model,steady_type,isty,n)
             do i=1,mmodel
-C
-C             Trigger model updates in the case of
-C             models with time interpolation.
-C
-              if(time_interpolate(i) .ne. 0)then
-                 lchange = l
-              endif
+C     
+C     Trigger model updates in the case of
+C     models with time interpolation.
+C     
+               if (time_interpolate(i) .ne. 0) then
+                  lchange = l
+               end if
             enddo
          else if(l.eq.0) then
             lchange=0
             do i=1,mmodel
                if(time_type(i).lt.0) then
-c GAZ 9-20-00
-c          do j=1,maxtimes
+c     GAZ 9-20-00
+c     do j=1,maxtimes
                   do j=2,maxtimes
                      if(days.le.time(j,i)) then
                         go to 810
@@ -555,33 +566,33 @@ c          do j=1,maxtimes
                else
                   time_type(i)=1
                   days0=0.0d00
-c GAZ 9-20-00
-c          do j=1,maxtimes
+c     GAZ 9-20-00
+c     do j=1,maxtimes
                   do j=2,maxtimes
                      if(days.le.time(j,i)) then
                         go to 820
                      endif
                   enddo
  820              continue
-c          time_type(i)=j
+c     time_type(i)=j
                   time_type(i)=j-1
                endif
             enddo
          endif
-c      
-c if change has occurred(modmin ne 0) then update model
-c
+c     
+c     if change has occurred(modmin ne 0) then update model
+c     
          if(lchange.eq.l) then
             lchange=0
-c
-c update all models that change at the beginning of this time step
-c 
+c     
+c     update all models that change at the beginning of this time step
+c     
             min_model = 0
             do i=1,mmodel
                if(l.eq.0) then
-c        daym1=0.0d00
-c GAZ 2-15-00
-c        daym1=days    
+c     daym1=0.0d00
+c     GAZ 2-15-00
+c     daym1=days    
                   daym1=0.0d00
                else if(time_type(i).lt.0) then
                   daym1=time(abs(time_type(i)-1),i)
@@ -663,7 +674,7 @@ c        daym1=days
             endif
 
             do i=1,mmodel
-c gaz steady state management 10-30-04
+c     gaz steady state management 10-30-04
                if(isty.ne.0) then
                   istea = steady_type(i)
                else
@@ -675,28 +686,28 @@ c gaz steady state management 10-30-04
                         vtotw(i)=0.0d00
                      endif
                   endif
-c zvd 16-Jul08, all weighting will use vtotw for now
+c     zvd 16-Jul08, all weighting will use vtotw for now
                   if(iqenth.ne.0) then
                      if(sourcee_type(i).lt.0) then
                         vtotw(i)=0.0d00
-c                        vtote(i)=0.0d00
+c     vtote(i)=0.0d00
                      endif
                   endif
                   if(iqa.ne.0) then
                      if(sourcea_type(i).lt.0) then
                         vtotw(i)=0.0d00
-c                        vtota(i)=0.0d00
+c     vtota(i)=0.0d00
                      endif
                   endif
                   if(ifd.ne.0) then
                      if(drainar_type(i).lt.0) then
                         vtotw(i)=0.0d00
-c                        atotd(i)=0.0d00
+c     atotd(i)=0.0d00
                      endif
                   endif
-c
-c check for timestep size change
-c
+c     
+c     check for timestep size change
+c     
                   if(timestep_type(i).ne.0) then
                      day=timestep(abs(time_type(i)),i)
                      daynew=day
@@ -706,7 +717,7 @@ c
                endif
             enddo
 
-c calculate uppermost node
+c     calculate uppermost node
 
             do i=1,n
                iimodel=node_model(i)
@@ -737,14 +748,61 @@ c calculate uppermost node
                else
                   imodel = iimodel
                endif
-c gaz steady state management 10-30-04
+c     gaz steady state management 10-30-04
                if(isty.ne.0.and.imodel.gt.0) then
                   istea = steady_type(imodel)
                else
                   istea = 1
                endif
                if(imodel.gt.0.and.istea.gt.0) then
-c gaz new weighting capability 10-26-04
+c     zvd 16-Oct-08 Variable perms from V2.26 (update perms before 
+c     weights in case using permeability weighting)
+                  if(ixperm.ne.0) then
+                     if(permx_type(imodel).ne.0) then
+c     If permx value is zero, don't update
+                        if(permx(abs(time_type(imodel)),imodel) .ne. 0.)
+     &                       then
+                           pnx(i)=permx(abs(time_type(imodel)),imodel)
+                           if(pnx(i).ge.0.0d00) then
+                              pnx(i) = max (zero_t, pnx(i))
+                           else
+                              pnx(i) = 1.0d00/10.0d00**(abs(pnx(i)))
+                           endif
+                           pnx(i) = pnx(i) * 1.d+06
+                        end if
+                     end if
+                  end if
+                  if(iyperm.ne.0) then
+                     if(permy_type(imodel).ne.0) then
+c     If permy value is zero, don't update
+                        if(permy(abs(time_type(imodel)),imodel) .ne. 0.)
+     &                       then
+                           pny(i)=permy(abs(time_type(imodel)),imodel)
+                           if(pny(i).ge.0.0d00) then
+                              pny(i) = max (zero_t, pny(i))
+                           else
+                              pny(i) = 1.0d00/10.0d00**(abs(pny(i)))
+                           endif
+                           pny(i) = pny(i) * 1.d+06
+                        end if
+                     end if
+                  end if
+                  if(izperm.ne.0) then
+                     if(permz_type(imodel).ne.0) then
+c     If permz value is zero, don't update
+                        if(permz(abs(time_type(imodel)),imodel) .ne. 0.)
+     &                       then     
+                           pnz(i)=permz(abs(time_type(imodel)),imodel)
+                           if(pnz(i).ge.0.0d00) then
+                              pnz(i) = max (zero_t, pnz(i))
+                           else
+                              pnz(i) = 1.0d00/10.0d00**(abs(pnz(i)))
+                           endif
+                           pnz(i) = pnz(i) * 1.d+06
+                        end if
+                     end if
+                  end if
+c     gaz new weighting capability 10-26-04
                   iwght = weight_type(imodel)
                   if(iwght.le.1) then
                      vtotw(imodel)=vtotw(imodel)+sf*vol_nd(i)
@@ -762,51 +820,54 @@ c gaz new weighting capability 10-26-04
                      endif
                      vtotw(imodel)=vtotw(imodel)+perm_tot*sf*vol_nd(i)
                   elseif(iwght.eq.5) then
-c this takes into account distance from pump
+c     this takes into account distance from pump
                      rldum = max(0.d0,rlxyf(i)-rlptol)
                      perm_tot = sqrt(rldum**2*
      &                    (pnx(i)**2+pny(i)**2+pnz(i)**2))
                      dd=zmax(imodel)-cord(i,igrav)
                      vtotw(imodel)=vtotw(imodel)+perm_tot*sf*vol_nd(i)*
      &                    exp(-2.45-.01*dd)
-C
-C 09/15/06 CWG
-C case 6 - 11
-C Volume/distance weighting, where distance is the [xyz]_d[xyz] = [xyz]_max - [xyz]_min of
-C the bounding box of the midpoint of all edges incident upon node i.
-C The extra if statement inside each case is to avoid a divide by
-C zero if [xyz]_d[xyz] is very small.
-C 09/15/06 CWG
-C
+C     
+C     09/15/06 CWG
+C     case 6 - 11
+C     Volume/distance weighting, where distance is the [xyz]_d[xyz] = [xyz]_max - [xyz]_min of
+C     the bounding box of the midpoint of all edges incident upon node i.
+C     The extra if statement inside each case is to avoid a divide by
+C     zero if [xyz]_d[xyz] is very small.
+C     09/15/06 CWG
+C     
                   elseif(iwght.eq.6) then
                      if(dx_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*1.e-7)then
-                  vtotw(imodel)=vtotw(imodel)+(sf*vol_nd(i)/dx_bbox(i))
+                        vtotw(imodel)=vtotw(imodel)+
+     &                       (sf*vol_nd(i)/dx_bbox(i))
                      endif
                   elseif(iwght.eq.7) then
                      if(dy_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*1.e-7)then
-                  vtotw(imodel)=vtotw(imodel)+(sf*vol_nd(i)/dy_bbox(i))
+                        vtotw(imodel)=vtotw(imodel)+
+     &                       (sf*vol_nd(i)/dy_bbox(i))
                      endif
                   elseif(iwght.eq.8) then
                      if(dz_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*1.e-7)then
-                  vtotw(imodel)=vtotw(imodel)+(sf*vol_nd(i)/dz_bbox(i))
+                        vtotw(imodel)=vtotw(imodel)+
+     &                       (sf*vol_nd(i)/dz_bbox(i))
                      endif
                   elseif(iwght.eq.9) then
                      if(dx_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*1.e-7)then
-                     perm_tot = sqrt(pnx(i)**2+pny(i)**2+pnz(i)**2)
-                     vtotw(imodel) = vtotw(imodel)+
-     &                               perm_tot*(sf*vol_nd(i)/dx_bbox(i))
+                        perm_tot = sqrt(pnx(i)**2+pny(i)**2+pnz(i)**2)
+                        vtotw(imodel) = vtotw(imodel)+
+     &                       perm_tot*(sf*vol_nd(i)/dx_bbox(i))
                      endif
                   elseif(iwght.eq.10) then
                      if(dy_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*1.e-7)then
-                     perm_tot = sqrt(pnx(i)**2+pny(i)**2+pnz(i)**2)
-                     vtotw(imodel)=vtotw(imodel)+
-     &                             perm_tot*(sf*vol_nd(i)/dy_bbox(i))
-                    endif
+                        perm_tot = sqrt(pnx(i)**2+pny(i)**2+pnz(i)**2)
+                        vtotw(imodel)=vtotw(imodel)+
+     &                       perm_tot*(sf*vol_nd(i)/dy_bbox(i))
+                     endif
                   elseif(iwght.eq.11) then
                      if(dz_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*1.e-7)then
-                     perm_tot = sqrt(pnx(i)**2+pny(i)**2+pnz(i)**2)
-                     vtotw(imodel)=vtotw(imodel)+
-     &                             perm_tot*(sf*vol_nd(i)/dz_bbox(i))
+                        perm_tot = sqrt(pnx(i)**2+pny(i)**2+pnz(i)**2)
+                        vtotw(imodel)=vtotw(imodel)+
+     &                       perm_tot*(sf*vol_nd(i)/dz_bbox(i))
                      endif
                   endif
                   if(isf.ne.0) then
@@ -893,7 +954,7 @@ C
      &                       imodel)
                      endif         
                   endif         
-c added initial value capability 12/3/98 GAZ
+c     added initial value capability 12/3/98 GAZ
                   if(itempb_ini.ne.0.and.node_model(i).gt.0) then
                      if(temperature_ini_type(imodel).ne.0) then
                         tempb_ini(i)=temperature_ini(abs(time_type
@@ -925,8 +986,8 @@ c added initial value capability 12/3/98 GAZ
             do i=1,n
                imodel=node_model(i)
                if(imodel.gt.0) then
-c gaz new weighting capability 10-26-04
-c gaz steady state management 10-30-04
+c     gaz new weighting capability 10-26-04
+c     gaz steady state management 10-30-04
                   if(isty.ne.0.and.imodel.gt.0) then
                      istea = steady_type(imodel)
                   else
@@ -955,57 +1016,72 @@ c gaz steady state management 10-30-04
                      vfac = sf*vol_nd(i)*perm_tot*
      &                    exp(-2.45-.01*dd)/vtotw(imodel)
                   elseif((iwght.ge.6).and.(iwght.le.11))then
-C Begin Volume/distance weighted cases
-                  if(iwght.eq.6) then
-                     if(dx_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*1.e-7)then
-                       vfac = (sf*vol_nd(i)/dx_bbox(i))/vtotw(imodel)
-                     else
-                       vfac = 0.0d0
+C     Begin Volume/distance weighted cases
+                     if(iwght.eq.6) then
+                        if(dx_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*1.e-7)
+     &                       then
+                           vfac = (sf*vol_nd(i)/dx_bbox(i))/
+     &                          vtotw(imodel)
+                        else
+                           vfac = 0.0d0
+                        endif
+                     elseif(iwght.eq.7) then
+                        if(dy_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*1.e-7)
+     &                       then
+                           vfac = (sf*vol_nd(i)/dy_bbox(i))/
+     &                          vtotw(imodel)
+                        else
+                           vfac = 0.0d0
+                        endif
+                     elseif(iwght.eq.8) then
+                        if(dz_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*1.e-7)
+     &                       then
+                           vfac = (sf*vol_nd(i)/dz_bbox(i))/
+     &                          vtotw(imodel)
+                        else
+                           vfac = 0.0d0
+                        endif
+                     elseif((iwght.ge.9).and.(iwght.le.11)) then
+C     Begin perm weighted cases
+                        perm_tot = sqrt(pnx(i)**2+pny(i)**2+pnz(i)**2)
+                        if(iwght.eq.9) then
+                           if(dx_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*
+     &                          1.e-7) then
+                              perm_tot = sqrt(pnx(i)**2+pny(i)**2+
+     &                             pnz(i)**2)
+                              vfac = 
+     &                             perm_tot*(sf*vol_nd(i)/dx_bbox(i))/
+     &                             vtotw(imodel)
+                           else
+                              vfac = 0.0d0
+                           endif
+                        elseif(iwght.eq.10) then
+                           if(dy_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*
+     &                          1.e-7) then
+                              perm_tot = sqrt(pnx(i)**2+pny(i)**2+
+     &                             pnz(i)**2)
+                              vfac = 
+     &                             perm_tot*(sf*vol_nd(i)/dy_bbox(i))/
+     &                             vtotw(imodel)
+                           else
+                              vfac = 0.0d0
+                           endif
+                        elseif(iwght.eq.11) then
+                           if(dz_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*
+     &                          1.e-7) then
+                              perm_tot = sqrt(pnx(i)**2+pny(i)**2+
+     &                             pnz(i)**2)
+                              vfac = 
+     &                             perm_tot*(sf*vol_nd(i)/dz_bbox(i))/
+     &                             vtotw(imodel)
+                              if(v11norm .le. 0) v11norm = vfac
+                           else
+                              vfac = 0.0d0
+                           endif
+                        endif
+C     End perm weighted cases
                      endif
-                  elseif(iwght.eq.7) then
-                     if(dy_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*1.e-7)then
-                       vfac = (sf*vol_nd(i)/dy_bbox(i))/vtotw(imodel)
-                     else
-                       vfac = 0.0d0
-                     endif
-                  elseif(iwght.eq.8) then
-                     if(dz_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*1.e-7)then
-                       vfac = (sf*vol_nd(i)/dz_bbox(i))/vtotw(imodel)
-                     else
-                       vfac = 0.0d0
-                     endif
-                  elseif((iwght.ge.9).and.(iwght.le.11))then
-C Begin perm weighted cases
-                  perm_tot = sqrt(pnx(i)**2+pny(i)**2+pnz(i)**2)
-                  if(iwght.eq.9) then
-                     if(dx_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*1.e-7)then
-                       perm_tot = sqrt(pnx(i)**2+pny(i)**2+pnz(i)**2)
-                       vfac = 
-     &                  perm_tot*(sf*vol_nd(i)/dx_bbox(i))/vtotw(imodel)
-                     else
-                       vfac = 0.0d0
-                     endif
-                  elseif(iwght.eq.10) then
-                     if(dy_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*1.e-7)then
-                       perm_tot = sqrt(pnx(i)**2+pny(i)**2+pnz(i)**2)
-                       vfac = 
-     &                  perm_tot*(sf*vol_nd(i)/dy_bbox(i))/vtotw(imodel)
-                     else
-                       vfac = 0.0d0
-                     endif
-                  elseif(iwght.eq.11) then
-                     if(dz_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*1.e-7)then
-                       perm_tot = sqrt(pnx(i)**2+pny(i)**2+pnz(i)**2)
-                       vfac = 
-     &                  perm_tot*(sf*vol_nd(i)/dz_bbox(i))/vtotw(imodel)
-                       if(v11norm .le. 0) v11norm = vfac
-                     else
-                       vfac = 0.0d0
-                     endif
-                  endif
-C End perm weighted cases
-                  endif
-C End Volume/distance weighted cases
+C     End Volume/distance weighted cases
                   endif
                   if(ifd.ne.0) then
                      if(drainar_type(imodel).lt.0) then
@@ -1021,7 +1097,7 @@ C End Volume/distance weighted cases
                   endif
                   if(iqa.ne.0) then
                      if(sourcea_type(imodel).lt.0) then
-c                        vfac = sf*vol_nd(i)/vtota(imodel)
+c     vfac = sf*vol_nd(i)/vtota(imodel)
                         qa(i)=sourcea(abs(time_type(imodel)),imodel)*
      &                       vfac
                      endif
@@ -1032,209 +1108,226 @@ c                        vfac = sf*vol_nd(i)/vtota(imodel)
      &                       *vfac
                      endif
                   endif
-C
-                  endif
+C     
+               endif
             enddo
-C
+C     
 C     Adjust time step if necessary.
-C
+C     
             call time_adjust(mmodel,modmin,time_type,time_cycle,
      *           time,days0,day,days,daynew,maxtimes,iptty,iout,l,
      *           lchange,node_model,steady_type,isty,n)
-C
+C     
 C     Enter a second loop over all the nodes to determine
 C     source/sink terms in cases where there is time interpolation
 C     of the source/sink terms.
-C
+C     
             if_time_interpolate = 0
             do i=1,mmodel
-              if(time_interpolate(i) .ne. 0)then
-                 if_time_interpolate = if_time_interpolate + 1
-              endif
+               if(time_interpolate(i) .ne. 0)then
+                  if_time_interpolate = if_time_interpolate + 1
+               endif
             enddo
 
             if(if_time_interpolate .gt. 0)then
-            do i=1,n
-               imodel=node_model(i)
-               if(imodel.gt.0) then
-c gaz new weighting capability 10-26-04
-c gaz steady state management 10-30-04
-                  if(isty.ne.0.and.imodel.gt.0) then
-                     istea = steady_type(imodel)
-                  else
-                     istea = 1
-                  endif
-               endif
-               if(imodel.gt.0.and.istea.gt.0) then
-                  iwght = weight_type(imodel)
-                  if(iwght.le.1) then
-                     vfac = sf*vol_nd(i)/vtotw(imodel)
-                  elseif(iwght.eq.2) then
-                     perm_tot = sqrt(pnx(i)**2+pny(i)**2+pnz(i)**2)
-                     vfac = sf*vol_nd(i)*perm_tot/vtotw(imodel)
-                  elseif(iwght.eq.3) then
-                     vfac = wgt_area(i)
-                  elseif(iwght.eq.4) then
-                     rldum = max(0.d0,rlxyf(i)-rlptol)
-                     perm_tot = sqrt(rldum**2*
-     &                    (pnx(i)**2+pny(i)**2+pnz(i)**2))
-                     vfac = sf*vol_nd(i)*perm_tot/vtotw(imodel)
-                  elseif(iwght.eq.5) then
-                     rldum = max(0.d0,rlxyf(i)-rlptol)
-                     perm_tot = sqrt(rldum**2*
-     &                    (pnx(i)**2+pny(i)**2+pnz(i)**2))
-                     dd=zmax(imodel)-cord(i,igrav)
-                     vfac = sf*vol_nd(i)*perm_tot*
-     &                    exp(-2.45-.01*dd)/vtotw(imodel)
-                  elseif((iwght.ge.6).and.(iwght.le.11))then
-C Begin Volume/distance weighted cases
-                  if(iwght.eq.6) then
-                     if(dx_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*1.e-7)then
-                       vfac = (sf*vol_nd(i)/dx_bbox(i))/vtotw(imodel)
+               do i=1,n
+                  imodel=node_model(i)
+                  if(imodel.gt.0) then
+c     gaz new weighting capability 10-26-04
+c     gaz steady state management 10-30-04
+                     if(isty.ne.0.and.imodel.gt.0) then
+                        istea = steady_type(imodel)
                      else
-                       vfac = 0.0d0
-                     endif
-                  elseif(iwght.eq.7) then
-                     if(dy_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*1.e-7)then
-                       vfac = (sf*vol_nd(i)/dy_bbox(i))/vtotw(imodel)
-                     else
-                       vfac = 0.0d0
-                     endif
-                  elseif(iwght.eq.8) then
-                     if(dz_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*1.e-7)then
-                       vfac = (sf*vol_nd(i)/dz_bbox(i))/vtotw(imodel)
-                     else
-                       vfac = 0.0d0
-                     endif
-                  elseif((iwght.ge.9).and.(iwght.le.11))then
-C Begin perm weighted cases
-                  perm_tot = sqrt(pnx(i)**2+pny(i)**2+pnz(i)**2)
-                  if(iwght.eq.9) then
-                     if(dx_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*1.e-7)then
-                       perm_tot = sqrt(pnx(i)**2+pny(i)**2+pnz(i)**2)
-                       vfac = 
-     &                  perm_tot*(sf*vol_nd(i)/dx_bbox(i))/vtotw(imodel)
-                     else
-                       vfac = 0.0d0
-                     endif
-                  elseif(iwght.eq.10) then
-                     if(dy_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*1.e-7)then
-                       perm_tot = sqrt(pnx(i)**2+pny(i)**2+pnz(i)**2)
-                       vfac = 
-     &                  perm_tot*(sf*vol_nd(i)/dy_bbox(i))/vtotw(imodel)
-                     else
-                       vfac = 0.0d0
-                     endif
-                  elseif(iwght.eq.11) then
-                     if(dz_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*1.e-7)then
-                       perm_tot = sqrt(pnx(i)**2+pny(i)**2+pnz(i)**2)
-                       vfac = 
-     &                  perm_tot*(sf*vol_nd(i)/dz_bbox(i))/vtotw(imodel)
-                     else
-                       vfac = 0.0d0
+                        istea = 1
                      endif
                   endif
-C End perm weighted cases
-                  endif
-C End Volume/distance weighted cases
-                  endif
-C
-C    Linear interpolation between time and flux values.
-C    This is turned on at input by use of ti_linear or cy_linear
-C    instead of ti or cy keywords.
-C
-             if(time_interpolate(imodel) .eq. 1)then
-C
+                  if(imodel.gt.0.and.istea.gt.0) then
+                     iwght = weight_type(imodel)
+                     if(iwght.le.1) then
+                        vfac = sf*vol_nd(i)/vtotw(imodel)
+                     elseif(iwght.eq.2) then
+                        perm_tot = sqrt(pnx(i)**2+pny(i)**2+pnz(i)**2)
+                        vfac = sf*vol_nd(i)*perm_tot/vtotw(imodel)
+                     elseif(iwght.eq.3) then
+                        vfac = wgt_area(i)
+                     elseif(iwght.eq.4) then
+                        rldum = max(0.d0,rlxyf(i)-rlptol)
+                        perm_tot = sqrt(rldum**2*
+     &                       (pnx(i)**2+pny(i)**2+pnz(i)**2))
+                        vfac = sf*vol_nd(i)*perm_tot/vtotw(imodel)
+                     elseif(iwght.eq.5) then
+                        rldum = max(0.d0,rlxyf(i)-rlptol)
+                        perm_tot = sqrt(rldum**2*
+     &                       (pnx(i)**2+pny(i)**2+pnz(i)**2))
+                        dd=zmax(imodel)-cord(i,igrav)
+                        vfac = sf*vol_nd(i)*perm_tot*
+     &                       exp(-2.45-.01*dd)/vtotw(imodel)
+                     elseif((iwght.ge.6).and.(iwght.le.11))then
+C     Begin Volume/distance weighted cases
+                        if(iwght.eq.6) then
+                           if(dx_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*
+     &                          1.e-7) then
+                              vfac = (sf*vol_nd(i)/dx_bbox(i))/
+     &                             vtotw(imodel)
+                           else
+                              vfac = 0.0d0
+                           endif
+                        elseif(iwght.eq.7) then
+                           if(dy_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*
+     &                          1.e-7) then
+                              vfac = (sf*vol_nd(i)/dy_bbox(i))/
+     &                             vtotw(imodel)
+                           else
+                              vfac = 0.0d0
+                           endif
+                        elseif(iwght.eq.8) then
+                           if(dz_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*
+     &                          1.e-7) then
+                              vfac = (sf*vol_nd(i)/dz_bbox(i))/
+     &                             vtotw(imodel)
+                           else
+                              vfac = 0.0d0
+                           endif
+                        elseif((iwght.ge.9).and.(iwght.le.11)) then
+C     Begin perm weighted cases
+                           perm_tot = sqrt(pnx(i)**2+pny(i)**2+
+     &                          pnz(i)**2)
+                           if(iwght.eq.9) then
+                              if(dx_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*
+     &                             1.e-7) then
+                                 perm_tot = sqrt(pnx(i)**2+pny(i)**2+
+     &                                pnz(i)**2)
+                                 vfac = 
+     &                                perm_tot*(sf*vol_nd(i)/dx_bbox(i))
+     &                                /vtotw(imodel)
+                              else
+                                 vfac = 0.0d0
+                              endif
+                           elseif(iwght.eq.10) then
+                              if(dy_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*
+     &                             1.e-7) then
+                                 perm_tot = sqrt(pnx(i)**2+pny(i)**2+
+     &                                pnz(i)**2)
+                                 vfac = 
+     &                                perm_tot*(sf*vol_nd(i)/dy_bbox(i))
+     &                                /vtotw(imodel)
+                              else
+                                 vfac = 0.0d0
+                              endif
+                           elseif(iwght.eq.11) then
+                              if(dz_bbox(i) .gt. (sf*vol_nd(i)**(1/3))*
+     &                             1.e-7) then
+                                 perm_tot = sqrt(pnx(i)**2+pny(i)**2+
+     &                                pnz(i)**2)
+                                 vfac = 
+     &                                perm_tot*(sf*vol_nd(i)/dz_bbox(i))
+     &                                /vtotw(imodel)
+                              else
+                                 vfac = 0.0d0
+                              endif
+                           endif
+C     End perm weighted cases
+                        endif
+C     End Volume/distance weighted cases
+                     endif
+C     
+C     Linear interpolation between time and flux values.
+C     This is turned on at input by use of ti_linear or cy_linear
+C     instead of ti or cy keywords.
+C     
+                     if(time_interpolate(imodel) .eq. 1)then
+C     
 C     Compute the proportion of the time cycle that has
 C     completed.
-C
+C     
 C     days = time_start, time_factor1=1, time_factor2=0
 C     days = time_end,   time_factor1=0, time_factor2=1
-C
+C     
 C     time_start = time(abs(time_type(imodel))  ,imodel)
 C     time_end   = time(abs(time_type(imodel))+1,imodel)
 C     time_factor2 = 
-             if(days .ge. time(abs(time_type(imodel)),imodel))then
-                time_factor2 = 
-     &             (days - time(abs(time_type(imodel)),imodel))/
-     &                    (time(abs(time_type(imodel))+1,imodel) - 
-     &                     time(abs(time_type(imodel))  ,imodel))
-                time_factor1 = 1.0d0 - time_factor2
-             else
-C
-C      No action if the start time of the model has not been reached.
-C
-                time_factor1 = 0.0d0
-                time_factor2 = 0.0d0
-             endif
-C
-                  if(ifd.ne.0) then
-                     if(drainar_type(imodel).lt.0) then
-                        drain(i)= time_factor1*drain(i) + 
-     &                            time_factor2*drainar
-     &                            (abs(time_type(imodel))+1,imodel)*vfac
+                        if(days .ge. time(abs(time_type(imodel)),
+     &                       imodel)) then
+                           time_factor2 = (days - 
+     &                          time(abs(time_type(imodel)),imodel))/
+     &                          (time(abs(time_type(imodel))+1,imodel)
+     &                          - time(abs(time_type(imodel)),imodel))
+                           time_factor1 = 1.0d0 - time_factor2
+                        else
+C     
+C     No action if the start time of the model has not been reached.
+C     
+                           time_factor1 = 0.0d0
+                           time_factor2 = 0.0d0
+                        endif
+
+                        if(ifd.ne.0) then
+                           if(drainar_type(imodel).lt.0) then
+                              drain(i)= time_factor1*drain(i) + 
+     &                             time_factor2*drainar(abs
+     &                             (time_type(imodel))+1,imodel)*vfac
+                           endif
+                        endif
+                        if(iqw.ne.0) then
+                           if(sourcew_type(imodel).lt.0) then
+                              qw(i)   = time_factor1*qw(i) + 
+     &                             time_factor2*sourcew(abs
+     &                             (time_type(imodel))+1,imodel)*vfac
+                           endif
+                        endif
+                        if(iqa.ne.0) then
+                           if(sourcea_type(imodel).lt.0) then
+                              vfac = sf*vol_nd(i)/vtota(imodel)
+                              qa(i)   = time_factor1*qa(i) + 
+     &                             time_factor2*sourcea(abs
+     &                             (time_type(imodel))+1,imodel)*vfac
+                           endif
+                        endif
+                        if(iqenth.ne.0) then
+                           if(sourcee_type(imodel).lt.0) then
+                              qenth(i)= time_factor1*qenth(i) + 
+     &                             time_factor2*sourcee(abs
+     &                             (time_type(imodel))+1,imodel)*vfac
+                           endif
+                        endif
                      endif
                   endif
-                  if(iqw.ne.0) then
-                     if(sourcew_type(imodel).lt.0) then
-                        qw(i)   = time_factor1*qw(i) + 
-     &                            time_factor2*sourcew
-     &                            (abs(time_type(imodel))+1,imodel)*vfac
+               enddo
+               if(iout.ne.0 .and. boun_out) write(iout,*) ' '
+               if(iptty.ne.0 .and. boun_out) write(iptty,*) ' '
+               do i=1,mmodel
+                  if(time_interpolate(i) .ne. 0)then
+                     if(days .ge. time(abs(time_type(i)),i))then
+                        time_factor2 = 
+     &                       (days - time(abs(time_type(i)),  i))/
+     &                       (time(abs(time_type(i))+1,i) - 
+     &                       time(abs(time_type(i))  ,i))
+                        time_factor1 = 1.0d0 - time_factor2
+                     else
+                        time_factor1 = 0.0d0
+                        time_factor2 = 0.0d0
+                     endif
+                     if (iout .ne. 0 .and. boun_out) then
+                        write(iout,20)' ti_linear t=',days,
+     *                       ' model #=',i,
+     *                       ' t1=',time(abs(time_type(i))  ,i),
+     *                       ' t2=',time(abs(time_type(i))+1,i),
+     *                       ' f1=',time_factor1,
+     *                       ' f2=',time_factor2
+                     endif
+                     if(iptty .ne. 0 .and. boun_out) then
+                        write(iptty,20)' ti_linear t=',days,
+     *                       ' model #=',i,
+     *                       ' t1=',time(abs(time_type(i))  ,i),
+     *                       ' t2=',time(abs(time_type(i))+1,i),
+     *                       ' f1=',time_factor1,
+     *                       ' f2=',time_factor2
                      endif
                   endif
-                  if(iqa.ne.0) then
-                     if(sourcea_type(imodel).lt.0) then
-                        vfac = sf*vol_nd(i)/vtota(imodel)
-                        qa(i)   = time_factor1*qa(i) + 
-     &                            time_factor2*sourcea
-     &                            (abs(time_type(imodel))+1,imodel)*vfac
-                     endif
-                  endif
-                  if(iqenth.ne.0) then
-                     if(sourcee_type(imodel).lt.0) then
-                        qenth(i)= time_factor1*qenth(i) + 
-     &                            time_factor2*sourcee
-     &                            (abs(time_type(imodel))+1,imodel)*vfac
-                     endif
-                  endif
-               endif
-              endif
-            enddo
-            if(iout.ne.0 .and. boun_out) write(iout,*)' '
-            if(iptty.ne.0 .and. boun_out) write(iptty,*)' '
-            do i=1,mmodel
-              if(time_interpolate(i) .ne. 0)then
-                if(days .ge. time(abs(time_type(i)),i))then
-                   time_factor2 = 
-     &             (days - time(abs(time_type(i)),  i))/
-     &                    (time(abs(time_type(i))+1,i) - 
-     &                     time(abs(time_type(i))  ,i))
-                   time_factor1 = 1.0d0 - time_factor2
-                else
-                  time_factor1 = 0.0d0
-                  time_factor2 = 0.0d0
-                endif
-                if (iout .ne. 0 .and. boun_out) then
-                write(iout,20)' ti_linear t=',days,
-     *                    ' model #=',i,
-     *                    ' t1=',time(abs(time_type(i))  ,i),
-     *                    ' t2=',time(abs(time_type(i))+1,i),
-     *                    ' f1=',time_factor1,
-     *                    ' f2=',time_factor2
-                endif
-               if(iptty.ne.0 .and. boun_out) then
-                  write(iptty,20)' ti_linear t=',days,
-     *                 ' model #=',i,
-     *                 ' t1=',time(abs(time_type(i))  ,i),
-     *                 ' t2=',time(abs(time_type(i))+1,i),
-     *                 ' f1=',time_factor1,
-     *                 ' f2=',time_factor2
-   20      format(a,g15.10,a,i4,a,g10.4,a,g10.4,a,g10.4,a,g10.4)
-                endif
-              endif
-            enddo
-          endif
-        endif
+ 20               format(a,g15.10,a,i4,a,g10.4,a,g10.4,a,g10.4,a,g10.4)
+               enddo
+            endif
+         endif
       endif
       return
       end

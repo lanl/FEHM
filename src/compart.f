@@ -132,5 +132,10 @@ c***  spchu add water table rise
 c***  add water table rise 
 c zvd 11/09/06
 	logical :: prnt_var(6)
+c bhl_5/15/08
+	real*8, allocatable :: bconf_sav(:,:)
+	integer ipmbal
+	integer:: ibox_offset = 0
+c bhl_5/15/08
 
 	end module compart

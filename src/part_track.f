@@ -370,6 +370,8 @@ c....................................................................
             theta = -99999.
             restarting=.true.
             tempneed=1
+            if (ripfehm .eq. 1 .and. prnt_rst .ge. 40) 
+     &           ibox_offset = 2 * neq + 1
          else
             if(idpdp.eq.0) then
                nsizep = nelm(neq+1) - neq - 1
@@ -385,13 +387,29 @@ c....................................................................
          end if
       else
          if(.not.restarting)then
+c     zvd 02-May-08
+c     Set rseed here for use in inmptr for particle size distribution
+c     during a GoldSim simulation
+            if (ripfehm .eq. 1) rseed = int(in(4)+0.1)
             call inmptr(in(3))
             restarting = .true.
             tempneed = 1
          end if
       end if
 
-      if(.not.allocated(frac))then
+cbhl  5/2/08, 
+c zvd 6/9/08 changed prnt_rst flag to >= 40
+c zvd 7/01/08 Moved following from set_mptr
+	if (.not. allocated (bconf_sav)) then    
+          if (abs(prnt_rst) .ge. 40 .and. ripfehm .eq. 1) then            
+               allocate (bconf_sav(max_particles,nspeci))
+	    else
+	         allocate (bconf_sav(1,nspeci))
+	    end if
+      endif
+cbhl  5/2/08
+      
+       if(.not.allocated(frac))then
          allocate (frac(nspeci))
       end if
 
@@ -716,7 +734,12 @@ c ********** MAIN LOOP OVER ALL PARTICLES **********
                endif            !corresponds to start_time<end_time
             endif               !corresponds to box(i,ith)>0
  200     continue
+c bhl_5/15/08
+c zvd 6/9/08 changed prnt_rst flag to < 40
+      if (abs(prnt_rst) .lt. 40 .or. ripfehm.ne.1) then
          if(ifrearrange.eq.0)lsport(las)=nsport(las1)+1
+      endif   
+c bhl_5/15/08
  110  continue
 
  !If a particle has not yet entered the system, set timeleft
@@ -811,9 +834,12 @@ cli   modified the code to handle variable conversion factors.  2/6/98
       integer:: gspeci,index_ith_mass, index_fracflow, number_of_species
       integer:: index_in_species, nflow_frac, ibin, icount, ispecies
       integer:: lans,lans1,last_sign,lsn,lsn1
+c bhl_5/15/08
+      integer:: ithpn,ithp_old
+c bhl_5/15/08
       integer,save::out_unit
       
-                                !the in array index for M_fine groups value
+c     the in array index for M_fine groups value
 
 c     index_M_fine was 4 prior to V 2.23, but we have added 4
 c     values before it in in() for the random number seeds and
@@ -1369,6 +1395,9 @@ c bhl_11/3/06
                         write(ierr,*)'at time step:',lstep           
                      end if
                                 !set up partciles
+c bhl_5/15/08
+                     ithp_old=ithp
+c bhl_5/15/08
                      call set_mptr(region,M_N_failed_nodes(j),ith,
      &                    istp,ithp,idaughter)
                  if(flag_diversity(ith).and.flag_col_irrev(ith))then
@@ -1484,6 +1513,14 @@ c bhl_11/3/06
  !cli_added M_N_failed_nodes(j) for random ebs
                      confactor(lans)=dum_p(istp)*gmol(ith)/pinmass
                      bconfactor(lans)=1.D0/confactor(lans)
+c bhl_5/15/08
+c zvd 6/9/08 changed prnt_rst flag to >= 40
+                     if (abs(prnt_rst) .ge. 40) then
+                        do ithpn=ithp_old+1,ithp
+                           bconf_sav(ithpn,ith)=bconfactor(lans)   
+                        enddo
+                     endif
+c bhl_5/15/08
                   endif
                enddo
 c     bhl_12/8/05 outer
@@ -1661,6 +1698,9 @@ c     bhl_12/8/05
      &                       end_time/(yearindays*dayinsecs)           
                         write(ierr,*)'at time step:',lstep	 
                      end if
+c bhl_5/15/08
+                     ithp_old=ithp
+c bhl_5/15/08
                      call set_mptr(region,M_N_failed_nodes(j),ith,
      &                    istp,ithp,idaughter) 
 
@@ -1691,6 +1731,14 @@ c     bhl_12/8/05
  !cli_added M_N_failed_nodes(j) for random ebs
                      confactor(lans)=dum_p(istp)*gmol(ith)/pinmass
                      bconfactor(lans)=1.D0/confactor(lans)
+c bhl_5/15/08
+c zvd 6/9/08 changed prnt_rst flag to >= 40
+                     if (abs(prnt_rst) .ge. 40) then
+                        do ithpn=ithp_old+1,ithp
+                           bconf_sav(ithpn,ith)=bconfactor(lans)   
+                        enddo
+                     endif
+c bhl_5/15/08
 c     bhl_12/14/05
                      num_part_mem(ith)=num_part_mem(ith)+dum_psv
 c     bhl_12/14/05
@@ -2967,7 +3015,13 @@ c        if(dpdpbox.gt.neq)then
         real*8 denom
 
 
-		dpdpbox=abs(box(i,ith))
+        if (ripfehm .eq. 1 .and. prnt_rst .ge. 40 .and. 
+     &       abs(box(i,ith)) .ge. ibox_offset) then
+           dpdpbox=abs(box(i,ith)) - ibox_offset
+        else
+           dpdpbox=abs(box(i,ith))
+        end if
+                
         if (dpdpbox.gt.neq) then
           lbox=dpdpbox-neq
           add_fact=nelm(neq+1)-neq-1
@@ -3031,7 +3085,7 @@ c        if(dpdpbox.gt.neq)then
       
       subroutine decay_calc
       implicit none
-      integer inode, ipart,lns,lns1
+      integer inode, ipart,lns,lns1,ibindex
 
       !Store positions for avs output in concentration array (_con).
       !Currently the concentration is the number of particles in any 
@@ -3045,37 +3099,49 @@ c        if(dpdpbox.gt.neq)then
         
 	if(nspeci.eq.1) then
 	  !ptrk, one species - use kfact(1) for decay
-          do li=1,nsegs(ith)
+           do li=1,nsegs(ith)
 	      lns1=aidex(ith)+li
 	      lns=lns1-1
-            do ipart=lsport(lns),nsport(lns1)
-              if(box(ipart,ith).gt.0 .and.
+              do ipart=lsport(lns),nsport(lns1)
+                 if(box(ipart,ith).gt.0 .and.
      2		      start_time(ipart,ith).le. end_time) then
-                pconc(box(ipart,ith))=pconc(box(ipart,ith))+
-     2          exp(-kfact(1)*(end_time-start_time(ipart,ith)))
-              elseif(box(ipart,ith).lt.0 .and.
-     2          timeleft(ipart,ith).lt.0.) then
-                pconc(-box(ipart,ith))=pconc(-box(ipart,ith))+
-     2          exp(-kfact(1)*(end_time-start_time(ipart,ith)))
-              end if
-            enddo
-          enddo       
+                    pconc(box(ipart,ith))=pconc(box(ipart,ith))+
+     2                   exp(-kfact(1)*(end_time-start_time(ipart,ith)))
+                 elseif(box(ipart,ith).lt.0 .and.
+     2                   timeleft(ipart,ith).lt.0.) then
+                    if (ripfehm .eq. 1 .and. prnt_rst .ge. 40 .and. 
+     &                   abs(box(i,ith)) .ge. ibox_offset) then
+                       ibindex = abs(box(ipart,ith)) - ibox_offset
+                    else
+                       ibindex = abs(box(ipart,ith))
+                    end if
+                    pconc(-box(ipart,ith))=pconc(-box(ipart,ith))+
+     2                   exp(-kfact(1)*(end_time-start_time(ipart,ith)))
+                 end if
+              enddo
+           enddo       
         else
-          do li=1,nsegs(ith)
+           do li=1,nsegs(ith)
 	      lns1=aidex(ith)+li
 	      lns=lns1-1
-            do ipart=lsport(lns),lsport(lns1)
-              if(box(ipart,ith).gt.0 .and.
+              do ipart=lsport(lns),lsport(lns1)
+                 if(box(ipart,ith).gt.0 .and.
      2		      start_time(ipart,ith).le. end_time) then
-                pconc(box(ipart,ith))=pconc(box(ipart,ith))+
-     2          gmol(ith)*bconfactor(lns)
-              elseif(box(ipart,ith).lt.0 .and.
-     2          timeleft(ipart,ith).lt.0.) then
-                pconc(-box(ipart,ith))=pconc(-box(ipart,ith))+
-     2          gmol(ith)*bconfactor(lns)
-              end if
-            enddo
-          enddo
+                    pconc(box(ipart,ith))=pconc(box(ipart,ith))+
+     2                   gmol(ith)*bconfactor(lns)
+                 elseif(box(ipart,ith).lt.0 .and.
+     2                   timeleft(ipart,ith).lt.0.) then
+                    if (ripfehm .eq. 1 .and. prnt_rst .ge. 40 .and. 
+     &                   abs(box(i,ith)) .ge. ibox_offset) then
+                       ibindex = abs(box(ipart,ith)) - ibox_offset
+                    else
+                       ibindex = abs(box(ipart,ith))
+                    end if
+                    pconc(-box(ipart,ith))=pconc(-box(ipart,ith))+
+     2                   gmol(ith)*bconfactor(lns)
+                 end if
+              enddo
+           enddo
         end if
       endif
            
@@ -3147,7 +3213,12 @@ c        if(dpdpbox.gt.neq)then
            end do
 ! Count number currently in a cell or that have exited system from cell
            do inode = 1, num_particles(ith)
-              itmp=abs(box(inode,ith)) + npt(ith)
+              if (ripfehm .eq. 1 .and. prnt_rst .ge. 40 .and. 
+     &             abs(box(i,ith)) .ge. ibox_offset) then
+                 itmp=abs(box(inode,ith)) - ibox_offset + npt(ith)
+              else
+                 itmp=abs(box(inode,ith)) + npt(ith)
+              end if
               if (box(inode,ith) .lt. 0) then
                  if (timeleft(inode,ith) .ge. 0.) then
                     an(itmp)=an(itmp) + 1

@@ -602,7 +602,7 @@ CPS       Find the maximum number of Newton iterations taken ...
 CPS       ... in each grouping
 CPS     ENDFOR each group
 CPS     IF we are leaving csolve
-CPS       Compute average time step
+CPS       Compute average time stepp
 CPS       EXIT
 CPS     ENDIF
 CPS     Adjust the time step
@@ -628,6 +628,7 @@ c**** set time step for tracer solution , call solution            ****c
       use comflow
       use comdti
       use comai
+      use comuserc, only : usroption
       use davidi
       implicit none
 
@@ -639,7 +640,6 @@ c**** set time step for tracer solution , call solution            ****c
       real*4 caz(2)
       real*8 dayst
       real*8 daytr
-      real*8 daytr_save
       integer nts
       integer icfin
       integer id
@@ -648,7 +648,7 @@ c**** set time step for tracer solution , call solution            ****c
       real*8 daytrm
       integer ja
       integer jad
-      real*8 vdum
+      real*8 vdum, dumv
       real*8 dencht
       real*8 tyming
       logical reset_tracer
@@ -1285,8 +1285,7 @@ c----------------- phs 9/26/2001 - added (1-s(i)) correction
       dayst=days
       daysi=days-day
       days=daysi
-c      daytr=min(daytr,day,daycmx/2.0)
-      daytr=min(daytr,day,daycmx)
+      daytr=min(daytr,day,daycmx/2.0)
       sehmindays=min(daymin,daycmm)
       nts=0
 c following causes output whenever a transport time step is initiated
@@ -1300,7 +1299,6 @@ c     Add counter for printout of trc output BAR 11-18-98
       if(days.eq.dayst) icfin=0
       if(days.gt.dayst) then
          days = days - daytr
-         daytr_save = daytr
          daytr = dayst - days
          days=dayst
          icfin = -1
@@ -1310,6 +1308,14 @@ c
 c adjust time step for tracer injection start or finish
 c
       daytrm=daytr
+
+c Call userc to determine recirculation, the rate is based
+c  on previous time step concentrations so only needs to be called
+c  once for each tracer timestep
+      if (usroption .eq. 5) then
+         call userc(3,0,dumv,dumv)
+      end if
+
       do isolute = 1, ncpnt
          npn=npt(isolute)
          do id=1,neq
@@ -1364,7 +1370,7 @@ c
       daytr=daytrm
       days=daysi+daytrm
       daysi=days
-      if(days.ge.dayst .and. icfin .gt. 0) icfin=0
+      if(days.ge.dayst) icfin=0
 c end change
       iter_counter = 0
       tajj = tyming(caz)
@@ -1420,17 +1426,17 @@ c     Add counter for total SIA iterations
          reset_tracer = .FALSE.
 c calculate porosity change due to mineral reactions
 c         ps_delta_rxn = 0.
-	   do im = 1, nimm
-	      nsp = pimm(im)
-	      npn = npt(nsp)
-	      if(mw_mineral(im).ne.0)then
-  	        do i = 1, n0
-	           ja = i + npn
-		       ps_delta_rxn(i) = ps_delta_rxn(i) - ((an(ja)-anlo(ja))*
-	2              mw_mineral(im)*denr(i))/
-     3              (rho_mineral(im)*100*100*100)
-              enddo
-	      endif
+         do im = 1, nimm
+            nsp = pimm(im)
+            npn = npt(nsp)
+            if(mw_mineral(im).ne.0)then
+               do i = 1, n0
+                  ja = i + npn
+                  ps_delta_rxn(i) = ps_delta_rxn(i) - ((an(ja) -
+     &                 anlo(ja))*mw_mineral(im)*denr(i))/
+     &                 (rho_mineral(im)*100*100*100)
+               enddo
+            endif
          enddo
       end if
  3011 format ('*****************************************************')
@@ -1569,5 +1575,4 @@ c     iprttrc = 0
       end if
       go to 1000
  4000 continue
-      if (icfin .eq. -1) daytr = daytr_save
       end
