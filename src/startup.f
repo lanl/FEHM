@@ -909,6 +909,11 @@ c
       call renum(1)
 c
       if(irun.eq.1) then
+ 11      if(nbd.lt.0) then
+            nbd = 1.5*abs(nbd)
+            if(iout.ne.0) write(iout,*) '>> nbd resized to ',nbd,' <<'
+            if(iptty.ne.0) write(iptty,*) '>> nbd resized to ',nbd,' <<'
+         endif      
          if (igauss .gt. 1) then
             if (gdpm_flag.ne.0) then
                call slvesu (neq_primary, ib, nelm_primary, nop,
@@ -916,11 +921,13 @@ c
      *              idum1, idum2, ldnmaxtmp, nbd, kgmres, nelmd, nnop, 
      *              mdof, abs(north), ireord, iout, iatty, 
      *              irdum, nbnd,accm)
+               if(nbd.lt.0) go to 11
             else
                call slvesu (neq, ib, nelm, nop, nelmdg, npvt, nar, irb,
      *              iirb, idum1, idum2, ldnmaxtmp, nbd, kgmres,  
      *              nelmd, nnop, mdof, abs(north), ireord, 
      *              iout, iatty, irdum, nbnd,accm)
+               if(nbd.lt.0) go to 11
             endif
             allocate (nop_temp(nnop))
             nop_temp(1:nnop) = nop(1:nnop)
@@ -990,9 +997,17 @@ c modify storage of LU factorization matrix for 6-2
 c 3-1 full GMRES schemes
       if(compute_flow .or. iccen .eq. 1) then
          if (igauss .gt. 1) then
+          if(gdpm_flag.ne.0) then
             nsbb = nop(neq_primary+1)-(neq_primary+1)
          else
+            nsbb = nop(neq+1)-(neq+1)
+          endif
+         else
+           if(gdpm_flag.ne.0) then
             nsbb = nelm(neq_primary+1)-(neq_primary+1)
+           else
+            nsbb = nelm(neq+1)-(neq+1)
+           endif
          end if
          if (jswitch.eq.1 .and. idpdp .eq. 0) then
             nbd = nsbb
@@ -1152,7 +1167,7 @@ c**** initialize coefficients adjust volumes in dpdp calcs ****
          deallocate (mass_var)
          iconv = iconv_tmp
       end if
-c  initialize pressures and temperatures
+c initialize pressures and temperatures
       if(ipini.eq.0.or.iread.eq.0) then      
          phini = pho
          psini = ps
@@ -1163,6 +1178,7 @@ c phini and tini have be read in from disk, just set pressure
       endif
 c initialize porosity model -5 if necessary
       call porosi(5)
+c apply distributed forces      
       call stressctr(2,0)
 c this call handled in call to porosi above
 c
@@ -1361,7 +1377,16 @@ c**** initialize noncondensible and ice arrays if applicable ****
          ditnd = 1.0d+30
       end if
  81   continue
-
+c gaz 05-08-2009 moved here so stress initcalcs show up at time = 0
+c calculate initial stress field and displacements
+c 
+         call stress_uncoupled(1)
+c 
+c reset boundary conditions for principal stresses (fraction of lithostatic)
+c
+         call stressctr(3,0) 
+c               
+c
 !      if(contim.ge.0) then
          call contr (-1)
          call contr ( 1)

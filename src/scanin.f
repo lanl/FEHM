@@ -381,6 +381,8 @@ c**** read startup parameters ****
       ipermstr4 = 0
       ipermstr5 = 0
       ipermstr6 = 0
+      ipermstr8 = 0
+      ipermstr11 = 0
       if(allocated(izone_free_nodes)) izone_free_nodes = 0
       if(allocated(move_type)) move_type=0
       compute_flow = .true.
@@ -962,6 +964,7 @@ c
                   jj = adumm/well_dz(j) + 1 
                   max_seg_div = max(max_seg_div,jj)
                   npoint_riv = npoint_riv + jj
+                  nnelm_riv = nnelm_riv + (jj-1)
                enddo
                deallocate(coor_dum,iwell_seg,well_rad,well_dz)
             endif
@@ -2061,6 +2064,8 @@ c need porosity model
                      read(locunitnum,*) idumm, (adumm, ja = 1, 9) 
 	          else if(idumm.eq.6) then
                      read(locunitnum,*) idumm,(adumm,ja=1,11)
+                  else if(idumm.eq.11) then
+                     read(locunitnum,*) idumm,(adumm,ja=1,3)
                   else
                      read(locunitnum,*) idumm             
                   endif

@@ -115,7 +115,7 @@ C***********************************************************************
       use davidi
       implicit none
  
-      integer i, ij, iq, jj, kb, neqp1, iwd
+      integer i, ij, iq, jj, kb, neqp1, iwd, iw_max
       real*8 pnxl_in, pnyl_in, pnzl_in, pnxv_in, pnyv_in, pnzv_in
       real*8 pnxl_out, pnyl_out, pnzl_out, pnxv_out, pnyv_out, pnzv_out
       real*8 area_t, axy, axyf, dili, dilkb, dis, divi, divkb 
@@ -124,6 +124,7 @@ C***********************************************************************
       real(8) :: vld = 0., vvd = 0.
       real*8 xdis_cos, ydis_cos, zdis_cos
       real*8 tol, dis_tol
+      parameter(iw_max = 10000000)
       parameter(tol=1.d-30, dis_tol=1.d-20)
 c gaz 11-09-2001 added dis_tol so a velocity can be calculated at
 c coincident mdnode nodes
@@ -174,8 +175,12 @@ c gaz 1-25-03 used abs(iw)
                it9(iq)=jj
                it10(iq)=istrw(jj-neqp1)
                iw=abs(it10(iq))
-               if (sx(iw,isox)+sx(iw,isoy)+
+               if(iw.eq.0.or.iw.gt.iw_max)then
+                iq=iq-1
+               else 
+                if (sx(iw,isox)+sx(iw,isoy)+
      &              sx(iw,isoz) .eq.0.) iq=iq-1
+               endif
             enddo
             do ij=1,iq                   
                jj=it9(ij)

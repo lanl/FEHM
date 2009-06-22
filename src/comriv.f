@@ -31,8 +31,8 @@
 !***********************************************************************
 
       integer npoint_riv,iriver,maxlay,nbc_riv,npoint_riv_old,nic_old
-      integer maxriver_nodes, n_well_prod,n_well_seg, nodes_well2_added
-      integer iwell_phy_all, max_seg_div
+      integer maxriver_nodes,n_well_prod,n_well_seg, nodes_well2_added
+      integer iwell_phy_all, max_seg_div,nnelm_riv
       integer, allocatable :: isriverf(:) 
       integer, allocatable :: ifriverf(:)
       integer, allocatable :: iriverf(:)
@@ -80,7 +80,8 @@ c arrays for welltype = 2
 	integer, allocatable :: iwell2_int(:,:) 
 	integer, allocatable :: izone_well2(:)		
 	integer, allocatable :: izlabelp(:)
-	integer, allocatable :: izlabels(:) 	 								 						
+	integer, allocatable :: izlabels(:) 
+	integer, allocatable :: nelm_riv(:,:)	 								 						
 	
 	real*8, allocatable ::  coor_well2(:,:)	
 	real*8, allocatable ::  coor_new_well2(:,:)	

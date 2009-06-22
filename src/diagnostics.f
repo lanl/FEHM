@@ -145,7 +145,7 @@ c     print out worst residuals
             if (iptty.ne.0 ) write(iptty, 300) 
  300        format(20x,'Largest Residuals')
          else
-            if (iout .ne. 0) then
+            if (iout .ne. 0) then 
                write(iout, *) '   '
                write(iout, 400) l
             end if

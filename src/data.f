@@ -323,6 +323,7 @@ c ico2 set in scanin.f
       ivfcal = 0
       ithic  = 0
       imdnode= 0
+      isubmodel = 0
       iw     = 0
       iwelb  = 0
       l      = 0

@@ -318,6 +318,20 @@ c
      &           '>>>reading nop was succesful .....'
             if(iatty.ne.0) 
      &           write(iatty,*) '>>>reading nop was succesful .....'
+             do i = 1,neq
+              if(ncon(npvc(i)).ne.i) then
+               if (iout .ne. 0) write(iout,*) 
+     &           '>>>diagonal check failed .....'
+               if(iatty.ne.0) write(iatty,*) 
+     &           '>>>diagonal check failed .....'
+               if (iout .ne. 0) 
+     &          write(iout,*) '>>>generating nop .....'
+               if(iatty.ne.0) 
+     &          write(iatty,*) '>>>generating nop .....'
+               used = .false.  
+               go to 100            
+              endif
+             enddo  
          else
             if (iout .ne. 0) write(iout,*) 
      &           '>>>stopped reading, nop did not match .....'
@@ -331,11 +345,12 @@ c
          if(iatty.ne.0) 
      &        write(iatty,*) '>>>generating nop .....'
       endif
-      close(io_nop)
+100   close(io_nop)
 c
       if ( noppar .le. 0 .and. .not.used)  then
 c     
          call  nopcnv  (ib,igaus,neq,ncon,nop,npvc,npvt,nopt,idum,nszb)
+         if(nszb.lt.0) return
 c
       else if(.not.used) then
 c

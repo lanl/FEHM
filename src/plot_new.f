@@ -50,7 +50,7 @@
       use comdti
       use comfi
       use comsi, only : du, dv , dw, str_x, str_y, str_z, str_xy,
-     &     str_xz, str_yz, vol_strain
+     &  str_xz, str_yz, vol_strain, du_ini, dv_ini, dw_ini, idisp_rel
       use comwt
       use comzone
       use davidi
@@ -1082,17 +1082,32 @@ C RJP 08/09/07
       end if
       if (ishisdisx .ne. 0 ) then
 ! Output x displacement
+       if(idisp_rel.ne.0) then
          write(ishisdisx, form1_string) ptime, (du(nskw(i)), i= 1, m) 
+       else
+         write(ishisdisx, form1_string) ptime, 
+     &    (du(nskw(i))-du_ini(nskw(i)), i= 1, m)        
+       endif  
          call flush(ishisdisx)
       end if
       if (ishisdisy .ne. 0 ) then
 ! Output y displacement
+       if(idisp_rel.ne.0) then
          write(ishisdisy, form1_string) ptime, (dv(nskw(i)), i= 1, m) 
+       else
+         write(ishisdisy, form1_string) ptime, 
+     &    (dv(nskw(i))-dv_ini(nskw(i)), i= 1, m)        
+       endif  
          call flush(ishisdisy)
       end if
       if (ishisdisz .ne. 0 ) then
 ! Output z displacement
+       if(idisp_rel.ne.0) then
          write(ishisdisz, form1_string) ptime, (dw(nskw(i)), i= 1, m) 
+       else
+         write(ishisdisz, form1_string) ptime, 
+     &    (dw(nskw(i))-dw_ini(nskw(i)), i= 1, m)        
+       endif  
          call flush(ishisdisz)
       end if
       if (ishisstr .ne. 0 ) then

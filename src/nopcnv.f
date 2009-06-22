@@ -464,6 +464,10 @@ c
             end do
             nop(kp+1)=icount
           endif
+            if(icount.gt.nbd) then
+             nbd = -nbd
+             return
+            endif
          end do
          end do
 c

@@ -210,14 +210,14 @@ c
          write(iout,*) '   '
          write(iout,*) '* singular matrix found during normalization *'
          write(iout,*) '   '
-         write(iout,'(i8,3g12.3)')
-     &        abs(nmatb(1)),(cord(abs(nmatb(1)),i),i=1,3)
+c         write(iout,'(i8,3g12.3)')
+c     &        abs(nmatb(1)),(cord(abs(nmatb(1)),i),i=1,3)
          if(iptty.gt.0)then
          write(iptty,*) '   '
          write(iptty,*) '* singular matrix found during normalization *'
          write(iptty,*) '   '
-         write(iptty,'(i8,3g12.3)') 
-     &        abs(nmatb(1)),(cord(abs(nmatb(1)),i),i=1,3)
+c         write(iptty,'(i8,3g12.3)') 
+c     &        abs(nmatb(1)),(cord(abs(nmatb(1)),i),i=1,3)
          endif
          iad=maxit
          return

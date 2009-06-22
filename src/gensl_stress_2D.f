@@ -578,8 +578,8 @@ c
      &                    ,mdof_sol)
                   end if
                endif
-               itert=itert+iter
-               itotals=itotals+iter
+               itert_s =itert_s+iter
+               itotals_s=itotals_s+iter
             else
                allocate(sto5(neq,3))
                if (igauss .gt. 1) then
@@ -593,8 +593,8 @@ c
      *                 ,h,c,ss,g,y,iter,iback,2,iptty,maxor
      *                 ,overf,irdof,icoupl,0,sto5,accm)
                end if
-               itert=itert+iter
-               itotals=itotals+iter
+               itert_s =itert_s+iter
+               itotals_s=itotals_s+iter
                deallocate(sto5)
             endif
 

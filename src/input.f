@@ -1281,7 +1281,9 @@ c         isteady = -1
       else if (macro .eq. 'strs') then
 c**** stress solution data ****
          istrs = 1
+         cnum_stress = cnum
          call stressctr (0,0)
+         cnum = cnum_stress
 
       else if (macro .eq. 'szna' .or. macro .eq. 'napl') then
 c**** isothermal NAPL - water transport ****

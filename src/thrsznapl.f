@@ -309,7 +309,7 @@ c      parameter(vis_Soltrol=6.12e-3)
 c      parameter(vis_111TCA=1.20e-3)
 c gaz need to formalize this ratio(Soltrol)
 c      
-      prop_ratio = (800./6.e-3)/(998./1.e-3)
+      prop_ratio = (dennapl/viscnapl)/(998./1.e-3)
 c
       dtin=1.0/dtot
 c     get relative perms
@@ -485,7 +485,9 @@ c ===area input in pflow term
                else
                 qwdis=0.0           
                endif
-               if(svd.gt.0.0) then
+c gaz 051809                
+c               if(svd.gt.0.0) then
+               if(esk(mi).lt.1.0) then               
                 qadis=qdis*(1.0-esk(mi))
                else
                 qadis=0.0           

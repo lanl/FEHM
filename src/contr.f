@@ -328,6 +328,7 @@ C***********************************************************************
       use compart
       use comwt
       use comxi
+      use comsi
       use davidi
 
       implicit none
@@ -377,7 +378,6 @@ c
       else
          iohead=0
       endif
-
       if (altc(1:3) .eq. 'avs' .or. altc(1:3) .eq. 'sur'.or. 
      &     altc(1:3) .eq. 'tec') then
 c use avs form

@@ -50,14 +50,15 @@ c
       implicit none
 
       integer iflg,i,ndummy,md,j,icoupl_save, ntty_save
-      integer idof_stress_save 
+      integer idof_stress_save,iad_save,itotal_save,itert_save
       character*10 macro1
       real*8, allocatable :: stressboun(:)
       integer, allocatable :: kq_dum(:)
-      save icoupl_save, ntty_save
+      save icoupl_save, ntty_save, itotal_save, itert_save
       
+      if(istrs.eq.0) return
       if(initcalc.eq.0) then 
-         if(istrs.eq.0.or.istrs_coupl.gt.0) return  
+         if(istrs_coupl.gt.0) return  
       endif
       
       
@@ -72,7 +73,15 @@ c
             idof_stress = 3
             icoupl_save = istrs_coupl
             istrs_coupl = -99
+            itotal_save = itotal
+            iad_save = iad
+            itert_save = itert
             call bnswer
+            itert = itert_save 
+            itotal = itotal_save
+            iad_strs = iad
+            iad = iad_save
+            itotal_s = itotal_s + iad_strs
             idof_stress = idof_stress_save 
             istrs_coupl = icoupl_save
 c     calculate total displacements
@@ -128,11 +137,20 @@ c
 c     final stress calculations
 c     
          if(istrs_coupl.eq.-2.or.istrs_coupl.eq.-1) then
+            itert_s = 0
             ntty_save = ntty
             ntty = 2
             icoupl_save = istrs_coupl
             istrs_coupl = -99
+            itotal_save = itotal
+            iad_save = iad
+            itert_save = itert
             call bnswer
+            itert = itert_save 
+            itotal = itotal_save
+            iad_strs = iad
+            iad = iad_save
+            itotal_s = itotal_s + iad_strs
             istrs_coupl = icoupl_save
             ntty = ntty_save
 c     calculate total displacements
@@ -158,11 +176,20 @@ c
 c     stress calculations after each time step
 c     
          if(istrs_coupl.eq.-3) then
+            itert_s = 0
             ntty_save = ntty
             ntty = 2
             icoupl_save = istrs_coupl
             istrs_coupl = -100
+            itotal_save = itotal
+            iad_save = iad
+            itert_save = itert
             call bnswer
+            itert = itert_save 
+            itotal = itotal_save
+            iad_strs = iad
+            iad = iad_save
+            itotal_s = itotal_s + iad_strs
             istrs_coupl = icoupl_save
             ntty = ntty_save
 c     calculate total displacements
@@ -181,9 +208,6 @@ c     reset order of equations
       else if(iflg.ge.100) then
          
       endif
-c     
-c     set iteration count to zero 
-c     
-      iad = 0
+
       return
       end
