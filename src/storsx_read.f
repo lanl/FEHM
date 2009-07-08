@@ -222,7 +222,7 @@ c     allocation of istrw_itfc and istrw_cold done in startup
             if(icnl.eq.0) then
                ncoef=12
             else
-               ncoef=8
+               ncoef=6
             endif
             allocate(sxs(iwtotl_strs,ncoef))
             call read_sx(iwtotl_strs,iwtotl_strs,ncoef,
@@ -336,7 +336,7 @@ c     allocation of istrw_itfc and istrw_cold done in startup
             if(icnl.eq.0) then
                ncoef=12
             else
-               ncoef=8
+               ncoef=6
             endif
             allocate(sxs(iwtotl_strs,ncoef))
             call read_sx(iwtotl_strs,iwtotl_strs,ncoef,
@@ -455,7 +455,7 @@ c     allocation of istrw_itfc and istrw_cold done in startup
             if(icnl.eq.0) then
                ncoef=12
             else
-               ncoef=8
+               ncoef=6
             endif
             allocate(sxs(iwtotl_strs,ncoef))
             call read_sx(iwtotl_strs,iwtotl_strs,ncoef,

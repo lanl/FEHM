@@ -15,7 +15,7 @@ CD1
 CD1  PURPOSE
 CD1
 CD1  This subroutine manages initization and boundary conditions 
-CD1  that involve gradients 
+CD1  that involve gradients  
 CD1
 C***********************************************************************
 CD2
@@ -24,6 +24,7 @@ CD2
 CD2 Initial implementation: 19-APR-02, Programmer: George Zyvoloski
 CD2 
 CD2 $Log:   /pvcs.config/fehm90/src/gradctr.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:43:12   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003

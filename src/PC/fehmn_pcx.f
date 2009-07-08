@@ -677,14 +677,14 @@ c**** call to set up area coefficients for md nodes
          call md_nodes(6,0,0)
 c**** call data checking routine ****
          call datchk
-c
+c gaz 050809 moved to startup
 c calculate initial stress field and displacements
 c 
-         call stress_uncoupled(1) 
+c         call stress_uncoupled(1)
 c 
 c reset boundary conditions for principal stresses (fraction of lithostatic)
 c
-         call stressctr(3,0) 
+c         call stressctr(3,0) 
 c               
 	 if(ico2.lt.0) then
             if (iout .ne. 0) write(iout,834) ifree1
@@ -1123,6 +1123,8 @@ c calculate stresses
                   call stressctr(13,0)	
 c update permeabilities (explicit)
                   call stress_perm(1,0)			            
+c update peaceman term for wellbore pressure
+                   if(isubwd.ne.0)call wellimped_ctr(1)                		            
                endif 
                do ja = 1,n
                   to (ja) = t(ja)
@@ -1240,7 +1242,8 @@ c     &           dabs(inflow_thstime), dabs(inen_thstime))
             else
                call plot (1, tmavg, pravg)
             end if
-
+c**** call wellbore pressures
+           if(isubwd. ne.0) call wellimped_ctr(4)
 c check for steady state solution
             if(isteady.ne.0) then
                call steady(2,dabs(inflow_thstime),dabs(inen_thstime))

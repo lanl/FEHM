@@ -331,8 +331,10 @@ c           tdumz=sjsiz*(tdumt*alphab+pdumt*bulkb)*efac
              
 c calculate stresses
 
+c      ddx=du(kb)
+c      ddy=dv(kb)
       ddx=du(kb)-dui
-      ddy=dv(kb)-dvi
+      ddy=dv(kb)-dvi      
 
       xx=e1bar*sisjx*ddx
       xy=e2bar*sisjy*ddy

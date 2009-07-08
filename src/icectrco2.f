@@ -273,54 +273,38 @@ c
             qhco2 = 0.0d00
             eskco2 = 0.0d00
             eflowco2 = 0.0d00
-            rovfco2 = 0.0d00
-            envfco2 = 0.0d00
+c            rovfco2 = 0.0d00
+c            envfco2 = 0.0d00
             wellco2 = 0.0d00
-            rolfco2 = 0.0d00
-            enlfco2 = 0.0d00
-            dpcpco22 = 0.0d00
-            dmmf = 0.0d00
-            demf = 0.0d00
-            dilm = 0.0d00
-            divm = 0.0d00
-            deqm = 0.0d00
-            deqpm = 0.0d00
+c            rolfco2 = 0.0d00
+c            enlfco2 = 0.0d00
+c            dpcpco22 = 0.0d00
+c            dmmf = 0.0d00
+c            demf = 0.0d00
+c            dilm = 0.0d00
+c            divm = 0.0d00
+c            deqm = 0.0d00
+c            deqpm = 0.0d00
             dmwf = 0.0d00
             dewf = 0.0d00
             dilw = 0.0d00
             divw = 0.0d00
             deqw = 0.0d00
-            deqpw = 0.0d00
-            diw = 0.d00
-            diwp = 0.d00
-            diwe = 0.d00
-            diww = 0.d00
-            diwyc = 0.d00
-            diwya = 0.d00
-            dilp = 0.d00
-            dile = 0.d00
-            dilw = 0.d00
-            dilyc = 0.d00
-            dilya = 0.d00
-            divp = 0.d00
-            dive = 0.d00
-            divw = 0.d00
-            divyc = 0.d00
-            divya = 0.d00           
+c            deqpw = 0.0d00
             fw = 0.0d00
             fow = 0.0d00
             qhflxco2 = 0.0d00
             dtpaco2 = 0.0d00
             dtpaeco2 = 0.0d00
             skmd1 = 0.0d00
-            dq3 = 0.d00
-            dq4 = 0.d00
+c            dq3 = 0.d00
+c            dq4 = 0.d00
             csalt = 0.d00
             co2_prop = 0.d00
             wat_prop = 0.d00
             diltrac = 0.d00
-            dpcp3 = 0.00
-            dpcp4 = 0.00
+c           dpcp3 = 0.00
+c           dpcp4 = 0.00
             dtpsc = 0.00
             kaco2 = 0
             iceso = 0
@@ -498,7 +482,7 @@ c
 c     read in initial CO2 flow and boundary data
 c     
                allocate(aiped(n0),esktmp(n0),sktmp(n0),iflg_flowmac(n0))
-               
+               iflg_flowmac = 0
                call initdata2( inpt, ischk, n0, narrays, itype, default,
      &              macroread(8), macro, igroup, ireturn,  r8_1 = 
      &              sktmp(1:n0),r8_2=esktmp(1:n0),r8_3=aiped(1:n0),

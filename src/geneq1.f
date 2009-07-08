@@ -28,6 +28,7 @@ CD2 10-JAN-96    S. Henderson   22      Add prolog.
 CD2              G. Zyvoloski           Initial implementation.
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/geneq1.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:43:04   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -326,14 +327,9 @@ c           pxy=sx2c*perml(1)+sx3c*perml(2)+sxzc*perml(3)
             delx2=(cord(kz,1)-cord(iz,1))**2
             dely2=(cord(kz,2)-cord(iz,2))**2
             delz2=(cord(kz,3)-cord(iz,3))**2
-            if(iriver.eq.1) then
-c               if(delz2.eq.0.d0.and.kb.lt.(neq_primary-npoint_riv)) then
-c                  if((mdnodes_riv(i).ne.0).or.
-c     &                 (mdnodes_riv(kb).ne.0)) then
-c                     delx2=mod_dis(iw-nic_old,1)**2
-c                     dely2=mod_dis(iw-nic_old,2)**2
-c                  endif
-c               endif
+            if(iriver.eq.2.and.kb.gt.neq_primary) then
+c this connection broken, then added when well equations are generated            
+              sx2c = 0.0
             endif
             dis2=delx2+dely2+delz2
             if(dis2.gt.dis_tol.and.iwd.gt.0) then

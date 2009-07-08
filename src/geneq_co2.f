@@ -127,6 +127,11 @@ c
 c     
                                 ! Guessed at value for grav_air
       grav_air = 0.
+      
+      hfc = 0.0
+      dhfcp = 0.0
+      dhfct = 0.0
+      
 c     changed by avw 4/95 -- entered into new version by seh
       neqp1=neq+1
       ldna=nelm(neqp1)-neqp1

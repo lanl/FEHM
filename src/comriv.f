@@ -81,19 +81,24 @@ c arrays for welltype = 2
 	integer, allocatable :: izone_well2(:)		
 	integer, allocatable :: izlabelp(:)
 	integer, allocatable :: izlabels(:) 
-	integer, allocatable :: nelm_riv(:,:)	 								 						
+	integer, allocatable :: nelm_riv(:,:)	
+	integer, allocatable :: idir_seg(:) 	
+	integer, allocatable :: iwdum(:) 				 						
 	
 	real*8, allocatable ::  coor_well2(:,:)	
 	real*8, allocatable ::  coor_new_well2(:,:)	
 	real*8, allocatable ::  well_rad(:)	
 	real*8, allocatable ::  well_dz(:)
 	real*8, allocatable ::  well_connect_fac(:)
+	real*8, allocatable ::  delxw2(:)
+	real*8, allocatable ::  delyw2(:)
+	real*8, allocatable ::  delzw2(:)
 
 	real*8, allocatable ::  vel_v_well2(:)	  
 	real*8, allocatable ::  vel_l_well2(:)	
 	real*8, allocatable ::  vel_m_well2(:)	
 	real*8, allocatable ::  sx_w(:,:)				 
-      
+      real*8, allocatable ::  seg_cos(:,:)
       
       parameter (maxriver_nodes = 100000)
 

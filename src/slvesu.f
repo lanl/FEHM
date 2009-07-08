@@ -29,6 +29,7 @@ CD2
 CD2 03-12-92     G. Zyvoloski   00097   Initial Implementation
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/slvesu.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:43:56   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -266,6 +267,7 @@ C**********************************************************************
       integer irb(*)
       integer irdof
       integer j
+      integer k
       integer nbnd
       integer ncon(*)
       integer neq
@@ -284,6 +286,7 @@ C**********************************************************************
       logical used
       integer neq_temp, nsize_ncon, nsize_nop, igaus_temp
       integer io_status, io_nop
+      integer, allocatable ::  npvc_temp(:)
       character*4 accm
       used = .false.
 c
@@ -311,6 +314,10 @@ c
          if(neq_temp.eq.neq.and.nsize_ncon.eq.ncon(neq+1)
      &        .and.igaus_temp.eq.igaus(1)) then
             nnop = nsize_nop
+            allocate (npvc_temp(neq))
+            do i = 1,neq
+             npvc_temp(i) = npvc(i)
+            enddo
             read(io_nop,iostat=io_status) (nop(i),i=1,nsize_nop)
             read(io_nop,iostat=io_status) (npvt(i),i=1,neq)            
             read(io_nop,iostat=io_status) (npvc(i),i=1,neq)            
@@ -319,7 +326,7 @@ c
             if(iatty.ne.0) 
      &           write(iatty,*) '>>>reading nop was succesful .....'
              do i = 1,neq
-              if(ncon(npvc(i)).ne.i) then
+              if(npvc(i).ne.npvc_temp(i)) then
                if (iout .ne. 0) write(iout,*) 
      &           '>>>diagonal check failed .....'
                if(iatty.ne.0) write(iatty,*) 
@@ -329,6 +336,9 @@ c
                if(iatty.ne.0) 
      &          write(iatty,*) '>>>generating nop .....'
                used = .false.  
+               do k = 1,neq
+                npvc(k) = npvc_temp(k)
+               enddo
                go to 100            
               endif
              enddo  
@@ -346,6 +356,7 @@ c
      &        write(iatty,*) '>>>generating nop .....'
       endif
 100   close(io_nop)
+      if(allocated(npvc_temp))deallocate (npvc_temp)
 c
       if ( noppar .le. 0 .and. .not.used)  then
 c     
@@ -367,6 +378,7 @@ c
      &        write(iatty,*) '>>>writing nop to file ', trim(nmfil(28)),
      &        ' .....'
          nsize_nop = nop(neq+1)
+         nnop = nsize_nop
          write(io_nop) neq,ncon(neq+1),nsize_nop,igaus(1)
          write(io_nop) (nop(i),i=1,nsize_nop)
          write(io_nop) (npvt(i),i=1,neq)

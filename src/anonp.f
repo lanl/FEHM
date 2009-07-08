@@ -1405,7 +1405,7 @@ c
          if(icnl.eq.0) then
             ncoef = 12
          else
-            ncoef = 8
+            ncoef = 6
          endif
 	 allocate(sxs(i3,ncoef))
 c     GAZ 011109 new storage for finv flow simulations	 

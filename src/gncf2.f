@@ -392,7 +392,7 @@ c     nk*njz
             enddo
             
          endif
-         if(nrq.eq.2.or.nrq.eq.15) then
+       if(nrq.eq.2.or.nrq.eq.15) then     
 c     (d(nk/dx)*(dnjz/dx)
 c     recall jacobian information
             a11=aj(neu,1)
@@ -408,7 +408,7 @@ c     recall jacobian information
                enddo
             enddo
          endif
-         if(nrq.eq.3.or.nrq.eq.16) then
+       if(nrq.eq.3.or.nrq.eq.16) then  
 c     (d(nk/dy)*(dnjz/dy)
 c     recall jacobian information
             a21=aj(neu,4)
@@ -425,7 +425,7 @@ c     recall jacobian information
             enddo
          endif
 
-c     c for 2-d stress
+c     c for 2-d stress 
          if(istrs.ne.0) then
             if(nrq.eq.11) then
 c     (dnk/dx)*(dnjz/dy)
@@ -495,6 +495,38 @@ c     recall jacobian information
                enddo
             enddo
          endif
+         if(nrq.eq.17) then
+c     
+c     nk*(dnj/dx)
+c     recall jacobian information
+            a11=aj(neu,1)
+            a12=aj(neu,2)
+            detja=aj(neu,10)
+            do k=1,nsl
+               knum=(k-1)*nsl
+               do jz=1,nsl
+                  ij=knum+jz
+                  bcoef(neu,ij)=bcoef(neu,ij)+
+     *                 wr(nga,k)*(a11*wxr(nga,jz)+a12*wyr(nga,jz))*dnga
+               enddo
+            enddo
+         endif         
+         if(nrq.eq.18) then
+c     
+c     nk*(dnj/dy)
+c     recall jacobian information
+            a21=aj(neu,4)
+            a22=aj(neu,5)
+            detja=aj(neu,10)
+            do k=1,nsl
+               knum=(k-1)*nsl
+               do jz=1,nsl
+                  ij=knum+jz
+                  bcoef(neu,ij)=bcoef(neu,ij)+
+     *                 wr(nga,k)*(a21*wxr(nga,jz)+a22*wyr(nga,jz))*dnga
+               enddo
+            enddo
+         endif         
          endif
       endif
 c     
