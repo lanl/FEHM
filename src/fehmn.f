@@ -939,6 +939,8 @@ c**** solve for heat and mass transfer solution ****
                   if (iptty .gt. 0)  write(iptty, 6030) trim(nmfil(7))
  6030             format(/, 1x, '**** allotted time gone, terminating ',
      *                 'run : restart = ', a, ' ****')
+c Make sure fin file is written if we are stopping
+                  if (isave .ne. 0) call diskwrite
 
                   go  to  170
                

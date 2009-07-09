@@ -247,9 +247,6 @@ c     Write Z coordinate
          if (ioporosity .eq. 1) then
             write(lu,200) trim(title(7)), trim(units(7))
          end if
-         if (iosource .eq. 1 ) then
-            write(lu,200) trim(title(8)), trim(units(8))
-         end if
          if (iodensity .eq. 1 .and. ioliquid .eq. 1) then
             write(lu,200) trim(title(9)), trim(units(9))
          end if
@@ -260,6 +257,9 @@ c     Write Z coordinate
             write(lu,200) trim(title(11)), trim(units(11))
             write(lu,200) trim(title(12)), trim(units(12))
             write(lu,200) trim(title(13)), trim(units(13))
+         end if
+         if (iosource .eq. 1 ) then
+            write(lu,200) trim(title(8)), trim(units(8))
          end if
          if (ioflx .eq. 1 .and. ioliquid .eq. 1) then
             write(lu,200) trim(title(18)), trim(units(18))
@@ -409,12 +409,6 @@ c     Write Z coordinate
             length = len_trim(tstring)
             ic2 = ic2 + length
          end if
-         if (iosource .eq. 1 ) then
-            write(tstring,formstring) trim(title(8))
-            tstring2 = tstring2(ic1:ic2) // tstring
-            length = len_trim(tstring)
-            ic2 = ic2 + length
-         end if
          if (iodensity .eq. 1 .and. ioliquid .eq. 1) then
             write(tstring,formstring) trim(title(9))
             tstring2 = tstring2(ic1:ic2) // tstring
@@ -437,6 +431,12 @@ c     Write Z coordinate
             length = len_trim(tstring)
             ic2 = ic2 + length
             write(tstring,formstring) trim(title(13))
+            tstring2 = tstring2(ic1:ic2) // tstring
+            length = len_trim(tstring)
+            ic2 = ic2 + length
+         end if
+         if (iosource .eq. 1 ) then
+            write(tstring,formstring) trim(title(8))
             tstring2 = tstring2(ic1:ic2) // tstring
             length = len_trim(tstring)
             ic2 = ic2 + length
