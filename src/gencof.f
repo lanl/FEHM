@@ -496,7 +496,7 @@ c     rest of terms
                   endif
  777              continue
                endif
-
+               if(istrs.ne.0) then
                if ( nrq.ge.ns1.and.nrq.le.ns2-3 )  then
 c     geometric coefficients (xy,xz,yz) for stress equations
                   nrs=nrq-10
@@ -514,6 +514,7 @@ c     geometric coefficients (xy,xz,yz) for stress equations
                      isx=isx+1
                      sxs(isx,nrs)=sxs(isx,nrs)+dumm(kb)
                   enddo
+               endif
                endif
             enddo
          endif

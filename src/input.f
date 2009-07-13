@@ -1367,6 +1367,11 @@ c**** wellbore physics or non darcy flow
 
          call wellphysicsctr(0, 0)
 
+      else if (macro .eq. 'weli') then
+c detailed well impedance calculations (peaceman-type well)
+       iwelimd = 1
+       call wellimped_ctr(0)
+       
       else if (macro .eq. 'wlbr') then
 c**** wellbore input ****
          iwelb = 1

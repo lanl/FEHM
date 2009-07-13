@@ -741,6 +741,7 @@ c      if (iread.le.0 .and. igrad. ne.0) call gradctr(1)
 c     gaz 9-26-04
       if (igrad. ne.0) call gradctr(1)
       if (iconv. ne.0) call convctr(1)
+      if (isubwd. ne.0) call wellimped_ctr(1)
 c
 c check that source terms are ok on restart for wellbore model
 c      call welbor(-1)

@@ -79,13 +79,14 @@ c
       integer imr,ipr,imrl,iprl,kb2,j1,j2,i3, ncont, ipiv, iskp1, iskp2
       integer neqpi, iexpfl, icoef,nr_old,kbmin,kbmax, npiv, iowell
       integer open_file, inwel,max_con,max_well_con,n_ncon_old
-      integer maxiarea,iareap, jj, n_ncon, irnode, isnode, nseg
+      integer maxiarea,iareap, jj, n_ncon, irnode, isnode, nseg,k,kc
 
       real*8  vol0, vol2, pi, pi2, disa, raddif,disr,rad2,amult,area_tol
       real*8  sx_max,area_dum,area_new,sx_dum,vol_well_dum,sx_well_seg
       real*8  seg,seg2,dis,xc,yc,zc,segx,segy,segz,segx2,segy2,segz2
 	real*8  disx,disy,disz,sx_well_to_grid,sx_well,rad,pd
-	real*8  x_last,y_last,z_last
+	real*8  delx,dely,delz,xi,yi,zi,term1,term2,radkb
+	real*8  rthick,rw,r0,pnxa,pnya,aperm,peaceman_term,onethird
 
       real*8, allocatable  :: sx_new(:,:)
       real*8, allocatable  :: dum(:)
@@ -102,6 +103,7 @@ c
 c     
       parameter (area_tol=1.e-10, pi= 3.1415927, pi2=6.2831850)
 	parameter (max_con = 100,max_well_con= 10)
+	parameter (onethird = 1.0/3.0)
 c     
 
       logical null1
@@ -140,7 +142,9 @@ c find number of intersection of wells
 c
 
         allocate(nwell2_int(n_well_prod))
-	  allocate(iwell2_int(n_well_prod,max_well_con))   
+	  allocate(iwell2_int(n_well_prod,max_well_con))  
+	  allocate(seg_cos(n_well_seg,3)) 
+	  allocate(idir_seg(n_well_seg))
 	  nwell2_int = 0
 	  iwell2_int = 0  
         do i = 1, n_well_seg
@@ -150,6 +154,25 @@ c
          nwell2_int(j2) = nwell2_int(j2) + 1
          iwell2_int(j1,nwell2_int(j1)) = i
          iwell2_int(j2,nwell2_int(j2)) = i
+c find orientation of each segment         
+         segx = (coor_well2(j1,1)-coor_well2(j2,1))
+         segy = (coor_well2(j1,2)-coor_well2(j2,2))  
+         segz = (coor_well2(j1,3)-coor_well2(j2,3))
+	   segx2 = segx**2
+	   segy2 = segy**2
+	   segz2 = segz**2
+	   dis = segx2 + segy2 + segz2
+	   seg_cos(i,1) = segx2/dis
+	   seg_cos(i,2) = segy2/dis
+	   seg_cos(i,3) = segz2/dis
+	   disa = max(seg_cos(i,1),seg_cos(i,2),seg_cos(i,3))
+	   if(disa-seg_cos(i,1).lt.area_tol) then
+	    idir_seg(i) = 1
+	   else if(disa-seg_cos(i,2).lt.area_tol) then
+	    idir_seg(i) = 2
+	   else
+	    idir_seg(i) = 3
+	   endif
 	  enddo
 c
 c label new nodes 
@@ -229,7 +252,7 @@ c found match - don't add node at end of segment
 	  segz2 = segz**2
 	  seg = sqrt(segx2 + segy2 + segz2)
 	  dis = well_dz(i)
-	  node_seg = seg/dis
+	  node_seg = seg/dis + 1
 c "1" insures spacing is le than desired spacing
 	  disx = segx/node_seg
 	  disy = segy/node_seg
@@ -241,13 +264,14 @@ c
          ic1 = ic1 +1   
 	   iwell_prod(j1) = ic1 
 	   new_node_well2(ic1) = ic1 + ntot2
+c set porosity of wellbore node = 1.	   
 	   ps(ic1 + ntot2) = 1.0
+	   pnx(ic1 + ntot2) = 1.e-30
+	   rad = well_rad(i)
+	   pny(ic1 + ntot2) = rad*rad/8.0
 	   coor_new_well2(ic1,1) = coor_well2(j1,1)
 	   coor_new_well2(ic1,2) = coor_well2(j1,2)
 	   coor_new_well2(ic1,3) = coor_well2(j1,3)
-	   x_last = coor_new_well2(ic1,1)
-	   y_last = coor_new_well2(ic1,2)
-	   z_last = coor_new_well2(ic1,3)
 	   new_node_well2_segid(ic1) = i
          neigh_well2_new(ic1,2) = 0
 	   neigh_well2_new(ic1,3) = ic1 + neq_primary
@@ -263,20 +287,18 @@ c	  else if(iwell_prod(j1).eq.0.and.iskp1.eq.1) then
 	    nnelm_riv = nnelm_riv + 1	    
 	    nelm_riv(nnelm_riv,1) =  ii + neq_primary
 	    nelm_riv(nnelm_riv,2) = ic1 + 1 + neq_primary
-	    x_last = coor_new_well2(ii,1)
-	    y_last = coor_new_well2(ii,2)
-	    z_last = coor_new_well2(ii,3) 
 	  endif
-        do j = 2,node_seg
+        do j = 2,node_seg-1
 	   ic1 = ic1 + 1
          new_node_well2(ic1) = ic1 + ntot2
-	   ps(ic1 + ntot2) = 1.0         
-	   coor_new_well2(ic1,1) = x_last + disx
-	   coor_new_well2(ic1,2) = y_last + disy
-	   coor_new_well2(ic1,3) = z_last + disz
-	    x_last = coor_new_well2(ic1,1)
-	    y_last = coor_new_well2(ic1,2)
-	    z_last = coor_new_well2(ic1,3)
+c set porosity of wellbore node = 1.	   
+	   ps(ic1 + ntot2) = 1.0
+	   pnx(ic1 + ntot2) = 1.e-30
+	   rad = well_rad(i)
+	   pny(ic1 + ntot2) = rad*rad/8.0      
+	   coor_new_well2(ic1,1) = coor_new_well2(ic1-1,1) + disx
+	   coor_new_well2(ic1,2) = coor_new_well2(ic1-1,2) + disy
+	   coor_new_well2(ic1,3) = coor_new_well2(ic1-1,3) + disz
 	   new_node_well2_segid(ic1) = i
 	   nnelm_riv = nnelm_riv + 1
 	   nelm_riv(nnelm_riv,1) =  ic1 + neq_primary
@@ -304,7 +326,11 @@ c	   nelm_riv(nnelm_riv,1) =  ic1 + neq_primary
 c	   nelm_riv(nnelm_riv,2) =  ic1 + 1 + neq_primary	  
 	   iwell_prod(j2) = ic1   
 	   new_node_well2(ic1) = ic1 + ntot2
-	   ps(ic1 + ntot2) = 1.0	   
+c set porosity of wellbore node = 1.	   
+	   ps(ic1 + ntot2) = 1.0
+	   pnx(ic1 + ntot2) = 1.e-30
+	   rad = well_rad(i)
+	   pny(ic1 + ntot2) = rad*rad/8.0	   
 	   coor_new_well2(ic1,1) = coor_well2(j2,1)
 	   coor_new_well2(ic1,2) = coor_well2(j2,2)
 	   coor_new_well2(ic1,3) = coor_well2(j2,3)
@@ -320,8 +346,9 @@ c	    nnelm_riv = nnelm_riv + 1
 	    nelm_riv(nnelm_riv,2) =  jj + neq_primary	  
 	    neigh_well2_new(ic1,4) = jj + neq_primary 
 	    neigh_well2_new(jj,4) = jj + neq_primary         	         
-	  endif   
+	  endif  	   
        enddo
+
        deallocate(idum2,idum)
 c
 c resize arrays
@@ -430,22 +457,25 @@ c identify segment and radius
          xc = cord(i,1)  
 	   yc = cord(i,2)
 	   zc = cord(i,3)  
-c only consider wellsegments here	         
+c only consider well segments here	   
+         sx_w(ii,1) = 0.0      
          do j = 2,4
           kb = neigh_well2_new(ii,j)          
           if(kb.ne.0.and.kb.ne.i) then
 c identify segment and radius        
            id = new_node_well2_segid(kb-neq_primary)
-           rad = well_rad(id)
-           area_new= pi*rad**2          
+           radkb = well_rad(id)
+           area_new= pi*radkb**2          
            segx = (xc-cord(kb,1))**2  
 	     segy = (yc-cord(kb,2))**2
 	     segz = (zc-cord(kb,3))**2  
 	     dis = sqrt(segx+segy+segz)    
            sx_w(ii,j) = -0.5*(area_dum+area_new)/dis
            sx1(i) = sx1(i) + area_dum*dis/2.
+c sx_w(ii,1) will contain the surface area of the segment ii          
+           sx_w(ii,1) = sx_w(ii,1)+pi2*(rad+radkb)/2.*dis
           endif
-         enddo   
+         enddo  
         enddo        
 c	   
 c
@@ -513,15 +543,15 @@ c  added additional connections to well from primary grid
 c  zero out first (1.e-9)
     
            sx_well = sx1(i)**0.333
+c need to find orientation and use cosines to figure delx delz            
 c do loop j start            
            do j = 1, neigh_well2_count(i) 
 	      kb = neigh_well2(i,j) + neq_primary
-            id = new_node_well2_segid(kb-neq_primary)
-            sx_well_to_grid =  well_connect_fac(id)       	      
+            id = new_node_well2_segid(kb-neq_primary)    	      
             kbmin=min(kbmin,kb)
             kbmax=max(kbmax,kb)
             idum(kb) = 1
-            dum1(kb,1) = sx_well*sx_well_to_grid 
+            dum1(kb,1) = -sx_w(id,1)/sx_well
 	     enddo
 c do loop j end  	     
 c
@@ -643,13 +673,133 @@ c  -99999999  below indicates last position
          nr = icoef + 1
 c gaz 060209 be careful         
 c         neq_primary = neq
-         deallocate(idum,dum,istrw_new,ncon_new,sx_new)     
+c
+c adjust area coeffcients for wellbore nodes
+c
+c
+c Peaceman model 
+c
+         allocate(delxw2(nodes_well2_added))
+         allocate(delyw2(nodes_well2_added))
+         allocate(delzw2(nodes_well2_added))
+         allocate(iwdum(nodes_well2_added))
+         do ii = 1,nodes_well2_added
+c  i is primary node           
+            i = neigh_well2_new(ii,1)
+c  k is the well node            
+            kc = ii + neq_primary
+             delx = 0.0
+             dely = 0.0
+             delz = 0.0
+c find gridblock dimensions of primary grid that holds well node
+             xi = cord(i,1)
+             yi = cord(i,2)
+             zi = cord(i,3)
+             i1 = nelm(i)+1
+             i2 = nelm(i+1)
+             do k = i1,i2
+              kb = nelm(k)
+              if(kb.eq.kc) iwdum(ii) = k
+              delx = max(abs(xi-cord(kb,1)),delx)
+              dely = max(abs(yi-cord(kb,2)),dely)
+              delz = max(abs(zi-cord(kb,3)),delz)
+             enddo
+            delxw2(ii) = delx
+            delyw2(ii) = dely
+            delzw2(ii) = delz  
+          enddo
+c          
+         do ii = 1,nodes_well2_added
+c  i is primary node           
+            i = neigh_well2_new(ii,1)
+c  k is the well node            
+            kc = ii + neq_primary
+             delx = delxw2(ii)
+             dely = delyw2(ii)
+             delz = delzw2(ii)
+c find gridblock dimensions  
+c jj is the connection primary to wellbore
+            jj = iwdum(ii)           
+            id = new_node_well2_segid(ii)
+	      iw = istrw(jj-neqp1)
+	      delx = delxw2(ii)
+            dely = delyw2(ii)
+            delz = delzw2(ii)
+	      if(idir_seg(id).eq.1) then
+c   aligned with x axis
+            else if(idir_seg(id).eq.2) then
+c   aligned with y axis                    
+            else 
+c   aligned with z axis               
+               rthick = delz
+               rw = well_rad(id)
+   	         r0 = 0.14*sqrt(delx*delx+dely*dely)
+   	         term2 = pi2*rthick/log(r0/rw)   
+              if(isoy.eq.1) then 	         
+   	          sx(iw,1) = -onethird*term2
+   	         else
+   	          sx(iw,1) = -term2
+   	          sx(iw,2) = 0.0
+   	          sx(iw,3) = 0.0
+   	         endif   	         	            
+            endif
+         enddo
+c
+c set peaceman type connection to primary grid block
+c only for nodes that represent segment ends
+c     
+       do ii = 1, n_well_prod
+          do j = neq_primary+1,neq
+       	   if(izonef(j).eq.izlabelp(ii)) then
+       	    i = j
+       	    kk = j - neq_primary
+       	    go to 201
+       	   endif
+       	  enddo
+       	  stop
+201     nodew = nwell2_prim(ii)
+             delx = delxw2(ii)
+             dely = delyw2(ii)
+             delz = delzw2(ii)
+c find gridblock dimensions  
+          jj = iwdum(kk)           
+          id = new_node_well2_segid(i-neq_primary)
+	    iw = istrw(jj-neqp1)
+	    if(idir_seg(id).eq.1) then
+c   aligned with x axis
+          else if(idir_seg(id).eq.2) then
+c   aligned with y axis                    
+          else
+c   aligned with z axis   
+               rthick = delz
+               rw = well_rad(id)
+   	         pnxa = 1.e-6*pnx(nodew)
+   	         pnya = 1.e-6*pny(nodew)
+   	         aperm = sqrt(pnxa*pnya)
+   	         term1 = (pnya/pnxa)**0.25 + (pnxa/pnya)**0.25
+   	         term2 = sqrt(sqrt(pnya/pnxa)*delx*delx + sqrt(pnxa/pnya)*
+     &	               dely*dely) 
+    	         r0 = 0.28*term2/term1	         
+   	         aperm = sqrt(pnxa*pnya)
+   	         peaceman_term = 1.e06*pi2*aperm*rthick/log(r0/rw)   	
+               if(isoy.eq.1) then 	         
+   	          sx(iw,1) = -onethird*peaceman_term
+   	         else
+   	          sx(iw,1) = -peaceman_term
+   	          sx(iw,2) = 0.0
+   	          sx(iw,3) = 0.0
+   	         endif
+   	      endif
+c for a producer set perm x (connection to primary grid) = 1.   	         
+   	      pnx(i) = well_connect_fac(ii)   	  
+	 enddo
+         deallocate(idum,dum,istrw_new,ncon_new,sx_new)  
+         deallocate(seg_cos,idir_seg,iwdum)
+         deallocate(delxw2,delyw2,delzw2)   
 	else if(iflg.eq.5) then
 c
-c     assign zones to wellbore segments
-c
-
-c assign zone number to potential source/sink nodes       
+c assign zone number to potential source/sink nodes  
+c     
        do ii = 1, n_well_prod
 	   xc = coor_well2(ii,1)
 	   yc = coor_well2(ii,2)
@@ -660,8 +810,7 @@ c assign zone number to potential source/sink nodes
 	     izonef(j) = izlabelp(ii)
 	    endif
 	   enddo
-	 enddo
-
+	 enddo          
 	else if(iflg.eq.-33) then
 c
 c    

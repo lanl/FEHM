@@ -342,8 +342,10 @@ c
 	       allocate(izlabelp(n_well_prod))	       
              do i = 1,n_well_prod
 	        read(inpt,*) ii,
-     &			coor_well2(ii,1),coor_well2(ii,2),coor_well2(ii,3),izlabelp(ii)	   
-              iwell_prod(i) = ii   
+     &			coor_well2(ii,1),coor_well2(ii,2),coor_well2(ii,3),
+     &          well_connect_fac(ii),izlabelp(ii)
+                iwell_prod(i) = ii   
+                well_connect_fac(ii) = abs(well_connect_fac(ii))
              enddo
              read(inpt,*) n_well_seg
 	       allocate(iwell_seg(n_well_seg,2))
@@ -352,8 +354,7 @@ c
 	       allocate(izlabels(n_well_seg))		       
              do i = 1,n_well_seg
 	        read(inpt,*) j,iwell_seg(j,1),iwell_seg(j,2),
-     &			well_rad(j),well_dz(j),well_connect_fac(j),izlabels(i)	  
-               well_connect_fac(j) = -abs(well_connect_fac(j))    
+     &			well_rad(j),well_dz(j),izlabels(i)	   
              enddo
             continue
             else if(iriver.eq.3) then

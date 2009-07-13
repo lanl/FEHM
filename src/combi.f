@@ -28,30 +28,6 @@
 !D2              G. Zyvoloski           Initial implementation.
 !D2
 !D2 $Log:   /pvcs.config/fehm90/src/combi.f_a  $
-!D2 
-!D2    Rev 2.5   06 Jan 2004 10:42:26   pvcs
-!D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
-!D2 
-!D2    Rev 2.4   29 Jan 2003 08:56:02   pvcs
-!D2 FEHM Version 2.20, STN 10086-2.20-00
-!D2 
-!D2    Rev 2.3   14 Nov 2001 13:05:20   pvcs
-!D2 FEHM Version 2.12, STN 10086-2.12-00
-!D2 
-!D2    Rev 2.2   06 Jun 2001 13:22:18   pvcs
-!D2 FEHM Version 2.11, STN 10086-2.11-00
-!D2 
-!D2    Rev 2.1   30 Nov 2000 11:56:30   pvcs
-!D2 FEHM Version 2.10, STN 10086-2.10-00
-!D2 
-!D2    Rev 2.0   Fri May 07 14:39:26 1999   pvcs
-!D2 FEHM Version 2.0, SC-194 (Fortran 90)
-!D2 
-!D2    Rev 1.1   03/18/94 16:22:56   gaz
-!D2 Added solve_new and cleaned up memory management.
-!D2 
-!D2    Rev 1.0   01/20/94 10:21:52   pvcs
-!D2 original version in process of being certified
 !D2
 !***********************************************************************
 !D3
@@ -358,6 +334,19 @@ c
       character*4, allocatable :: keyms1(:), keyms2(:)
       character*4, allocatable :: keyms3(:), keyms4(:) 
       character*120, allocatable :: submod_filename(:)
-
+c
+c well impedance model (peaceman) conditions 
+c
+      character*4 keywordwel1,keywordwel2,keywordwel3
+      integer iwelimd,isubwd,welifile
+      integer, allocatable ::izonewel1(:)
+      integer, allocatable ::itypwel(:) 
+      integer, allocatable ::icountw(:)       
+      character*4, allocatable :: keywel1(:), keywel2(:)
+      character*4, allocatable :: keywel3(:), keywel4(:) 
+      real*8, allocatable ::   parmwel1(:)
+      real*8, allocatable ::   parmwel2(:)
+      real*8, allocatable ::   parmwel3(:)
+      
       end module combi
 

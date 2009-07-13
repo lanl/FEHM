@@ -31,6 +31,7 @@ CD2                                        the current version differs
 CD2                                        from these in minor ways.  
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/thrair.f_a  $
+CD2
 !D2 
 !D2    Rev 2.3   14 Nov 2001 13:28:34   pvcs
 !D2 FEHM Version 2.12, STN 10086-2.12-00
@@ -537,6 +538,14 @@ c     form flow terms
 c     flow in or out
             sflux=esk(mi)
             permsd=abs(wellim(mi))
+            if(iwelimd.ne.0)then
+c 
+c peaceman solution only available for models kq(-1,-2,1)
+c           
+             if(izonewel1(mi).ne.0) then
+              permsd = wellim(mi)*rolref/xvisl
+             endif
+            endif
             pflowd=pflow(mi)
             if(sflux.eq.1.0.and.irdof.ne.13) then
                qwdis=permsd*(pl-pflowd) + permsd*(sl-sflux) 
@@ -939,6 +948,17 @@ c     overwrite sk(mi) for evaporation nodes.
                deqh(mi)=dqas
             endif
          endif
+       if(kq.eq.1) then
+c
+c check for peaceman calculation
+c       
+            if(iwelimd.ne.0)then        
+             if(izonewel1(mi).ne.0) then
+              permsd = wellim(mi)*rolref/xvisl
+             endif
+             pflow(mi)=phi(mi) - sk(mi)/permsd
+            endif
+        endif      
  100  continue
       
       if(allocated(s0)) then

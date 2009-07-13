@@ -28,6 +28,7 @@ CD2 NOV 1993     Z. Dash        22      Add prolog
 CD2              G. Zyvoloski   N/A     Initial implementation
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/thermw.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:43:06   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -1295,6 +1296,14 @@ c     form pressure dependent flow term
                dpldt=-dpsatt
             endif
             permsd=abs(wellim(mi))
+            if(iwelimd.ne.0)then
+c 
+c peaceman solution only available for models kq(-1,-2,1)
+c   (need) to put derivative terms in later (gaz)  
+             if(izonewel1(mi).ne.0) then
+              permsd = wellim(mi)*rol/xvisl
+             endif
+            endif            
             if(pldif.le.0.0d00.and.wellim(mi).lt.0.0d0) permsd=0.0d0
             qdis=permsd*(pldif)
             sk(mi)=qdis
@@ -1546,6 +1555,17 @@ c     heat conduction only
             sto1(mi+neq)=denrd*tl
             deef(mi)=denrd*dtin
          endif
+       if(kq.eq.1) then
+c
+c check for peaceman calculation
+c       
+            if(iwelimd.ne.0)then        
+             if(izonewel1(mi).ne.0) then
+              permsd = wellim(mi)*rolf(mi)/xvisl
+             endif
+             pflow(mi)=phi(mi) - sk(mi)/permsd
+            endif
+        endif               
       enddo
 
 c     modify accumulation terms for volume changes

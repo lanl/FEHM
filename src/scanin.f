@@ -26,6 +26,7 @@ CD2
 CD2 13-JAN-94    Z. Dash        22      Initial implementation.
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/scanin.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:43:50   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -2060,7 +2061,9 @@ c need porosity model
                   read(dumstring,*) idumm
 	          backspace locunitnum
 	          i = i + 1
-	          if (idumm .eq. 2 .or. idumm .eq. 4) then
+	          if(idumm.eq.1) then
+ 	           read(locunitnum,*) idumm
+	          else if (idumm .eq. 2 .or. idumm .eq. 4) then
                      read(locunitnum,*) idumm, (adumm, ja = 1, 9) 
 	          else if(idumm.eq.6) then
                      read(locunitnum,*) idumm,(adumm,ja=1,11)

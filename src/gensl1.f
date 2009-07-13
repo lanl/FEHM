@@ -23,6 +23,7 @@ CD2
 CD2  REVISION HISTORY 
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/gensl1.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:43:06   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -121,12 +122,13 @@ C***********************************************************************
       use combi
       use comdti
       use comai
+      use comriv
       use comcouple
       implicit none
 
       integer ndex(2)
       integer i, id, neqp1, nsizea, nsizea1 
-      real*8 dumn(100)
+      real*8 dumn(100),term
       real*8, allocatable :: sto5(:,:)
       real*8, allocatable :: dum(:)
       real*8  facr, fdum2, tollr, tolls, tmch_new, tmch_old, bp_max
@@ -144,7 +146,11 @@ c     zero out arrays
       enddo
       fdum2=0.
       do id=1,neq
+        if(iriver.eq.2.and.id.gt.neq_primary) then
+         call geneq1_well(id)
+        else
          call geneq1(id)
+        endif
       enddo
       do id=1,neq
          if(ps(id).le.0.0) then
@@ -165,12 +171,9 @@ c
 c
       if(islord.ne.0) call switch(nmat,nmatb,islord,2,1,nsizea1)
       if(islord.ne.0) call switchb(bp,nrhs,nrhsb,islord,2,1,neq)
-
-c
-c     
+c    
 c normalize equations 
 c     
-
       call normal_dof(neq,a,bp,nelm,nmat,nrhs,nelmdg
      &     ,ndex,2,dumn(1),dumn(37),dumn(73),0,fdum2)
       if(ndex(1).lt.0) then
