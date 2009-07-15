@@ -470,6 +470,7 @@ c..................................
          allocate(zo(num_part))
          allocate(ttpo(num_part))
          allocate(lastnode(num_part))
+         allocate(pstart_out(num_part))
          allocate(ijkvss(num_part))
          allocate(vx(num_part))
          allocate(vy(num_part))

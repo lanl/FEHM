@@ -182,5 +182,7 @@ c
       real*8, allocatable :: ttbtc(:,:)
 ! ZVD - 04/06/09 Added for output location of particles that have been removed from system dure to bad location
       integer, allocatable :: lastnode(:)
+! ZVD - 07/15/09 Add to mark wheter or not the starting particle location has been output
+      logical, allocatable :: pstart_out(:)
 
       end module comsptr
