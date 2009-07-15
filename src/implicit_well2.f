@@ -777,8 +777,8 @@ c   aligned with z axis
    	         pnya = 1.e-6*pny(nodew)
    	         aperm = sqrt(pnxa*pnya)
    	         term1 = (pnya/pnxa)**0.25 + (pnxa/pnya)**0.25
-   	         term2 = sqrt(sqrt(pnya/pnxa)*delx*delx + sqrt(pnxa/pnya)*
-     &	               dely*dely) 
+   	         term2 = sqrt(sqrt(pnya/pnxa)*delx*delx + 
+     &                sqrt(pnxa/pnya)*dely*dely) 
     	         r0 = 0.28*term2/term1	         
    	         aperm = sqrt(pnxa*pnya)
    	         peaceman_term = 1.e06*pi2*aperm*rthick/log(r0/rw)   	
@@ -790,7 +790,7 @@ c   aligned with z axis
    	          sx(iw,3) = 0.0
    	         endif
    	      endif
-c for a producer set perm x (connection to primary grid) = 1.   	         
+c for a producer set perm x (connection to primary grid) = 1. 
    	      pnx(i) = well_connect_fac(ii)   	  
 	 enddo
          deallocate(idum,dum,istrw_new,ncon_new,sx_new)  

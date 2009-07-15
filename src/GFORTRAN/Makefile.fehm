@@ -39,10 +39,10 @@ endif
 
 # Linux OS ------------------------------
 ifeq (${OPSYS}, Linux)
-OSTAG = gf${BIT}
+OSTAG = gf
 ifeq (${BIT},64)
 FC = /usr/bin/gfortran
-LIBRARY = -L/usr/lib/gcc/x86_64-redhat-linux
+LIBRARY = -L/usr/lib/gcc/x86_64-redhat-linux/4.1.1
 else
 FC = /usr/bin/gfortran
 LIBRARY =  -L/usr/lib/gcc/x86_64-redhat-linux/4.1.1

@@ -447,9 +447,9 @@ c set default
 	          itype(1) = 4
 	          default(1) = 1
 	          igroup = 1
-	          call initdata2( inpt, ischk, n0, narrays,
-	2           itype, default, macroread(8), macro, igroup, ireturn,
-	3           i4_1=ispm(1:n0))	        
+	          call initdata2( inpt, ischk, n0, narrays, itype,
+     2                 default, macroread(8), macro, igroup, ireturn,
+     3                 i4_1=ispm(1:n0))	        
 	          
 	          
 c     ****** end of input loop

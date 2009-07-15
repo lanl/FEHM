@@ -723,7 +723,8 @@ c porosity change due to precip/diss reaction
 	      read(inpt,'(a1)')por_change
 		  if(por_change.eq.'p')then
 	         read(inpt,*)
-	         read(inpt,*) mw_mineral(irxnim(j,1)), rho_mineral(irxnim(j,1))
+	         read(inpt,*) mw_mineral(irxnim(j,1)), 
+     &                rho_mineral(irxnim(j,1))
 	      else
 	         backspace(inpt)
 		  endif
