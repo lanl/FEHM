@@ -164,9 +164,23 @@ C***********************************************************************
       implicit none
 
       integer i
-
+      character*4 duma1
       macro = 'anpe'
       ianpe = 2
+      backspace inpt
+      read (inpt,'(a80)') wdd(1:80)
+      read (wdd,*) duma1
+      do i = 5,80
+       if(wdd(i:i).eq.'o'.or.wdd(i:i).eq.'O') then
+        ianpe = 3
+        go to 100
+       endif
+       if(wdd(i:i).eq.'a'.or.wdd(i:i).eq.'A') then
+        ianpe = 2
+        go to 100
+       endif 
+      enddo
+100   continue      
 c**** read anisotropic permeability
       if(.not.allocated(anxy)) then
        allocate(anxy(n0),anxz(n0),anyz(n0))

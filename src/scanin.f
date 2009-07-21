@@ -364,6 +364,7 @@ c**** read startup parameters ****
       total_irrev = 0
       total_rev = 0
       maxprobdivs = 0
+      ianpe = 0
       ivboun = 0
       nflxt = 0
       nspeci = 0

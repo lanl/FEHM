@@ -416,10 +416,9 @@ C***********************************************************************
       integer, allocatable :: nop_temp(:)      
       integer i1,i2,ipiv,icnt
       integer count, num_zone
-      integer nsbb,idofdum
+      integer nsbb,idofdum,neidum
       real*8 very_small, fac_nop, fac_mult
       parameter (very_small= 1.d-30)
-
 c     Calculate rho1grav
 c      rho1grav = crl(1,1)*(9.81d-6)
 c      rho1grav = 997.*9.81d-6
@@ -563,10 +562,11 @@ c**** complete element information ****
 
 c**** complete pest information(if interpolation is used) ****
       call pest(-1)
-      if (mlz .ne. 0. and. irun .eq. 1 .and. lda .le. 0) call split(0)
+      if (mlz .ne. 0. and. irun .eq. 1 .and. lda .le. 0.and.ianpe.eq.0) 
+     &    call split(0)
       if (lda .le. 0.and.irun.eq.1) then
          if(ivf.ne.-1) then
-            if(ianpe.ne.2) call anonp
+            if(ianpe.eq.0) call anonp
             if(ianpe.ne.0) call anonp_ani
          else
             call structured(1)

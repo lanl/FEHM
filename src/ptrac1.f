@@ -855,7 +855,7 @@ c temporarily
          delkb=0.
          if(j.ne.0) then
             jab=abs(j)
-            kb=irray(i, j)
+            kb= abs (irray(i, j))
             if((irray(i,0).eq.0).or.(irray(i,0).eq.-(i+1000)).or.
      1          (irray(i,0).lt.-200000000)) then
                kb_omr=0
@@ -1322,11 +1322,16 @@ c handle OMR nodes on exterior boundaries, including omr-cliff nodes
             do ibou=1,6
                if(iboulist(i,ibou).eq.la) then
 c     node i is an OMR node on an exterior boundary, with the exterior in 
-c     the la direction. set gotcord =cord of i                    
-                  gotcord=cord(i,l)
-                  kb=0
-                  itempf = 1
-               endif
+c     the la direction. set gotcord =cord of i
+                  if (irray(i, l) .lt. 0) then
+                     kb = irray(i, l)
+                     gotcord = cord (abs(kb), l)
+                  else
+                     gotcord=cord(i,l)
+                     kb=0
+                   end if
+                   itempf = 1
+              endif
             enddo
 
          endif

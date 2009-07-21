@@ -255,7 +255,7 @@ c
         phii=pvii
       endif
       ti=t(i)
-      swi=s(i)
+c      swi=s(i)
 c
 c form constants for i>neq
 c
@@ -281,7 +281,7 @@ c If this is an isothermal air-water simulation
       a_axy(jmia+nmatavw)=sk(i)
 c Take care of source/sink term 
 c If this is an isothermal air-water simulation
-      a_vxy(jmia+nmatavw)=qh(i)
+c      a_vxy(jmia+nmatavw)=qh(i)
 
 c
 c   anisotropy coding
@@ -401,9 +401,11 @@ c  check x direction upwinding
             kb1=it4(jm)
             kz1=kb1-icd
             kb2=it4a(jm)
-            kz2=kb1-icd
-            presd1 = phi(kb1)-pcp(kb1)
-            presd2 = phi(kb2)-pcp(kb2)
+            kz2=kb2-icd
+c            presd1 = phi(kb1)-pcp(kb1)
+c            presd2 = phi(kb2)-pcp(kb2)
+            presd1 = phi(kb1)
+            presd2 = phi(kb2)            
             cordd1 = cord(kz1,igrav)
             cordd2 = cord(kz2,igrav)
             sumx = sumx + t1(jm)*(presd1-presd2) 
@@ -420,9 +422,11 @@ c  check y direction upwinding
             kb1=it5(jm)
             kz1=kb1-icd
             kb2=it5a(jm)
-            kz2=kb1-icd
-            presd1 = phi(kb1)-pcp(kb1)
-            presd2 = phi(kb2)-pcp(kb2)
+            kz2=kb2-icd
+c            presd1 = phi(kb1)-pcp(kb1)
+c            presd2 = phi(kb2)-pcp(kb2)
+            presd1 = phi(kb1)
+            presd2 = phi(kb2)  
             cordd1 = cord(kz1,igrav)
             cordd2 = cord(kz2,igrav)
             sumy = sumy + t2(jm)*(presd1-presd2) 
@@ -439,9 +443,11 @@ c  check z direction upwinding
             kb1=it6(jm)
             kz1=kb1-icd
             kb2=it6a(jm)
-            kz2=kb1-icd
-            presd1 = phi(kb1)-pcp(kb1)
-            presd2 = phi(kb2)-pcp(kb2)
+            kz2=kb2-icd
+c            presd1 = phi(kb1)-pcp(kb1)
+c            presd2 = phi(kb2)-pcp(kb2)
+            presd1 = phi(kb1)
+            presd2 = phi(kb2)  
             cordd1 = cord(kz1,igrav)
             cordd2 = cord(kz2,igrav)
             sumz = sumz + t3(jm)*(presd1-presd2) 
@@ -497,9 +503,11 @@ c     + x face
                kb1=it4(jm)
                kz1=kb1-icd
                kb2=it4a(jm)
-               kz2=kb1-icd
-               presd1 = phi(kb1)-pcp(kb1)
-               presd2 = phi(kb2)-pcp(kb2)
+               kz2=kb2-icd
+c            presd1 = phi(kb1)-pcp(kb1)
+c            presd2 = phi(kb2)-pcp(kb2)
+            presd1 = phi(kb1)
+            presd2 = phi(kb2)  
                dsumxp = t1(jm)
                dum(kb1) = dum(kb1) + axyf*dsumxp
                dumx(kb1) = dumx(kb1) - axyf*dsumxp
@@ -534,9 +542,11 @@ c     + y face
                kb1=it5(jm)
                kz1=kb1-icd
                kb2=it5a(jm)
-               kz2=kb1-icd
-               presd1 = phi(kb1)-pcp(kb1)
-               presd2 = phi(kb2)-pcp(kb2)
+               kz2=kb2-icd
+c            presd1 = phi(kb1)-pcp(kb1)
+c            presd2 = phi(kb2)-pcp(kb2)
+            presd1 = phi(kb1)
+            presd2 = phi(kb2)  
                dsumyp = t2(jm)
                dum(kb1) = dum(kb1) + axyf*dsumyp
                dumy(kb1) = dumy(kb1) - axyf*dsumyp
@@ -571,9 +581,11 @@ c     + z face
                kb1=it6(jm)
                kz1=kb1-icd
                kb2=it6a(jm)
-               kz2=kb1-icd
-               presd1 = phi(kb1)-pcp(kb1)
-               presd2 = phi(kb2)-pcp(kb2)
+               kz2=kb2-icd
+c            presd1 = phi(kb1)-pcp(kb1)
+c            presd2 = phi(kb2)-pcp(kb2)
+            presd1 = phi(kb1)
+            presd2 = phi(kb2)  
                dsumzp = t3(jm)
                dum(kb1) = dum(kb1) + axyf*dsumzp
                dumz(kb1) = dumz(kb1) - axyf*dsumzp
