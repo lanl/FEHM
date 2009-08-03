@@ -346,7 +346,7 @@ c 3d coupled THM
 c add stress equations and derivatives
 c uncoupled stress equations
          call  stressctr(8,0)
-      else if(idof.le.1) then
+      else if(idoff.eq.-1) then
          call gensl3
       else
          if(ico2.gt.0) then

@@ -79,15 +79,6 @@ c
       
       integer nmatavw
       real*8 sx1d
-      real*8 axi
-      real*8 ayi
-      real*8 azi
-      real*8 alxi
-      real*8 alyi
-      real*8 alzi
-      real*8 avxi
-      real*8 avyi
-      real*8 avzi
       real*8 pvii
       real*8 phii
       real*8 swi
@@ -222,12 +213,6 @@ c
 c fluid and grid properties at node i
 c
       sx1d=sx1(i)
-      axi=pnx(i)
-      ayi=pny(i)     
-      alxi=axi
-      avxi=axi
-      alyi=ayi
-      avyi=ayi      
       pvii=phi(i)
       dili=dil(i)
       dilpi=dilp(i)

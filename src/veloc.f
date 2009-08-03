@@ -130,16 +130,219 @@ c gaz 11-09-2001 added dis_tol so a velocity can be calculated at
 c coincident mdnode nodes
 
 c ************
-c     return
+c     return for anisotropy or heat-only
 c
-      if(ianpe.ne.0) return
-c
-      if ( idof .gt. 1 )  then
-         vlmax  =  0.0
-         vvmax  =  0.0
-         neqp1  =  neq+1
+      if(ianpe.ne.0 .or. idoff .eq. -1) return
+c     
+      vlmax  =  0.0
+      vvmax  =  0.0
+      neqp1  =  neq+1
 
-c TAKE CARE OF NODES 1 TO NEQ (ONLY FRACTURES FOR DPDP)
+c     TAKE CARE OF NODES 1 TO NEQ (ONLY FRACTURES FOR DPDP)
+      do i=1,neq
+c     zero out velocities
+         pnxl_in = 0.
+         pnyl_in = 0.
+         pnzl_in = 0.
+         pnxv_in = 0.
+         pnyv_in = 0.
+         pnzv_in = 0.
+         pnxl_out = 0.
+         pnyl_out = 0.
+         pnzl_out = 0.
+         pnxv_out = 0.
+         pnyv_out = 0.
+         pnzv_out = 0.
+c     calculate lower diagonal geometric coefficient
+c     gaz 1-25-03 used abs(iw)      
+         iq=0
+         do ij=nelm(i)+1,nelmdg(i)-1
+            kb=nelm(ij)
+            do jj=nelmdg(kb)+1,nelm(kb+1)
+               if(nelm(jj).eq.i) then
+                  iq=iq+1 
+                  it9(iq)=ij
+                  it10(iq)=istrw(jj-neqp1)
+                  iw=abs(it10(iq))
+                  if (sx(iw,isox)+sx(iw,isoy)+
+     &                 sx(iw,isoz) .eq.0.) iq=iq-1
+               endif
+            enddo
+         enddo
+         do jj=nelmdg(i)+1,nelm(i+1)     
+            iq=iq+1 
+            it9(iq)=jj
+            it10(iq)=istrw(jj-neqp1)
+            iw=abs(it10(iq))
+            if(iw.eq.0.or.iw.gt.iw_max)then
+               iq=iq-1
+            else 
+               if (sx(iw,isox)+sx(iw,isoy)+
+     &              sx(iw,isoz) .eq.0.) iq=iq-1
+            endif
+         enddo
+         do ij=1,iq                   
+            jj=it9(ij)
+            kb=nelm(jj)
+            iwd=it10(ij)
+            iw = abs(iwd)
+c     use internode fluxes already stored
+            axy=a_axy(jj-neqp1)
+            if (irdof .ne. 13 .and. jswitch .eq. 0) then
+               vxy=a_vxy(jj-neqp1)
+            end if
+c     velocities
+            if(icnl.eq.0) then
+               dis=sqrt((cord(i,1)-cord(kb,1))**2
+     &              + (cord(i,2)-cord(kb,2))**2
+     &              + (cord(i,3)-cord(kb,3))**2)+dis_tol
+               area_t=-(sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz))*dis
+               if(iwd.lt.0) area_t=area_t*sx_mult
+            else
+               dis=sqrt((cord(i,1)-cord(kb,1))**2
+     &              + (cord(i,2)-cord(kb,2))**2)+dis_tol
+c     area_t=-(sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz))*dis
+               area_t=-(sx(iw,isox)+sx(iw,isoy))*dis
+     &              *0.5*(cord(i,3)+cord(kb,3))
+               if(iwd.lt.0) area_t=area_t*sx_mult
+            endif
+            area_t=area_t+tol
+            if(axy.gt.0.0) then
+               fid=upwgt
+               fid1=1.0-fid
+            else if(axy.lt.0.0) then
+               fid1=upwgt
+               fid=1.0-fid1
+            else
+               fid=0.5
+               fid1=0.5
+            endif
+            dili=dil(i)
+            dilkb=dil(kb)
+            axyf=max(tol,(fid*dilkb+fid1*dili))
+            if(abs(axy).gt.tol) then
+               axy=axy/(axyf+tol  )/area_t
+     &              *(fid1*dil(i)/(rolf(i)+tol)+
+     &              fid*dil(kb)/(rolf(kb)+tol))
+               if(axy.gt.0.0) then
+                  if(icnl.ne.0) then
+                     xdis_cos=(cord(kb,1)-cord(i,1))/dis 
+                     ydis_cos=(cord(kb,2)-cord(i,2))/dis 
+                     pnxl_in=pnxl_in+xdis_cos*axy
+                     pnyl_in=pnyl_in+ydis_cos*axy
+                  else
+                     xdis_cos=(cord(kb,1)-cord(i,1))/dis 
+                     ydis_cos=(cord(kb,2)-cord(i,2))/dis 
+                     zdis_cos=(cord(kb,3)-cord(i,3))/dis 
+                     pnxl_in=pnxl_in+xdis_cos*axy
+                     pnyl_in=pnyl_in+ydis_cos*axy
+                     pnzl_in=pnzl_in+zdis_cos*axy
+                  endif
+               else
+                  if(icnl.ne.0) then
+                     xdis_cos=(cord(kb,1)-cord(i,1))/dis 
+                     ydis_cos=(cord(kb,2)-cord(i,2))/dis 
+                     pnxl_out=pnxl_out+xdis_cos*axy
+                     pnyl_out=pnyl_out+ydis_cos*axy
+                  else
+                     xdis_cos=(cord(kb,1)-cord(i,1))/dis 
+                     ydis_cos=(cord(kb,2)-cord(i,2))/dis 
+                     zdis_cos=(cord(kb,3)-cord(i,3))/dis 
+                     pnxl_out=pnxl_out+xdis_cos*axy
+                     pnyl_out=pnyl_out+ydis_cos*axy
+                     pnzl_out=pnzl_out+zdis_cos*axy
+                  endif
+               endif
+            endif
+            if (irdof .ne. 13 .and. jswitch .eq. 0) then
+               if(vxy.gt.0.0) then
+                  fid=upwgt
+                  fid1=1.0-fid
+               else if(vxy.lt.0.0) then
+                  fid1=upwgt
+                  fid=1.0-fid1
+               else
+                  fid=0.5
+                  fid1=0.5
+               endif
+               divi=div(i)
+               divkb=div(kb)
+               vxyf=max(tol,(fid*divkb+fid1*divi))
+               if(abs(vxy).gt.tol) then
+                  vxy=vxy/(vxyf+tol)/area_t
+     &                 *(fid1*div(i)/(rovf(i)+tol)+fid*
+     &                 div(kb)/(rovf(kb)+tol))
+                  if(vxy.gt.0.0) then
+                     if(icnl.ne.0) then
+                        xdis_cos=(cord(kb,1)-cord(i,1))/dis 
+                        ydis_cos=(cord(kb,2)-cord(i,2))/dis 
+                        pnxv_in=pnxv_in+xdis_cos*vxy
+                        pnyv_in=pnyv_in+ydis_cos*vxy
+                     else
+                        xdis_cos=(cord(kb,1)-cord(i,1))/dis 
+                        ydis_cos=(cord(kb,2)-cord(i,2))/dis 
+                        zdis_cos=(cord(kb,3)-cord(i,3))/dis 
+                        pnxv_in=pnxv_in+xdis_cos*vxy
+                        pnyv_in=pnyv_in+ydis_cos*vxy
+                        pnzv_in=pnzv_in+zdis_cos*vxy
+                     endif
+                  else
+                     if(icnl.ne.0) then
+                        xdis_cos=(cord(kb,1)-cord(i,1))/dis 
+                        ydis_cos=(cord(kb,2)-cord(i,2))/dis 
+                        pnxv_out=pnxv_out+xdis_cos*vxy
+                        pnyv_out=pnyv_out+ydis_cos*vxy
+                     else
+                        xdis_cos=(cord(kb,1)-cord(i,1))/dis 
+                        ydis_cos=(cord(kb,2)-cord(i,2))/dis 
+                        zdis_cos=(cord(kb,3)-cord(i,3))/dis 
+                        pnxv_out=pnxv_out+xdis_cos*vxy
+                        pnyv_out=pnyv_out+ydis_cos*vxy
+                        pnzv_out=pnzv_out+zdis_cos*vxy
+                     endif
+                  endif
+               endif
+            end if
+         enddo
+c     calculate magnitude of vapor velocity
+         if (irdof .ne. 13 .and. jswitch .eq. 0) then
+            vvd_in = sqrt(pnxv_in**2 + pnyv_in**2 + pnzv_in**2)
+            vvd_out = sqrt(pnxv_out**2 + pnyv_out**2 + pnzv_out**2)
+            if( vvd_in .gt. vvd_out ) then
+               vvd = vvd_in
+               pnx(n*2+i) = pnxv_in
+               pny(n*2+i) = pnyv_in
+               pnz(n*2+i) = pnzv_in
+            else
+               vvd = vvd_out
+               pnx(n*2+i) = pnxv_out
+               pny(n*2+i) = pnyv_out
+               pnz(n*2+i) = pnzv_out
+            end if
+         end if
+c     calculate magnitude of liquid velocity
+c     
+         vld_in = sqrt(pnxl_in**2 + pnyl_in**2 + pnzl_in**2)
+         vld_out = sqrt(pnxl_out**2 + pnyl_out**2 + pnzl_out**2)
+         if( vld_in .gt. vld_out ) then
+            vld = vld_in
+            pnx(n+i) = pnxl_in
+            pny(n+i) = pnyl_in
+            pnz(n+i) = pnzl_in
+         else
+            vld = vld_out
+            pnx(n+i) = pnxl_out
+            pny(n+i) = pnyl_out
+            pnz(n+i) = pnzl_out
+         end if
+c     find maximum velocities
+c     
+         vlmax  =  max( vlmax,abs(vld) )
+         vvmax  =  max( vvmax,abs(vvd) )
+      enddo
+
+c     TAKE CARE OF NEQ+1 TO N0 IF THEY EXIST (MATRIX FOR DPDP) 
+      if (idpdp.ne.0) then
          do i=1,neq
 c     zero out velocities
             pnxl_in = 0.
@@ -155,7 +358,6 @@ c     zero out velocities
             pnyv_out = 0.
             pnzv_out = 0.
 c     calculate lower diagonal geometric coefficient
-c gaz 1-25-03 used abs(iw)      
             iq=0
             do ij=nelm(i)+1,nelmdg(i)-1
                kb=nelm(ij)
@@ -164,9 +366,8 @@ c gaz 1-25-03 used abs(iw)
                      iq=iq+1 
                      it9(iq)=ij
                      it10(iq)=istrw(jj-neqp1)
-                     iw=abs(it10(iq))
-                     if (sx(iw,isox)+sx(iw,isoy)+
-     &                    sx(iw,isoz) .eq.0.) iq=iq-1
+                     if (sx(it10(iq),isox)+sx(it10(iq),isoy)+
+     &                    sx(it10(iq),isoz) .eq.0.) iq=iq-1
                   endif
                enddo
             enddo
@@ -174,23 +375,17 @@ c gaz 1-25-03 used abs(iw)
                iq=iq+1 
                it9(iq)=jj
                it10(iq)=istrw(jj-neqp1)
-               iw=abs(it10(iq))
-               if(iw.eq.0.or.iw.gt.iw_max)then
-                iq=iq-1
-               else 
-                if (sx(iw,isox)+sx(iw,isoy)+
-     &              sx(iw,isoz) .eq.0.) iq=iq-1
-               endif
+               if (sx(it10(iq),isox)+sx(it10(iq),isoy)+
+     &              sx(it10(iq),isoz) .eq.0.) iq=iq-1
             enddo
             do ij=1,iq                   
                jj=it9(ij)
                kb=nelm(jj)
-               iwd=it10(ij)
-               iw = abs(iwd)
+               iw=it10(ij)                
 c     use internode fluxes already stored
-               axy=a_axy(jj-neqp1)
+               axy=a_axy(jj-neqp1+nelm(neq+1)-neq-1)
                if (irdof .ne. 13 .and. jswitch .eq. 0) then
-                  vxy=a_vxy(jj-neqp1)
+                  vxy=a_vxy(jj-neqp1+nelm(neq+1)-neq-1)
                end if
 c     velocities
                if(icnl.eq.0) then
@@ -198,14 +393,11 @@ c     velocities
      &                 + (cord(i,2)-cord(kb,2))**2
      &                 + (cord(i,3)-cord(kb,3))**2)+dis_tol
                   area_t=-(sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz))*dis
-                  if(iwd.lt.0) area_t=area_t*sx_mult
                else
                   dis=sqrt((cord(i,1)-cord(kb,1))**2
      &                 + (cord(i,2)-cord(kb,2))**2)+dis_tol
-c                  area_t=-(sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz))*dis
                   area_t=-(sx(iw,isox)+sx(iw,isoy))*dis
      &                 *0.5*(cord(i,3)+cord(kb,3))
-                  if(iwd.lt.0) area_t=area_t*sx_mult
                endif
                area_t=area_t+tol
                if(axy.gt.0.0) then
@@ -218,13 +410,13 @@ c                  area_t=-(sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz))*dis
                   fid=0.5
                   fid1=0.5
                endif
-               dili=dil(i)
-               dilkb=dil(kb)
+               dili=dil(i+neq)
+               dilkb=dil(kb+neq)
                axyf=max(tol,(fid*dilkb+fid1*dili))
                if(abs(axy).gt.tol) then
-                  axy=axy/(axyf+tol  )/area_t
-     &                 *(fid1*dil(i)/(rolf(i)+tol)+
-     &                 fid*dil(kb)/(rolf(kb)+tol))
+                  axy=axy/axyf/area_t
+     &                 *(fid1*dil(i+neq)/(rolf(i+neq)+tol)+
+     &                 fid*dil(kb+neq)/(rolf(kb+neq)+tol))
                   if(axy.gt.0.0) then
                      if(icnl.ne.0) then
                         xdis_cos=(cord(kb,1)-cord(i,1))/dis 
@@ -266,13 +458,13 @@ c                  area_t=-(sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz))*dis
                      fid=0.5
                      fid1=0.5
                   endif
-                  divi=div(i)
-                  divkb=div(kb)
+                  divi=div(i+neq)
+                  divkb=div(kb+neq)
                   vxyf=max(tol,(fid*divkb+fid1*divi))
                   if(abs(vxy).gt.tol) then
-                     vxy=vxy/(vxyf+tol)/area_t
-     &                    *(fid1*div(i)/(rovf(i)+tol)+fid*
-     &                    div(kb)/(rovf(kb)+tol))
+                     vxy=vxy/vxyf/area_t
+     &                    *(fid1*div(i+neq)/(rovf(i+neq)+tol)+
+     &                    fid*div(kb+neq)/(rovf(kb+neq)+tol))
                      if(vxy.gt.0.0) then
                         if(icnl.ne.0) then
                            xdis_cos=(cord(kb,1)-cord(i,1))/dis 
@@ -303,239 +495,45 @@ c                  area_t=-(sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz))*dis
                         endif
                      endif
                   endif
-               end if
+               endif
             enddo
 c     calculate magnitude of vapor velocity
             if (irdof .ne. 13 .and. jswitch .eq. 0) then
                vvd_in = sqrt(pnxv_in**2 + pnyv_in**2 + pnzv_in**2)
-               vvd_out = sqrt(pnxv_out**2 + pnyv_out**2 + pnzv_out**2)
+               vvd_out =sqrt(pnxv_out**2 + pnyv_out**2 + pnzv_out**2)
                if( vvd_in .gt. vvd_out ) then
                   vvd = vvd_in
-                  pnx(n*2+i) = pnxv_in
-                  pny(n*2+i) = pnyv_in
-                  pnz(n*2+i) = pnzv_in
+                  pnx(n*2+i+neq) = pnxv_in
+                  pny(n*2+i+neq) = pnyv_in
+                  pnz(n*2+i+neq) = pnzv_in
                else
                   vvd = vvd_out
-                  pnx(n*2+i) = pnxv_out
-                  pny(n*2+i) = pnyv_out
-                  pnz(n*2+i) = pnzv_out
+                  pnx(n*2+i+neq) = pnxv_out
+                  pny(n*2+i+neq) = pnyv_out
+                  pnz(n*2+i+neq) = pnzv_out
                end if
             end if
 c     calculate magnitude of liquid velocity
 c     
             vld_in = sqrt(pnxl_in**2 + pnyl_in**2 + pnzl_in**2)
             vld_out = sqrt(pnxl_out**2 + pnyl_out**2 + pnzl_out**2)
-            if( vld_in .gt. vld_out ) then
+c     if( vld_in .gt. vld_out ) then
+            if( vld_in .eq. -1.d40  ) then
                vld = vld_in
-               pnx(n+i) = pnxl_in
-               pny(n+i) = pnyl_in
-               pnz(n+i) = pnzl_in
+               pnx(n+i+neq) = pnxl_in
+               pny(n+i+neq) = pnyl_in
+               pnz(n+i+neq) = pnzl_in
             else
                vld = vld_out
-               pnx(n+i) = pnxl_out
-               pny(n+i) = pnyl_out
-               pnz(n+i) = pnzl_out
+               pnx(n+i+neq) = pnxl_out
+               pny(n+i+neq) = pnyl_out
+               pnz(n+i+neq) = pnzl_out
             end if
 c     find maximum velocities
 c     
             vlmax  =  max( vlmax,abs(vld) )
             vvmax  =  max( vvmax,abs(vvd) )
          enddo
-
-c TAKE CARE OF NEQ+1 TO N0 IF THEY EXIST (MATRIX FOR DPDP) 
-         if (idpdp.ne.0) then
-            do i=1,neq
-c     zero out velocities
-               pnxl_in = 0.
-               pnyl_in = 0.
-               pnzl_in = 0.
-               pnxv_in = 0.
-               pnyv_in = 0.
-               pnzv_in = 0.
-               pnxl_out = 0.
-               pnyl_out = 0.
-               pnzl_out = 0.
-               pnxv_out = 0.
-               pnyv_out = 0.
-               pnzv_out = 0.
-c     calculate lower diagonal geometric coefficient
-               iq=0
-               do ij=nelm(i)+1,nelmdg(i)-1
-                  kb=nelm(ij)
-                  do jj=nelmdg(kb)+1,nelm(kb+1)
-                     if(nelm(jj).eq.i) then
-                        iq=iq+1 
-                        it9(iq)=ij
-                        it10(iq)=istrw(jj-neqp1)
-                     if (sx(it10(iq),isox)+sx(it10(iq),isoy)+
-     &                  sx(it10(iq),isoz) .eq.0.) iq=iq-1
-                     endif
-                  enddo
-               enddo
-               do jj=nelmdg(i)+1,nelm(i+1)     
-                  iq=iq+1 
-                  it9(iq)=jj
-                  it10(iq)=istrw(jj-neqp1)
-                     if (sx(it10(iq),isox)+sx(it10(iq),isoy)+
-     &                  sx(it10(iq),isoz) .eq.0.) iq=iq-1
-               enddo
-               do ij=1,iq                   
-                  jj=it9(ij)
-                  kb=nelm(jj)
-                  iw=it10(ij)                
-c     use internode fluxes already stored
-                  axy=a_axy(jj-neqp1+nelm(neq+1)-neq-1)
-                  if (irdof .ne. 13 .and. jswitch .eq. 0) then
-                     vxy=a_vxy(jj-neqp1+nelm(neq+1)-neq-1)
-                  end if
-c     velocities
-                  if(icnl.eq.0) then
-                     dis=sqrt((cord(i,1)-cord(kb,1))**2
-     &                    + (cord(i,2)-cord(kb,2))**2
-     &                    + (cord(i,3)-cord(kb,3))**2)+dis_tol
-                     area_t=-(sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz))*dis
-                  else
-                     dis=sqrt((cord(i,1)-cord(kb,1))**2
-     &                    + (cord(i,2)-cord(kb,2))**2)+dis_tol
-                     area_t=-(sx(iw,isox)+sx(iw,isoy))*dis
-     &                    *0.5*(cord(i,3)+cord(kb,3))
-                  endif
-                  area_t=area_t+tol
-                  if(axy.gt.0.0) then
-                     fid=upwgt
-                     fid1=1.0-fid
-                  else if(axy.lt.0.0) then
-                     fid1=upwgt
-                     fid=1.0-fid1
-                  else
-                     fid=0.5
-                     fid1=0.5
-                  endif
-                  dili=dil(i+neq)
-                  dilkb=dil(kb+neq)
-                  axyf=max(tol,(fid*dilkb+fid1*dili))
-                  if(abs(axy).gt.tol) then
-                     axy=axy/axyf/area_t
-     &                    *(fid1*dil(i+neq)/(rolf(i+neq)+tol)+
-     &                    fid*dil(kb+neq)/(rolf(kb+neq)+tol))
-                     if(axy.gt.0.0) then
-                        if(icnl.ne.0) then
-                           xdis_cos=(cord(kb,1)-cord(i,1))/dis 
-                           ydis_cos=(cord(kb,2)-cord(i,2))/dis 
-                           pnxl_in=pnxl_in+xdis_cos*axy
-                           pnyl_in=pnyl_in+ydis_cos*axy
-                        else
-                           xdis_cos=(cord(kb,1)-cord(i,1))/dis 
-                           ydis_cos=(cord(kb,2)-cord(i,2))/dis 
-                           zdis_cos=(cord(kb,3)-cord(i,3))/dis 
-                           pnxl_in=pnxl_in+xdis_cos*axy
-                           pnyl_in=pnyl_in+ydis_cos*axy
-                           pnzl_in=pnzl_in+zdis_cos*axy
-                        endif
-                     else
-                        if(icnl.ne.0) then
-                           xdis_cos=(cord(kb,1)-cord(i,1))/dis 
-                           ydis_cos=(cord(kb,2)-cord(i,2))/dis 
-                           pnxl_out=pnxl_out+xdis_cos*axy
-                           pnyl_out=pnyl_out+ydis_cos*axy
-                        else
-                           xdis_cos=(cord(kb,1)-cord(i,1))/dis 
-                           ydis_cos=(cord(kb,2)-cord(i,2))/dis 
-                           zdis_cos=(cord(kb,3)-cord(i,3))/dis 
-                           pnxl_out=pnxl_out+xdis_cos*axy
-                           pnyl_out=pnyl_out+ydis_cos*axy
-                           pnzl_out=pnzl_out+zdis_cos*axy
-                        endif
-                     endif
-                  endif
-                  if (irdof .ne. 13 .and. jswitch .eq. 0) then
-                     if(vxy.gt.0.0) then
-                        fid=upwgt
-                        fid1=1.0-fid
-                     else if(vxy.lt.0.0) then
-                        fid1=upwgt
-                        fid=1.0-fid1
-                     else
-                        fid=0.5
-                        fid1=0.5
-                     endif
-                     divi=div(i+neq)
-                     divkb=div(kb+neq)
-                     vxyf=max(tol,(fid*divkb+fid1*divi))
-                     if(abs(vxy).gt.tol) then
-                        vxy=vxy/vxyf/area_t
-     &                       *(fid1*div(i+neq)/(rovf(i+neq)+tol)+
-     &                       fid*div(kb+neq)/(rovf(kb+neq)+tol))
-                        if(vxy.gt.0.0) then
-                           if(icnl.ne.0) then
-                              xdis_cos=(cord(kb,1)-cord(i,1))/dis 
-                              ydis_cos=(cord(kb,2)-cord(i,2))/dis 
-                              pnxv_in=pnxv_in+xdis_cos*vxy
-                              pnyv_in=pnyv_in+ydis_cos*vxy
-                           else
-                              xdis_cos=(cord(kb,1)-cord(i,1))/dis 
-                              ydis_cos=(cord(kb,2)-cord(i,2))/dis 
-                              zdis_cos=(cord(kb,3)-cord(i,3))/dis 
-                              pnxv_in=pnxv_in+xdis_cos*vxy
-                              pnyv_in=pnyv_in+ydis_cos*vxy
-                              pnzv_in=pnzv_in+zdis_cos*vxy
-                           endif
-                        else
-                           if(icnl.ne.0) then
-                              xdis_cos=(cord(kb,1)-cord(i,1))/dis 
-                              ydis_cos=(cord(kb,2)-cord(i,2))/dis 
-                              pnxv_out=pnxv_out+xdis_cos*vxy
-                              pnyv_out=pnyv_out+ydis_cos*vxy
-                           else
-                              xdis_cos=(cord(kb,1)-cord(i,1))/dis 
-                              ydis_cos=(cord(kb,2)-cord(i,2))/dis 
-                              zdis_cos=(cord(kb,3)-cord(i,3))/dis 
-                              pnxv_out=pnxv_out+xdis_cos*vxy
-                              pnyv_out=pnyv_out+ydis_cos*vxy
-                              pnzv_out=pnzv_out+zdis_cos*vxy
-                           endif
-                        endif
-                     endif
-                  endif
-               enddo
-c     calculate magnitude of vapor velocity
-               if (irdof .ne. 13 .and. jswitch .eq. 0) then
-                  vvd_in = sqrt(pnxv_in**2 + pnyv_in**2 + pnzv_in**2)
-                  vvd_out =sqrt(pnxv_out**2 + pnyv_out**2 + pnzv_out**2)
-                  if( vvd_in .gt. vvd_out ) then
-                     vvd = vvd_in
-                     pnx(n*2+i+neq) = pnxv_in
-                     pny(n*2+i+neq) = pnyv_in
-                     pnz(n*2+i+neq) = pnzv_in
-                  else
-                     vvd = vvd_out
-                     pnx(n*2+i+neq) = pnxv_out
-                     pny(n*2+i+neq) = pnyv_out
-                     pnz(n*2+i+neq) = pnzv_out
-                  end if
-               end if
-c     calculate magnitude of liquid velocity
-c     
-               vld_in = sqrt(pnxl_in**2 + pnyl_in**2 + pnzl_in**2)
-               vld_out = sqrt(pnxl_out**2 + pnyl_out**2 + pnzl_out**2)
-c              if( vld_in .gt. vld_out ) then
-               if( vld_in .eq. -1.d40  ) then
-                  vld = vld_in
-                  pnx(n+i+neq) = pnxl_in
-                  pny(n+i+neq) = pnyl_in
-                  pnz(n+i+neq) = pnzl_in
-               else
-                  vld = vld_out
-                  pnx(n+i+neq) = pnxl_out
-                  pny(n+i+neq) = pnyl_out
-                  pnz(n+i+neq) = pnzl_out
-               end if
-c     find maximum velocities
-c     
-               vlmax  =  max( vlmax,abs(vld) )
-               vvmax  =  max( vvmax,abs(vvd) )
-            enddo
-         endif
       endif
 
       return
