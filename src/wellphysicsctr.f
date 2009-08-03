@@ -119,7 +119,7 @@ c
       character*80 dum_string
 
       integer i4,ic1,node_seg,iseg,ntot2,nodew
-      allocate(seg_min(max_con))
+      if (.not. allocated(seg_min)) allocate(seg_min(max_con))
       
 
 C     

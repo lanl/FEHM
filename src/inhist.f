@@ -59,6 +59,7 @@
       character*120 fname, root
       logical null1, opend
       integer i, iroot, msg(4), imsg(4), nwds, ishisfzz, ishiscfzz
+      integer ishiscs
       real*8 xmsg(4)
 
       hist_flag = .TRUE.
@@ -88,6 +89,8 @@
       ishiscm = 0
       ishiscfz = 0
       ishiscs = 0
+      ishiscsl = 0
+      ishiscsg = 0
       ishisdisx = 0
       ishisdisy = 0
       ishisdisz = 0
@@ -143,8 +146,9 @@
          if (cmsg(2)(1:3) .eq. 'tec' .or. cmsg(2)(1:3) .eq. 'TEC') then
             form_flag = 1
             hissfx = '_his.dat'
-         else if (cmsg(2)(1:3) .eq. 'sur' .or. cmsg(2)(1:3) .eq. 'SUR') 
-     &           then
+         else if (cmsg(2)(1:3) .eq. 'sur' .or. cmsg(2)(1:3) .eq. 'SUR'
+     &           .or. cmsg(2)(1:3) .eq. 'csv' .or. cmsg(2)(1:3) .eq. 
+     &           'CSV') then
             form_flag = 2
             hissfx = '_his.csv'
          end if
@@ -572,20 +576,64 @@
                if (iptty .ne. 0) write(iptty, 6050)
             end if
          case ('sco', 'SCO')
-! Output CO2 mass in kg
-            fname =  root(1:iroot) // '_co2s' // hissfx
-            ishiscs = ishis + 230
-            open (unit=ishiscs, file=fname, form='formatted')
-            select case (form_flag)
-            case (0)
-               write(ishiscm, 6000) verno, jdate, jtime, trim(wdd)
-            case (1)
-               write(ishiscm, 6005) verno, jdate, jtime
+! Output CO2 saturations
+            select case (chdum(4:4))
+            case ('l', 'L')
+! Liquid CO2
+               ishiscsl = ishis + 230
+               fname =  root(1:iroot) // '_co2sl' // hissfx
+               open (unit=ishiscsl, file=fname, form='formatted')
+               select case (form_flag)
+               case (0)
+                  write(ishiscsl, 6000) verno, jdate, jtime, trim(wdd)
+               case (1)
+                  write(ishiscsl, 6005) verno, jdate, jtime
+               end select
+c               if (out_zones) then
+c                  ozflag = ozflag + 1
+c                  carbflag2 = ozflag
+c               end if
+            case ('g', 'G')
+! Gaseous CO2
+               ishiscs = ishis + 231
+               fname =  root(1:iroot) // '_co2sg' // hissfx
+               open (unit=ishiscsg, file=fname, form='formatted')
+               select case (form_flag)
+               case (0)
+                  write(ishiscsg, 6000) verno, jdate, jtime, trim(wdd)
+               case (1)
+                  write(ishiscsg, 6005) verno, jdate, jtime
+               end select
+c               if (out_zones) then
+c                  ozflag = ozflag + 1
+c                  carbflag2 = ozflag
+c               end if
+            case default
+! Both liquid and gas
+               do i = 0, 1
+                  select case (i)
+                  case (0)
+                     fname =  root(1:iroot) // '_co2sl' // hissfx
+                     ishiscsl = ishis + 230
+                     ishiscs = ishiscsl
+                  case (1)
+                     fname =  root(1:iroot) // '_co2sg' // hissfx
+                     ishiscsg = ishis + 231
+                     ishiscs = ishiscsg
+                  end select
+                  open (unit=ishiscs, file=fname, form='formatted')
+                  select case (form_flag)
+                  case (0)
+                     write(ishiscs, 6000) verno, jdate, jtime, trim(wdd)
+                  case (1)
+                     write(ishiscs, 6005) verno, jdate, jtime
+                  end select
+c               if (out_zones) then
+c                  ozflag = ozflag + 1
+c                  carbflag2 = ozflag
+c               end if
+               end do
             end select
-            if (out_zones) then
-               ozflag = ozflag + 1
-               carbflag2 = ozflag
-            end if
          case ('dis', 'DIS')
 ! Output displacements in m
             select case (chdum(4:4))

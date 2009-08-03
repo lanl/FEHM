@@ -423,7 +423,7 @@ c RJP 12/13/06 added nriver below
 c ZVD 05/01/07 added form_flag, ishisc, ishiswc
       integer             form_flag, ishisc, ishiswc
 c RJP added for history of carbon mass
-      integer             ishiscm, ishiscfz, ishiscs	 
+      integer             ishiscm, ishiscfz, ishiscsl, ishiscsg 
       integer             imbe_ctr, imbet_ctr
 c GAZ 11/02/08 
       integer             ishisstr, ishisstrx, ishisstry, ishisstrz
@@ -473,7 +473,7 @@ C gaz 11-06-2007
 
       logical tpor_flag, compute_flow, hist_flag, reverse_flow, boun_out
       logical out_zones, spercent, mass_read, pres_read, co2_read
-      logical connect_out
+      logical connect_out, resid_out
 
       end module comai
 
