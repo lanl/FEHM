@@ -215,6 +215,7 @@ C***********************************************************************
 
       use comai
       use combi
+      use comchem, only : conc_read
       use comdi
       use comdti
       use comrxni
@@ -274,6 +275,7 @@ c
      2                 ' read from restart file'
                   write(ischk, *)
                end if
+               conc_read(iq) = .true.
             enddo
             do iq=nspecl+1,nspeci
                if (ischk .ne. 0) then
