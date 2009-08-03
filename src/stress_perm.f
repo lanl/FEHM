@@ -76,6 +76,7 @@ c.........................................
 c     
 c     
       pi = 3.14159
+      if(idoff .eq. -1) return
       if(istrs.eq.0) return
       if(ipermstr.eq.0) return
 c     
@@ -351,9 +352,9 @@ c
 c     
 c     determine the net contribution  
 c     
-               disptx12 = max(dispx12-tx12,0.0)
-               dispty12 = max(dispy12-ty12,0.0) 
-               disptz12 = max(dispz12-tz12,0.0)              
+               disptx12 = max(dispx12-tx12,0.0d0)
+               dispty12 = max(dispy12-ty12,0.0d0) 
+               disptz12 = max(dispz12-tz12,0.0d0)              
 c     
 c     displacement terms (shear)
 c     
