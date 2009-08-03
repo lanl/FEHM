@@ -134,7 +134,7 @@ c
       real*8   ,allocatable :: idumx(:)
       real*8   ,allocatable :: idumy(:)
       real*8   ,allocatable :: idumz(:)
-      real*8   ,allocatable :: nelm_temp(:,:)
+      integer   ,allocatable :: nelm_temp(:,:)
 
       parameter (a_tol=1.d-15, deg2rad=0.017453293d00)
 
@@ -165,12 +165,12 @@ c      data itwo   / 2,3,3,4,6,7,7,8,5,6,7,8 /
      &           19,20,23,22,10,11,14,13,
      &           20,21,24,23,11,12,15,14/
       data iface /1,-1,-2,2,4,-4,-3,3,5,6,-6,-5,8,7,-7,-8,
-     &      9,10,11,12,-9,-10,-11,-12/
+     &      -9,-10,-11,-12,9,10,11,12/
       data kb_face_local /2,0,0,3,6,0,0,7,4,3,0,0,8,7,0,0,
-     &      5,6,7,8,0,0,0,0/
+     &      0,0,0,0,1,2,3,4/
       data kkx /1,0,0,2,3,0,0,4/
       data kky /1,2,0,0,3,4,0,0/
-      data kkz /1,2,3,4,0,0,0,0/  
+      data kkz /0,0,0,0,1,2,3,4/  
 
 
 c     triple vector product
@@ -279,12 +279,13 @@ c99            continue
 c
 c renumber local element nodes to conform to convention
 c
-            do lei = 1, 4 
-              numgb(lei) = nelm((ie-1)*ns+lei+4)
+c gaz don't reverse this is already done (gaz 7-15-09)
+            do lei = 1, 8 
+              numgb(lei) = nelm((ie-1)*ns+lei)
             enddo
-            do lei = 5, 8 
-              numgb(lei) = nelm((ie-1)*ns+lei-4)
-            enddo
+c            do lei = 5, 8 
+c              numgb(lei) = nelm((ie-1)*ns+lei-4)
+c            enddo
 c     3-d 8 node brick
 c     calculate volume
                x12 = cord(numgb(1), 1)-cord(numgb(2), 1)
@@ -474,6 +475,7 @@ c
 c here the pnx,pny,pnz represent the principal values of
 c permeability in the directions aligned with the stratigraphy
 c
+      if(ianpe.ne.3) then
       do i = 1,n0
        theta1 = anxy(i)*deg2rad
        theta2 = anxz(i)*deg2rad
@@ -502,6 +504,7 @@ c
        anyz(i)=ak11*a12*a13+ak22*a22*a23+ak33*a32*a33
 c
       enddo
+      endif
 c
 c now permeabilities are transformed
 c
@@ -536,13 +539,14 @@ c
 c
 c   identify nodes in element
 c   note: top and bottom layers are reversed
-c 
-        do lei = 1, 4 
-          numgb(lei) = nelm((ie-1)*ns+lei+4)
+c   don't need to reverse (gaz 7-15-09)
+ 
+        do lei = 1, 8 
+          numgb(lei) = nelm((ie-1)*ns+lei)
         enddo
-        do lei = 5, 8 
-          numgb(lei) = nelm((ie-1)*ns+lei-4)
-        enddo
+c        do lei = 5, 8 
+c          numgb(lei) = nelm((ie-1)*ns+lei-4)
+c        enddo
 c   define coeficients for pressure difference
         do j=1,12
          xcell(ithree(j))=(cord(numgb(ione(j)),1)
@@ -819,7 +823,7 @@ c contribution x+(interface 3),y-(interface(8),z-(interface 12)
 c  calculate node-element information
         do  ik = 1, 8
          kb = numgb(ik)
-         iplace(kb) = iplace(kb) +1
+         iplace(kb) = iplace(kb) +1 
          ncon_elem(kb,iplace(kb)) = ie 
          ncon_pos(kb,iplace(kb)) = ik 
         enddo
@@ -874,12 +878,13 @@ c
             ie = ncon_elem(i,jj)
             if(ie.eq.0) go to 700
 c identify global and local element numbers
-            do lei = 1, 4 
-               numgb(lei) = nelm((ie-1)*ns+lei+4)
+c now done elsewhere gaz 7-14-2009
+            do lei = 1, 8 
+               numgb(lei) = nelm((ie-1)*ns+lei)
             enddo
-            do lei = 5, 8 
-               numgb(lei) = nelm((ie-1)*ns+lei-4)
-            enddo
+c            do lei = 5, 8 
+c               numgb(lei) = nelm((ie-1)*ns+lei-4)
+c            enddo
             kk = ncon_pos(i,jj)
             do ik = 1,3
 c loop on three faces associated with element position
@@ -921,8 +926,8 @@ c z face
                      termz = sx_temp_z(ie,kkz(kk),ii)
                      if(abs(termz).gt.a_tol) then
                         icz = icz +1
-                        ncon_z1(icx) = kb1 
-                        ncon_z2(icx) = kb2
+                        ncon_z1(icz) = kb1 
+                        ncon_z2(icz) = kb2
                         sx_z(icz) = termz
                      endif  
                   endif

@@ -177,7 +177,13 @@ c
       call normal_dof(neq,a,bp,nelm,nmat,nrhs,nelmdg
      &     ,ndex,2,dumn(1),dumn(37),dumn(73),0,fdum2)
       if(ndex(1).lt.0) then
-         write(ierr,*) 'cannot normalize'
+         write(ierr,*) '>>> cannot normalize, stopping <<<'
+         if(iout.ne.0) then
+          write(iout,*) '>>> cannot normalize, stopping <<<'
+         endif
+         if(iptty.ne.0) then
+          write(iptty,*) '>>> cannot normalize, stopping <<<'
+         endif         
          stop
       endif
 

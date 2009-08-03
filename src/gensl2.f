@@ -475,6 +475,7 @@ c no accumulation term in the wellbore
                call geneq2_wellphysics(id)	
             else if(ianpe.ne.0) then
                call geneq2_ani(id)
+               call add_accumulation(id)               
             else if(irich.ne.0) then
                call geneq2_rich(id)
                call add_accumulation(id)	

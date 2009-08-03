@@ -12,7 +12,7 @@
 ! warranty,   express   or   implied,   or   assumes  any  liability  or
 ! responsibility for the use of this information.       
 !***********************************************************************
-!D1
+!D1 
 !D1  PURPOSE
 !D1
 !D1      Create a simple well 
@@ -254,9 +254,9 @@ c found match - don't add node at end of segment
 	  dis = well_dz(i)
 	  node_seg = seg/dis + 1
 c "1" insures spacing is le than desired spacing
-	  disx = segx/node_seg
-	  disy = segy/node_seg
-	  disz = segz/node_seg
+	  disx = segx/(node_seg-1)
+	  disy = segy/(node_seg-1)
+	  disz = segz/(node_seg-1)
 c
 c  fill in additional nodes along well
 c   
@@ -447,6 +447,7 @@ c
 c  well_rad(n_well_seg)-well_radius for each segment
 c  well_dz(n_well_seg)- distance increment for gridblock along well segment
 c
+        vol_well_dum = 0.0d0
         do ii = 1,nodes_well2_added
 c identify segment and radius        
          id = new_node_well2_segid(ii)
@@ -476,7 +477,14 @@ c sx_w(ii,1) will contain the surface area of the segment ii
            sx_w(ii,1) = sx_w(ii,1)+pi2*(rad+radkb)/2.*dis
           endif
          enddo  
-        enddo        
+         vol_well_dum = vol_well_dum + sx1(i)
+        enddo   
+        if(iout.ne.0) then
+          write(iout,*)'>>>>> wellbore volume ',vol_well_dum,' <<<<<<'
+        endif    
+        if(iptty.ne.0) then
+          write(iptty,*)'>>>>> wellbore volume ',vol_well_dum,' <<<<<<'
+        endif  
 c	   
 c
 c this estimate for n_ncon is too large - can improve
@@ -798,7 +806,7 @@ c for a producer set perm x (connection to primary grid) = 1.
          deallocate(delxw2,delyw2,delzw2)   
 	else if(iflg.eq.5) then
 c
-c assign zone number to potential source/sink nodes  
+c assign zone number to potential source/sink nodes   
 c     
        do ii = 1, n_well_prod
 	   xc = coor_well2(ii,1)

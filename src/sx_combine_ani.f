@@ -77,29 +77,35 @@ c anisotropy requires we break connections on control volume boundaries
           kb_adv_x = ncon_adv(i,1)
           kb_adv_y = ncon_adv(i,2)
           kb_adv_z = ncon_adv(i,3)
-          if(ka(kb_adv_x).ne.0) then
+          if(kb_adv_x.ne.0)then
+           if(ka(kb_adv_x).ne.0) then
            i1=icxani(i)+1 
            i2=icxani(i+1)
             do jj=i1,i2
               sx_x(jj-neqp1)=0.0d00
               icon=icon +1
             enddo
+           endif
           endif
-          if(ka(kb_adv_y).ne.0) then
+          if(kb_adv_y.ne.0)then
+           if(ka(kb_adv_y).ne.0) then
            i1=icyani(i)+1 
            i2=icyani(i+1)
             do jj=i1,i2
               sx_y(jj-neqp1)=0.0d00
               icon=icon +1
             enddo
+           endif 
           endif
-          if(ka(kb_adv_z).ne.0) then
+          if(kb_adv_z.ne.0)then
+           if(ka(kb_adv_z).ne.0) then
            i1=iczani(i)+1 
            i2=iczani(i+1)
             do jj=i1,i2
               sx_z(jj)=0.0d00
               icon=icon +1
             enddo
+           endif
           endif
          endif
         enddo

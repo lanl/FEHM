@@ -1121,10 +1121,14 @@ c update volume strains
                   call stressctr(-6,0)
 c calculate stresses
                   call stressctr(13,0)	
-c update permeabilities (explicit)
-                  call stress_perm(1,0)			            
+c allocate memory for permeability update if necessay
+                  call stress_perm(-1,0)
+c update permeabilities (explicit)                  	
+                  call stress_perm(1,0)		
+c deallocate memory for permeability update if necessay
+                  call stress_perm(-2,0)                  	            
 c update peaceman term for wellbore pressure
-                   if(isubwd.ne.0)call wellimped_ctr(1)                		            
+                   if(isubwd.ne.0)call wellimped_ctr(1)                	
                endif 
                do ja = 1,n
                   to (ja) = t(ja)

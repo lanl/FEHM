@@ -387,14 +387,12 @@ c set default to model 1
             i = i+1           
             if(ispmd .eq.1) then
 c default and no input            
-             read(inpt,*) ispmt(i)
-            else if(ispmd .eq.3) then
-c displacement based formulation and no input              
-             read(inpt,*) ispmt(i)       
+             read(inpt,*) ispmt(i)   
 c model 1 default            
 c model 2 (linear perm variation with stress)
-c model 3 general diaplacement based formulation
-c model 3 and model 5 are explicitly coupled or fully coupled
+c model 3 general diaplacement based formulation (fully coupled)
+c model 5 general diaplacement (modified) based formulation (explicit)
+c Model 3 and 5 can be explicitly coupled or fully coupled
 c model 4 (cubic perm variation with stress)        
 c simple explicit tensile stress model
 c spm3f,spm6f,spm9f are ignored for a 2D problem
@@ -410,6 +408,12 @@ c spm9f is str_multz, maximum change in permeability (z direction) allowed
 c model 6 (linear perm variation with stress with effective stress failure)
 c             
             else if (ispmd .eq. 2) then
+              read(inpt,*) ispmt(i),spm1f(i),spm2f(i),spm3f(i),spm4f(i),
+     &                     spm5f(i),spm6f(i),spm7f(i),spm8f(i),spm9f(i)
+            else if (ispmd .eq. 3) then
+              read(inpt,*) ispmt(i),spm1f(i),spm2f(i),spm3f(i),spm4f(i),
+     &                     spm5f(i),spm6f(i),spm7f(i),spm8f(i),spm9f(i)
+            else if (ispmd .eq. 5) then
               read(inpt,*) ispmt(i),spm1f(i),spm2f(i),spm3f(i),spm4f(i),
      &                     spm5f(i),spm6f(i),spm7f(i),spm8f(i),spm9f(i)
             else if (ispmd .eq. 6) then
@@ -434,8 +438,9 @@ c
                  
                if(ispmt(i).eq.1) ipermstr1 = ispmt(i)
                if(ispmt(i).eq.2) ipermstr2 = ispmt(i)
-               if(ispmt(i).eq.3.or.ispmt(i).eq.5) ipermstr3 = ispmt(i)
+               if(ispmt(i).eq.3) ipermstr3 = ispmt(i)
                if(ispmt(i).eq.4) ipermstr4 = ispmt(i)
+               if(ispmt(i).eq.5) ipermstr5 = ispmt(i)
                if(ispmt(i).eq.6) ipermstr6 = ispmt(i)
                if(ispmt(i).eq.7) ipermstr7 = ispmt(i)
                if(ispmt(i).eq.8) ipermstr8 = ispmt(i)

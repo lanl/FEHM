@@ -222,12 +222,7 @@ c
 c fluid and grid properties at node i
 c
       sx1d=sx1(i)
-      axi=pnx(i)
-      ayi=pny(i)     
-      alxi=axi
-      avxi=axi
-      alyi=ayi
-      avyi=ayi      
+    
       pvii=phi(i)
       dili=dil(i)
       dilpi=dilp(i)

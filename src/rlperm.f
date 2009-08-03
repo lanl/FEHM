@@ -706,7 +706,7 @@ c     GAZ 8-16-94 added slcut to work with liquid saturation
 c     get fit at saturated end(star=su_cut)
                slcut = su_cut*(rp2f(i)-rp1f(i)) + rp1f(i)
                call vgcap_fit(4,rp1f(i),rp2f(i),slcut,su_cut ,fac,alpha
-     &              ,alamda, 0.0, 0.0, cp1f(i),cp2f(i),hmin)
+     &              ,alamda, 0.0d0, 0.0d0, cp1f(i),cp2f(i),hmin)
             
                if (irlpt(i) .ne. 3 .and. irlpt(i) .ne. 5 
      &              .and. irlpt(i) .lt. 8) then
@@ -749,7 +749,7 @@ c next call matches cutoff capillary pressure
 c     get fit at saturated end(star=su_cut)
                   slcut = su_cut*(rp12f(i)-rp11f(i)) + rp11f(i)
                   call vgcap_fit(4,rp1f(i),rp2f(i),slcut,su_cut,fac
-     &                 ,alpha,alamda,0.0,0.0,cp3f(i),cp4f(i),hmin)
+     &                 ,alpha,alamda,0.0d0,0.0d0,cp3f(i),cp4f(i),hmin)
                endif
                if (irlpt(i) .ge. 5 .and. irlpt(i) .le. 7) then
                   rp1=rp1f(i)
