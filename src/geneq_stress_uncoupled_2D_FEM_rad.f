@@ -80,15 +80,6 @@ c
       
       integer nmatavw
       real*8 sx1d
-      real*8 axi
-      real*8 ayi
-      real*8 azi
-      real*8 alxi
-      real*8 alyi
-      real*8 alzi
-      real*8 avxi
-      real*8 avyi
-      real*8 avzi
       real*8 pvii
       real*8 phii
       real*8 swi
@@ -190,6 +181,10 @@ c
       integer isl
       integer iz4m1
       integer imd,iwd    
+
+  
+
+
 c changed by avw -- entered here by seh
       neqp1=neq+1
       ldna=nelm(neqp1)-neqp1
@@ -214,6 +209,7 @@ c
 
 
       endif
+
 c
 c fluid and grid properties at node i
 c

@@ -961,6 +961,8 @@ c**** solve for heat and mass transfer solution ****
                   if (iptty .gt. 0)  write(iptty, 6030) trim(nmfil(7))
  6030             format(/, 1x, '**** allotted time gone, terminating ',
      *                 'run : restart = ', a, ' ****')
+c Make sure fin file is written if we are stopping
+                  if (isave .ne. 0) call diskwrite
 
                   go  to  170
                
@@ -1120,7 +1122,7 @@ c update displacements
 c update volume strains
                   call stressctr(-6,0)
 c calculate stresses
-                  call stressctr(13,0)	
+                  call stressctr(13,0)		            
 c allocate memory for permeability update if necessay
                   call stress_perm(-1,0)
 c update permeabilities (explicit)                  	
@@ -1128,7 +1130,7 @@ c update permeabilities (explicit)
 c deallocate memory for permeability update if necessay
                   call stress_perm(-2,0)                  	            
 c update peaceman term for wellbore pressure
-                   if(isubwd.ne.0)call wellimped_ctr(1)                	
+                   if(isubwd.ne.0)call wellimped_ctr(1)                		            
                endif 
                do ja = 1,n
                   to (ja) = t(ja)

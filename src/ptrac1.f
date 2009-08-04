@@ -645,6 +645,7 @@ c     initial node is set to 0
  105     format(1x,i8,1x,g21.14,1x,i8,3(1x,g16.9))
  110     format (a, 'Part_no    time_days     cell_leaving')
       elseif(iprto.eq.1) then
+         pstart_out = .false.
          do iprint = 1, 200
             sptr_heading(iprint:iprint) = ' '
          end do
@@ -816,6 +817,7 @@ c     Particle ID
 c Don't output if particle time is greater than starting time
 c               if (sptr_time .gt. days) sptr_time = days
                if (sptr_time .le. days) then
+                  pstart_out(np1) = .true.
                   position_in_string = len_trim(sptr_prop_values)
 
                   write(isptr2,8001) part_id(np1,1), xcoordw, ycoordw, 
@@ -853,7 +855,7 @@ c temporarily
          delkb=0.
          if(j.ne.0) then
             jab=abs(j)
-            kb=irray(i, j)
+            kb= abs (irray(i, j))
             if((irray(i,0).eq.0).or.(irray(i,0).eq.-(i+1000)).or.
      1          (irray(i,0).lt.-200000000)) then
                kb_omr=0
@@ -1320,11 +1322,16 @@ c handle OMR nodes on exterior boundaries, including omr-cliff nodes
             do ibou=1,6
                if(iboulist(i,ibou).eq.la) then
 c     node i is an OMR node on an exterior boundary, with the exterior in 
-c     the la direction. set gotcord =cord of i                    
-                  gotcord=cord(i,l)
-                  kb=0
-                  itempf = 1
-               endif
+c     the la direction. set gotcord =cord of i
+                  if (irray(i, l) .lt. 0) then
+                     kb = irray(i, l)
+                     gotcord = cord (abs(kb), l)
+                  else
+                     gotcord=cord(i,l)
+                     kb=0
+                   end if
+                   itempf = 1
+              endif
             enddo
 
          endif

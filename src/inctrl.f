@@ -226,13 +226,21 @@ C***********************************************************************
       implicit none
 
       real*8 aaw, agrav
+      character*6 chdum
 
       macro = 'ctrl'
 
 c**** read control variables ****
 
+c zvd Add option to suppress output of nodal equation residuals
+      resid_out = .true.
+      backspace (inpt)
+      read (inpt,'(a80)') wdd1
+      read (wdd1, *, end = 5) chdum, chdum
+      if (chdum(1:2) .eq. 'no' .or. chdum(1:2) .eq. 'NO')
+     &     resid_out = .false.
 c gaz read (inpt,*) maxit, epe, north
-      read (inpt,'(a80)') wdd1         
+ 5    read (inpt,'(a80)') wdd1         
       read (wdd1,*,end=10) maxit, epe, north, maxsolve, accm
       go to 20
  10   continue

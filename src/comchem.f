@@ -498,6 +498,9 @@
       integer cflxz
       integer, allocatable ::  izoncflxz(:),  icflxz(:)
       logical :: cflx_var(5)
-	
+
+! zvd 23-Jul-09 Added for input of total moles
+      logical, allocatable :: conc_read(:)
+
       end module comchem
 

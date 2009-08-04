@@ -521,11 +521,12 @@ C**********************************************************************
       use comai
       use comki
       use compart
+      use davidi, only : irdof
       implicit none
 
       real*8 h_const, dvap_conc
       integer mi,mim,ndummy,iret,i,iz,jj,ij,ispecies,npt_subst
-      integer n_node_sets,i_node_set
+      integer n_node_sets,i_node_set, ja, jb, jc
       logical null1, readflag
       character*5 user_macro
       character*3 nstring
@@ -540,9 +541,13 @@ C**********************************************************************
       real*8 cord1x,cord1y,cord2x,cord2y
       real*8 dispxavw,dispyavw,dispzavw,cord1z,cord2z,x
       integer icpnt,iimm,ivap
-      integer idum, io_stat
-      real*8 rdum1, rdum2
+      integer idum, io_stat, open_file, mfile
+      real*8 rdum1, rdum2, mvol, psdum, roldum, sdum, sctmp, frac
+      real*8 ctmp, ctol, antmp
 
+      save mfile
+
+      ctol = 1.d-06
       iret = 0
       if(iz.eq.0) then
 c
@@ -597,6 +602,8 @@ c and we only have to backspace once
          if(upwgta.lt.0.5) then
             upwgta=0.5
          end if
+
+         an = an0
 
          read(inpt,*) daycs,daycf,dayhf,dayhs
          if(dayhs.lt.dayhf) then
@@ -1241,17 +1248,36 @@ CPS       ENDIF
                end if
             endif
 
-            narrays = 1
-            itype(1) = 8
-            default(1) = an0
-            macro = "trac"
-            igroup = 15
-            call initdata2( inpt, ischk, n0, narrays,
-     2           itype, default, macroread(5), macro, igroup, 
-     3           ireturn, r8_1=an(1+(nsp-1)*n0:nsp*n0) )
-            do ij = 1, n0
-               anlo(ij+npn)=an(ij+npn)
+
+c zvd 22-Jul-09
+c Modify for option to read total moles as input and compute moles/kg
+c for nodal volume or zone volume (need rolf and sx1 defined)
+c (read group 15 data and write to a temporary file)
+            if (nsp .eq. 1) then
+               mfile = open_file ('moles_in.tmp', 'unknown')
+            end if
+            write (mfile, *) nsp
+            do
+               read (inpt, '(a80)') input_msg
+               if (null1(input_msg)) then
+                  write (mfile, *)
+                  exit 
+               end if
+               write (mfile, '(a)') trim(input_msg)
             end do
+c            narrays = 1
+c            itype(1) = 8
+c            default(1) = an0
+c            macro = "trac"
+c            igroup = 15
+c            call initdata2( inpt, ischk, n0, narrays,
+c     2           itype, default, macroread(5), macro, igroup, 
+c     3           ireturn, r8_1=an(1+(nsp-1)*n0:nsp*n0) )
+
+c            do ij = 1, n0
+c               anlo(ij+npn)=an(ij+npn)
+c            end do
+
             narrays = 3
             itype(1) = 8
             itype(2) = 8
@@ -1288,7 +1314,6 @@ c     fluid leaving BAR 4-28-99
                
                
             enddo
-!?            end if
 
 CPS ENDLOOP through each species
          end do
@@ -1297,10 +1322,175 @@ CPS ENDLOOP through each species
 
 CPS ENDIF the data are to be read in on this pass
       endif
-CPS IF this call to the routine is for initialization
+CPS IF this call to the routine is for initialization 
 CPS
       if( iz .lt. 0 ) then
-c
+c zvd 22-Jul-09
+c Modify for option to read total moles as input and compute moles/kg
+c for nodal volume or zone volume
+         rewind (mfile)
+         do nsp = 1, nspeci
+            if (.not. conc_read(nsp)) then
+               read (mfile, *) idum
+               if (idum .ne. nsp) then
+                  stop
+               end if
+               npn=npt(nsp)
+               do
+                  read (mfile, '(a80)') input_msg
+                  if (null1(input_msg)) exit
+                  read (input_msg, *) ja, jb, jc, rdum1
+                  if ( ja .eq. 1 .and. jb .eq. 0 .and. jc .eq. 0 ) then
+                     jb = n0
+                     jc = 1
+                  end if
+                  if (rdum1 .lt. 0.d0) then
+                     if (ja .lt. 0) then
+                        mvol = 0.d0
+                        do i = 1, n0
+                           if (izonef(i) .eq. abs (ja) ) then
+                              if (icns(nsp) .eq. 0) then
+                                 sdum = 1.0
+                                 roldum = denr(i)
+                                 psdum = 1 - ps_trac(i)
+                              else if (icns(nsp) .gt. 0) then
+                                 if (irdof .ne. 13 .or. ifree.ne.0) then
+                                    sdum = s(i)
+                                 else
+                                    sdum = 1.0
+                                 end if
+                                 roldum = rolf(i)
+                                 psdum = ps_trac(i)
+                              else if (icns(nsp) .lt. 0) then
+                                 sdum = 1 - s(i)
+                                 roldum = rovf(i)
+                                 psdum = ps_trac(i)
+                              end if
+                              mvol = mvol + sx1(i)*psdum*sdum*roldum
+                           end if
+                        end do
+                        do i = 1, n0
+                           mi = i + npn
+                           if (izonef(i) .eq. abs(ja)) then
+                              an(i + npn) = abs(rdum1) / mvol
+                              sctmp = 0.
+c Account for sorption (moles input is total)
+                              if (iadsfl(nsp,itrc(mi)) .ne. 0 .or.
+     &                             iadsfv(nsp,itrc(mi)) .ne. 0) then
+                                 ctmp = abs(rdum1)
+                                 antmp = an(mi)
+                                 do
+                                    if (icns(nsp) .gt. 0) then
+                                    sctmp=(denr(i)*a1adfl(nsp,itrc(mi)) 
+     1                                   *antmp**betadfl(nsp,itrc(mi)) /
+     2                                   (1.0 + a2adfl(nsp,itrc(mi)) *
+     3                                   antmp**betadfl(nsp,itrc(mi)) ))
+                                    else if (icns(nsp) .lt. 0) then
+                                    sctmp=(denr(i)*a1adfv(nsp,itrc(mi)) 
+     1                                   *antmp**betadfv(nsp,itrc(mi)) /
+     2                                   (1.0 + a2adfv(nsp,itrc(mi)) *
+     3                                   antmp**betadfv(nsp,itrc(mi)) ))
+                                    end if
+                                    sctmp = sctmp * sx1(i)
+                                    rdum2 = ctmp + sctmp
+                                    if (abs(rdum1 + rdum2) .le. ctol) 
+     &                                   then
+                                       an(mi) = antmp
+                                       exit
+                                    end if
+                                    if (sctmp .lt. abs(rdum1)) then
+                                       ctmp = abs(rdum1) - sctmp
+                                       antmp = ctmp / mvol
+                                    else
+                                       frac = ctmp / rdum2
+                                       antmp = an(mi) * frac
+                                       ctmp = antmp * mvol
+                                    end if 
+                                 end do
+                              
+                              end if
+                           end if
+                        end do
+                     else
+                        do i = ja, jb, jc
+                           mi = i + npn
+                           if (icns(nsp) .eq. 0) then
+                              sdum = 1.0
+                              roldum = denr(i)
+                              psdum = 1 - ps_trac(i)
+                           else if (icns(nsp) .gt. 0) then
+                              if (irdof .ne. 13 .or. ifree.ne.0) then
+                                 sdum = s(i)
+                              else
+                                 sdum = 1.0
+                              end if
+                              roldum = rolf(i)
+                              psdum = ps_trac(i)
+                           else if (icns(nsp) .lt. 0) then
+                              sdum = 1 - s(i)
+                              roldum = rovf(i)
+                              psdum = ps_trac(i)
+                           end if
+                           mvol = sx1(i) * psdum * sdum * roldum
+                           an(mi) = abs(rdum1) / mvol
+                           sctmp = 0.
+c Account for sorption (moles input is total)
+                           if (iadsfl(nsp,itrc(mi)) .ne. 0 .or.
+     &                          iadsfv(nsp,itrc(mi)) .ne. 0) then
+                              ctmp = abs(rdum1)
+                              antmp = an(mi)
+                              do
+                                 if (icns(nsp) .gt. 0) then
+                                 sctmp = (denr(i)*a1adfl(nsp,itrc(mi)) 
+     1                                * antmp**betadfl(nsp,itrc(mi)) /
+     2                                (1.0 + a2adfl(nsp,itrc(mi)) *
+     3                                antmp**betadfl(nsp,itrc(mi)) ))
+                                 else if (icns(nsp) .lt. 0) then
+                                 sctmp = (denr(i)*a1adfv(nsp,itrc(mi)) 
+     1                                * antmp**betadfv(nsp,itrc(mi)) / 
+     2                                (1.0 + a2adfv(nsp,itrc(mi))
+     3                                * antmp**betadfv(nsp,itrc(mi)) ))
+                                 end if
+                                 sctmp = sctmp * sx1(i)
+                                 rdum2 = ctmp + sctmp
+                                 if (abs (rdum1 + rdum2) .le. ctol) then
+                                    an(mi) = antmp
+                                    exit
+                                 end if
+                                 if (sctmp .lt. abs(rdum1)) then
+                                    ctmp = abs(rdum1) - sctmp
+                                    antmp = ctmp / mvol
+                                 else
+                                    frac = ctmp / rdum2
+                                    antmp = an(mi) * frac
+                                    ctmp = antmp * mvol
+                                 end if 
+                              end do
+                           end if
+                        end do
+                     end if
+                  else
+                     if ( ja .gt. 0) then
+                        do i = ja, jb, jc
+                           an(i + npn) = rdum1
+                        end do
+                     else
+                        do i = 1, n0
+                           if (izonef(i) .eq. abs(ja)) then
+                              an(i + npn) = rdum1
+                           end if
+                        end do
+                     end if
+                  end if
+               end do
+
+               do ij = 1, n0
+                  anlo(ij+npn)=an(ij+npn)
+               end do
+            end if
+         end do
+         close (mfile, status = 'delete')
+
 c
 c seh
 CC Check for keyword specifying to use same dispersivity and diffusivity

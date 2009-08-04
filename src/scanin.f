@@ -818,7 +818,7 @@ c**** We need to know number of elements  if elem is in inpt ****
          
       else if (macro  .eq.  'ctrl')  then
          call start_macro(inpt,locunitnum, macro)
-         read (locunitnum, *) idumm, idumm, north
+         read (locunitnum, *) idumm, rdum1, north
          maxor = north + 1
          igauss = 1
          

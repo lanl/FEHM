@@ -297,4 +297,6 @@ c     &                 j = 1, ncont_primary)
  2000 format (' !!!!!!!!!!!!!!!!!!!!!!!!!! ')
  2010 format (' Coefficients written to file: ', a)
 
+      close (isstor)
+
       end subroutine storsx_write

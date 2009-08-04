@@ -314,6 +314,10 @@ c Output new location if the particle has been moved
      &                    call write_path_info
                   end if
                end if
+               if (.not. pstart_out(np1) .and. ioutt(np1) .ne. -1) then
+                  pstart_out(np1) = .true.
+                  call write_path_info
+               end if                                
             else
                ioutt(np1) = -1
             end if
@@ -899,8 +903,9 @@ c     use the upcoming or new node to get the correct coordinate
          end if
       else
 
-! If we are ahead of the current time don't output location
-         if (sptr_time .gt. days) return
+! If we are ahead of the current time don't output location unless
+! we are at the end of the simulation
+         if (sptr_time .gt. days .and. days .lt. tims) return
          
 ! Check to see if particle has moved enough to be output
          dist = dsqrt ((xcoordw - xo(np1))**2 +  

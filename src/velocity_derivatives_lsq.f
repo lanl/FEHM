@@ -200,8 +200,8 @@ c     coefficients for  equations
                            term(jj,jjj)=term(jj,jjj)+fad(jj)*fac(jjj)
                         enddo
                      enddo
-99999                continue
                   endif
+99999             continue
                endif
             enddo
          endif

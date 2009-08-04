@@ -39,18 +39,18 @@ endif
 
 # Linux OS ------------------------------
 ifeq (${OPSYS}, Linux)
-OSTAG = gf${BIT}
+OSTAG = gf
 ifeq (${BIT},64)
-FC = /usr/bin/gfortran
-LIBRARY = -L/usr/lib/gcc/x86_64-redhat-linux
+FC = /usr/lanl/bin/gfortran
+LIBRARY = -L/usr/lanl/packages/gcc42/lib
 else
-FC = /usr/bin/gfortran
-LIBRARY =  -L/usr/lib/gcc/x86_64-redhat-linux/4.1.1
+FC = /usr/lanl/bin/gfortran
+LIBRARY =  -L/usr/lanl/packages/gcc42/lib
 endif
 DFLAG =
 LD = /usr/bin/ld
 ifeq (${DEBUG}, ON)
-FFLAGS = -g
+FFLAGS = -g -frecord-marker=4
 else
 FFLAGS = -O2 -frecord-marker=4
 endif
@@ -86,7 +86,7 @@ dated:
 	sed s/OS\ DATE/${OSTAG}\ ${DATETAG}/ ${SRCDIR}dated.template >  ${SRCDIR}dated.f
 
 xfehm : ${OBJECTS} ${OBJECTS_F90}
-	${FC} ${FFLAGS} ${OBJECTS} ${OBJECTS_F90} ${LIBRARY} ${STATIC} -o xfehm_v2.30${OSTAG}${DATE}
+	${FC} ${FFLAGS} ${OBJECTS} ${OBJECTS_F90} ${LIBRARY} ${STATIC} -o xfehm_v3.00${OSTAG}${DATE}
 
 test:
 	echo ${OSTAG} ${FFLAGS} ${DATETAG} ${DATE}

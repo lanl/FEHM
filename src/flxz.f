@@ -271,7 +271,7 @@ c     Fluxes are written to flux history file
                write (flux_string(izone), 1050) sumsource, sumsink, 
      &              sumfout, sumboun
             else
-               write (flux_string(izone), 1056) sumsource, sumsink, 
+               write (flux_string(izone), 1055) sumsource, sumsink, 
      &              sumfout, sumboun
             end if
          end if
@@ -282,8 +282,8 @@ c     Fluxes are written to flux history file
  1047 format('(g16.9, ', i3, '(a))')
  1050 format(4(g16.9, 1x), g16.9)
  1051 format(g16.9, 1x, a)
- 1055 format(3(g16.9, ", "), g16.9)
- 1056 format(4(g16.9, ", "), g16.9)
+ 1055 format(4(", ", g16.9))
+ 1056 format(5(", ", g16.9))
  1057 format(g16.9, a)
 
 c     Write to flux history file

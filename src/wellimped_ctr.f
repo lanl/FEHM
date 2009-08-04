@@ -192,8 +192,8 @@ c delx,dely,delz represent the max diff between neighbors (upper bound of gridbl
    	         pnxa = 1.e-6*pnx(i)
    	         pnya = 1.e-6*pny(i)
    	         term1 = (pnya/pnxa)**0.25 + (pnxa/pnya)**0.25
-   	         term2 = sqrt(sqrt(pnya/pnxa)*delx*delx + sqrt(pnxa/pnya)*
-     &	               dely*dely) 
+   	         term2 = sqrt(sqrt(pnya/pnxa)*delx*delx + 
+     &                sqrt(pnxa/pnya)*dely*dely) 
     	         r0 = 0.28*term2/term1	         
    	         aperm = sqrt(pnxa*pnya)
    	         peaceman_term = 1.e06*pi2*aperm*rthick/log(r0/rw)

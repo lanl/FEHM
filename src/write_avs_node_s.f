@@ -652,12 +652,6 @@ c     might need help in the
          string(ic1:ic2) = vstring
          ic1 = ic2 + 1
       end if
-      if (iosource .eq. 1) then
-         write(vstring,110) dls(1:k), sk(i)
-         ic2 = ic1 + len_trim(vstring)
-         string(ic1:ic2) = vstring
-         ic1 = ic2 + 1
-      end if
       if (iodensity .eq. 1 .and. ioliquid .eq. 1) then
          write(vstring,110) dls(1:k), rolf(i)
          ic2 = ic1 + len_trim(vstring)
@@ -693,6 +687,12 @@ c     might need help in the
          string(ic1:ic2) = vstring
          ic1 = ic2 + 1
       endif
+      if (iosource .eq. 1) then
+         write(vstring,110) dls(1:k), sk(i)
+         ic2 = ic1 + len_trim(vstring)
+         string(ic1:ic2) = vstring
+         ic1 = ic2 + 1
+      end if
       if (ioflx .eq. 1 .and. ioliquid .eq. 1) then
          if (.not. net_flux) then
             iaxy = nelmdg (i) - (neq + 1) + nadd

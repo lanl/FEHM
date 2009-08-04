@@ -281,7 +281,7 @@ C***********************************************************************
          usub_num = 0
          cuser =  'not using'
       else
-         read(chk, '(i4)') usub_num 
+         read(chk, *) usub_num 
          if (usub_num .ne. 0)  then
             write(cuser , '(a4)') chk
          else

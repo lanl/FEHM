@@ -45,7 +45,7 @@
 
       use comai
       use combi
-      use comco2, only : denco2h, fl, fg
+      use comco2, only : icarb, denco2h, fl, fg, fw
       use comdi
       use comdti
       use comfi
@@ -383,37 +383,21 @@ c RJP 04/30/07 added following for outputting time-dependent CO2 mass
             title_string = 'CO2 mass (Kg)'
             call plot_header(ishiscm, var_num, form2_string)
          end if
-         if (ishiscs .ne. 0 ) then
-! Ouput CO2 Saturation
-            info_string = info_string(ic1:ic2) // 'CO2 saturations '
+         if (ishiscsl .ne. 0 ) then
+! Ouput CO2 Liquid Saturation
+            info_string = info_string(ic1:ic2) // 
+     &           'CO2 liquid saturations '
             ic2 = len_trim(info_string) + 1
-            title_string = 'CO2 Saturation: Liquid, Gaseous'
-            if (form_flag .eq. 1) then
-               write (formcs_string, 200) 2*m
-            else if (form_flag .eq. 2) then
-               write (formcs_string, 210) 2*m
-            else
-               write (formcs_string, 220) 2*m
-            end if
-            deallocate (var_string)
-            allocate (var_string(2*m))
-            j = 0
-            k = 0
-            do i = 1, m
-               j = k + 1
-               k = j + 1
-               var_string(j) = trim(var_tmp(i)) // ' Liq'
-               var_string(k) = trim(var_tmp(i)) // ' Gas'
-            end do
-            call plot_header(ishiscs,2*m,formcs_string)
-            deallocate (var_string)
-            allocate (var_string(var_num))
-            var_string = var_tmp
-            if (form_flag .le. 1) then
-               write (formcs_string, 300) 2*m
-            else
-               write (formcs_string, 310) 2*m
-            end if
+            title_string = 'CO2 Liquid Saturation'
+            call plot_header(ishiscsl, m, form1_string)
+         end if
+         if (ishiscsg .ne. 0 ) then
+! Ouput CO2 Gas Saturation
+            info_string = info_string(ic1:ic2) // 
+     &           'CO2 gaseous saturations '
+            ic2 = len_trim(info_string) + 1
+            title_string = 'CO2 Gaseous Saturation'
+            call plot_header(ishiscsg, m, form1_string)
          end if
          if (ishisfz .ne. 0) then
 ! Output zone fluxes
@@ -453,7 +437,7 @@ c RJP 04/30/07 added following for outputting time-dependent CO2 mass
                if (form_flag .eq. 0)
      &              write(ishisfzz, '(a)') trim(title_string)
                if (form_flag .eq. 2) then
-                  write(ishisfzz, '(a, 1x, a, a)') trim(zone_string), 
+                  write(ishisfzz, '(a, ", ", a, a)') trim(zone_string), 
      &                 trim(vt_string), trim(formf_string)
                else
                   write(ishisfzz, formz_string) trim(vt_string), 
@@ -483,7 +467,7 @@ c RJP 04/30/07 added following for outputting time-dependent CO2 mass
                   write(ishiscfzz, 230) 50., 95., trim(wdd)
                   write(ishiscfzz, 230) 50., 90., trim(title_string)
                else if (form_flag .eq. 2) then
-                  formz_string = trim(zone_string) // " " //
+                  formz_string = trim(zone_string) // ", " //
      &                 trim(time_string) // 
      &                 ", Source, Sink, Net, Boundary"
                   write(ishiscfzz, '(a)') trim(formz_string)
@@ -982,6 +966,9 @@ c
             if (ps(nskw(i)) .le. 0.) then
 c zero porosity node
                dumv(i) = 0.d0
+            else if (icarb .ne. 0) then
+c water saturation for CO2 problem
+               dumv(i) = fw(nskw(i))
             else if (irdof .ne. 13 .or. ifree .ne. 0) then
 c               dumv(i) = max(s(nskw(i)), rlptol)
 c               if (dumv(i) .le. rlptol) dumv(i) = 0.d0
@@ -1058,10 +1045,15 @@ C RJP 04/30/07
          call flush(ishiscm)
       end if
 C RJP 08/09/07
-      if (ishiscs .ne. 0 ) then
-! Output CO2 sats only for nodes if present
-         write(ishiscs, formcs_string) ptime, (max(fl(nskw(i)),0.d0),
-     &        i=1,m), (max(fg(nskw(i)),0.d0),i=1,m)
+      if (ishiscsl .ne. 0 ) then
+! Output CO2 liquid sats only for nodes if present
+         write(ishiscsl, form1_string) ptime, 
+     &        (max(fl(nskw(i)),0.d0), i=1,m)
+      end if
+      if (ishiscsg .ne. 0 ) then
+! Output CO2 gaseous sats only for nodes if present
+         write(ishiscsg, form1_string) ptime,
+     &        (max(fg(nskw(i)),0.d0),i=1,m)
       end if
       if (ishisfz .ne. 0) then
 ! Output zone fluxes
@@ -1128,7 +1120,7 @@ C RJP 08/09/07
      &        i= 1, m) 
          call flush(ishisstry)
       end if
-      if (ishisstrx .ne. 0 ) then
+      if (ishisstrxy .ne. 0 ) then
 ! Output xy stress
          write(ishisstrxy, form1_string) ptime, (str_xy(nskw(i)), 
      &        i= 1, m) 

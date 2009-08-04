@@ -306,7 +306,6 @@ c local
       integer :: max_con = 0
       character*100 filename, tail
       character*72 cline
-      character*32 sxformat
       character*3 stat_var
 
 
@@ -326,9 +325,10 @@ c**** retrieve coefficients ****
             call storsx_read
             
             if (lda .ge. 5) then
-c     Write file based on ascii data read in
+c     Write file based on data read in
                stat_var = '   '
                iw = iwtotl
+               filename = nmfil(12)
                flen = len_trim (filename)
                do i = flen, 1, -1
                   if (filename(i:i) .eq. '.') then

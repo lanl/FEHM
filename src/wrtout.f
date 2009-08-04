@@ -236,7 +236,7 @@ c     insert diagnostics code here
             call diagnostics(2)
          endif
 
-         if ((ntty.eq.2).and.(m.gt.0)) then
+         if ((ntty.eq.2).and.(m.gt.0).and.resid_out) then
             write(iout,774)
             if (iatty.gt.0)  write(iatty,774)
  774        format(3x,'Node',3x,'Equation 1 Residual',3x,

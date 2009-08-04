@@ -64,7 +64,8 @@ CD4
       character*80 gradm_name
       character*5 dgradm
       character*80 gradmod_root
-
+      logical grad_dum
+      character*3 grad_all
       parameter(ngrad_max= 50)
       real*8 dist 
 
@@ -97,17 +98,37 @@ c
             allocate(gradmod_filename(ngrad_max))
             allocate(igradmodnamlen(ngrad_max))
             allocate(igradmodelfile(ngrad_max))
-            igradmd = 0  
+            igradmd = 0
+            gradmod_filename = ''
          end if
          iroot = 8
          gradmod_root(1:8)='gradtemp'
          read(inpt,*) ngrad
-         read(inpt,*) 
-     &        (izone_grad(i),cordg(i),idirg(i),
-     &        igradf(i),var0(i),grad1(i),i=1,ngrad)
+        do i = 1,ngrad
+         grad_dum = .false.
+         read(inpt,'(a80)') wdd1
+          do jj = 1,78
+           if(wdd1(jj:jj+2).eq.'all') grad_dum = .true.
+          enddo
+         backspace inpt
+         if(grad_dum) then
+          read(inpt,*) 
+     &        grad_all,cordg(i),idirg(i),
+     &        igradf(i),var0(i),grad1(i)
+          izone_grad(i) = -1
+         else
+          read(inpt,*) 
+     &        izone_grad(i),cordg(i),idirg(i),
+     &        igradf(i),var0(i),grad1(i)
+          if(izone_grad(i).ne.-1) then
+           izone_grad(i) = abs(izone_grad(i))  
+          endif 
+         endif    
+        enddo
 c       
 c     save zone file and parameters
 c 
+         gradm_name = ''
          igradmd = igradmd + 1   
          idgradmc = 10000+igradmd
          write(dgradm,'(i5)')idgradmc 
@@ -121,17 +142,17 @@ c
 c         
 c complete name here
 c
-         igradmodelfile(igradmd) = open_file(gradm_name, 'unknown')             
+         igradmodelfile(igradmd) = open_file(gradm_name, 'unknown')    
          j = igradmodelfile(igradmd)
-         write(j,'(a4,i9)') 'grad',ngrad       
+         write(j,'(a4, 1x, i9)') 'grad',ngrad       
          do i = 1, ngrad
-         write(j,*) 
-     &        izone_grad(i),cordg(i),idirg(i),
-     &        igradf(i),var0(i),grad1(i)
+            write(j,*) 
+     &           izone_grad(i),cordg(i),idirg(i),
+     &           igradf(i),var0(i),grad1(i)
          enddo
-        write(j,'(a4)') 'end '
-        write(j,'(8(1x,i9))') (izonef(i),i=1,n0)
-        close (j)
+         write(j,'(a4)') 'end '
+         write(j,'(8(1x,i9))') (izonef(i),i=1,n0)
+         close (j)
       else if(iflg.eq.1) then 
 c
 c modify initial values and BC's
@@ -143,23 +164,25 @@ c and zone list for that request
 c    
          j = igradmodelfile(jj)
          i1=igradmodnamlen(jj)
-         open(j,file=gradmod_filename(jj)(1:i1),
-     &    status ='unknown')
+         j = open_file (gradmod_filename(jj), 'old')
+c         open(j,file=gradmod_filename(jj)(1:i1),
+c     &    status ='unknown')
          
          read(j,*)dgradm(1:4) ,ngrad      
          do i = 1, ngrad
-         read(j,*) 
-     &        izone_grad(i),cordg(i),idirg(i),
-     &        igradf(i),var0(i),grad1(i)
+            read(j,*) 
+     &           izone_grad(i),cordg(i),idirg(i),
+     &           igradf(i),var0(i),grad1(i)
          enddo
-        read(j,'(a4)') dgradm(1:4)
-        read(j,*) (izonef(i),i=1,n0)
+         read(j,'(a4)') dgradm(1:4)
+         read(j,*) (izonef(i),i=1,n0)
 c    
          if(iread.le.0) then
 c code with no restart file is present                 
             do izone=1,ngrad
                do inode=1,n0
-                  if(izonef(inode).eq.izone_grad(izone)) then
+                  if(izonef(inode).eq.izone_grad(izone)
+     &                  .or.izone_grad(izone).eq.-1) then
                      idir = idirg(izone)
                      dist = cord(inode,idir)-cordg(izone)
                      if(igradf(izone).eq.1) then
@@ -213,9 +236,9 @@ c RJP 04/10/07 added following for CO2
                enddo
             enddo
          endif
-        rewind j
-        write(j,*) 'gradctr file ', jj, ' read'
-        close(j)         
+c        rewind j
+c        write(j,*) 'gradctr file ', jj, ' read'
+        close(j, status = 'delete')         
        enddo
          if(allocated(izone_grad)) then
             deallocate(izone_grad)

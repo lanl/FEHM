@@ -527,7 +527,8 @@ c    zero out volumes of gridblocks, coefficient storage
       sx_temp_y = 0.0
       sx_temp_z = 0.0
       sx1 = 0.0
-      ncon_adv = 0
+c ncon_adv not allocated yet
+c      ncon_adv = 0
       ncon_elem = 0
       iplace = 0
 c
