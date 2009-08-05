@@ -49,7 +49,7 @@ c****************************local parameters used in perm model 4
       real*8  ipmd4_p1,ipmd4_p2,ipmd4_p3,ipmd4_p4
       real*8  ipmd4_k
       
-c****************************local parameters used in perm model 7 Bai   
+c****************************local parameters used in perm model 7 Bai 
       real*8  ipmd7_dsx,ipmd7_dsy,ipmd7_dsz
       real*8  ipmd7_dsxy,ipmd7_dsxz,ipmd7_dsyz
       real*8  ipmd7_knx,ipmd7_kny,ipmd7_knz
@@ -78,7 +78,7 @@ c.........................................
       parameter (dis_tol = 1.d-8)
 c     
 c     
-      
+      if(idoff .eq. -1) return      
       if(istrs.eq.0) return
       if(ipermstr.eq.0) return
 c     
@@ -155,7 +155,7 @@ c
 c     
 c     only calculate for model 3 and model 5
 c     initial setup calcs node neighbor information
-c    
+c     
             jj1 =0 
             do i = 1,n0
                iispmd = ispm(i)
@@ -198,8 +198,8 @@ c
                            xdmaxt = dist
                         else if(abs(dis-xdmax).lt.dis_tol) then
                            if(dist.lt.xdmaxt) then
-                             xdmaxt = dist
-                             kbxmax = kb
+                              xdmaxt = dist
+                              kbxmax = kb
                            endif
                         endif
                      else if(xkb-xi.lt.0) then
@@ -211,8 +211,8 @@ c
                            xdmint = dist
                         else if(abs(dis-xdmin).lt.dis_tol) then
                            if(dist.lt.xdmint) then
-                             xdmint = dist
-                             kbxmin = kb
+                              xdmint = dist
+                              kbxmin = kb
                            endif
                         endif
                      endif
@@ -225,8 +225,8 @@ c
                            ydmaxt = dist
                         else if(abs(dis-ydmax).lt.dis_tol) then
                            if(dist.lt.ydmaxt) then
-                             ydmaxt = dist
-                             kbymax = kb
+                              ydmaxt = dist
+                              kbymax = kb
                            endif
                         endif
                      else if(ykb-yi.lt.0) then
@@ -238,8 +238,8 @@ c
                            ydmint = dist
                         else if(abs(dis-ydmin).lt.dis_tol) then
                            if(dist.lt.ydmint) then
-                             ydmint = dist
-                             kbymin = kb
+                              ydmint = dist
+                              kbymin = kb
                            endif
                         endif
                      endif 
@@ -252,8 +252,8 @@ c
                            zdmaxt = dist
                         else if(abs(dis-zdmax).lt.dis_tol) then
                            if(dist.lt.zdmaxt) then
-                             zdmaxt = dist
-                             kbzmax = kb
+                              zdmaxt = dist
+                              kbzmax = kb
                            endif
                         endif
                      else if(zkb-zi.lt.0) then
@@ -265,8 +265,8 @@ c
                            zdmint = dist
                         else if(abs(dis-zdmin).lt.dis_tol) then
                            if(dist.lt.zdmint) then
-                             zdmint = dist
-                             kbzmin = kb
+                              zdmint = dist
+                              kbzmin = kb
                            endif
                         endif
                      endif
@@ -280,57 +280,57 @@ c
                   ipermy(i,2) = kbymax	     
                   ipermz(i,1) = kbzmin
                   ipermz(i,2) = kbzmax	  
-               if(cord(kbxmax,1)-cord(kbxmin,1).le.0.0) then
-                jj1 =1
-                write(ierr,*) 
-     &          'dis(x) failed, node ',i,' model 3 or 5 sub stres_perm'
-               endif 
-               if(cord(kbymax,2)-cord(kbymin,2).le.0.0) then
-                jj1 =1
-                write(ierr,*) 
-     &          'dis(y) failed, node ',i,' model 3 or 5 sub stres_perm' 
-               endif 
-               if(cord(kbzmax,3)-cord(kbzmin,3).le.0.0) then
-                jj1 =1
-                write(ierr,*) 
-     &          'dis(y) failed, node ',i,' model 3 or 5 sub stres_perm'
-               endif                             
-c stop for zero distances               
-              if(jj1.ne.0) stop     
-             endif 	                 
+                  if(cord(kbxmax,1)-cord(kbxmin,1).le.0.0) then
+                     jj1 =1
+                     write(ierr,*) 'dis(x) failed, node ',
+     &                    i,' model 3 or 5 sub stres_perm'
+                  endif 
+                  if(cord(kbymax,2)-cord(kbymin,2).le.0.0) then
+                     jj1 =1
+                     write(ierr,*) 'dis(y) failed, node ',
+     &                    i,' model 3 or 5 sub stres_perm' 
+                  endif 
+                  if(cord(kbzmax,3)-cord(kbzmin,3).le.0.0) then
+                     jj1 =1
+                     write(ierr,*) 'dis(y) failed, node ',
+     &                    i,' model 3 or 5 sub stres_perm'
+                  endif                             
+c     stop for zero distances               
+                  if(jj1.ne.0) stop     
+               endif 	                 
             enddo
          endif
       endif
       go to 2001
-c
-c test code
-c      
+c     
+c     test code
+c     
       open(99,file='stress_perm',status = 'unknown')
-              do i = 1,n0
-               iispmd = ispm(i)
-               ispmd = ispmt(iispmd)
-               if(ispmd.eq.3.or.ispmd.eq.5) then
-                write(99,*) 'node = ',i
-                write(99,*) 
+      do i = 1,n0
+         iispmd = ispm(i)
+         ispmd = ispmt(iispmd)
+         if(ispmd.eq.3.or.ispmd.eq.5) then
+            write(99,*) 'node = ',i
+            write(99,*) 
      &           ' x node pair', ipermx(i,2), ipermx(i,1),
      &           ' dis ', cord(ipermx(i,2),1)-cord(ipermx(i,1),1)
-                 if(cord(ipermx(i,2),1)-cord(ipermx(i,1),1).le.0.001)
-     &             write (99,*) '>>> zero distance x <<<<'
-                    write(99,*) 
+            if(cord(ipermx(i,2),1)-cord(ipermx(i,1),1).le.0.001)
+     &           write (99,*) '>>> zero distance x <<<<'
+            write(99,*) 
      &           ' y node pair', ipermy(i,2), ipermy(i,1),
      &           ' dis ', cord(ipermy(i,2),2)-cord(ipermy(i,1),2)
-                 if(cord(ipermy(i,2),2)-cord(ipermy(i,1),2).le.0.001)
-     &             write (99,*) '>>> zero distance y <<<<'
-                    write(99,*) 
+            if(cord(ipermy(i,2),2)-cord(ipermy(i,1),2).le.0.001)
+     &           write (99,*) '>>> zero distance y <<<<'
+            write(99,*) 
      &           ' z node pair', ipermz(i,2), ipermz(i,1),
      &           ' dis ', cord(ipermz(i,2),3)-cord(ipermz(i,1),3)
-                  if(cord(ipermz(i,2),3)-cord(ipermz(i,1),3).le.0.001)
-     &             write (99,*) '>>> zero distance z <<<<'    
-               endif
-              enddo
-              close(99)
-    
-2001  continue
+            if(cord(ipermz(i,2),3)-cord(ipermz(i,1),3).le.0.001)
+     &           write (99,*) '>>> zero distance z <<<<'    
+         endif
+      enddo
+      close(99)
+      
+ 2001 continue
       if (iflg.eq.-1) then
 c     
 c     allocate memory for stress derivatives for fully coupled solution
@@ -338,7 +338,7 @@ c     just before call to generate equations
 c     
 c     
          if(ipermstr3.ne.0.or.ipermstr5.ne.0.and.
-     &         .not.allocated(rlxs))then  
+     &        .not.allocated(rlxs))then  
             allocate(rlxs(n0))
             allocate(rlys(n0))
             allocate(rlzs(n0))
@@ -354,7 +354,7 @@ c     deallocate memory for stress derivatives for fully coupled solution
 c     
 c     
          if(ipermstr3.ne.0.or.ipermstr5.ne.0.and.
-     &                    allocated(rlxs))then       
+     &        allocated(rlxs))then       
             deallocate(rlxs,rlys,rlzs)
             deallocate(drlxs,drlys,drlzs)
             deallocate(idum_str1)
@@ -428,7 +428,7 @@ c
                disx = (cord(kbx2,1)-cord(kbx1,1))/2.
                disy = (cord(kby2,2)-cord(kby1,2))/2.
                disz = (cord(kbz2,3)-cord(kbz1,3))/2.
-c               
+c     
                amultx = frac_bx**3
                amulty = frac_by**3
                amultz = frac_bz**3
@@ -451,9 +451,9 @@ c
 c     
 c     determine the net contribution  
 c     
-               disptx12 = max(dispx12-tx12,0.0)
-               dispty12 = max(dispy12-ty12,0.0) 
-               disptz12 = max(dispz12-tz12,0.0)              
+               disptx12 = max(dispx12-tx12,0.0d0)
+               dispty12 = max(dispy12-ty12,0.0d0) 
+               disptz12 = max(dispz12-tz12,0.0d0)              
 c     
 c     displacement terms (shear)
 c     
@@ -467,42 +467,42 @@ c
                
                rlxs(i) = amultyz*(1. + amulty*(dv(kby2)-dv(kby1)))**3*
      &              (1. + amultz*(dw(kbz2)-dw(kbz1)))**3
-          drlxs(i,2) = 3.*amultyz*(1. + amulty*(dv(kby2)-dv(kby1)))**2*
-     &              (1. + amultz*(dw(kbz2)-dw(kbz1)))**3*amulty
-          drlxs(i,1) = -3.*amultyz*(1. + amulty*(dv(kby2)-dv(kby1)))**2*
-     &              (1. + amultz*(dw(kbz2)-dw(kbz1)))**3*amulty
-          drlxs(i,4) = 3.*amultyz*(1. + amulty*(dv(kby2)-dv(kby1)))**3*
-     &              (1. + amultz*(dw(kbz2)-dw(kbz1)))**2*amultz
-          drlxs(i,3) = -3.*amultyz*(1. + amulty*(dv(kby2)-dv(kby1)))**3*
-     &              (1. + amultz*(dw(kbz2)-dw(kbz1)))**2*amultz
+               drlxs(i,2) = 3.*amultyz*(1. + amulty*(dv(kby2)-dv(kby1)))
+     &              **2*(1. + amultz*(dw(kbz2)-dw(kbz1)))**3*amulty
+               drlxs(i,1) =-3.*amultyz*(1. + amulty*(dv(kby2)-dv(kby1)))
+     &              **2*(1. + amultz*(dw(kbz2)-dw(kbz1)))**3*amulty
+               drlxs(i,4) = 3.*amultyz*(1. + amulty*(dv(kby2)-dv(kby1)))
+     &              **3*(1. + amultz*(dw(kbz2)-dw(kbz1)))**2*amultz
+               drlxs(i,3) =-3.*amultyz*(1. + amulty*(dv(kby2)-dv(kby1)))
+     &              **3*(1. + amultz*(dw(kbz2)-dw(kbz1)))**2*amultz
                
                rlys(i) = amultxz*(1. + amultx*(du(kby2)-du(kby1)))**3*
      &              (1. + amultz*(dw(kbz2)-dw(kbz1)))**3
-          drlys(i,2) = 3.*amultxz*(1. + amultx*(du(kby2)-du(kby1)))**2*
-     &              (1. + amultz*(dw(kbz2)-dw(kbz1)))**3*amultx
-          drlys(i,1) = -3.*amultxz*(1. + amultx*(du(kby2)-du(kby1)))**2*
-     &              (1. + amultz*(dw(kbz2)-dw(kbz1)))**3*amultx
-          drlys(i,4) = 3.*amultxz*(1. + amultx*(du(kby2)-du(kby1)))**3*
-     &              (1. + amultz*(dw(kbz2)-dw(kbz1)))**2*amultz
-          drlys(i,3) = -3.*amultxz*(1. + amultx*(du(kby2)-du(kby1)))**3*
-     &              (1. + amultz*(dw(kbz2)-dw(kbz1)))**2*amultz  
+               drlys(i,2) = 3.*amultxz*(1. + amultx*(du(kby2)-du(kby1)))
+     &              **2*(1. + amultz*(dw(kbz2)-dw(kbz1)))**3*amultx
+               drlys(i,1) =-3.*amultxz*(1. + amultx*(du(kby2)-du(kby1)))
+     &              **2*(1. + amultz*(dw(kbz2)-dw(kbz1)))**3*amultx
+               drlys(i,4) = 3.*amultxz*(1. + amultx*(du(kby2)-du(kby1)))
+     &              **3*(1. + amultz*(dw(kbz2)-dw(kbz1)))**2*amultz
+               drlys(i,3) =-3.*amultxz*(1. + amultx*(du(kby2)-du(kby1)))
+     &              **3*(1. + amultz*(dw(kbz2)-dw(kbz1)))**2*amultz  
                
                rlzs(i) = amultxy*(1. + amultx*(du(kby2)-du(kby1)))**3*
      &              (1. + amulty*(dv(kbz2)-dv(kbz1)))**3
-          drlzs(i,2) = 3.*amultxy*(1. + amultx*(du(kby2)-du(kby1)))**2*
-     &              (1. + amulty*(dv(kbz2)-dv(kbz1)))**3*amultx
-          drlzs(i,1) = -3.*amultxy*(1. + amultx*(du(kby2)-du(kby1)))**2*
-     &              (1. + amulty*(dv(kbz2)-dv(kbz1)))**3*amultx
-          drlzs(i,4) = 3.*amultxy*(1. + amultx*(du(kby2)-du(kby1)))**3*
-     &              (1. + amulty*(dv(kbz2)-dv(kbz1)))**2*amulty
-          drlzs(i,3) = -3.*amultxy*(1. + amultx*(du(kby2)-du(kby1)))**3*
-     &              (1. + amulty*(dv(kbz2)-dv(kbz1)))**2*amulty     
+               drlzs(i,2) = 3.*amultxy*(1. + amultx*(du(kby2)-du(kby1)))
+     &              **2*(1. + amulty*(dv(kbz2)-dv(kbz1)))**3*amultx
+               drlzs(i,1) =-3.*amultxy*(1. + amultx*(du(kby2)-du(kby1)))
+     &              **2*(1. + amulty*(dv(kbz2)-dv(kbz1)))**3*amultx
+               drlzs(i,4) = 3.*amultxy*(1. + amultx*(du(kby2)-du(kby1)))
+     &              **3*(1. + amulty*(dv(kbz2)-dv(kbz1)))**2*amulty
+               drlzs(i,3) =-3.*amultxy*(1. + amultx*(du(kby2)-du(kby1)))
+     &              **3*(1. + amulty*(dv(kbz2)-dv(kbz1)))**2*amulty     
                
 c     
 c     thermal contribution based formulation
 c     
-c    
-c
+c     
+c     
             else if(ispmd.eq.5) then
 c     
 c     perm model 5 displacement based model-explicitly coupled
@@ -518,17 +518,17 @@ c
                strx_min = spm1f(iispmd)
                stry_min = spm2f(iispmd) 
                strz_min = spm3f(iispmd) 
-c
-c  the parameters in the fully coupled model are replaced 
-c  by initial permeabilities
-c               
+c     
+c     the parameters in the fully coupled model are replaced 
+c     by initial permeabilities
+c     
                
                frac_bx = max(spm4f(iispmd),frac_tol) 
                frac_by = max(spm4f(iispmd),frac_tol) 
                frac_bz = max(spm4f(iispmd),frac_tol) 
-c               perx_m = spm7f(iispmd)
-c               pery_m = spm8f(iispmd) 
-c               perz_m = spm9f(iispmd) 
+c     perx_m = spm7f(iispmd)
+c     pery_m = spm8f(iispmd) 
+c     perz_m = spm9f(iispmd) 
                
                kbx1 = ipermx(i,1)
                kbx2 = ipermx(i,2)
@@ -543,9 +543,9 @@ c
                disy = (cord(kby2,2)-cord(kby1,2))/2.
                disz = (cord(kbz2,3)-cord(kbz1,3))/2.
 c     
-c   
-c different definitions from model 3
-c  
+c     
+c     different definitions from model 3
+c     
                amultx = 1./(disx*frac_bx)
                amulty = 1./(disy*frac_by)
                amultz = 1./(disz*frac_bz)
@@ -568,9 +568,9 @@ c
 c     
 c     determine the net contribution  
 c     
-               disptx12 = max(dispx12-tx12,0.0)
-               dispty12 = max(dispy12-ty12,0.0) 
-               disptz12 = max(dispz12-tz12,0.0)              
+               disptx12 = max(dispx12-tx12,0.0d0)
+               dispty12 = max(dispy12-ty12,0.0d0) 
+               disptz12 = max(dispz12-tz12,0.0d0)              
 c     
 c     displacement terms (shear)
 c     
@@ -584,47 +584,47 @@ c
                
                rlxs(i) = amultyz*(1. + amulty*dispty12)**3*
      &              (1. + amultz*disptz12)**3
-          drlxs(i,2) = 3.*amultyz*(1. + amulty*dispty12)**2*
+               drlxs(i,2) = 3.*amultyz*(1. + amulty*dispty12)**2*
      &              (1. + amultz*disptz12)**3*amulty
-          drlxs(i,1) = -3.*amultyz*(1. + amulty*dispty12)**2*
+               drlxs(i,1) = -3.*amultyz*(1. + amulty*dispty12)**2*
      &              (1. + amultz*disptz12)**3*amulty
-          drlxs(i,4) = 3.*amultyz*(1. + amulty*dispty12)**3*
+               drlxs(i,4) = 3.*amultyz*(1. + amulty*dispty12)**3*
      &              (1. + amultz*disptz12)**2*amultz
-          drlxs(i,3) = -3.*amultyz*(1. + amulty*dispty12)**3*
+               drlxs(i,3) = -3.*amultyz*(1. + amulty*dispty12)**3*
      &              (1. + amultz*disptz12)**2*amultz
                
                rlys(i) = amultxz*(1. + amultx*disptz12)**3*
      &              (1. + amultz*disptz12)**3
-          drlys(i,2) = 3.*amultxz*(1. + amultx*disptz12)**2*
+               drlys(i,2) = 3.*amultxz*(1. + amultx*disptz12)**2*
      &              (1. + amultz*disptz12)**3*amultx
-          drlys(i,1) = -3.*amultxz*(1. + amultx*disptz12)**2*
+               drlys(i,1) = -3.*amultxz*(1. + amultx*disptz12)**2*
      &              (1. + amultz*disptz12)**3*amultx
-          drlys(i,4) = 3.*amultxz*(1. + amultx*disptz12)**3*
+               drlys(i,4) = 3.*amultxz*(1. + amultx*disptz12)**3*
      &              (1. + amultz*disptz12)**2*amultz
-          drlys(i,3) = -3.*amultxz*(1. + amultx*disptz12)**3*
+               drlys(i,3) = -3.*amultxz*(1. + amultx*disptz12)**3*
      &              (1. + amultz*disptz12)**2*amultz  
                
                rlzs(i) = amultxy*(1. + amultx*disptz12)**3*
      &              (1. + amulty*dispty12)**3
-          drlzs(i,2) = 3.*amultxy*(1. + amultx*disptz12)**2*
+               drlzs(i,2) = 3.*amultxy*(1. + amultx*disptz12)**2*
      &              (1. + amulty*dispty12)**3*amultx
-          drlzs(i,1) = -3.*amultxy*(1. + amultx*disptz12)**2*
+               drlzs(i,1) = -3.*amultxy*(1. + amultx*disptz12)**2*
      &              (1. + amulty*dispty12)**3*amultx
-          drlzs(i,4) = 3.*amultxy*(1. + amultx*disptz12)**3*
+               drlzs(i,4) = 3.*amultxy*(1. + amultx*disptz12)**3*
      &              (1. + amulty*dispty12)**2*amulty
-          drlzs(i,3) = -3.*amultxy*(1. + amultx*disptz12)**3*
+               drlzs(i,3) = -3.*amultxy*(1. + amultx*disptz12)**3*
      &              (1. + amulty*dispty12)**2*amulty     
                
 c     
 c     thermal contribution based formulation
 c     
-c   
+c     
 c     now change absolute permeabilities         
 
-         pnx(i) = pnx0(i)*rlxs(i)
-         pny(i) = pny0(i)*rlys(i)
-         pnz(i) = pnz0(i)*rlzs(i)
-       
+               pnx(i) = pnx0(i)*rlxs(i)
+               pny(i) = pny0(i)*rlys(i)
+               pnz(i) = pnz0(i)*rlzs(i)
+               
 c     
             else if(ispmd.eq.2) then
 c     perm model 2 - volume strains
@@ -1069,17 +1069,21 @@ c********************have to decide how to do with perx_m etc. input?
                pery_m = 100     
                
 c***********************************NORMAL
-      ipmd4_p1 = ipmd4_alx*(str_x(i)-pho(i))+ipmd4_aly*(str_y(i)-pho(i))
+               ipmd4_p1 = ipmd4_alx*(str_x(i)-pho(i))+ipmd4_aly*
+     &              (str_y(i)-pho(i))
 c     maximum aperture dilation	   
                if(ipmd4_p1.lt.-5) ipmd4_p1 = -5
                
 c     normal dilation component	   
-      ipmd4_p2 = ipmd4_fx/12*(ipmd4_br+ipmd4_bmx*exp(-ipmd4_p1))**3
+               ipmd4_p2 = ipmd4_fx/12*(ipmd4_br+ipmd4_bmx*
+     &              exp(-ipmd4_p1))**3
                
-      ipmd4_p3 = ipmd4_btx*(str_x(i)-pho(i))+ipmd4_bty*(str_y(i)-pho(i))
+               ipmd4_p3 = ipmd4_btx*(str_x(i)-pho(i))+ipmd4_bty*
+     &              (str_y(i)-pho(i))
                if(ipmd4_p3.lt.-5) ipmd4_p4 = -5
                
-      ipmd4_p4 = ipmd4_fy/12*(ipmd4_br+ipmd4_bmx*exp(-ipmd4_p3))**3
+               ipmd4_p4 = ipmd4_fy/12*(ipmd4_br+ipmd4_bmx*
+     &              exp(-ipmd4_p3))**3
                
 c***********************************SHEAR
 c     ipmd4_k is the ratio of min stress to max stress
@@ -1102,7 +1106,7 @@ c***********************************SHEAR
                pny(i) = min(pery_m*pny0(i),pny(i))
                
 c     
-c     ******************************Bai et al model (stress based)	 
+c     ******************************Bai et al model (stress based)
 c     
             else if(ispmd.eq.7) then
                if(icnl.ne.0) then 
@@ -1461,24 +1465,24 @@ c     Tensile criteria
                   
                endif
 c...........................................................
-               elseif(ispmd.eq.11) then
-c s kelkar June 9 2009, simple gangi (1978, Int.J.Rock Mech)
-c  model in 2-D
-c assumed model in x-y plane and fracture in x-z plane, so only 
-c x-perm is modified. This formulation is for fracture faces
-c in contact, so str_y = effective stress in y-dir has to be
-c compressive
-                  if(icnl.ne.0) then
-                     gk0  =spm1f(iispmd)
-                     gpmod=spm2f(iispmd)
-                     gmexp =spm3f(iispmd)
-                     gn=1./gmexp
-                     sigy_eff=str_y(i)
-                     if(sigy_eff.gt.0.d0) then
-                        pnx(i)=gk0*(1.-(sigy_eff/gpmod)**gmexp)**3.
-                        e2(i) =  gn*sigy_eff*(gpmod/sigy_eff)**gn
-                     endif
+            elseif(ispmd.eq.11) then
+c     s kelkar June 9 2009, simple gangi (1978, Int.J.Rock Mech)
+c     model in 2-D
+c     assumed model in x-y plane and fracture in x-z plane, so only 
+c     x-perm is modified. This formulation is for fracture faces
+c     in contact, so str_y = effective stress in y-dir has to be
+c     compressive
+               if(icnl.ne.0) then
+                  gk0  =spm1f(iispmd)
+                  gpmod=spm2f(iispmd)
+                  gmexp =spm3f(iispmd)
+                  gn=1./gmexp
+                  sigy_eff=str_y(i)
+                  if(sigy_eff.gt.0.d0) then
+                     pnx(i)=gk0*(1.-(sigy_eff/gpmod)**gmexp)**3.
+                     e2(i) =  gn*sigy_eff*(gpmod/sigy_eff)**gn
                   endif
+               endif
 c...........................................................
 
             endif   
@@ -1491,7 +1495,7 @@ c     check for damage zone (permeability changes)
 c     and maximum allowable changes
 c     
          if(ipermstr2.ne.0.or.ipermstr5.ne.0.or.ipermstr7.ne.0
-     &    .or.ipermstr8.ne.0) then
+     &        .or.ipermstr8.ne.0) then
             permx_max = 0.0
             permy_max = 0.0
             permz_max = 0.0
@@ -1550,19 +1554,19 @@ c
             if(iout.ne.0) write(iout,101) 
             if(iptty.ne.0) write(iptty,101)   
             ipermx_max = 308
-            if(iout.ne.0)
-     &          write(iout,102)ipermx_max,sxx_min,pnx(ipermx_max)*1.e-6,
+            if(iout.ne.0) write(iout,102)
+     &           ipermx_max,sxx_min,pnx(ipermx_max)*1.e-6,
      &           cord(ipermx_max,1),cord(ipermx_max,2),coorxz_max
 *******************************
             
 c     &  write(iout,201)ipermx_max,str_y(ipermx_max)-phi(ipermx_max),
 c     &        frac_flg(ipermx_max)
 c*******************************
-            if(iptty.ne.0)
-     &         write(iptty,102)ipermx_max,sxx_min,pnx(ipermx_max)*1.e-6,
+            if(iptty.ne.0) write(iptty,102)
+     &           ipermx_max,sxx_min,pnx(ipermx_max)*1.e-6,
      &           cord(ipermx_max,1),cord(ipermx_max,2),coorxz_max 
-            if(iout.ne.0)
-     &         write(iout,103)ipermy_max,syy_min,pny(ipermy_max)*1.e-6,
+            if(iout.ne.0) write(iout,103)
+     &           ipermy_max,syy_min,pny(ipermy_max)*1.e-6,
      &           cord(ipermy_max,1),cord(ipermy_max,2),cooryz_max  
 c*******************************
             
@@ -1572,15 +1576,15 @@ c     &       estr_y0(ipermx_max) - (str_x(ipermx_max)-pho(ipermx_max)),
 c     &       pny(ipermx_max)*1.e-6,
 c     &       cord(ipermy_max,1),cord(ipermy_max,2),cooryz_max  
 c*******************************
-            if(iptty.ne.0)
-     &         write(iptty,103)ipermy_max,syy_min,pny(ipermy_max)*1.e-6,
+            if(iptty.ne.0) write(iptty,103)
+     &           ipermy_max,syy_min,pny(ipermy_max)*1.e-6,
      &           cord(ipermy_max,1),cord(ipermy_max,2),cooryz_max  
             if(icnl.eq.0) then
-               if(iout.ne.0)
-     &          write(iout,104)ipermz_max,szz_min,pnz(ipermz_max)*1.e-6,
+               if(iout.ne.0) write(iout,104)
+     &              ipermz_max,szz_min,pnz(ipermz_max)*1.e-6,
      &              cord(ipermz_max,1),cord(ipermz_max,2),coorzz_max  
-               if(iptty.ne.0)
-     &         write(iptty,104)ipermz_max,szz_min,pnz(ipermz_max)*1.e-6,
+               if(iptty.ne.0) write(iptty,104)
+     &              ipermz_max,szz_min,pnz(ipermz_max)*1.e-6,
      &              cord(ipermz_max,1),cord(ipermz_max,2),coorzz_max    
             endif     
          endif         
