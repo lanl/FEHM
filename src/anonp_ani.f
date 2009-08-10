@@ -135,8 +135,9 @@ c
       real*8   ,allocatable :: idumy(:)
       real*8   ,allocatable :: idumz(:)
       integer   ,allocatable :: nelm_temp(:,:)
+      logical iani_chk
 
-      parameter (a_tol=1.d-15, deg2rad=0.017453293d00)
+      parameter (a_tol=1.d-15, deg2rad=0.017453293d00,iani_chk=.false.)
 
 c  gaz modified ione and itwo
 
@@ -943,6 +944,7 @@ c z face
       enddo
       deallocate(sx_temp_x,sx_temp_y,sx_temp_z)
       deallocate(iplace,ncon_elem,ncon_pos)
+      if(iani_chk) then
 c  assemble overall connectivity array from ncon
       if (iptty .ne. 0) write(iptty,*)
       if (iout .ne. 0) write(iout,*)
@@ -970,6 +972,7 @@ c  assemble overall connectivity array from ncon
          write(iout,*) 'sum of z coeffs = ', sumu
          write(iout,*)
       end if
+      endif
 c
 c  resize arrays
 c
