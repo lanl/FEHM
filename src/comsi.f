@@ -88,13 +88,20 @@
       real*8, allocatable ::  str_x(:) 
       real*8, allocatable ::  str_y(:)
       real*8, allocatable ::  str_z(:)
-c     Bai model      
+c Bai model      
       real*8, allocatable ::  estr_x0(:)
       real*8, allocatable ::  estr_y0(:)
       real*8, allocatable ::  estr_z0(:)
       real*8, allocatable ::  str_xy0(:)
       real*8, allocatable ::  str_xz0(:)
       real*8, allocatable ::  str_yz0(:)
+c Failure + Bai displacement
+      real*8, allocatable ::  es_f_x0(:,:)  
+      real*8, allocatable ::  es_f_y0(:,:)
+      real*8, allocatable ::  es_f_z0(:,:)
+      real*8, allocatable ::  s_f_xy0(:,:)
+      real*8, allocatable ::  s_f_xz0(:,:)
+      real*8, allocatable ::  s_f_yz0(:,:) 
 c     ___________________________________________      
       real*8, allocatable ::  str_xy(:) 
       real*8, allocatable ::  str_xz(:)

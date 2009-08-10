@@ -163,14 +163,6 @@ c     real*8 sxzc
       real*8 grav_air
       real*8 grav_term
 
-      real*8, allocatable ::   dum(:)
-      real*8, allocatable ::   dumx(:)
-      real*8, allocatable ::   dumy(:)
-      real*8, allocatable ::   dumz(:)
-      integer, allocatable ::   it4a(:)
-      integer, allocatable ::   it5a(:)
-      integer, allocatable ::   it6a(:)
-
       parameter(dis_tol=1.d-12)
 
       logical bit
@@ -195,7 +187,6 @@ c     real*8 sxzc
       real*8 presd1,presd2,cordd1,cordd2  
       real*8 sumxg,sumyg,sumzg,dsumxp,dsumyp,dsumzp 
       real*8 dend,ddendpi,ddendpkb  
-
 c changed by avw -- entered here by seh
       neqp1=neq+1
       if(i.gt.neq) then
@@ -212,22 +203,15 @@ c changed by avw -- entered here by seh
 c
 c zero out temporary storage
 c
-      if(.not.allocated(dum)) then
-       allocate(dum(neq))
-       allocate(dumx(neq))
-       allocate(dumy(neq))
-       allocate(dumz(neq))
+      if(.not.allocated(dum_ani)) then
+       allocate(dum_ani(neq))
+       allocate(dumx_ani(neq))
+       allocate(dumy_ani(neq))
+       allocate(dumz_ani(neq))
        allocate(it4a(200))
        allocate(it5a(200))
        allocate(it6a(200))
       endif
-      dum = 0.0
-      dumx = 0.0
-      dumy = 0.0
-      dumz = 0.0
-      it4a = 0
-      it5a = 0
-      it6a = 0
 c
 c storage for upwind
 c
@@ -347,8 +331,8 @@ c figure this out once above
              it9(iq) = jj - neqp1
            enddo
 c  find -x positions
+          iqxm = 0
           if(kb_adv_x.gt.0) then
-           iqxm = 0
            i3 = nelm(kb_adv_x)+1
            i4 = nelm(kb_adv_x+1) 
             do kd = i3,i4
@@ -359,8 +343,8 @@ c  find -x positions
            enddo
           endif
 c  find -y positions
+          iqym = 0
           if(kb_adv_y.gt.0) then
-           iqym = 0
            i3 = nelm(kb_adv_y)+1
            i4 = nelm(kb_adv_y+1) 
             do kd = i3,i4
@@ -371,8 +355,8 @@ c  find -y positions
            enddo
           endif
 c  find -z positions
+          iqzm = 0
           if(kb_adv_z.gt.0) then
-           iqzm = 0
            i3 = nelm(kb_adv_z)+1
            i4 = nelm(kb_adv_z+1) 
             do kd = i3,i4
@@ -383,6 +367,22 @@ c  find -z positions
            enddo
           endif
 
+       do jm = 1,iq
+        kb = it8(jm)
+        dum_ani(kb)= 0.0
+       enddo
+        do jm = 1,iqxm
+         kb = it11(jm)
+         dumx_ani(kb) = 0.0
+       enddo
+       do jm = 1,iqym
+        kb = it12(jm)     
+        dumy_ani(kb) = 0.0
+       enddo
+       do jm = 1,iqzm
+        kb = it13(jm)
+        dumz_ani(kb) = 0.0
+       enddo
 c
 c 3-d geometry
 c
@@ -509,20 +509,20 @@ c            presd2 = phi(kb2)-pcp(kb2)
             presd1 = phi(kb1)
             presd2 = phi(kb2)  
                dsumxp = t1(jm)
-               dum(kb1) = dum(kb1) + axyf*dsumxp
-               dumx(kb1) = dumx(kb1) - axyf*dsumxp
-               dum(kb2) = dum(kb2) - axyf*dsumxp
-               dumx(kb2) = dumx(kb2) + axyf*dsumxp
+               dum_ani(kb1) = dum_ani(kb1) + axyf*dsumxp
+               dumx_ani(kb1) = dumx_ani(kb1) - axyf*dsumxp
+               dum_ani(kb2) = dum_ani(kb2) - axyf*dsumxp
+               dumx_ani(kb2) = dumx_ani(kb2) + axyf*dsumxp
             enddo
            flux_x = axyf*(sumx + dend*sumxg)
            dfxpi = daxyfpi*(sumx + dend*sumxg) + 
      &                  axyf*ddendpi*sumxg
            dfxpkb = daxyfpkb*(sumx + dend*sumxg) + 
      &                   axyf*ddendpkb*sumxg
-           dum(iz) = dum(iz) + dfxpi
-           dum(kb_adv_x) = dum(kb_adv_x) + dfxpkb 
-           dumx(iz) = dumx(iz) - dfxpi
-           dumx(kb_adv_x) = dumx(kb_adv_x) - dfxpkb 
+           dum_ani(iz) = dum_ani(iz) + dfxpi
+           dum_ani(kb_adv_x) = dum_ani(kb_adv_x) + dfxpkb 
+           dumx_ani(iz) = dumx_ani(iz) - dfxpi
+           dumx_ani(kb_adv_x) = dumx_ani(kb_adv_x) - dfxpkb 
            bp(iz+nrhs(1))=bp(iz+nrhs(1))+flux_x
            bp(kb_adv_x+nrhs(1))=bp(kb_adv_x+nrhs(1))-flux_x
           endif
@@ -548,20 +548,20 @@ c            presd2 = phi(kb2)-pcp(kb2)
             presd1 = phi(kb1)
             presd2 = phi(kb2)  
                dsumyp = t2(jm)
-               dum(kb1) = dum(kb1) + axyf*dsumyp
-               dumy(kb1) = dumy(kb1) - axyf*dsumyp
-               dum(kb2) = dum(kb2) - axyf*dsumyp
-               dumy(kb2) = dumy(kb2) + axyf*dsumyp
+               dum_ani(kb1) = dum_ani(kb1) + axyf*dsumyp
+               dumy_ani(kb1) = dumy_ani(kb1) - axyf*dsumyp
+               dum_ani(kb2) = dum_ani(kb2) - axyf*dsumyp
+               dumy_ani(kb2) = dumy_ani(kb2) + axyf*dsumyp
             enddo
            flux_y = axyf*(sumy + dend*sumyg)
            dfypi = daxyfpi*(sumy + dend*sumyg) + 
      &                  axyf*ddendpi*sumyg
            dfypkb = daxyfpkb*(sumy + dend*sumyg) + 
      &                   axyf*ddendpkb*sumyg
-           dum(iz) = dum(iz) + dfypi
-           dum(kb_adv_y) = dum(kb_adv_y) + dfypkb 
-           dumy(iz) = dumy(iz) - dfypi
-           dumy(kb_adv_y) = dumy(kb_adv_y) - dfypkb                 
+           dum_ani(iz) = dum_ani(iz) + dfypi
+           dum_ani(kb_adv_y) = dum_ani(kb_adv_y) + dfypkb 
+           dumy_ani(iz) = dumy_ani(iz) - dfypi
+           dumy_ani(kb_adv_y) = dumy_ani(kb_adv_y) - dfypkb                 
            bp(iz+nrhs(1))=bp(iz+nrhs(1))+flux_y
            bp(kb_adv_y+nrhs(1))=bp(kb_adv_y+nrhs(1))-flux_y
           endif
@@ -587,20 +587,20 @@ c            presd2 = phi(kb2)-pcp(kb2)
             presd1 = phi(kb1)
             presd2 = phi(kb2)  
                dsumzp = t3(jm)
-               dum(kb1) = dum(kb1) + axyf*dsumzp
-               dumz(kb1) = dumz(kb1) - axyf*dsumzp
-               dum(kb2) = dum(kb2) - axyf*dsumzp
-               dumz(kb2) = dumz(kb2) + axyf*dsumzp
+               dum_ani(kb1) = dum_ani(kb1) + axyf*dsumzp
+               dumz_ani(kb1) = dumz_ani(kb1) - axyf*dsumzp
+               dum_ani(kb2) = dum_ani(kb2) - axyf*dsumzp
+               dumz_ani(kb2) = dumz_ani(kb2) + axyf*dsumzp
             enddo
            flux_z = axyf*(sumz + dend*sumzg)
            dfzpi = daxyfpi*(sumz + dend*sumzg) + 
      &                  axyf*ddendpi*sumzg
            dfzpkb = daxyfpkb*(sumz + dend*sumzg) + 
      &                   axyf*ddendpkb*sumzg
-           dum(iz) = dum(iz) + dfzpi
-           dum(kb_adv_z) = dum(kb_adv_z) + dfzpkb 
-           dumz(iz) = dumz(iz) - dfzpi
-           dumz(kb_adv_z) = dumz(kb_adv_z) - dfzpkb                  
+           dum_ani(iz) = dum_ani(iz) + dfzpi
+           dum_ani(kb_adv_z) = dum_ani(kb_adv_z) + dfzpkb 
+           dumz_ani(iz) = dumz_ani(iz) - dfzpi
+           dumz_ani(kb_adv_z) = dumz_ani(kb_adv_z) - dfzpkb                  
            bp(iz+nrhs(1))=bp(iz+nrhs(1))+flux_z
            bp(kb_adv_z+nrhs(1))=bp(kb_adv_z+nrhs(1))-flux_z
           endif
@@ -611,7 +611,7 @@ c
        do jm = 1,iq
         kb = it8(jm)
         jj = it9(jm)
-        a(jj) = a(jj) + dum(kb)
+        a(jj) = a(jj) + dum_ani(kb)
        enddo
 c
 c  now load jacobian matrix (node kb_adv_x) (negative contribution)
@@ -619,7 +619,7 @@ c
        do jm = 1,iqxm
         kb = it11(jm)
         jj = it11a(jm)
-         a(jj) = a(jj) + dumx(kb)
+         a(jj) = a(jj) + dumx_ani(kb)
        enddo
 c
 c  now load jacobian matrix (node kb_adv_y) (negative contribution)
@@ -627,7 +627,7 @@ c
        do jm = 1,iqym
         kb = it12(jm)
         jj = it12a(jm)
-        a(jj) = a(jj) + dumy(kb)
+        a(jj) = a(jj) + dumy_ani(kb)
        enddo
 c
 c  now load jacobian matrix (node kb_adv_z) (negative contribution)
@@ -635,7 +635,7 @@ c
        do jm = 1,iqzm
         kb = it13(jm)
         jj = it13a(jm)
-        a(jj) = a(jj) + dumz(kb)
+        a(jj) = a(jj) + dumz_ani(kb)
        enddo
 c
       endif
@@ -646,7 +646,6 @@ c vapour phase calculations
 c
 
       endif
-      
       return
       end
 

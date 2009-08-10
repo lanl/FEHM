@@ -239,6 +239,17 @@
 !     ***** Pointers in COMMON Block eq2 *****
       real*8, allocatable ::  upwind_l(:)
       real*8, allocatable ::  upwind_v(:)
+      
+c parameters for anisotropy
+
+      real*8, allocatable ::   dum_ani(:)
+      real*8, allocatable ::   dumx_ani(:)
+      real*8, allocatable ::   dumy_ani(:)
+      real*8, allocatable ::   dumz_ani(:)
+      integer, allocatable ::   it4a(:)
+      integer, allocatable ::   it5a(:)
+      integer, allocatable ::   it6a(:)
+      
 
       end module comji
 
