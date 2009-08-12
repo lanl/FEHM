@@ -45,7 +45,7 @@
 
       use comai
       use combi
-      use comco2, only : icarb, denco2h, fl, fg, fw, phico2
+      use comco2, only : icarb, denco2h, fl, fg, fw, phico2, xc, yc
       use comdi
       use comdti
       use comfi
@@ -350,14 +350,30 @@ c            write(ishis, '(a4)')  '    '
          end if
 c RJP 04/30/07 added following for outputting time-dependent CO2 mass
          if (ishiscm .ne. 0 ) then
-! Ouput CO2 mass kg
+! Output CO2 mass kg
             info_string = info_string(ic1:ic2) // 'CO2 mass '
             ic2 = len_trim(info_string) + 1
             title_string = 'CO2 mass (Kg)'
             call plot_header(ishiscm, var_num, form2_string)
          end if
+         if (ishiscmf .ne. 0 ) then
+! Output free CO2 mass fraction
+            info_string = info_string(ic1:ic2) // 
+     &           'Free CO2 mass fraction'
+            ic2 = len_trim(info_string) + 1
+            title_string = 'Free CO2 mass fraction'
+            call plot_header(ishiscmf, var_num, form2_string)
+         end if
+         if (ishiscmd .ne. 0 ) then
+! Output dissolved CO2 mass fraction
+            info_string = info_string(ic1:ic2) // 
+     &           'Dissolved CO2 mass fraction'
+            ic2 = len_trim(info_string) + 1
+            title_string = 'Dissolved CO2 mass fraction'
+            call plot_header(ishiscmd, var_num, form2_string)
+         end if
          if (ishiscsl .ne. 0 ) then
-! Ouput CO2 Liquid Saturation
+! Output CO2 Liquid Saturation
             info_string = info_string(ic1:ic2) // 
      &           'CO2 liquid saturation '
             ic2 = len_trim(info_string) + 1
@@ -365,7 +381,7 @@ c RJP 04/30/07 added following for outputting time-dependent CO2 mass
             call plot_header(ishiscsl, m, form1_string)
          end if
          if (ishiscsg .ne. 0 ) then
-! Ouput CO2 Gas Saturation
+! Output CO2 Gas Saturation
             info_string = info_string(ic1:ic2) // 
      &           'CO2 gaseous saturation '
             ic2 = len_trim(info_string) + 1
@@ -1030,6 +1046,18 @@ C RJP 04/30/07
          end if
          call flush(ishiscm)
       end if
+      if (ishiscmf .ne. 0 ) then
+! Output free CO2 mass fraction
+            write(ishiscmf, form1_string) ptime,
+     &           (max(xc(nskw(i)),0.d0), i=1,m)
+         call flush(ishiscmf)
+      end if
+      if (ishiscmd .ne. 0 ) then
+! Output dissolved CO2 mass fraction
+            write(ishiscmd, form1_string) ptime,
+     &           (max(yc(nskw(i)),0.d0), i=1,m)
+         call flush(ishiscmd)
+      end if
 C RJP 08/09/07
       if (ishiscsl .ne. 0 ) then
 ! Output CO2 liquid sats only for nodes if present
@@ -1068,9 +1096,9 @@ C RJP 08/09/07
        endif  
          call flush(ishisdisx)
       end if
-      if (ishisdisy .eq. 0 ) then
+      if (ishisdisy .ne. 0 ) then
 ! Output y displacement
-         if(idisp_rel.ne.0) then
+         if(idisp_rel .eq. 0) then
             write(ishisdisy, form1_string) ptime, (dv(nskw(i)), i= 1, m)
          else
             write(ishisdisy, form1_string) ptime, 
