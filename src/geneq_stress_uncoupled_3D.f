@@ -171,7 +171,7 @@ c
       real*8 siysjx,sixsjz,sizsjx,siysjz
       real*8 sizsjy,sjsix,sjsiy,sjsiz
       
-      integer, allocatable ::   itstress(:)
+c      integer, allocatable ::   itstress(:)
       integer iws
 
       parameter(dis_tol=1.d-12)
@@ -201,13 +201,9 @@ c changed by avw -- entered here by seh
 c
 c zero out temporary storage
 c
-      if(.not.allocated(itstress)) then
-
-
-       allocate(itstress(200))
-
-
-      endif
+c      if(.not.allocated(itstress)) then
+c       allocate(itstress(200))
+c      endif
 
 c
 c fluid and grid properties at node i

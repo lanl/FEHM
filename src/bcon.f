@@ -287,17 +287,22 @@ c identify ieos(i)<0 as fixed bc
 c
 c remove boundary nodes from mass and energy calculations
 c
+
          qtb  = 0.0
          qteb = 0.0
          qtcb = 0.0
          do i = 1, n
             if (volume(i) .eq. 0.0) then
-               qtb = qtb + deni(i) * sx1(i) * dtotdm / sx1bc
-               qteb = qteb + denei(i) * sx1(i) * dtotdm / sx1bc
-               qtcb = qtcb + denpci(i) * sx1(i) * dtotdm / sx1bc
+               qtb = qtb + deni(i) * sx1(i) * dtotdm / sx1bc        
                denh(i) = denh(i) - deni(i)*dtot
-               deneh(i) = deneh(i) - denei(i)*dtot
-               denpch(i) = denpch(i) - denpci(i)*dtot
+               if(ifree.eq.0.and.irdof.ne.13) then
+                qteb = qteb + denei(i) * sx1(i) * dtotdm / sx1bc
+                deneh(i) = deneh(i) - denei(i)*dtot
+               endif
+               if(ico2.gt.0) then
+                qtcb = qtcb + denpci(i) * sx1(i) * dtotdm / sx1bc
+                denpch(i) = denpch(i) - denpci(i)*dtot
+               endif
             end if
          end do
          qt   = qt   + qtb * sx1bc

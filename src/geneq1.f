@@ -274,8 +274,9 @@ c If this is an isothermal air-water simulation
       a_vxy(jmia+nmatavw)=sk(i)*(1-s(i))
 
       do 58 jm=jmi+1,ii2
-      iq=iq+1
       kb=nelm(jm)+icd
+      if(iriver.eq.2.and.kb.gt.neq_primary) go to 58
+      iq=iq+1
       it8(iq)=kb
       it9(iq)=jm-ii1+1
       it10(iq)=istrw(jm-neqp1)

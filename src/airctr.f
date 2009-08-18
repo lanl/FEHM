@@ -830,7 +830,7 @@ c     check also for free surface calcs
 c     
             if(ifree.ne.0) then
                call wtsictr(1)	
-               call wtsictr(12)
+c               call wtsictr(12)
 c     call wtsictr(9)
             endif
          elseif(iflg.eq.7) then

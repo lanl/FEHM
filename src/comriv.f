@@ -83,7 +83,8 @@ c arrays for welltype = 2
 	integer, allocatable :: izlabels(:) 
 	integer, allocatable :: nelm_riv(:,:)	
 	integer, allocatable :: idir_seg(:) 	
-	integer, allocatable :: iwdum(:) 				 						
+	integer, allocatable :: iwdum(:) 	
+	integer, allocatable :: iwell_end(:) 			 						
 	
 	real*8, allocatable ::  coor_well2(:,:)	
 	real*8, allocatable ::  coor_new_well2(:,:)	

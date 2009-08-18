@@ -146,6 +146,7 @@ c     ___________________________________________
       real*8, allocatable ::  e20(:)
       real*8, allocatable ::  e30(:)
       
+      integer, allocatable ::   itstress(:)
 
 
       real*8 ftoll

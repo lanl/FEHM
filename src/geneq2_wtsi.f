@@ -63,6 +63,7 @@ c
       use comdti
       use comai
       use comwt
+      use comriv
       implicit none
 
       integer i,imm
@@ -258,8 +259,9 @@ c If this is an isothermal air-water simulation
       end if
 
       do 58 jm=jmi+1,ii2
-         iq=iq+1
          kb=nelm(jm)+icd
+         if(iriver.eq.2.and.kb.gt.neq_primary) go to 58
+         iq=iq+1
          it8(iq)=kb
          it9(iq)=jm-ii1+1
          it10(iq)=istrw(jm-neqp1)
@@ -410,9 +412,8 @@ c 2-d problem
                   dely2=0.
                endif
                delz2=(cord(kz,igrav)-cord(iz,igrav))**2
-               dis2=delx2+dely2+delz2
                dxy2=delx2+dely2
-						
+			   dis2=delx2+dely2+delz2+dis_tol		
             endif
             if(iad.le.iad_up) then
                axyd=t8(neighc)
@@ -541,8 +542,11 @@ c
                a(jmia+nmat(1))=a(jmia+nmat(1))+dlapi
                a(ial+nmat(1))=a(ial+nmat(1))-dlapi
                a(iau+nmat(1))=a(iau+nmat(1))+dlapkb
-               a(jml+nmat(1))=a(jml+nmat(1))-dlapkb
-
+               a(jml+nmat(1))=a(jml+nmat(1))-dlapkb  
+               if(kb.gt.neq_primary) then
+                write(*,*) i, kb, jmia, ial, iau,jml, axy, dlapi,dlapkb
+                pause
+               endif
  72         continue
 	endif
       return

@@ -1074,7 +1074,7 @@ C RJP 08/09/07
       end if
       if (ishisdisx .ne. 0 ) then
 ! Output x displacement
-       if(idisp_rel.ne.0) then
+       if(idisp_rel.eq.0) then
          write(ishisdisx, form1_string) ptime, (du(nskw(i)), i= 1, m) 
        else
          write(ishisdisx, form1_string) ptime, 
@@ -1084,7 +1084,7 @@ C RJP 08/09/07
       end if
       if (ishisdisy .ne. 0 ) then
 ! Output y displacement
-       if(idisp_rel.ne.0) then
+       if(idisp_rel.eq.0) then
          write(ishisdisy, form1_string) ptime, (dv(nskw(i)), i= 1, m) 
        else
          write(ishisdisy, form1_string) ptime, 
@@ -1094,7 +1094,7 @@ C RJP 08/09/07
       end if
       if (ishisdisz .ne. 0 ) then
 ! Output z displacement
-       if(idisp_rel.ne.0) then
+       if(idisp_rel.eq.0) then
          write(ishisdisz, form1_string) ptime, (dw(nskw(i)), i= 1, m) 
        else
          write(ishisdisz, form1_string) ptime, 

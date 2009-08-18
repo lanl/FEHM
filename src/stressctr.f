@@ -163,6 +163,8 @@ c arrays for stress derivatives in mass and energy equations
 	allocate (its32(100,4))
       allocate (its41(1,4))
 	allocate (its42(100,4))
+	
+	allocate (itstress(200))
 
       allocate (ts21(1,4))
 	allocate (ts22(100,4))

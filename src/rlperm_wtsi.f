@@ -182,10 +182,10 @@ c
 !               write(iout,3000) l, iad, head_ck, ihead_ck,
 !     &              (cord(ihead_ck,j),j=1,3),izone_free_nodes(ihead_ck)
 !            end if
-            if(iptty.ne.0) then
-               write(iptty,3000) l, iad, head_ck, ihead_ck,
-     &              (cord(ihead_ck,j),j=1,3),izone_free_nodes(ihead_ck)
-            endif
+c            if(iptty.ne.0) then
+c               write(iptty,3000) l, iad, head_ck, ihead_ck,
+c     &              (cord(ihead_ck,j),j=1,3),izone_free_nodes(ihead_ck)
+c            endif
          endif
          
          if(iad.eq.1) then

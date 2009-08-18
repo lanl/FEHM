@@ -1149,7 +1149,6 @@ c**** initialize coeffients adjust volumes in dual porosity calcs ****
 
 c**** initialize coefficients adjust volumes in dpdp calcs ****
       call dpdp (1)
-
       do i = 1, n
          volume(i) = sx1(i)
          if (to (i) .le. zero_t)   to (i) = tin0

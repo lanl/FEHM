@@ -80,7 +80,9 @@ c
       real*8 head_ck1, head_ck2, strd_wtsi, hgrid
       real*8 hfac_h,hfac_l,pt,p_dum,wt_elev2
       character*80 form_string
+      character*3 dum_wtsi
       logical:: debug_flag = .FALSE.
+      logical:: zonewt_flag = .FALSE.
       parameter (htol=1.d-15,dentol=1.d+1)
       parameter (min_sat=1.d-5, strd_wtsi= 1.d00)
       parameter (hfac_h=1.00d0, hfac_l=1.00d0)
@@ -108,7 +110,18 @@ c
 c iad_up_wtsi fixed at 1000 (no explicit component)
 c
          iad_up_wtsi = 1000
-         read(inpt,*) nfree
+         read(inpt,'(a80)') wdd1
+         do i = 1,80
+          if(wdd1(i:i).eq.'a'.or.wdd1(i:i).eq.'A') then
+           zonewt_flag = .true.
+          endif
+         enddo
+         if(zonewt_flag) then
+          nfree = 1
+         else
+          backspace inpt
+          read(inpt,*) nfree
+         endif
          if(.not.allocated(izone_free)) then
             allocate(izone_free(max(1,nfree)))
             allocate(ifreef(max(1,nfree)))
@@ -128,9 +141,17 @@ c            allocate(dpcef(n0))
          allocate(head12(n0,2))
          allocate(dzrg(n0))
          backspace inpt
-         read(inpt, *, end=555, err=555) nfree, 
+          if(zonewt_flag) then
+           izone_free(1) = -1
+           read(inpt, *, end=555, err=555) dum_wtsi,
+     &        head_tol,rlptol,zfac_ani,head_id,sattol
+          else
+           read(inpt, *, end=555, err=555) nfree, 
      &        (izone_free(i),i=1,nfree),head_tol,rlptol,zfac_ani,
-     &        head_id,sattol
+     &        head_id,sattol          
+          endif
+
+         
 
          if(abs(zfac_ani).lt.1.0d0) then
 	    zfac_ani = 1.0d0
@@ -156,13 +177,19 @@ c     Loop over each zone for determining izone_free array
          izone_free_nodes=0
 c     set number of partialy filled cells = 0
          ifree1 = 0
-         do izone = 1, nfree
+         if(zonewt_flag) then
+           do inode = 1, n0          
+              izone_free_nodes(inode) = 1              
+            end do
+         else
+          do izone = 1, nfree
             do inode = 1, n0
                if(izonef(inode).eq.izone_free(izone)) then
                   izone_free_nodes(inode) = izone_free(izone)
                end if
             end do
-         end do
+          end do
+         endif
     
 c     
 

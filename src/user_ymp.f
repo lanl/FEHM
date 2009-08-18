@@ -115,6 +115,8 @@ C***********************************************************************
       real*8 total_recharge, total_recharge_in, total_recharge1
       real*8 total_recharge2, tol, fluxd, vol, frac, shut_time
       real*8 rzw, sww, scc
+      integer iuser1,iuser2,icount
+      real*8 permxd
       real*8, allocatable :: sk_save(:)
       real*8, allocatable :: sk_save1(:)
       real*8, allocatable :: sk_save2(:)
@@ -1193,6 +1195,24 @@ c
          close(ifile1)
          close(ifile2)
          stop
-
+      case(455)
+c read permeability from daniil and out in permeability file   
+        write(*,*) '>>>> enter name of raw permeability file <<<<<<'
+        read(*,'(a80)') dum_user   
+        iuser1 = open_file(dum_user,'old')
+        iuser2 = open_file('perm_fehm_ner.macro','unknown')
+        icount = 0
+        write(iuser2,'(a4)') 'perm'
+455     continue   
+        read(iuser1,*,end = 456) permxd
+        icount = icount + 1
+        write(iuser2,457) icount,icount,1, permxd,permxd,permxd
+        go to 455
+456     continue  
+        write(iuser2,*) ' '
+        write(*,*) 'perm data read and transformed, n = ',icount
+        pause
+        stop
+457     format(3(1x,i8),1p,3(1x,g14.6))     
       end select
       end

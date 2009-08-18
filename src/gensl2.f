@@ -389,6 +389,7 @@ c
       use comdti
       use comai
       use comwt
+      use comriv
       use comwellphys
       implicit none
 
@@ -428,7 +429,7 @@ c     zero out arrays
       else
          nsizea=nsizea1
          allocate(dum(4*neq))
-      endif
+      endif    
 c
       a=0.0d0
 c
@@ -480,7 +481,11 @@ c no accumulation term in the wellbore
                call geneq2_rich(id)
                call add_accumulation(id)	
             else if(ifree.ne.0) then
+              if(iriver.eq.2.and.id.gt.neq_primary) then
+               call geneq2_wtsi_well(id)
+              else
                call geneq2_wtsi(id)
+              endif
                call add_accumulation(id)
 c set updates to zero if s=0 and all neighbors are s=0
                if(dry_zone(id).eq.0.and.sk(id).eq.0.0) then	
@@ -506,7 +511,11 @@ c do we need to make sure this is a wtsi node?
             endif
          endif
  101  continue
-
+c          do i = 7050,7066
+c           write(*,*) 'i = ', i , phi(i),bp(i)
+c          enddo 
+c          pause 
+         
 c     
 c
 c add correction for saturations over 1.0
@@ -679,7 +688,7 @@ c
             np=nelmdg(id)
             i1=nelm(id)+1
             i2=nelm(id+1)
-            apiv=a(np-neqp1+nmat(1))+adiag_tol
+            apiv=a(np-neqp1+nmat(1))+adiag_tol     
             do ijj=i1,i2
                ij=nelm(ijj)
                aij=a(ijj-neqp1+nmat(1))/apiv
@@ -691,9 +700,11 @@ c
                ibp_max = id
 	    endif
             bp(id+nrhs(1))=bp(id+nrhs(1))/apiv
+            
             fdum2=fdum2+bp(id+nrhs(1))*bp(id+nrhs(1))
          enddo
-
+       
+           
          if(fdum2.eq.0.0) go to 999
 
 
@@ -931,6 +942,7 @@ c
  999  continue
       
       deallocate(dum)
+
       
       return
       end

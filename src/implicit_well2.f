@@ -757,14 +757,9 @@ c set peaceman type connection to primary grid block
 c only for nodes that represent segment ends
 c     
        do ii = 1, n_well_prod
-          do j = neq_primary+1,neq
-       	   if(izonef(j).eq.izlabelp(ii)) then
-       	    i = j
-       	    kk = j - neq_primary
-       	    go to 201
-       	   endif
-       	  enddo
-       	  stop
+       	  i = iwell_end(ii)
+       	  j = i
+       	  kk = i - neq_primary     	  
 201     nodew = nwell2_prim(ii)
              delx = delxw2(ii)
              dely = delyw2(ii)
@@ -802,12 +797,13 @@ c for a producer set perm x (connection to primary grid) = 1.
    	      pnx(i) = well_connect_fac(ii)   	  
 	 enddo
          deallocate(idum,dum,istrw_new,ncon_new,sx_new)  
-         deallocate(seg_cos,idir_seg,iwdum)
+         deallocate(seg_cos,idir_seg,iwdum,iwell_end)
          deallocate(delxw2,delyw2,delzw2)   
 	else if(iflg.eq.5) then
 c
 c assign zone number to potential source/sink nodes   
 c     
+       allocate(iwell_end(n_well_prod))
        do ii = 1, n_well_prod
 	   xc = coor_well2(ii,1)
 	   yc = coor_well2(ii,2)
@@ -816,6 +812,7 @@ c
 	    dis = abs(cord(j,1)-xc)+abs(cord(j,2)-yc)+abs(cord(j,3)-zc)
 	    if(dis.lt.area_tol) then
 	     izonef(j) = izlabelp(ii)
+	     iwell_end(ii) = j
 	    endif
 	   enddo
 	 enddo          

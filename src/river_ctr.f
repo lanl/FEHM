@@ -129,7 +129,12 @@ c RJP 05/21/08 added following
       integer ic1
 c     RJP 1/9/07 changed following
       save n_ncon, river_zone, iexpfl, neq_new, well_root, iroot, inwel
+           
+      real*8 well_connect_tol
+      parameter(well_connect_tol = 1.d-30)
+      
       maxlay = 300
+
 c     
 C     
 C#######################################################################
@@ -345,7 +350,9 @@ c
      &			coor_well2(ii,1),coor_well2(ii,2),coor_well2(ii,3),
      &          well_connect_fac(ii),izlabelp(ii)
                 iwell_prod(i) = ii   
-                well_connect_fac(ii) = abs(well_connect_fac(ii))
+                well_connect_fac(ii) = 
+     &            max(abs(well_connect_fac(ii)),well_connect_tol)
+                
              enddo
              read(inpt,*) n_well_seg
 	       allocate(iwell_seg(n_well_seg,2))
@@ -354,7 +361,7 @@ c
 	       allocate(izlabels(n_well_seg))		       
              do i = 1,n_well_seg
 	        read(inpt,*) j,iwell_seg(j,1),iwell_seg(j,2),
-     &			well_rad(j),well_dz(j),izlabels(i)	   
+     &			well_rad(j),well_dz(j),izlabels(j)	   
              enddo
             continue
             else if(iriver.eq.3) then
