@@ -385,6 +385,34 @@ c**** read startup parameters ****
       ipermstr6 = 0
       ipermstr8 = 0
       ipermstr11 = 0
+
+c zvd 17-Aug-09 move boun flag initializations here
+      iqa=0
+      iqw=0
+      iqf=0
+      iqenth=0
+      isatb=0
+      ienth=0
+      itempb=0
+      ipresa=0
+      ipresw=0
+      imped=0
+      its=0
+      ifd=0
+      isf=0
+      ixperm = 0
+      iyperm = 0
+      izperm = 0
+c new initial value stuff 12/3/98 GAZ
+      itempb_ini=0
+      ipresa_ini=0
+      ipresw_ini=0
+      isatb_ini=0
+      icm=0
+      iwght = 1
+      isty = 0
+c zvd 17-Aug-09 move boun flag initializations here
+
       if(allocated(izone_free_nodes)) izone_free_nodes = 0
       if(allocated(move_type)) move_type=0
       compute_flow = .true.
@@ -639,30 +667,6 @@ c
 c     check for read from other file
          call start_macro(inpt, locunitnum, macro)
 
-         iqa=0
-         iqw=0
-         iqf=0
-         iqenth=0
-         isatb=0
-         ienth=0
-         itempb=0
-         ipresa=0
-         ipresw=0
-         imped=0
-         its=0
-         ifd=0
-         isf=0
-         ixperm = 0
-         iyperm = 0
-         izperm = 0
-c new initial value stuff 12/3/98 GAZ
-         itempb_ini=0
-         ipresa_ini=0
-         ipresw_ini=0
-         isatb_ini=0
-         icm=0
-         iwght = 1
-         isty = 0
  31      continue
 c         read(locunitnum,'(a80)') wdd1
 c         if(.not. null1(wdd1)) then

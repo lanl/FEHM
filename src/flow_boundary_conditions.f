@@ -149,7 +149,7 @@ c
             sourcef_type = 0
          endif
          if(ifd.ne.0) then
-            if (.not. allocated (drain)) allocate(drain(n0))                  
+            if (.not. allocated (drain)) allocate(drain(n0))
             if (.not. allocated (drainar)) 
      .           allocate(drainar(maxtimes,maxmodel))   
             if (.not. allocated (drainar_type)) 
@@ -339,8 +339,8 @@ c always allocate space for timestep
             node_ch_model_type = 0
          endif
 c
-c set model number to zero
-         mmodel=0
+c set model number to zero (initialize in data)
+c         mmodel=0
          
       else if(iflg.eq.1) then
 c

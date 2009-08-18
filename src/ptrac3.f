@@ -310,13 +310,13 @@ c izone_free_nodes(i) = 3, fully unsaturated wtsi node
                      current_node = ijkv(np1)
                      call wtsi_ptrac3(np1)
 c Output new location if the particle has been moved
-                     if (ioutt(np1) .ne. -1) 
+                     if (ioutt(np1) .ne. -1 .and. iprto .ne. 0) 
      &                    call write_path_info
                   end if
                end if
                if (.not. pstart_out(np1) .and. ioutt(np1) .ne. -1) then
                   pstart_out(np1) = .true.
-                  call write_path_info
+                  if (iprto .ne. 0) call write_path_info
                end if                                
             else
                ioutt(np1) = -1

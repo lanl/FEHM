@@ -465,6 +465,7 @@ C***********************************************************************
       use comsptr
       use comwt
       use comxi
+      use comsi
       use davidi
       use property_interpolate
 c     added combi and comflow to get izonef and a_axy arrays
@@ -516,6 +517,11 @@ c*** water table rise modification
       integer is_ch
       integer :: is_ch_t = 0
       integer :: out_flag = 0
+
+      save flowflag, ichk, tassem, tasii, tscounter,
+     &     contr_riptot, tims_save, day_saverip, in3save,
+     &     water_table_old
+
       if(method.eq.2) then
 c	When run from Goldsim, the normal fehm screen output gets
 c	written to fehmn.log instead by opening unit 6 as a file
@@ -594,6 +600,9 @@ c     Initialize
 c*** water table rise modification
          water_table_old = -1.d+10
 c*** water table rise modification
+c bhl_5/15/08
+         ipmbal = 0
+c bhl_5/15/08
 
 c     Increase counter for simulation number
 
@@ -677,10 +686,14 @@ c**** call to set up area coefficients for md nodes
          call md_nodes(6,0,0)
 c**** call data checking routine ****
          call datchk
-c
+c gaz 050809 moved to startup
 c calculate initial stress field and displacements
 c 
-         call stress_uncoupled(1)
+c         call stress_uncoupled(1)
+c 
+c reset boundary conditions for principal stresses (fraction of lithostatic)
+c
+c         call stressctr(3,0) 
 c         
 	 if(ico2.lt.0) then
             if (iout .ne. 0) write(iout,834) ifree1
@@ -708,7 +721,18 @@ c     rip avs output flag  - initialize
 !        open(isptr1, file = nmfil(17), status = cstats(17))
 !        open(isptr2, file = nmfil(18), status = cstats(18))
 !        open(isptr3, file = nmfil(19), status = cstats(19))
-            call ptrac1
+c s kelkar may 20 09 moved call to load_omr_flux_array from ptrac1 here
+c s kelkar may 28 09 moved call to init_sptr_params from ptrac1 here
+c where ptrac1 used to be called
+            call init_sptr_params
+            if (.not. compute_flow) then
+               if (.not. sptr_exists) call load_omr_flux_array
+               if(.not.random_flag) then
+c                  if(allocated(sx)) deallocate(sx)
+c                  if(allocated(istrw)) deallocate(istrw)
+               end if
+            end if
+c            call ptrac1
          endif
 
 c     If block only entered if the code is being called to 
@@ -727,6 +751,11 @@ c  change to 4 in new version of rip
 
 c  stop simulation after stress calc for certain stress input
          if(istrs.ne.0.and.istrs_coupl.eq.0) go to 170
+c set up time-spaced coupling         
+         if(istrs_coupl.eq.-4) then
+           timestress0 = days
+           timestress = timestress0 + daystress
+         endif
 c Before the time step loop create the partitions for zones
 
          call paractr(1)
@@ -783,8 +812,22 @@ c
 cHari 3/1/07
 c*** water table rise modification
             water_table_old = in(7)
-c*** water table rise modification
+c*** adjust timestep size
             call timcrl
+c
+c  manage the stress calls when ihms = istrs_coupl = -4
+c
+           istresscall = 0
+c           
+           if(ihms.eq.-4) then
+            if(days.ge.timestress) then
+             istrs_coupl = -3
+             timestress0 = timestress
+             timestress = timestress0 + daystress
+            else
+             istrs_coupl = ihms
+            endif
+           endif
 
 c     Call evaporation routine if this is an evaporation problem
             if (evaporation_flag) call evaporation(2)
@@ -931,6 +974,8 @@ c**** solve for heat and mass transfer solution ****
                   if (iptty .gt. 0)  write(iptty, 6030) trim(nmfil(7))
  6030             format(/, 1x, '**** allotted time gone, terminating ',
      *                 'run : restart = ', a, ' ****')
+c Make sure fin file is written if we are stopping
+                  if (isave .ne. 0) call diskwrite
 
                   go  to  170
                
@@ -1074,8 +1119,9 @@ c                  pho (ja) = phi(ja)
 c save flow residuals
                   call stressctr(17,0) 
 c**** update stress arrays ****
-c displacements
+c solve for displacements
                   if(istrs_coupl.eq.-3) then
+                     istresscall = 1
                      call stress_uncoupled(3)
 c update volume strains
                      call stressctr(6,0)
@@ -1090,8 +1136,14 @@ c update volume strains
                   call stressctr(-6,0)
 c calculate stresses
                   call stressctr(13,0)	
-c update permeabilities (explicit)
-                  call stress_perm(1,0)			            
+c allocate memory for permeability update if necessay
+                  call stress_perm(-1,0)
+c update permeabilities (explicit)                  	
+                  call stress_perm(1,0)		
+c deallocate memory for permeability update if necessay
+                  call stress_perm(-2,0)                  	            
+c update peaceman term for wellbore pressure
+                   if(isubwd.ne.0)call wellimped_ctr(1)                		            
                endif 
                do ja = 1,n
                   to (ja) = t(ja)
@@ -1209,7 +1261,8 @@ c     &           dabs(inflow_thstime), dabs(inen_thstime))
             else
                call plot (1, tmavg, pravg)
             end if
-
+c**** call wellbore pressures
+           if(isubwd. ne.0) call wellimped_ctr(4)
 c check for steady state solution
             if(isteady.ne.0) then
                call steady(2,dabs(inflow_thstime),dabs(inen_thstime))
@@ -1386,6 +1439,9 @@ c
 c calculate final stress field and displacements
 c output contour information
 c 
+         if(istresscall.eq.0.and.ihms.eq.-4)then
+           istrs_coupl = -2
+         endif 
          call stress_uncoupled(2)
 
 c     New convention is to make days the - of its value to
@@ -1487,6 +1543,8 @@ c     Subroutine riptime - scope is local to fehmn
       character*23 string_call
       character*10 ffname
       character*5 ch5
+
+      wtrise_flag = .false.
       if(in(1).ne.0.) then
          tims = abs(in(1))*365.25
 
@@ -1505,12 +1563,10 @@ c     flow field is being read in
             tscounter = -tscounter
 
 c*** water table rise modification
-            if(abs(in(7)-water_table_old).gt.1.d-6) then
-               water_table = in(7)
-               wtrise_flag = .true.
-            else
-               wtrise_flag = .false.
-            end if
+c zvd 21-Jul-08 Always make water table adjustment when a new flow 
+c field is read
+            water_table = in(7)
+            wtrise_flag = .true.
 c*** water table rise modification
 
 c     Define file name except for the number

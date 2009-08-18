@@ -835,7 +835,7 @@ c**** read in sources and sinks - time dependent mode ****
      &              boun_out = .false.
             end if
          end if
-         call flow_boundary_conditions(0)
+         if (mmodel .eq. 0) call flow_boundary_conditions(0)
          call flow_boundary_conditions(1)
 
       else if (macro .eq. 'flxn') then

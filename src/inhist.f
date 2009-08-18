@@ -44,6 +44,7 @@
 
       use comai
       use combi, only : prnt_flxzvar
+      use comco2, only : icarb
       use comdi
       use comsi, only : ihms
       use comxi
@@ -53,13 +54,12 @@
       implicit none
 
       character*5 flxzone
-      character*8 hissfx, trcsfx
+      character*8 hissfx, trcsfx, chtmp(3)
       character*32 cmsg(4), cdum
       character*80 chdum
       character*120 fname, root
       logical null1, opend
       integer i, iroot, msg(4), imsg(4), nwds, ishisfzz, ishiscfzz
-      integer ishiscs
       real*8 xmsg(4)
 
       hist_flag = .TRUE.
@@ -76,6 +76,8 @@
       histime = 1.e6
 ! Other flags initialized to 0 -> no output
       ishisp = 0
+      ishisp2 = 0
+      ishisp3 = 0
       ishist = 0
       ishishd = 0
       ishiss = 0
@@ -87,8 +89,9 @@
       ishisc = 0
       ishiswc = 0
       ishiscm = 0
+      ishiscmf = 0
+      ishiscmd = 0
       ishiscfz = 0
-      ishiscs = 0
       ishiscsl = 0
       ishiscsg = 0
       ishisdisx = 0
@@ -208,26 +211,14 @@
             end if
          case ('mpa', 'MPa', 'MPA','pre','PRE')
 ! Output pressures in MPa
-            fname =  root(1:iroot) // '_pres' // hissfx
-            ishisp = ishis + 100
-            open (unit=ishisp, file=fname, form='formatted')
-            select case (form_flag)
-            case (0)
-               write(ishisp, 6000) verno, jdate, jtime, trim(wdd)
-            case (1)
-               write(ishisp, 6005) verno, jdate, jtime
-            end select
-            if (out_zones)  then
-               ozflag = ozflag + 1
-               pflag = ozflag
-            end if
             call parse_string(chdum,imsg,msg,xmsg,cmsg,nwds)
             if (nwds .gt. 1) then
 ! Determine which pressures to output
                nwd : select case (nwds)
                case (2)
-                  if (cmsg(2)(1:3) .eq. 'tot' .or. 
-     &                 cmsg(2)(1:3) .eq. 'TOT' ) then
+                  if (cmsg(2)(1:3) .eq. 'tot' .or. cmsg(2)(1:3) .eq. 
+     &                 'TOT' .or. cmsg(2)(1:3) .eq. 'wat' .or.
+     &                 cmsg(2)(1:3) .eq. 'WAT' ) then
 ! Output total/water pressure
                      pres_flag = 1
                   else if ((cmsg(2)(1:3) .eq. 'air' .or. cmsg(2)(1:3) 
@@ -238,6 +229,10 @@
      &                    .eq. 'CAP') .and. ico2 .gt. 0) then
 ! Output capillary pressure
                      pres_flag = 5
+                  else if ((cmsg(2)(1:3) .eq. 'co2' .or. cmsg(2)(1:3) 
+     &                    .eq. 'CO2') .and. icarb .ne. 0) then
+! Output CO2 pressure
+                     pres_flag = 8
                   else
                      pres_flag = 1
                      if (iout .ne. 0) write(iout, 6030)
@@ -293,7 +288,10 @@
                end select nwd
             else
 ! Defaults determined from run parameters
-               if (ico2 .gt. 0) then
+               if (icarb .ne. 0) then
+! Output CO2 and water pressure
+                  pres_flag = 9
+               else if (ico2 .gt. 0) then
 ! Output total, air/vapor and capillary pressure
                   pres_flag = 3
                else
@@ -306,6 +304,77 @@
                   end if
                end if
             end if
+            ishisp = ishis + 100
+            chtmp = ''
+            select case (pres_flag)
+            case (1)
+! One output variable, total/water pressure
+               chtmp(1) = '_presWAT'
+            case (2)
+! Two output variables, total/water and air/vapor pressure
+               chtmp(1) = '_presWAT'
+               chtmp(2) = '_presAIR'
+            case (3)
+! Three output variables (total, air/vapor and capillary pressure)
+               chtmp(1) = '_presWAT'
+               chtmp(2) = '_presVAP'
+               chtmp(3) = '_presCAP'
+            case (4)
+! One output variable, air/vapor pressure
+               chtmp(1) = '_presAIR'
+            case (5)
+! One output variable, capillary pressure
+               chtmp(1) = '_presCAP'
+            case (6)
+! Two output variables, total/water and capillary pressure
+               chtmp(1) = '_presTOT'
+               chtmp(2) = '_presCAP'
+            case (7)
+! Two output variables, air/vapor and capillary pressure
+               chtmp(1) = '_presVAP'
+               chtmp(2) = '_presCAP'
+            case (8)
+! One output variable, CO2 pressure
+               chtmp(1) = '_presCO2'
+            case (9)
+! Two output variables, CO2 and water pressure
+               chtmp(1) = '_presCO2'
+               chtmp(2) = '_presWAT'
+            end select
+            fname =  root(1:iroot) // trim(chtmp(1)) // hissfx
+            open (unit=ishisp, file=fname, form='formatted')
+            if (pres_flag .ne. 1 .and. pres_flag .ne. 4 .and.
+     &           pres_flag .ne. 5 .and. pres_flag .ne. 8) then
+               ishisp2 = ishisp + 1
+               fname = ''
+               fname =  root(1:iroot) // trim(chtmp(2)) // hissfx
+               open (unit=ishisp2, file=fname, form='formatted')
+               if (pres_flag .eq. 3) then
+                  ishisp3 = ishisp2 + 1
+                  fname = ''
+                  fname =  root(1:iroot) // trim(chtmp(3)) // hissfx
+                  open (unit=ishisp3, file=fname, form='formatted')
+               end if
+            end if
+            select case (form_flag)
+            case (0)
+               write(ishisp, 6000) verno, jdate, jtime, trim(wdd)
+               if (ishisp2 .ne. 0) write(ishisp, 6000) verno, jdate, 
+     &              jtime, trim(wdd)
+               if (ishisp3 .ne. 0) write(ishisp, 6000) verno, jdate, 
+     &              jtime, trim(wdd)
+            case (1)
+               write(ishisp, 6005) verno, jdate, jtime
+               if (ishisp2 .ne. 0) write(ishisp2, 6005) verno, jdate, 
+     &              jtime
+               if (ishisp3 .ne. 0) write(ishisp3, 6005) verno, jdate, 
+     &              jtime
+            end select
+            if (out_zones)  then
+               ozflag = ozflag + 1
+               pflag = ozflag
+            end if
+
          case ('deg', 'DEG', 'tem', 'TEM')
 ! Output temperature in degrees C
             fname =  root(1:iroot) // '_temp' // hissfx
@@ -534,26 +603,115 @@
                ozflag = ozflag + 1
             end if
 ! RJP 08/09/07 added below for outputing CO2 related states
-! RJP added below for outputing CO2 mass
-         case ('co2', 'CO2')
-! Output CO2 mass in kg
-            fname =  root(1:iroot) // '_co2m' // hissfx
-            ishiscm = ishis + 210
-            open (unit=ishiscm, file=fname, form='formatted')
-            select case (form_flag)
-            case (0)
-               write(ishiscm, 6000) verno, jdate, jtime, trim(wdd)
-            case (1)
-               write(ishiscm, 6005) verno, jdate, jtime
-            end select
-            if (out_zones) then
-               ozflag = ozflag + 1
-               carbflag = ozflag
+         case ('co2', 'CO2', 'sco', 'SCO')
+            if (chdum(1:3) .eq. 'sco' .or. chdum(1:3) .eq. 'SCO') then
+! recognize old keyword and replace with new for saturation output
+               chdum = ''
+               chdum = 'co2s'
+            end if               
+            if (icarb .ne. 0 ) then
+               select case (chdum(4:4))
+               case ('m', 'M')
+                  select case (chdum(5:5))
+                  case ('t','T')
+! Output total CO2 mass in kg
+                     ishiscm = ishis + 210
+                  case ('f','F')
+! Output free CO2 mass fraction
+                     ishiscmf = ishis + 211
+                  case ('d','D')
+! Output dissolved CO2 mass fraction
+                     ishiscmd = ishis + 212
+                  case default
+                     ishiscm = ishis + 210
+                     ishiscmf = ishis + 211
+                     ishiscmd = ishis + 212
+                  end select
+                  if (ishiscm .ne. 0) then
+                     fname =  root(1:iroot) // '_co2m' // hissfx
+                     open (unit=ishiscm, file=fname, form='formatted')
+                     select case (form_flag)
+                     case (0)
+                        write(ishiscm, 6000) verno, jdate, jtime, 
+     &                       trim(wdd)
+                     case (1)
+                        write(ishiscm, 6005) verno, jdate, jtime
+                     end select
+                     if (out_zones) then
+                        ozflag = ozflag + 1
+                        carbflag = ozflag
+                     end if
+                  end if
+                  if (ishiscmf .ne. 0) then
+                     fname =  root(1:iroot) // '_co2mf' // hissfx
+                     open (unit=ishiscmf, file=fname, form='formatted')
+                     select case (form_flag)
+                     case (0)
+                        write(ishiscmf, 6000) verno, jdate, jtime, 
+     &                       trim(wdd)
+                     case (1)
+                        write(ishiscmf, 6005) verno, jdate, jtime
+                     end select
+                  end if
+                  if (ishiscmd .ne. 0) then
+                     fname =  root(1:iroot) // '_co2md' // hissfx
+                     open (unit=ishiscmd, file=fname, form='formatted')
+                     select case (form_flag)
+                     case (0)
+                        write(ishiscmd, 6000) verno, jdate, jtime, 
+     &                       trim(wdd)
+                     case (1)
+                        write(ishiscmd, 6005) verno, jdate, jtime
+                     end select
+                  end if
+               case ('s', 'S')
+! Output CO2 saturations
+                  select case (chdum(5:5))
+                  case ('l', 'L')
+! Liquid CO2
+                     ishiscsl = ishis + 230
+                  case ('g', 'G')
+! Gaseous CO2
+                     ishiscsg = ishis + 231
+                  case default
+! Both liquid and gas
+                     ishiscsl = ishis + 230
+                     ishiscsg = ishis + 231
+                  end select
+                  if (ishiscsl .ne. 0) then
+                     fname =  root(1:iroot) // '_co2sl' // hissfx
+                     open (unit=ishiscsl, file=fname, form='formatted')
+                     select case (form_flag)
+                     case (0)
+                        write(ishiscsl, 6000) verno, jdate, jtime, 
+     &                       trim(wdd)
+                     case (1)
+                        write(ishiscsl, 6005) verno, jdate, jtime
+                     end select
+                  end if
+                  if (ishiscsg .ne. 0) then
+                     fname =  root(1:iroot) // '_co2sg' // hissfx
+                     open (unit=ishiscsg, file=fname, form='formatted')
+                     select case (form_flag)
+                     case (0)
+                        write(ishiscsg, 6000) verno, jdate, jtime, 
+     &                       trim(wdd)
+                     case (1)
+                        write(ishiscsg, 6005) verno, jdate, jtime
+                     end select
+                  end if
+               case default
+                  if (iout .ne. 0) write(iout, 6066) trim(chdum)
+                  if (iptty .ne. 0) write(iptty, 6066) trim(chdum)
+               end select
+            else
+               if (iout .ne. 0) write(iout, 6065)
+               if (iptty .ne. 0) write(iptty, 6065)               
             end if
 ! RJP 07/05/07 added below for outputing CO2 flux
          case ('cfl', 'CFL')
 ! Output CO2 zone fluxes in kg/s
-            if (nflxz .ne. 0) then
+            if (nflxz .ne. 0 .and. icarb .ne. 0) then
                ishiscfz = ishis + 700
                do i = 1, nflxz
                   fname = ''
@@ -572,68 +730,15 @@
                   end select
                end do
             else
-               if (iout .ne. 0) write(iout, 6050)
-               if (iptty .ne. 0) write(iptty, 6050)
+               if (icarb .eq. 0) then
+                  if (iout .ne. 0) write(iout, 6065)
+                  if (iptty .ne. 0) write(iptty, 6065)
+               end if              
+               if (nflxz .eq. 0) then
+                  if (iout .ne. 0) write(iout, 6050)
+                  if (iptty .ne. 0) write(iptty, 6050)
+               end if
             end if
-         case ('sco', 'SCO')
-! Output CO2 saturations
-            select case (chdum(4:4))
-            case ('l', 'L')
-! Liquid CO2
-               ishiscsl = ishis + 230
-               fname =  root(1:iroot) // '_co2sl' // hissfx
-               open (unit=ishiscsl, file=fname, form='formatted')
-               select case (form_flag)
-               case (0)
-                  write(ishiscsl, 6000) verno, jdate, jtime, trim(wdd)
-               case (1)
-                  write(ishiscsl, 6005) verno, jdate, jtime
-               end select
-c               if (out_zones) then
-c                  ozflag = ozflag + 1
-c                  carbflag2 = ozflag
-c               end if
-            case ('g', 'G')
-! Gaseous CO2
-               ishiscs = ishis + 231
-               fname =  root(1:iroot) // '_co2sg' // hissfx
-               open (unit=ishiscsg, file=fname, form='formatted')
-               select case (form_flag)
-               case (0)
-                  write(ishiscsg, 6000) verno, jdate, jtime, trim(wdd)
-               case (1)
-                  write(ishiscsg, 6005) verno, jdate, jtime
-               end select
-c               if (out_zones) then
-c                  ozflag = ozflag + 1
-c                  carbflag2 = ozflag
-c               end if
-            case default
-! Both liquid and gas
-               do i = 0, 1
-                  select case (i)
-                  case (0)
-                     fname =  root(1:iroot) // '_co2sl' // hissfx
-                     ishiscsl = ishis + 230
-                     ishiscs = ishiscsl
-                  case (1)
-                     fname =  root(1:iroot) // '_co2sg' // hissfx
-                     ishiscsg = ishis + 231
-                     ishiscs = ishiscsg
-                  end select
-                  open (unit=ishiscs, file=fname, form='formatted')
-                  select case (form_flag)
-                  case (0)
-                     write(ishiscs, 6000) verno, jdate, jtime, trim(wdd)
-                  case (1)
-                     write(ishiscs, 6005) verno, jdate, jtime
-                  end select
-c               if (out_zones) then
-c                  ozflag = ozflag + 1
-c                  carbflag2 = ozflag
-c               end if
-               end do
-            end select
          case ('dis', 'DIS')
 ! Output displacements in m
             select case (chdum(4:4))
@@ -909,8 +1014,12 @@ c               end if
      &     'pressure will be output')
  6050 format('Zone fluxes not specified for the problem, ', 
      &     'will not be output')
- 6060 format('Transport not specified for the problem,',      
+ 6060 format('Transport not specified for the problem, ',      
      &     'will not be output')
+ 6065 format('CO2 not specified for the problem, ',      
+     &     'will not be output')
+ 6066 format('Invalid CO2 output option, ', a,      
+     &     'no output will be generated')
  6070 format('2-D problem, ', a, ' will not be output')
  6080 format('ihms =', i3, ' Time history for ', a, 
      & ' will not be output')
