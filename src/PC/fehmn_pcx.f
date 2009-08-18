@@ -1128,9 +1128,9 @@ c allocate memory for permeability update if necessay
 c update permeabilities (explicit)                  	
                   call stress_perm(1,0)		
 c deallocate memory for permeability update if necessay
-                  call stress_perm(-2,0)                  	            
+                  call stress_perm(-2,0)
 c update peaceman term for wellbore pressure
-                   if(isubwd.ne.0)call wellimped_ctr(1)                		            
+                   if(isubwd.ne.0)call wellimped_ctr(1)
                endif 
                do ja = 1,n
                   to (ja) = t(ja)
@@ -1575,8 +1575,6 @@ c     file name for #1 is ff00001.ini, etc.
             end do
 
             if (iptty .gt. 0) write(iptty,*) 
-     2           'Reading a new restart file: ', ffname
-            write(iptty,*) 
      2           'Reading a new restart file: ', ffname
 
 

@@ -651,6 +651,8 @@ c zero out include comdi
       irlp=1
       itrc=0
       itrcdsp=0
+c zvd 17-Aug-09 initialize mmodel here
+      mmodel=0     
       nskw=0
       nskw2=0
       a1adfl=0
