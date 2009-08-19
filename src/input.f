@@ -677,7 +677,7 @@ c**** thermal conductivity data ****
          call incond
 
       else if (macro .eq. 'conn') then
-c**** thermal conductivity data ****
+c**** connections_list ****
          connect_out = .true.
 
       else if (macro .eq. 'cont') then
