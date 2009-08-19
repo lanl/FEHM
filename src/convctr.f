@@ -144,7 +144,7 @@ c     Loop over each zone for determining izone_conv array
      &        izone_conv_nodes(1:nall-n0)
 
               deallocate(izone_conv,iconvf,cordc,varc,conv1)
-              deallocate(conv2,idirc,izone_conv_nodes,headconv_val)               
+              deallocate(conv2,idirc,izone_conv_nodes,headconv_val)    
 
               allocate(izone_conv(max(1,nconv)))
               allocate(iconvf(max(1,nconv)))
@@ -202,7 +202,7 @@ c
      &     izone_conv(izone)) then
 	     idir = max(1,idirc(izone))
 	     dist = cord(inode,idir)-cordc(izone)
-		 headconv = headconv_val(izone)
+		   headconv = headconv_val(izone)
 	      if(iconvf(izone).eq.1) then
 	       if(pho(inode).le.cord(inode,igrav)) then
 	           pho(inode)= conv1(izone)
