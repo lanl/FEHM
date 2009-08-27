@@ -260,6 +260,9 @@ c**** read flow data ****
          if (sktmp(i) .ne. default(1) .or. esktmp(i) .ne. default(2)
      *        .or. aiped(i) .ne. default(3)) then
             esk(i) = esktmp(i)
+            if(esk(i).gt.0.and.igrav.ne.0) then
+             esk(i) = esktmp(i)-grav*cord(i,igrav)
+            endif
             if (abs(aiped(i)) .lt. zero_t) then
                sk(i) = sktmp(i)
                ka(i) = 1

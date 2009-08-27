@@ -544,7 +544,11 @@ c pure water/heat
                if(idum(i).ne.0) then
                   if(ienth.ne.0) then
                      if(enth(i).ne.0.0) then
-                        esk(i)=enth(i)
+                        if(enth(i).gt.0.and.igrav.ne.0) then
+                          esk(i) = enth(i)-grav*cord(i,igrav)
+                        else
+                          esk(i)=enth(i)
+                        endif
                      endif
                   endif
                endif
@@ -623,7 +627,11 @@ c air/water/heat
                if(idum(i).ne.0) then
                   if(ienth.ne.0.0) then
                      if(enth(i).ne.0.0) then
+                       if(enth(i).gt.0.0.and.igrav.ne.0) then
+                        esk(i)=enth(i)-grav*cord(i,igrav)
+                       else
                         esk(i)=enth(i)
+                       endif
                      endif
                   endif
                endif
@@ -970,7 +978,11 @@ c     & ,n,ico2,idof
                if(idum(i).ne.0) then
                   if(ienth.ne.0) then
                      if(enth(i).ne.0.0) then
+                       if(enth(i).gt.0.0.and.igrav.ne.0) then
+                        esk(i)=enth(i)-grav*cord(i,igrav)
+                       else
                         esk(i)=enth(i)
+                       endif
                      endif
                   endif
                endif

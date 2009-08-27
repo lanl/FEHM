@@ -89,6 +89,9 @@ c**** read flow data ****
      *        .or. aiped(i) .ne. default(3).or.
      *         katmp(i) .ne. default(4)) then
             esk(i) = esktmp(i)
+            if(esk(i).gt.0.and.igrav.ne.0) then
+             esk(i) = esktmp(i)-grav*cord(i,igrav)
+            endif            
             if (katmp(i).eq.1) then
                sk(i) = sktmp(i)
                esk(i) = esktmp(i)

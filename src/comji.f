@@ -216,6 +216,7 @@
       real*8, allocatable ::  t5v(:) 
       real*8, allocatable ::  t6(:) 
       real*8, allocatable ::  t7(:) 
+      real*8, allocatable ::  t7a(:) 
       real*8, allocatable ::  t8(:) 
       real*8, allocatable ::  t9(:) 
       real*8, allocatable ::  t10(:) 

@@ -239,6 +239,9 @@ C***********************************************************************
          kl = jk - ja
          do ij = ja + kl, jc + kl, jd
             esk(ij) = eskd
+            if(esk(ij).gt.0.and.igrav.ne.0) then
+             esk(ij) = eskd-grav*cord(ij,igrav)
+            endif
             if (abs(aiped) .lt. zero_t) then
                sk(ij) = skd
             else

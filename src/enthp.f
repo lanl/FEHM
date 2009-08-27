@@ -219,6 +219,7 @@ C**********************************************************************
       use comii
       use comdti
       use comai
+      use combi
       implicit none
 
       integer mi,iieosd
@@ -226,9 +227,15 @@ C**********************************************************************
       real*8 elta3,elpta,elp2ta,elpt2a,elb0,elpb1,elpb2,elpb3,eltb1
       real*8 eltb2,eltb3,elptb,elp2tb,elpt2b,x,x2,x3,tl2,tl3,enwn1,enwn2
       real*8 enwn3,enwn,enwd1,enwd2,enwd3,enwd,enw
-
+      real*8 p_energy
+c
 c calculates enthalpy as a function of t and p
 c
+      if(igrav.ne.0) then
+       p_energy = -grav*cord(mi,igrav)
+      else
+       p_energy = 0.0d0
+      endif
       psd=ps(mi)
       cprd=cpr(mi)
       tl=td
@@ -272,7 +279,7 @@ c denomenator coefficients
          enwd3=elptb*tl*x+elpt2b*tl2*x+elp2tb*tl*x2
          enwd=enwd1+enwd2+enwd3
          enw=enwn/enwd
-         enthp=enw
+         enthp=enw + p_energy
       endif
       if(psd.eq.0.0.or.idof.le.1) then
          enthp=cprd*tl
