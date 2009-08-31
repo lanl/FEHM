@@ -45,7 +45,7 @@
 
       use comai
       use combi
-      use comco2, only : icarb, denco2h, fl, fg, fw
+      use comco2, only : icarb, denco2h, fl, fg, fw, phico2, xc, yc
       use comdi
       use comdti
       use comfi
@@ -67,7 +67,7 @@
       character*80 title_string, formh_string 
       character*80 form1_string, form2_string, formp_string
       character*110 formz_string
-      character*200 info_string
+      character*500 info_string
       character*90 :: formf_string
       character*28 vt_string
       character*80 formcs_string
@@ -189,100 +189,73 @@ c            write(ishis, '(a4)')  '    '
 
          if (ishisp .ne. 0 ) then
 ! Output pressures in MPa
-            info_string = info_string(ic1:ic2) // 'pressure '
-            ic2 = len_trim(info_string) + 1
             select case (pres_flag)
             case (1)
                title_string = 'Water Pressure (MPa)'
                call plot_header(ishisp,var_num,form2_string)
-            case (2, 6, 7)
-               if (form_flag .eq. 1) then
-                  write (formp_string, 200) 2*m
-               else if (form_flag .eq. 2) then
-                  write (formp_string, 210) 2*m 
-               else
-                   write (formp_string, 220) 2*m
-               end if
-               if (pres_flag .eq. 2) then
-                  title_string = 'Pressure (MPa): Water, Air'
-               else if (pres_flag .eq. 6) then
-                  title_string = 'Pressure (MPa): Total, Capillary'
-               else if (pres_flag .eq. 7) then
-                  title_string = 'Pressure (MPa): Vapor, Capillary'
-               end if
-               deallocate (var_string)
-               allocate (var_string(2*m))
-               j = 0
-               k = 0
-               do i = 1, m
-                  j = k + 1
-                  k = j + 1
-                  if (pres_flag .eq. 2) then
-                     var_string(j) = trim(var_tmp(i)) // ' Pw'
-                     var_string(k) = trim(var_tmp(i)) // ' Pa'
-                  else if (pres_flag .eq. 6) then
-                     var_string(j) = trim(var_tmp(i)) // ' Pt'
-                     var_string(k) = trim(var_tmp(i)) // ' Pc'
-                  else if (pres_flag .eq. 7) then
-                     var_string(j) = trim(var_tmp(i)) // ' Pv'
-                     var_string(k) = trim(var_tmp(i)) // ' Pc'
-                  end if   
-               end do
-               call plot_header(ishisp,2*m,formp_string)
-               deallocate (var_string)
-               allocate (var_string(var_num))
-               var_string = var_tmp
-               if (form_flag .le. 1) then
-                  write (formp_string, 300) 2*m
-               else
-                  write (formp_string, 310) 2*m
-               end if
-            case (3)
-               if (form_flag .eq. 1) then
-                  write (formp_string, 200) 3*m
-               else if (form_flag .eq. 2) then
-                  write (formp_string, 210) 3*m 
-               else
-                   write (formp_string, 220) 3*m
-               end if
-               title_string = 'Pressure (MPa): Total, Vapor, Capillary'
-               deallocate (var_string)
-               allocate (var_string(3*m))
-               j = 0
-               do i = 1, m
-                  j = j + 1
-                  var_string(j) = trim(var_tmp(i)) // ' Pt'
-                  j = j + 1
-                  var_string(j) = trim(var_tmp(i)) // ' Pv'
-                  j = j + 1
-                  var_string(j) = trim(var_tmp(i)) // ' Pc'
-               end do
-               call plot_header(ishisp,3*m,formp_string)
-               deallocate (var_string)
-               allocate (var_string(var_num))
-               var_string = var_tmp
-               if (form_flag .le. 1) then
-                  write (formp_string, 300) 3*m
-               else
-                  write (formp_string, 310) 3*m
-               end if
+               info_string = info_string(ic1:ic2) // 'Water pressure'
+            case (2)
+               title_string = 'Water Pressure (MPa)'
+               call plot_header(ishisp,var_num,form2_string)
+               title_string = 'Air pressure (MPa)'
+               call plot_header(ishisp2,m,form1_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'Water and air pressure'
+           case (3)
+               title_string = 'Water Pressure (MPa)'
+               call plot_header(ishisp,var_num,form2_string)
+               title_string = 'Vapor pressure (MPa)'
+               call plot_header(ishisp2,m,form1_string)
+               title_string = 'Capillary pressure (MPa)'
+               call plot_header(ishisp3,m,form1_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'Water, vapor, and capillary pressure'
             case (4)
                title_string = 'Air Pressure (MPa)'
-               call plot_header(ishisp,var_num,form2_string)
-            case (5)
+               call plot_header(ishisp,m,form1_string)
+                info_string = info_string(ic1:ic2) // 'Air pressure'
+           case (5)
                title_string = 'Capillary Pressure (MPa)'
+               call plot_header(ishisp,m,form1_string)
+                info_string = info_string(ic1:ic2) // 
+     &              'Capillary pressure'
+            case (6)
+               title_string = 'Total Pressure (MPa)'
                call plot_header(ishisp,var_num,form2_string)
+               title_string = 'Capillary pressure (MPa)'
+               call plot_header(ishisp2,m,form1_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'Total and capillary pressure'
+            case (7)
+               title_string = 'Vapor Pressure (MPa)'
+               call plot_header(ishisp,m,form1_string)
+               title_string = 'Capillary pressure (MPa)'
+               call plot_header(ishisp2,m,form1_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'Vapor and capillary pressure'
+            case (8)
+               title_string = 'CO2 Pressure (MPa)'
+               call plot_header(ishisp,m,form1_string)
+               info_string = info_string(ic1:ic2) // 'CO2 pressure'
+            case (9)
+               title_string = 'CO2 Pressure (MPa)'
+               call plot_header(ishisp,m,form1_string)
+               title_string = 'Water pressure (MPa)'
+               call plot_header(ishisp2,m,form1_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'Water and CO2 pressure'
             end select
+            ic2 = len_trim(info_string) + 1
          end if
          if (ishist .ne. 0 ) then
 ! Output temperature in degrees C
-            info_string = info_string(ic1:ic2) // 'temperature '
+            info_string = info_string(ic1:ic2) // 'Temperature '
             ic2 = len_trim(info_string) + 1
             title_string = 'Temperature (C)'
             call plot_header(ishist,var_num,form2_string)
          end if
          if (ishishd .ne. 0 ) then
-            info_string = info_string(ic1:ic2) // 'head '
+            info_string = info_string(ic1:ic2) // 'Head '
             ic2 = len_trim(info_string) + 1
             if (ishishd .eq. ishis + 120) then
 ! Output heads in m
@@ -328,14 +301,14 @@ c            write(ishis, '(a4)')  '    '
          end if
          if (ishiss .ne. 0 ) then
 ! Ouput saturations
-            info_string = info_string(ic1:ic2) // 'saturation '
+            info_string = info_string(ic1:ic2) // 'Saturation '
             ic2 = len_trim(info_string) + 1
             title_string = 'Saturation'
             call plot_header(ishiss, m, form1_string)
          end if
 	   if (ishiswc .ne. 0 ) then
 ! Ouput water content
-            info_string = info_string(ic1:ic2) // 'water_content '
+            info_string = info_string(ic1:ic2) // 'Water_content '
             ic2 = len_trim(info_string) + 1
             title_string = 'Water_content'
             call plot_header(ishiswc, m, form1_string)
@@ -356,14 +329,14 @@ c            write(ishis, '(a4)')  '    '
          end if
          if (ishise .ne. 0 ) then
 ! Ouput enthalpy in MJ/kg
-            info_string = info_string(ic1:ic2) // 'enthalpy '
+            info_string = info_string(ic1:ic2) // 'Enthalpy '
             ic2 = len_trim(info_string) + 1
             title_string = 'Enthalpy (MJ/kg)'
             call plot_header(ishise,var_num,form2_string)
          end if
          if (ishishm .ne. 0 ) then
 ! Ouput humidity
-            info_string = info_string(ic1:ic2) // 'humidity '
+            info_string = info_string(ic1:ic2) // 'Humidity '
             ic2 = len_trim(info_string) + 1
             title_string = 'Humidity'
             call plot_header(ishishm, m, form1_string)
@@ -377,24 +350,40 @@ c            write(ishis, '(a4)')  '    '
          end if
 c RJP 04/30/07 added following for outputting time-dependent CO2 mass
          if (ishiscm .ne. 0 ) then
-! Ouput CO2 mass kg
+! Output CO2 mass kg
             info_string = info_string(ic1:ic2) // 'CO2 mass '
             ic2 = len_trim(info_string) + 1
             title_string = 'CO2 mass (Kg)'
             call plot_header(ishiscm, var_num, form2_string)
          end if
-         if (ishiscsl .ne. 0 ) then
-! Ouput CO2 Liquid Saturation
+         if (ishiscmf .ne. 0 ) then
+! Output free CO2 mass fraction
             info_string = info_string(ic1:ic2) // 
-     &           'CO2 liquid saturations '
+     &           'Free CO2 mass fraction'
+            ic2 = len_trim(info_string) + 1
+            title_string = 'Free CO2 mass fraction'
+            call plot_header(ishiscmf, var_num, form2_string)
+         end if
+         if (ishiscmd .ne. 0 ) then
+! Output dissolved CO2 mass fraction
+            info_string = info_string(ic1:ic2) // 
+     &           'Dissolved CO2 mass fraction'
+            ic2 = len_trim(info_string) + 1
+            title_string = 'Dissolved CO2 mass fraction'
+            call plot_header(ishiscmd, var_num, form2_string)
+         end if
+         if (ishiscsl .ne. 0 ) then
+! Output CO2 Liquid Saturation
+            info_string = info_string(ic1:ic2) // 
+     &           'CO2 liquid saturation '
             ic2 = len_trim(info_string) + 1
             title_string = 'CO2 Liquid Saturation'
             call plot_header(ishiscsl, m, form1_string)
          end if
          if (ishiscsg .ne. 0 ) then
-! Ouput CO2 Gas Saturation
+! Output CO2 Gas Saturation
             info_string = info_string(ic1:ic2) // 
-     &           'CO2 gaseous saturations '
+     &           'CO2 gaseous saturation '
             ic2 = len_trim(info_string) + 1
             title_string = 'CO2 Gaseous Saturation'
             call plot_header(ishiscsg, m, form1_string)
@@ -402,7 +391,7 @@ c RJP 04/30/07 added following for outputting time-dependent CO2 mass
          if (ishisfz .ne. 0) then
 ! Output zone fluxes
  240        format ('(a, ', i3, '(a))')
-            info_string = info_string(ic1:ic2) // 'zone flux '
+            info_string = info_string(ic1:ic2) // 'Zone flux '
             ic2 = len_trim(info_string) + 1
             formz_string = ''
             if (form_flag .eq. 1) then
@@ -451,7 +440,7 @@ c RJP 04/30/07 added following for outputting time-dependent CO2 mass
          end if
          if (ishiscfz .ne. 0) then
 ! Output CO2 zone fluxes
-            info_string = info_string(ic1:ic2) // 'zone CO2 flux '
+            info_string = info_string(ic1:ic2) // 'Zone CO2 flux '
             ic2 = len_trim(info_string) + 1
             formz_string = ''
             do i = 1, nflxz
@@ -482,75 +471,75 @@ c RJP 04/30/07 added following for outputting time-dependent CO2 mass
          end if
          if (ishisc .ne. 0) then
 ! Output concentrations
-            info_string = info_string(ic1:ic2) // 'concentration '
+            info_string = info_string(ic1:ic2) // 'Concentration '
             ic2 = len_trim(info_string) + 1
          end if
          if (ishisdisx .ne. 0) then
 ! Output x displacement
-            info_string = info_string(ic1:ic2) // 'x displacement '
+            info_string = info_string(ic1:ic2) // 'X displacement '
             ic2 = len_trim(info_string) + 1
             title_string = 'X Displacement (m)'
             call plot_header(ishisdisx,var_num,form2_string)
          end if
          if (ishisdisy .ne. 0) then
 ! Output y displacement
-            info_string = info_string(ic1:ic2) // 'y displacement '
+            info_string = info_string(ic1:ic2) // 'Y displacement '
             ic2 = len_trim(info_string) + 1
             title_string = 'Y Displacement (m)'
             call plot_header(ishisdisy,var_num,form2_string)
          end if
          if (ishisdisz .ne. 0) then
 ! Output z displacement
-            info_string = info_string(ic1:ic2) // 'z displacement '
+            info_string = info_string(ic1:ic2) // 'Z displacement '
             ic2 = len_trim(info_string) + 1
             title_string = 'Z Displacement (m)'
             call plot_header(ishisdisz,var_num,form2_string)
          end if
          if (ishisstr .ne. 0) then
 ! Output strain
-            info_string = info_string(ic1:ic2) // 'volume strain  '
+            info_string = info_string(ic1:ic2) // 'Volume strain  '
             ic2 = len_trim(info_string) + 1
             title_string = 'Volume Strain'
             call plot_header(ishisstr,var_num,form2_string)
          end if
          if (ishisstrx .ne. 0) then
 ! Output x stress
-            info_string = info_string(ic1:ic2) // 'x stress '
+            info_string = info_string(ic1:ic2) // 'X stress '
             ic2 = len_trim(info_string) + 1
             title_string = 'X Stress (MPa)'
             call plot_header(ishisstrx,var_num,form2_string)
          end if
          if (ishisstry .ne. 0) then
 ! Output y stress
-            info_string = info_string(ic1:ic2) // 'y stress '
+            info_string = info_string(ic1:ic2) // 'Y stress '
             ic2 = len_trim(info_string) + 1
             title_string = 'Y Stress (MPa)'
             call plot_header(ishisstry,var_num,form2_string)
          end if
          if (ishisstrxy .ne. 0) then
 ! Output xy stress
-            info_string = info_string(ic1:ic2) // 'xy stress '
+            info_string = info_string(ic1:ic2) // 'XY stress '
             ic2 = len_trim(info_string) + 1
             title_string = 'XY Stress (MPa)'
             call plot_header(ishisstrxy,var_num,form2_string)
          end if
          if (ishisstrz .ne. 0) then
 ! Output z stress
-               info_string = info_string(ic1:ic2) // 'z stress '
+               info_string = info_string(ic1:ic2) // 'Z stress '
                title_string = 'Z Stress (MPa)'
                call plot_header(ishisstrz,var_num,form2_string)
             ic2 = len_trim(info_string) + 1
          end if
          if (ishisstrxz .ne. 0) then
 ! Output xz stress
-            info_string = info_string(ic1:ic2) // 'xy stress '
+            info_string = info_string(ic1:ic2) // 'XY stress '
             ic2 = len_trim(info_string) + 1
             title_string = 'XZ Stress (MPa)'
             call plot_header(ishisstrxz,var_num,form2_string)
          end if
          if (ishisstryz .ne. 0) then
 ! Output yz stress
-            info_string = info_string(ic1:ic2) // 'y stress '
+            info_string = info_string(ic1:ic2) // 'Y stress '
             ic2 = len_trim(info_string) + 1
             title_string = 'YZ Stress (MPa)'
             call plot_header(ishisstryz,var_num,form2_string)
@@ -558,7 +547,7 @@ c RJP 04/30/07 added following for outputting time-dependent CO2 mass
          if (ishiswt .ne. 0) then
 ! output water table elevations
             formz_string = ''
-            info_string = info_string(ic1:ic2) // 'water table '
+            info_string = info_string(ic1:ic2) // 'Water table '
             ic2 = len_trim(info_string) + 1
             title_string = "Water table"
             if (form_flag .eq. 1) then
@@ -842,19 +831,8 @@ c**** write number of plot nodes, node numbers and coordinates ****
       end if
       if (ishisp .ne. 0 ) then
 ! Output pressures in MPa
-         if (pres_flag .eq. 1) then
-            if (out_zones) then
-               write(ishisp, form2_string) ptime,  
-     &              (max(phi(nskw(i))-phi_inc,1.d-20), i=1,m),
-     &              (avg_values(j,pflag), j=1,node_azones)
-            else
-               write(ishisp, form2_String) ptime,  
-     &              (max(phi(nskw(i))-phi_inc,1.d-20), i=1,m)
-            end if
-         else if (pres_flag .eq. 2) then
-            write(ishisp, formp_string) ptime, (max(phi(nskw(i)),1.d-20)
-     &           ,max(pci(nskw(i)),1.d-20), i=1,m)
-         else if (pres_flag .eq. 3 .or. pres_flag .ge. 5) then
+         if (pres_flag .eq. 3 .or. pres_flag .eq. 5 .or. 
+     &        pres_flag .eq. 6 .or. pres_flag .eq. 7) then
             do i = 1, m
                if(abs(pcp(nskw(i))).lt.1.d-20) then
                   dumv(i) = 0.0
@@ -862,23 +840,47 @@ c**** write number of plot nodes, node numbers and coordinates ****
                   dumv(i) = pcp(nskw(i))
                endif
             end do
-            if (pres_flag .eq. 3) then
-               write(ishisp, formp_string) ptime, (max(phi(nskw(i)),
-     &              1.d-20), max(pci(nskw(i)),1.d-20), dumv(i), i=1,m)
-            else if (pres_flag .eq. 5) then
-               write(ishisp, form1_string) ptime, (dumv(i), i=1,m)
-            else if (pres_flag .eq. 6) then
-               write(ishisp, formp_string) ptime, (max(phi(nskw(i)),
-     &              1.d-20), dumv(i), i=1,m)
-            else if (pres_flag .eq. 7) then
-               write(ishisp, formp_string) ptime, (max(pci(nskw(i)),
-     &              1.d-20), dumv(i), i=1,m)
+         end if
+         if (pres_flag .eq. 1 .or. pres_flag .eq. 2 .or. 
+     &        pres_flag .eq. 3) then
+! Output total/water pressure
+            if (out_zones) then
+               write(ishisp, form2_string) ptime,  
+     &              (max(phi(nskw(i))-phi_inc,1.d-20), i=1,m),
+     &              (avg_values(j,pflag), j=1,node_azones)
+            else
+               write(ishisp, form2_string) ptime,  
+     &              (max(phi(nskw(i))-phi_inc,1.d-20), i=1,m)
+            end if
+            if (pres_flag .eq. 2 .or. pres_flag .eq. 3) then
+               write(ishisp2, form1_string) ptime, 
+     &              (max(pci(nskw(i)),1.d-20), i=1,m)
+               if (pres_flag .eq. 3)
+     &             write(ishisp3, form1_string) ptime, (dumv(i), i=1,m)
             end if
          else if (pres_flag .eq. 4) then
             write(ishisp, form1_string) ptime,  
      &           (max(pci(nskw(i)),1.d-20), i=1,m)
+         else if (pres_flag .eq. 5) then
+            write(ishisp, form1_string) ptime, (dumv(i), i=1,m)
+         else if (pres_flag .eq. 6 .or. pres_flag .eq. 7) then
+            if (pres_flag .eq. 6) then
+               write(ishisp, form1_string) ptime, (max(phi(nskw(i)),
+     &              1.d-20), i=1,m)
+            else
+               write(ishisp, form1_string) ptime, (max(pci(nskw(i)),
+     &              1.d-20), i=1,m)
+            end if
+            write(ishisp2, form1_string) ptime, (dumv(i), i=1,m)
+         else if (pres_flag .eq. 8 .or. pres_flag .eq. 9) then
+            write(ishisp, form1_string) ptime, (max(phico2(nskw(i)),
+     &              1.d-20), i = 1, m)
+            if (pres_flag .eq. 9) write(ishisp2, form1_string) ptime, 
+     &           (max(phi(nskw(i)), 1.d-20), i = 1, m)
          end if
          call flush(ishisp)
+         if (ishisp2 .ne. 0) call flush(ishisp2)
+         if (ishisp3 .ne. 0) call flush(ishisp3)
       end if
       if (ishist .ne. 0 ) then
 ! Output temperature in degrees C
@@ -1044,6 +1046,18 @@ C RJP 04/30/07
          end if
          call flush(ishiscm)
       end if
+      if (ishiscmf .ne. 0 ) then
+! Output free CO2 mass fraction
+            write(ishiscmf, form1_string) ptime,
+     &           (max(xc(nskw(i)),0.d0), i=1,m)
+         call flush(ishiscmf)
+      end if
+      if (ishiscmd .ne. 0 ) then
+! Output dissolved CO2 mass fraction
+            write(ishiscmd, form1_string) ptime,
+     &           (max(yc(nskw(i)),0.d0), i=1,m)
+         call flush(ishiscmd)
+      end if
 C RJP 08/09/07
       if (ishiscsl .ne. 0 ) then
 ! Output CO2 liquid sats only for nodes if present
@@ -1074,32 +1088,32 @@ C RJP 08/09/07
       end if
       if (ishisdisx .ne. 0 ) then
 ! Output x displacement
-       if(idisp_rel.eq.0) then
-         write(ishisdisx, form1_string) ptime, (du(nskw(i)), i= 1, m) 
+       if(idisp_rel .eq. 0) then
+          write(ishisdisx, form1_string) ptime, (du(nskw(i)), i= 1, m) 
        else
-         write(ishisdisx, form1_string) ptime, 
-     &    (du(nskw(i))-du_ini(nskw(i)), i= 1, m)        
+          write(ishisdisx, form1_string) ptime, 
+     &         (du(nskw(i))-du_ini(nskw(i)), i= 1, m)        
        endif  
          call flush(ishisdisx)
       end if
       if (ishisdisy .ne. 0 ) then
 ! Output y displacement
-       if(idisp_rel.eq.0) then
-         write(ishisdisy, form1_string) ptime, (dv(nskw(i)), i= 1, m) 
-       else
-         write(ishisdisy, form1_string) ptime, 
-     &    (dv(nskw(i))-dv_ini(nskw(i)), i= 1, m)        
-       endif  
+         if(idisp_rel .eq. 0) then
+            write(ishisdisy, form1_string) ptime, (dv(nskw(i)), i= 1, m)
+         else
+            write(ishisdisy, form1_string) ptime, 
+     &           (dv(nskw(i))-dv_ini(nskw(i)), i= 1, m)        
+         endif  
          call flush(ishisdisy)
       end if
       if (ishisdisz .ne. 0 ) then
 ! Output z displacement
-       if(idisp_rel.eq.0) then
-         write(ishisdisz, form1_string) ptime, (dw(nskw(i)), i= 1, m) 
-       else
-         write(ishisdisz, form1_string) ptime, 
-     &    (dw(nskw(i))-dw_ini(nskw(i)), i= 1, m)        
-       endif  
+         if(idisp_rel .eq. 0) then
+            write(ishisdisz, form1_string) ptime, (dw(nskw(i)), i= 1, m)
+         else
+            write(ishisdisz, form1_string) ptime, 
+     &           (dw(nskw(i))-dw_ini(nskw(i)), i= 1, m)        
+         endif  
          call flush(ishisdisz)
       end if
       if (ishisstr .ne. 0 ) then

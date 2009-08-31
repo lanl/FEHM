@@ -20,6 +20,9 @@
       real*8 enth_rate, flow_rate
       real*8 shtl,shtl0,tacc,accmax,ratio,stmch,stmch0,tmch1,tmch2
       real*8 pdifmax, sdifmax, tdifmax, pcidifmax, hdifmax
+
+      character*50 info_string
+
       parameter (tolerance = 1.d20)
 
       logical svar_flag, sflux_flag

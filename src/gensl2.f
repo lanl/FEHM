@@ -474,9 +474,12 @@ c
             else if(iwellp_chk.ne.0) then
 c no accumulation term in the wellbore            
                call geneq2_wellphysics(id)	
-            else if(ianpe.ne.0) then
+            else if(ianpe.ne.0.and.irdof.eq.13) then
                call geneq2_ani(id)
-               call add_accumulation(id)               
+               call add_accumulation(id)   
+            else if(ianpe.ne.0.and.irdof.ne.13) then
+               call geneq2_ani_2p(id)
+               call add_accumulation(id)                                          
             else if(irich.ne.0) then
                call geneq2_rich(id)
                call add_accumulation(id)	

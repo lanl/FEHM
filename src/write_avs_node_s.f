@@ -426,11 +426,8 @@ c     fdm grid
                end if
                if(irivp.eq.0) then
                   tecstring = trim(string)
-                  write (lu, 130) trim(timec_string), trim(tecstring) 
                else
                   tecstring_riv = trim(string)
-                  write (lu, 130) trim(timec_string),
-     &                 trim(tecstring_riv)
                endif                             
             else
                if(irivp.eq.0) then
