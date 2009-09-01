@@ -126,7 +126,7 @@ dualta.o: comgi.o comhi.o comji.o comrxnb.o comrxni.o
 dualtx.o: comai.o combi.o comdi.o comdti.o comei.o comfi.o comgi.o comhi.o
 dvacalc.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 dvacalc.o: comhi.o davidi.o
-enthp.o: comai.o comdi.o comdti.o comfi.o comii.o
+enthp.o: comai.o combi.o comdi.o comdti.o comfi.o comii.o
 evaporation.o: comai.o combi.o comdi.o comevap.o
 explicit.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
 explicit.o: comgi.o comji.o davidi.o
@@ -166,6 +166,8 @@ geneq2.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
 geneq2.o: comgi.o comji.o comwellphys.o davidi.o
 geneq2_ani.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 geneq2_ani.o: comflow.o comgi.o comji.o davidi.o
+geneq2_ani_2p.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+geneq2_ani_2p.o: comflow.o comgi.o comji.o davidi.o
 geneq2_part.o: com_part.o comai.o combi.o comci.o comdi.o comdti.o comei.o
 geneq2_part.o: comfi.o comflow.o comgi.o comji.o davidi.o
 geneq2_rich.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o

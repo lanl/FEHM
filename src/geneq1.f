@@ -217,7 +217,7 @@ c changed by avw 4/95 -- entered into new version by seh
       endif
 
       sx1d=sx1(i)
-      axi=pnx(i)
+      axi=pnx(i) 
       ayi=pny(i)
       azi=pnz(i)
       alxi=axi
@@ -359,7 +359,7 @@ c this connection broken, then added when well equations are generated
  59      continue
       else if ( icnl.ne.0 )  t h e n
 c
-c 2-d geometry
+c 2-d geometry 
 c
       radi=cord(iz,3)
          do 69 jm=1,iq

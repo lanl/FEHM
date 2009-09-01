@@ -1373,8 +1373,8 @@ c Tensile criteria
      &              *ipmd8_sy/elastic_mod(i)+1/ipmd8_ksh)
      &              *ipmd8_dsxy/ipmd8_by*tan(ipmd8_phid/180*pi)
             
-                    ipmd8_nmy = max(0.,ipmd8_nmy)
-                    ipmd8_shy = max(0.,ipmd8_shy)
+                    ipmd8_nmy = max(0.d0,ipmd8_nmy)
+                    ipmd8_shy = max(0.d0,ipmd8_shy)
 
                     pnx(i) = pnx0(i)
      &               +(ipmd8_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
@@ -1392,8 +1392,8 @@ c Tensile criteria
      &        +1/ipmd8_ksh)
      &        *ipmd8_dsxy/ipmd8_bx*tan(ipmd8_phid/180*pi) 
            
-           ipmd8_nmx = max(0.,ipmd8_nmx)
-           ipmd8_shx = max(0.,ipmd8_shx)
+           ipmd8_nmx = max(0.d0,ipmd8_nmx)
+           ipmd8_shx = max(0.d0,ipmd8_shx)
 
            pny(i) = pny0(i)+(ipmd8_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
            
@@ -1422,10 +1422,10 @@ c Tensile criteria
      &         +1/ipmd8_ksh)
      &         *ipmd8_dsxy/ipmd8_by*tan(ipmd8_phid/180*pi)
       
-           ipmd8_nmy = max(0.,ipmd8_nmy)
-           ipmd8_shy = max(0.,ipmd8_shy)
-           ipmd8_nmx = max(0.,ipmd8_nmx)
-           ipmd8_shx = max(0.,ipmd8_shx)
+           ipmd8_nmy = max(0.d0,ipmd8_nmy)
+           ipmd8_shy = max(0.d0,ipmd8_shy)
+           ipmd8_nmx = max(0.d0,ipmd8_nmx)
+           ipmd8_shx = max(0.d0,ipmd8_shx)
                       
            pnx(i) = pnx0(i)+(ipmd8_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
            pny(i) = pny0(i)+(ipmd8_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
@@ -1584,8 +1584,8 @@ c frac_flg = 1, xz-plane -> kx, kz
      &         +1/ipmd8_ksh)
      &         *(ipmd8_dsxy+ipmd8_dsyz)*tan(ipmd8_phid/180*pi)
             
-            ipmd8_nmy = max(0.,ipmd8_nmy)
-            ipmd8_shy = max(0.,ipmd8_shy)
+            ipmd8_nmy = max(0.d0,ipmd8_nmy)
+            ipmd8_shy = max(0.d0,ipmd8_shy)
             
             pnx(i) = pnx0(i)+(ipmd8_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
             pnz(i) = pnz0(i)+(ipmd8_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
@@ -1606,8 +1606,8 @@ c frac_flg = 2, yz-plane -> ky, kz
      &         +1/ipmd8_ksh)
      &         *(ipmd8_dsxy+ipmd8_dsxz)*tan(ipmd8_phid/180*pi) 
             
-            ipmd8_nmx = max(0.,ipmd8_nmx)
-            ipmd8_shx = max(0.,ipmd8_shx)
+            ipmd8_nmx = max(0.d0,ipmd8_nmx)
+            ipmd8_shx = max(0.d0,ipmd8_shx)
             
             pny(i) = pny0(i)+(ipmd8_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
             pnz(i) = pnz0(i)+(ipmd8_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
@@ -1629,8 +1629,8 @@ c frac_flg = 3, xy-plane -> kx, ky
      &        +1/ipmd8_ksh)
      &        *(ipmd8_dsxz+ipmd8_dsyz)*tan(ipmd8_phid/180*pi)
 
-            ipmd8_nmz = max(0.,ipmd8_nmz)
-            ipmd8_shz = max(0.,ipmd8_shz)
+            ipmd8_nmz = max(0.d0,ipmd8_nmz)
+            ipmd8_shz = max(0.d0,ipmd8_shz)
                        
             pnx(i) = pnx0(i)+(ipmd8_bz+ipmd8_nmz+ipmd8_shz)**3/(12*disz)
             pny(i) = pnz0(i)+(ipmd8_bz+ipmd8_nmz+ipmd8_shz)**3/(12*disz)
@@ -1665,10 +1665,10 @@ c frac_flg = 4, xz and xy plane -> kx*, ky, kz
      &        +1/ipmd8_ksh)
      &        *(ipmd8_dsxz+ipmd8_dsyz)*tan(ipmd8_phid/180*pi)
 
-            ipmd8_nmy = max(0.,ipmd8_nmy)
-            ipmd8_shy = max(0.,ipmd8_shy)
-            ipmd8_nmz = max(0.,ipmd8_nmz)
-            ipmd8_shz = max(0.,ipmd8_shz)
+            ipmd8_nmy = max(0.d0,ipmd8_nmy)
+            ipmd8_shy = max(0.d0,ipmd8_shy)
+            ipmd8_nmz = max(0.d0,ipmd8_nmz)
+            ipmd8_shz = max(0.d0,ipmd8_shz)
                           
             pnx(i) = pnx0(i)+(ipmd8_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
      &                      +(ipmd8_bz+ipmd8_nmz+ipmd8_shz)**3/(12*disz)
@@ -1705,10 +1705,10 @@ c frac_flg = 5, yz and xy plane -> kx, ky*, kz
      &        +1/ipmd8_ksh)
      &        *(ipmd8_dsxz+ipmd8_dsyz)*tan(ipmd8_phid/180*pi)
                  
-            ipmd8_nmx = max(0.,ipmd8_nmx)
-            ipmd8_shx = max(0.,ipmd8_shx)
-            ipmd8_nmz = max(0.,ipmd8_nmz)
-            ipmd8_shz = max(0.,ipmd8_shz)
+            ipmd8_nmx = max(0.d0,ipmd8_nmx)
+            ipmd8_shx = max(0.d0,ipmd8_shx)
+            ipmd8_nmz = max(0.d0,ipmd8_nmz)
+            ipmd8_shz = max(0.d0,ipmd8_shz)
       
             pnx(i) = pnx0(i)+(ipmd8_bz+ipmd8_nmz+ipmd8_shz)**3/(12*disz)
             pny(i) = pny0(i)+(ipmd8_bz+ipmd8_nmz+ipmd8_shz)**3/(12*disz)
@@ -1745,10 +1745,10 @@ c frac_flg = 6, xz and yz plane -> kx, ky, kz*
      &         +1/ipmd8_ksh)
      &         *(ipmd8_dsxy+ipmd8_dsyz)*tan(ipmd8_phid/180*pi)
             
-            ipmd8_nmx = max(0.,ipmd8_nmx)
-            ipmd8_shx = max(0.,ipmd8_shx)
-            ipmd8_nmy = max(0.,ipmd8_nmy)
-            ipmd8_shy = max(0.,ipmd8_shy)
+            ipmd8_nmx = max(0.d0,ipmd8_nmx)
+            ipmd8_shx = max(0.d0,ipmd8_shx)
+            ipmd8_nmy = max(0.d0,ipmd8_nmy)
+            ipmd8_shy = max(0.d0,ipmd8_shy)
     
             pnx(i) = pnx0(i)+(ipmd8_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
             pny(i) = pny0(i)+(ipmd8_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
@@ -1800,12 +1800,12 @@ c frac_flg = 7, all plane -> kx*, ky*, kz*
      &        +1/ipmd8_ksh)
      &        *(ipmd8_dsxz+ipmd8_dsyz)*tan(ipmd8_phid/180*pi) 
 
-            ipmd8_nmx = max(0.,ipmd8_nmx)
-            ipmd8_shx = max(0.,ipmd8_shx)
-            ipmd8_nmy = max(0.,ipmd8_nmy)
-            ipmd8_shy = max(0.,ipmd8_shy)
-            ipmd8_nmz = max(0.,ipmd8_nmz)
-            ipmd8_shz = max(0.,ipmd8_shz)                
+            ipmd8_nmx = max(0.d0,ipmd8_nmx)
+            ipmd8_shx = max(0.d0,ipmd8_shx)
+            ipmd8_nmy = max(0.d0,ipmd8_nmy)
+            ipmd8_shy = max(0.d0,ipmd8_shy)
+            ipmd8_nmz = max(0.d0,ipmd8_nmz)
+            ipmd8_shz = max(0.d0,ipmd8_shz)                
             
             pnx(i) = pnx0(i)+(ipmd8_by+ipmd8_nmy)**3/(12*disy)
             pny(i) = pny0(i)

@@ -1416,7 +1416,8 @@ c mixture of water and air,co2
       real*8 dvfp
       real*8 xtol
       real*8 flow_tol
-      real*8 fimped   
+      real*8 fimped 
+      real*8 p_energy  
 c
 c     rol  -  density liquid
 c     ros  -  density steam
@@ -1491,6 +1492,11 @@ c
 
       do 100 mid=1,neq
          mi=mid+ndummy
+         if(igrav.ne.0) then
+          p_energy = -grav*cord(mi,igrav)
+         else
+          p_energy = 0.0d0
+         endif
          ieosd=ieos(mi)
          iieosd=iieos(mi)
 c
@@ -1767,7 +1773,7 @@ c
       enwd3=elptb*tlx+elpt2b*tl2x+elp2tb*tlx2
       enwd=enwd1+enwd2+enwd3
       enw=enwn/enwd
-      enl=enw
+      enl=enw + p_energy
 c
 c derivatives of enthalpy
 c
@@ -1924,7 +1930,7 @@ c
       ensd3=evptb*tlxv+evpt2b*tl2xv+evp2tb*tlxv2
       ensd=ensd1+ensd2+ensd3
       ens=ensn/ensd
-      env=ens
+      env=ens + p_energy
 c
 c       derivatives of water vapor enthalpy
 c

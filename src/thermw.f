@@ -818,6 +818,7 @@ C**********************************************************************
       real*8 tfunn,tfund,dtpsn,dtpsd,dpldt,psat,vfcal,rop2,daep2
       real*8 dqv,dhflxe,drovp,drovt
       real*8 xa,xa2,xa3,xa4
+      real*8 p_energy
       real*8, allocatable :: sto1(:)
       real(8) :: damh = 0., damp = 0., daep = 0., daeh = 0.
       real(8) :: dtps = 0., dtd = 0.
@@ -894,6 +895,11 @@ c     undo equivalence relations for relative perms
          xrv=rvf(mi)
          drv=drvef(mi)
          drvp=drvpf(mi)
+         if(igrav.ne.0) then
+          p_energy = -grav*cord(mi,igrav)
+         else
+          p_energy = 0.0d0
+         endif
 
 c     adjust coefficients for thermo fits
          if(iieosd.ne.iieosl) then
@@ -1086,7 +1092,7 @@ c     liquid enthalpy
             enwd3=elptb*tlx+elpt2b*tl2x+elp2tb*tlx2
             enwd=enwd1+enwd2+enwd3
             enw=enwn/enwd
-            enl=enw
+            enl=enw + p_energy
 
 c     derivatives of enthalpy
             dhwpn1=elpa1+2*elpa2*x+3*elpa3*x2+elpta*tl
@@ -1178,7 +1184,7 @@ c     vapor enthalpy
             ensd3=evptb*tlx+evpt2b*tl2x+evp2tb*tlx2
             ensd=ensd1+ensd2+ensd3
             ens=ensn/ensd
-            env=ens
+            env=ens + p_energy
 
 c     derivatives of vapor enthalpy
             dhvp1=evpa1+2*evpa2*x+3*evpa3*x2+evpta*tl
