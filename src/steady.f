@@ -642,7 +642,6 @@ c     time limit, make sure we output information
 
  50   format(/,'>>>>> Steady State achieved at ', g16.9, 
      &     ' days (', a, ') <<<<<')
- 51   format(/,'>>>>> Starting transient with steady solution <<<<<',/)
  52   format(/,'>>>>> Steady state time exceeded <<<<<',/,1p,
      &     'Max timesteps: ', i6, ' Specified Time: ',
      &     g15.6,' Simulated Time: ',g15.6)
@@ -699,6 +698,7 @@ c     time limit, make sure we output information
  40   format ('>>>>> Max change in ', a, 1pg12.4, ' tolerance',
      &     1pg12.4, ' <<<<<')
  41   format (/, '>>>>> Steady state check (', a, ') <<<<<')
+ 51   format(/,'>>>>> Starting transient with steady solution <<<<<',/)
      
       end subroutine write_steady_state
 
