@@ -419,7 +419,7 @@ C**********************************************************************
       parameter(eosmg=1.0001)
       parameter(eosml=0.999)
       parameter(eostol=0.0001)
-      parameter(stepl=0.95)
+      parameter(stepl=0.9)
       parameter(pcimin=0.0)
       parameter(phase_mult=1.00)
       parameter(phase_sat=1.0d-9)
@@ -458,7 +458,7 @@ c ich_m1 and ich_m2 are in comai but are adjusted here
 c these are maybe best for geothermal systems
       ich_m1 = 10
       ich_m2 = 10
-      ich_max = 2
+      ich_max = 6
 c
 c determine variable set
 c
