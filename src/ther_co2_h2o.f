@@ -323,6 +323,8 @@ c     modify derivatives for 2-phase (should now depend on p, not t)
                endif
 
                wat_prop(mi) = rol
+c Hari
+               rolf(mi) = rol
                wat_prop(neq+mi) = drolp
                wat_prop(2*neq+mi) = drolt
                wat_prop(3*neq+mi) = drolyc

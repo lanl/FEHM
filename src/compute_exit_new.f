@@ -487,9 +487,9 @@ c     if newnode=0, particle has exited the model domain
 c particle has entered a -ve or 0 porosity node. Not allowed
 c Flag and remove particle
                         istop(np1) = 10
-                        write(ierr, 9998), inp1,np1,ipc,newnode
+                        write(ierr, 9998) inp1,np1,ipc,newnode
                         if (iptty .ne. 0) 
-     &                       write(iptty, 9998), inp1,np1,ipc,newnode
+     &                       write(iptty, 9998) inp1,np1,ipc,newnode
                      end if
                   endif         
                endif

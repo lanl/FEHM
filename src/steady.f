@@ -628,8 +628,8 @@ c     time limit, make sure we output information
          end if
       else if(iflg.eq.3) then
          if(isteady .ne. 2) then
-            if (iout .ne. 0) write(iout,53), trim(info_string)
-            if (iptty .ne. 0) write(iptty,53), trim(info_string)
+            if (iout .ne. 0) write(iout,53) trim(info_string)
+            if (iptty .ne. 0) write(iptty,53) trim(info_string)
 
             call write_steady_state
 
