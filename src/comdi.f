@@ -893,6 +893,8 @@
       real*8, allocatable :: sinkint(:)
  
       integer, allocatable :: ieos_ch(:)
+      real*8 time_ch
+      real*8, allocatable :: time_ieos(:) 
 
 ! gaz 11-Jan-08 Pressure from mass conversion
       real*8, allocatable :: mass_var(:)

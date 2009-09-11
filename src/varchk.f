@@ -417,9 +417,9 @@ C**********************************************************************
       real*8 satml 
       parameter(psatmn=0.0001)
       parameter(eosmg=1.0001)
-      parameter(eosml=0.999)
+      parameter(eosml=1.0)
       parameter(eostol=0.0001)
-      parameter(stepl=0.9)
+      parameter(stepl=1.)
       parameter(pcimin=0.0)
       parameter(phase_mult=1.00)
       parameter(phase_sat=1.0d-9)
@@ -458,7 +458,7 @@ c ich_m1 and ich_m2 are in comai but are adjusted here
 c these are maybe best for geothermal systems
       ich_m1 = 10
       ich_m2 = 10
-      ich_max = 6
+      ich_max = 6      
 c
 c determine variable set
 c
@@ -505,28 +505,31 @@ c
                   tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,1)
 c     change to 2-phase
                   if(tl.ge.tboil*phase_mult.
-     &				and.ieos_ch(ij).le.ich_max) then
+     &				and.days.ge.time_ieos(ij)) then
                      ieosdc=2
                      s(ij)=eosml
                      t(ij)=tboil
+                     time_ieos(ij) = days + time_ch
                   endif
 c
                elseif(ieosd.eq.2) then
 c
 c     2-phase conditions
 c
-                  if(sl.ge.1..and.ieos_ch(ij).le.ich_max) then
+                  if(sl.ge.1..and.days.ge.time_ieos(ij)) then
 c     change to liquid only conditions
                      ieosdc=1
                      t(ij)=psatl(pl,pcp(ij),dpcef(ij),
      2                    dtsatp,dpsats,1)*eosml
                      s(ij)=1.0
-                  elseif(s(ij).le.0.0.and.ieos_ch(ij).le.ich_max) then
+                     time_ieos(ij) = days + time_ch
+                  elseif(s(ij).le.0.0.and.days.ge.time_ieos(ij)) then
 c     change to gas only
                      ieosdc=3
                      t(ij)=psatl(pl,pcp(ij),dpcef(ij),
      2                    dtsatp,dpsats,1)*eosmg
                      s(ij)=0.0
+                     time_ieos(ij) = days + time_ch
                   endif
 c     
                elseif(ieosd.eq.3) then
@@ -535,11 +538,12 @@ c     gas conditions
 c     
                   tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,1)
                   if(tl.le.tboil/phase_mult.
-     &				and.ieos_ch(ij).le.ich_max) then
+     &				and.days.ge.time_ieos(ij)) then
 c     change to 2-phase
                      s(ij)=satml         
                      t(ij)=tboil
                      ieosdc=2
+                     time_ieos(ij) = days + time_ch
                   endif
                endif
 c

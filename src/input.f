@@ -989,6 +989,13 @@ c**** iteration parameters ****
             overf = 1.0
          endif
 
+      else if (macro .eq. 'ittm') then
+c**** sticking time for phase changes      
+      read (inpt, *) time_ch
+       if(.not.allocated(time_ieos)) then
+        allocate (time_ieos(n0))
+        time_ieos = 0.0d0
+      endif 
       else if (macro .eq. 'isot') then
 c**** isotropic geometric coeficients
          isox=1

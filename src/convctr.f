@@ -73,7 +73,7 @@ c
 c read input       
 c iconvf=1 : initial conditions         
 c iconvf=2 : boundary conditions         
-c conv1 is the reference head 
+c conv1 is the reference pressure 
 c conv2 is the reference temperature
 c cordc is the reference coordinate
 c idirc is the gradient direction   
@@ -218,6 +218,7 @@ c
                  crl(4,1)=pres0
                  head0_dum = head0
                  head0 = headconv
+                 rho1grav = rolconv*9.81d-6
                  call headctr(5,inode,pho(inode),pho(inode))
                  head0 = head0_dum
                  crl(1,1)= dumconv
@@ -246,6 +247,7 @@ c
                crl(4,1)=pres0
                head0_dum = head0
                head0 = headconv
+               rho1grav = rolconv*9.81d-6
                call headctr(5,inode,pflow(inode),pflow(inode))
                head0 = head0_dum
                crl(1,1)= dumconv
@@ -279,6 +281,7 @@ c
              crl(4,1)=pres0
              head0_dum = head0
              head0 = headconv
+             rho1grav = rolconv*9.81d-6
              call headctr(5,inode,pflow(inode),pflow(inode))
              head0 = head0_dum
              crl(1,1)= dumconv
@@ -328,6 +331,7 @@ c
              crl(4,1)=pres0
              head0_dum = head0
              head0 = headconv
+             rho1grav = rolconv*9.81d-6
              call headctr(5,inode,pho(inode),pho(inode))
              head0 = head0_dum
              crl(1,1)= dumconv
@@ -350,6 +354,7 @@ c
              crl(4,1)=pres0
              head0_dum = head0
              head0 = headconv
+             rho1grav = rolconv*9.81d-6
              call headctr(5,inode,pflow(inode),pflow(inode))
              head0 = head0_dum
              crl(1,1)= dumconv
@@ -393,6 +398,7 @@ c
              crl(4,1)=pres0
              head0_dum = head0
              head0 = headconv
+             rho1grav = rolconv*9.81d-6
              call headctr(5,inode,pflow(inode),pflow(inode))
              head0 = head0_dum
              crl(1,1)= dumconv

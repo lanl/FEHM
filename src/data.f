@@ -466,6 +466,7 @@ C added phi_inc to comai so it only needs to be computed in one place
       tin0   =   0.0
       tin1   =   0.0
       tmch   =   1.0d-09
+      time_ch=   0.0
       tort   =   0.0
       toutfl =   0.0
       upwgt  =   1.0

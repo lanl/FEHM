@@ -387,6 +387,7 @@ c     CHANGE ABOVE TO JUST PRINT OUT qh ARRAY
                            call water_density(tdum,pdum,rolconv)
                            crl(1,1)=rolconv
                            crl(4,1)=pres0
+                           rho1grav = rolconv*9.81d-6
                            call headctr(4,md   ,pho(md   ),phod)  
                            crl(1,1)= dumconv
                            crl(4,1)= dumconv1
