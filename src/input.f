@@ -1336,8 +1336,8 @@ c**** read in nonlinear thermal conductivity information ****
          call vcon (0, 0)
          
       else if (macro .eq. 'vbou') then
-c**** read in nonlinear thermal conductivity information ****
-         ivcond = 1
+c**** set arbitrary volume at a specified node ****
+         ivboun = 1
          call vboun (0, 0)
 
       else if (macro .eq. 'dvel') then
