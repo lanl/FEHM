@@ -49,6 +49,7 @@
       use comdi
       use comdti
       use comfi
+      use comii, only : crl
       use comsi, only : du, dv , dw, str_x, str_y, str_z, str_xy,
      &  str_xz, str_yz, vol_strain, du_ini, dv_ini, dw_ini, idisp_rel
       use comwt
@@ -62,6 +63,7 @@
       real*8 pwatersat, psat, dpdummy, headdum, ptime, last_time
       real*8 totalflin, totalein, curinflow, cureinflow
       real*8 dae, dmass, start_ae, start_mass
+      real*8 pdum, tdum, rolconv, dumconv, dumconv1
       real*8, allocatable :: dumv(:)
       character*400 glob_string
       character*80 title_string, formh_string 
@@ -413,29 +415,50 @@ c RJP 04/30/07 added following for outputting time-dependent CO2 mass
      &           trim(formf_string) // dls // 'Net'
             if (prnt_flxzvar(4)) formf_string = 
      &           trim(formf_string) // dls // 'Boundary'
-            if ((irdof .ne. 13 .or. ifree .ne. 0) .and.
-     &           prnt_flxzvar(5)) formf_string = 
-     &           trim(formf_string) // dls //  'Vapor'
             if (form_flag .eq. 1) 
      &           formf_string = trim(formf_string) // '"'
             write(formz_string, 240) nflxz
             do i = 1, nflxz
-               ishisfzz = ishisfz + i
-               write(zone_string, '("Zone ", i5.5, 1x)') iflxz(i)
-               title_string = trim (zone_string) // ' Flux (kg/s)'
-               if (form_flag .eq. 0)
-     &              write(ishisfzz, '(a)') trim(title_string)
-               if (form_flag .eq. 2) then
-                  write(ishisfzz, '(a, ", ", a, a)') trim(zone_string), 
-     &                 trim(vt_string), trim(formf_string)
-               else
-                  write(ishisfzz, formz_string) trim(vt_string), 
-     &                 trim(formf_string)
+               if (wflux_flag) then
+                  ishisfzz = ishisfz + i
+                  write(zone_string, '("Zone ", i5.5, 1x)') iflxz(i)
+                  title_string = trim (zone_string) // 
+     &                 ' Water Flux (kg/s)'
+                  if (form_flag .eq. 0)
+     &                 write(ishisfzz, '(a)') trim(title_string)
+                  if (form_flag .eq. 2) then
+                     write(ishisfzz, '(a, ", ", a, a)') 
+     &                    trim(zone_string), 
+     &                    trim(vt_string), trim(formf_string)
+                  else
+                     write(ishisfzz, formz_string) trim(vt_string), 
+     &                    trim(formf_string)
+                  end if
+                  if (form_flag .eq. 1) then
+                     write(ishisfzz, 230) 50., 95., trim(wdd)
+                     write(ishisfzz, 230) 50., 90., trim(title_string)
+                  endif
                end if
-               if (form_flag .eq. 1) then
-                  write(ishisfzz, 230) 50., 95., trim(wdd)
-                  write(ishisfzz, 230) 50., 90., trim(title_string)
-               endif
+               if (vflux_flag) then
+                  ishisfzz = ishisfz + i + 400
+                  write(zone_string, '("Zone ", i5.5, 1x)') iflxz(i)
+                  title_string = trim (zone_string) // 
+     &                 ' Vapor Flux (kg/s)'
+                  if (form_flag .eq. 0)
+     &                 write(ishisfzz, '(a)') trim(title_string)
+                  if (form_flag .eq. 2) then
+                     write(ishisfzz, '(a, ", ", a, a)') 
+     &                    trim(zone_string), 
+     &                    trim(vt_string), trim(formf_string)
+                  else
+                     write(ishisfzz, formz_string) trim(vt_string), 
+     &                    trim(formf_string)
+                  end if
+                  if (form_flag .eq. 1) then
+                     write(ishisfzz, 230) 50., 95., trim(wdd)
+                     write(ishisfzz, 230) 50., 90., trim(title_string)
+                  endif
+               end if
             end do
          end if
          if (ishiscfz .ne. 0) then
@@ -913,14 +936,38 @@ c**** write number of plot nodes, node numbers and coordinates ****
          end if
       endif
       if (ishishd .ne. 0 ) then
-         do i = 1, m
-            call headctr(4,nskw(i),phi(nskw(i)),headdum)
-            dumv(i)=max(headdum,0.0d00)
+         if (ihead .ne. 0) then
+            do i = 1, m
+               call headctr(4,nskw(i),phi(nskw(i)),headdum)
+               dumv(i)=max(headdum,0.0d00)
 c gaz 7-22-05
-            if (ifree .ne. 0) then 
-               if(rlxyf(nskw(i)).lt.rlptol+sattol) dumv(i) = 0.0d0
+               if (ifree .ne. 0) then 
+                  if(rlxyf(nskw(i)).lt.rlptol+sattol) dumv(i) = 0.0d0
+               endif
+            end do
+         else if (ichead .ne. 0) then
+            ihead=1
+            dumconv = crl(1,1)
+            dumconv1 = crl(4,1)
+            pdum = pres0+rol0*head0*(-grav)
+            tdum = temp0        
+            call water_density(tdum,pdum,rolconv)
+            crl(1,1)=rolconv
+            crl(4,1)=pres0
+            rho1grav = rolconv*9.81d-6
+            do i = 1, m
+               call headctr(4,nskw(i),phi(nskw(i)),headdum)
+               dumv(i)=max(headdum,0.0d00)
+            end do
+            crl(1,1)= dumconv
+            crl(4,1)= dumconv1
+            ihead=0
+            if(ico2.lt.0) then
+               rho1grav = crl(1,1)*(9.81d-6)
+            else
+               rho1grav = rol0*9.81d-6
             endif
-         end do
+         end if
          if (ishishd .eq. ishis + 120) then
 ! Output in columns (default)
             if (out_zones) then
@@ -1072,19 +1119,11 @@ C RJP 08/09/07
       if (ishisfz .ne. 0) then
 ! Output zone fluxes
          call flxz (2, ptime)
-         do i = 1, nflxz
-            ishisfzz = ishisfz + i
-            call flush(ishisfzz)
-         end do
       end if
 ! RJP 7/5/07 added following for co2 zone fluxes
       if (ishiscfz .ne. 0) then
 ! Output zone fluxes
          call flxz (3, ptime)
-         do i = 1, nflxz
-            ishiscfzz = ishiscfz + i
-            call flush(ishiscfzz)
-         end do
       end if
       if (ishisdisx .ne. 0 ) then
 ! Output x displacement

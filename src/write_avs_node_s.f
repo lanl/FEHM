@@ -219,13 +219,15 @@ c---   pci coming into this subroutine from avs_io.f
 c----------------------------------------------------------------------
 
       use avsio
-      use comai, only : altc, days, iadif, icnl, idof, nei_in,
-     &     ns_in, phi_inc, istrs, neq_primary
+      use comai, only : altc, days, grav, iadif, icnl, ico2, idof, 
+     &     ichead, ihead, nei_in, ns_in, phi_inc, istrs, 
+     &     neq_primary, rho1grav
       use combi, only : corz, izonef, nelm, nelmdg, sx1
       use comci, only : rolf, rovf
       use comdi
       use comfi, only : pci
       use comflow, only : a_axy, a_vxy
+      use comii, only : crl
       use comwt, only : sattol, head_id, rlptol
       use comsi
       use davidi
@@ -242,6 +244,7 @@ c     RJP 1/12/07 added following
       integer icord1, icord2, icord3, ns_in0, irivp 
       integer nelm2(ns_in)
       real*8 hdum, sdum, px, py, pz, flxdum
+      real*8 pdum, tdum, rolconv, dumconv, dumconv1
       character*80 title(2*maxscalar+3)
       character*150 :: tecstring = ''
       character*150 :: tecstring_riv = ''
@@ -452,6 +455,18 @@ c     fdm grid
          k = 1
       end if
       
+      if (iohead .eq. 1 .and. ichead .eq. 1) then
+         ihead=1
+         dumconv = crl(1,1)
+         dumconv1 = crl(4,1)
+         pdum = pres0+rol0*head0*(-grav)
+         tdum = temp0        
+         call water_density(tdum,pdum,rolconv)
+         crl(1,1)=rolconv
+         crl(4,1)=pres0
+         rho1grav = rolconv*9.81d-6
+      end if
+
       do i = istart, iend
 c     Node loop          
          string = ''
@@ -622,7 +637,7 @@ c     saturations are never zeroed out, report what is in array
                ic1 = ic2 + 1
             end if
          end if
-         if (iohead .eq. 1 .and. size_head .ne. 1) then
+         if (ihead.eq.1 .and. iohead .eq. 1 .and. size_head .ne. 1) then
             if (ps(i) .le. 0.) then
                hdum = 0.d0
             else
@@ -631,6 +646,18 @@ c     might need help in the
                if (irdof .ne. 13 .or. ifree .ne. 0) then
                   if (s(i).lt.sattol+rlptol) hdum = head_id
                endif 
+            end if
+            write(vstring,110) dls(1:k), hdum
+            ic2 = ic1 + len_trim(vstring)
+            string(ic1:ic2) = vstring
+            ic1 = ic2 + 1
+         end if
+         if (ichead .eq. 1 .and. iohead .eq. 1) then
+            if (ps(i) .le. 0.) then
+               hdum = 0.d0
+            else
+               call headctr(4, i   ,pho(i), hdum)
+               hdum = max(hdum,0.0d00)
             end if
             write(vstring,110) dls(1:k), hdum
             ic2 = ic1 + len_trim(vstring)
@@ -797,6 +824,18 @@ c     might need help in the
          length = len_trim(string)
          write(lu,'(a)') string(1:length)           
  200  enddo
+
+      if (iohead .eq. 1 .and. ichead .eq. 1) then
+         crl(1,1)= dumconv
+         crl(4,1)= dumconv1
+         ihead=0
+         if(ico2.lt.0) then
+            rho1grav = crl(1,1)*(9.81d-6)
+         else
+            rho1grav = rol0*9.81d-6
+         endif
+      end if
+
       call flush(lu)
       if (altc(1:3) .eq. 'sur') close (lu)
       enddo
