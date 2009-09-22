@@ -220,7 +220,7 @@ c----------------------------------------------------------------------
 
       use avsio
       use comai, only : altc, days, iadif, icnl, idof, nei_in,
-     &     ns_in, phi_inc, istrs, neq_primary
+     &     ns_in, phi_inc, istrs, neq_primary, ivf, ifdm_elem
       use combi, only : corz, izonef, nelm, nelmdg, sx1
       use comci, only : rolf, rovf
       use comdi
@@ -831,6 +831,20 @@ c     river segments (2 node elements)
             enddo
          endif
       end if
+c gaz added element output  (hex only) for fdm generated grid   
+      if (icall .eq. 1 .and. altc(1:3) .eq. 'tec' .and. ivf .eq. -1
+     &     .and. ifdm_elem. eq. 1) then
+c first generate elements      
+         call structured(4)
+         il = open_file('fdm_elem.macro','old')
+         read(il,*) 
+         read(il,*) nei_in, ns_in
+         do i = 1, nei_in
+            read (il,*) i1, (nelm2(j), j=1,ns_in)
+            write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
+         end do
+         close (il)
+      end if        
       if (altc(1:3) .ne. 'sur') close (lu)
 
  100  format(i10.10)

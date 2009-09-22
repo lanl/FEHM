@@ -757,7 +757,16 @@ c**** set flag and input name of file with evaporation nodes ****
 
       else if (macro .eq. 'fdm ') then
 c finite difference input 
-         jj = 0
+c check macro line for elem keyword
+         backspace inpt
+         read (inpt, '(a80)') wdd1
+         do i = 4,80
+          if(wdd1(i:i).eq.'e') then
+           ifdm_elem = 1
+           go to 219
+          endif
+         enddo
+ 219     jj = 0
  220     continue
          read (inpt, '(a80)') wdd1
          do i = 1,80
@@ -992,10 +1001,7 @@ c**** iteration parameters ****
       else if (macro .eq. 'ittm') then
 c**** sticking time for phase changes      
       read (inpt, *) time_ch
-       if(.not.allocated(time_ieos)) then
-        allocate (time_ieos(n0))
-        time_ieos = 0.0d0
-      endif 
+      
       else if (macro .eq. 'isot') then
 c**** isotropic geometric coeficients
          isox=1
@@ -1443,6 +1449,10 @@ c**** check if air macro called if head macro called
 
  210  continue
       call steady(-1,0.,0.)
+      if(.not.allocated(time_ieos)) then
+        allocate (time_ieos(n0))
+        time_ieos = 0.0d0
+      endif 
       end
 
 

@@ -147,13 +147,14 @@ C***********************************************************************
       use comdi
       use comchem, only : cpntnam
       use comrxni, only : rxn_flag
+      use comriv, only : iriver
       use davidi
 
       implicit none
 
       integer i, j, lu, ifdual, maxtitle, mout, length, ic1, ic2
       integer il, open_file, nelm(ns_in)
-      integer icord1, icord2, icord3
+      integer icord1, icord2, icord3, neq_read
       parameter(maxtitle = 22)
       character*3 dls
       character*5 char_type, dual_char
@@ -491,7 +492,13 @@ c------------------------------------------------------------------------------
 ! avsx geometry file has an initial line that starts with neq_primary
             read(il,*) i
             if (i .ne. neq_primary) backspace il
-            do i = 1, neq
+c for river or wells, "geoname" will only have neq_primary nodes 
+            if(iriver.ne.2) then
+              neq_read = neq
+            else
+              neq_read = neq_primary
+            endif                   
+            do i = 1, neq_read
                read(il,*)
             end do
             do i = 1, nei_in

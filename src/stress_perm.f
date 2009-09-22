@@ -846,7 +846,7 @@ c     spm7f is str_multx, maximum change in x-permeability allowed
 c     spm8f is str_multy, maximum change in y-permeability  allowed 
 c     spm9f is str_multz, maximum change in z-permeability  allowed 
 c     model 3 and model 5 are fully coupled
-c     model 6 is simple directional plasticity
+c  
 c     
                if(icnl.ne.0) then   
 c     2D x-y version  (y can be vertical) 

@@ -757,6 +757,9 @@ c     write coordinates to a file
             write(nunit,'(i9,1x,1p,3(g15.6,1x),g12.4)') 
      &           i,(cord(i,j),j=1,3),sx1(i)
          enddo
+      else if (iflg.eq.4) then
+c generate a write element info to file 'fdm_coor_elem.macro'           
+           call generate_elements(nx,ny,nz)    
       end if
 
       end
@@ -778,4 +781,57 @@ c
       do io = 1, mdifm
          a(mc+io) =  a(mc)+io*dela
       end do
+      end
+      subroutine generate_elements(nx,ny,nz)
+c     
+c     write out generated element connectivity 
+c    
+      integer nx,ny,nz,nxny,kk
+      integer i,j,k,ne,ns,npoint,il
+      integer, allocatable :: nelm_temp(:)
+      character*14  fdm_elem_file
+      logical opnd
+      fdm_elem_file = 'fdm_elem.macro'
+      if(nx.le.1) then
+      else if(ny.le.1) then
+      else if(nz.le.1) then  
+      else
+c 3D hex elements
+      inquire (file = fdm_elem_file, OPENED=opnd)
+      if(.not.opnd) then
+       il = open_file(fdm_elem_file,'unknown')
+      else
+       go to 100
+      endif
+      ne = (nz-1)*(ny-1)*(nx-1)
+      ns = 8
+      nxny = nx*ny
+      allocate(nelm_temp(ne*8))
+      kk = 0
+      do k = 1, nz-1  
+        do j = 1, ny-1 
+          do i = 1, nx-1 
+           kk = kk + 1
+           nelm_temp((kk-1)*ns+1) = kk + nxny
+           nelm_temp((kk-1)*ns+1) = kk + nxny + 1
+           nelm_temp((kk-1)*ns+1) = kk + nxny + nx + 1
+           nelm_temp((kk-1)*ns+1) = kk + nxny + nx
+           nelm_temp((kk-1)*ns+1) = kk 
+           nelm_temp((kk-1)*ns+1) = kk + 1
+           nelm_temp((kk-1)*ns+1) = kk + nx + 1
+           nelm_temp((kk-1)*ns+1) = kk + nx
+          enddo
+        enddo
+      enddo   
+      write(il,'(a9)') 'elem trad'
+      write(il,*) 8,kk
+      do i = 1,kk
+       write(il,'(9(1x,i8))') i,(nelm_temp((i-1)*ns +j),j=1,8)
+      enddo
+      write(il,*)
+      write(il,'(a4)') 'stop'
+      close(il)
+      endif        
+      deallocate(nelm_temp)
+100   return      
       end

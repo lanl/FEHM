@@ -1197,20 +1197,25 @@ c
          stop
       case(455)
 c read permeability from daniil and out in permeability file   
-        write(*,*) '>>>> enter name of raw permeability file <<<<<<'
-        read(*,'(a80)') dum_user   
+        write(*,*) '>>>> enter raw permeability file  <<<<<<'
+        read(*,'(a80)') dum_user  
+        write(*,*) '>>>> enter nx,ny  <<<<<<'
+        read(*,*) i1,i2          
         iuser1 = open_file(dum_user,'old')
         iuser2 = open_file('perm_fehm_ner.macro','unknown')
         icount = 0
+        i3 = i1*i2 + 1
         write(iuser2,'(a4)') 'perm'
 455     continue   
         read(iuser1,*,end = 456) permxd
         icount = icount + 1
-        write(iuser2,457) icount,icount,1, permxd,permxd,permxd
+        i3 = i3 -1
+        write(iuser2,457) i3, i3, 1, permxd,permxd,permxd
         go to 455
 456     continue  
         write(iuser2,*) ' '
         write(*,*) 'perm data read and transformed, n = ',icount
+        write(*,*) 'file perm_fehm_ner.macro created'
         pause
         stop
 457     format(3(1x,i8),1p,3(1x,g14.6))     

@@ -167,7 +167,7 @@ C***********************************************************************
 
       use avsio
       use comai, only : altc, days, icnl, jdate, jtime, nei_in,
-     &     ns_in, verno, wdd, neq_primary
+     &     ns_in, verno, wdd, neq_primary, ivf, ifdm_elem
       use combi, only : corz, izonef, nelm
       use comchem
       use comdi, only : nsurf, izone_surf, izone_surf_nodes, icns
@@ -790,6 +790,20 @@ c=================================================
          end do
          close (il)
       end if
+c gaz added element output  (hex only) for fdm generated grid   
+      if (icall .eq. 1 .and. altc(1:3) .eq. 'tec' .and. ivf .eq. -1
+     &     .and. ifdm_elem. eq. 1) then
+c first generate elements      
+         call structured(4)
+         il = open_file('fdm_elem.macro','old')
+         read(il,*) 
+         read(il,*) nei_in, ns_in
+         do i = 1, nei_in
+            read (il,*) i1, (nelm2(j), j=1,ns_in)
+            write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
+         end do
+         close (il)
+      end if      
       if (altc(1:3) .ne. 'sur') close (lu)
 
 c 94   format('ZONE T = "Simulation time ',1p,g16.9,' days"', a)

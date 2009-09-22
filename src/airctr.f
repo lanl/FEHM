@@ -390,7 +390,8 @@ c
       real*8 hmax, hmin, hmid
       character*80 form_string
       real*8 pref_1_2,pref_2_1,s_1_2,schng,pchng
-      parameter (pchng = 0.005,schng = 0.005)
+c      parameter (pchng = 0.005,schng = 0.005)
+      parameter (pchng = 0.005,schng = 0.000)
       save tref,pref
       if (jswitch.ne.0) strd_iter = strd_rich
 
@@ -540,26 +541,32 @@ c
                   do  mid=1,neq
                      mi=mid+ndummy
 c     
-                     if(phi(mi).lt.pref_1_2.and.ieos(mi).eq.1) then
+                     if(phi(mi).lt.pref_1_2.and.ieos(mi)
+     &                 .eq.1.and.days.ge.time_ieos(mi)) then
                         strd = strd_iter
                         s(mi) = s_1_2
                         phi(mi) = pref
                         ieos(mi)=2 
-                     else if(s(mi).lt.1.0-tol_phase.and.ieos(mi).eq.1) 
-     &                       then
+                        time_ieos(mi) = days + time_ch
+                     else if(s(mi).lt.1.0-tol_phase.and.ieos(mi) 
+     &                   .eq.1.and.days.ge.time_ieos(mi)) then 
                         strd = strd_iter
                         s(mi) = s_1_2
                         ieos(mi)=2 
-                     else if(s(mi).gt.tol_phase.and.ieos(mi).eq.3) then
+                        time_ieos(mi) = days + time_ch
+                     else if(s(mi).gt.tol_phase.and.ieos(mi)
+     &                .eq.2.and.days.ge.time_ieos(mi)) then 
                         strd = strd_iter
-                        ieos(mi)=2
-                     else if(s(mi).gt.1.0+tol_phase.and.ieos(mi).eq.2) 
-     &                       then
+                        ieos(mi)=2                      
+                     else if(s(mi).gt.1.0+tol_phase.and.ieos(mi)
+     &                   .eq.2.and.days.ge.time_ieos(mi)) then     
                         strd = strd_iter
                         phi(mi) = pref_2_1
                         s(mi) = 1.
                         ieos(mi)=1
-                     else if(s(mi).le.-tol_phase.and.ieos(mi).eq.2) then
+                        time_ieos(mi) = days + time_ch
+                     else if(s(mi).le.-tol_phase.and.ieos(mi)
+     &                   .eq.2.and.days.ge.time_ieos(mi)) then       
                         s(mi)=0.0
                         strd = strd_iter
 c     ieos(mi)=3
