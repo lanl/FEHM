@@ -204,26 +204,28 @@ c     add to source sum
      2                          a_axy(indexa_axy)
                         end if
                      end if
-                     if(vflux_flag .and. a_vxy(indexa_axy).gt.0.) then
+                     if(vflux_flag) then
+                        if (a_vxy(indexa_axy).gt.0.) then
 c     add to sum only if the connecting node is not also
 c     in the zone or else the connecting node is itself, i.e.
 c     the value is a sink term
-                        if(izoneflxz(idummy+nelm(iconn))
-     2                       .ne.izone.or.nelm(iconn)
-     3                       .eq.inneq) then
-                           sumfout(izone,iv) = sumfout(izone,iv) + 
-     &                          a_vxy(indexa_axy)
-                           if(nelm(iconn).eq.inneq) then
-                              sumsink(izone,iv) = sumsink(izone,iv) +
-     2                             a_vxy(indexa_axy)
+                           if(izoneflxz(idummy+nelm(iconn))
+     2                          .ne.izone.or.nelm(iconn)
+     3                          .eq.inneq) then
+                              sumfout(izone,iv) = sumfout(izone,iv) + 
+     &                             a_vxy(indexa_axy)
+                              if(nelm(iconn).eq.inneq) then
+                                 sumsink(izone,iv) = sumsink(izone,iv) +
+     2                                a_vxy(indexa_axy)
+                              end if
                            end if
-                        end if
-                     elseif(vflux_flag.and.a_vxy(indexa_axy).lt.0.) then
+                        else if (a_vxy(indexa_axy).lt.0.) then
 c     add to source sum
-                        if(nelm(iconn).eq.inneq) then
-                           sumsource(izone,iv) = sumsource(izone,iv) +
-     2                          a_vxy(indexa_axy)
-                        end if
+                           if(nelm(iconn).eq.inneq) then
+                              sumsource(izone,iv) = sumsource(izone,iv)
+     2                             + a_vxy(indexa_axy)
+                           end if
+                       end if
                      end if
                   end if               
                end do

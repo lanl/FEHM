@@ -1348,7 +1348,9 @@ c for nodal volume or zone volume
                      if (ja .lt. 0) then
                         mvol = 0.d0
                         do i = 1, n0
-                           if (izonef(i) .eq. abs (ja) ) then
+                           if (izonef(i) .eq. abs (ja) .and. 
+     &                          ps_trac(i) .gt. 0.) then
+c     Only include if porosity > 0
                               if (icns(nsp) .eq. 0) then
                                  sdum = 1.0
                                  roldum = denr(i)
@@ -1371,7 +1373,9 @@ c for nodal volume or zone volume
                         end do
                         do i = 1, n0
                            mi = i + npn
-                           if (izonef(i) .eq. abs(ja)) then
+                           if (izonef(i) .eq. abs(ja) .and. 
+     &                          ps_trac(i) .gt. 0.) then
+c     Only include if porosity > 0
                               an(i + npn) = abs(rdum1) / mvol
                               sctmp = 0.
 c Account for sorption (moles input is total)

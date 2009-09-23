@@ -902,7 +902,8 @@ c will be output
             end do
          else
             wflux_flag = .true.
-            if (irdof .ne. 13 .or. ifree .ne. 0) vflux_flag = .true.
+            if ((irdof .ne. 13 .or. ifree .ne. 0) .and. jswitch .eq. 0) 
+     &           vflux_flag = .true.
          end if
          read(inpt,*) nflxz
          if(.not.allocated(iflxz)) allocate(iflxz(max(1,nflxz)))

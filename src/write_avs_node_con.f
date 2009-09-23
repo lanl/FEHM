@@ -768,9 +768,9 @@ c=================================================
      &                    i=1,write_total)
                   end if
                end if
-            enddo
+ 299        enddo
             if(altc(1:3) .eq. 'sur') close (lu)
- 299     end do
+         end do
          deallocate (title)
       endif
 
