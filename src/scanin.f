@@ -2070,8 +2070,18 @@ c need porosity model
  	           read(locunitnum,*) idumm
 	          else if (idumm .eq. 2 .or. idumm .eq. 4) then
                      read(locunitnum,*) idumm, (adumm, ja = 1, 9) 
+	          else if (idumm .eq. 3) then
+                     read(locunitnum,*) idumm, (adumm, ja = 1, 9) 
+	          else if (idumm .eq. 4) then
+                     read(locunitnum,*) idumm, (adumm, ja = 1, 14)   
+	          else if(idumm.eq.5) then
+                     read(locunitnum,*) idumm,(adumm,ja=1,6)
 	          else if(idumm.eq.6) then
                      read(locunitnum,*) idumm,(adumm,ja=1,11)
+	          else if(idumm.eq.7) then
+                     read(locunitnum,*) idumm,(adumm,ja=1,6)
+	          else if(idumm.eq.8) then
+                     read(locunitnum,*) idumm,(adumm,ja=1,9)         
                   else if(idumm.eq.11) then
                      read(locunitnum,*) idumm,(adumm,ja=1,3)
                   else
@@ -2083,7 +2093,7 @@ c need porosity model
          allocate(ispmt(i))
          allocate(spm1f(i),spm2f(i),spm3f(i),spm4f(i),spm5f(i))
          allocate(spm6f(i),spm7f(i),spm8f(i),spm9f(i),spm10f(i))
-         allocate(spm11f(i))
+         allocate(spm11f(i),spm12f(i),spm13f(i),spm14f(i))
          call done_macro(locunitnum)
          
       end if

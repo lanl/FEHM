@@ -36,7 +36,7 @@
       integer ipermstr4,ipermstr5,ipermstr6,ipermstr7,ipermstr8
       integer ipermstr11
       integer istresscall,ilitho,iad_strs,istresspor,idisp_rel
-      integer cnum_stress, ilithgrad
+      integer cnum_stress, ilithgrad, permfile
       
       real*8 daystr,fpor,fric,wo,fwght,fupwt,fdnwt,tol_stress
       real*8 tptch,pchmin,pchmax,tchmin,tchmax,coftol,bp_stress
@@ -102,6 +102,10 @@ c Failure + Bai displacement
       real*8, allocatable ::  s_f_xy0(:,:)
       real*8, allocatable ::  s_f_xz0(:,:)
       real*8, allocatable ::  s_f_yz0(:,:) 
+      real*8, allocatable ::  frc_zen(:,:)
+      real*8, allocatable ::  frc_azm(:,:)
+cccccccccccccccccccccccccccccccccccccccccccccccheck
+      real*8,  allocatable ::  check(:)            
 c     ___________________________________________      
       real*8, allocatable ::  str_xy(:) 
       real*8, allocatable ::  str_xz(:)
@@ -275,15 +279,5 @@ c     For Min model
       real*8 ipmd4_fx,ipmd4_br,ipmd4_bmx,ipmd4_alx,ipmd4_aly
       real*8 ipmd4_fdx,ipmd4_dmx,ipmd4_gmx,ipmd4_kc
       real*8 ipmd4_fy,ipmd4_btx,ipmd4_bty, ipmd4_fdy,ipmd4_gmy
-
-c     For Bai model	
-      real*8 ipmd7_bx,ipmd7_Jx,ipmd7_sx,ipmd7_phid,ipmd7_ksh
-      real*8 ipmd7_by,ipmd7_Jy,ipmd7_sy
-      real*8 ipmd7_bz,ipmd7_Jz,ipmd7_sz
-c     For failure criteria model
-      real*8 ipmd8_tns,ipmd8_clb
-      real*8 ipmd8_bx,ipmd8_Jx,ipmd8_sx,ipmd8_phid,ipmd8_ksh
-      real*8 ipmd8_by,ipmd8_Jy,ipmd8_sy
-      real*8 ipmd8_bz,ipmd8_Jz,ipmd8_sz
       
       end module comsi

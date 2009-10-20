@@ -41,14 +41,18 @@ c
       real*8 disptx12, dispty12, disptz12
       real*8 dispxy12, dispxz12, dispyx12, dispyz12, dispzx12, dispzy12
       real*8 alpkbx1, alpkbx2, alpkby1, alpkby2, alpkbz1, alpkbz2, alpi
-      real*8 tx12, ty12, tz12
+      real*8 tx12, ty12, tz12, phid, phib
       real*8 biot,erat,efac,epi,dpd,shpi,stress_min_prin,lith_min
       real*8 ctherm,eti,shti,e1i,e2i,e3i,lith_damage_fac,str_eff,pterm
       
 c****************************local parameters used in perm model 4      
       real*8  ipmd4_p1,ipmd4_p2,ipmd4_p3,ipmd4_p4
       real*8  ipmd4_k
-      
+c**************************** parameters added for perm model 5, may need to be merged with 7&8
+      real*8  knx, kny, knz, ksx, ksy, ksz
+      real*8  epsxx12, epsyy12, epszz12 
+      real*8  epsxy12, epsxz12, epsyz12
+      real*8  sisjx, sisjy, sisjz           
 c****************************local parameters used in perm model 7 Bai   
       real*8  ipmd7_dsx,ipmd7_dsy,ipmd7_dsz
       real*8  ipmd7_dsxy,ipmd7_dsxz,ipmd7_dsyz
@@ -60,9 +64,12 @@ c****************************local parameters used in perm model 7 Bai
 c****************************local parameters used in perm model 8  Bai 
       real*8  ipmd8_dsx,ipmd8_dsy,ipmd8_dsz
       real*8  ipmd8_dsxy,ipmd8_dsyz,ipmd8_dsxz
-      real*8  ipmd8_knx,ipmd8_kny,ipmd8_knz
+      real*8  ipmd8_tns,ipmd8_clb,cohes,sh_cohe
       real*8  ipmd8_nmx,ipmd8_nmy,ipmd8_nmz
       real*8  ipmd8_shx,ipmd8_shy,ipmd8_shz
+      real*8  esxi, esyi, eszi
+      real*8  dsx12,dsy12,dsz12,dsxy12,dsxz12,dsyz12
+      real*8  L11,L12,L13,L21,L22,L23,L31,L32,L33
       
       integer ipermx_max, ipermy_max, ipermz_max
       integer iflg,i,kb,kc,i1,i2,jj,jj1,ndummy,ipchk,ipr_str
@@ -70,6 +77,7 @@ c****************************local parameters used in perm model 8  Bai
       integer ikcxmin,ikcxmax,ikcymin,ikcymax,ikczmin,ikczmax
       integer kbxmin,kbxmax,kbymin,kbymax,kbzmin,kbzmax
       integer kbx1,kbx2,kby1,kby2,kbz1,kbz2,idir,iispmd
+       
 c................
       real*8 gk0,gpmod,gmexp,gn,sigy_eff
       real*8 dis_tol
@@ -78,10 +86,7 @@ c.........................................
       parameter (permchng_tol = 0.01,frac_tol=0.00001)
       parameter (dis_tol = 1.d-8)
 c     
-c  
 c     
-c     
-      if(idoff .eq. -1) return      
       if(istrs.eq.0) return
       if(ipermstr.eq.0) return
 c     
@@ -144,9 +149,10 @@ c
 c     
 c     model 3 and model 5 require an initial setup      
 c     
-c     only allocate if there is a model 3 and model 5
+c     only allocate if there is a model 3, model 5 and model 8
 c     
-       if(ipermstr3.ne.0.or.ipermstr5.ne.0.or.ipermstr8.ne.0) then
+         if(ipermstr3.ne.0.or.ipermstr5.ne.0.or.ipermstr7.ne.0.
+     &      .or.ipermstr8.ne.0) then
             if(.not.allocated(ipermx)) then
                allocate(ipermx(n0,2))
                allocate(ipermy(n0,2))
@@ -156,14 +162,15 @@ c
                ipermz = 0
             endif  
 c     
-c     only calculate for model 3 and model 5
+c     only calculate for model 3, model 5, model 7 and model 8
 c     initial setup calcs node neighbor information
-c     
+c    
             jj1 =0 
             do i = 1,n0
                iispmd = ispm(i)
                ispmd = ispmt(iispmd)
-               if(ispmd.eq.3.or.ispmd.eq.5.or.ispmd.eq.8) then
+               if(ispmd.eq.3.or.ispmd.eq.5.or.ispmd.eq.7
+     &            .or.ispmd.eq.8) then
                   xi = cord(i,1)
                   yi = cord(i,2)
                   zi = cord(i,3)
@@ -201,8 +208,8 @@ c
                            xdmaxt = dist
                         else if(abs(dis-xdmax).lt.dis_tol) then
                            if(dist.lt.xdmaxt) then
-                              xdmaxt = dist
-                              kbxmax = kb
+                             xdmaxt = dist
+                             kbxmax = kb
                            endif
                         endif
                      else if(xkb-xi.lt.0) then
@@ -214,8 +221,8 @@ c
                            xdmint = dist
                         else if(abs(dis-xdmin).lt.dis_tol) then
                            if(dist.lt.xdmint) then
-                              xdmint = dist
-                              kbxmin = kb
+                             xdmint = dist
+                             kbxmin = kb
                            endif
                         endif
                      endif
@@ -228,8 +235,8 @@ c
                            ydmaxt = dist
                         else if(abs(dis-ydmax).lt.dis_tol) then
                            if(dist.lt.ydmaxt) then
-                              ydmaxt = dist
-                              kbymax = kb
+                             ydmaxt = dist
+                             kbymax = kb
                            endif
                         endif
                      else if(ykb-yi.lt.0) then
@@ -241,8 +248,8 @@ c
                            ydmint = dist
                         else if(abs(dis-ydmin).lt.dis_tol) then
                            if(dist.lt.ydmint) then
-                              ydmint = dist
-                              kbymin = kb
+                             ydmint = dist
+                             kbymin = kb
                            endif
                         endif
                      endif 
@@ -255,8 +262,8 @@ c
                            zdmaxt = dist
                         else if(abs(dis-zdmax).lt.dis_tol) then
                            if(dist.lt.zdmaxt) then
-                              zdmaxt = dist
-                              kbzmax = kb
+                             zdmaxt = dist
+                             kbzmax = kb
                            endif
                         endif
                      else if(zkb-zi.lt.0) then
@@ -268,8 +275,8 @@ c
                            zdmint = dist
                         else if(abs(dis-zdmin).lt.dis_tol) then
                            if(dist.lt.zdmint) then
-                              zdmint = dist
-                              kbzmin = kb
+                             zdmint = dist
+                             kbzmin = kb
                            endif
                         endif
                      endif
@@ -283,57 +290,57 @@ c
                   ipermy(i,2) = kbymax	     
                   ipermz(i,1) = kbzmin
                   ipermz(i,2) = kbzmax	  
-                  if(cord(kbxmax,1)-cord(kbxmin,1).le.0.0) then
-                     jj1 =1
-                     write(ierr,*) 'dis(x) failed, node ',
-     &                    i,' model 3 or 5 sub stres_perm'
-                  endif 
-                  if(cord(kbymax,2)-cord(kbymin,2).le.0.0) then
-                     jj1 =1
-                     write(ierr,*) 'dis(y) failed, node ',
-     &                    i,' model 3 or 5 sub stres_perm' 
-                  endif 
-                  if(cord(kbzmax,3)-cord(kbzmin,3).le.0.0) then
-                     jj1 =1
-                     write(ierr,*) 'dis(y) failed, node ',
-     &                    i,' model 3 or 5 sub stres_perm'
-                  endif                             
-c     stop for zero distances               
-                  if(jj1.ne.0) stop     
-               endif 	                 
+               if(cord(kbxmax,1)-cord(kbxmin,1).le.0.0) then
+                jj1 =1
+                write(ierr,*) 
+     &          'dis(x) failed, node ',i,' model 3 or 5 sub stres_perm'
+               endif 
+               if(cord(kbymax,2)-cord(kbymin,2).le.0.0) then
+                jj1 =1
+                write(ierr,*) 
+     &          'dis(y) failed, node ',i,' model 3 or 5 sub stres_perm' 
+               endif 
+               if(cord(kbzmax,3)-cord(kbzmin,3).le.0.0) then
+                jj1 =1
+                write(ierr,*) 
+     &          'dis(z) failed, node ',i,' model 3 or 5 sub stres_perm'
+               endif                             
+c stop for zero distances               
+              if(jj1.ne.0) stop     
+             endif 	                 
             enddo
          endif
       endif
       go to 2001
-c     
-c     test code
-c     
+c
+c test code
+c      
       open(99,file='stress_perm',status = 'unknown')
-      do i = 1,n0
-         iispmd = ispm(i)
-         ispmd = ispmt(iispmd)
-         if(ispmd.eq.3.or.ispmd.eq.5) then
-            write(99,*) 'node = ',i
-            write(99,*) 
+              do i = 1,n0
+               iispmd = ispm(i)
+               ispmd = ispmt(iispmd)
+               if(ispmd.eq.3.or.ispmd.eq.5) then
+                write(99,*) 'node = ',i
+                write(99,*) 
      &           ' x node pair', ipermx(i,2), ipermx(i,1),
      &           ' dis ', cord(ipermx(i,2),1)-cord(ipermx(i,1),1)
-            if(cord(ipermx(i,2),1)-cord(ipermx(i,1),1).le.0.001)
-     &           write (99,*) '>>> zero distance x <<<<'
-            write(99,*) 
+                 if(cord(ipermx(i,2),1)-cord(ipermx(i,1),1).le.0.001)
+     &             write (99,*) '>>> zero distance x <<<<'
+                    write(99,*) 
      &           ' y node pair', ipermy(i,2), ipermy(i,1),
      &           ' dis ', cord(ipermy(i,2),2)-cord(ipermy(i,1),2)
-            if(cord(ipermy(i,2),2)-cord(ipermy(i,1),2).le.0.001)
-     &           write (99,*) '>>> zero distance y <<<<'
-            write(99,*) 
+                 if(cord(ipermy(i,2),2)-cord(ipermy(i,1),2).le.0.001)
+     &             write (99,*) '>>> zero distance y <<<<'
+                    write(99,*) 
      &           ' z node pair', ipermz(i,2), ipermz(i,1),
      &           ' dis ', cord(ipermz(i,2),3)-cord(ipermz(i,1),3)
-            if(cord(ipermz(i,2),3)-cord(ipermz(i,1),3).le.0.001)
-     &           write (99,*) '>>> zero distance z <<<<'    
-         endif
-      enddo
-      close(99)
-      
- 2001 continue
+                  if(cord(ipermz(i,2),3)-cord(ipermz(i,1),3).le.0.001)
+     &             write (99,*) '>>> zero distance z <<<<'    
+               endif
+              enddo
+              close(99)
+    
+2001  continue   
       if (iflg.eq.-1) then
 c     
 c     allocate memory for stress derivatives for fully coupled solution
@@ -341,7 +348,7 @@ c     just before call to generate equations
 c     
 c     
          if(ipermstr3.ne.0.or.ipermstr5.ne.0.and.
-     &        .not.allocated(rlxs))then  
+     &         .not.allocated(rlxs))then  
             allocate(rlxs(n0))
             allocate(rlys(n0))
             allocate(rlzs(n0))
@@ -357,7 +364,7 @@ c     deallocate memory for stress derivatives for fully coupled solution
 c     
 c     
          if(ipermstr3.ne.0.or.ipermstr5.ne.0.and.
-     &        allocated(rlxs))then       
+     &                    allocated(rlxs))then       
             deallocate(rlxs,rlys,rlzs)
             deallocate(drlxs,drlys,drlzs)
             deallocate(idum_str1)
@@ -431,7 +438,7 @@ c
                disx = (cord(kbx2,1)-cord(kbx1,1))/2.
                disy = (cord(kby2,2)-cord(kby1,2))/2.
                disz = (cord(kbz2,3)-cord(kbz1,3))/2.
-c     
+c               
                amultx = frac_bx**3
                amulty = frac_by**3
                amultz = frac_bz**3
@@ -454,9 +461,9 @@ c
 c     
 c     determine the net contribution  
 c     
-               disptx12 = max(dispx12-tx12,0.0d0)
-               dispty12 = max(dispy12-ty12,0.0d0) 
-               disptz12 = max(dispz12-tz12,0.0d0)              
+               disptx12 = max(dispx12-tx12,0.0)
+               dispty12 = max(dispy12-ty12,0.0) 
+               disptz12 = max(dispz12-tz12,0.0)              
 c     
 c     displacement terms (shear)
 c     
@@ -470,42 +477,42 @@ c
                
                rlxs(i) = amultyz*(1. + amulty*(dv(kby2)-dv(kby1)))**3*
      &              (1. + amultz*(dw(kbz2)-dw(kbz1)))**3
-               drlxs(i,2) = 3.*amultyz*(1. + amulty*(dv(kby2)-dv(kby1)))
-     &              **2*(1. + amultz*(dw(kbz2)-dw(kbz1)))**3*amulty
-               drlxs(i,1) =-3.*amultyz*(1. + amulty*(dv(kby2)-dv(kby1)))
-     &              **2*(1. + amultz*(dw(kbz2)-dw(kbz1)))**3*amulty
-               drlxs(i,4) = 3.*amultyz*(1. + amulty*(dv(kby2)-dv(kby1)))
-     &              **3*(1. + amultz*(dw(kbz2)-dw(kbz1)))**2*amultz
-               drlxs(i,3) =-3.*amultyz*(1. + amulty*(dv(kby2)-dv(kby1)))
-     &              **3*(1. + amultz*(dw(kbz2)-dw(kbz1)))**2*amultz
+          drlxs(i,2) = 3.*amultyz*(1. + amulty*(dv(kby2)-dv(kby1)))**2*
+     &              (1. + amultz*(dw(kbz2)-dw(kbz1)))**3*amulty
+          drlxs(i,1) = -3.*amultyz*(1. + amulty*(dv(kby2)-dv(kby1)))**2*
+     &              (1. + amultz*(dw(kbz2)-dw(kbz1)))**3*amulty
+          drlxs(i,4) = 3.*amultyz*(1. + amulty*(dv(kby2)-dv(kby1)))**3*
+     &              (1. + amultz*(dw(kbz2)-dw(kbz1)))**2*amultz
+          drlxs(i,3) = -3.*amultyz*(1. + amulty*(dv(kby2)-dv(kby1)))**3*
+     &              (1. + amultz*(dw(kbz2)-dw(kbz1)))**2*amultz
                
                rlys(i) = amultxz*(1. + amultx*(du(kby2)-du(kby1)))**3*
      &              (1. + amultz*(dw(kbz2)-dw(kbz1)))**3
-               drlys(i,2) = 3.*amultxz*(1. + amultx*(du(kby2)-du(kby1)))
-     &              **2*(1. + amultz*(dw(kbz2)-dw(kbz1)))**3*amultx
-               drlys(i,1) =-3.*amultxz*(1. + amultx*(du(kby2)-du(kby1)))
-     &              **2*(1. + amultz*(dw(kbz2)-dw(kbz1)))**3*amultx
-               drlys(i,4) = 3.*amultxz*(1. + amultx*(du(kby2)-du(kby1)))
-     &              **3*(1. + amultz*(dw(kbz2)-dw(kbz1)))**2*amultz
-               drlys(i,3) =-3.*amultxz*(1. + amultx*(du(kby2)-du(kby1)))
-     &              **3*(1. + amultz*(dw(kbz2)-dw(kbz1)))**2*amultz  
+          drlys(i,2) = 3.*amultxz*(1. + amultx*(du(kby2)-du(kby1)))**2*
+     &              (1. + amultz*(dw(kbz2)-dw(kbz1)))**3*amultx
+          drlys(i,1) = -3.*amultxz*(1. + amultx*(du(kby2)-du(kby1)))**2*
+     &              (1. + amultz*(dw(kbz2)-dw(kbz1)))**3*amultx
+          drlys(i,4) = 3.*amultxz*(1. + amultx*(du(kby2)-du(kby1)))**3*
+     &              (1. + amultz*(dw(kbz2)-dw(kbz1)))**2*amultz
+          drlys(i,3) = -3.*amultxz*(1. + amultx*(du(kby2)-du(kby1)))**3*
+     &              (1. + amultz*(dw(kbz2)-dw(kbz1)))**2*amultz  
                
                rlzs(i) = amultxy*(1. + amultx*(du(kby2)-du(kby1)))**3*
      &              (1. + amulty*(dv(kbz2)-dv(kbz1)))**3
-               drlzs(i,2) = 3.*amultxy*(1. + amultx*(du(kby2)-du(kby1)))
-     &              **2*(1. + amulty*(dv(kbz2)-dv(kbz1)))**3*amultx
-               drlzs(i,1) =-3.*amultxy*(1. + amultx*(du(kby2)-du(kby1)))
-     &              **2*(1. + amulty*(dv(kbz2)-dv(kbz1)))**3*amultx
-               drlzs(i,4) = 3.*amultxy*(1. + amultx*(du(kby2)-du(kby1)))
-     &              **3*(1. + amulty*(dv(kbz2)-dv(kbz1)))**2*amulty
-               drlzs(i,3) =-3.*amultxy*(1. + amultx*(du(kby2)-du(kby1)))
-     &              **3*(1. + amulty*(dv(kbz2)-dv(kbz1)))**2*amulty     
+          drlzs(i,2) = 3.*amultxy*(1. + amultx*(du(kby2)-du(kby1)))**2*
+     &              (1. + amulty*(dv(kbz2)-dv(kbz1)))**3*amultx
+          drlzs(i,1) = -3.*amultxy*(1. + amultx*(du(kby2)-du(kby1)))**2*
+     &              (1. + amulty*(dv(kbz2)-dv(kbz1)))**3*amultx
+          drlzs(i,4) = 3.*amultxy*(1. + amultx*(du(kby2)-du(kby1)))**3*
+     &              (1. + amulty*(dv(kbz2)-dv(kbz1)))**2*amulty
+          drlzs(i,3) = -3.*amultxy*(1. + amultx*(du(kby2)-du(kby1)))**3*
+     &              (1. + amulty*(dv(kbz2)-dv(kbz1)))**2*amulty     
                
 c     
 c     thermal contribution based formulation
 c     
-c     
-c     
+c    
+c
             else if(ispmd.eq.5) then
 c     
 c     perm model 5 displacement based model-explicitly coupled
@@ -521,17 +528,17 @@ c
                strx_min = spm1f(iispmd)
                stry_min = spm2f(iispmd) 
                strz_min = spm3f(iispmd) 
-c     
-c     the parameters in the fully coupled model are replaced 
-c     by initial permeabilities
-c     
+c
+c  the parameters in the fully coupled model are replaced 
+c  by initial permeabilities
+c               
                
                frac_bx = max(spm4f(iispmd),frac_tol) 
                frac_by = max(spm4f(iispmd),frac_tol) 
                frac_bz = max(spm4f(iispmd),frac_tol) 
-c     perx_m = spm7f(iispmd)
-c     pery_m = spm8f(iispmd) 
-c     perz_m = spm9f(iispmd) 
+c               perx_m = spm7f(iispmd)
+c               pery_m = spm8f(iispmd) 
+c               perz_m = spm9f(iispmd) 
                
                kbx1 = ipermx(i,1)
                kbx2 = ipermx(i,2)
@@ -546,9 +553,9 @@ c
                disy = (cord(kby2,2)-cord(kby1,2))/2.
                disz = (cord(kbz2,3)-cord(kbz1,3))/2.
 c     
-c     
-c     different definitions from model 3
-c     
+c   
+c different definitions from model 3
+c  
                amultx = 1./(disx*frac_bx)
                amulty = 1./(disy*frac_by)
                amultz = 1./(disz*frac_bz)
@@ -564,73 +571,146 @@ c
      &          (dv(kby2)-dv(kby1)-(dv_ini(kby2)-dv_ini(kby1)))/2.  
                dispz12 = 
      &          (dw(kbz2)-dw(kbz1)-(dw_ini(kbz2)-dw_ini(kbz1)))/2. 
+               epsxx12 = dispx12/disx
+               epsyy12 = dispy12/disy
+               epszz12 = dispz12/disz 
 c     
 c     displacement terms (thermal)
 c     
                alpi = alp(i)     
-               tx12 = (t(i)-tini(i))*alpi*disx
-               ty12 = (t(i)-tini(i))*alpi*disy
-               tz12 = (t(i)-tini(i))*alpi*disz 
+               dt = t(i)-tini(i)
+               efac = 3.d0*e2(i)+2.d0*e3(i)        
+c               tx12 = (t(i)-tini(i))*alpi*disx
+c               ty12 = (t(i)-tini(i))*alpi*disy
+c               tz12 = (t(i)-tini(i))*alpi*disz 
+
 c     
 c     determine the net contribution  
 c     
-               disptx12 = max(dispx12-tx12,0.0d0)
-               dispty12 = max(dispy12-ty12,0.0d0) 
-               disptz12 = max(dispz12-tz12,0.0d0)              
+
+               dispx12= dispx12
+     &         +(e1(i)*epsxx12+e2(i)*(epsyy12+epszz12)
+     &         -alpi*efac*dt)/knx     
+
+               dispy12 = dispy12
+     &         +(e1(i)*epsyy12+e2(i)*(epsxx12+epszz12)
+     &         -alpi*efac*dt)/kny
+               
+               dispz12 = dispz12
+     &         +(e1(i)*epszz12+e2(i)*(epsxx12+epsyy12)
+     &         -alpi*efac*dt)/knz
+               
+               disptx12 = max(dispx12,0.0)
+               dispty12 = max(dispy12,0.0) 
+               disptz12 = max(dispz12,0.0)              
 c     
 c     displacement terms (shear)
 c     
-               dispxy12 = (du(kby2)-du(kby1))/2.
-               dispxz12 = (du(kbz2)-du(kbz1))/2.  
-               dispyx12 = (dv(kbx2)-dv(kbx1))/2.
-               dispyz12 = (dv(kbz2)-dv(kbz1))/2.
-               dispzx12 = (dw(kbx2)-dw(kbx1))/2.
-               dispzy12 = (dw(kby2)-dw(kby1))/2.                      
                
-               rlxs(i) = amultyz*(1. + amulty*dispty12)**3*
-     &              (1. + amultz*disptz12)**3
-               drlxs(i,2) = 3.*amultyz*(1. + amulty*dispty12)**2*
+               epsxy12 = abs((du(kby2)-du(kby1))/2)/disy
+     &                  +abs((dv(kbx2)-dv(kbx1))/2)/disx          
+               epsxz12 = abs((du(kbz2)-du(kbz1))/2)/disz
+     &                  +abs((dw(kbx2)-dw(kbx1))/2)/disx
+               epsyz12 = abs((dv(kbz2)-dv(kbz1))/2)/disz
+     &                  +abs((dw(kby2)-dw(kby1))/2)/disy
+               
+            if(str_x(i)-phi(i).gt.0) then
+                dispyx12 = (disy+e3(i)/ksy)*epsxy12
+                dispzx12 = (disz+e3(i)/ksz)*epsxz12
+            endif
+            
+            if(str_y(i)-phi(i).gt.0) then
+               dispxy12 = (disx+e3(i)/ksx)*epsxy12
+               dispzy12 = (disz+e3(i)/ksz)*epsyz12  
+            endif
+
+            if(str_z(i)-phi(i).gt.0) then
+                dispxz12 = (disx+e3(i)/ksx)*epsxz12
+                dispyz12 = (disy+e3(i)/ksy)*epsyz12
+            endif
+
+c               dispxy12 = (disx+e3(i)/ksx)*epsxy12
+c               dispxz12 = (disx+e3(i)/ksx)*epsxz12
+c               dispyx12 = (disy+e3(i)/ksy)*epsxy12
+c               dispyz12 = (disy+e3(i)/ksy)*epsyz12
+c               dispzx12 = (disz+e3(i)/ksz)*epsxz12
+c               dispzy12 = (disz+e3(i)/ksz)*epsyz12  
+
+c
+c     perm enhancement                               
+c
+
+          if(frac_by.eq.0.and.frac_bz.eq.0) then
+             rlxs(i) = 1.
+          else
+             rlxs(i) = 1/(frac_by**3+frac_bz**3)*((frac_by+dispty12
+     &        +(dispxy12+dispzy12)*tan(phid/180*pi))**3+
+     &       (frac_bz+disptz12+(dispyz12+dispxz12)*tan(phid/180*pi))**3)
+          endif
+          
+          if(frac_bx.eq.0.and.frac_bz.eq.0) then
+             rlys(i) = 1.
+          else
+             rlys(i) = 1/(frac_bx**3+frac_bz**3)*((frac_bx+disptx12
+     &       +(dispyx12+dispzx12)*tan(phid/180*pi))**3+
+     &       (frac_bz+disptz12+(dispyz12+dispxz12)*tan(phid/180*pi))**3)
+          endif
+          
+          if(frac_bx.eq.0.and.frac_by.eq.0) then
+             rlzs(i) = 1.
+          else
+             rlzs(i) = 1/(frac_bx**3+frac_by**3)*((frac_bx+disptx12
+     &       +(dispyx12+dispzx12)*tan(phid/180*pi))**3+
+     &       (frac_by+dispty12+(dispxy12+dispzy12)*tan(phid/180*pi))**3)
+          endif
+          
+ccccccccccccccccccccccccccccccccccccccccccccccccccccCHECK          
+             check(i)= (dispxy12+dispzy12)*tan(phid/180*pi)
+               
+c               rlxs(i) = amultyz*(1. + amulty*dispty12)**3*
+c     &              (1. + amultz*disptz12)**3
+          drlxs(i,2) = 3.*amultyz*(1. + amulty*dispty12)**2*
      &              (1. + amultz*disptz12)**3*amulty
-               drlxs(i,1) = -3.*amultyz*(1. + amulty*dispty12)**2*
+          drlxs(i,1) = -3.*amultyz*(1. + amulty*dispty12)**2*
      &              (1. + amultz*disptz12)**3*amulty
-               drlxs(i,4) = 3.*amultyz*(1. + amulty*dispty12)**3*
+          drlxs(i,4) = 3.*amultyz*(1. + amulty*dispty12)**3*
      &              (1. + amultz*disptz12)**2*amultz
-               drlxs(i,3) = -3.*amultyz*(1. + amulty*dispty12)**3*
+          drlxs(i,3) = -3.*amultyz*(1. + amulty*dispty12)**3*
      &              (1. + amultz*disptz12)**2*amultz
                
-               rlys(i) = amultxz*(1. + amultx*disptz12)**3*
-     &              (1. + amultz*disptz12)**3
-               drlys(i,2) = 3.*amultxz*(1. + amultx*disptz12)**2*
+c               rlys(i) = amultxz*(1. + amultx*disptz12)**3*
+c     &              (1. + amultz*disptz12)**3
+          drlys(i,2) = 3.*amultxz*(1. + amultx*disptz12)**2*
      &              (1. + amultz*disptz12)**3*amultx
-               drlys(i,1) = -3.*amultxz*(1. + amultx*disptz12)**2*
+          drlys(i,1) = -3.*amultxz*(1. + amultx*disptz12)**2*
      &              (1. + amultz*disptz12)**3*amultx
-               drlys(i,4) = 3.*amultxz*(1. + amultx*disptz12)**3*
+          drlys(i,4) = 3.*amultxz*(1. + amultx*disptz12)**3*
      &              (1. + amultz*disptz12)**2*amultz
-               drlys(i,3) = -3.*amultxz*(1. + amultx*disptz12)**3*
+          drlys(i,3) = -3.*amultxz*(1. + amultx*disptz12)**3*
      &              (1. + amultz*disptz12)**2*amultz  
                
-               rlzs(i) = amultxy*(1. + amultx*disptz12)**3*
-     &              (1. + amulty*dispty12)**3
-               drlzs(i,2) = 3.*amultxy*(1. + amultx*disptz12)**2*
+c               rlzs(i) = amultxy*(1. + amultx*disptz12)**3*
+c     &              (1. + amulty*dispty12)**3
+          drlzs(i,2) = 3.*amultxy*(1. + amultx*disptz12)**2*
      &              (1. + amulty*dispty12)**3*amultx
-               drlzs(i,1) = -3.*amultxy*(1. + amultx*disptz12)**2*
+          drlzs(i,1) = -3.*amultxy*(1. + amultx*disptz12)**2*
      &              (1. + amulty*dispty12)**3*amultx
-               drlzs(i,4) = 3.*amultxy*(1. + amultx*disptz12)**3*
+          drlzs(i,4) = 3.*amultxy*(1. + amultx*disptz12)**3*
      &              (1. + amulty*dispty12)**2*amulty
-               drlzs(i,3) = -3.*amultxy*(1. + amultx*disptz12)**3*
+          drlzs(i,3) = -3.*amultxy*(1. + amultx*disptz12)**3*
      &              (1. + amulty*dispty12)**2*amulty     
                
 c     
 c     thermal contribution based formulation
 c     
-c     
+c   
 c     now change absolute permeabilities         
 
-               pnx(i) = pnx0(i)*rlxs(i)
-               pny(i) = pny0(i)*rlys(i)
-               pnz(i) = pnz0(i)*rlzs(i)
-               
-c     
+         pnx(i) = pnx0(i)*rlxs(i)
+         pny(i) = pny0(i)*rlys(i)
+         pnz(i) = pnz0(i)*rlzs(i)
+       
+c   
             else if(ispmd.eq.2) then
 c     perm model 2 - volume strains
 c     lagged permeability only (stress-based) (only after each time step)
@@ -651,8 +731,6 @@ c     spm6f is e10_facz, damage factor (maximum z) for elastic modulus
 c     spm7f is str_multx, maximum change in x-permeability allowed 
 c     spm8f is str_multy, maximum change in y-permeability  allowed 
 c     spm9f is str_multz, maximum change in z-permeability  allowed 
-c     model 3 and model 5 are fully coupled
-c     model 6 is simple directional plasticity
 c     
                if(icnl.ne.0) then   
 c     2D x-y version  (y can be vertical) 
@@ -846,7 +924,7 @@ c     spm7f is str_multx, maximum change in x-permeability allowed
 c     spm8f is str_multy, maximum change in y-permeability  allowed 
 c     spm9f is str_multz, maximum change in z-permeability  allowed 
 c     model 3 and model 5 are fully coupled
-c  
+c     model 6 is simple directional plasticity
 c     
                if(icnl.ne.0) then   
 c     2D x-y version  (y can be vertical) 
@@ -1074,21 +1152,17 @@ c********************have to decide how to do with perx_m etc. input?
                pery_m = 100     
                
 c***********************************NORMAL
-               ipmd4_p1 = ipmd4_alx*(str_x(i)-pho(i))+ipmd4_aly*
-     &              (str_y(i)-pho(i))
+      ipmd4_p1 = ipmd4_alx*(str_x(i)-pho(i))+ipmd4_aly*(str_y(i)-pho(i))
 c     maximum aperture dilation	   
                if(ipmd4_p1.lt.-5) ipmd4_p1 = -5
                
 c     normal dilation component	   
-               ipmd4_p2 = ipmd4_fx/12*(ipmd4_br+ipmd4_bmx*
-     &              exp(-ipmd4_p1))**3
+      ipmd4_p2 = ipmd4_fx/12*(ipmd4_br+ipmd4_bmx*exp(-ipmd4_p1))**3
                
-               ipmd4_p3 = ipmd4_btx*(str_x(i)-pho(i))+ipmd4_bty*
-     &              (str_y(i)-pho(i))
+      ipmd4_p3 = ipmd4_btx*(str_x(i)-pho(i))+ipmd4_bty*(str_y(i)-pho(i))
                if(ipmd4_p3.lt.-5) ipmd4_p4 = -5
                
-               ipmd4_p4 = ipmd4_fy/12*(ipmd4_br+ipmd4_bmx*
-     &              exp(-ipmd4_p3))**3
+      ipmd4_p4 = ipmd4_fy/12*(ipmd4_br+ipmd4_bmx*exp(-ipmd4_p3))**3
                
 c***********************************SHEAR
 c     ipmd4_k is the ratio of min stress to max stress
@@ -1113,355 +1187,177 @@ c***********************************SHEAR
 c     
 c     ******************************Bai et al model (stress based)	 
 c     
-            else if(ispmd.eq.7) then
-               if(icnl.ne.0) then 
-                  ipmd7_bx = spm1f(iispmd)
-                  ipmd7_Jx = spm2f(iispmd)
-                  ipmd7_sx = spm3f(iispmd)
-                  ipmd7_by = spm4f(iispmd)
-                  ipmd7_Jy = spm5f(iispmd)
-                  ipmd7_sy = spm6f(iispmd)
-                  ipmd7_phid = spm10f(iispmd)
-                  ipmd7_ksh = spm11f(iispmd)
-                  
-                  ipmd7_nmx = 0
-                  ipmd7_nmy = 0
-                  ipmd7_shx = 0
-                  ipmd7_shy = 0
-                  
-                  perx_m=100
-                  pery_m=100
-c     initial stress - current stress	   
-                  ipmd7_dsx = estr_x0(i) - (str_x(i)-phi(i))
-                  ipmd7_dsy = estr_y0(i) - (str_y(i)-phi(i))
-                  ipmd7_dsxy = abs(str_xy0(i) - str_xy(i))
-                  
-c     fracture toughness can be a function of stress as well 
-c     (not implemented yet)
-                  ipmd7_knx = ipmd7_Jx
-                  ipmd7_kny = ipmd7_Jy
-c     normal dilation 
-                  if(ipmd7_bx.eq.0) then
-                     ipmd7_nmx = 0.
-                     ipmd7_shx = 0.
-                  else
-      	             ipmd7_nmx = ipmd7_dsx/(ipmd7_knx*ipmd7_bx) + 
-     &               (ipmd7_sx-ipmd7_bx)/(elastic_mod(i)*ipmd7_bx)
-     &               *(ipmd7_dsx-poisson(i)*ipmd7_dsy)
-     
-                     ipmd7_shx = (2*(1+poisson(i))
-     &               *ipmd7_sx/elastic_mod(i)+1/ipmd7_ksh)
-     &               *ipmd7_dsxy/ipmd7_bx*tan(ipmd7_phid/180*pi)      
-                  endif
-         
-                  if(ipmd7_by.eq.0) then
-                     ipmd7_nmy = 0.
-                     ipmd7_shy = 0.
-                  else
-                     ipmd7_nmy = ipmd7_dsy/(ipmd7_kny*ipmd7_by) + 
-     &               (ipmd7_sy-ipmd7_by)/(elastic_mod(i)*ipmd7_by)
-     &               *(ipmd7_dsy-poisson(i)*ipmd7_dsx)
-     
-                     ipmd7_shy = (2*(1+poisson(i))
-     &                *ipmd7_sy/elastic_mod(i)+1/ipmd7_ksh)
-     &                *ipmd7_dsxy/ipmd7_by*tan(ipmd7_phid/180*pi)     
-                  endif
+	 else if(ispmd.eq.7) then
+c     ************************ 2D is not implemented
+	  if(icnl.ne.0) then 
+	     write(ierr,*) 'Bai model not implemented in 2D'
+	     write(ierr,*) 'stopping in stress_perm.f'
 
-                  pnx(i) = pnx0(i)*(1+ipmd7_nmy+ipmd7_shy)**3
-                  pny(i) = pny0(i)*(1+ipmd7_nmx+ipmd7_shx)**3
-     
-                  pnx(i) = min(perx_m*pnx0(i),pnx(i))
-                  pny(i) = min(pery_m*pny0(i),pny(i))
-                  pnx(i) = max(1.*pnx0(i),pnx(i))
-                  pny(i) = max(1.*pny0(i),pny(i))  
         endif        
-c     
-c************************************3D
-               if(icnl.eq.0) then 
-                  
-                  ipmd7_bx = spm1f(iispmd)
-                  ipmd7_Jx = spm2f(iispmd)
-                  ipmd7_sx = spm3f(iispmd)
-                  ipmd7_by = spm4f(iispmd)
-                  ipmd7_Jy = spm5f(iispmd)
-                  ipmd7_sy = spm6f(iispmd)
-                  ipmd7_bz = spm7f(iispmd)
-                  ipmd7_Jz = spm8f(iispmd)
-                  ipmd7_sz = spm9f(iispmd)
-                  ipmd7_phid = spm10f(iispmd)
-                  ipmd7_ksh = spm11f(iispmd)
-                  
-                  ipmd7_nmx = 0
-                  ipmd7_nmy = 0
-                  ipmd7_nmz = 0
-                  ipmd7_shx = 0
-                  ipmd7_shy = 0
-                  ipmd7_shz = 0
-                  
-                  perx_m=100
-                  pery_m=100
-                  perz_m=100
-c     initial stress - current stress	   
-                  ipmd7_dsx = estr_x0(i) - (str_x(i)-phi(i))
-                  ipmd7_dsy = estr_y0(i) - (str_y(i)-phi(i))
-                  ipmd7_dsz = estr_z0(i) - (str_z(i)-phi(i))
-                  ipmd7_dsxy = abs(str_xy0(i) - str_xy(i))
-                  ipmd7_dsxz = abs(str_xz0(i) - str_xz(i))
-                  ipmd7_dsyz = abs(str_yz0(i) - str_yz(i))
-                  
-c     fracture toughness can be a function of stress as well 
-c     (not implemented yet)
-                  ipmd7_knx = ipmd7_Jx
-                  ipmd7_kny = ipmd7_Jy
-                  ipmd7_knz = ipmd7_Jz
-                  
-c     normal dilation
-         	      if(ipmd7_bx.eq.0.) then
-         	         ipmd7_nmx = 0.
-         	         ipmd7_shx = 0.
-         	      else
-                     ipmd7_nmx = ipmd7_dsx/(ipmd7_knx*ipmd7_bx) + 
-     &                   (ipmd7_sx-ipmd7_bx)/(elastic_mod(i)*ipmd7_bx)
-     &                   *(ipmd7_dsx-poisson(i)*
-     &                   (ipmd7_dsy+ipmd7_dsz)) 
-     
-                     ipmd7_shx = (2*(1+poisson(i))*ipmd7_sx/
-     &                   elastic_mod(i)
-     &                   +1/ipmd7_ksh)
-     &                   *(ipmd7_dsxy+ipmd7_dsxz)/
-     &                   ipmd7_bx*tan(ipmd7_phid/180*pi)
-                  endif 
-                  
-                  if(ipmd7_by.eq.0.) then
-                     ipmd7_nmy = 0.
-                     ipmd7_shy = 0.
-                  else  
-                     ipmd7_nmy = ipmd7_dsy/(ipmd7_kny*ipmd7_by) + 
-     &                   (ipmd7_sy-ipmd7_by)/(elastic_mod(i)*ipmd7_by)
-     &                   *(ipmd7_dsy-poisson(i)*(ipmd7_dsx+ipmd7_dsz))
+c
+c **************************** 3D
+c
+	  if(icnl.eq.0) then 
 
-                     ipmd7_shy = (2*(1+poisson(i))*ipmd7_sy/
-     &                   elastic_mod(i)
-     &                   +1/ipmd7_ksh)
-     &                   *(ipmd7_dsxy+ipmd7_dsyz)/
-     &                   ipmd7_by*tan(ipmd7_phid/180*pi)
-                  endif
-                  
-                  if(ipmd7_bz.eq.0) then
-                     ipmd7_nmz = 0.
-                     ipmd7_shz = 0.
-                  else
-                     ipmd7_nmz = ipmd7_dsz/(ipmd7_knz*ipmd7_bz) + 
-     &                   (ipmd7_sz-ipmd7_bz)/
-     &                   (elastic_mod(i)*ipmd7_bz)
-     &                   *(ipmd7_dsz-poisson(i)*
-     &                   (ipmd7_dsx+ipmd7_dsy))
-                 
-                     ipmd7_shz = (2*(1+poisson(i))*
-     &                    ipmd7_sz/elastic_mod(i)
-     &                    +1/ipmd7_ksh)
-     &                    *(ipmd7_dsxz+ipmd7_dsyz)/
-     &                    ipmd7_bz*tan(ipmd7_phid/180*pi)
-                  endif
-                  
-                  pnx(i) = pnx0(i)/(ipmd7_by**3+ipmd7_bz**3)*
-     &                 (ipmd7_by**3*(1+ipmd7_nmy+ipmd7_shy)**3 
-     &                 +ipmd7_bz**3*(1+ipmd7_nmz+ipmd7_shz)**3)
-                  
-                  pny(i) = pny0(i)/(ipmd7_bx**3+ipmd7_bz**3)*
-     &                 (ipmd7_bx**3*(1+ipmd7_nmx+ipmd7_shx)**3
-     &                 +ipmd7_bz**3*(1+ipmd7_nmz+ipmd7_shz)**3)
-                  
-                  pnz(i) = pnz0(i)/(ipmd7_bx**3+ipmd7_by**3)*
-     &                 (ipmd7_bx**3*(1+ipmd7_nmx+ipmd7_shx)**3
-     &                 +ipmd7_by**3*(1+ipmd7_nmy+ipmd7_shy)**3)
-                  
-                  
-                  pnx(i) = min(perx_m*pnx0(i),pnx(i))
-                  pny(i) = min(pery_m*pny0(i),pny(i))
-                  pnz(i) = min(perz_m*pnz0(i),pnz(i))
-                  pnx(i) = max(1.*pnx0(i),pnx(i))
-                  pny(i) = max(1.*pny0(i),pny(i))  
-                  pnz(i) = max(1.*pnz0(i),pnz(i))
-               endif 
-               
+	   frac_bx = spm1f(iispmd)
+	   frac_by = spm2f(iispmd)
+	   frac_bz = spm3f(iispmd)
+	   knx = spm4f(iispmd)
+	   ksx = spm5f(iispmd)
+	   phid = spm6f(iispmd)
+
+         kny = knx
+         knz = knx
+         ksy = ksx
+         ksz = ksx	     
+	   ipmd7_nmx = 0.
+	   ipmd7_nmy = 0.
+	   ipmd7_nmz = 0.
+	   ipmd7_shx = 0.
+	   ipmd7_shy = 0.
+	   ipmd7_shz = 0.
+	     
+	   perx_m=1.e4
+	   pery_m=1.e4
+	   perz_m=1.e4
+c initial stress - current stress	   
+	   ipmd7_dsx = estr_x0(i) - (str_x(i)-phi(i))
+	   ipmd7_dsy = estr_y0(i) - (str_y(i)-phi(i))
+	   ipmd7_dsz = estr_z0(i) - (str_z(i)-phi(i))
+	   ipmd7_dsxy = abs(str_xy0(i) - str_xy(i))
+	   ipmd7_dsxz = abs(str_xz0(i) - str_xz(i))
+	   ipmd7_dsyz = abs(str_yz0(i) - str_yz(i))
+	   
+	   if(ipmd7_dsx.lt.0) ipmd7_dsx = 0.
+	   if(ipmd7_dsy.lt.0) ipmd7_dsy = 0.
+	   if(ipmd7_dsz.lt.0) ipmd7_dsz = 0.
+
+         kbx1 = ipermx(i,1)
+         kbx2 = ipermx(i,2)
+         kby1 = ipermy(i,1)
+         kby2 = ipermy(i,2)
+         kbz1 = ipermz(i,1)
+         kbz2 = ipermz(i,2)
+c     
+c     identify displacements
+c     
+         disx = (cord(kbx2,1)-cord(kbx1,1))/2.
+         disy = (cord(kby2,2)-cord(kby1,2))/2.
+         disz = (cord(kbz2,3)-cord(kbz1,3))/2.
+     
+c
+c       fracture dilation (normal and shear)        
+c
+         if(frac_bx.ne.0.) then
+           ipmd7_nmx = ipmd7_dsx/(knx*frac_bx) + disx/frac_bx
+     &     *((ipmd7_dsx-poisson(i)*(ipmd7_dsy+ipmd7_dsz))/elastic_mod(i)
+     &     +alp(i)*(t(i)-tini(i)))
+           
+           if(str_x(i)-phi(i).lt.0) then
+             ipmd7_shx = 0.
+           else     
+             ipmd7_shx = ((disy/e3(i)+1/ksy)*ipmd7_dsxy
+     &       +(disz/e3(i)+1/ksz)*ipmd7_dsxz)*tan(phid/180*pi)/frac_bx
+           endif
+           
+         endif 
+         
+         if(frac_by.ne.0.) then
+     	     ipmd7_nmy = ipmd7_dsy/(kny*frac_by) + disy/frac_by
+     &     *((ipmd7_dsy-poisson(i)*(ipmd7_dsx+ipmd7_dsz))/elastic_mod(i)
+     &     +alp(i)*(t(i)-tini(i)))
+           
+           if(str_y(i)-phi(i).lt.0) then
+             ipmd7_shy = 0.
+           else
+             ipmd7_shy = ((disx/e3(i)+1/ksx)*ipmd7_dsxy
+     &       +(disz/e3(i)+1/ksz)*ipmd7_dsyz)*tan(phid/180*pi)/frac_by
+           endif
+           
+         endif
+     
+         if(frac_bz.ne.0.) then
+	     ipmd7_nmz = ipmd7_dsz/(knz*frac_bz) + disz/frac_bz
+     &     *((ipmd7_dsz-poisson(i)*(ipmd7_dsx+ipmd7_dsy))/elastic_mod(i)
+     &     +alp(i)*(t(i)-tini(i)))
+           
+           if(str_z(i)-phi(i).lt.0) then
+             ipmd7_shy = 0.
+           else
+             ipmd7_shz = ((disx/e3(i)+1/ksx)*ipmd7_dsxz
+     &       +(disy/e3(i)+1/ksy)*ipmd7_dsyz)*tan(phid/180*pi)/frac_bz
+           endif
+           
+         endif
+
+cccccccccccccccccccccccccccccccccccCHECK            
+          check(i) = ipmd7_shy*frac_by    
+c
+c         perm enhancement    
+c
+
+          if(frac_by.ne.0.or.frac_bz.ne.0) then
+             pnx(i) = pnx0(i)/(frac_by**3+frac_bz**3)*
+     &     ( frac_by**3*(1+ipmd7_nmy+ipmd7_shy)**3 
+     &       + frac_bz**3*(1+ipmd7_nmz+ipmd7_shz)**3 ) 
+          endif
+          
+          if(frac_bx.ne.0.or.frac_bz.ne.0) then
+            pny(i) = pny0(i)/(frac_bx**3+frac_bz**3)*
+     &     ( frac_bx**3*(1+ipmd7_nmx+ipmd7_shx)**3
+     &       + frac_bz**3*(1+ipmd7_nmz+ipmd7_shz)**3 )                 
+          endif
+     
+          if(frac_bx.ne.0.or.frac_by.ne.0) then
+            pnz(i) = pnz0(i)/(frac_bx**3+frac_by**3)*
+     &     ( frac_bx**3*(1+ipmd7_nmx+ipmd7_shx)**3
+     &       + frac_by**3*(1+ipmd7_nmy+ipmd7_shy)**3 )
+          endif     
+
+          
+c         pnx(i) = min(perx_m*pnx0(i),pnx(i))
+c         pny(i) = min(pery_m*pny0(i),pny(i))
+c         pnz(i) = min(perz_m*pnz0(i),pnz(i))
+c         pnx(i) = max(0.01*pnx0(i),pnx(i))
+c         pny(i) = max(0.01*pny0(i),pny(i))  
+c         pnz(i) = max(0.01*pnz0(i),pnz(i))
+
+        endif   
 c     **************failure criteria + stress-perm (for intact rock)
             else if(ispmd.eq.8) then
                
                
                if(icnl.ne.0) then 
-                  ipmd8_bx = spm1f(iispmd)
-                  ipmd8_Jx = spm2f(iispmd)
-                  ipmd8_sx = spm3f(iispmd)
-                  ipmd8_by = spm4f(iispmd)
-                  ipmd8_Jy = spm5f(iispmd)
-                  ipmd8_sy = spm6f(iispmd)
-                  ipmd8_phid = spm10f(iispmd)
-                  ipmd8_ksh = spm11f(iispmd)
-c     Tensile strength and Coulomb criteria
-                  ipmd8_tns = spm12f(iispmd)
-                  ipmd8_clb = spm13f(iispmd)	   
-                  
-                  ipmd8_knx = ipmd8_Jx
-                  ipmd8_kny = ipmd8_Jy
-                  
-                  ipmd8_nmx = 0.
-                  ipmd8_nmy = 0.
-                  ipmd8_shx = 0.
-                  ipmd8_shy = 0.
-                  
-                  perx_m=100
-                  pery_m=100
-                  	    
-                  kbx1 = ipermx(i,1)
-                  kbx2 = ipermx(i,2)
-                  kby1 = ipermy(i,1)
-                  kby2 = ipermy(i,2)
-	    
-                  disx = cord(kbx2,1)-cord(kbx1,1)
-                  disy = cord(kby2,2)-cord(kby1,2)
-c     2D	    
-c     
-c frac_flg = 0 (no fracture)
-c          = 1 (frac - x direction       -> kx)
-c          = 2 (frac - y direction       -> ky)
-c          = 3 (frac - x and y direction -> kx,ky)
-c Tensile criteria
-                  if((str_y(i)-phi(i)).lt.ipmd8_tns.or.
-     &            (str_y(i)-phi(i)).gt.(str_x(i)-phi(i))*ipmd8_clb) then
-           
-                     if(frac_flg(i).eq.0.or.frac_flg(i).eq.2) then
-                        es_f_x0(i,2) = str_x(i)-phi(i)
-                        es_f_y0(i,2) = str_y(i)-phi(i)
-                        s_f_xy0(i,2) = str_xy(i)
-                        if(frac_flg(i).eq.0) then
-                           frac_flg(i) = 1
-                        elseif(frac_flg(i).eq.2) then
-                           frac_flg(i) = 3
-                        endif
-                     endif
-                  endif
-           
-                 if((str_x(i)-phi(i)).lt.ipmd8_tns.or.
-     &           (str_x(i)-phi(i)).gt.(str_y(i)-phi(i))*ipmd8_clb) then
-           
-                     if(frac_flg(i).eq.0.or.frac_flg(i).eq.1) then
-                        es_f_x0(i,1) = str_x(i)-phi(i)
-                        es_f_y0(i,1) = str_y(i)-phi(i)
-                        s_f_xy0(i,1) = str_xy(i)
-                        if(frac_flg(i).eq.0) then
-                           frac_flg(i) = 2
-                        elseif(frac_flg(i).eq.1) then
-                           frac_flg(i) = 3
-                        endif
-                     endif
-                 endif
+               
+c   ******** 2D is not implemented yet
 
-    	           ipmd8_nmx = 0
-	           ipmd8_nmy = 0     	   
+               endif
 
-	           if(frac_flg(i).eq.1) then
-                    ipmd8_dsx  = es_f_x0(i,2) - (str_x(i)-phi(i))
-                    ipmd8_dsy  = es_f_y0(i,2) - (str_y(i)-phi(i))
-                    ipmd8_dsxy = abs(s_f_xy0(i,2)-str_xy(i))
-            
-                    ipmd8_nmy = ipmd8_dsy/(ipmd8_kny*ipmd8_by) + 
-     &              (ipmd8_sy-ipmd8_by)/(elastic_mod(i)*ipmd8_by)
-     &              *(ipmd8_dsy-poisson(i)*ipmd8_dsx)
-            
-                    ipmd8_shy = (2*(1+poisson(i))
-     &              *ipmd8_sy/elastic_mod(i)+1/ipmd8_ksh)
-     &              *ipmd8_dsxy/ipmd8_by*tan(ipmd8_phid/180*pi)
-            
-                    ipmd8_nmy = max(0.,ipmd8_nmy)
-                    ipmd8_shy = max(0.,ipmd8_shy)
-
-                    pnx(i) = pnx0(i)
-     &               +(ipmd8_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
-            
-                 elseif(frac_flg(i).eq.2) then
-           ipmd8_dsx  = es_f_x0(i,1) - (str_x(i)-phi(i))
-           ipmd8_dsy  = es_f_y0(i,1) - (str_y(i)-phi(i))
-           ipmd8_dsxy = abs(s_f_xy0(i,1)-str_xy(i))
-                  
-  	     ipmd8_nmx = ipmd8_dsx/(ipmd8_knx*ipmd8_bx) + 
-     &      (ipmd8_sx-ipmd8_bx)/(elastic_mod(i)*ipmd8_bx)
-     &      *(ipmd8_dsx-poisson(i)*ipmd8_dsy)
-        
-           ipmd8_shx = (2*(1+poisson(i))*ipmd8_sx/elastic_mod(i)
-     &        +1/ipmd8_ksh)
-     &        *ipmd8_dsxy/ipmd8_bx*tan(ipmd8_phid/180*pi) 
-           
-           ipmd8_nmx = max(0.,ipmd8_nmx)
-           ipmd8_shx = max(0.,ipmd8_shx)
-
-           pny(i) = pny0(i)+(ipmd8_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
-           
-         elseif(frac_flg(i).eq.3) then
-           ipmd8_dsx  = es_f_x0(i,1) - (str_x(i)-phi(i))
-           ipmd8_dsy  = es_f_y0(i,1) - (str_y(i)-phi(i))
-           ipmd8_dsxy = abs(s_f_xy0(i,1)-str_xy(i))
-                  
-  	     ipmd8_nmx = ipmd8_dsx/(ipmd8_knx*ipmd8_bx) + 
-     &      (ipmd8_sx-ipmd8_bx)/(elastic_mod(i)*ipmd8_bx)
-     &      *(ipmd8_dsx-poisson(i)*ipmd8_dsy)
-        
-           ipmd8_shx = (2*(1+poisson(i))*ipmd8_sx/elastic_mod(i)
-     &        +1/ipmd8_ksh)
-     &        *ipmd8_dsxy/ipmd8_bx*tan(ipmd8_phid/180*pi) 
-         
-           ipmd8_dsx  = es_f_x0(i,2) - (str_x(i)-phi(i))
-           ipmd8_dsy  = es_f_y0(i,2) - (str_y(i)-phi(i))
-           ipmd8_dsxy = abs(s_f_xy0(i,2)-str_xy(i))
-                      
-           ipmd8_nmy = ipmd8_dsy/(ipmd8_kny*ipmd8_by) + 
-     &       (ipmd8_sy-ipmd8_by)/(elastic_mod(i)*ipmd8_by)
-     &       *(ipmd8_dsy-poisson(i)*ipmd8_dsx)
-            
-           ipmd8_shy = (2*(1+poisson(i))*ipmd8_sy/elastic_mod(i)
-     &         +1/ipmd8_ksh)
-     &         *ipmd8_dsxy/ipmd8_by*tan(ipmd8_phid/180*pi)
-      
-           ipmd8_nmy = max(0.,ipmd8_nmy)
-           ipmd8_shy = max(0.,ipmd8_shy)
-           ipmd8_nmx = max(0.,ipmd8_nmx)
-           ipmd8_shx = max(0.,ipmd8_shx)
-                      
-           pnx(i) = pnx0(i)+(ipmd8_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
-           pny(i) = pny0(i)+(ipmd8_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
-         endif
-
-         pnx(i) = min(perx_m*pnx0(i),pnx(i))
-         pny(i) = min(pery_m*pny0(i),pny(i))
-         pnx(i) = max(pnx0(i),pnx(i))
-         pny(i) = max(pny0(i),pny(i)) 
-        endif
-
-c     3D
+c   ******** 3D 
 c     
                if(icnl.eq.0) then 
-                  ipmd8_bx = spm1f(iispmd)
-                  ipmd8_Jx = spm2f(iispmd)
-                  ipmd8_sx = spm3f(iispmd)
-                  ipmd8_by = spm4f(iispmd)
-                  ipmd8_Jy = spm5f(iispmd)
-                  ipmd8_sy = spm6f(iispmd)
-                  ipmd8_bz = spm7f(iispmd)
-                  ipmd8_Jz = spm8f(iispmd)
-                  ipmd8_sz = spm9f(iispmd)
-                  ipmd8_phid = spm10f(iispmd)
-                  ipmd8_ksh = spm11f(iispmd)
-c     Tensile strength and Coulomb criteria
-                  ipmd8_tns = spm12f(iispmd)
-                  ipmd8_clb = spm13f(iispmd)	   
+                  frac_bx = spm1f(iispmd)
+                  frac_by = spm2f(iispmd)
+                  frac_bz = spm3f(iispmd)
+                  knx = spm4f(iispmd)
+                  ksx = spm5f(iispmd)
+                  phid = spm6f(iispmd)
+                  ipmd8_tns = spm7f(iispmd)
+                  phib = spm8f(iispmd)
+                  cohes = spm9f(iispmd)
                   
-	    perx_m=100
-	    pery_m=100
-	    perz_m=100
+                  ipmd8_clb = (1+sin(phib/180*pi))/(1-sin(phib/180*pi))
+                  sh_cohe=2.*cohes*cos(phib/180*pi)/(1-sin(phib/180*pi))
+                  
+
+	    perx_m=1.e4
+	    pery_m=1.e4
+	    perz_m=1.e4
 c Fracture toughness is input (can be a funciton of stress)	    
-	    ipmd8_knx = ipmd8_Jx
-	    ipmd8_kny = ipmd8_Jy
-	    ipmd8_knz = ipmd8_Jz
+	    kny = knx
+	    knz = knx
+	    ksy = ksx
+	    ksz = ksx
 	    
 	    ipmd8_nmx = 0.
 	    ipmd8_nmy = 0.
@@ -1477,9 +1373,9 @@ c Distance
 	    kbz1 = ipermz(i,1)
           kbz2 = ipermz(i,2)
 
-          disx = cord(kbx2,1)-cord(kbx1,1)
-          disy = cord(kby2,2)-cord(kby1,2)
-          disz = cord(kbz2,3)-cord(kbz1,3)
+          disx = (cord(kbx2,1)-cord(kbx1,1))/2
+          disy = (cord(kby2,2)-cord(kby1,2))/2
+          disz = (cord(kbz2,3)-cord(kbz1,3))/2
         
 c frac_flg = 0 (no fracture)
 c          = 1 (frac - xz plane, vertical   -> kx,kz)
@@ -1490,16 +1386,35 @@ c          = 5 (frac - yz and xy plane 2&3  -> kx,ky*,kz)
 c          = 6 (frac - xz and yz plane 1&2  -> kx,ky,kz*)
 c          = 7 (frac - all planes           -> kx*,ky*,kz*)	   
 
-c********************************** Frac on xz-plane	
-          if((str_y(i)-phi(i)).lt.ipmd8_tns.or.
-     &      (str_y(i)-phi(i)).gt.(str_z(i)-phi(i))*ipmd8_clb.or.
-     &      (str_y(i)-phi(i)).gt.(str_x(i)-phi(i))*ipmd8_clb) then
+c********************************** check rock failure
+          esxi = str_x(i)-phi(i)
+          esyi = str_y(i)-phi(i)
+          eszi = str_z(i)-phi(i)
+
+c********************************** Frac on xz-plane, frac_flg = 1
+          if(esyi.lt.ipmd8_tns.or.
+     &    ((esyi.gt.esxi).and.(esyi.gt.eszi).and.
+     &     ((esyi.gt.sh_cohe+eszi*ipmd8_clb).or.
+     &     (esyi.gt.sh_cohe+esxi*ipmd8_clb)))) then
+c          if(esyi.lt.ipmd8_tns) then
 c Save stresses when xz-plane frac, normal to y(=2), is initiated for futher dilation calc            
             if(frac_flg(i).eq.0.or.frac_flg(i).eq.3.or.frac_flg(i).eq.2
      &         .or.frac_flg(i).eq.5) then
-              es_f_x0(i,2) = str_x(i)-phi(i)
-              es_f_y0(i,2) = str_y(i)-phi(i)
-              es_f_z0(i,2) = str_z(i)-phi(i)
+              if(esyi.lt.ipmd8_tns) then
+                es_f_y0(i,2) = ipmd8_tns
+                frc_zen(i,2) = 0.
+                frc_azm(i,2) = 0.
+              elseif(esyi.gt.sh_cohe+eszi*ipmd8_clb) then
+                es_f_y0(i,2) = esyi
+                frc_zen(i,2) = cohes
+                frc_azm(i,2) = 0.
+              elseif(esyi.gt.sh_cohe+esxi*ipmd8_clb) then
+                es_f_y0(i,2) = esyi
+                frc_zen(i,2) = 0.
+                frc_azm(i,2) = cohes
+              endif               
+              es_f_x0(i,2) = esxi
+              es_f_z0(i,2) = eszi
               s_f_xy0(i,2) = str_xy(i)
               s_f_yz0(i,2) = str_yz(i)
               s_f_xz0(i,2) = str_xz(i)
@@ -1516,16 +1431,30 @@ c save frac directions in frac_flg
             endif
           endif
 
-c********************************** Frac on yz-plane         
-          if((str_x(i)-phi(i)).lt.ipmd8_tns.or.
-     &      (str_x(i)-phi(i)).gt.(str_y(i)-phi(i))*ipmd8_clb.or.
-     &      (str_x(i)-phi(i)).gt.(str_z(i)-phi(i))*ipmd8_clb) then
+c********************************** Frac on yz-plane, frac_flg = 2         
+          if(esxi.lt.ipmd8_tns.or.
+     &    ((esxi.gt.esyi).and.(esxi.gt.eszi).and.
+     &     ((esxi.gt.sh_cohe+eszi*ipmd8_clb)
+     &     .or.(esxi.gt.sh_cohe+esyi*ipmd8_clb)))) then
+c          if(esxi.lt.ipmd8_tns) then
 c Save stresses when yz-plane frac, normal to x(=1), is initiated for futher dilation calc            
             if(frac_flg(i).eq.0.or.frac_flg(i).eq.3.or.frac_flg(i).eq.1
      &        .or.frac_flg(i).eq.4) then
-              es_f_x0(i,1) = str_x(i)-phi(i)
-              es_f_y0(i,1) = str_y(i)-phi(i)
-              es_f_z0(i,1) = str_z(i)-phi(i)
+              if(esxi.lt.ipmd8_tns) then
+                es_f_x0(i,1) = ipmd8_tns
+                frc_zen(i,1) = 0.
+                frc_azm(i,2) = 0.
+              elseif(esxi.gt.sh_cohe+eszi*ipmd8_clb) then
+                es_f_x0(i,1) = esxi
+                frc_zen(i,1) = cohes
+                frc_azm(i,1) = 0.
+              elseif(esxi.gt.sh_cohe+esyi*ipmd8_clb) then
+                es_f_x0(i,1) = esxi
+                frc_zen(i,1) = 0.
+                frc_azm(i,1) = cohes
+              endif               
+              es_f_y0(i,1) = esyi
+              es_f_z0(i,1) = eszi
               s_f_xy0(i,1) = str_xy(i)
               s_f_yz0(i,1) = str_yz(i)
               s_f_xz0(i,1) = str_xz(i)
@@ -1542,16 +1471,30 @@ c save frac directions in frac_flg
             endif
           endif
           
-c********************************** Frac on xy-plane           
-          if((str_z(i)-phi(i)).lt.ipmd8_tns.or.
-     &      (str_z(i)-phi(i)).gt.(str_y(i)-phi(i))*ipmd8_clb.or.
-     &      (str_z(i)-phi(i)).gt.(str_x(i)-phi(i))*ipmd8_clb) then
+c********************************** Frac on xy-plane, frac_flg = 3        
+          if(eszi.lt.ipmd8_tns.or.
+     &    ((eszi.gt.esyi).and.(eszi.gt.esxi).and.
+     &     ((eszi.gt.sh_cohe+esyi*ipmd8_clb)
+     &     .or.(eszi.gt.sh_cohe+esxi*ipmd8_clb)))) then
+c          if(eszi.lt.ipmd8_tns) then
 c Save stresses when xy-plane frac, normal to z(=3), is initiated for futher dilation calc 
             if(frac_flg(i).eq.0.or.frac_flg(i).eq.1.or.frac_flg(i).eq.2
      &        .or.frac_flg(i).eq.6) then            
-              es_f_x0(i,3) = str_x(i)-phi(i)
-              es_f_y0(i,3) = str_y(i)-phi(i)
-              es_f_z0(i,3) = str_z(i)-phi(i)
+              if(eszi.lt.ipmd8_tns) then
+                es_f_z0(i,3) = ipmd8_tns
+                frc_zen(i,3) = 0.
+                frc_azm(i,3) = 0.
+              elseif(eszi.gt.sh_cohe+esyi*ipmd8_clb) then
+                es_f_z0(i,3) = eszi
+                frc_zen(i,3) = cohes
+                frc_azm(i,3) = 90.
+              elseif(eszi.gt.sh_cohe+esxi*ipmd8_clb) then
+                es_f_z0(i,3) = eszi
+                frc_zen(i,3) = cohes
+                frc_azm(i,3) = 0.
+              endif               
+              es_f_x0(i,3) = esxi
+              es_f_y0(i,3) = esyi
               s_f_xy0(i,3) = str_xy(i)
               s_f_yz0(i,3) = str_yz(i)
               s_f_xz0(i,3) = str_xz(i)
@@ -1570,235 +1513,686 @@ c Save stresses when xy-plane frac, normal to z(=3), is initiated for futher dil
 
 c frac_flg = 1, xz-plane -> kx, kz          
           if(frac_flg(i).eq.1) then
-            ipmd8_dsx  = es_f_x0(i,2) - (str_x(i)-phi(i))
-            ipmd8_dsy  = es_f_y0(i,2) - (str_y(i)-phi(i))
-            ipmd8_dsz  = es_f_z0(i,2) - (str_z(i)-phi(i))
-            ipmd8_dsxy = abs(s_f_xy0(i,2)-str_xy(i))
-            ipmd8_dsyz = abs(s_f_yz0(i,2)-str_yz(i))
+            dsx12  = es_f_x0(i,2) - esxi
+            dsy12  = es_f_y0(i,2) - esyi
+            dsz12  = es_f_z0(i,2) - eszi
+            dsxy12 = abs(s_f_xy0(i,2)-str_xy(i))
+            dsyz12 = abs(s_f_yz0(i,2)-str_yz(i))
+            dsxz12 = abs(s_f_xz0(i,2)-str_xz(i))
+            L11 = cos(frc_zen(i,2)/180*pi)*cos(frc_azm(i,2)/180*pi)
+            L12 = cos(frc_zen(i,2)/180*pi)*sin(frc_azm(i,2)/180*pi)
+            L13 = -sin(frc_zen(i,2)/180*pi)
+            L21 = -sin(frc_azm(i,2)/180*pi)
+            L22 = cos(frc_azm(i,2)/180*pi)
+            L23 = 0.
+            L31 = sin(frc_zen(i,2)/180*pi)*cos(frc_azm(i,2)/180*pi)
+            L32 = sin(frc_zen(i,2)/180*pi)*sin(frc_azm(i,2)/180*pi)
+            L33 = cos(frc_zen(i,2)/180*pi)
+			            
+           ipmd8_dsx = L11*L11*dsx12 + L12*L12*dsy12 + L13*L13*dsz12
+     &      + 2.*L11*L12*dsxy12 + 2.*L11*L13*dsxz12 + 2.*L12*L13*dsyz12
+     
+           ipmd8_dsy = L21*L21*dsx12 + L22*L22*dsy12 + L23*L23*dsz12
+     &      + 2.*L21*L22*dsxy12 + 2.*L21*L23*dsxz12 + 2.*L22*L23*dsyz12
+     
+           ipmd8_dsz = L31*L31*dsx12 + L32*L32*dsy12 + L33*L33*dsz12
+     &      + 2.*L31*L32*dsxy12 + 2.*L31*L33*dsxz12 + 2.*L32*L33*dsyz12
+     
+           ipmd8_dsxy = L11*L21*dsx12 + L12*L22*dsy12 + L13*L23*dsz12
+     &      + (L11*L22+L12*L21)*dsxy12 + (L12*L23+L13*L22)*dsyz12
+     &      + (L11*L23+L13*L21)*dsxz12
+           
+           ipmd8_dsyz = L21*L31*dsx12 + L22*L32*dsy12 + L23*L33*dsz12
+     &      + (L21*L32+L22*L31)*dsxy12 + (L22*L33+L23*L32)*dsyz12
+     &      + (L21*L33+L23*L31)*dsxz12
+     
+           ipmd8_dsxz = L11*L31*dsx12 + L12*L32*dsy12 + L13*L33*dsz12
+     &      + (L11*L32+L12*L31)*dsxy12 + (L12*L33+L13*L32)*dsyz12
+     &      + (L11*L33+L13*L31)*dsxz12  
             
-            ipmd8_nmy = ipmd8_dsy/ipmd8_kny + 
-     &        (ipmd8_sy-ipmd8_by)/elastic_mod(i)
-     &        *(ipmd8_dsy-poisson(i)*(ipmd8_dsx+ipmd8_dsz))
-            
-            ipmd8_shy = (2*(1+poisson(i))*ipmd8_sy/elastic_mod(i)
-     &         +1/ipmd8_ksh)
-     &         *(ipmd8_dsxy+ipmd8_dsyz)*tan(ipmd8_phid/180*pi)
+     	     ipmd8_nmy = ipmd8_dsy/kny + disy
+     &     *((ipmd8_dsy-poisson(i)*(ipmd8_dsx+ipmd8_dsz))/elastic_mod(i)
+     &     +alp(i)*(t(i)-tini(i)))
+     
+           if(esyi.lt.0) then
+             ipmd8_shy = 0.
+           else
+             ipmd8_shy = ((disx/e3(i)+1/ksx)*ipmd8_dsxy
+     &       +(disz/e3(i)+1/ksz)*ipmd8_dsyz)*tan(phid/180*pi)
+           endif
             
             ipmd8_nmy = max(0.,ipmd8_nmy)
             ipmd8_shy = max(0.,ipmd8_shy)
             
-            pnx(i) = pnx0(i)+(ipmd8_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
-            pnz(i) = pnz0(i)+(ipmd8_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
+            pnx(i) = pnx0(i)+
+     &               1.e6*(frac_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
+            pnz(i) = pnz0(i)+
+     &               1.e6*(frac_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
 
 c frac_flg = 2, yz-plane -> ky, kz            
           elseif(frac_flg(i).eq.2) then
-            ipmd8_dsx  = es_f_x0(i,1) - (str_x(i)-phi(i))
-            ipmd8_dsy  = es_f_y0(i,1) - (str_y(i)-phi(i))
-            ipmd8_dsz  = es_f_z0(i,1) - (str_z(i)-phi(i))
-            ipmd8_dsxy = abs(s_f_xy0(i,1)-str_xy(i))
-            ipmd8_dsxz = abs(s_f_xz0(i,1)-str_xz(i))	
-                  
-  	      ipmd8_nmx = ipmd8_dsx/ipmd8_knx + 
-     &       (ipmd8_sx-ipmd8_bx)/elastic_mod(i)
-     &       *(ipmd8_dsx-poisson(i)*(ipmd8_dsy+ipmd8_dsz))
-        
-            ipmd8_shx = (2*(1+poisson(i))*ipmd8_sx/elastic_mod(i)
-     &         +1/ipmd8_ksh)
-     &         *(ipmd8_dsxy+ipmd8_dsxz)*tan(ipmd8_phid/180*pi) 
+            dsx12  = es_f_x0(i,1) - esxi
+            dsy12  = es_f_y0(i,1) - esyi
+            dsz12  = es_f_z0(i,1) - eszi
+            dsxy12 = abs(s_f_xy0(i,1)-str_xy(i))
+            dsxz12 = abs(s_f_xz0(i,1)-str_xz(i))
+            dsyz12 = abs(s_f_yz0(i,1)-str_yz(i))	
+            L11 = cos(frc_zen(i,1)/180*pi)*cos(frc_azm(i,1)/180*pi)
+            L12 = cos(frc_zen(i,1)/180*pi)*sin(frc_azm(i,1)/180*pi)
+            L13 = -sin(frc_zen(i,1)/180*pi)
+            L21 = -sin(frc_azm(i,1)/180*pi)
+            L22 = cos(frc_azm(i,1)/180*pi)
+            L23 = 0.
+            L31 = sin(frc_zen(i,1)/180*pi)*cos(frc_azm(i,1)/180*pi)
+            L32 = sin(frc_zen(i,1)/180*pi)*sin(frc_azm(i,1)/180*pi)
+            L33 = cos(frc_zen(i,1)/180*pi)
             
+            ipmd8_dsx = L11*L11*dsx12 + L12*L12*dsy12 + L13*L13*dsz12
+     &      + 2.*L11*L12*dsxy12 + 2.*L11*L13*dsxz12 + 2.*L12*L13*dsyz12
+     
+           ipmd8_dsy = L21*L21*dsx12 + L22*L22*dsy12 + L23*L23*dsz12
+     &      + 2.*L21*L22*dsxy12 + 2.*L21*L23*dsxz12 + 2.*L22*L23*dsyz12
+     
+           ipmd8_dsz = L31*L31*dsx12 + L32*L32*dsy12 + L33*L33*dsz12
+     &      + 2.*L31*L32*dsxy12 + 2.*L31*L33*dsxz12 + 2.*L32*L33*dsyz12
+     
+           ipmd8_dsxy = L11*L21*dsx12 + L12*L22*dsy12 + L13*L23*dsz12
+     &      + (L11*L22+L12*L21)*dsxy12 + (L12*L23+L13*L22)*dsyz12
+     &      + (L11*L23+L13*L21)*dsxz12
+           
+           ipmd8_dsyz = L21*L31*dsx12 + L22*L32*dsy12 + L23*L33*dsz12
+     &      + (L21*L32+L22*L31)*dsxy12 + (L22*L33+L23*L32)*dsyz12
+     &      + (L21*L33+L23*L31)*dsxz12
+     
+           ipmd8_dsxz = L11*L31*dsx12 + L12*L32*dsy12 + L13*L33*dsz12
+     &      + (L11*L32+L12*L31)*dsxy12 + (L12*L33+L13*L32)*dsyz12
+     &      + (L11*L33+L13*L31)*dsxz12     
+                               
+           ipmd8_nmx = ipmd8_dsx/knx + disx
+     &     *((ipmd8_dsx-poisson(i)*(ipmd8_dsy+ipmd8_dsz))/elastic_mod(i)
+     &     +alp(i)*(t(i)-tini(i)))
+       
+           if(esxi.lt.0) then
+             ipmd8_shx = 0.
+           else
+             ipmd8_shx = ((disy/e3(i)+1/ksy)*ipmd8_dsxy
+     &       +(disz/e3(i)+1/ksz)*ipmd8_dsxz)*tan(phid/180*pi)
+           endif
+           
             ipmd8_nmx = max(0.,ipmd8_nmx)
             ipmd8_shx = max(0.,ipmd8_shx)
             
-            pny(i) = pny0(i)+(ipmd8_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
-            pnz(i) = pnz0(i)+(ipmd8_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
+            pny(i) = pny0(i)+
+     &               1.e6*(frac_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
+            pnz(i) = pnz0(i)+
+     &               1.e6*(frac_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
 
           
 c frac_flg = 3, xy-plane -> kx, ky     
           elseif(frac_flg(i).eq.3) then
-            ipmd8_dsx  = es_f_x0(i,3) - (str_x(i)-phi(i))
-            ipmd8_dsy  = es_f_y0(i,3) - (str_y(i)-phi(i))
-            ipmd8_dsz  = es_f_z0(i,3) - (str_z(i)-phi(i))         
-            ipmd8_dsxz = abs(s_f_xz0(i,3)-str_xz(i))
-            ipmd8_dsyz = abs(s_f_yz0(i,3)-str_yz(i))
+            dsx12  = es_f_x0(i,3) - esxi
+            dsy12  = es_f_y0(i,3) - esyi
+            dsz12  = es_f_z0(i,3) - eszi         
+            dsxz12 = abs(s_f_xz0(i,3)-str_xz(i))
+            dsyz12 = abs(s_f_yz0(i,3)-str_yz(i))
+            dsxy12 = abs(s_f_xy0(i,3)-str_xy(i))
+            
+  			L11 = cos(frc_zen(i,3)/180*pi)*cos(frc_azm(i,3)/180*pi)
+            L12 = cos(frc_zen(i,3)/180*pi)*sin(frc_azm(i,3)/180*pi)
+            L13 = -sin(frc_zen(i,3)/180*pi)
+            L21 = -sin(frc_azm(i,3)/180*pi)
+            L22 = cos(frc_azm(i,3)/180*pi)
+            L23 = 0.
+            L31 = sin(frc_zen(i,3)/180*pi)*cos(frc_azm(i,3)/180*pi)
+            L32 = sin(frc_zen(i,3)/180*pi)*sin(frc_azm(i,3)/180*pi)
+                       
+           ipmd8_dsx = L11*L11*dsx12 + L12*L12*dsy12 + L13*L13*dsz12
+     &      + 2.*L11*L12*dsxy12 + 2.*L11*L13*dsxz12 + 2.*L12*L13*dsyz12
+     
+           ipmd8_dsy = L21*L21*dsx12 + L22*L22*dsy12 + L23*L23*dsz12
+     &      + 2.*L21*L22*dsxy12 + 2.*L21*L23*dsxz12 + 2.*L22*L23*dsyz12
+     
+           ipmd8_dsz = L31*L31*dsx12 + L32*L32*dsy12 + L33*L33*dsz12
+     &      + 2.*L31*L32*dsxy12 + 2.*L31*L33*dsxz12 + 2.*L32*L33*dsyz12
+     
+           ipmd8_dsxy = L11*L21*dsx12 + L12*L22*dsy12 + L13*L23*dsz12
+     &      + (L11*L22+L12*L21)*dsxy12 + (L12*L23+L13*L22)*dsyz12
+     &      + (L11*L23+L13*L21)*dsxz12
+           
+           ipmd8_dsyz = L21*L31*dsx12 + L22*L32*dsy12 + L23*L33*dsz12
+     &      + (L21*L32+L22*L31)*dsxy12 + (L22*L33+L23*L32)*dsyz12
+     &      + (L21*L33+L23*L31)*dsxz12
+     
+           ipmd8_dsxz = L11*L31*dsx12 + L12*L32*dsy12 + L13*L33*dsz12
+     &      + (L11*L32+L12*L31)*dsxy12 + (L12*L33+L13*L32)*dsyz12
+     &      + (L11*L33+L13*L31)*dsxz12  
+            L33 = cos(frc_zen(i,3)/180*pi)          
 	
-	      ipmd8_nmz = ipmd8_dsz/ipmd8_knz + 
-     &       (ipmd8_sz-ipmd8_bz)/elastic_mod(i)
-     &       *(ipmd8_dsz-poisson(i)*(ipmd8_dsx+ipmd8_dsy))
-                
-            ipmd8_shz = (2*(1+poisson(i))*ipmd8_sz/elastic_mod(i)
-     &        +1/ipmd8_ksh)
-     &        *(ipmd8_dsxz+ipmd8_dsyz)*tan(ipmd8_phid/180*pi)
+	     ipmd8_nmz = ipmd8_dsz/knz + disz
+     &     *((ipmd8_dsz-poisson(i)*(ipmd8_dsx+ipmd8_dsy))/elastic_mod(i)
+     &     +alp(i)*(t(i)-tini(i)))
+      
+           if(eszi.lt.0) then
+             ipmd8_shz = 0.
+           else
+             ipmd8_shz = ((disx/e3(i)+1/ksx)*ipmd8_dsxz
+     &       +(disy/e3(i)+1/ksy)*ipmd8_dsyz)*tan(phid/180*pi)
+           endif
 
             ipmd8_nmz = max(0.,ipmd8_nmz)
             ipmd8_shz = max(0.,ipmd8_shz)
                        
-            pnx(i) = pnx0(i)+(ipmd8_bz+ipmd8_nmz+ipmd8_shz)**3/(12*disz)
-            pny(i) = pnz0(i)+(ipmd8_bz+ipmd8_nmz+ipmd8_shz)**3/(12*disz)
+            pnx(i) = pnx0(i)+
+     &               1.e6*(frac_bz+ipmd8_nmz+ipmd8_shz)**3/(12*disz)
+            pny(i) = pnz0(i)+
+     &               1.e6*(frac_bz+ipmd8_nmz+ipmd8_shz)**3/(12*disz)
 
 c frac_flg = 4, xz and xy plane -> kx*, ky, kz   
           elseif(frac_flg(i).eq.4) then
-            ipmd8_dsx  = es_f_x0(i,2) - (str_x(i)-phi(i))
-            ipmd8_dsy  = es_f_y0(i,2) - (str_y(i)-phi(i))
-            ipmd8_dsz  = es_f_z0(i,2) - (str_z(i)-phi(i))
-            ipmd8_dsxy = abs(s_f_xy0(i,2)-str_xy(i))
-            ipmd8_dsyz = abs(s_f_yz0(i,2)-str_yz(i))
+c
+c frac on xz
+c         
+            dsx12  = es_f_x0(i,2) - esxi
+            dsy12  = es_f_y0(i,2) - esyi
+            dsz12  = es_f_z0(i,2) - eszi
+            dsxy12 = abs(s_f_xy0(i,2)-str_xy(i))
+            dsyz12 = abs(s_f_yz0(i,2)-str_yz(i))     
+            dsxz12 = abs(s_f_xz0(i,2)-str_xz(i))
+            L11 = cos(frc_zen(i,2)/180*pi)*cos(frc_azm(i,2)/180*pi)
+            L12 = cos(frc_zen(i,2)/180*pi)*sin(frc_azm(i,2)/180*pi)
+            L13 = -sin(frc_zen(i,2)/180*pi)
+            L21 = -sin(frc_azm(i,2)/180*pi)
+            L22 = cos(frc_azm(i,2)/180*pi)
+            L23 = 0.
+            L31 = sin(frc_zen(i,2)/180*pi)*cos(frc_azm(i,2)/180*pi)
+            L32 = sin(frc_zen(i,2)/180*pi)*sin(frc_azm(i,2)/180*pi)
+            L33 = cos(frc_zen(i,2)/180*pi)
+            	           
+           ipmd8_dsx = L11*L11*dsx12 + L12*L12*dsy12 + L13*L13*dsz12
+     &      + 2.*L11*L12*dsxy12 + 2.*L11*L13*dsxz12 + 2.*L12*L13*dsyz12
+     
+           ipmd8_dsy = L21*L21*dsx12 + L22*L22*dsy12 + L23*L23*dsz12
+     &      + 2.*L21*L22*dsxy12 + 2.*L21*L23*dsxz12 + 2.*L22*L23*dsyz12
+     
+           ipmd8_dsz = L31*L31*dsx12 + L32*L32*dsy12 + L33*L33*dsz12
+     &      + 2.*L31*L32*dsxy12 + 2.*L31*L33*dsxz12 + 2.*L32*L33*dsyz12
+     
+           ipmd8_dsxy = L11*L21*dsx12 + L12*L22*dsy12 + L13*L23*dsz12
+     &      + (L11*L22+L12*L21)*dsxy12 + (L12*L23+L13*L22)*dsyz12
+     &      + (L11*L23+L13*L21)*dsxz12
+           
+           ipmd8_dsyz = L21*L31*dsx12 + L22*L32*dsy12 + L23*L33*dsz12
+     &      + (L21*L32+L22*L31)*dsxy12 + (L22*L33+L23*L32)*dsyz12
+     &      + (L21*L33+L23*L31)*dsxz12
+     
+           ipmd8_dsxz = L11*L31*dsx12 + L12*L32*dsy12 + L13*L33*dsz12
+     &      + (L11*L32+L12*L31)*dsxy12 + (L12*L33+L13*L32)*dsyz12
+     &      + (L11*L33+L13*L31)*dsxz12  
+     
+	     ipmd8_nmy = ipmd8_dsy/kny + disy
+     &     *((ipmd8_dsy-poisson(i)*(ipmd8_dsx+ipmd8_dsz))/elastic_mod(i)
+     &     +alp(i)*(t(i)-tini(i)))
+           
+           if(esyi.lt.0) then
+             ipmd8_shy = 0.
+           else
+             ipmd8_shy = ((disx/e3(i)+1/ksy)*ipmd8_dsxy
+     &       +(disz/e3(i)+1/ksz)*ipmd8_dsyz)*tan(phid/180*pi)
+           endif
+           
+c
+c frac on xy plane
+c 
+            dsx12  = es_f_x0(i,3) - (str_x(i)-phi(i))
+            dsy12  = es_f_y0(i,3) - (str_y(i)-phi(i))
+            dsz12  = es_f_z0(i,3) - (str_z(i)-phi(i))         
+            dsxz12 = abs(s_f_xz0(i,3)-str_xz(i))
+            dsyz12 = abs(s_f_yz0(i,3)-str_yz(i))
+            dsxy12 = abs(s_f_xy0(i,3)-str_xy(i))
+			L11 = cos(frc_zen(i,3)/180*pi)*cos(frc_azm(i,3)/180*pi)
+            L12 = cos(frc_zen(i,3)/180*pi)*sin(frc_azm(i,3)/180*pi)
+            L13 = -sin(frc_zen(i,3)/180*pi)
+            L21 = -sin(frc_azm(i,3)/180*pi)
+            L22 = cos(frc_azm(i,3)/180*pi)
+            L23 = 0.
+            L31 = sin(frc_zen(i,3)/180*pi)*cos(frc_azm(i,3)/180*pi)
+            L32 = sin(frc_zen(i,3)/180*pi)*sin(frc_azm(i,3)/180*pi)
+            L33 = cos(frc_zen(i,3)/180*pi)
             
-            ipmd8_nmy = ipmd8_dsy/ipmd8_kny  
-     &        +(ipmd8_sy-ipmd8_by)/elastic_mod(i)
-     &        *(ipmd8_dsy-poisson(i)*(ipmd8_dsx+ipmd8_dsz))
-            
-            ipmd8_shy = (2*(1+poisson(i))*ipmd8_sy/elastic_mod(i)
-     &         +1/ipmd8_ksh)
-     &         *(ipmd8_dsxy+ipmd8_dsyz)*tan(ipmd8_phid/180*pi)
- 
-            ipmd8_dsx  = es_f_x0(i,3) - (str_x(i)-phi(i))
-            ipmd8_dsy  = es_f_y0(i,3) - (str_y(i)-phi(i))
-            ipmd8_dsz  = es_f_z0(i,3) - (str_z(i)-phi(i))         
-            ipmd8_dsxz = abs(s_f_xz0(i,3)-str_xz(i))
-            ipmd8_dsyz = abs(s_f_yz0(i,3)-str_yz(i))
-	
-	      ipmd8_nmz = ipmd8_dsz/ipmd8_knz + 
-     &       (ipmd8_sz-ipmd8_bz)/elastic_mod(i)
-     &       *(ipmd8_dsz-poisson(i)*(ipmd8_dsx+ipmd8_dsy))
-                
-            ipmd8_shz = (2*(1+poisson(i))*ipmd8_sz/elastic_mod(i)
-     &        +1/ipmd8_ksh)
-     &        *(ipmd8_dsxz+ipmd8_dsyz)*tan(ipmd8_phid/180*pi)
+            ipmd8_dsx = L11*L11*dsx12 + L12*L12*dsy12 + L13*L13*dsz12
+     &      + 2.*L11*L12*dsxy12 + 2.*L11*L13*dsxz12 + 2.*L12*L13*dsyz12
+     
+           ipmd8_dsy = L21*L21*dsx12 + L22*L22*dsy12 + L23*L23*dsz12
+     &      + 2.*L21*L22*dsxy12 + 2.*L21*L23*dsxz12 + 2.*L22*L23*dsyz12
+     
+           ipmd8_dsz = L31*L31*dsx12 + L32*L32*dsy12 + L33*L33*dsz12
+     &      + 2.*L31*L32*dsxy12 + 2.*L31*L33*dsxz12 + 2.*L32*L33*dsyz12
+     
+           ipmd8_dsxy = L11*L21*dsx12 + L12*L22*dsy12 + L13*L23*dsz12
+     &      + (L11*L22+L12*L21)*dsxy12 + (L12*L23+L13*L22)*dsyz12
+     &      + (L11*L23+L13*L21)*dsxz12
+           
+           ipmd8_dsyz = L21*L31*dsx12 + L22*L32*dsy12 + L23*L33*dsz12
+     &      + (L21*L32+L22*L31)*dsxy12 + (L22*L33+L23*L32)*dsyz12
+     &      + (L21*L33+L23*L31)*dsxz12
+     
+           ipmd8_dsxz = L11*L31*dsx12 + L12*L32*dsy12 + L13*L33*dsz12
+     &      + (L11*L32+L12*L31)*dsxy12 + (L12*L33+L13*L32)*dsyz12
+     &      + (L11*L33+L13*L31)*dsxz12   
+               	
+	     ipmd8_nmz = ipmd8_dsz/knz + disz
+     &     *((ipmd8_dsz-poisson(i)*(ipmd8_dsx+ipmd8_dsy))/elastic_mod(i)
+     &     +alp(i)*(t(i)-tini(i)))
+      
+           if(eszi.lt.0) then
+             ipmd8_shz = 0.
+           else
+             ipmd8_shz = ((disx/e3(i)+1/ksx)*ipmd8_dsxz
+     &       +(disy/e3(i)+1/ksy)*ipmd8_dsyz)*tan(phid/180*pi)
+           endif
 
             ipmd8_nmy = max(0.,ipmd8_nmy)
             ipmd8_shy = max(0.,ipmd8_shy)
             ipmd8_nmz = max(0.,ipmd8_nmz)
             ipmd8_shz = max(0.,ipmd8_shz)
                           
-            pnx(i) = pnx0(i)+(ipmd8_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
-     &                      +(ipmd8_bz+ipmd8_nmz+ipmd8_shz)**3/(12*disz)
-            pny(i) = pny0(i)+(ipmd8_bz+ipmd8_nmz+ipmd8_shz)**3/(12*disz)
-            pnz(i) = pnz0(i)+(ipmd8_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
+            pnx(i) = pnx0(i)+
+     &               1.e6*(frac_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
+     &               +1.e6*(frac_bz+ipmd8_nmz+ipmd8_shz)**3/(12*disz)
+            pny(i) = pny0(i)+
+     &               1.e6*(frac_bz+ipmd8_nmz+ipmd8_shz)**3/(12*disz)
+            pnz(i) = pnz0(i)+
+     &               1.e6*(frac_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
   
 c frac_flg = 5, yz and xy plane -> kx, ky*, kz   
           elseif(frac_flg(i).eq.5) then
-            ipmd8_dsx  = es_f_x0(i,1) - (str_x(i)-phi(i))
-            ipmd8_dsy  = es_f_y0(i,1) - (str_y(i)-phi(i))
-            ipmd8_dsz  = es_f_z0(i,1) - (str_z(i)-phi(i))
-            ipmd8_dsxy = abs(s_f_xy0(i,1)-str_xy(i))
-            ipmd8_dsxz = abs(s_f_xz0(i,1)-str_xz(i))	
-                        
-  	      ipmd8_nmx = ipmd8_dsx/ipmd8_knx + 
-     &       (ipmd8_sx-ipmd8_bx)/elastic_mod(i)
-     &       *(ipmd8_dsx-poisson(i)*(ipmd8_dsy+ipmd8_dsz))
+c          
+c frac on yz plane
+c
+            dsx12  = ipmd8_tns - esxi
+            dsy12  = es_f_y0(i,1) - esyi
+            dsz12  = es_f_z0(i,1) - eszi
+            dsxy12 = abs(s_f_xy0(i,1)-str_xy(i))
+            dsxz12 = abs(s_f_xz0(i,1)-str_xz(i))
+            dsyz12 = abs(s_f_yz0(i,1)-str_yz(i))
+            L11 = cos(frc_zen(i,1)/180*pi)*cos(frc_azm(i,1)/180*pi)
+            L12 = cos(frc_zen(i,1)/180*pi)*sin(frc_azm(i,1)/180*pi)
+            L13 = -sin(frc_zen(i,1)/180*pi)
+            L21 = -sin(frc_azm(i,1)/180*pi)
+            L22 = cos(frc_azm(i,1)/180*pi)
+            L23 = 0.
+            L31 = sin(frc_zen(i,1)/180*pi)*cos(frc_azm(i,1)/180*pi)
+            L32 = sin(frc_zen(i,1)/180*pi)*sin(frc_azm(i,1)/180*pi)
+            L33 = cos(frc_zen(i,1)/180*pi)
+            
+            ipmd8_dsx = L11*L11*dsx12 + L12*L12*dsy12 + L13*L13*dsz12
+     &      + 2.*L11*L12*dsxy12 + 2.*L11*L13*dsxz12 + 2.*L12*L13*dsyz12
      
-            ipmd8_shx = (2*(1+poisson(i))*ipmd8_sx/elastic_mod(i)
-     &         +1/ipmd8_ksh)
-     &         *(ipmd8_dsxy+ipmd8_dsxz)*tan(ipmd8_phid/180*pi)
+           ipmd8_dsy = L21*L21*dsx12 + L22*L22*dsy12 + L23*L23*dsz12
+     &      + 2.*L21*L22*dsxy12 + 2.*L21*L23*dsxz12 + 2.*L22*L23*dsyz12
      
-            ipmd8_dsx  = es_f_x0(i,3) - (str_x(i)-phi(i))
-            ipmd8_dsy  = es_f_y0(i,3) - (str_y(i)-phi(i))
-            ipmd8_dsz  = es_f_z0(i,3) - (str_z(i)-phi(i))         
-            ipmd8_dsxz = abs(s_f_xz0(i,3)-str_xz(i))
-            ipmd8_dsyz = abs(s_f_yz0(i,3)-str_yz(i))
+           ipmd8_dsz = L31*L31*dsx12 + L32*L32*dsy12 + L33*L33*dsz12
+     &      + 2.*L31*L32*dsxy12 + 2.*L31*L33*dsxz12 + 2.*L32*L33*dsyz12
+     
+           ipmd8_dsxy = L11*L21*dsx12 + L12*L22*dsy12 + L13*L23*dsz12
+     &      + (L11*L22+L12*L21)*dsxy12 + (L12*L23+L13*L22)*dsyz12
+     &      + (L11*L23+L13*L21)*dsxz12
+           
+           ipmd8_dsyz = L21*L31*dsx12 + L22*L32*dsy12 + L23*L33*dsz12
+     &      + (L21*L32+L22*L31)*dsxy12 + (L22*L33+L23*L32)*dsyz12
+     &      + (L21*L33+L23*L31)*dsxz12
+     
+           ipmd8_dsxz = L11*L31*dsx12 + L12*L32*dsy12 + L13*L33*dsz12
+     &      + (L11*L32+L12*L31)*dsxy12 + (L12*L33+L13*L32)*dsyz12
+     &      + (L11*L33+L13*L31)*dsxz12                         
 	
-	      ipmd8_nmz = ipmd8_dsz/ipmd8_knz + 
-     &       (ipmd8_sz-ipmd8_bz)/elastic_mod(i)
-     &       *(ipmd8_dsz-poisson(i)*(ipmd8_dsx+ipmd8_dsy))
-                
-            ipmd8_shz = (2*(1+poisson(i))*ipmd8_sz/elastic_mod(i)
-     &        +1/ipmd8_ksh)
-     &        *(ipmd8_dsxz+ipmd8_dsyz)*tan(ipmd8_phid/180*pi)
+           ipmd8_nmx = ipmd8_dsx/knx + disx
+     &     *((ipmd8_dsx-poisson(i)*(ipmd8_dsy+ipmd8_dsz))/elastic_mod(i)
+     &     +alp(i)*(t(i)-tini(i)))
+       
+           if(esxi.lt.0) then 
+             ipmd8_shx = 0.
+           else
+             ipmd8_shx = ((disy/e3(i)+1/ksy)*ipmd8_dsxy
+     &       +(disz/e3(i)+1/ksy)*ipmd8_dsxz)*tan(phid/180*pi)
+           endif
+
+c
+c frac on xy plane
+c     
+            dsx12  = es_f_x0(i,3) - (str_x(i)-phi(i))
+            dsy12  = es_f_y0(i,3) - (str_y(i)-phi(i))
+            dsz12  = es_f_z0(i,3) - (str_z(i)-phi(i))         
+            dsxz12 = abs(s_f_xz0(i,3)-str_xz(i))
+            dsyz12 = abs(s_f_yz0(i,3)-str_yz(i))
+            dsxy12 = abs(s_f_xy0(i,3)-str_xy(i))
+			L11 = cos(frc_zen(i,3)/180*pi)*cos(frc_azm(i,3)/180*pi)
+            L12 = cos(frc_zen(i,3)/180*pi)*sin(frc_azm(i,3)/180*pi)
+            L13 = -sin(frc_zen(i,3)/180*pi)
+            L21 = -sin(frc_azm(i,3)/180*pi)
+            L22 = cos(frc_azm(i,3)/180*pi)
+            L23 = 0.
+            L31 = sin(frc_zen(i,3)/180*pi)*cos(frc_azm(i,3)/180*pi)
+            L32 = sin(frc_zen(i,3)/180*pi)*sin(frc_azm(i,3)/180*pi)
+            L33 = cos(frc_zen(i,3)/180*pi)
+            
+            ipmd8_dsx = L11*L11*dsx12 + L12*L12*dsy12 + L13*L13*dsz12
+     &      + 2.*L11*L12*dsxy12 + 2.*L11*L13*dsxz12 + 2.*L12*L13*dsyz12
+     
+           ipmd8_dsy = L21*L21*dsx12 + L22*L22*dsy12 + L23*L23*dsz12
+     &      + 2.*L21*L22*dsxy12 + 2.*L21*L23*dsxz12 + 2.*L22*L23*dsyz12
+     
+           ipmd8_dsz = L31*L31*dsx12 + L32*L32*dsy12 + L33*L33*dsz12
+     &      + 2.*L31*L32*dsxy12 + 2.*L31*L33*dsxz12 + 2.*L32*L33*dsyz12
+     
+           ipmd8_dsxy = L11*L21*dsx12 + L12*L22*dsy12 + L13*L23*dsz12
+     &      + (L11*L22+L12*L21)*dsxy12 + (L12*L23+L13*L22)*dsyz12
+     &      + (L11*L23+L13*L21)*dsxz12
+           
+           ipmd8_dsyz = L21*L31*dsx12 + L22*L32*dsy12 + L23*L33*dsz12
+     &      + (L21*L32+L22*L31)*dsxy12 + (L22*L33+L23*L32)*dsyz12
+     &      + (L21*L33+L23*L31)*dsxz12
+     
+           ipmd8_dsxz = L11*L31*dsx12 + L12*L32*dsy12 + L13*L33*dsz12
+     &      + (L11*L32+L12*L31)*dsxy12 + (L12*L33+L13*L32)*dsyz12
+     &      + (L11*L33+L13*L31)*dsxz12  
+            	
+           ipmd8_nmz = ipmd8_dsz/knz + disz
+     &     *((ipmd8_dsz-poisson(i)*(ipmd8_dsx+ipmd8_dsy))/elastic_mod(i)
+     &     +alp(i)*(t(i)-tini(i)))
+      
+           if(eszi.lt.0) then
+             ipmd8_shz = 0.
+           else
+             ipmd8_shz = ((disx/e3(i)+1/ksx)*ipmd8_dsxz
+     &       +(disy/e3(i)+1/ksy)*ipmd8_dsyz)*tan(phid/180*pi)	
+           endif
                  
             ipmd8_nmx = max(0.,ipmd8_nmx)
             ipmd8_shx = max(0.,ipmd8_shx)
             ipmd8_nmz = max(0.,ipmd8_nmz)
             ipmd8_shz = max(0.,ipmd8_shz)
       
-            pnx(i) = pnx0(i)+(ipmd8_bz+ipmd8_nmz+ipmd8_shz)**3/(12*disz)
-            pny(i) = pny0(i)+(ipmd8_bz+ipmd8_nmz+ipmd8_shz)**3/(12*disz)
-     &                      +(ipmd8_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
-            pnz(i) = pnz0(i)+(ipmd8_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
+            pnx(i) = pnx0(i)+
+     &               1.e6*(frac_bz+ipmd8_nmz+ipmd8_shz)**3/(12*disz)
+            pny(i) = pny0(i)+
+     &               1.e6*(frac_bz+ipmd8_nmz+ipmd8_shz)**3/(12*disz)
+     &               +1.e6*(frac_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
+            pnz(i) = pnz0(i)+
+     &               1.e6*(frac_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
 
 c frac_flg = 6, xz and yz plane -> kx, ky, kz*   
-          elseif(frac_flg(i).eq.6) then            
-            ipmd8_dsx  = es_f_x0(i,1) - (str_x(i)-phi(i))
-            ipmd8_dsy  = es_f_y0(i,1) - (str_y(i)-phi(i))
-            ipmd8_dsz  = es_f_z0(i,1) - (str_z(i)-phi(i))
-            ipmd8_dsxy = abs(s_f_xy0(i,1)-str_xy(i))
-            ipmd8_dsxz = abs(s_f_xz0(i,1)-str_xz(i))	
-                        
-  	      ipmd8_nmx = ipmd8_dsx/ipmd8_knx + 
-     &       (ipmd8_sx-ipmd8_bx)/elastic_mod(i)
-     &       *(ipmd8_dsx-poisson(i)*(ipmd8_dsy+ipmd8_dsz))
+          elseif(frac_flg(i).eq.6) then 
+c
+c frac on yz plane
+c                     
+            dsx12  = es_f_x0(i,1) - esxi
+            dsy12  = es_f_y0(i,1) - esyi
+            dsz12  = es_f_z0(i,1) - eszi
+            dsxy12 = abs(s_f_xy0(i,1)-str_xy(i))
+            dsxz12 = abs(s_f_xz0(i,1)-str_xz(i))	
+            dsyz12 = abs(s_f_yz0(i,1)-str_yz(i))
+            L11 = cos(frc_zen(i,1)/180*pi)*cos(frc_azm(i,1)/180*pi)
+            L12 = cos(frc_zen(i,1)/180*pi)*sin(frc_azm(i,1)/180*pi)
+            L13 = -sin(frc_zen(i,1)/180*pi)
+            L21 = -sin(frc_azm(i,1)/180*pi)
+            L22 = cos(frc_azm(i,1)/180*pi)
+            L23 = 0.
+            L31 = sin(frc_zen(i,1)/180*pi)*cos(frc_azm(i,1)/180*pi)
+            L32 = sin(frc_zen(i,1)/180*pi)*sin(frc_azm(i,1)/180*pi)
+            L33 = cos(frc_zen(i,1)/180*pi)   
+                     
+            ipmd8_dsx = L11*L11*dsx12 + L12*L12*dsy12 + L13*L13*dsz12
+     &      + 2.*L11*L12*dsxy12 + 2.*L11*L13*dsxz12 + 2.*L12*L13*dsyz12
      
-            ipmd8_shx = (2*(1+poisson(i))*ipmd8_sx/elastic_mod(i)
-     &         +1/ipmd8_ksh)
-     &         *(ipmd8_dsxy+ipmd8_dsxz)*tan(ipmd8_phid/180*pi)
-            
-            ipmd8_dsx  = es_f_x0(i,2) - (str_x(i)-phi(i))
-            ipmd8_dsy  = es_f_y0(i,2) - (str_y(i)-phi(i))
-            ipmd8_dsz  = es_f_z0(i,2) - (str_z(i)-phi(i))
-            ipmd8_dsxy = abs(s_f_xy0(i,2)-str_xy(i))
-            ipmd8_dsyz = abs(s_f_yz0(i,2)-str_yz(i)) 
-            
-            ipmd8_nmy = ipmd8_dsy/ipmd8_kny
-     &        +(ipmd8_sy-ipmd8_by)/elastic_mod(i)
-     &        *(ipmd8_dsy-poisson(i)*(ipmd8_dsx+ipmd8_dsz))            
+           ipmd8_dsy = L21*L21*dsx12 + L22*L22*dsy12 + L23*L23*dsz12
+     &      + 2.*L21*L22*dsxy12 + 2.*L21*L23*dsxz12 + 2.*L22*L23*dsyz12
      
-            ipmd8_shy = (2*(1+poisson(i))*ipmd8_sy/elastic_mod(i)
-     &         +1/ipmd8_ksh)
-     &         *(ipmd8_dsxy+ipmd8_dsyz)*tan(ipmd8_phid/180*pi)
+           ipmd8_dsz = L31*L31*dsx12 + L32*L32*dsy12 + L33*L33*dsz12
+     &      + 2.*L31*L32*dsxy12 + 2.*L31*L33*dsxz12 + 2.*L32*L33*dsyz12
+     
+           ipmd8_dsxy = L11*L21*dsx12 + L12*L22*dsy12 + L13*L23*dsz12
+     &      + (L11*L22+L12*L21)*dsxy12 + (L12*L23+L13*L22)*dsyz12
+     &      + (L11*L23+L13*L21)*dsxz12
+           
+           ipmd8_dsyz = L21*L31*dsx12 + L22*L32*dsy12 + L23*L33*dsz12
+     &      + (L21*L32+L22*L31)*dsxy12 + (L22*L33+L23*L32)*dsyz12
+     &      + (L21*L33+L23*L31)*dsxz12
+     
+           ipmd8_dsxz = L11*L31*dsx12 + L12*L32*dsy12 + L13*L33*dsz12
+     &      + (L11*L32+L12*L31)*dsxy12 + (L12*L33+L13*L32)*dsyz12
+     &      + (L11*L33+L13*L31)*dsxz12    
+                          
+           ipmd8_nmx = ipmd8_dsx/knx + disx
+     &     *((ipmd8_dsx-poisson(i)*(ipmd8_dsy+ipmd8_dsz))/elastic_mod(i)
+     &     +alp(i)*(t(i)-tini(i)))
+       
+           if(esxi.lt.0) then
+             ipmd8_shx = 0.
+           else
+             ipmd8_shx = ((disy/e3(i)+1/ksy)*ipmd8_dsxy
+     &       +(disz/e3(i)+1/ksz)*ipmd8_dsxz)*tan(phid/180*pi)
+           endif
+
+c
+c frac on xy plane
+c            
+            dsx12  = es_f_x0(i,2) - (str_x(i)-phi(i))
+            dsy12  = es_f_y0(i,2) - (str_y(i)-phi(i))
+            dsz12  = es_f_z0(i,2) - (str_z(i)-phi(i))
+            dsxy12 = abs(s_f_xy0(i,2)-str_xy(i))
+            dsyz12 = abs(s_f_yz0(i,2)-str_yz(i)) 
+            dsxz12 = abs(s_f_xz0(i,2)-str_xz(i))
+            L11 = cos(frc_zen(i,2)/180*pi)*cos(frc_azm(i,2)/180*pi)
+            L12 = cos(frc_zen(i,2)/180*pi)*sin(frc_azm(i,2)/180*pi)
+            L13 = -sin(frc_zen(i,2)/180*pi)
+            L21 = -sin(frc_azm(i,2)/180*pi)
+            L22 = cos(frc_azm(i,2)/180*pi)
+            L23 = 0.
+            L31 = sin(frc_zen(i,2)/180*pi)*cos(frc_azm(i,2)/180*pi)
+            L32 = sin(frc_zen(i,2)/180*pi)*sin(frc_azm(i,2)/180*pi)
+            L33 = cos(frc_zen(i,2)/180*pi)
+                       
+            ipmd8_dsx = L11*L11*dsx12 + L12*L12*dsy12 + L13*L13*dsz12
+     &      + 2.*L11*L12*dsxy12 + 2.*L11*L13*dsxz12 + 2.*L12*L13*dsyz12
+     
+           ipmd8_dsy = L21*L21*dsx12 + L22*L22*dsy12 + L23*L23*dsz12
+     &      + 2.*L21*L22*dsxy12 + 2.*L21*L23*dsxz12 + 2.*L22*L23*dsyz12
+     
+           ipmd8_dsz = L31*L31*dsx12 + L32*L32*dsy12 + L33*L33*dsz12
+     &      + 2.*L31*L32*dsxy12 + 2.*L31*L33*dsxz12 + 2.*L32*L33*dsyz12
+     
+           ipmd8_dsxy = L11*L21*dsx12 + L12*L22*dsy12 + L13*L23*dsz12
+     &      + (L11*L22+L12*L21)*dsxy12 + (L12*L23+L13*L22)*dsyz12
+     &      + (L11*L23+L13*L21)*dsxz12
+           
+           ipmd8_dsyz = L21*L31*dsx12 + L22*L32*dsy12 + L23*L33*dsz12
+     &      + (L21*L32+L22*L31)*dsxy12 + (L22*L33+L23*L32)*dsyz12
+     &      + (L21*L33+L23*L31)*dsxz12
+     
+           ipmd8_dsxz = L11*L31*dsx12 + L12*L32*dsy12 + L13*L33*dsz12
+     &      + (L11*L32+L12*L31)*dsxy12 + (L12*L33+L13*L32)*dsyz12
+     &      + (L11*L33+L13*L31)*dsxz12
+                  
+	     ipmd8_nmy = ipmd8_dsy/kny + disy
+     &     *((ipmd8_dsy-poisson(i)*(ipmd8_dsx+ipmd8_dsz))/elastic_mod(i)
+     &     +alp(i)*(t(i)-tini(i)))
+           
+           if(esyi.lt.0) then
+             ipmd8_shy = 0.
+           else
+             ipmd8_shy = ((disx/e3(i)+1/ksx)*ipmd8_dsxy
+     &       +(disz/e3(i)+1/ksz)*ipmd8_dsyz)*tan(phid/180*pi)
+           endif
             
             ipmd8_nmx = max(0.,ipmd8_nmx)
             ipmd8_shx = max(0.,ipmd8_shx)
             ipmd8_nmy = max(0.,ipmd8_nmy)
             ipmd8_shy = max(0.,ipmd8_shy)
     
-            pnx(i) = pnx0(i)+(ipmd8_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
-            pny(i) = pny0(i)+(ipmd8_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
-            pnz(i) = pnz0(i)+(ipmd8_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
-     &                      +(ipmd8_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
+            pnx(i) = pnx0(i)+
+     &               1.e6*(frac_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
+            pny(i) = pny0(i)+
+     &               1.e6*(frac_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
+            pnz(i) = pnz0(i)+
+     &               1.e6*(frac_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
+     &               +1.e6*(frac_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
                  
 c frac_flg = 7, all plane -> kx*, ky*, kz*   
           elseif(frac_flg(i).eq.7) then  
-          
-            ipmd8_dsx  = es_f_x0(i,1) - (str_x(i)-phi(i))
-            ipmd8_dsy  = es_f_y0(i,1) - (str_y(i)-phi(i))
-            ipmd8_dsz  = es_f_z0(i,1) - (str_z(i)-phi(i))
-            ipmd8_dsxy = abs(s_f_xy0(i,1)-str_xy(i))
-            ipmd8_dsxz = abs(s_f_xz0(i,1)-str_xz(i))	
-                        
-  	      ipmd8_nmx = ipmd8_dsx/ipmd8_knx + 
-     &       (ipmd8_sx-ipmd8_bx)/elastic_mod(i)
-     &       *(ipmd8_dsx-poisson(i)*(ipmd8_dsy+ipmd8_dsz))
-     
-            ipmd8_shx = (2*(1+poisson(i))*ipmd8_sx/elastic_mod(i)
-     &         +1/ipmd8_ksh)
-     &         *(ipmd8_dsxy+ipmd8_dsxz)*tan(ipmd8_phid/180*pi)
+c
+c frac on yz plane
+c          
+            dsx12  = es_f_x0(i,1) - esxi
+            dsy12  = es_f_y0(i,1) - esyi
+            dsz12  = es_f_z0(i,1) - eszi
+            dsxy12 = abs(s_f_xy0(i,1)-str_xy(i))
+            dsxz12 = abs(s_f_xz0(i,1)-str_xz(i))	
+            dsyz12 = abs(s_f_yz0(i,1)-str_yz(i))
+            L11 = cos(frc_zen(i,1)/180*pi)*cos(frc_azm(i,1)/180*pi)
+            L12 = cos(frc_zen(i,1)/180*pi)*sin(frc_azm(i,1)/180*pi)
+            L13 = -sin(frc_zen(i,1)/180*pi)
+            L21 = -sin(frc_azm(i,1)/180*pi)
+            L22 = cos(frc_azm(i,1)/180*pi)
+            L23 = 0.
+            L31 = sin(frc_zen(i,1)/180*pi)*cos(frc_azm(i,1)/180*pi)
+            L32 = sin(frc_zen(i,1)/180*pi)*sin(frc_azm(i,1)/180*pi)
+            L33 = cos(frc_zen(i,1)/180*pi)
             
-            ipmd8_dsx  = es_f_x0(i,2) - (str_x(i)-phi(i))
-            ipmd8_dsy  = es_f_y0(i,2) - (str_y(i)-phi(i))
-            ipmd8_dsz  = es_f_z0(i,2) - (str_z(i)-phi(i))
-            ipmd8_dsxy = abs(s_f_xy0(i,2)-str_xy(i))
-            ipmd8_dsyz = abs(s_f_yz0(i,2)-str_yz(i)) 
-            
-            ipmd8_nmy = ipmd8_dsy/ipmd8_kny
-     &        +(ipmd8_sy-ipmd8_by)/elastic_mod(i)
-     &        *(ipmd8_dsy-poisson(i)*(ipmd8_dsx+ipmd8_dsz))            
+           ipmd8_dsx = L11*L11*dsx12 + L12*L12*dsy12 + L13*L13*dsz12
+     &      + 2.*L11*L12*dsxy12 + 2.*L11*L13*dsxz12 + 2.*L12*L13*dsyz12
      
-            ipmd8_shy = (2*(1+poisson(i))*ipmd8_sy/elastic_mod(i)
-     &         +1/ipmd8_ksh)
-     &         *(ipmd8_dsxy+ipmd8_dsyz)*tan(ipmd8_phid/180*pi)
+           ipmd8_dsy = L21*L21*dsx12 + L22*L22*dsy12 + L23*L23*dsz12
+     &      + 2.*L21*L22*dsxy12 + 2.*L21*L23*dsxz12 + 2.*L22*L23*dsyz12
+     
+           ipmd8_dsz = L31*L31*dsx12 + L32*L32*dsy12 + L33*L33*dsz12
+     &      + 2.*L31*L32*dsxy12 + 2.*L31*L33*dsxz12 + 2.*L32*L33*dsyz12
+     
+           ipmd8_dsxy = L11*L21*dsx12 + L12*L22*dsy12 + L13*L23*dsz12
+     &      + (L11*L22+L12*L21)*dsxy12 + (L12*L23+L13*L22)*dsyz12
+     &      + (L11*L23+L13*L21)*dsxz12
+           
+           ipmd8_dsyz = L21*L31*dsx12 + L22*L32*dsy12 + L23*L33*dsz12
+     &      + (L21*L32+L22*L31)*dsxy12 + (L22*L33+L23*L32)*dsyz12
+     &      + (L21*L33+L23*L31)*dsxz12
+     
+           ipmd8_dsxz = L11*L31*dsx12 + L12*L32*dsy12 + L13*L33*dsz12
+     &      + (L11*L32+L12*L31)*dsxy12 + (L12*L33+L13*L32)*dsyz12
+     &      + (L11*L33+L13*L31)*dsxz12  
+            
+           ipmd8_nmx = ipmd8_dsx/knx + disx
+     &     *((ipmd8_dsx-poisson(i)*(ipmd8_dsy+ipmd8_dsz))/elastic_mod(i)
+     &     +alp(i)*(t(i)-tini(i)))
+       
+           if(esxi.lt.0) then
+             ipmd8_shx = 0.
+           else
+             ipmd8_shx = ((disy/e3(i)+1/ksy)*ipmd8_dsxy
+     &       +(disz/e3(i)+1/ksz)*ipmd8_dsxz)*tan(phid/180*pi)
+           endif
 
-            ipmd8_dsx  = es_f_x0(i,3) - (str_x(i)-phi(i))
-            ipmd8_dsy  = es_f_y0(i,3) - (str_y(i)-phi(i))
-            ipmd8_dsz  = es_f_z0(i,3) - (str_z(i)-phi(i))         
-            ipmd8_dsxz = abs(s_f_xz0(i,3)-str_xz(i))
-            ipmd8_dsyz = abs(s_f_yz0(i,3)-str_yz(i))
-	
-	      ipmd8_nmz = ipmd8_dsz/ipmd8_knz + 
-     &       (ipmd8_sz-ipmd8_bz)/elastic_mod(i)
-     &       *(ipmd8_dsz-poisson(i)*(ipmd8_dsx+ipmd8_dsy))
-                
-            ipmd8_shz = (2*(1+poisson(i))*ipmd8_sz/elastic_mod(i)
-     &        +1/ipmd8_ksh)
-     &        *(ipmd8_dsxz+ipmd8_dsyz)*tan(ipmd8_phid/180*pi) 
+c
+c frac on xz plane
+c     
+            
+            dsx12  = es_f_x0(i,2) - (str_x(i)-phi(i))
+            dsy12  = es_f_y0(i,2) - (str_y(i)-phi(i))
+            dsz12  = es_f_z0(i,2) - (str_z(i)-phi(i))
+            dsxy12 = abs(s_f_xy0(i,2)-str_xy(i))
+            dsyz12 = abs(s_f_yz0(i,2)-str_yz(i)) 
+            dsxz12 = abs(s_f_xz0(i,2)-str_xz(i))
+            L11 = cos(frc_zen(i,2)/180*pi)*cos(frc_azm(i,2)/180*pi)
+            L12 = cos(frc_zen(i,2)/180*pi)*sin(frc_azm(i,2)/180*pi)
+            L13 = -sin(frc_zen(i,2)/180*pi)
+            L21 = -sin(frc_azm(i,2)/180*pi)
+            L22 = cos(frc_azm(i,2)/180*pi)
+            L23 = 0.
+            L31 = sin(frc_zen(i,2)/180*pi)*cos(frc_azm(i,2)/180*pi)
+            L32 = sin(frc_zen(i,2)/180*pi)*sin(frc_azm(i,2)/180*pi)
+            L33 = cos(frc_zen(i,2)/180*pi)
+            
+           ipmd8_dsx = L11*L11*dsx12 + L12*L12*dsy12 + L13*L13*dsz12
+     &      + 2.*L11*L12*dsxy12 + 2.*L11*L13*dsxz12 + 2.*L12*L13*dsyz12
+     
+           ipmd8_dsy = L21*L21*dsx12 + L22*L22*dsy12 + L23*L23*dsz12
+     &      + 2.*L21*L22*dsxy12 + 2.*L21*L23*dsxz12 + 2.*L22*L23*dsyz12
+     
+           ipmd8_dsz = L31*L31*dsx12 + L32*L32*dsy12 + L33*L33*dsz12
+     &      + 2.*L31*L32*dsxy12 + 2.*L31*L33*dsxz12 + 2.*L32*L33*dsyz12
+     
+           ipmd8_dsxy = L11*L21*dsx12 + L12*L22*dsy12 + L13*L23*dsz12
+     &      + (L11*L22+L12*L21)*dsxy12 + (L12*L23+L13*L22)*dsyz12
+     &      + (L11*L23+L13*L21)*dsxz12
+           
+           ipmd8_dsyz = L21*L31*dsx12 + L22*L32*dsy12 + L23*L33*dsz12
+     &      + (L21*L32+L22*L31)*dsxy12 + (L22*L33+L23*L32)*dsyz12
+     &      + (L21*L33+L23*L31)*dsxz12
+     
+           ipmd8_dsxz = L11*L31*dsx12 + L12*L32*dsy12 + L13*L33*dsz12
+     &      + (L11*L32+L12*L31)*dsxy12 + (L12*L33+L13*L32)*dsyz12
+     &      + (L11*L33+L13*L31)*dsxz12  
+                 	           
+	     ipmd8_nmy = ipmd8_dsy/kny + disy
+     &     *((ipmd8_dsy-poisson(i)*(ipmd8_dsx+ipmd8_dsz))/elastic_mod(i)
+     &     +alp(i)*(t(i)-tini(i)))
+           
+           if(esyi.lt.0) then
+             ipmd8_shy = 0.
+           else
+             ipmd8_shy = ((disx/e3(i)+1/ksx)*ipmd8_dsxy
+     &      +(disz/e3(i)+1/ksz)*ipmd8_dsyz)*tan(phid/180*pi)
+           endif
+
+c
+c frac on xy plane
+c
+            dsx12  = es_f_x0(i,3) - (str_x(i)-phi(i))
+            dsy12  = es_f_y0(i,3) - (str_y(i)-phi(i))
+            dsz12  = es_f_z0(i,3) - (str_z(i)-phi(i))         
+            dsxz12 = abs(s_f_xz0(i,3)-str_xz(i))
+            dsyz12 = abs(s_f_yz0(i,3)-str_yz(i))
+            dsxy12 = abs(s_f_xy0(i,3)-str_xy(i))
+			L11 = cos(frc_zen(i,3)/180*pi)*cos(frc_azm(i,3)/180*pi)
+            L12 = cos(frc_zen(i,3)/180*pi)*sin(frc_azm(i,3)/180*pi)
+            L13 = -sin(frc_zen(i,3)/180*pi)
+            L21 = -sin(frc_azm(i,3)/180*pi)
+            L22 = cos(frc_azm(i,3)/180*pi)
+            L23 = 0.
+            L31 = sin(frc_zen(i,3)/180*pi)*cos(frc_azm(i,3)/180*pi)
+            L32 = sin(frc_zen(i,3)/180*pi)*sin(frc_azm(i,3)/180*pi)
+            L33 = cos(frc_zen(i,3)/180*pi)   
+                    
+           ipmd8_dsx = L11*L11*dsx12 + L12*L12*dsy12 + L13*L13*dsz12
+     &      + 2.*L11*L12*dsxy12 + 2.*L11*L13*dsxz12 + 2.*L12*L13*dsyz12
+     
+           ipmd8_dsy = L21*L21*dsx12 + L22*L22*dsy12 + L23*L23*dsz12
+     &      + 2.*L21*L22*dsxy12 + 2.*L21*L23*dsxz12 + 2.*L22*L23*dsyz12
+     
+           ipmd8_dsz = L31*L31*dsx12 + L32*L32*dsy12 + L33*L33*dsz12
+     &      + 2.*L31*L32*dsxy12 + 2.*L31*L33*dsxz12 + 2.*L32*L33*dsyz12
+     
+           ipmd8_dsxy = L11*L21*dsx12 + L12*L22*dsy12 + L13*L23*dsz12
+     &      + (L11*L22+L12*L21)*dsxy12 + (L12*L23+L13*L22)*dsyz12
+     &      + (L11*L23+L13*L21)*dsxz12
+           
+           ipmd8_dsyz = L21*L31*dsx12 + L22*L32*dsy12 + L23*L33*dsz12
+     &      + (L21*L32+L22*L31)*dsxy12 + (L22*L33+L23*L32)*dsyz12
+     &      + (L21*L33+L23*L31)*dsxz12
+     
+           ipmd8_dsxz = L11*L31*dsx12 + L12*L32*dsy12 + L13*L33*dsz12
+     &      + (L11*L32+L12*L31)*dsxy12 + (L12*L33+L13*L32)*dsyz12
+     &      + (L11*L33+L13*L31)*dsxz12  
+     	
+           ipmd8_nmz = ipmd8_dsz/knz + disz
+     &     *((ipmd8_dsz-poisson(i)*(ipmd8_dsx+ipmd8_dsy))/elastic_mod(i)
+     &     +alp(i)*(t(i)-tini(i)))
+      
+           if(eszi.lt.0) then
+             ipmd8_shz = 0.
+           else
+             ipmd8_shz = ((disx/e3(i)+1/ksx)*ipmd8_dsxz
+     &       +(disy/e3(i)+1/ksy)*ipmd8_dsyz)*tan(phid/180*pi)
+           endif
 
             ipmd8_nmx = max(0.,ipmd8_nmx)
             ipmd8_shx = max(0.,ipmd8_shx)
@@ -1807,15 +2201,21 @@ c frac_flg = 7, all plane -> kx*, ky*, kz*
             ipmd8_nmz = max(0.,ipmd8_nmz)
             ipmd8_shz = max(0.,ipmd8_shz)                
             
-            pnx(i) = pnx0(i)+(ipmd8_by+ipmd8_nmy)**3/(12*disy)
-            pny(i) = pny0(i)
-            pnz(i) = pnz0(i)+(ipmd8_by+ipmd8_nmy)**3/(12*disy)
+            pnx(i) = pnx0(i)+
+     &               1.e6*(frac_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
+     &               +1.e6*(frac_bz+ipmd8_nmz+ipmd8_shz)**3/(12*disz)
+            pny(i) = pny0(i)+
+     &               1.e6*(frac_bz+ipmd8_nmz+ipmd8_shz)**3/(12*disz)
+     &               +1.e6*(frac_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
+            pnz(i) = pnz0(i)+
+     &               1.e6*(frac_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
+     &               +1.e6*(frac_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy) 
      
 
           endif          
-c            pnx(i) = min(perx_m*pnx0(i),pnx(i))
-c            pny(i) = min(pery_m*pny0(i),pny(i))
-c            pnz(i) = min(perz_m*pnz0(i),pnz(i))
+            pnx(i) = min(perx_m*pnx0(i),pnx(i))
+            pny(i) = min(pery_m*pny0(i),pny(i))
+            pnz(i) = min(perz_m*pnz0(i),pnz(i))
 
 c            pnx(i) = max(pnx0(i),pnx(i))
 c            pny(i) = max(pny0(i),pny(i))  
@@ -1825,26 +2225,25 @@ c            pnz(i) = max(pnz0(i),pnz(i))
                   endif 
                   
 
-
 c...........................................................
-            elseif(ispmd.eq.11) then
-c     s kelkar June 9 2009, simple gangi (1978, Int.J.Rock Mech)
-c     model in 2-D
-c     assumed model in x-y plane and fracture in x-z plane, so only 
-c     x-perm is modified. This formulation is for fracture faces
-c     in contact, so str_y = effective stress in y-dir has to be
-c     compressive
-               if(icnl.ne.0) then
-                  gk0  =spm1f(iispmd)
-                  gpmod=spm2f(iispmd)
-                  gmexp =spm3f(iispmd)
-                  gn=1./gmexp
-                  sigy_eff=str_y(i)
-                  if(sigy_eff.gt.0.d0) then
-                     pnx(i)=gk0*(1.-(sigy_eff/gpmod)**gmexp)**3.
-                     e2(i) =  gn*sigy_eff*(gpmod/sigy_eff)**gn
+               elseif(ispmd.eq.11) then
+c s kelkar June 9 2009, simple gangi (1978, Int.J.Rock Mech)
+c  model in 2-D
+c assumed model in x-y plane and fracture in x-z plane, so only 
+c x-perm is modified. This formulation is for fracture faces
+c in contact, so str_y = effective stress in y-dir has to be
+c compressive
+                  if(icnl.ne.0) then
+                     gk0  =spm1f(iispmd)
+                     gpmod=spm2f(iispmd)
+                     gmexp =spm3f(iispmd)
+                     gn=1./gmexp
+                     sigy_eff=str_y(i)
+                     if(sigy_eff.gt.0.d0) then
+                        pnx(i)=gk0*(1.-(sigy_eff/gpmod)**gmexp)**3.
+                        e2(i) =  gn*sigy_eff*(gpmod/sigy_eff)**gn
+                     endif
                   endif
-               endif
 c...........................................................
 
             endif   
@@ -1857,7 +2256,7 @@ c     check for damage zone (permeability changes)
 c     and maximum allowable changes
 c     
          if(ipermstr2.ne.0.or.ipermstr5.ne.0.or.ipermstr7.ne.0
-     &        .or.ipermstr8.ne.0) then
+     &    .or.ipermstr8.ne.0) then
             permx_max = 0.0
             permy_max = 0.0
             permz_max = 0.0
@@ -1916,19 +2315,19 @@ c
             if(iout.ne.0) write(iout,101) 
             if(iptty.ne.0) write(iptty,101)   
             ipermx_max = 308
-            if(iout.ne.0) write(iout,102)
-     &           ipermx_max,sxx_min,pnx(ipermx_max)*1.e-6,
+            if(iout.ne.0)
+     &          write(iout,102)ipermx_max,sxx_min,pnx(ipermx_max)*1.e-6,
      &           cord(ipermx_max,1),cord(ipermx_max,2),coorxz_max
 *******************************
             
 c     &  write(iout,201)ipermx_max,str_y(ipermx_max)-phi(ipermx_max),
 c     &        frac_flg(ipermx_max)
 c*******************************
-            if(iptty.ne.0) write(iptty,102)
-     &           ipermx_max,sxx_min,pnx(ipermx_max)*1.e-6,
+            if(iptty.ne.0)
+     &         write(iptty,102)ipermx_max,sxx_min,pnx(ipermx_max)*1.e-6,
      &           cord(ipermx_max,1),cord(ipermx_max,2),coorxz_max 
-            if(iout.ne.0) write(iout,103)
-     &           ipermy_max,syy_min,pny(ipermy_max)*1.e-6,
+            if(iout.ne.0)
+     &         write(iout,103)ipermy_max,syy_min,pny(ipermy_max)*1.e-6,
      &           cord(ipermy_max,1),cord(ipermy_max,2),cooryz_max  
 c*******************************
             
@@ -1938,15 +2337,15 @@ c     &       estr_y0(ipermx_max) - (str_x(ipermx_max)-pho(ipermx_max)),
 c     &       pny(ipermx_max)*1.e-6,
 c     &       cord(ipermy_max,1),cord(ipermy_max,2),cooryz_max  
 c*******************************
-            if(iptty.ne.0) write(iptty,103)
-     &           ipermy_max,syy_min,pny(ipermy_max)*1.e-6,
+            if(iptty.ne.0)
+     &         write(iptty,103)ipermy_max,syy_min,pny(ipermy_max)*1.e-6,
      &           cord(ipermy_max,1),cord(ipermy_max,2),cooryz_max  
             if(icnl.eq.0) then
-               if(iout.ne.0) write(iout,104)
-     &              ipermz_max,szz_min,pnz(ipermz_max)*1.e-6,
+               if(iout.ne.0)
+     &          write(iout,104)ipermz_max,szz_min,pnz(ipermz_max)*1.e-6,
      &              cord(ipermz_max,1),cord(ipermz_max,2),coorzz_max  
-               if(iptty.ne.0) write(iptty,104)
-     &              ipermz_max,szz_min,pnz(ipermz_max)*1.e-6,
+               if(iptty.ne.0)
+     &         write(iptty,104)ipermz_max,szz_min,pnz(ipermz_max)*1.e-6,
      &              cord(ipermz_max,1),cord(ipermz_max,2),coorzz_max    
             endif     
          endif         

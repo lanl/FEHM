@@ -107,6 +107,7 @@
 	real*8 area_ix, area_iy, area_iz, area_tol
       real*8 dvol_strainu_i, dvol_strainv_i, dvol_strainw_i
       real*8 strx,strxgrad 
+      integer open_file
             
 	parameter (area_tol = 1.d-18)
 	parameter(dis_tol=1.d-12)
@@ -163,9 +164,7 @@ c arrays for stress derivatives in mass and energy equations
 	allocate (its32(100,4))
       allocate (its41(1,4))
 	allocate (its42(100,4))
-	
-	allocate (itstress(200))
-
+      allocate (itstress(200))
       allocate (ts21(1,4))
 	allocate (ts22(100,4))
       allocate (ts31(1,4))
@@ -388,6 +387,9 @@ c set default to model 1
             backspace inpt
             i = i+1           
             if(ispmd .eq.1) then
+              permfile = open_file('permifile.permi', 'unknown')
+              write(permfile,*) 
+     &         'node  time  check  Kyy  Sxx  Syy  Szz  P'
 c default and no input            
              read(inpt,*) ispmt(i)   
 c model 1 default            
@@ -415,25 +417,23 @@ c
             else if (ispmd .eq. 3) then
               read(inpt,*) ispmt(i),spm1f(i),spm2f(i),spm3f(i),spm4f(i),
      &                     spm5f(i),spm6f(i),spm7f(i),spm8f(i),spm9f(i)
+            else if (ispmd .eq. 4) then
+              read(inpt,*) ispmt(i),spm1f(i),spm2f(i),spm3f(i),spm4f(i),
+     &                     spm5f(i),spm6f(i),spm7f(i),spm8f(i),spm9f(i),
+     &                     spm10f(i),spm11f(i),spm12f(i),spm13f(i)     
             else if (ispmd .eq. 5) then
               read(inpt,*) ispmt(i),spm1f(i),spm2f(i),spm3f(i),spm4f(i),
-     &                     spm5f(i),spm6f(i),spm7f(i),spm8f(i),spm9f(i)
+     &                     spm5f(i),spm6f(i)
             else if (ispmd .eq. 6) then
               read(inpt,*) ispmt(i),spm1f(i),spm2f(i),spm3f(i),spm4f(i),
      &                     spm5f(i),spm6f(i),spm7f(i),spm8f(i),spm9f(i),
      &                     spm10f(i),spm11f(i)
-            else if (ispmd .eq. 4) then
-              read(inpt,*) ispmt(i),spm1f(i),spm2f(i),spm3f(i),spm4f(i),
-     &                     spm5f(i),spm6f(i),spm7f(i),spm8f(i),spm9f(i),
-     &                     spm10f(i),spm11f(i),spm12f(i),spm13f(i)
             else if (ispmd .eq. 7) then
               read(inpt,*) ispmt(i),spm1f(i),spm2f(i),spm3f(i),spm4f(i),
-     &                     spm5f(i),spm6f(i),spm7f(i),spm8f(i),spm9f(i),
-     &                     spm10f(i),spm11f(i)
+     &                     spm5f(i),spm6f(i)
             else if (ispmd .eq. 8) then
               read(inpt,*) ispmt(i),spm1f(i),spm2f(i),spm3f(i),spm4f(i),
-     &                     spm5f(i),spm6f(i),spm7f(i),spm8f(i),spm9f(i),
-     &                     spm10f(i),spm11f(i),spm12f(i),spm13f(i)  
+     &                     spm5f(i),spm6f(i),spm7f(i),spm8f(i),spm9f(i) 
             else if (ispmd .eq.11) then
               read(inpt,*) ispmt(i),spm1f(i),spm2f(i),spm3f(i)     
             endif
@@ -898,6 +898,11 @@ c If Bai model (model 7) is chosen, store the initial effective stresses
 c If  model 2 is chosen, store the initial effective stresses
 c If  model 6 is chosen, store the initial effective stresses
 c      
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccheck
+       if(ipermstr7.ne.0.or.ipermstr5.ne.0.or.ipermstr8.ne.0) then
+         allocate(check(n0))
+       endif
+
        if(ipermstr2.ne.0.or.ipermstr6.ne.0.or.ipermstr7.ne.0) then
          if(icnl.ne.0) then
            allocate(estr_x0(n0))
@@ -928,6 +933,23 @@ c
          enddo
        endif
       endif
+            
+      if(ipermstr8.ne.0) then
+         if(icnl.ne.0) then
+           allocate(es_f_x0(n0,2))
+           allocate(es_f_y0(n0,2))
+           allocate(s_f_xy0(n0,2))
+         else 
+           allocate(es_f_x0(n0,3))
+           allocate(es_f_y0(n0,3))
+           allocate(es_f_z0(n0,3))           
+           allocate(s_f_xy0(n0,3))  
+           allocate(s_f_xz0(n0,3))
+           allocate(s_f_yz0(n0,3))
+           allocate(frc_zen(n0,3))
+           allocate(frc_azm(n0,3))
+         endif
+      endif  
 c
 c if a pore pressure damage model is chosen save the initial lithostsic stress
 c this next part is to remove stresses caused by initial temperature and pressure fields       
