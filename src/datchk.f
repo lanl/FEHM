@@ -551,6 +551,7 @@ c**** zero out z coordinate in 2-d case ****
          end if
 
 C**** print reference values for air/water problem ****
+        if(ico2.lt.0) then
  6053    format(1x, 'reference temperature, pressure for isothermal ',
      &        'EOS problems')      
          write(ischk, 6053)
@@ -562,9 +563,14 @@ C**** print reference values for air/water problem ****
  6056    format(5x,"gas    : density, viscosity, compressibility ")
          write(ischk, 6056)
          den_vap = 1.292864*(273.0/(crl(6,1)+273.0))*crl(4,1)/0.101325
-         write(ischk, 6055) den_vap, crl(5,1), 1./crl(4,1)                   
+         write(ischk, 6055) den_vap, crl(5,1), 1./crl(4,1)           
 c**** print out max and min values ****
  6100    format(3x, g16.8, 3x, i8, 3(3x, g10.3))
+        else
+         write(ischk,*)
+         write(ischk,*)'EOS data obtained from internal equations'
+         write(ischk,*)
+        endif
 
 c**** pressure information ****
       
