@@ -448,7 +448,8 @@ c
       parameter(su_cut = 0.99d00)
 
 
-      integer iz,ndummy,i,irlpd,mi,ieosd,it,ir,j,num_models,ireg
+      integer iz,ndummy,i,irlpd,mi,ieosd,it,ir,j,num_models
+      integer :: ireg = 1
       real*8 alpha,beta,alamda,alpi,smcut,slcut,fac,ds,dhp
       real*8 rp1,rp2,rp3,rp4,denom,star,hp,rl1,rv1
       real(8) :: rl = 1., rv = 1., drls = 0., drvs = 0.
@@ -973,7 +974,7 @@ c     corey relationships(geothermal)
                   endif
                elseif(irpd.eq.3) then
 c rlp(h)
-                  call vg_regions(1,ireg,mi,su_cut)
+c                  call vg_regions(1,ireg,mi,su_cut)
                   call vgcap( sl, rp1, rp2, rp3, rp4, 
      2                 rp7f(it), rp8f(it), rp9f(it),
      3                 rp10f(it), rp6f(it),su_cut ,
@@ -985,7 +986,7 @@ c rlp(h)
                   dpcef(mi) = 9.8e-3 * dhp
                elseif(irpd.eq.8) then
 c rlp(h) and vapor rlp
-                  call vg_regions(1,ireg,mi,su_cut)
+c                  call vg_regions(1,ireg,mi,su_cut)
                   call vgcap( sl, rp1, rp2, rp3, rp4, 
      2                 rp7f(it), rp8f(it), rp9f(it),
      3                 rp10f(it), rp6f(it),su_cut ,
@@ -997,7 +998,7 @@ c rlp(h) and vapor rlp
                   dpcef(mi) = 9.8e-3 * dhp
                elseif(irpd.eq.9) then
 c rlp(h) and vapor rlp
-                  call vg_regions(1,ireg,mi,su_cut)
+c                  call vg_regions(1,ireg,mi,su_cut)
                   call vgcap( sl, rp1, rp2, rp3, rp4, 
      2                 rp7f(it), rp8f(it), rp9f(it),
      3                 rp10f(it), rp6f(it),su_cut ,
@@ -1015,7 +1016,7 @@ c rlp(h) and vapor rlp
                   dpcef(mi) = 9.8e-3 * dhp
                elseif(irpd.eq.5) then
 c rlp(S)
-                  call vg_regions(1,ireg,mi,su_cut)
+c                  call vg_regions(1,ireg,mi,su_cut)
                   call vgcap( sl, rp1, rp2, rp3, rp4, 
      2                 rp7f(it), rp8f(it), rp9f(it),
      3                 rp10f(it), rp6f(it), su_cut,
@@ -1038,7 +1039,7 @@ c
                   if( idpdp .ne. 0 .or. idualp .ne. 0 ) then
                      
                      if( mi .le. neq ) then
-                        call vg_regions(2,ireg,mi,su_cut)
+c                        call vg_regions(2,ireg,mi,su_cut)
                         call vgcap( sl, rp11f(it), rp12f(it), rp13f(it),
      2                       rp14f(it), rp20f(it), rp21f(it), rp22f(it),
      3                       rp23f(it), rp16f(it), su_cut,    
@@ -1049,7 +1050,7 @@ c
                         permb = akf * porf
                         
                      else
-                        call vg_regions(1,ireg,mi,su_cut)
+c                        call vg_regions(1,ireg,mi,su_cut)
                         call vgcap( sl, rp1, rp2, rp3, rp4, 
      2                       rp7f(it), rp8f(it), rp9f(it),
      3                       rp10f(it), rp6f(it), su_cut,      
@@ -1061,7 +1062,7 @@ c
                      end if
                      
                   else
-                     call vg_regions(1,ireg,mi,su_cut)
+c                     call vg_regions(1,ireg,mi,su_cut)
                      call vgcap( sl, rp1, rp2, rp3, rp4,  
      2                    rp7f(it), rp8f(it), rp9f(it),
      3                    rp10f(it), rp6f(it), su_cut,      
@@ -1116,7 +1117,7 @@ c
                   if( idpdp .ne. 0 .or. idualp .ne. 0 ) then
                      
                      if( mi .le. neq )  then
-                        call vg_regions(2,ireg,mi,su_cut)
+c                        call vg_regions(2,ireg,mi,su_cut)
                         call vgcap( sl, rp11f(it), rp12f(it), rp13f(it),
      2                       rp14f(it), rp20f(it), rp21f(it), rp22f(it),
      3                       rp23f(it), rp16f(it), su_cut,    
@@ -1133,7 +1134,7 @@ c calculate fracture term(from Sandia) if necessary
                         endif
                         
                      else
-                        call vg_regions(1,ireg,mi,su_cut)
+c                        call vg_regions(1,ireg,mi,su_cut)
                         call vgcap( sl, rp1, rp2, rp3, rp4, 
      2                       rp7f(it), rp8f(it), rp9f(it),
      3                       rp10f(it), rp6f(it), su_cut,      
@@ -1150,7 +1151,7 @@ c calculate fracture term(from Sandia) if necessary
                      end if
                      
                   else
-                     call vg_regions(1,ireg,mi,su_cut)
+c                     call vg_regions(1,ireg,mi,su_cut)
                      call vgcap( sl, rp1, rp2, rp3, rp4,  
      2                    rp7f(it), rp8f(it), rp9f(it),
      3                    rp10f(it), rp6f(it), su_cut,      
