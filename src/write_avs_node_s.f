@@ -240,7 +240,7 @@ c     RJP 1/12/07 added following
       integer i,j,iolp,iovp,nout,iz,iendz,il,idz, i1, i2, index, iaxy, k
       integer size_head, size_pcp, istart, iend, ic1, ic2, length, nadd
       integer icord1, icord2, icord3, ns_in0, irivp 
-      integer nelm2(ns_in)
+      integer, allocatable ::  nelm2(:)
       real*8 hdum, sdum, px, py, pz, flxdum
       character*80 title(2*maxscalar+3)
       character*150 :: tecstring = ''
@@ -818,10 +818,12 @@ c     Read the element connectivity and write to tec file
             do i = 1, neq
                read(il,*)
             end do
+            allocate (nelm2(ns_in))
             do i = 1, nei_in
                read (il,*) i1,i2,char_type,(nelm2(j), j=1,ns_in)
                write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
             end do
+            deallocate(nelm2)
             close (il)
          else
 c     river segments (2 node elements)
@@ -838,11 +840,13 @@ c first generate elements
          call structured(4)
          il = open_file('fdm_elem.macro','old')
          read(il,*) 
-         read(il,*) nei_in, ns_in
+         read(il,*)  ns_in , nei_in
+         allocate (nelm2(ns_in))
          do i = 1, nei_in
             read (il,*) i1, (nelm2(j), j=1,ns_in)
             write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
          end do
+         deallocate(nelm2)
          close (il)
       end if        
       if (altc(1:3) .ne. 'sur') close (lu)

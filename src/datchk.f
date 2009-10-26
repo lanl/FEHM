@@ -384,9 +384,9 @@ c**** search for maximum and minimum values ****
 
 ! If a check file is not requested skip checking (zvd 01/07/2005)
       if (ischk .ne. 0) then
-
+            zdiff = 0.0d0
          do i = 1, n
-
+            zdiff = max(zdiff,abs(cord(1, igrav) - cord(i, igrav)))
             call min_max (phi(i), i, prsmin, iprsmn, prsmax, iprsmx)
             if (irdof .ne. 13 .or. ifree .ne. 0) then
                call min_max (pci(i), i, prcmin, iprcmn, prcmax, iprcmx)
@@ -525,7 +525,6 @@ c**** further analysis of storage ****
 
 c**** check for possible error in dimension specification ****
 
-         zdiff = cord(1, 3) - cord(neq, 3)
          if (icnl .eq. 0)  then
             if (abs(zdiff) .lt. zero_t)  then
                write(ischk, 6050)

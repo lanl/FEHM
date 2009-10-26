@@ -789,6 +789,7 @@ c
       integer nx,ny,nz,nxny,kk
       integer i,j,k,ne,ns,npoint,il
       integer, allocatable :: nelm_temp(:)
+      integer open_file
       character*14  fdm_elem_file
       logical opnd
       fdm_elem_file = 'fdm_elem.macro'
@@ -813,18 +814,18 @@ c 3D hex elements
           do i = 1, nx-1 
            kk = kk + 1
            nelm_temp((kk-1)*ns+1) = kk + nxny
-           nelm_temp((kk-1)*ns+1) = kk + nxny + 1
-           nelm_temp((kk-1)*ns+1) = kk + nxny + nx + 1
-           nelm_temp((kk-1)*ns+1) = kk + nxny + nx
-           nelm_temp((kk-1)*ns+1) = kk 
-           nelm_temp((kk-1)*ns+1) = kk + 1
-           nelm_temp((kk-1)*ns+1) = kk + nx + 1
-           nelm_temp((kk-1)*ns+1) = kk + nx
+           nelm_temp((kk-1)*ns+2) = kk + nxny + 1
+           nelm_temp((kk-1)*ns+3) = kk + nxny + nx + 1
+           nelm_temp((kk-1)*ns+4) = kk + nxny + nx
+           nelm_temp((kk-1)*ns+5) = kk 
+           nelm_temp((kk-1)*ns+6) = kk + 1
+           nelm_temp((kk-1)*ns+7) = kk + nx + 1
+           nelm_temp((kk-1)*ns+8) = kk + nx
           enddo
         enddo
       enddo   
       write(il,'(a9)') 'elem trad'
-      write(il,*) 8,kk
+      write(il,*) 8, kk
       do i = 1,kk
        write(il,'(9(1x,i8))') i,(nelm_temp((i-1)*ns +j),j=1,8)
       enddo

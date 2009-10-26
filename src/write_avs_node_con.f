@@ -178,7 +178,8 @@ C***********************************************************************
       integer add_dual, maxcon, iz, idz, iendz, il, open_file
       integer neq,nspeci,lu,ifdual,icall,length,i1,i2
       integer icord1, icord2, icord3, iaq, ivap, isolid
-      integer npt(*),nelm2(ns_in)
+      integer npt(*)
+      integer, allocatable ::  nelm2(:)
       parameter (maxcon = 100)
       real*8 an(n0,nspeci)
       real*8 anv(n0,nspeci)
@@ -779,6 +780,7 @@ c=================================================
 ! Read the element connectivity and write to tec file
          il = open_file(geoname,'old')
 ! avsx geometry file has an initial line that starts with neq_primary
+         allocate(nelm(ns_in))
          read(il,*) i
          if (i .ne. neq_primary) backspace il
          do i = 1, neq
@@ -788,6 +790,7 @@ c=================================================
             read (il,*) i1,i2,char_type,(nelm2(j), j=1,ns_in)
             write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
          end do
+         deallocate(nelm2)
          close (il)
       end if
 c gaz added element output  (hex only) for fdm generated grid   
@@ -797,11 +800,14 @@ c first generate elements
          call structured(4)
          il = open_file('fdm_elem.macro','old')
          read(il,*) 
+         read(il,*)  ns_in , nei_in
+         allocate (nelm2(ns_in))
          read(il,*) nei_in, ns_in
          do i = 1, nei_in
             read (il,*) i1, (nelm2(j), j=1,ns_in)
             write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
          end do
+         deallocate(nelm2)
          close (il)
       end if      
       if (altc(1:3) .ne. 'sur') close (lu)
