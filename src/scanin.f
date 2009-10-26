@@ -2083,7 +2083,7 @@ c need porosity model
          allocate(ispmt(i))
          allocate(spm1f(i),spm2f(i),spm3f(i),spm4f(i),spm5f(i))
          allocate(spm6f(i),spm7f(i),spm8f(i),spm9f(i),spm10f(i))
-         allocate(spm11f(i))
+         allocate(spm11f(i),spm12f(i),spm13f(i))
          call done_macro(locunitnum)
          
       end if

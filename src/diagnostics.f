@@ -180,8 +180,8 @@ c     print out worst residuals
             endif
          else if(idof.eq.2 .or. idof_co2.eq.2) then
             ibp=0
-            ibp1=0
-            ibp2=0
+            ibp1=1
+            ibp2=1
             bpmax=-1.0
             bp1max=-1.0
             bp2max=-1.0

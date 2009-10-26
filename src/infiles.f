@@ -254,7 +254,7 @@ C***********************************************************************
       if (ischk  .gt. 0) write(ischk, 5005) wdd
  5005 format (/, 1x, a80, //)
 
-      call writeio (iout)
+      if (iout .ne. 0) call writeio (iout)
 
 c****  coordinate input section ('incoor'-file) ****
 
