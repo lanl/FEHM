@@ -780,7 +780,7 @@ c=================================================
 ! Read the element connectivity and write to tec file
          il = open_file(geoname,'old')
 ! avsx geometry file has an initial line that starts with neq_primary
-         allocate(nelm(ns_in))
+         allocate(nelm2(ns_in))
          read(il,*) i
          if (i .ne. neq_primary) backspace il
          do i = 1, neq
