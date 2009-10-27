@@ -1106,9 +1106,9 @@ c      call wtsictr(-1)
       endif
 c     Calculate rho1grav
       if(ico2.lt.0) then
-       rho1grav = crl(1,1)*(9.81d-6)
+         rho1grav = crl(1,1)*(9.81d-6)
       else
-       rho1grav = 997.*9.81d-6
+         rho1grav = rol0*9.81d-6
       endif
 c      rho1grav = 997.*9.81d-6
 

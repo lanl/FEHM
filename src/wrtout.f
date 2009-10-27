@@ -324,6 +324,17 @@ c
                   ilev=1
                   mlev=m
                endif
+               if (ichead .ne. 0) then
+                  ihead=1
+                  dumconv = crl(1,1)
+                  dumconv1 = crl(4,1)
+                  pdum = pres0+rol0*head0*(-grav)
+                  tdum = temp0        
+                  call water_density(tdum,pdum,rolconv)
+                  crl(1,1)=rolconv
+                  crl(4,1)=pres0
+                  rho1grav = rolconv*9.81d-6                  
+               end if
                do il=1,ilev
                   if(il.ne.1) then
                      write(iout,780) il
@@ -379,19 +390,7 @@ c     CHANGE ABOVE TO JUST PRINT OUT qh ARRAY
                            call headctr(4,md,pho(md),phod)
                            if(sl.lt.rlptol+sattol) phod=head_id
                         else
-                           ihead=1
-                           dumconv = crl(1,1)
-                           dumconv1 = crl(4,1)
-                           pdum = pres0+rol0*head0*(-grav)
-                           tdum = temp0        
-                           call water_density(tdum,pdum,rolconv)
-                           crl(1,1)=rolconv
-                           crl(4,1)=pres0
-                           rho1grav = rolconv*9.81d-6
-                           call headctr(4,md   ,pho(md   ),phod)  
-                           crl(1,1)= dumconv
-                           crl(4,1)= dumconv1
-                           ihead=0
+                           call headctr(4,md,pho(md),phod)  
                         endif
 c     phod is head with offset removed
                         if (ico2 .lt. 0) then
@@ -413,6 +412,16 @@ c     phod is head with offset removed
      *                    f8.3,3x,g11.4,1x,g11.4)
                   enddo
                enddo
+               if (ichead .ne. 0) then
+                  crl(1,1)= dumconv
+                  crl(4,1)= dumconv1
+                  ihead=0
+                  if(ico2.lt.0) then
+                     rho1grav = crl(1,1)*(9.81d-6)
+                  else
+                     rho1grav = rol0*9.81d-6
+                  endif
+               end if
 c     
 c**** call varible porosity output ****
 c     

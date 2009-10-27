@@ -43,17 +43,32 @@
 !D4
 !***********************************************************************
 
+      use comai, only : ichead, ihead, ico2, grav
       use combi, only : sx1
       use comco2
-      use comdi, only : head, t, phi, qh, pnx, ifree, rlxyf
+      use comdi, only : head, t, phi, qh, pnx, ifree, rlxyf, 
+     &     head0, pres0, rol0, temp0
+      use comii, only : crl
       use comwt, only : rlptol, sattol, wt_flag, wt_elev, head_id
       use comzone
       implicit none
 
       integer i, ij, j, k, count, num_zone
       integer, allocatable :: zn(:)
-      real*8 headdum
+      real*8 headdum, pdum, tdum, rolconv, dumconv, dumconv1, rho1grav
       real*8, allocatable :: zv(:)
+
+      if (hflag .ne. 0 .and. ichead .ne. 0) then
+            ihead=1
+            dumconv = crl(1,1)
+            dumconv1 = crl(4,1)
+            pdum = pres0+rol0*head0*(-grav)
+            tdum = temp0        
+            call water_density(tdum,pdum,rolconv)
+            crl(1,1)=rolconv
+            crl(4,1)=pres0
+            rho1grav = rolconv*9.81d-6
+      end if
 
       allocate (zv(node_azones), zn(node_azones))
 !      zv = zone_volume
@@ -126,6 +141,18 @@ c     RJP 08/09/07 added below
          end if
          node_ptr_num =>node_ptr_num%nnp
       end do outer
+
+      if (hflag .ne. 0 .and. ichead .ne. 0) then
+         crl(1,1)= dumconv
+         crl(4,1)= dumconv1
+         ihead=0
+         if(ico2.lt.0) then
+            rho1grav = crl(1,1)*(9.81d-6)
+         else
+            rho1grav = rol0*9.81d-6
+         endif         
+      end if
+
       do i = 1, num_zone
          do j = 1, ozflag
             if(j.ne.carbflag) then

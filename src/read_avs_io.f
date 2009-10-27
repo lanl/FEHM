@@ -150,7 +150,7 @@ CPS
 C***********************************************************************
 
       use avsio
-      use comai, only : altc, ihead, ierr, iptty, icnl, istrs
+      use comai, only : altc, ichead, ihead, ierr, iptty, icnl, istrs
       use combi, only : izonef
       use comco2, only : icarb
       use comdi, only : nsurf, izone_surf, izone_surf_nodes, ifree
@@ -633,7 +633,7 @@ c     illegal character found
          ioco2 = 0   
       end if
 
-      if (ihead .ne. 1 .and. iohead .eq. 1 ) then
+      if (ihead .ne. 1 .and. ichead .ne. 1 .and. iohead .eq. 1 ) then
          write(ierr, 100)
          write(ierr, 110) 'head defined for non-head problem'
          write(ierr, 120) 'head'

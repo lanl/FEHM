@@ -392,7 +392,7 @@
             end if
          case ('met', 'MET', 'hea', 'HEA')
 ! Output heads in m
-            if (ihead .ne. 0 ) then
+            if (ihead .ne. 0 .or. ichead .ne. 0) then
                if (ishishd .ne. 0) then
                   if (iout .ne. 0) write(iout, 6025) 'feet'
                   if (iptty .ne. 0) write(iptty, 6025) 'feet'
@@ -428,7 +428,7 @@
             end if
          case ('fee', 'FEE')
 ! Output heads in ft
-            if (ihead .ne. 0 ) then
+            if (ihead .ne. 0 .or. ichead .ne. 0) then
                if (ishishd .ne. 0) then
                   if (iout .ne. 0) write(iout, 6025) 'meters'
                   if (iptty .ne. 0) write(iptty, 6025) 'meters'
@@ -539,27 +539,44 @@
                            prnt_flxzvar(3) = .TRUE.
                         case ('bou', 'BOU')   ! Boundary
                            prnt_flxzvar(4) = .TRUE.
-                        case ('vap', 'VAP')   ! Vapor
-                           prnt_flxzvar(5) = .TRUE.
                         end select
                      end if
                   end do
                end if
                ishisfz = ishis + 500
                do i = 1, nflxz
-                  fname = ''
-                  flxzone = ''
-                  write (flxzone, '(i5.5)') iflxz(i)
-                  fname =  root(1:iroot) // '_flxz' // flxzone // hissfx
-                  ishisfzz = ishisfz +i
-                  open (unit=ishisfzz, file=fname, form='formatted')
-                  select case (form_flag)
-                  case (0)
-                     write(ishisfzz, 6000) verno, jdate, jtime, 
-     &                    trim(wdd)
-                  case (1)
-                     write(ishisfzz, 6005) verno, jdate, jtime
-                  end select
+                  if (wflux_flag) then
+                     fname = ''
+                     flxzone = ''
+                     write (flxzone, '(i5.5)') iflxz(i)
+                     fname =  root(1:iroot) // '_wflxz' // flxzone // 
+     &                    hissfx
+                     ishisfzz = ishisfz +i
+                     open (unit=ishisfzz, file=fname, form='formatted')
+                     select case (form_flag)
+                     case (0)
+                        write(ishisfzz, 6000) verno, jdate, jtime, 
+     &                       trim(wdd)
+                     case (1)
+                        write(ishisfzz, 6005) verno, jdate, jtime
+                     end select
+                  end if
+                  if (vflux_flag) then
+                     fname = ''
+                     flxzone = ''
+                     write (flxzone, '(i5.5)') iflxz(i)
+                     fname =  root(1:iroot) // '_vflxz' // flxzone // 
+     &                    hissfx
+                     ishisfzz = ishisfz + i + 400
+                     open (unit=ishisfzz, file=fname, form='formatted')
+                     select case (form_flag)
+                     case (0)
+                        write(ishisfzz, 6000) verno, jdate, jtime, 
+     &                       trim(wdd)
+                     case (1)
+                        write(ishisfzz, 6005) verno, jdate, jtime
+                     end select
+                  end if
                end do
             else
                if (iout .ne. 0) write(iout, 6050)

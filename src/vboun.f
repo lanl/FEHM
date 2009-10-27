@@ -120,13 +120,13 @@ C**********************************************************************
 c read in data
       if(ivboun.ne.0) then
          if(iz.eq.0) then
-         if(.not.allocated(ivbounf)) then
-          allocate(ivbounf(n0))
-          ivbounf = 0
-         endif
+            if(.not.allocated(ivbounf)) then
+               allocate(ivbounf(n0))
+               ivbounf = 0
+            endif
             narrays = 1
             itype(1) = 4
-            default(1) = 0
+            default(1) = 1
             macro = "vbou"
             igroup = 2
             
@@ -144,10 +144,10 @@ c
                mi=mid+ndummy
                itp = ivbounf(mi)
                if(itp.gt.0) then
-                sx1(mi)= sx1(mi)*itp
-                ps(mi) = 1.0
-               else if(itp.lt.0) then 
-                sx1(mi)= sx1(mi)*abs(itp)
+                  sx1(mi)= sx1(mi)*itp
+                  ps(mi) = 1.0
+               else if(itp.le.0) then 
+                  sx1(mi)= sx1(mi)*abs(itp)
                endif
             enddo
            deallocate(ivbounf)
