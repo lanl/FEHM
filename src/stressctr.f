@@ -164,7 +164,7 @@ c arrays for stress derivatives in mass and energy equations
       allocate (its41(1,4))
 	allocate (its42(100,4))
 	
-	allocate (itstress(200))
+       allocate (itstress(200))
 
       allocate (ts21(1,4))
 	allocate (ts22(100,4))
@@ -928,6 +928,21 @@ c
          enddo
        endif
       endif
+            
+      if(ipermstr8.ne.0) then
+         if(icnl.ne.0) then
+           allocate(es_f_x0(n0,2))
+           allocate(es_f_y0(n0,2))
+           allocate(s_f_xy0(n0,2))
+         else 
+           allocate(es_f_x0(n0,3))
+           allocate(es_f_y0(n0,3))
+           allocate(es_f_z0(n0,3))           
+           allocate(s_f_xy0(n0,3))  
+           allocate(s_f_xz0(n0,3))
+           allocate(s_f_yz0(n0,3))
+         endif
+      endif  
 c
 c if a pore pressure damage model is chosen save the initial lithostsic stress
 c this next part is to remove stresses caused by initial temperature and pressure fields       
