@@ -9,7 +9,7 @@
 !  This program was prepared by the Regents of the University of 
 !  California at Los Alamos National Laboratory (the University) under  
 !  contract No. W-7405-ENG-36 with the U.S. Department of Energy (DOE). 
-!  All rights in the program are reserved by the DOE and the University. 
+!  All rights in the program are reserved by the DOE and the University.
 !  Permission is granted to the public to copy and use this software 
 !  without charge, provided that this Notice and any statement of 
 !  authorship are reproduced on all copies. Neither the U.S. Government 
@@ -38,7 +38,7 @@ CD2
 !D2 
 !D2    Rev 2.4   29 Jan 2003 09:24:44   pvcs
 !D2 FEHM Version 2.20, STN 10086-2.20-00
-!!D2 
+!D2 
 !D2    Rev 2.3   14 Nov 2001 13:29:16   pvcs
 !D2 FEHM Version 2.12, STN 10086-2.12-00
 !D2 
@@ -220,8 +220,8 @@ c----------------------------------------------------------------------
 
       use avsio
       use comai, only : altc, days, grav, iadif, icnl, ico2, idof, 
-     &     ichead, ihead, nei_in, ns_in, phi_inc, istrs, 
-     &     neq_primary, rho1grav
+     &     ichead, ihead, nei_in, ns_in, phi_inc, istrs, ivf,
+     &     neq_primary, rho1grav, ifdm_elem
       use combi, only : corz, izonef, nelm, nelmdg, sx1
       use comci, only : rolf, rovf
       use comdi
@@ -242,7 +242,7 @@ c     RJP 1/12/07 added following
       integer i,j,iolp,iovp,nout,iz,iendz,il,idz, i1, i2, index, iaxy, k
       integer size_head, size_pcp, istart, iend, ic1, ic2, length, nadd
       integer icord1, icord2, icord3, ns_in0, irivp 
-      integer nelm2(ns_in)
+      integer, allocatable :: nelm2(:)
       real*8 hdum, sdum, px, py, pz, flxdum
       real*8 pdum, tdum, rolconv, dumconv, dumconv1
       character*80 title(2*maxscalar+3)
@@ -845,16 +845,18 @@ c     might need help in the
 c     Read the element connectivity and write to tec file
          if(irivp.eq.0) then
             il = open_file(geoname,'old')
-                                ! avsx geometry file has an initial line that starts with neq_primary
+c     avsx geometry file has an initial line that starts with neq_primary
             read(il,*) i
             if (i .ne. neq_primary) backspace il
             do i = 1, neq
                read(il,*)
             end do
+            allocate (nelm2(ns_in))
             do i = 1, nei_in
                read (il,*) i1,i2,char_type,(nelm2(j), j=1,ns_in)
                write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
             end do
+            deallocate(nelm2)
             close (il)
          else
 c     river segments (2 node elements)
@@ -864,6 +866,22 @@ c     river segments (2 node elements)
             enddo
          endif
       end if
+c gaz added element output  (hex only) for fdm generated grid   
+      if (icall .eq. 1 .and. altc(1:3) .eq. 'tec' .and. ivf .eq. -1
+     &     .and. ifdm_elem. eq. 1) then
+c first generate elements      
+         call structured(4)
+         il = open_file('fdm_elem.macro','old')
+         read(il,*) 
+         read(il,*)  ns_in , nei_in
+         allocate (nelm2(ns_in))
+         do i = 1, nei_in
+            read (il,*) i1, (nelm2(j), j=1,ns_in)
+            write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
+         end do
+         deallocate(nelm2)
+         close (il)
+      end if        
       if (altc(1:3) .ne. 'sur') close (lu)
 
  100  format(i10.10)

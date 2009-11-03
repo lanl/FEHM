@@ -757,6 +757,15 @@ c**** set flag and input name of file with evaporation nodes ****
 
       else if (macro .eq. 'fdm ') then
 c finite difference input 
+c check macro line for elem keyword
+         backspace inpt
+         read (inpt, '(a80)') wdd1
+         do i = 4,80
+            if(wdd1(i:i).eq.'e') then
+               ifdm_elem = 1
+               exit
+            endif
+         enddo
          jj = 0
  220     continue
          read (inpt, '(a80)') wdd1

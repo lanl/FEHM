@@ -436,6 +436,7 @@ c GAZ 11/02/08
       integer             iwellp_flag
       integer             istrs_coupl, iax_b, ipini
       integer             ivboun, itert_s,itotal_s,itotals_s
+      integer             ifdm_elem
       
       integer :: irun = 0
 

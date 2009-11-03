@@ -377,6 +377,7 @@ C *** integers in davidi.h
       joff = 0
 C from comwt
       irich = 0
+      ifdm_elem = 0
 
 c initialize scalar reals in comai
       aiaa   =   1.0
