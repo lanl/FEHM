@@ -461,9 +461,9 @@ c
 c     
 c     determine the net contribution  
 c     
-               disptx12 = max(dispx12-tx12,0.0)
-               dispty12 = max(dispy12-ty12,0.0) 
-               disptz12 = max(dispz12-tz12,0.0)              
+               disptx12 = max(dispx12-tx12,0.0d0)
+               dispty12 = max(dispy12-ty12,0.0d0) 
+               disptz12 = max(dispz12-tz12,0.0d0)              
 c     
 c     displacement terms (shear)
 c     
@@ -600,9 +600,9 @@ c
      &         +(e1(i)*epszz12+e2(i)*(epsxx12+epsyy12)
      &         -alpi*efac*dt)/knz
                
-               disptx12 = max(dispx12,0.0)
-               dispty12 = max(dispy12,0.0) 
-               disptz12 = max(dispz12,0.0)              
+               disptx12 = max(dispx12,0.0d0)
+               dispty12 = max(dispy12,0.0d0) 
+               disptz12 = max(dispz12,0.0d0)              
 c     
 c     displacement terms (shear)
 c     
@@ -1561,8 +1561,8 @@ c frac_flg = 1, xz-plane -> kx, kz
      &       +(disz/e3(i)+1/ksz)*ipmd8_dsyz)*tan(phid/180*pi)
            endif
             
-            ipmd8_nmy = max(0.,ipmd8_nmy)
-            ipmd8_shy = max(0.,ipmd8_shy)
+            ipmd8_nmy = max(0.d0,ipmd8_nmy)
+            ipmd8_shy = max(0.d0,ipmd8_shy)
             
             pnx(i) = pnx0(i)+
      &               1.e6*(frac_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
@@ -1619,8 +1619,8 @@ c frac_flg = 2, yz-plane -> ky, kz
      &       +(disz/e3(i)+1/ksz)*ipmd8_dsxz)*tan(phid/180*pi)
            endif
            
-            ipmd8_nmx = max(0.,ipmd8_nmx)
-            ipmd8_shx = max(0.,ipmd8_shx)
+            ipmd8_nmx = max(0.d0,ipmd8_nmx)
+            ipmd8_shx = max(0.d0,ipmd8_shx)
             
             pny(i) = pny0(i)+
      &               1.e6*(frac_bx+ipmd8_nmx+ipmd8_shx)**3/(12*disx)
@@ -1679,8 +1679,8 @@ c frac_flg = 3, xy-plane -> kx, ky
      &       +(disy/e3(i)+1/ksy)*ipmd8_dsyz)*tan(phid/180*pi)
            endif
 
-            ipmd8_nmz = max(0.,ipmd8_nmz)
-            ipmd8_shz = max(0.,ipmd8_shz)
+            ipmd8_nmz = max(0.d0,ipmd8_nmz)
+            ipmd8_shz = max(0.d0,ipmd8_shz)
                        
             pnx(i) = pnx0(i)+
      &               1.e6*(frac_bz+ipmd8_nmz+ipmd8_shz)**3/(12*disz)
@@ -1791,10 +1791,10 @@ c
      &       +(disy/e3(i)+1/ksy)*ipmd8_dsyz)*tan(phid/180*pi)
            endif
 
-            ipmd8_nmy = max(0.,ipmd8_nmy)
-            ipmd8_shy = max(0.,ipmd8_shy)
-            ipmd8_nmz = max(0.,ipmd8_nmz)
-            ipmd8_shz = max(0.,ipmd8_shz)
+            ipmd8_nmy = max(0.d0,ipmd8_nmy)
+            ipmd8_shy = max(0.d0,ipmd8_shy)
+            ipmd8_nmz = max(0.d0,ipmd8_nmz)
+            ipmd8_shz = max(0.d0,ipmd8_shz)
                           
             pnx(i) = pnx0(i)+
      &               1.e6*(frac_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
@@ -1908,10 +1908,10 @@ c
      &       +(disy/e3(i)+1/ksy)*ipmd8_dsyz)*tan(phid/180*pi)	
            endif
                  
-            ipmd8_nmx = max(0.,ipmd8_nmx)
-            ipmd8_shx = max(0.,ipmd8_shx)
-            ipmd8_nmz = max(0.,ipmd8_nmz)
-            ipmd8_shz = max(0.,ipmd8_shz)
+            ipmd8_nmx = max(0.d0,ipmd8_nmx)
+            ipmd8_shx = max(0.d0,ipmd8_shx)
+            ipmd8_nmz = max(0.d0,ipmd8_nmz)
+            ipmd8_shz = max(0.d0,ipmd8_shz)
       
             pnx(i) = pnx0(i)+
      &               1.e6*(frac_bz+ipmd8_nmz+ipmd8_shz)**3/(12*disz)
@@ -2025,10 +2025,10 @@ c
      &       +(disz/e3(i)+1/ksz)*ipmd8_dsyz)*tan(phid/180*pi)
            endif
             
-            ipmd8_nmx = max(0.,ipmd8_nmx)
-            ipmd8_shx = max(0.,ipmd8_shx)
-            ipmd8_nmy = max(0.,ipmd8_nmy)
-            ipmd8_shy = max(0.,ipmd8_shy)
+            ipmd8_nmx = max(0.d0,ipmd8_nmx)
+            ipmd8_shx = max(0.d0,ipmd8_shx)
+            ipmd8_nmy = max(0.d0,ipmd8_nmy)
+            ipmd8_shy = max(0.d0,ipmd8_shy)
     
             pnx(i) = pnx0(i)+
      &               1.e6*(frac_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
@@ -2194,12 +2194,12 @@ c
      &       +(disy/e3(i)+1/ksy)*ipmd8_dsyz)*tan(phid/180*pi)
            endif
 
-            ipmd8_nmx = max(0.,ipmd8_nmx)
-            ipmd8_shx = max(0.,ipmd8_shx)
-            ipmd8_nmy = max(0.,ipmd8_nmy)
-            ipmd8_shy = max(0.,ipmd8_shy)
-            ipmd8_nmz = max(0.,ipmd8_nmz)
-            ipmd8_shz = max(0.,ipmd8_shz)                
+            ipmd8_nmx = max(0.d0,ipmd8_nmx)
+            ipmd8_shx = max(0.d0,ipmd8_shx)
+            ipmd8_nmy = max(0.d0,ipmd8_nmy)
+            ipmd8_shy = max(0.d0,ipmd8_shy)
+            ipmd8_nmz = max(0.d0,ipmd8_nmz)
+            ipmd8_shz = max(0.d0,ipmd8_shz)                
             
             pnx(i) = pnx0(i)+
      &               1.e6*(frac_by+ipmd8_nmy+ipmd8_shy)**3/(12*disy)
