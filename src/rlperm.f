@@ -439,23 +439,27 @@ c
       use comki
       implicit none
 
-      real*8 scutm,hmin,darcyf,tol_l,tol_u,su_cut
+      real*8 scutm,hmin,darcyf,tol_l,tol_u,su_cut 
       parameter(scutm = 1.d-03)
-      parameter(hmin = 1.d-18)
+      parameter(hmin = 1.d-8)
       parameter(darcyf = 1.d12)
       parameter(tol_l  = 1.d-5)
       parameter(tol_u  = 1.d-5)
-      parameter(su_cut = 0.99d00)
+      parameter(su_cut = 0.7d00)
 
 
       integer iz,ndummy,i,irlpd,mi,ieosd,it,ir,j,num_models,ireg
       real*8 alpha,beta,alamda,alpi,smcut,slcut,fac,ds,dhp
-      real*8 rp1,rp2,rp3,rp4,denom,star,hp,rl1,rv1
+      real*8 rp1,rp2,rp3,rp4,denom,star,hp,rl1,rv1,hp1,dhp1
       real(8) :: rl = 1., rv = 1., drls = 0., drvs = 0.
       real*8 drls1,drvs1,akf,akm,porf,permb,sl
       real*8 smcutm,smcutf,alpham,alamdam,facf
       real*8 rpa1, rpa2, rpa3, rpa4, rpa5      
       logical null1,ex
+      integer ireg0
+      save ireg,ireg0
+      if(l.eq.0) ireg0 = 0
+      
 
       if(iz.eq.0) then
 c     read in data
@@ -613,13 +617,20 @@ c     van Genutchen capillary pressure and relative perms
 c with rlp(h) 
                read(inpt,*) irlpt(i), rp1f(i), rp2f(i), rp3f(i), 
      *              rp4f(i), rp5f(i), rp6f(i)
+            else if (irlpd .eq. -4) then
+c     van Genutchen capillary pressure and relative perms fracture/matrix
+c with rlp(h) non-equilibrium cap pressures
+               read(inpt,*) irlpt(i), rp1f(i), rp2f(i), rp3f(i),
+     *              rp4f(i), rp5f(i), rp6f(i), rp11f(i), rp12f(i), 
+     *              rp13f(i), rp14f(i), rp15f(i), rp16f(i), rp17f(i),  
+     *              rp18f(i), rp19f(i)
             else if (irlpd .eq. 4) then
 c     van Genutchen capillary pressure and relative perms fracture/matrix
 c with rlp(h) 
                read(inpt,*) irlpt(i), rp1f(i), rp2f(i), rp3f(i),
      *              rp4f(i), rp5f(i), rp6f(i), rp11f(i), rp12f(i), 
      *              rp13f(i), rp14f(i), rp15f(i), rp16f(i), rp17f(i),  
-     *              rp18f(i), rp19f(i)
+     *              rp18f(i), rp19f(i)      
             else if (irlpd .eq. 5) then
 c     van Genutchen capillary pressure and relative perms
 c with rlp(S) 
@@ -678,7 +689,8 @@ c     ****** end of input loop
  20      num_models=max(i,j-1)
          do i=1,num_models
             
-            if(irlpt(i).ge.3 .and. irlpt(i) .le. 9) then
+            if(irlpt(i).ge.3 .and. irlpt(i)
+     &        .le. 9. or. irlpt(i) .eq. -4 ) then
                
 c     calculate cutoff saturation and head difference
 c     GAZ 8-16-94 added slcut to work with liquid saturation
@@ -709,7 +721,7 @@ c     get fit at saturated end(star=su_cut)
      &              ,alamda, 0.0d0, 0.0d0, cp1f(i),cp2f(i),hmin)
             
                if (irlpt(i) .ne. 3 .and. irlpt(i) .ne. 5 
-     &              .and. irlpt(i) .lt. 8) then
+     &              .and. irlpt(i) .lt. 8 .or. irlpt(i) .eq. -4 ) then
                
 C     terms for the fractures
 c     calculate cutoff saturation and head difference
@@ -840,6 +852,7 @@ c
 c     calculate relative perm and derivatives
 c     
          do i = 1,neq
+            ireg0 = ireg
             mi = i+ndummy
             ieosd = ieos(mi)
             if (rlp_flag .eq. 0) then
@@ -1051,7 +1064,7 @@ c
                      else
                         call vg_regions(1,ireg,mi,su_cut)
                         call vgcap( sl, rp1, rp2, rp3, rp4, 
-     2                       rp7f(it), rp8f(it), rp9f(it),
+     2                       rp7f(it), rp8f(it), rp9f(it), 
      3                       rp10f(it), rp6f(it), su_cut,      
      4                       cp1f(it),cp2f(it),hp, dhp, ireg    )
                         star = (sl-rp1f(it))/(rp2f(it)-rp1f(it))
@@ -1061,7 +1074,7 @@ c
                      end if
                      
                   else
-                     call vg_regions(1,ireg,mi,su_cut)
+c gaz changed so that frac cap pressure is used with frac rel perm                  
                      call vgcap( sl, rp1, rp2, rp3, rp4,  
      2                    rp7f(it), rp8f(it), rp9f(it),
      3                    rp10f(it), rp6f(it), su_cut,      
@@ -1069,6 +1082,7 @@ c
                      star = (sl-rp1f(it))/(rp2f(it)-rp1f(it))
                      call vgrlp(sl, star, rp3, rp4, hmin, hp,
      2                    dhp, rl, drls, rv, drvs,0)
+
                      star = (sl-rp11f(it))/(rp12f(it)-rp11f(it))
                      call vgrlp(sl, star, rp13f(it), rp14f(it), hmin,
      2                    hp, dhp, rl1, drls1, rv1, drvs1,0)
@@ -1101,7 +1115,89 @@ c     set saturated permeabilities(assume isotropic)
 c     set capillary pressures
                   pcp(mi) = 9.8e-3 * hp
                   dpcef(mi) = 9.8e-3 * dhp
-
+               elseif(irpd.eq.-4) then
+c     
+c     akf-fracture saturated permeability(rp15)
+c     akm-matrix saturated permeability(rp16)
+c     porf-fracture fraction(rp17)
+c     
+                  akf = rp17f(it)
+                  akm = rp18f(it)
+                  porf = rp19f(it)
+                  
+                  if( idpdp .ne. 0 .or. idualp .ne. 0 ) then
+                     
+                     if( mi .le. neq ) then
+                        call vg_regions(2,ireg,mi,su_cut)
+                        call vgcap( sl, rp11f(it), rp12f(it), rp13f(it),
+     2                       rp14f(it), rp20f(it), rp21f(it), rp22f(it),
+     3                       rp23f(it), rp16f(it), su_cut,    
+     4                       cp3f(it),cp4f(it),hp, dhp, ireg    )
+                        star = (sl-rp11f(it))/(rp12f(it)-rp11f(it))
+                        call vgrlp(sl, star, rp13f(it), rp14f(it), hmin,
+     2                       hp, dhp, rl, drls, rv, drvs,0)
+                        permb = akf * porf
+                        
+                     else
+                        call vg_regions(1,ireg,mi,su_cut)
+                        call vgcap( sl, rp1, rp2, rp3, rp4, 
+     2                       rp7f(it), rp8f(it), rp9f(it), 
+     3                       rp10f(it), rp6f(it), su_cut,      
+     4                       cp1f(it),cp2f(it),hp, dhp, ireg    )
+                        star = (sl-rp1f(it))/(rp2f(it)-rp1f(it))
+                        call vgrlp(sl, star, rp3, rp4, hmin, hp,
+     2                       dhp, rl, drls, rv, drvs,0)
+                        permb = akm * (1. - porf)
+                     end if
+                     
+                  else
+c gaz changed so that frac cap pressure is used with frac rel perm                  
+                     call vgcap( sl, rp1, rp2, rp3, rp4,  
+     2                    rp7f(it), rp8f(it), rp9f(it),
+     3                    rp10f(it), rp6f(it), su_cut,      
+     4                    cp1f(it),cp2f(it),hp, dhp, ireg    )
+                     star = (sl-rp1f(it))/(rp2f(it)-rp1f(it))
+                     call vgrlp(sl, star, rp3, rp4, hmin, hp,
+     2                    dhp, rl, drls, rv, drvs,0)
+                     call vgcap( sl, rp11f(it), rp12f(it), rp13f(it),
+     2                       rp14f(it), rp20f(it), rp21f(it), rp22f(it),
+     3                       rp23f(it), rp16f(it), su_cut,    
+     4                       cp3f(it),cp4f(it),hp1, dhp1, ireg    )   
+                     star = (sl-rp11f(it))/(rp12f(it)-rp11f(it))
+    
+                     call vgrlp(sl, star, rp13f(it), rp14f(it), hmin,
+     2                    hp1, dhp1, rl1, drls1, rv1, drvs1,0)
+c                     hp = hp1 * porf + hp * (1. - porf) 
+c                     dhp = dhp1 * porf + dhp * (1. - porf) 
+                     permb = akf * porf + akm * (1. - porf)
+                     rl=(akf*rl1*porf+akm*rl*(1.0-porf))/permb
+                     drls=(akf*drls1*porf+akm*drls*(1.0-porf))/permb
+                     rv = 1. - rl
+                     drvs = -drls
+                  endif
+                  if(iupk.gt.0) then
+c     upstream weighting of intrinsic permeability
+                     permb = permb*darcyf
+                     rl = rl*permb
+                     rv = rv*permb
+                     drls = drls*permb
+                     drvs = drvs*permb
+                     permb = 1.0/darcyf
+c     set saturated permeabilities(assume isotropic)
+                     pnx(mi) = permb*1.e+6
+                     pnz(mi) = pnx(mi)
+                     pny(mi) = pnx(mi) 
+                  else
+c     set saturated permeabilities(assume isotropic)
+                     if(porf.ge.0.0) then
+                        pnx(mi) = permb*1.e+6
+                        pny(mi) = pnx(mi)
+                        pnz(mi) = pnx(mi)
+                     endif
+                  endif
+c     set capillary pressures
+                  pcp(mi) = 9.8e-3 * hp
+                  dpcef(mi) = 9.8e-3 * dhp
                elseif(irpd .eq. 6 .or. irpd .eq. 7) then
 c     
 c     akf-fracture saturated permeability(rp15)
@@ -1126,7 +1222,7 @@ c
      2                       rp14f(it), rp11f(it), rp12f(it),
      3                       tol_l, tol_u, rl, drls, rv, drvs)
                         permb = akf * porf
-                        if(irpd.eq.7) then
+                        if(irpd.eq.7) then 
 c calculate fracture term(from Sandia) if necessary
                            call rlp_frac(1,mi,sl,star,rp11f(it),
      &                          rp12f(it),rl,drls,1.-rl,-drls,rp24f(it))
@@ -1219,6 +1315,7 @@ c call for relative permeabilities
             drvef(mi) = drvs
             drlpf(mi) = 0.0
             drvpf(mi) = 0.0
+            if(ireg.eq.100.and.ireg0.ne.100) strd = strd
          enddo
 c     
 c     check perms if wellbore is enabled

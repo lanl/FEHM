@@ -102,13 +102,12 @@ c**** read flow data ****
                esk(i) = esktmp(i)
                wellim(i) = aiped(i) * 1.0e+06
                ka(i) = -1
-            else if (katmp(i).eq.-23) then
-c free drainage 
-               
+            else if (katmp(i).eq.-23.or.katmp(i).eq.-24) then
+c free drainage                
                esk(i) = esktmp(i)
                wellim(i) = sktmp(i)
 	         pflow(i) = 0.0
-               ka(i) = -23
+               ka(i) = katmp(i)
             else if (katmp(i).eq.-3) then
 c seepage face  - 2 phase and wtsi
                pflow(i) = sktmp(i)
@@ -144,13 +143,31 @@ c set air  pressure, set water saturation
                pflow(i) = sktmp(i) 
                esk(i) = esktmp(i)
                wellim(i) = abs(aiped(i)) * 1.0e+06
-               ka(i) = -9
+               ka(i) = -9               
             else if (katmp(i).eq.-10) then 
 c set air  pressure, specified flow
                pflow(i) = sktmp(i) 
                esk(i) = esktmp(i)
                wellim(i) = abs(aiped(i)) * 1.0e+06
                ka(i) = -10
+            else if (katmp(i).eq.-11) then 
+c set air  pressure, set water saturation
+               pflow(i) = sktmp(i) 
+               esk(i) = esktmp(i)
+               wellim(i) = aiped(i)
+               ka(i) = -11
+             else if (katmp(i).eq.-12) then 
+c set air  pressure, set water saturation
+               pflow(i) = sktmp(i) 
+               esk(i) = esktmp(i)
+               wellim(i) = aiped(i)
+               ka(i) = -12
+            else if (katmp(i).eq.-13) then 
+c set air  pressure, set water saturation
+               pflow(i) = sktmp(i) 
+               esk(i) = esktmp(i)
+               wellim(i) = aiped(i)
+               ka(i) = -13                                            
             else if (katmp(i).eq.-8) then
 c set ponding condition
                pflow(i) = sktmp(i)

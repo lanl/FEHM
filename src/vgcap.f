@@ -246,7 +246,7 @@ C**********************************************************************
 
       implicit none
 
-      integer ireg
+      integer ireg,ncut
       real*8 sl
       real*8 slr
       real*8 smr
@@ -273,10 +273,12 @@ C**********************************************************************
       real*8 termstar2
       real*8 termb1
       real*8 termb2
+      parameter(ncut = 1)
       alamda = 1.0-1.0/beta
       denom = smr-slr
       star=(sl-slr)/denom
       ds = 1.0/denom
+      ireg = 0
       if(sl.gt.0.0.and.sl.lt.1.0) then
 c     check if within spline cutoffs
          if(star.gt.smcut.and.star.lt.sucut) then
@@ -299,6 +301,8 @@ c        else  if(star.ge.sucut.or.ireg.eq.5) then
 c     use linear interpolation for upper cutoff
             hp = bc3*sl + bc4
             dhp= bc3
+            hp = bc3/sl**ncut + bc4
+            dhp = -bc3*ncut/sl**(ncut+1)
          endif
 
       else if(sl.le.0.0) then
@@ -313,6 +317,8 @@ c     upper saturation cutoff
          dhp= 0.0
 c gaz  02-18-08
          dhp = bc3
+         dhp = -bc3*ncut/sl**(ncut+1)
+         ireg = 100
       endif
       return
       end

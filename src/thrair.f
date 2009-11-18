@@ -590,7 +590,8 @@ c
          else if(kq.eq.-23) then
 c     ===Free drainage condition for water flow at the lower boundary
 c     ===(each node at the free drainage boundary needs to be specified
-c     ===explicitly, also the area or length associated with that node).
+c     ===explicitly, also the area or length associated with that node)
+c     area is read in the flow rate or pressure slot and transferred to array wellim
 c     rol = rolref*(1.0+comw*(pl-pref))
             rol = rolref
             area=wellim(mi)
@@ -606,7 +607,27 @@ c     rol = rolref*(1.0+comw*(pl-pref))
                dqws=-dqws
                dqwp=-dqwp
             endif
-
+      else if(kq.eq.-24) then
+c     same as -23 except  xrl = s and drl = 1    
+c     ===Free drainage condition for water flow at the lower boundary
+c     ===(each node at the free drainage boundary needs to be specified
+c     ===explicitly, also the area or length associated with that node)
+c     area is read in the flow rate or pressure slot and transferred to array wellim
+c     rol = rolref*(1.0+comw*(pl-pref))
+            rol = rolref
+            area=wellim(mi)
+            uperm=-pnx(mi)*rol*rol*grav*area/xvisl
+            qwdis=uperm*sl
+            dqws=uperm
+            dqwp=0.
+            qadis=0.
+            dqas=0.
+            dqap=0.
+            if(qwdis.lt.0.0) then
+               qwdis=-qwdis
+               dqws=-dqws
+               dqwp=-dqwp
+            endif
          else if(kq.eq.-3.and.ifree.eq.0) then
 c     ===Seepage face condition for air and water 
 
@@ -759,7 +780,22 @@ c     no derivatives of rlps
                dqws = 0.0d00
                dqwp = 0.0d00
             endif
-
+         else if(kq.eq.-11.or.kq.eq.-12.or.kq.eq.-13) then
+c     ===x dir geralized head BC
+c     ===wellim calculated in area_flow_bc
+               permsd=abs(wellim(mi))
+               pflowd=pflow(mi) 
+               qwdis = permsd*(phi(mi)-pflowd)
+               dqwp = permsd
+               if(wellim(mi).le.0.0.and.qwdis.le.0.0) then
+                 qwdis = 0.0
+                 dqwp = 0.0
+               endif
+               qadis = 0.0d0
+               dqap = 0.0d0
+               dqas = 0.0d0                           
+c     ===specified flux
+c     no derivatives of rlps
          else if(kq.eq.-22.and.irdof.ne.13) then
 c     ===manage outflow only conditions
             if(sflux.lt.0.0) then

@@ -1223,8 +1223,14 @@ c**** these are minimum relative permeabilities *****
       else if (macro .eq. 'rich') then
          jswitch = 1
          if (idpdp .eq. 1) joff = 4
-         read (inpt,*) strd_rich,tol_phase 
-
+c         read (inpt,*) strd_rich, tol_phase 
+         read (inpt, '(a80)') wdd1
+         read (wdd1,*,end = 598) strd_rich, tol_phase, pchng, schng 
+          go to 599
+ 598      continue
+           pchng = 0.005
+           schng = 0.005
+ 599      continue        
 c**** rock densities, etc ****
       else if (macro .eq. 'rock') then
 c**** rock densities, etc ****

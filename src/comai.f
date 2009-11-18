@@ -437,6 +437,7 @@ c GAZ 11/02/08
       integer             istrs_coupl, iax_b, ipini
       integer             ivboun, itert_s,itotal_s,itotals_s
       integer             ifdm_elem
+      real*8              pchng, schng 
       
       integer :: irun = 0
 

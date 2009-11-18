@@ -96,11 +96,11 @@ C***********************************************************************
 
       implicit none
 
-      integer iflg 
+      integer iflg,ncut 
       real*8 slr,slm,slcut,alpha,alamda,c1,c2,c3,c4 
       real*8 hmax,hmin,hcut,smcut,alpi,ds,dhp,slope
-      real*8 fac,fac_min,fac_use
-      parameter(fac_min=2.0)
+      real*8 fac,fac_min,fac_use,hcut2,smcut2,ancut
+      parameter(fac_min=2.0,ncut = 1)
       if(iflg.eq.1) then
 c zero slope, zero curvature at sl=0
 c h = a*x**3 + d
@@ -148,6 +148,10 @@ c with hmax: linear extension of slope at slcut
        slope=(hcut-hmin)/(1.0-slcut)
        c3=-slope
        c4=slope+hmin
+       ancut = (1./slcut**ncut-1.0)
+       c3 = hcut/ancut
+       c4 = -c3 + hmin
+      continue
       endif
       return
       end

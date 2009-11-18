@@ -592,9 +592,11 @@ c     check for read from other file
             elseif(idumm.eq.2) then
                read(locunitnum,*) idumm,(adumm,ja=1,4)
             elseif(idumm.eq.3) then
-               read(locunitnum,*) idumm,(adumm,ja=1,6)
-            elseif(idumm.eq.4) then
+               read(locunitnum,*) idumm,(adumm,ja=1,6) 
+            elseif(idumm.eq.-4) then
                read(locunitnum,*) idumm,(adumm,ja=1,15)
+            elseif(idumm.eq.4) then
+               read(locunitnum,*) idumm,(adumm,ja=1,15)               
             elseif(idumm.eq.5) then
                read(locunitnum,*) idumm,(adumm,ja=1,6)
             elseif(idumm.eq.6) then

@@ -1222,7 +1222,12 @@ c     being computed
 
 c modify volumes and heat capacities to affect boundary conditions
       call bcon(1)
-
+c
+c calculate areas for use in flow through boundary conditions
+c
+c      moved below
+c      call area_flow_bc(1)     
+c      
 c**** initialize ngas varibles ****
       call co2ctr (6)
 
@@ -1324,7 +1329,11 @@ c     nonisothermal problem
       if(compute_flow) then
          call dpdp ( 2 )
       end if
-
+c
+c calculate areas for use in flow through boundary conditions
+c
+      call area_flow_bc(1)     
+c      
       if(compute_flow ) then
 c**** initialize some variables **** 
          am0 = 0.0

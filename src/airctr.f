@@ -389,9 +389,9 @@ c
       real*8 fdum01,fdum02,sx1d,phidum,phi_dif,phi_1,phi_2
       real*8 hmax, hmin, hmid
       character*80 form_string
-      real*8 pref_1_2,pref_2_1,s_1_2,schng,pchng
+      real*8 pref_1_2,pref_2_1,s_1_2
 c      parameter (pchng = 0.005,schng = 0.005)
-      parameter (pchng = 0.005,schng = 0.000)
+c      gaz pchng and schng in comai 103009
       save tref,pref
       if (jswitch.ne.0) strd_iter = strd_rich
 
@@ -555,7 +555,8 @@ c
                         ieos(mi)=2 
                         time_ieos(mi) = days + time_ch
                      else if(s(mi).gt.tol_phase.and.ieos(mi)
-     &                .eq.2.and.days.ge.time_ieos(mi)) then 
+     &                .eq.3.and.days.ge.time_ieos(mi)) then 
+c   changed eq.2 to eq.3 gaz 103009     
                         strd = strd_iter
                         ieos(mi)=2                      
                      else if(s(mi).gt.1.0+tol_phase.and.ieos(mi)
@@ -567,7 +568,7 @@ c
                         time_ieos(mi) = days + time_ch
                      else if(s(mi).le.-tol_phase.and.ieos(mi)
      &                   .eq.2.and.days.ge.time_ieos(mi)) then       
-                        s(mi)=0.0
+c                        s(mi)=0.0
                         strd = strd_iter
 c     ieos(mi)=3
                      endif
