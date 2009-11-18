@@ -477,6 +477,9 @@ C added phi_inc to comai so it only needs to be computed in one place
       vtot   =   0.0
       tol_phase = 1.e-4
       strd_iter = 0.99
+c logical variables in comai
+      wflux_flag = .false.
+      vflux_flag = .false.
 
 c zero out include combi
       if(irun.eq.1) then
@@ -725,6 +728,7 @@ c     itc=0
       qh=0
       rc=0
       rcss=0
+      rol0 = 997.
       rp10f=0
       rp11f=0
       rp12f=0

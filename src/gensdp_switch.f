@@ -206,15 +206,19 @@ c
             write(iout,*) '   '
             write(iout, 100)
             write(iout,*) '   '
+c            write(iout,'(i8,3g12.3)')
+c     &           abs(nmatb(1)),(cord(abs(nmatb(1)),i),i=1,3)
             write(iout,'(i8,3g12.3)')
-     &           abs(nmatb(1)),(cord(abs(nmatb(1)),i),i=1,3)
+     &           abs(ndex(1)),(cord(abs(ndex(1)),i),i=1,3)
          end if
          if(iptty.gt.0) then
             write(iptty,*) '   '
             write(iptty,100) 
             write(iptty,*) '   '
+c            write(iptty,'(i8,3g12.3)') 
+c     &           abs(nmatb(1)),(cord(abs(nmatb(1)),i),i=1,3)
             write(iptty,'(i8,3g12.3)') 
-     &           abs(nmatb(1)),(cord(abs(nmatb(1)),i),i=1,3)
+     &           abs(ndex(1)),(cord(abs(ndex(1)),i),i=1,3)
          endif
          iad=maxit
          return

@@ -80,7 +80,6 @@ c     Open file to read
             open_file = irfile
 	    open(irfile, file = trim(filename), status=filestat, 
      &           err = 100)
-         continue
          else
 c     Unit number used, try the next one
             used = .true.
