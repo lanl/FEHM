@@ -761,12 +761,12 @@ c check macro line for elem keyword
          backspace inpt
          read (inpt, '(a80)') wdd1
          do i = 4,80
-          if(wdd1(i:i).eq.'e') then
-           ifdm_elem = 1
-           go to 219
-          endif
+            if(wdd1(i:i).eq.'e') then
+               ifdm_elem = 1
+               exit
+            endif
          enddo
- 219     jj = 0
+         jj = 0
  220     continue
          read (inpt, '(a80)') wdd1
          do i = 1,80
@@ -889,6 +889,31 @@ c     Loop over each zone for determining izoncflxz array
 
       else if (macro .eq. 'flxz') then
 c**** calculate intermode fluxes ****
+         backspace inpt
+         read(inpt,'(a80)') input_msg 
+         call parse_string(input_msg,imsg,msg,xmsg,cmsg,nwds)
+c No additional keywords both water and air (vapor) fluxes (if 2-phase) 
+c will be output 
+         if (nwds .gt. 1) then
+            do i = 2, nwds
+               if (msg(i) .eq. 3) then
+                  if (cmsg(i)(1:3) .eq. 'wat') then
+                     wflux_flag = .true.
+                  else if (cmsg(i)(1:3) .eq. 'vap') then
+                     if (irdof .ne. 13 .or. ifree .ne. 0) then
+                        vflux_flag = .true.
+                     else
+                        write (ierr, *) 'No air/vapor phase in problem',
+     &                       ' Vapor fluxes will not be output'
+                     end if
+                  end if
+               end if
+            end do
+         else
+            wflux_flag = .true.
+            if ((irdof .ne. 13 .or. ifree .ne. 0) .and. jswitch .eq. 0) 
+     &           vflux_flag = .true.
+         end if
          read(inpt,*) nflxz
          if(.not.allocated(iflxz)) allocate(iflxz(max(1,nflxz)))
          if(.not.allocated(izoneflxz)) allocate(izoneflxz(n0))   
@@ -1000,8 +1025,7 @@ c**** iteration parameters ****
 
       else if (macro .eq. 'ittm') then
 c**** sticking time for phase changes      
-      read (inpt, *) time_ch
-      
+         read (inpt, *) time_ch
       else if (macro .eq. 'isot') then
 c**** isotropic geometric coeficients
          isox=1
@@ -1355,8 +1379,8 @@ c**** read in nonlinear thermal conductivity information ****
          call vcon (0, 0)
          
       else if (macro .eq. 'vbou') then
-c**** read in nonlinear thermal conductivity information ****
-         ivcond = 1
+c**** set arbitrary volume at a specified node ****
+         ivboun = 1
          call vboun (0, 0)
 
       else if (macro .eq. 'dvel') then
@@ -1455,10 +1479,12 @@ c**** check if air macro called if head macro called
 
  210  continue
       call steady(-1,0.,0.)
+
       if(.not.allocated(time_ieos)) then
-        allocate (time_ieos(n0))
-        time_ieos = 0.0d0
+         allocate (time_ieos(n0))
+         time_ieos = 0.0d0
       endif 
+
       end
 
 
