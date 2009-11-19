@@ -17,6 +17,7 @@ allocmem.o: comnire.o compart.o comriv.o comrxnb.o comrxni.o comsk.o comsptr.o
 allocmem.o: comzeoli.o davidi.o
 anonp.o: comai.o combi.o comdi.o comdti.o comei.o comsi.o
 anonp_ani.o: comai.o combi.o comdi.o comdti.o comei.o
+area_flow_bc.o: comai.o combi.o comci.o comdi.o comdti.o comki.o davidi.o
 area_vol_weightctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 area_vol_weightctr.o: comgi.o comii.o comrxni.o davidi.o
 avs_io.o: avsio.o comai.o combi.o comchem.o comdi.o comdti.o commeth.o comriv.o
@@ -259,7 +260,7 @@ head_2phase.o: comai.o combi.o comdi.o comdti.o comfi.o comgi.o comii.o
 head_2phase.o: comrxni.o
 headctr.o: comai.o combi.o comdi.o comdti.o comfi.o comgi.o comii.o comrxni.o
 headctr.o: comwt.o
-hstz.o: combi.o comco2.o comdi.o comwt.o comzone.o
+hstz.o: comai.o combi.o comco2.o comdi.o comii.o comwt.o comzone.o
 hyddiss.o: comai.o combi.o comdi.o comdti.o comki.o commeth.o
 hydrate_array.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 hydrate_array.o: comgi.o comhi.o commeth.o davidi.o
@@ -353,8 +354,8 @@ plot_co2.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o comfi.o
 plot_co2.o: comhi.o comki.o
 plot_hyd.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comhi.o
 plot_hyd.o: comki.o commeth.o
-plot_new.o: comai.o combi.o comco2.o comdi.o comdti.o comfi.o comsi.o comwt.o
-plot_new.o: comzone.o davidi.o
+plot_new.o: comai.o combi.o comco2.o comdi.o comdti.o comfi.o comii.o comsi.o
+plot_new.o: comwt.o comzone.o davidi.o
 plotc1.o: comai.o combi.o comchem.o comci.o comdi.o comdti.o compart.o
 plotc1.o: comrxni.o comsptr.o
 pod_derivatives.o: comai.o comci.o comdi.o comsptr.o comxi.o
@@ -522,10 +523,10 @@ write_avs_head_s.o: avsio.o comai.o comdi.o davidi.o
 write_avs_node_con.o: avsio.o comai.o combi.o comchem.o comdi.o comdti.o
 write_avs_node_con.o: comrxni.o
 write_avs_node_h.o: comai.o
-write_avs_node_mat.o: avsio.o comai.o combi.o comchem.o comdi.o comrxni.o
-write_avs_node_mat.o: davidi.o
+write_avs_node_mat.o: avsio.o comai.o combi.o comchem.o comdi.o comriv.o
+write_avs_node_mat.o: comrxni.o davidi.o
 write_avs_node_s.o: avsio.o comai.o combi.o comci.o comco2.o comdi.o comfi.o
-write_avs_node_s.o: comflow.o comriv.o comsi.o comwt.o davidi.o
+write_avs_node_s.o: comflow.o comii.o comriv.o comsi.o comwt.o davidi.o
 write_avs_node_v.o: avsio.o comai.o combi.o comdi.o
 write_rlp_hyd.o: comai.o commeth.o
 writeio.o: comai.o comxi.o
