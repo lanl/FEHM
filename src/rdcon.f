@@ -543,7 +543,9 @@ C**********************************************************************
       integer icpnt,iimm,ivap
       integer idum, io_stat, open_file, mfile
       real*8 rdum1, rdum2, mvol, psdum, roldum, sdum, sctmp, frac
-      real*8 ctmp, ctol, antmp
+      real*8 ctmp, ctol, andum, antmp, anvtmp, mvolv
+      real*8, allocatable :: rvol(:), lvol(:), vvol(:)
+      integer, allocatable :: hflag(:)
 
       save mfile
 
@@ -1328,6 +1330,8 @@ CPS
 c zvd 22-Jul-09
 c Modify for option to read total moles as input and compute moles/kg
 c for nodal volume or zone volume
+         allocate (hflag(n7))
+         hflag = 0
          rewind (mfile)
          do nsp = 1, nspeci
             if (.not. conc_read(nsp)) then
@@ -1339,44 +1343,191 @@ c for nodal volume or zone volume
                do
                   read (mfile, '(a80)') input_msg
                   if (null1(input_msg)) exit
-                  read (input_msg, *) ja, jb, jc, rdum1
+                  read (input_msg, *) ja, jb, jc, andum
                   if ( ja .eq. 1 .and. jb .eq. 0 .and. jc .eq. 0 ) then
                      jb = n0
                      jc = 1
                   end if
-                  if (rdum1 .lt. 0.d0) then
+                  if (andum .lt. 0.d0) then
+                     if (.not. allocated(lvol)) 
+     &                    allocate(lvol(n0), rvol(n0), vvol(n0))
+c     Input is total moles
+                     lvol = 0.
+                     rvol = 0.
+                     vvol = 0.
                      if (ja .lt. 0) then
                         mvol = 0.d0
+                        mvolv = 0.d0
                         do i = 1, n0
                            if (izonef(i) .eq. abs (ja) .and. 
      &                          ps_trac(i) .gt. 0.) then
 c     Only include if porosity > 0
-                              if (icns(nsp) .eq. 0) then
+                              rvol(i) = sx1(i)*denr(i)*(1-ps_trac(i))
+                              if (irdof .ne. 13 .or. ifree.ne.0) then
+                                 sdum = s(i)
+                              else
                                  sdum = 1.0
-                                 roldum = denr(i)
-                                 psdum = 1 - ps_trac(i)
-                              else if (icns(nsp) .gt. 0) then
-                                 if (irdof .ne. 13 .or. ifree.ne.0) then
-                                    sdum = s(i)
-                                 else
-                                    sdum = 1.0
-                                 end if
-                                 roldum = rolf(i)
-                                 psdum = ps_trac(i)
-                              else if (icns(nsp) .lt. 0) then
-                                 sdum = 1 - s(i)
-                                 roldum = rovf(i)
-                                 psdum = ps_trac(i)
                               end if
-                              mvol = mvol + sx1(i)*psdum*sdum*roldum
+                              lvol(i) = sx1(i)*sdum*rolf(i)*ps_trac(i)
+                              vvol(i) = sx1(i)*(1 - sdum)*rovf(i)*
+     &                           ps_trac(i) 
+                              if (icns(nsp) .eq. 0) then
+                                 mvol = mvol + rvol(i)
+                              else if (icns(nsp) .eq. 1) then
+                                 mvol = mvol + lvol(i)
+                              else if (icns(nsp) .eq. -1) then
+                                 mvol = mvol + vvol(i)
+                              else
+c     Henry's law species
+                                 mvol = mvol + lvol(i)
+                                 if(henry_model(nsp).eq.1) then
+                                    h_const= a_henry(nsp)*
+     2                                   exp(dh_henry(nsp)/
+     3                                   (gas_const*0.001)*(1/298.16-1/
+     4                                   (t(i)+temp_conv)))
+                                 else if(henry_model(nsp).eq.2) then
+                                    h_const = 10**(hawwa(nsp,1)+
+     2                                   hawwa(nsp,2)*(t(i)+
+     3                                   temp_conv)+hawwa(nsp,3)
+     4                                   /(t(mim)+temp_conv)+hawwa
+     5                                   (nsp,4)*dlog10(t(i)
+     6                                   +temp_conv)+hawwa(nsp,5)
+     7                                   /(t(i)+temp_conv)**2)
+                                    h_const= (101325*rolf(i)*1e-3)/
+     2                                   (h_const*1e6*mw_water)
+                                 else if(henry_model(nsp).eq.3) then
+                                    h_const= (phi(i) - pci(i)) * 
+     2                                   dh_henry(nsp)
+                                 endif
+                                 dvap_conc = (mw_water*h_const) /
+     2                                (phi(i)*avgmolwt(i))
+                                 mvolv = mvolv + dvap_conc * vvol(i)
+                              end if
                            end if
                         end do
                         do i = 1, n0
-                           mi = i + npn
-                           if (izonef(i) .eq. abs(ja) .and. 
+                           if (izonef(i) .eq. abs (ja) .and. 
      &                          ps_trac(i) .gt. 0.) then
 c     Only include if porosity > 0
-                              an(i + npn) = abs(rdum1) / mvol
+                              mi = i + npn
+                              hflag(mi) = 1
+                              dvap_conc = 0.
+                              if ( abs(icns(nsp)) .eq. 2 ) then
+c     Henry's law species
+                                 if(henry_model(nsp).eq.1) then
+                                    h_const= a_henry(nsp)*
+     2                                   exp(dh_henry(nsp)/
+     3                                   (gas_const*0.001)*(1/298.16-1/
+     4                                   (t(i)+temp_conv)))
+                                 else if(henry_model(nsp).eq.2) then
+                                    h_const = 10**(hawwa(nsp,1)+
+     2                                   hawwa(nsp,2)*(t(i)+
+     3                                   temp_conv)+hawwa(nsp,3)
+     4                                   /(t(mim)+temp_conv)+hawwa
+     5                                   (nsp,4)*dlog10(t(i)
+     6                                   +temp_conv)+hawwa(nsp,5)
+     7                                   /(t(i)+temp_conv)**2)
+                                    h_const= (101325*rolf(i)*1e-3)/
+     2                                   (h_const*1e6*mw_water)
+                                 else if(henry_model(nsp).eq.3) then
+                                    h_const= (phi(i) - pci(i)) * 
+     2                                   dh_henry(nsp)
+                                 endif
+                                 dvap_conc = (mw_water*h_const) /
+     2                                (phi(i)*avgmolwt(i))
+                              end if
+
+                              an(mi) = abs(andum) / (mvol + mvolv)
+                              rdum1 = an(mi) * (lvol(i) +
+     &                             vvol(i) * dvap_conc)
+                              sctmp = 0.
+c Account for sorption (moles input is total)
+                              if (iadsfl(nsp,itrc(mi)) .ne. 0 .or.
+     &                             iadsfv(nsp,itrc(mi)) .ne. 0 ) then
+                                 ctmp = rdum1
+                                 antmp = an(mi)
+                                 do
+                                    if (icns(nsp) .gt. 0) then
+                                       sctmp = (denr(i) * a1adfl(nsp,
+     1                                      itrc(mi)) * antmp**betadfl
+     2                                      (nsp,itrc(mi)) / (1.0 + 
+     3                                      a2adfl(nsp,itrc(mi)) * antmp
+     4                                      **betadfl(nsp,itrc(mi)) ))
+                                    else if (icns(nsp) .lt. 0) then
+                                       if (icns(nsp) .eq. -2) then
+                                          anvtmp = antmp * dvap_conc
+                                       else
+                                          anvtmp = antmp
+                                       end if
+                                       sctmp = (denr(i)*a1adfv(nsp,
+     1                                      itrc(mi)) * anvtmp**betadfv
+     2                                      (nsp,itrc(mi)) / (1.0 + 
+     3                                      a2adfv(nsp,itrc(mi)) *anvtmp
+     4                                      **betadfv(nsp,itrc(mi)) ))
+                                    end if
+                                    sctmp = sctmp * sx1(i)
+                                    rdum2 = ctmp + sctmp
+                                    if (abs(rdum1 - rdum2) .le. ctol) 
+     &                                   then
+                                       an(mi) = antmp
+                                       exit
+                                    end if
+                                    if (rdum2 .lt. rdum1) then
+                                       ctmp = ctmp + (rdum1 - rdum2)
+                                       antmp = ctmp / (lvol(i) + 
+     &                                      vvol(i) * dvap_conc)
+                                    else
+                                       frac = rdum1/ rdum2
+                                       antmp = antmp * frac
+                                       ctmp = antmp * (lvol(i) 
+     &                                      + vvol(i) * dvap_conc)
+                                    end if 
+                                 end do
+                              end if
+                           end if
+                        end do
+                     else
+                        do i = ja, jb, jc
+                           mi = i + npn
+                           hflag(mi) = 1
+                           if (ps_trac(i) .ne. 0) then
+                              rvol(i) = sx1(i)*denr(i)*(1-ps_trac(i))
+                              if (irdof .ne. 13 .or. ifree.ne.0) then
+                                 sdum = s(i)
+                              else
+                                 sdum = 1.0
+                              end if
+                              lvol(i) = sx1(i)*sdum*rolf(i)*ps_trac(i)
+                              vvol(i) = sx1(i)*(1 - sdum)*rovf(i)*
+     &                             ps_trac(i)
+                              dvap_conc = 0.
+                              if ( abs(icns(nsp)) .eq. 2 ) then
+c     Henry's law species
+                                 if(henry_model(nsp).eq.1) then
+                                    h_const= a_henry(nsp)*
+     2                                   exp(dh_henry(nsp)/
+     3                                   (gas_const*0.001)*(1/298.16-1/
+     4                                   (t(i)+temp_conv)))
+                                 else if(henry_model(nsp).eq.2) then
+                                    h_const = 10**(hawwa(nsp,1)+
+     2                                   hawwa(nsp,2)*(t(i)+
+     3                                   temp_conv)+hawwa(nsp,3)
+     4                                   /(t(i)+temp_conv)+hawwa
+     5                                   (nsp,4)*dlog10(t(i)
+     6                                   +temp_conv)+hawwa(nsp,5)
+     7                                   /(t(i)+temp_conv)**2)
+                                    h_const= (101325*rolf(i)*1e-3)/
+     2                                   (h_const*1e6*mw_water)
+                                 else if(henry_model(nsp).eq.3) then
+                                    h_const= (phi(i) - pci(i)) * 
+     2                                   dh_henry(nsp)
+                                 endif
+                                 dvap_conc = (mw_water*h_const) /
+     2                                (phi(i)*avgmolwt(i))
+                              end if
+                              rdum1 = abs(andum)
+                              an(mi) = abs(andum) / (lvol(i) + 
+     &                             vvol(i) * dvap_conc)
                               sctmp = 0.
 c Account for sorption (moles input is total)
                               if (iadsfl(nsp,itrc(mi)) .ne. 0 .or.
@@ -1385,103 +1536,57 @@ c Account for sorption (moles input is total)
                                  antmp = an(mi)
                                  do
                                     if (icns(nsp) .gt. 0) then
-                                    sctmp=(denr(i)*a1adfl(nsp,itrc(mi)) 
-     1                                   *antmp**betadfl(nsp,itrc(mi)) /
-     2                                   (1.0 + a2adfl(nsp,itrc(mi)) *
-     3                                   antmp**betadfl(nsp,itrc(mi)) ))
+                                       sctmp = (denr(i) * a1adfl(nsp,
+     1                                      itrc(mi)) * antmp**betadfl
+     2                                      (nsp,itrc(mi)) / (1.0 + 
+     3                                      a2adfl(nsp,itrc(mi)) * antmp
+     4                                      **betadfl(nsp,itrc(mi)) ))
                                     else if (icns(nsp) .lt. 0) then
-                                    sctmp=(denr(i)*a1adfv(nsp,itrc(mi)) 
-     1                                   *antmp**betadfv(nsp,itrc(mi)) /
-     2                                   (1.0 + a2adfv(nsp,itrc(mi)) *
-     3                                   antmp**betadfv(nsp,itrc(mi)) ))
+                                       if (icns(nsp) .eq. -2) then
+                                          anvtmp = antmp * dvap_conc
+                                       else
+                                          anvtmp = antmp
+                                       end if
+                                       sctmp = (denr(i)*a1adfv(nsp,
+     1                                      itrc(mi)) * anvtmp**betadfv
+     2                                      (nsp,itrc(mi)) / (1.0 + 
+     3                                      a2adfv(nsp,itrc(mi)) *anvtmp
+     4                                      **betadfv(nsp,itrc(mi)) ))
                                     end if
                                     sctmp = sctmp * sx1(i)
                                     rdum2 = ctmp + sctmp
-                                    if (abs(rdum1 + rdum2) .le. ctol) 
+                                    if (abs (rdum1 - rdum2) .le. ctol) 
      &                                   then
                                        an(mi) = antmp
                                        exit
                                     end if
-                                    if (sctmp .lt. abs(rdum1)) then
-                                       ctmp = abs(rdum1) - sctmp
-                                       antmp = ctmp / mvol
+                                    if (rdum2 .lt. rdum1) then
+                                       ctmp = ctmp + (rdum1 - rdum2)/2.
+                                       antmp = ctmp / (lvol(i) + 
+     &                                      vvol(i) * dvap_conc)
                                     else
-                                       frac = ctmp / rdum2
-                                       antmp = an(mi) * frac
-                                       ctmp = antmp * mvol
+                                       frac = rdum1/ rdum2
+                                       antmp = antmp * frac
+                                       ctmp = antmp * (lvol(i) 
+     &                                      + vvol(i) * dvap_conc)
                                     end if 
                                  end do
-                              
                               end if
-                           end if
-                        end do
-                     else
-                        do i = ja, jb, jc
-                           mi = i + npn
-                           if (icns(nsp) .eq. 0) then
-                              sdum = 1.0
-                              roldum = denr(i)
-                              psdum = 1 - ps_trac(i)
-                           else if (icns(nsp) .gt. 0) then
-                              if (irdof .ne. 13 .or. ifree.ne.0) then
-                                 sdum = s(i)
-                              else
-                                 sdum = 1.0
-                              end if
-                              roldum = rolf(i)
-                              psdum = ps_trac(i)
-                           else if (icns(nsp) .lt. 0) then
-                              sdum = 1 - s(i)
-                              roldum = rovf(i)
-                              psdum = ps_trac(i)
-                           end if
-                           mvol = sx1(i) * psdum * sdum * roldum
-                           an(mi) = abs(rdum1) / mvol
-                           sctmp = 0.
-c Account for sorption (moles input is total)
-                           if (iadsfl(nsp,itrc(mi)) .ne. 0 .or.
-     &                          iadsfv(nsp,itrc(mi)) .ne. 0) then
-                              ctmp = abs(rdum1)
-                              antmp = an(mi)
-                              do
-                                 if (icns(nsp) .gt. 0) then
-                                 sctmp = (denr(i)*a1adfl(nsp,itrc(mi)) 
-     1                                * antmp**betadfl(nsp,itrc(mi)) /
-     2                                (1.0 + a2adfl(nsp,itrc(mi)) *
-     3                                antmp**betadfl(nsp,itrc(mi)) ))
-                                 else if (icns(nsp) .lt. 0) then
-                                 sctmp = (denr(i)*a1adfv(nsp,itrc(mi)) 
-     1                                * antmp**betadfv(nsp,itrc(mi)) / 
-     2                                (1.0 + a2adfv(nsp,itrc(mi))
-     3                                * antmp**betadfv(nsp,itrc(mi)) ))
-                                 end if
-                                 sctmp = sctmp * sx1(i)
-                                 rdum2 = ctmp + sctmp
-                                 if (abs (rdum1 + rdum2) .le. ctol) then
-                                    an(mi) = antmp
-                                    exit
-                                 end if
-                                 if (sctmp .lt. abs(rdum1)) then
-                                    ctmp = abs(rdum1) - sctmp
-                                    antmp = ctmp / mvol
-                                 else
-                                    frac = ctmp / rdum2
-                                    antmp = an(mi) * frac
-                                    ctmp = antmp * mvol
-                                 end if 
-                              end do
                            end if
                         end do
                      end if
                   else
+c     Input is in moles/kg fluid
                      if ( ja .gt. 0) then
                         do i = ja, jb, jc
-                           an(i + npn) = rdum1
+                           hflag(i + npn) = 0
+                           an(i + npn) = andum
                         end do
                      else
                         do i = 1, n0
                            if (izonef(i) .eq. abs(ja)) then
-                              an(i + npn) = rdum1
+                              hflag(i + npn) = 0
+                              an(i + npn) = andum
                            end if
                         end do
                      end if
@@ -1791,9 +1896,10 @@ CPS           ENDIF
      .                    'species with no interphase transport,',
      .                    'then you must specify a gaseous',
      .                    'species (icns = -1).')
-                                      
-                     an(mi) = an(mi) / dvap_conc
-                     anlo(mi) = an(mi)
+                     if (hflag(mi) .eq. 0) then                 
+                        an(mi) = an(mi) / dvap_conc
+                        anlo(mi) = an(mi)
+                     end if
 c
 CPS         ENDFOR each node
 c
@@ -1829,6 +1935,9 @@ c Move call to startup to ensure all data read prior to setup
 c to accomodate new output options
 c         call plotc1(0,0)
       end if
+
+      if (allocated(lvol)) deallocate(lvol,rvol,vvol)
+
       return
 
  9000 continue

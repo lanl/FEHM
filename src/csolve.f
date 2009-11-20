@@ -673,7 +673,7 @@ c**** set time step for tracer solution , call solution            ****c
       integer ix
       integer :: iprttrc = 0, last_step = 0
       integer :: idebug = 0
-      logical :: time2print
+      logical :: time2print, istop_flag
       parameter(toldil = 1.d-20)
       save daytr, iprttrc, icfin, last_step, last_time
 c seh
@@ -1318,6 +1318,7 @@ c  once for each tracer timestep
 
       do isolute = 1, ncpnt
          npn=npt(isolute)
+         istop_flag = .false.
          do id=1,neq
             i=id+npn
 c     
@@ -1356,6 +1357,7 @@ c
                         daytr=sehmindays
                      endif
                      write(iout,401) i,t2sk(i)
+                     istop_flag = .true.
  401                 format(1x,/,'tracer injection stopped for node ',
      2                    i7,' at days=',g12.6)
                      icfin=1
@@ -1365,6 +1367,7 @@ c
                endif
             endif
          end do
+         if (istop_flag) call wrtcon(1)
       end do
       dtotc=daytrm*86400.
       daytr=daytrm
