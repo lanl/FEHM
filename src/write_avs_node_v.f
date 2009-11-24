@@ -214,7 +214,7 @@ c     error
             icord2 = 3
             icord3 = 2
          case(3, 6)
-            icord1 = 1
+            icord1 = 2
             icord2 = 3
             icord3 = 1
          case default
@@ -234,6 +234,10 @@ c     error
          if (iocord .ne. 0 ) then
             j = j + 1
             title(j) = trim(dual_char) // 'XYZ coordinates, (m)'
+            icord1 = 1
+            icord2 = 3
+            icord3 = 1
+            iocord = 3
          end if
          if (iovapor .ne. 0 ) then
             j = j + 1
@@ -268,19 +272,28 @@ c     error
             end if
          end if
          if (iocord .ne. 0 ) then
-            if (altc(1:3) .eq. 'tec') then
-               title(1) =  trim(dual_char) // 'X Coordinate (m)'
-            else
-               title(1) = dlstring // trim(dual_char) // 
-     &              'X Coordinate (m)'
+            j = 1
+            if (icnl .ne. 3 .and. icnl .ne. 6) then
+               if (altc(1:3) .eq. 'tec') then
+                  title(j) = trim(dual_char) //  'X Coordinate (m)'
+               else
+                  title(j) = dlstring // trim(dual_char) // 
+     &                 'X Coordinate (m)'
+               end if
+               j = j + 1
             end if
-            title(2) = dlstring // trim(dual_char) // 'Y Coordinate (m)'
-            if (iocord .eq. 3) then
-               title(3) = dlstring // trim(dual_char) // 
+            if (icnl .ne. 2 .and. icnl .ne. 5) then
+               if (j .eq. 1 .and. altc(1:3) .eq. 'tec') then
+                  title(j) = trim(dual_char) // 'Y Coordinate (m)'
+               else
+                  title(j) = dlstring // trim(dual_char) // 
+     &                 'Y Coordinate (m)'
+               end if
+               j = j + 1
+            end if
+            if (icnl .ne. 1 .and. icnl .ne. 4) then
+               title(j) = dlstring // trim(dual_char) // 
      &              'Z Coordinate (m)'
-               j = 3
-            else
-               j = 2
             end if
             if (iozid .ne. 0) then
                write (share_string, '(i1, "-", i1, ", ", i1)') 1, j, j+2
@@ -289,29 +302,37 @@ c     error
             end if
          end if
          if (iovapor .ne. 0) then
-            title(j + 1) = dlstring // trim(dual_char) // 
-     &           'Vapor X Volume Flux (m3/[m2 s])'
-            title(j + 2) = dlstring // trim(dual_char) //  
-     &           'Vapor Y Volume Flux (m3/[m2 s])'
-            if (iocord .eq. 3 .or. altc(1:4) .eq. 'avsx') then
-               title(j + 3) = dlstring // trim(dual_char) //  
+            j = j + 1
+            if (icnl .ne. 3 .and. icnl .ne. 6) then
+               title(j) = dlstring // trim(dual_char) // 
+     &              'Vapor X Volume Flux (m3/[m2 s])'
+               j = j + 1
+            end if
+            if (icnl .ne. 2 .and. icnl .ne. 5) then
+               title(j) = dlstring // trim(dual_char) //  
+     &              'Vapor Y Volume Flux (m3/[m2 s])'
+               j = j + 1
+            end if
+            if (icnl .ne. 1 .and. icnl .ne. 4) then
+               title(j) = dlstring // trim(dual_char) //  
      &              'Vapor Z Volume Flux (m3/[m2 s])'
-               j = j + 3
-            else
-               j = j + 2
             end if
          end if
          if (ioliquid .ne. 0) then
-            title(j + 1) = dlstring // trim(dual_char) //  
+            j = j + 1
+            if (icnl .ne. 3 .and. icnl .ne. 6) then
+               title(j) = dlstring // trim(dual_char) //  
      &           'Liquid X Volume Flux (m3/[m2 s])'
-            title(j + 2) = dlstring // trim(dual_char) //  
-     &           'Liquid Y Volume Flux (m3/[m2 s])'
-            if (iocord .eq. 3 .or. altc(1:4) .eq. 'avsx') then
-               title(j + 3) = dlstring // trim(dual_char) //  
+               j = j + 1
+            end if
+            if (icnl .ne. 2 .and. icnl .ne. 5) then
+               title(j) = dlstring // trim(dual_char) //  
+     &              'Liquid Y Volume Flux (m3/[m2 s])'
+               j = j + 1
+            end if
+            if (icnl .ne. 1 .and. icnl .ne. 4) then
+               title(j) = dlstring // trim(dual_char) //  
      &              'Liquid Z Volume Flux (m3/[m2 s])'
-               j = j + 3
-            else
-               j = j + 2
             end if
          end if
       end if
@@ -383,16 +404,12 @@ c     &        (trim(title(i)), j = 1, nout)
                if (izone_surf_nodes(i).ne.idz) goto 199
             end if
             if (iocord .ne. 0) then
-               if (iocord .eq. 2 .and. altc(1:3) .eq. 'avs') then
-                  do j = 1, 3
-                     write_array(j) = corz(i, j)
-                  end do
-               else
-                  do j = icord1, icord2, icord3
-                     write_array(j) = corz(i, j)
-                  end do
-                  j = iocord + 1
-               end if
+               k = 1
+               do j = icord1, icord2, icord3
+                  write_array(k) = corz(i, j)
+                  k = k + 1
+               end do
+               j = iocord + 1
             else
                j = 1
             end if
@@ -401,7 +418,7 @@ c     &        (trim(title(i)), j = 1, nout)
                j = j + 1
                write_array(j) = pnyv(i)
                j = j + 1
-               if (iocord .eq. 3 .or. altc(1:3) .eq. 'avs') then
+               if (icnl .eq. 0 .or. altc .eq. 'avs') then
                   write_array(j) = pnzv(i)
                   j = j + 1
                end if
@@ -411,7 +428,7 @@ c     &        (trim(title(i)), j = 1, nout)
                j = j + 1
                write_array(j) = pnyl(i)
                j = j + 1
-               if (iocord .eq. 3 .or. altc(1:3) .eq. 'avs') then
+               if (icnl .eq. 0 .or. altc .eq. 'avs') then
                   write_array(j) = pnzl(i)
                   j = j + 1
                end if
@@ -419,11 +436,11 @@ c     &        (trim(title(i)), j = 1, nout)
             j = j - 1
             if (altc(1:3) .eq. 'tec') then
                if (icall .eq. 1 .and. iozid .ne. 0) then
-                  write (fstring, 130) iocord, j - iocord - 2
+                  write (fstring, 130) iocord, j - iocord
                   write(lu, fstring) (write_array(k), k = 1, iocord),
      &                 i, izonef(i), (write_array(k), k = iocord + 1, j)
                else if (icall .eq. 1 .and. iozid .eq. 0) then
-                  write (fstring, 120) iocord, j - iocord - 1
+                  write (fstring, 120) iocord, j - iocord
                   write(lu, fstring) (write_array(k), k = 1, iocord),
      &                 i, (write_array(k), k = iocord + 1, j)
                else
