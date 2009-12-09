@@ -335,6 +335,14 @@ c     Temperature
      &                          keyms2(isubmd)(1:1).eq.'E') then
 c     Enthalpy
                            parm2 = enlf(ik)
+                        else if(keyms2(isubmd)(1:1).eq.'w' .or.
+     &                          keyms2(isubmd)(1:1).eq.'W') then
+c     Water only source
+                              parm2 = 1.0
+                        else if(keyms2(isubmd)(1:1).eq.'a' .or.
+     &                          keyms2(isubmd)(1:1).eq.'A') then
+c     Water only source
+                              parm2 = -1.0                          
                         else
                            write(ierr, 350) 2, trim(keyms2(isubmd)), mi
                            if (iout .ne. 0) write(iout, 350) 2, 
