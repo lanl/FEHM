@@ -277,18 +277,34 @@ c
 c     full dof solution
 c
 
-             if(gdpm_flag.eq.0) then 
-              call solve_new(neq,a,b,bp,nmat,nb,nrhs,nelm,nop,north
-     &             ,tollr,irb,iirb,npvt,gmres,dumz,piv
-     &             ,h,c,ss,g,y,iter,iback,idofm,iptty,maxor,accm)
-             else
-             call solve_dual(neq_primary,neq,a,b,bp,nmat,nb,nrhs
-     &            ,nelm,nelm_primary,nop,north,tollr,irb,iirb
-     &            ,npvt,gmres,dumz,piv
-     &            ,h,c,ss,g,y,iter,iback,idofm,iptty,maxor
-     &            ,igdpm,maxgdpmlayers,ngdpm_layers,nelmdg,accm
-     &            ,mdof_sol)
-             endif
+         if(gdpm_flag.eq.0) then 
+            if (igauss .gt. 1) then
+               call solve_new(neq,a,b,bp,nmat,nb,nrhs,nelm,nop,north
+     &              ,tollr,irb,iirb,npvt,gmres,dumz,piv
+     &              ,h,c,ss,g,y,iter,iback,idofm,iptty,maxor,accm)
+            else
+               call solve_new(neq,a,b,bp,nmat,nmat,nrhs,nelm,nelm
+     &              ,north,tollr,irb,iirb,npvt,gmres,dumz,piv
+     &              ,h,c,ss,g,y,iter,iback,1,iptty,maxor,accm)
+               
+            end if
+         else
+            if (igauss .gt. 1) then
+               call solve_dual(neq_primary,neq,a,b,bp,nmat,nb,nrhs
+     &              ,nelm,nelm_primary,nop,north,tollr,irb,iirb
+     &              ,npvt,gmres,dumz,piv
+     &              ,h,c,ss,g,y,iter,iback,idofm,iptty,maxor
+     &              ,igdpm,maxgdpmlayers,ngdpm_layers,nelmdg,accm
+     &              ,mdof_sol)
+            else
+               call solve_dual(neq_primary,neq,a,b,bp,nmat,nmat,nrhs
+     &              ,nelm,nelm_primary,nelm_primary,north,tollr,irb
+     &              ,iirb,npvt,gmres,dumz,piv
+     &              ,h,c,ss,g,y,iter,iback,1,iptty,maxor
+     &              ,igdpm,maxgdpmlayers,ngdpm_layers,nelmdg,accm
+     &              ,mdof_sol)
+               end if
+         endif
 
       else if(irdof.eq.-idofm) then
 c     reduced degree of freedom with full grmres
