@@ -879,6 +879,7 @@ c     use the upcoming or new node to get the correct coordinate
             xo(np1) = xcoordw
             yo(np1) = ycoordw
             zo(np1) = zcoordw
+            call flush (isptr2)
          else if (path_done .and. xyz_flag) then
             write(isptr2,9002) np1,sptr_time,current_node,
      &              xcoordw, ycoordw, zcoordw    
@@ -897,6 +898,7 @@ c     use the upcoming or new node to get the correct coordinate
             xo(np1) = xcoordw
             yo(np1) = ycoordw
             zo(np1) = zcoordw
+            call flush (isptr2)
          else if (path_done .and. xyz_flag) then
                write(isptr2) np1,sptr_time,current_node,
      &              xcoordw, ycoordw, zcoordw 
@@ -1035,7 +1037,7 @@ c     s_print = s(current_node)
          yo(np1) = ycoordw
          zo(np1) = zcoordw
          lastnode(np1) = current_node
-
+         call flush (isptr2)
       end if
 
  8001 format(1x, i8, 3(1x,g16.9), 1x, g21.14, 200a)

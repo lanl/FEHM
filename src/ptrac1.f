@@ -147,6 +147,10 @@ c     Initialize particle time arrays
       ttt=0
       if (irsttime .ne. 0) then
          tt1 = rsttime
+c     ZVD - 10-Dec-09, time can't be less than the simulation start time
+         do i = 1, num_part
+            if (ttp1(i) .lt. tt1) ttp1(i) = tt1
+         end do
       else
          tt1= 0.d0
       end if
@@ -589,6 +593,10 @@ c **** got irray *****
       character*200 sptr_heading, sptr_prop_values
 
 c     Sets up output of particle tracking info
+
+c     Only used for regular output with transient particle start times, 
+c     trans_flag is used for minimal output options
+      pstart_out = .true.
 
 c     Robinson added minimal write option 3-11-02
       if(iprto.lt.0) then
