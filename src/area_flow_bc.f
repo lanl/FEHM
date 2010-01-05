@@ -68,111 +68,112 @@
       dil_dum = (997./1.e-3)
       neqp1 = neq +1
       if(iflg.eq.1) then 
-       do i = 1, n0
-         if (ka(i).eq.-23.or.ka(i).eq.-24) then  
-c free drainage condition         
-           areat = 0.0 
-           area_mult = wellim(i) 
-            cord1 = cord(i,1)
-            cord2 = cord(i,2)
-            cord3 = 0.0
-            if(icnl.eq.0) then
-             cord3 = cord(i,3)
-            endif
-            i1 = nelm(i)+1
-            i2 = nelm(i+1)
-            do jj = i1,i2
-             kb = nelm(jj)
-              if(kb.lt.i) then
-                i3 = nelmdg(kb)+1
-                i4 = nelm(kb+1)
-                do kk = i3,i4
-                  if(nelm(kk).eq.i) then
-                   iw = istrw(kk-neqp1)
-                   go to 100
-                  endif
-                enddo
-              else if(kb.gt.i) then
-                iw = istrw(jj-neqp1)
-              else
-               go to 200
-              endif
-100            cord1j = cord(kb,1)
-               cord2j = cord(kb,2)
-               cord3j = 0.0
+         do i = 1, n0
+            if (ka(i).eq.-23.or.ka(i).eq.-24) then  
+c     free drainage condition         
+               areat = 0.0 
+               area_mult = wellim(i) 
+               cord1 = cord(i,1)
+               cord2 = cord(i,2)
+               cord3 = 0.0
                if(icnl.eq.0) then
-                cord3j = cord(kb,3)
-               endif 
-               dis = sqrt((cord1-cord1j)**2 + (cord2-cord2j)**2 +
-     &          + (cord3-cord3j)**2)                   
-               disz2 = cord(kb,igrav)-cord(i,igrav)
-               cosz = abs(disz2)/dis
-               if(disz2.ge.0.0) then
-                sx2c=abs(sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz))
-                areat = max(sx2c*dis*cosz,areat)
+                  cord3 = cord(i,3)
                endif
- 200          continue
-            enddo
-            wellim(i)=areat*area_mult
-         else if (ka(i).le.-11.and.ka(i).ge.-13) then  
-c constant head or pressure, physically based impedance         
-           areat = 0.0 
-           area_mult = wellim(i)
-           idir = abs(ka(i))-10 
-            if(idir.eq.1) then
-             perm = pnx(i)
-            else if(idir.eq.2) then
-             perm = pny(i)
-            else
-             perm = pnz(i)
-            endif
-            cord1 = cord(i,1)
-            cord2 = cord(i,2)
-            cord3 = 0.0
-            if(icnl.eq.0) then
-             cord3 = cord(i,3)
-            endif
-            i1 = nelm(i)+1
-            i2 = nelm(i+1)
-            do jj = i1,i2
-             kb = nelm(jj)
-              if(kb.lt.i) then
-                i3 = nelmdg(kb)+1
-                i4 = nelm(kb+1)
-                do kk = i3,i4
-                  if(nelm(kk).eq.i) then
-                   iw = istrw(kk-neqp1)
-                   go to 110
+               i1 = nelm(i)+1
+               i2 = nelm(i+1)
+               do jj = i1,i2
+                  kb = nelm(jj)
+                  if(kb.lt.i) then
+                     i3 = nelmdg(kb)+1
+                     i4 = nelm(kb+1)
+                     do kk = i3,i4
+                        if(nelm(kk).eq.i) then
+                           iw = istrw(kk-neqp1)
+                           go to 100
+                        endif
+                     enddo
+                  else if(kb.gt.i) then
+                     iw = istrw(jj-neqp1)
+                  else
+                     go to 200
                   endif
-                enddo
-              else if(kb.gt.i) then
-                iw = istrw(jj-neqp1)
-              else
-               go to 210
-              endif
-110            cord1j = cord(kb,1)
-               cord2j = cord(kb,2)
-               cord3j = 0.0
-               if(icnl.eq.0) then
-                cord3j = cord(kb,3)
-               endif 
-               dis = sqrt((cord1-cord1j)**2 + (cord2-cord2j)**2 +
-     &          + (cord3-cord3j)**2)                   
-               disz2 = cord(kb,idir)-cord(i,idir)
-               cosz = abs(disz2)/dis
-               if(disz2.ge.0.0) then
-                sx2c=abs(sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz))
-                areat = max(sx2c*cosz,areat)
+ 100              cord1j = cord(kb,1)
+                  cord2j = cord(kb,2)
+                  cord3j = 0.0
+                  if(icnl.eq.0) then
+                     cord3j = cord(kb,3)
+                  endif 
+                  dis = sqrt((cord1-cord1j)**2 + (cord2-cord2j)**2 +
+     &                 (cord3-cord3j)**2)                   
+                  disz2 = cord(kb,igrav)-cord(i,igrav)
+                  cosz = abs(disz2)/dis
+                  if(disz2.ge.0.0) then
+                     sx2c=abs(sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz))
+                     areat = max(sx2c*dis*cosz,areat)
+                  endif
+ 200              continue
+               enddo
+               wellim(i)=areat*area_mult
+            else if (ka(i).le.-11.and.ka(i).ge.-13) then  
+c     constant head or pressure, physically based impedance         
+               areat = 0.0 
+               area_mult = wellim(i)
+               idir = abs(ka(i))-10 
+               if(idir.eq.1) then
+                  perm = pnx(i)
+               else if(idir.eq.2) then
+                  perm = pny(i)
+               else
+                  perm = pnz(i)
                endif
- 210          continue
-            enddo
-            dil_dum = dil(i)
-            if(irdof.ne.13) then
-             if(rlf(i).lt.1.0) dil_dum = dil_dum/max(rlf(i),rlp_min)
-            endif
-            wellim(i)=areat*area_mult*perm*dil_dum
-         endif            
-       end do
+               cord1 = cord(i,1)
+               cord2 = cord(i,2)
+               cord3 = 0.0
+               if(icnl.eq.0) then
+                  cord3 = cord(i,3)
+               endif
+               i1 = nelm(i)+1
+               i2 = nelm(i+1)
+               do jj = i1,i2
+                  kb = nelm(jj)
+                  if(kb.lt.i) then
+                     i3 = nelmdg(kb)+1
+                     i4 = nelm(kb+1)
+                     do kk = i3,i4
+                        if(nelm(kk).eq.i) then
+                           iw = istrw(kk-neqp1)
+                           go to 110
+                        endif
+                     enddo
+                  else if(kb.gt.i) then
+                     iw = istrw(jj-neqp1)
+                  else
+                     go to 210
+                  endif
+ 110              cord1j = cord(kb,1)
+                  cord2j = cord(kb,2)
+                  cord3j = 0.0
+                  if(icnl.eq.0) then
+                     cord3j = cord(kb,3)
+                  endif 
+                  dis = sqrt((cord1-cord1j)**2 + (cord2-cord2j)**2 +
+     &                 (cord3-cord3j)**2)                   
+                  disz2 = cord(kb,idir)-cord(i,idir)
+                  cosz = abs(disz2)/dis
+                  if(disz2.ge.0.0) then
+                     sx2c=abs(sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz))
+                     areat = max(sx2c*cosz,areat)
+                  endif
+ 210              continue
+               enddo
+               dil_dum = dil(i)
+               if(irdof.ne.13) then
+                  if(rlf(i).lt.1.0) dil_dum = 
+     &                 dil_dum/max(rlf(i),rlp_min)
+               endif
+               wellim(i)=areat*area_mult*perm*dil_dum
+            endif            
+         end do
       endif
       
 
