@@ -427,7 +427,7 @@ c RJP 04/30/07 added following for outputting time-dependent CO2 mass
                   if (form_flag .eq. 0)
      &                 write(ishisfzz, '(a)') trim(title_string)
                   if (form_flag .eq. 2) then
-                     write(ishisfzz, '(a, ", ", a, a)') 
+                     write(ishisfzz, '(a, ": ",  a, a)') 
      &                    trim(zone_string), 
      &                    trim(vt_string), trim(formf_string)
                   else
@@ -447,7 +447,7 @@ c RJP 04/30/07 added following for outputting time-dependent CO2 mass
                   if (form_flag .eq. 0)
      &                 write(ishisfzz, '(a)') trim(title_string)
                   if (form_flag .eq. 2) then
-                     write(ishisfzz, '(a, ", ", a, a)') 
+                     write(ishisfzz, '(a, ": ", a, a)') 
      &                    trim(zone_string), 
      &                    trim(vt_string), trim(formf_string)
                   else
