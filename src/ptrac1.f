@@ -216,40 +216,44 @@ c     n_col(column#)=# of nodes in the column
 c     col(kb,wcol(node))=node #s in that column
          n_porosi0= 0 
          do i=1,num_part
-            if(ps(ijkv(i)).le.0.) then
-               n_porosi0 =  n_porosi0 +1
-               if( n_porosi0.eq.1) then
-                  if(.not.allocated(wcol)) then
-                     call wtsi_column
-                  endif
-               endif
-               inp1=ijkv(i)
-               itemp_col = wcol(inp1)
-               do kb2 = 1, n_col(itemp_col)
-                  itemp_node=col(itemp_col,kb2)
-                  if(inp1.eq.itemp_node) then
-                     do kb = kb2+1, n_col(itemp_col)
-                        itemp_node=col(itemp_col,kb)
-                        if(ps(itemp_node).gt.0.) then
-                           ijkv(i) = itemp_node
-                           z1(i)=cord(itemp_node,3)-corn(itemp_node,3)
-                           goto 96969
-                        endif
-                     enddo
-c     did not find a porosity>0 node in the column. Do a neighbor search
-                     call tree_search_porosity(ijkv(i),5,flag_box)
-                     if(flag_box.gt.0) then
-                        ijkv(i)=flag_box
-                        z1(i) = cord(flag_box,3)
-                     else
-                        write(ierr,*)'error in ptrac1. cant find'
-                        write(ierr,*)'neighbor with porosity>0. STOP.'
-                        stop
+            if (ijkv(i) .ne. 0) then
+               if(ps(ijkv(i)).le.0.) then
+                  n_porosi0 =  n_porosi0 +1
+                  if( n_porosi0.eq.1) then
+                     if(.not.allocated(wcol)) then
+                        call wtsi_column
                      endif
                   endif
-               enddo
-96969          continue
-            endif
+                  inp1=ijkv(i)
+                  itemp_col = wcol(inp1)
+                  do kb2 = 1, n_col(itemp_col)
+                     itemp_node=col(itemp_col,kb2)
+                     if(inp1.eq.itemp_node) then
+                        do kb = kb2+1, n_col(itemp_col)
+                           itemp_node=col(itemp_col,kb)
+                           if(ps(itemp_node).gt.0.) then
+                              ijkv(i) = itemp_node
+                              z1(i)=cord(itemp_node,3)-
+     &                             corn(itemp_node,3)
+                              goto 96969
+                           endif
+                        enddo
+c     did not find a porosity>0 node in the column. Do a neighbor search
+                        call tree_search_porosity(ijkv(i),5,flag_box)
+                        if(flag_box.gt.0) then
+                           ijkv(i)=flag_box
+                           z1(i) = cord(flag_box,3)
+                        else
+                           write(ierr,*)"error in ptrac1. can't find"
+                           write(ierr,*)'neighbor with porosity>0. ',
+     &                          'STOP.'
+                           stop
+                        endif
+                     endif
+                  enddo
+96969             continue
+               endif
+            end if
          enddo
 c..............................................................
 
@@ -266,6 +270,10 @@ c zvd 06-21-07 Set x3,y3,z3 to initial particle location
             x3(i) = x1(i) + corn(ijkv(i), 1)
             y3(i) = y1(i) + corn(ijkv(i), 2)
             z3(i) = z1(i) + corn(ijkv(i), 3)
+         else
+            x3(i) = x1(i)
+            y3(i) = y1(i)
+            z3(i) = z1(i)
          end if
       end do
 
@@ -1141,13 +1149,28 @@ c         where((z1.gt.ddzv).or.(z1.lt.0.))     ijkv=0
 c      end if
 
       do is=1,num_part
-         if(x1(is).gt.ddxv(is)) x1(is)=ddxv(is)
-         if(x1(is).lt.0.) x1(is)=0.
-         if(y1(is).gt.ddyv(is)) y1(is)=ddyv(is)
-         if(y1(is).lt.0.) y1(is)=0.
-         if(icnl.eq.0) then
-            if(z1(is).gt.ddzv(is)) z1(is)=ddzv(is)
-            if(z1(is).lt.0.) z1(is)=0.
+c     Check to see if particle should be excluded if out side the model domain
+         if (exclude_particle) then
+            if(x1(is).gt.ddxv(is) .or. x1(is).lt.0. .or. 
+     &           y1(is).gt.ddyv(is) .or. y1(is).lt.0.) then
+               istop(is) = 1
+               ijkv(is) = 0
+            end if
+            if (icnl.eq.0) then
+               if(z1(is).gt.ddzv(is) .or. z1(is).lt.0.) then
+                  istop(is) = 1
+                  ijkv(is) = 0
+               end if
+            end if           
+         else
+            if(x1(is).gt.ddxv(is)) x1(is)=ddxv(is)
+            if(x1(is).lt.0.) x1(is)=0.
+            if(y1(is).gt.ddyv(is)) y1(is)=ddyv(is)
+            if(y1(is).lt.0.) y1(is)=0.
+            if(icnl.eq.0) then
+               if(z1(is).gt.ddzv(is)) z1(is)=ddzv(is)
+               if(z1(is).lt.0.) z1(is)=0.
+            end if
          end if
       enddo      
 

@@ -106,6 +106,7 @@ c..........................................................
 
       macro = 'sptr'
       btc_flag = .false.
+      exclude_particle = .false.
 c Assign file unit numbers and determine  output filenames
       isptr1 = nufilb(17)
       isptr2 = nufilb(18)
@@ -758,6 +759,15 @@ c     Keywords to specify which parameters to output along the particle path
          case('tr', 'TR')
 ! Flag to indicate particle start time should be included for abbreviated output -- the initial node will be set to 0 if this option is used
             trans_flag = .true.
+            done = .false.
+! Flags to indicate whether particles that are outside the model domain should be included in the simulation
+         case ('in', 'IN')
+! Include all particles that are input (this is the default)
+            exclude_particle = .false.
+            done = .false.
+         case ('ex', 'EX')
+! Exclude particles with locations outside the model domain
+            exclude_particle = .true.
             done = .false.
          case('po', 'PO')
             done = .false.

@@ -184,5 +184,7 @@ c
       integer, allocatable :: lastnode(:)
 ! ZVD - 07/15/09 Add to mark wheter or not the starting particle location has been output
       logical, allocatable :: pstart_out(:)
+! ZVD - 02/16/2010 Add variable to flag whether particles outside the model domain should be included in the simualtion
+      logical :: exclude_particle
 
       end module comsptr
