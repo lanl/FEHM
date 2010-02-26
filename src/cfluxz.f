@@ -134,7 +134,7 @@
          do i = 1, cflxz
             write (string2(is:ie), '(1x, i5)') icflxz(i)
             is = ie + 1
-            ie = ie + 4
+            ie = ie + 6
          end do
          do nsp = 1, nspeci
             iname = len_trim (cpntnam(nsp))
