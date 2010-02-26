@@ -900,7 +900,7 @@ c will be output
                   if (cmsg(i)(1:3) .eq. 'wat') then
                      wflux_flag = .true.
                   else if (cmsg(i)(1:3) .eq. 'vap') then
-                     if (irdof .ne. 13 .or. ifree .ne. 0) then
+                     if (irdof .ne. 13) then
                         vflux_flag = .true.
                      else
                         write (ierr, *) 'No air/vapor phase in problem',
@@ -911,7 +911,7 @@ c will be output
             end do
          else
             wflux_flag = .true.
-            if ((irdof .ne. 13 .or. ifree .ne. 0) .and. jswitch .eq. 0) 
+            if (irdof .ne. 13 .and. jswitch .eq. 0) 
      &           vflux_flag = .true.
          end if
          read(inpt,*) nflxz
