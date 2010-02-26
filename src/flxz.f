@@ -83,18 +83,14 @@ c     Fluxes are written to tty and output file
             write(iatty,*)
      2           'Total Flux (kg/s) Leaving Zone (flxz macro option)'
             write(iatty,*)
-            write(iatty,*)'Zone(# nodes)         Source         ',
-     &           'Sink          Net     Boundary       Vapor'
-            write(iatty,*)
+            write(iatty, 1000) 
          end if
          if(ntty.eq.2 .and. iout .ne. 0) then
             write(iout,*)
             write(iout,*)
      2           '      Total Flux Leaving Zone (flxz macro option)'
             write(iout,*)
-            write(iout,*)'Zone(# nodes)         Source         Sink',
-     &           '          Net     Boundary       Vapor'
-            write(iout,*)
+            write(iout, 1000)
          end if
       else
 c     Fluxes are written to flux history file
@@ -238,11 +234,13 @@ c     Fluxes are written to tty and output file
          if(wflux_flag) then
             do izone = 1, nflxz
                if(iatty.ne.0) then
+                  if (izone .eq. 1) write(iatty, *) 'Water'
                   write(iatty,1045) iflxz(izone), md(izone),
      2                 sumsource(izone,ii), sumsink(izone,ii), 
      3                 sumfout(izone,ii), sumboun(izone,ii)
                end if
                if(ntty.eq.2 .and. iout .ne. 0) then
+                  if (izone .eq. 1) write(iout, *) 'Water'
                   write(iout,1045) iflxz(izone), md(izone),
      2                 sumsource(izone,ii), sumsink(izone,ii), 
      3                 sumfout(izone,ii), sumboun(izone,ii)
@@ -252,12 +250,14 @@ c     Fluxes are written to tty and output file
          if (vflux_flag) then
             do izone = 1, nflxz
                if(iatty.ne.0) then
-                  write(iatty,1046) iflxz(izone), md(izone),
+                  if (izone .eq. 1) write(iatty, *) 'Vapor'
+                  write(iatty,1045) iflxz(izone), md(izone),
      2                 sumsource(izone,iv), sumsink(izone,iv), 
      3                 sumfout(izone,iv), sumboun(izone,iv)
                end if
                if(ntty.eq.2 .and. iout .ne. 0) then
-                  write(iout,1046) iflxz(izone), md(izone),
+                  if (izone .eq. 1) write(iout, *) 'Vapor'
+                  write(iout,1045) iflxz(izone), md(izone),
      2                 sumsource(izone,iv), sumsink(izone,iv), 
      3                 sumfout(izone,iv), sumboun(izone,iv)
                end if
@@ -366,7 +366,9 @@ c     Fluxes are written to flux history file
          end do
       end if
 
- 1045 format(1x,i4,' (',i6,')',2x,1p,4(1x,e12.5))
+ 1000    format ('Zone  (# nodes)   Source       Sink',
+     &           '         Net          Boundary')
+ 1045 format(1x,i4,' (',i7,')',1x,1p,4(1x,e12.5))
  1046 format(1x,i4,' (',i6,')',2x,1p,5(1x,e12.5))
  1047 format('(g16.9, ', i3, '(a))')
  1050 format(4(g16.9, 1x), g16.9)
