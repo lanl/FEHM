@@ -855,14 +855,14 @@ c need to if rel perm factor is used
          iflxc = iflxc +1
          call start_macro(inpt, locunitnum, macro)
          read(locunitnum,*) nflx
-          ivelo = 1
+         ivelo = 1
          nflxt = nflxt + nflx
          call done_macro(locunitnum)
       else if (macro .eq. 'dvel') then
          iflxc = iflxc +1
          call start_macro(inpt, locunitnum, macro)
          read(locunitnum,*) nflx
-          ivelo = -1
+         ivelo = -1
          nflxt = nflxt + nflx
          call done_macro(locunitnum)
       else if (macro .eq. 'dpdp') then
@@ -939,8 +939,8 @@ c     parameters
                   do ii = 1,jj+1
                      read(locunitnum,'(a80)') wdd1
                      if(null1(wdd1)) goto 441
-                     backspace inpt
-                     read (inpt, *) idum1
+                     backspace locunitnum
+                     read (locunitnum, *) idum1
                      if (idum1 .lt. 0) goto 441
                   enddo
  441              continue
@@ -952,12 +952,12 @@ c
                   read (locunitnum, *) ii, 
      &                 coor_dum(ii,1),coor_dum(ii,2),coor_dum(ii,3)
                enddo
-               read(inpt,*) n_well_seg
+               read(locunitnum,*) n_well_seg
 	       allocate(iwell_seg(n_well_seg,2))
 	       allocate(well_rad(n_well_seg))
 	       allocate(well_dz(n_well_seg))
                do i = 1,n_well_seg
-                  read(inpt,*) j,iwell_seg(j,1),iwell_seg(j,2),
+                  read(locunitnum,*) j,iwell_seg(j,1),iwell_seg(j,2),
      &                 well_rad(j),well_dz(j)	       
                enddo
                npoint_riv = 0
