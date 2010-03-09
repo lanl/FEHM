@@ -186,5 +186,7 @@ c
       logical, allocatable :: pstart_out(:)
 ! ZVD - 02/16/2010 Add variable to flag whether particles outside the model domain should be included in the simualtion
       logical :: exclude_particle
+! ZVD - 03/04/2010 Add variable to force output of particle location in sptr2 if its start time is greater than the simulation end time
+      logical :: output_end
 
       end module comsptr

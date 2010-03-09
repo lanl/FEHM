@@ -906,7 +906,8 @@ c     use the upcoming or new node to get the correct coordinate
       else
 
 ! If we are ahead of the current time don't output location unless
-! we are at the end of the simulation
+! we are at the end of the simulation and output is requested
+         if (sptr_time .gt. tims .and. .not. output_end) return
          if (sptr_time .gt. days .and. days .lt. tims) return
          
 ! Check to see if particle has moved enough to be output

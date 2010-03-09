@@ -107,6 +107,7 @@ c..........................................................
       macro = 'sptr'
       btc_flag = .false.
       exclude_particle = .false.
+      output_end = .false.
 c Assign file unit numbers and determine  output filenames
       isptr1 = nufilb(17)
       isptr2 = nufilb(18)
@@ -768,6 +769,10 @@ c     Keywords to specify which parameters to output along the particle path
          case ('ex', 'EX')
 ! Exclude particles with locations outside the model domain
             exclude_particle = .true.
+            done = .false.
+         case ('ou', 'OU')
+! Exclude particles with locations outside the model domain
+            output_end = .true.
             done = .false.
          case('po', 'PO')
             done = .false.

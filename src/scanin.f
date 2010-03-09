@@ -1876,6 +1876,8 @@ c Read past the itrc group (model assignment)
                done = .false.
             case ('ex', 'EX')
                done = .false.
+            case ('ou', 'OU')
+               done = .false.
             case('zb','ZB')
                done = .false.
                read(locunitnum,*) ireaddum
