@@ -589,6 +589,11 @@ c Brooks-Corey capillary and rlperms
 c constant rlperms
                read(inpt,*) irlpt(i),rp1f(i),rp2f(i),
      &              cp1f(i),cp3f(i)
+c     If the permeability was entered as a negative value, use log permeability
+               if (rp1f(i) .lt. 0.d0) 
+     &              rp1f(i) =  1.0d00/10.0d00**(abs(rp1f(i)))
+               if (rp2f(i) .lt. 0.d0) 
+     &              rp2f(i) =  1.0d00/10.0d00**(abs(rp2f(i)))
                cp2f(i)=0.0
                if((cp3f(i)-cp2f(i)) .gt. 0. ) then
                   cp1f(i) = cp1f(i) / (cp3f(i) - cp2f(i))
