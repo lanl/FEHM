@@ -2062,7 +2062,7 @@ c need porosity model
          izeolites = 1
       else if (macro .eq. 'strs') then
          call start_macro(inpt, locunitnum, macro)
-         read(locunitnum,*) istrs
+         read(locunitnum,*) istrs, ihms
          i = 0
          do
             read(locunitnum,'(a80)') dumstring
