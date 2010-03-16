@@ -218,43 +218,58 @@ c     col(kb,wcol(node))=node #s in that column
          do i=1,num_part
             if (ijkv(i) .ne. 0) then
                if(ps(ijkv(i)).le.0.) then
-                  n_porosi0 =  n_porosi0 +1
-                  if( n_porosi0.eq.1) then
-                     if(.not.allocated(wcol)) then
-                        call wtsi_column
-                     endif
-                  endif
-                  inp1=ijkv(i)
-                  itemp_col = wcol(inp1)
-                  do kb2 = 1, n_col(itemp_col)
-                     itemp_node=col(itemp_col,kb2)
-                     if(inp1.eq.itemp_node) then
-                        do kb = kb2+1, n_col(itemp_col)
-                           itemp_node=col(itemp_col,kb)
-                           if(ps(itemp_node).gt.0.) then
-                              ijkv(i) = itemp_node
-                              z1(i)=cord(itemp_node,3)-
-     &                             corn(itemp_node,3)
-                              goto 96969
-                           endif
-                        enddo
-c     did not find a porosity>0 node in the column. Do a neighbor search
-                        call tree_search_porosity(ijkv(i),5,flag_box)
-                        if(flag_box.gt.0) then
-                           ijkv(i)=flag_box
-                           z1(i) = cord(flag_box,3)
-                        else
-                           write(ierr,*)"error in ptrac1. can't find"
-                           write(ierr,*)'neighbor with porosity>0. ',
-     &                          'STOP.'
-                           stop
+                  if (ifree .ne. 0) then
+c     Only try to move particle if wtsi problem
+                     n_porosi0 =  n_porosi0 +1
+                     if( n_porosi0.eq.1) then
+                        if(.not.allocated(wcol)) then
+                           call wtsi_column
                         endif
                      endif
-                  enddo
-96969             continue
+                     inp1=ijkv(i)
+                     itemp_col = wcol(inp1)
+                     do kb2 = 1, n_col(itemp_col)
+                        itemp_node=col(itemp_col,kb2)
+                        if(inp1.eq.itemp_node) then
+                           do kb = kb2+1, n_col(itemp_col)
+                              itemp_node=col(itemp_col,kb)
+                              if(ps(itemp_node).gt.0.) then
+                                 ijkv(i) = itemp_node
+                                 z1(i)=cord(itemp_node,3)-
+     &                                corn(itemp_node,3)
+                                 goto 96969
+                              endif
+                           enddo
+c     did not find a porosity>0 node in the column. Do a neighbor search
+                           call tree_search_porosity(ijkv(i),5,flag_box)
+                           if(flag_box.gt.0) then
+                              ijkv(i)=flag_box
+                              z1(i) = cord(flag_box,3)
+                           else
+                              write(ierr, 222) i, ijkv(i) 
+                              ijkv(i) = 0
+                              istop(i) = 1                           
+c                           write(ierr,*)"error in ptrac1. can't find"
+c                           write(ierr,*)'neighbor with porosity>0. ',
+c     &                          'STOP.'
+c                           stop
+                           endif
+                        endif
+                     enddo
+96969                continue
+                  else
+c     Just remove the particle 
+                     write(ierr, 223) ijkv(i), i
+                     istop(i) = 1
+                     ijkv(i) = 0
+                  end if              
                endif
             end if
          enddo
+ 222     format ("Error in ptrac1: can't find neighbor with porosity>0",
+     &        ' for particle ', i8, 'at node ', i8)
+ 223     format ('Error in ptrac1: Invalid particle start ',
+     &        'at 0 porosity node ', i8, ' for particle number ', i8)
 c..............................................................
 
          if (ist .eq. 2) then
@@ -270,7 +285,8 @@ c zvd 06-21-07 Set x3,y3,z3 to initial particle location
             x3(i) = x1(i) + corn(ijkv(i), 1)
             y3(i) = y1(i) + corn(ijkv(i), 2)
             z3(i) = z1(i) + corn(ijkv(i), 3)
-         else
+c zvd 03-16-2010 Set x3, y3, z3 to initial particle location in insptr for ist = 1
+         else if (ist .ne. 1) then
             x3(i) = x1(i)
             y3(i) = y1(i)
             z3(i) = z1(i)
@@ -1152,7 +1168,8 @@ c      end if
 c     Check to see if particle should be excluded if out side the model domain
          if (exclude_particle) then
             if(x1(is).gt.ddxv(is) .or. x1(is).lt.0. .or. 
-     &           y1(is).gt.ddyv(is) .or. y1(is).lt.0.) then
+     &           y1(is).gt.ddyv(is) .or. y1(is).lt.0. .or.
+     &           ps(ijkv(is)) .le. 0.) then
                istop(is) = 1
                ijkv(is) = 0
             end if
@@ -1186,15 +1203,16 @@ c     ***** stop if initial state of any particle is invalid: ijkv=0 ****
       istop=0
       do i1=1,num_part
          if(ijkv(i1).eq.0) then
-            write(ierr,*) 'Initial state of particles is invalid'
-            write(ierr,*) 'Particle number ', i1
+            write(ierr, 224) i1
 !            call exit_ptrac1
             istop (i1)=1
          end if
       enddo
-      
+ 224  format ('Error in ptrac1: Initial state of particle is invalid',
+     &     ' for particle number ', i8)
+
 c     **** set istop=1 if point out of domain****
-      where(ijkv.eq.0) istop=1
+c      where(ijkv.eq.0) istop=1
       
 c     *** move initial points off element boundaries***
       ddxv=ddx(ijkv)

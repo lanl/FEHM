@@ -1198,6 +1198,9 @@ c      read(inpt,*) itm, ist
                part_id(i,2) = ijkv(i)
             end if
          enddo
+         x3 = x1
+         y3 = y1
+         z3 = z1
 ! Read past blank line at end of sptr macro input
          read(ifile,'(a80)') dummy_string
          if(.not. null1(dummy_string)) write (ierr, 110)
