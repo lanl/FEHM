@@ -54,6 +54,7 @@
       character*3 spnum
       character*4 trcsfx
       character*14 time_string, units
+      character*20 tmpname
       character*80 form_string, title_string
       character*14, allocatable :: var_string(:)
       character*150 fname, root
@@ -121,12 +122,23 @@ c Standard text
          trcsfx = '.trc'
       end select
 
-      units = 'Moles/kg water'
       do i = 1, ncpntprt
          fname = ''
          title_string = ''
          ic = cpntprt(i)
          nsp =  pcpnt(ic)
+         if (icns(i) .ne. -2) then
+            units = 'Moles/kg water'
+         else
+            units = 'Moles/kg vapor'
+            tmpname = cpntnam(ic)
+            if (tmpname(1:7) .eq. 'Aqueous') then
+               tmpname(1:5) = 'Vapor'
+               tmpname(6:17) = tmpname(8:19)
+               tmpname(18:20) = ''
+               cpntnam(ic) = tmpname
+            end if
+         end if
          title_string = cpntnam(ic)
          iunit = ishisc + nsp
          write(spnum, '(i3.3)') nsp

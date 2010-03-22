@@ -183,19 +183,23 @@ C***********************************************************************
       parameter (maxcon = 100)
       real*8 an(n0,nspeci)
       real*8 anv(n0,nspeci)
+      real*8 antmp(n0,nspeci)
       character*60, allocatable :: title(:)
       character*14 tailstring
       character*8 dual_char
       character*3 dls
       character*5 char_type
       character*60 fstring
+      character*20 tmpname
       character*30 cordname(3)
       character*150 :: string = '', tecstring = '', sharestring = ''
       real*8 write_array(maxcon)
-      integer i, ic, im, in, iv, ix, istep, j, n
+      integer i, ic, im, in, iv, ix, istep, j, k, n
       integer t1(maxcon),itotal2,write_total
       integer irxn_title
       real*8 complex_conc
+      real*8 minc, maxc
+      parameter (minc = 1.0d-20, maxc = 1.0d+20)
 
       save tecstring, sharestring
 
@@ -363,10 +367,23 @@ c---------------------------------------
          iaq = 0
          ivap = 0
          isolid = 0
+         antmp = an
          do i = 1, nspeci
             select case (icns(i))
             case (1, 2, -2)
                iaq = iaq + 1
+               tmpname = cpntnam(iaq)
+               if (icns(i) .eq. -2) then
+                  if (tmpname(1:7) .eq. 'Aqueous') then
+                     tmpname(1:5) = 'Vapor'
+                     tmpname(6:17) = tmpname(8:19)
+                     tmpname(18:20) = ''
+                     cpntnam(iaq) = tmpname
+                  end if
+                  do k = 1, n0
+                     antmp(k+add_dual,i) = anv(k+add_dual,i)
+                  end do
+               end if
                title(j) = trim(dual_char)//trim(cpntnam(iaq))
             case (0)
                isolid = isolid + 1
@@ -460,44 +477,44 @@ c     Zone loop
                if (altc(1:3) .eq. 'tec' .and. iocord .ne. 0) then
                   if (icall .eq. 1 .and. iozid .eq. 0) then
                      write(lu, fstring) (corz(i,j), j = icord1, icord2,
-     +                    icord3), i, (min(1.0d+20, max(1.0d-20,
-     +                    an(i+add_dual,n))), n=1,nspeci)
+     +                    icord3), i, (min(maxc, max(minc,
+     +                    antmp(i+add_dual,n))), n=1,nspeci)
                   else if (icall .eq. 1 .and. iozid .eq. 1) then
                      write(lu, fstring) (corz(i,j), j = icord1, icord2,
-     +                    icord3), i,izonef(i), (min(1.0d+20, 
-     +                    max(1.0d-20,an(i+add_dual,n))), n=1,nspeci)
+     +                    icord3), i,izonef(i), (min(maxc, 
+     +                    max(minc,antmp(i+add_dual,n))), n=1,nspeci)
                   else
-                     write(lu, fstring) i, (min(1.0d+20, max(1.0d-20,
-     +                    an(i+add_dual,n))), n=1,nspeci)
+                     write(lu, fstring) i, (min(maxc, max(minc,
+     +                    antmp(i+add_dual,n))), n=1,nspeci)
                   end if
 
                else if (altc(1:3) .eq. 'tec' .and. iozid .ne. 0) then
                   if (icall .eq. 1) then
-                     write(lu, fstring) i, izonef(i), (min(1.0d+20,
-     +                    max(1.0d-20, an(i+add_dual,n))), n=1,nspeci)
+                     write(lu, fstring) i, izonef(i), (min(maxc,
+     +                    max(minc, antmp(i+add_dual,n))), n=1,nspeci)
                   else
-                     write(lu, fstring) i, (min(1.0d+20, max(1.0d-20,
-     +                    an(i+add_dual,n))), n=1,nspeci)
+                     write(lu, fstring) i, (min(maxc, max(minc,
+     +                    antmp(i+add_dual,n))), n=1,nspeci)
                   end if
                   
                else if (iocord .ne. 0) then
                   if (iozid .eq. 0) then
                      write(lu, fstring) i, (corz(i,j), j = icord1, 
-     +                    icord2, icord3), (min(1.0d+20, max(1.0d-20,
-     +                    an(i+add_dual,n))), n=1,nspeci)
+     +                    icord2, icord3), (min(maxc, max(minc,
+     +                    antmp(i+add_dual,n))), n=1,nspeci)
                   else
                      write(lu, fstring) i, (corz(i,j), j = icord1,
-     +                    icord2, icord3), izonef(i), (min(1.0d+20, 
-     +                    max(1.0d-20, an(i+add_dual,n))), n=1,nspeci)
+     +                    icord2, icord3), izonef(i), (min(maxc, 
+     +                    max(minc, antmp(i+add_dual,n))), n=1,nspeci)
                   end if
 
                else
                   if (iozid .eq. 0) then
-                     write(lu, fstring) i,(min(1.0d+20, max(1.0d-20,
-     +                    an(i+add_dual,n))), n=1,nspeci)
+                     write(lu, fstring) i,(min(maxc, max(minc,
+     +                    antmp(i+add_dual,n))), n=1,nspeci)
                   else
-                     write(lu, fstring) i, izonef(i), (min(1.0d+20,
-     +                    max(1.0d-20, an(i+add_dual,n))), n=1,nspeci)
+                     write(lu, fstring) i, izonef(i), (min(maxc,
+     +                    max(minc, antmp(i+add_dual,n))), n=1,nspeci)
                   end if
                end if
  199        enddo

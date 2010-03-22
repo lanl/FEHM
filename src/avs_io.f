@@ -763,7 +763,7 @@ C No binary option
         if (iowt .ne. 0) then
            call namefile2(icall,lu,ioformat,wt_tail,0)
            isconwt = lu
-           if (ifree .eq. 0) then
+           if (ifree .ne. 0) then
               if (.not. allocated(col)) then
                  if (.not. allocated(izone_free_nodes)) then
                     allocate(izone_free_nodes(n0))
