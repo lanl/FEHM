@@ -197,7 +197,7 @@ c     write results to file
          end do
  304     format(3i15,3f15.3,i10)
          rewind(iswt)
-         deallocate (col)
+         deallocate (col, n_col)
       end if
 ! if file exists, read from the file, otherwise 
 ! we are re-reading so we minimize space allocation
