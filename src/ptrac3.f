@@ -754,7 +754,9 @@ c     write 0's to denote end of particle tracking info
 !         xwrite = 0.
 !         write(isptr2) iwrite, xwrite, iwrite
 !         write(isptr2) num_part
-      if (iprto .ne. 0) then
+c     Only output final location for normal sptr2, not for minimal output
+c      if (iprto .ne. 0) then
+      if (iprto .gt. 0) then
          path_done = .true.
          do np1 = 1, num_part
             current_node = abs(ijkv(np1))
@@ -836,7 +838,7 @@ C                                           fracture and matrix in dpdp model
       subroutine write_path_info
       implicit none
 
-      real*8 dist, sptr_time
+      real*8 dist, sptr_time, idum
       integer position_in_string, upcoming_node
       character*200 sptr_prop_values
 
@@ -859,19 +861,30 @@ c     use the upcoming or new node to get the correct coordinate
          ycoordw = y3(np1)
          zcoordw = z3(np1)
       end if
+c     tmp for debug
+      if (part_id(np1,1) .eq. 2064) then
+         idum = 1
+      end if
+
+c
 ! If this time and location have already been output, return
       if (path_done .and. ttpo(np1) .eq. ttp1(np1) .and.
      &     xcoordw .eq. xo(np1) .and. ycoordw .eq. yo(np1)
      &     .and. zcoordw .eq. zo(np1) .and. (current_node .eq. 
      &     lastnode(np1) .or. current_node .eq. 0)) return
       
+! If we are ahead of the current time don't output location unless
+! we are at the end of the simulation and output is requested
+      if (sptr_time .gt. tims .and. .not. output_end) return
+      if (sptr_time .gt. days .and. days .lt. tims) return
+
       if (iprto .eq. -1) then
          if(upcoming_node.ne.current_node) then
             if (xyz_flag) then
-               write(isptr2,9002) np1,sptr_time,current_node,
+               write(isptr2,9002) part_id(np1,1),sptr_time,current_node,
      &              xcoordw, ycoordw, zcoordw    
             else 
-               write(isptr2,9001) np1,sptr_time,current_node
+               write(isptr2,9001) part_id(np1,1),sptr_time,current_node
             end if
 ! Save values just written 
             count_sptr2=count_sptr2+1
@@ -881,16 +894,16 @@ c     use the upcoming or new node to get the correct coordinate
             zo(np1) = zcoordw
             call flush (isptr2)
          else if (path_done .and. xyz_flag) then
-            write(isptr2,9002) np1,sptr_time,current_node,
+            write(isptr2,9002) part_id(np1,1),sptr_time,current_node,
      &              xcoordw, ycoordw, zcoordw    
          end if
       else if (iprto.eq.-2 .or. iprto.eq.-3) then
          if(upcoming_node.ne.current_node) then
             if (xyz_flag) then
-               write(isptr2) np1,sptr_time,current_node,
+               write(isptr2) part_id(np1,1),sptr_time,current_node,
      &              xcoordw, ycoordw, zcoordw 
             else   
-               write(isptr2) np1,sptr_time,current_node
+               write(isptr2) part_id(np1,1),sptr_time,current_node
             end if
 ! Save values just written 
             count_sptr2=count_sptr2+1
@@ -900,15 +913,11 @@ c     use the upcoming or new node to get the correct coordinate
             zo(np1) = zcoordw
             call flush (isptr2)
          else if (path_done .and. xyz_flag) then
-               write(isptr2) np1,sptr_time,current_node,
+               write(isptr2) part_id(np1,1),sptr_time,current_node,
      &              xcoordw, ycoordw, zcoordw 
          end if
       else
 
-! If we are ahead of the current time don't output location unless
-! we are at the end of the simulation and output is requested
-         if (sptr_time .gt. tims .and. .not. output_end) return
-         if (sptr_time .gt. days .and. days .lt. tims) return
          
 ! Check to see if particle has moved enough to be output
          dist = dsqrt ((xcoordw - xo(np1))**2 +  

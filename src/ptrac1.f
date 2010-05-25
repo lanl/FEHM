@@ -638,10 +638,10 @@ c ZVD modified minimal write option to include coordinates 12-08-2005
                zcoordw = z1(np1) + corn(current_node,3)
                sptr_time = ttp1(np1)
                if (iprto .eq. -1) then
-                  write(isptr2,105) np1,sptr_time,current_node,
-     &                 xcoordw, ycoordw, zcoordw
+                  write(isptr2,105) part_id(np1,1),sptr_time,
+     &                 current_node,xcoordw, ycoordw, zcoordw
                else
-                  write (isptr2) np1,sptr_time,current_node,
+                  write (isptr2) part_id(np1,1),sptr_time,current_node,
      &                 xcoordw, ycoordw, zcoordw 
                end if
             end do
@@ -666,9 +666,10 @@ c     initial node is set to 0
                end if
                sptr_time = ttp1(np1)
                if (iprto .eq. -1) then
-                  write(isptr2,105) np1,sptr_time,current_node
+                  write(isptr2,105) part_id(np1,1),sptr_time,
+     &                 current_node
                else
-                  write (isptr2) np1,sptr_time,current_node
+                  write (isptr2) part_id(np1,1),sptr_time,current_node
                end if
             end do
          end if            
@@ -1372,8 +1373,8 @@ c handle OMR nodes on exterior boundaries, including omr-cliff nodes
                if(iboulist(i,ibou).eq.la) then
 c     node i is an OMR node on an exterior boundary, with the exterior in 
 c     the la direction. set gotcord =cord of i
-                  if (irray(i, l) .lt. 0) then
-                     kb = irray(i, l)
+                  if (irray(i, la) .lt. 0) then
+                     kb = irray(i, la)
                      gotcord = cord (abs(kb), l)
                   else
                      gotcord=cord(i,l)
