@@ -82,8 +82,9 @@ C***********************************************************************
       integer j, jd, jdd, je, kb, kbn, kbns
       integer na, nact, nactp1, nb, neqp1, nopc, nrest, nrhs
       integer maxsolve
+      integer ncon(*),nop(*)
       real*8  epn, omega
-      real*8  a(*),b(*),ncon(*),nop(*),r(*),sorthm(*)
+      real*8  a(*),b(*),r(*),sorthm(*)
       real*8  xtemp(*),dum(*),rw(*),piv(*),xx(*)
       real*8  h(*),c(*),ss(*),g(*),y(*)
       real*8  an(*),bn(*),resid(*),delx(*),dum1(*)
