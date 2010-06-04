@@ -527,16 +527,20 @@ C**********************************************************************
       real*8 h_const, dvap_conc
       integer mi,mim,ndummy,iret,i,iz,jj,ij,ispecies,npt_subst
       integer n_node_sets,i_node_set, ja, jb, jc
-      logical null1, readflag
+      logical null1, readflag, alt_zone, found, mole_input
       character*5 user_macro
+      character*4 zmacro
       character*3 nstring
       character*80 input_msg
+      character*100 zone_file
       integer msg(16)
       integer nwds
       real*8 xmsg(16)
       integer imsg(16)
       character*32 cmsg(16)
       integer kz,iz2,iz2p,i1,i2,ipivt,ii,sehindexl,sehindexv,neqp1
+      integer izf, nin, num_nodes, nend, znum
+      integer, allocatable :: node_list(:)
       real*8 tempx,tempy,tempz,templength
       real*8 cord1x,cord1y,cord2x,cord2y
       real*8 dispxavw,dispyavw,dispzavw,cord1z,cord2z,x
@@ -546,8 +550,9 @@ C**********************************************************************
       real*8 ctmp, ctol, andum, antmp, anvtmp, mvolv
       real*8, allocatable :: rvol(:), lvol(:), vvol(:)
       integer, allocatable :: hflag(:)
+      logical, allocatable :: seen(:)
 
-      save mfile
+      save mfile, mole_input
 
       ctol = 1.d-06
       iret = 0
@@ -862,6 +867,7 @@ c Define maximum saturation for vapor or Henry's species,
 c currently only a single value can be defined for all vapor/Henry's 
 c species so it only needs to be entered once
          strac_max = 0.99
+         mole_input = .false.
          do nsp=1,nspeci
             npn=npt(nsp)
 !            read(inpt,*) icns(nsp)
@@ -1250,35 +1256,50 @@ CPS       ENDIF
                end if
             endif
 
-
-c zvd 22-Jul-09
+            read (inpt, '(a80)') input_msg
+            if (input_msg(1:5) .eq. 'moles') then
+c zvd 22-Jul-09, 12-Apr-10
 c Modify for option to read total moles as input and compute moles/kg
+c if keyword moles is found (only entered for first species)
 c for nodal volume or zone volume (need rolf and sx1 defined)
 c (read group 15 data and write to a temporary file)
-            if (nsp .eq. 1) then
-               mfile = open_file ('moles_in.tmp', 'unknown')
+c Also, need to be able to read zone definitions on the fly to allow 
+c multiple sources to be accumulated at the same node for overlapping zones
+               mole_input = .true.
+            else
+               backspace inpt
             end if
-            write (mfile, *) nsp
-            do
-               read (inpt, '(a80)') input_msg
-               if (null1(input_msg)) then
-                  write (mfile, *)
-                  exit 
+            if (mole_input) then
+               if (nsp .eq. 1) then
+                  mfile = open_file ('moles_in.tmp', 'unknown')
                end if
-               write (mfile, '(a)') trim(input_msg)
-            end do
-c            narrays = 1
-c            itype(1) = 8
-c            default(1) = an0
-c            macro = "trac"
-c            igroup = 15
-c            call initdata2( inpt, ischk, n0, narrays,
-c     2           itype, default, macroread(5), macro, igroup, 
-c     3           ireturn, r8_1=an(1+(nsp-1)*n0:nsp*n0) )
+               write (mfile, *) nsp
+               do
+                  read (inpt, '(a80)') input_msg
+                  if (null1(input_msg)) then
+                     write (mfile, *)
+                     if (nsp .eq. nspeci) close (mfile)
+                     exit 
+                  end if
+                  write (mfile, '(a)') trim(input_msg)
+               end do
+            else
+c     Input is in moles/kg fluid
+c     read the original way
+               narrays = 1
+               itype(1) = 8
+               default(1) = an0
+               macro = "trac"
+               igroup = 15
+               call initdata2( inpt, ischk, n0, narrays,
+     2              itype, default, macroread(5), macro, igroup, 
+     3              ireturn, r8_1=an(1+(nsp-1)*n0:nsp*n0) )
 
-c            do ij = 1, n0
-c               anlo(ij+npn)=an(ij+npn)
-c            end do
+               do ij = 1, n0
+                  anlo(ij+npn)=an(ij+npn)
+               end do
+
+            end if
 
             narrays = 3
             itype(1) = 8
@@ -1327,50 +1348,117 @@ CPS ENDIF the data are to be read in on this pass
 CPS IF this call to the routine is for initialization 
 CPS
       if( iz .lt. 0 ) then
-c zvd 22-Jul-09
-c Modify for option to read total moles as input and compute moles/kg
-c for nodal volume or zone volume
          allocate (hflag(n7))
          hflag = 0
-         rewind (mfile)
-         do nsp = 1, nspeci
-            if (.not. conc_read(nsp)) then
-               read (mfile, *) idum
-               if (idum .ne. nsp) then
-                  stop
+         if (mole_input) then
+c     zvd 22-Jul-09
+c     Modify for option to read total moles as input and compute moles/kg
+c     for nodal volume or zone volume
+            allocate (seen(n7))
+            alt_zone = .false.
+            mfile = open_file ('moles_in.tmp', 'old')
+            if (.not. allocated(lvol)) 
+     &           allocate(lvol(n0), rvol(n0), vvol(n0))
+c     Compute rock, liquid, and vapor volume for each node
+            lvol = 0.
+            rvol = 0.
+            vvol = 0.
+            do i = 1, n0
+               rvol(i) = sx1(i)*denr(i)*(1-ps_trac(i))
+               if (irdof .ne. 13 .or. ifree.ne.0) then
+                  sdum = s(i)
+               else
+                  sdum = 1.0
                end if
-               npn=npt(nsp)
-               do
-                  read (mfile, '(a80)') input_msg
-                  if (null1(input_msg)) exit
-                  read (input_msg, *) ja, jb, jc, andum
-                  if ( ja .eq. 1 .and. jb .eq. 0 .and. jc .eq. 0 ) then
-                     jb = n0
-                     jc = 1
+               lvol(i) = sx1(i)*sdum*rolf(i)*ps_trac(i)
+               vvol(i) = sx1(i)*(1 - sdum)*rovf(i)*ps_trac(i) 
+            end do
+
+            do nsp = 1, nspeci
+               if (.not. conc_read(nsp)) then
+                  read (mfile, *) idum
+                  if (idum .ne. nsp) then
+c     We didn't save input for this species, this is an error
+                     write (ierr, *) 
+     &                    'Missing mole input ddata for species ', nsp
+                     stop
                   end if
-                  if (andum .lt. 0.d0) then
-                     if (.not. allocated(lvol)) 
-     &                    allocate(lvol(n0), rvol(n0), vvol(n0))
+                  npn=npt(nsp)
+                  do
+                     read (mfile, '(a80)') input_msg
+                     if (null1(input_msg)) exit
+                     if (input_msg(1:) .eq. 'file') then
+c     Read name of alternate zone file
+                        read (mfile, '(a100)') zone_file
+                        izf = open_file(zone_file, 'unknown')
+                        read (mfile, '(a80)') input_msg
+                        alt_zone = .true.
+                     else if (input_msg(1:6) .eq. 'altend') then
+c     Use currently defined zone list (default)
+                        alt_zone = .false.
+                     end if
+                     read (input_msg, *) ja, jb, jc, andum
+                     if ( ja .eq. 1 .and. jb .eq. 0 .and. jc .eq. 0 ) 
+     &                    then
+                        jb = n0
+                        jc = 1
+                     end if
+
 c     Input is total moles
-                     lvol = 0.
-                     rvol = 0.
-                     vvol = 0.
                      if (ja .lt. 0) then
+c     Using zone definitions
                         mvol = 0.d0
                         mvolv = 0.d0
-                        do i = 1, n0
-                           if (izonef(i) .eq. abs (ja) .and. 
-     &                          ps_trac(i) .gt. 0.) then
-c     Only include if porosity > 0
-                              rvol(i) = sx1(i)*denr(i)*(1-ps_trac(i))
-                              if (irdof .ne. 13 .or. ifree.ne.0) then
-                                 sdum = s(i)
-                              else
-                                 sdum = 1.0
+                        if (alt_zone) then
+c     Assumes nnum style zone input
+                           num_nodes = 0
+                           rewind (izf)
+                           read (izf, '(a4)', end = 77) zmacro
+                           if (zmacro(1:3) .ne. 'zon') then
+                              write (ierr, *) 
+     &                             'Not a zone file, stopping'
+                           end if
+                           do
+                              read (izf, *, end = 77) znum
+                              read (izf, '(a4)') zmacro
+                              if (zmacro .ne. 'nnum') then
+                                 write (ierr, *) 
+     &                                'Wrong zone file format, stopping'
+                                 stop
                               end if
-                              lvol(i) = sx1(i)*sdum*rolf(i)*ps_trac(i)
-                              vvol(i) = sx1(i)*(1 - sdum)*rovf(i)*
-     &                           ps_trac(i) 
+                              read (izf, *) num_nodes
+                              if (num_nodes .gt. 0) then
+                                 if (znum .eq. abs(ja)) then
+                                    allocate(node_list(num_nodes))
+                                    read (izf, *) (node_list(i), i = 1, 
+     &                                   num_nodes)
+                                    exit
+                                 else
+                                    read (izf, *) (rdum1, i = 1, 
+     &                                   num_nodes)
+                                    num_nodes = 0
+                                 end if
+                              end if
+                           end do
+ 77                        nend = num_nodes
+                        else
+                           nend = n0
+                        end if
+c     Find the total volume for current zone to apportion moles
+                        do nin = 1, nend
+                           if (alt_zone) then
+                              i = node_list(nin)
+                              found = .true.
+                           else
+                              i = nin
+                              if (izonef(nin) .eq. abs (ja)) then
+                                 found = .true.
+                              else
+                                 found = .false.
+                              end if
+                           end if
+                           if (found .and. ps_trac(i) .gt. 0.) then
+c     Only include if porosity > 0
                               if (icns(nsp) .eq. 0) then
                                  mvol = mvol + rvol(i)
                               else if (icns(nsp) .eq. 1) then
@@ -1405,9 +1493,21 @@ c     Henry's law species
                               end if
                            end if
                         end do
-                        do i = 1, n0
-                           if (izonef(i) .eq. abs (ja) .and. 
-     &                          ps_trac(i) .gt. 0.) then
+                        found = .false.
+c     Apportion mass to each node in zone
+                        do nin = 1, nend
+                           if (alt_zone) then
+                              i = node_list(nin)
+                              found = .true.
+                           else
+                              i = nin
+                              if (izonef(nin) .eq. abs (ja)) then
+                                 found = .true.
+                              else
+                                 found = .false.
+                              end if
+                           end if
+                           if (found .and. ps_trac(i) .gt. 0.) then
 c     Only include if porosity > 0
                               mi = i + npn
                               hflag(mi) = 1
@@ -1436,70 +1536,21 @@ c     Henry's law species
                                  dvap_conc = (mw_water*h_const) /
      2                                (phi(i)*avgmolwt(i))
                               end if
-
-                              an(mi) = abs(andum) / (mvol + mvolv)
-                              rdum1 = an(mi) * (lvol(i) +
-     &                             vvol(i) * dvap_conc)
-                              sctmp = 0.
-c Account for sorption (moles input is total)
-                              if (iadsfl(nsp,itrc(mi)) .ne. 0 .or.
-     &                             iadsfv(nsp,itrc(mi)) .ne. 0 ) then
-                                 ctmp = rdum1
-                                 antmp = an(mi)
-                                 do
-                                    if (icns(nsp) .gt. 0) then
-                                       sctmp = (denr(i) * a1adfl(nsp,
-     1                                      itrc(mi)) * antmp**betadfl
-     2                                      (nsp,itrc(mi)) / (1.0 + 
-     3                                      a2adfl(nsp,itrc(mi)) * antmp
-     4                                      **betadfl(nsp,itrc(mi)) ))
-                                    else if (icns(nsp) .lt. 0) then
-                                       if (icns(nsp) .eq. -2) then
-                                          anvtmp = antmp * dvap_conc
-                                       else
-                                          anvtmp = antmp
-                                       end if
-                                       sctmp = (denr(i)*a1adfv(nsp,
-     1                                      itrc(mi)) * anvtmp**betadfv
-     2                                      (nsp,itrc(mi)) / (1.0 + 
-     3                                      a2adfv(nsp,itrc(mi)) *anvtmp
-     4                                      **betadfv(nsp,itrc(mi)) ))
-                                    end if
-                                    sctmp = sctmp * sx1(i)
-                                    rdum2 = ctmp + sctmp
-                                    if (abs(rdum1 - rdum2) .le. ctol) 
-     &                                   then
-                                       an(mi) = antmp
-                                       exit
-                                    end if
-                                    if (rdum2 .lt. rdum1) then
-                                       ctmp = ctmp + (rdum1 - rdum2)
-                                       antmp = ctmp / (lvol(i) + 
-     &                                      vvol(i) * dvap_conc)
-                                    else
-                                       frac = rdum1/ rdum2
-                                       antmp = antmp * frac
-                                       ctmp = antmp * (lvol(i) 
-     &                                      + vvol(i) * dvap_conc)
-                                    end if 
-                                 end do
+                              if (.not. seen(mi)) then
+                                 an(mi) = abs(andum) / (mvol + mvolv)
+                                 seen(mi) = .true.
+                              else
+                                 an(mi) = an(mi) + abs(andum) / 
+     &                                (mvol + mvolv)
                               end if
                            end if
                         end do
-                     else
+                        if (allocated(node_list)) deallocate (node_list)
+                     else   
                         do i = ja, jb, jc
                            mi = i + npn
                            hflag(mi) = 1
                            if (ps_trac(i) .ne. 0) then
-                              rvol(i) = sx1(i)*denr(i)*(1-ps_trac(i))
-                              if (irdof .ne. 13 .or. ifree.ne.0) then
-                                 sdum = s(i)
-                              else
-                                 sdum = 1.0
-                              end if
-                              lvol(i) = sx1(i)*sdum*rolf(i)*ps_trac(i)
-                              vvol(i) = sx1(i)*(1 - sdum)*rovf(i)*
-     &                             ps_trac(i)
                               dvap_conc = 0.
                               if ( abs(icns(nsp)) .eq. 2 ) then
 c     Henry's law species
@@ -1525,81 +1576,77 @@ c     Henry's law species
                                  dvap_conc = (mw_water*h_const) /
      2                                (phi(i)*avgmolwt(i))
                               end if
-                              rdum1 = abs(andum)
-                              an(mi) = abs(andum) / (lvol(i) + 
-     &                             vvol(i) * dvap_conc)
-                              sctmp = 0.
-c Account for sorption (moles input is total)
-                              if (iadsfl(nsp,itrc(mi)) .ne. 0 .or.
-     &                             iadsfv(nsp,itrc(mi)) .ne. 0) then
-                                 ctmp = abs(rdum1)
-                                 antmp = an(mi)
-                                 do
-                                    if (icns(nsp) .gt. 0) then
-                                       sctmp = (denr(i) * a1adfl(nsp,
-     1                                      itrc(mi)) * antmp**betadfl
-     2                                      (nsp,itrc(mi)) / (1.0 + 
-     3                                      a2adfl(nsp,itrc(mi)) * antmp
-     4                                      **betadfl(nsp,itrc(mi)) ))
-                                    else if (icns(nsp) .lt. 0) then
-                                       if (icns(nsp) .eq. -2) then
-                                          anvtmp = antmp * dvap_conc
-                                       else
-                                          anvtmp = antmp
-                                       end if
-                                       sctmp = (denr(i)*a1adfv(nsp,
-     1                                      itrc(mi)) * anvtmp**betadfv
-     2                                      (nsp,itrc(mi)) / (1.0 + 
-     3                                      a2adfv(nsp,itrc(mi)) *anvtmp
-     4                                      **betadfv(nsp,itrc(mi)) ))
-                                    end if
-                                    sctmp = sctmp * sx1(i)
-                                    rdum2 = ctmp + sctmp
-                                    if (abs (rdum1 - rdum2) .le. ctol) 
-     &                                   then
-                                       an(mi) = antmp
-                                       exit
-                                    end if
-                                    if (rdum2 .lt. rdum1) then
-                                       ctmp = ctmp + (rdum1 - rdum2)/2.
-                                       antmp = ctmp / (lvol(i) + 
-     &                                      vvol(i) * dvap_conc)
-                                    else
-                                       frac = rdum1/ rdum2
-                                       antmp = antmp * frac
-                                       ctmp = antmp * (lvol(i) 
-     &                                      + vvol(i) * dvap_conc)
-                                    end if 
-                                 end do
+                              if (.not. seen(mi)) then
+                                 seen(mi) = .true.
+                                 an(mi) = abs(andum) / (lvol(i) + 
+     &                                vvol(i) * dvap_conc)
+                              else
+                                 an(mi) = an(mi) + abs(andum) / 
+     &                                (lvol(i) + vvol(i) * dvap_conc)
                               end if
                            end if
                         end do
                      end if
-                  else
-c     Input is in moles/kg fluid
-                     if ( ja .gt. 0) then
-                        do i = ja, jb, jc
-                           hflag(i + npn) = 0
-                           an(i + npn) = andum
-                        end do
-                     else
-                        do i = 1, n0
-                           if (izonef(i) .eq. abs(ja)) then
-                              hflag(i + npn) = 0
-                              an(i + npn) = andum
-                           end if
-                        end do
+                  end do
+
+                  do i = 1, n0
+c     Account for sorption (moles input is total)
+                     mi = i + npn
+                     if (seen(mi)) then
+                        rdum1 = an(mi) * (lvol(i) +
+     &                       vvol(i) * dvap_conc)
+                        sctmp = 0.
+                        if (iadsfl(nsp,itrc(mi)) .ne. 0 .or.
+     &                       iadsfv(nsp,itrc(mi)) .ne. 0 ) then
+                           ctmp = rdum1
+                           antmp = an(mi)
+                           do
+                              if (icns(nsp) .gt. 0) then
+                                 sctmp = (denr(i) * a1adfl(nsp,
+     1                                itrc(mi)) * antmp**betadfl
+     2                                (nsp,itrc(mi)) / (1.0 + 
+     3                                a2adfl(nsp,itrc(mi)) * antmp
+     4                                **betadfl(nsp,itrc(mi)) ))
+                              else if (icns(nsp) .lt. 0) then
+                                 if (icns(nsp) .eq. -2) then
+                                    anvtmp = antmp * dvap_conc
+                                 else
+                                    anvtmp = antmp
+                                 end if
+                                 sctmp = (denr(i)*a1adfv(nsp,
+     1                                itrc(mi)) * anvtmp**betadfv
+     2                                (nsp,itrc(mi)) / (1.0 + 
+     3                                a2adfv(nsp,itrc(mi)) *anvtmp
+     4                                **betadfv(nsp,itrc(mi)) ))
+                              end if
+                              sctmp = sctmp * sx1(i)
+                              rdum2 = ctmp + sctmp
+                              if (abs(rdum1 - rdum2) .le. ctol) 
+     &                             then
+                                 an(mi) = antmp
+                                 exit
+                              end if
+                              if (rdum2 .lt. rdum1) then
+                                 ctmp = ctmp + (rdum1 - rdum2)
+                                 antmp = ctmp / (lvol(i) + 
+     &                                vvol(i) * dvap_conc)
+                              else
+                                 frac = rdum1/ rdum2
+                                 antmp = antmp * frac
+                                 ctmp = antmp * (lvol(i) 
+     &                                + vvol(i) * dvap_conc)
+                              end if 
+                           end do
+                        end if
                      end if
-                  end if
-               end do
-
-               do ij = 1, n0
-                  anlo(ij+npn)=an(ij+npn)
-               end do
-            end if
-         end do
-         close (mfile, status = 'delete')
-
+                  end do
+                  do ij = 1, n0
+                     anlo(ij+npn)=an(ij+npn)
+                  end do
+               end if
+            end do
+            close (mfile, status = 'delete')
+         end if
 c
 c seh
 CC Check for keyword specifying to use same dispersivity and diffusivity
@@ -1936,7 +1983,7 @@ c to accomodate new output options
 c         call plotc1(0,0)
       end if
 
-      if (allocated(lvol)) deallocate(lvol,rvol,vvol)
+      if (allocated(lvol)) deallocate(lvol,rvol,vvol,hflag,seen)
 
       return
 
