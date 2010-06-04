@@ -522,7 +522,11 @@
       real*8, allocatable ::  anxz(:) 
       real*8, allocatable ::  anyz(:) 
 !     GAZ 3-19-00 rlp_fac residual rel perm
-      real*8, allocatable ::  rlp_fac(:) 
+      real*8, allocatable ::  rlp_fac(:)
+!     ZVD 09-Apr-2010 fperm for use with rlp
+      real*8, allocatable ::  xfperm(:)
+      real*8, allocatable ::  yfperm(:)
+      real*8, allocatable ::  zfperm(:)
       real*8, allocatable ::  ps(:)
       real*8, allocatable ::  ps_trac(:)
       real*8, allocatable ::  qflux(:) 

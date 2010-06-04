@@ -455,7 +455,8 @@ c
       real(8) :: rl = 1., rv = 1., drls = 0., drvs = 0.
       real*8 drls1,drvs1,akf,akm,porf,permb,sl
       real*8 smcutm,smcutf,alpham,alamdam,facf
-      real*8 rpa1, rpa2, rpa3, rpa4, rpa5      
+      real*8 rpa1, rpa2, rpa3, rpa4, rpa5
+      real*8, allocatable :: xfptmp(:), yfptmp(:), zfptmp(:)
       logical null1,ex
       integer ireg0
       save ireg,ireg0
@@ -850,6 +851,34 @@ c     read in nodal capillary type
                endif
             enddo
          endif
+
+         if (.not. allocated(xfperm)) then
+            allocate(xfperm(nrlp),yfperm(nrlp),zfperm(nrlp))
+            xfperm = 1.d0
+            yfperm = 1.d0
+            zfperm = 1.d0
+         else if (fperm_flag) then
+c     Assign values from temporary fperm arrays
+            allocate (xfptmp(nrlp), yfptmp(nrlp), zfptmp(nrlp))
+            xfptmp = 1.d0
+            yfptmp = 1.d0
+            zfptmp = 1.d0
+            do mi = 1, n0
+               ir = irlp(mi)
+               if (ir  .ne. 0) then
+                  xfptmp(ir) = xfperm(mi)
+                  yfptmp(ir) = yfperm(mi)
+                  zfptmp(ir) = zfperm(mi)
+               end if
+            end do
+            deallocate (xfperm, yfperm, zfperm)
+            allocate(xfperm(nrlp),yfperm(nrlp),zfperm(nrlp))
+            xfperm = xfptmp 
+            yfperm = yfptmp
+            zfperm =  zfptmp 
+            deallocate (xfptmp, yfptmp, zfptmp)
+         end if
+            
  100     format ("cannot have anisotropic perms for rlp model 4")
  110     format ("or rlp model 7 with equivalent continuum")
  120     format ("*********************************************")
@@ -1109,14 +1138,16 @@ c     upstream weighting of intrinsic permeability
                      permb = 1.0/darcyf
 c     set saturated permeabilities(assume isotropic)
                      pnx(mi) = permb*1.e+6
-                     pnz(mi) = pnx(mi)
-                     pny(mi) = pnx(mi) 
+                     pnz(mi) = pnx(mi) * zfperm(it)
+                     pny(mi) = pnx(mi) * yfperm(it)
+                     pnx(mi) = pnx(mi) * xfperm(it)
                   else
 c     set saturated permeabilities(assume isotropic)
                      if(porf.ge.0.0) then
                         pnx(mi) = permb*1.e+6
-                        pny(mi) = pnx(mi)
-                        pnz(mi) = pnx(mi)
+                        pny(mi) = pnx(mi) * yfperm(it)
+                        pnz(mi) = pnx(mi) * zfperm(it)
+                        pnx(mi) = pnx(mi) * xfperm(it)
                      endif
                   endif
 c     set capillary pressures
@@ -1192,14 +1223,16 @@ c     upstream weighting of intrinsic permeability
                      permb = 1.0/darcyf
 c     set saturated permeabilities(assume isotropic)
                      pnx(mi) = permb*1.e+6
-                     pnz(mi) = pnx(mi)
-                     pny(mi) = pnx(mi) 
+                     pnz(mi) = pnx(mi) * zfperm(it)
+                     pny(mi) = pnx(mi) * yfperm(it)
+                     pnx(mi) = pnx(mi) * xfperm(it)
                   else
 c     set saturated permeabilities(assume isotropic)
                      if(porf.ge.0.0) then
                         pnx(mi) = permb*1.e+6
-                        pny(mi) = pnx(mi)
-                        pnz(mi) = pnx(mi)
+                        pny(mi) = pnx(mi) * yfperm(it)
+                        pnz(mi) = pnx(mi) * zfperm(it)
+                        pnx(mi) = pnx(mi) * xfperm(it)
                      endif
                   endif
 c     set capillary pressures
@@ -1282,14 +1315,16 @@ c     upstream weighting of intrinsic permeability
                      permb = 1.0/darcyf
 c     set saturated permeabilities(assume isotropic)
                      pnx(mi) = permb*1.e+6
-                     pnz(mi) = pnx(mi)
-                     pny(mi) = pnx(mi) 
+                     pnz(mi) = pnx(mi) * zfperm(it)
+                     pny(mi) = pnx(mi) * yfperm(it)
+                     pnx(mi) = pnx(mi) * xfperm(it)
                   else
 c     set saturated permeabilities(assume isotropic)
                      if(porf.ge.0.0) then
                         pnx(mi) = permb*1.e+6
-                        pny(mi) = pnx(mi)
-                        pnz(mi) = pnx(mi)
+                        pny(mi) = pnx(mi) * yfperm(it)
+                        pnz(mi) = pnx(mi) * zfperm(it)
+                        pnx(mi) = pnx(mi) * xfperm(it)
                      endif
                   endif
 c     set capillary pressures
