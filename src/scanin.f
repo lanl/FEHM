@@ -421,6 +421,7 @@ c zvd 17-Aug-09 move boun flag initializations here
       omr_flag = .false.
       save_omr = .false.
       sptr_flag = .false.
+      fperm_flag = .false.
 
  10   continue
       filename = ''
@@ -848,8 +849,12 @@ c**** dual porosity/dual permeability problem ****
       else if(macro .eq. 'dual') then
          idualp = 1
          
+      else if (macro .eq. 'fper') then
+c need to know if fperms are being used
+         fperm_flag = .true.
+
       else if (macro .eq. 'frlp') then
-c need to if rel perm factor is used
+c need to know if rel perm factor is used
          irlp_fac = 1
       else if (macro .eq. 'flxo') then
          iflxc = iflxc +1
