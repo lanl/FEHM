@@ -429,17 +429,19 @@ c            if( iz .eq. 0 ) then
                   endif
                enddo
                
-               if (iout .ne. 0) 
-     &              write(iout,6020)  cm0(nsp),cm(nsp),abs(qcin(nsp)),
-     &              sehratein,qcout(nsp),sehrateout,-qcrxn(nsp),cbal
-               if ( iatty .gt. 0 )
-     &              write(iatty,6020) cm0(nsp),cm(nsp),abs(qcin(nsp)),
-     &              sehratein,qcout(nsp),sehrateout,-qcrxn(nsp),cbal
+               if (iout .ne. 0) then
+                  if (m .eq. 0) write (iout, 6000) nsp
+                  write(iout,6020)  cm0(nsp),cm(nsp),abs(qcin(nsp)),
+     &                 sehratein,qcout(nsp),sehrateout,-qcrxn(nsp),cbal
+               end if
+               if ( iatty .gt. 0 ) then
+                  if (m .eq. 0) write (iatty, 6000) nsp
+                  write(iatty,6020) cm0(nsp),cm(nsp),abs(qcin(nsp)),
+     &                 sehratein,qcout(nsp),sehrateout,-qcrxn(nsp),cbal
+               end if
             end if
          end do
       endif
-
-
 
       return
  6000 format(/,1x,'Solute output information, species number ',i5)
