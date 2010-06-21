@@ -213,6 +213,7 @@ c read in "sub macros" for well
 100     continue
         read (inpt, '(a80)') wdd1
         if (wdd1(1:9) .eq. 'wellend') go to 200 
+        if (wdd1(1:9) .eq. '       ') go to 200 
         if (wdd1(1:1) .eq. '#') go to 40 
         read (wdd1, '(a10)') macro1
      	  write(iout, 50) macro1

@@ -409,7 +409,7 @@ C**********************************************************************
       real*8 psatmn
       real*8 eosmg
       real*8 eosml
-      real*8 eostol
+      real*8 eostol 
       real*8 stepl
       real*8 pcimin
       real*8 phase_mult
@@ -417,13 +417,13 @@ C**********************************************************************
       real*8 satml 
       parameter(psatmn=0.0001)
       parameter(eosmg=1.0001)
-      parameter(eosml=1.0)
+      parameter(eosml=0.99)
       parameter(eostol=0.0001)
-      parameter(stepl=1.)
+      parameter(stepl=0.9)
       parameter(pcimin=0.0)
       parameter(phase_mult=1.00)
       parameter(phase_sat=1.0d-9)
-      parameter(satml=1.0d-5)
+      parameter(satml=1.0d-4)
 c ich_max should be odd or even but don't know which
 c      parameter(ich_max = 2)
       real*8 psatl
@@ -462,6 +462,9 @@ c these are maybe best for geothermal systems
 c
 c determine variable set
 c
+      if(nr_stop.ne.0.and.iad.ge.1.and.ifl.eq.1)then
+       call nr_stop_ctr(1)
+      endif
       if(ifl.eq.0) then
 c
 c     evaluate eos status of each node. change status as prescribed
@@ -781,5 +784,6 @@ c RJP 04/10/07 added CO2 part
          endif
 c
       endif
+
       return
       end

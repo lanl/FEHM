@@ -1232,10 +1232,8 @@ c     recall jacobian information
             do jz=1,nsl
                ij=knum+jz
                bcoef(neu,ij)=bcoef(neu,ij)+
-c     &              w(nga,k)*(a11*wx(nga,jz)+a12*wy(nga,jz)+a13*
-c     &              wz(nga,jz))*dnga
-     &              w(nga,jz)*(a11*wx(nga,k)+a12*wy(nga,k)+a13*
-     &              wz(nga,k))*dnga
+     &              w(nga,k)*(a11*wx(nga,jz)+a12*wy(nga,jz)+a13*
+     &              wz(nga,jz))*dnga
             enddo
          enddo
       endif
@@ -1251,10 +1249,8 @@ c     recall jacobian information
             do jz=1,nsl
                ij=knum+jz
                bcoef(neu,ij)=bcoef(neu,ij)+
-c     &              w(nga,k)*(a21*wx(nga,jz)+a22*wy(nga,jz)+a23*
-c     &              wz(nga,jz))*dnga
-     &              w(nga,jz)*(a21*wx(nga,k)+a22*wy(nga,k)+a23*
-     &              wz(nga,k))*dnga
+     &              w(nga,k)*(a21*wx(nga,jz)+a22*wy(nga,jz)+a23*
+     &              wz(nga,jz))*dnga
             enddo
          enddo
       endif
@@ -1270,13 +1266,62 @@ c     recall jacobian information
             do jz=1,nsl
                ij=knum+jz
                bcoef(neu,ij)=bcoef(neu,ij)+
-c     &              w(nga,k)*(a31*wx(nga,jz)+a32*wy(nga,jz)+a33*
-c     &              wz(nga,jz))*dnga
-     &              w(nga,jz)*(a31*wx(nga,k)+a32*wy(nga,k)+a33*
+     &              w(nga,k)*(a31*wx(nga,jz)+a32*wy(nga,jz)+a33*
+     &              wz(nga,jz))*dnga
+            enddo
+         enddo
+      endif
+      if ( nrq.eq.23 )  then
+c     nk*(dnjz/dx)
+c     recall jacobian information
+         a11=aj(neu,1)
+         a12=aj(neu,2)
+         a13=aj(neu,3)
+         detja=aj(neu,10)
+         do k=1,nsl
+            knum=(k-1)*nsl
+            do jz=1,nsl
+               ij=knum+jz
+               bcoef(neu,ij)=bcoef(neu,ij)+
+     &              w(nga,jz)*(a11*wx(nga,k)+a12*wy(nga,k)+a13*
      &              wz(nga,k))*dnga
             enddo
          enddo
       endif
+      if ( nrq.eq.24 )  then
+c     nk*(dnjz/dy)
+c     recall jacobian information
+         a21=aj(neu,4)
+         a22=aj(neu,5)
+         a23=aj(neu,6)
+         detja=aj(neu,10)
+         do k=1,nsl
+            knum=(k-1)*nsl
+            do jz=1,nsl
+               ij=knum+jz
+               bcoef(neu,ij)=bcoef(neu,ij)+
+     &              w(nga,jz)*(a21*wx(nga,k)+a22*wy(nga,k)+a23*
+     &              wz(nga,k))*dnga
+            enddo
+         enddo
+      endif
+      if ( nrq.eq.25 )  then
+c     nk*(dnjz/dz)
+c     recall jacobian information
+         a31=aj(neu,7)
+         a32=aj(neu,8)
+         a33=aj(neu,9)
+         detja=aj(neu,10)
+         do k=1,nsl
+            knum=(k-1)*nsl
+            do jz=1,nsl
+               ij=knum+jz
+               bcoef(neu,ij)=bcoef(neu,ij)+
+     &              w(nga,jz)*(a31*wx(nga,k)+a32*wy(nga,k)+a33*
+     &              wz(nga,k))*dnga
+            enddo
+         enddo
+      endif      
       endif
  999  continue
       

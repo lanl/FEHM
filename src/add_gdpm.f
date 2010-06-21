@@ -61,14 +61,16 @@
       use comdti
       use comai
       use combi
+      use comdi
       implicit none
 
+      integer, allocatable :: istrw_new(:)
       integer ncont_primary
       integer ncont
-      integer ngdpm_primary
+      integer ngdpm_primary, i1, i2, jj
       integer i, j, n_n_n, new_place, jcounter, j_old
       integer nposition, connected_node, primary_node
-      integer gdpm_counter
+      integer gdpm_counter,iw_c,kb
       integer imodel
       integer nmodels
       integer inew_gdpm
@@ -76,10 +78,14 @@
       integer nr_primary
 
       real*8, allocatable :: vol_gdpm(:)
+      real*8,  allocatable :: sx_dum(:,:)
       real*8 area_factor
-      real*8 delx_gdpm
-      real*8 sx1save, sx1gdpm
+      real*8 delx_gdpm, sx_1,sx_2,sx_3
+      real*8 vfac, vfackb, vfacmin, vfrac_pri
+      real*8 sx1save, sx1gdpm, wgtgdpm
       real*8 length_total, coord_primary
+      real*8 length_cell, length_pri, length_sec, gdpm_len
+      real*8 gdpm_left, gdpm_right
 
 c     Set actual size of neq
 c     gdpm_flag: if nonzero, determines the geometry of the matrix. 
@@ -137,14 +143,14 @@ c RJP 12/13/06 modified below for wellbore
       deallocate(istrw)
       allocate(istrw(ncont))
       istrw = 0
-      deallocate(istrw_itfc,istrw_cold)
+c      deallocate(istrw_itfc,istrw_cold)
 
 c     No possibility of dpdp run if gdpm is invoked, so
 c     the sizes of these arrays are ncont, not 2*ncont
 
-      allocate(istrw_itfc(ncont),istrw_cold(ncont))
-      istrw_itfc = 0
-      istrw_cold = 0
+c      allocate(istrw_itfc(ncont),istrw_cold(ncont))
+c      istrw_itfc = 0
+c      istrw_cold = 0
 
 c	Store old sx values, allocate space for new array
       if(isoy.eq.1) then
@@ -293,7 +299,7 @@ c	Section determines the volumes (sx1)
 c Check for model type 4, the 1-d column based on total area
 c The volumes associated with an individual model are summed
 c The area associated with an individual column is the volume 
-c fraction tines the total area
+c fraction times the total area
       if(gdpm_flag.eq.4.or.gdpm_flag.eq.6) then
      
        allocate(vol_gdpm(nmodels))
@@ -304,7 +310,8 @@ c fraction tines the total area
            vol_gdpm(imodel) = vol_gdpm(imodel) + sx1(i)
           endif
        enddo
-
+      else if(gdpm_flag.eq.11) then
+       allocate(areat_gdpm(neq_primary))
       endif
 
       do i = 1, neq_primary
@@ -315,7 +322,7 @@ c	The node has gdpm nodes, divide up the volume
             length_total = gdpm_x(imodel,ngdpm_layers(imodel))
 
 c	Volume of primary node
-c   Don't change volume if model 3 or 4 (linear column model)
+c   Don't change primary gridblock volume if model 4 or 6 (linear column model)
             if(gdpm_flag.eq.4.or.gdpm_flag.eq.6) then
               area_factor = sx1(i)/vol_gdpm(imodel)
               sx1(i) = sx1save
@@ -323,8 +330,29 @@ c   Don't change volume if model 3 or 4 (linear column model)
               sx1(i) = sx1save*vfrac_primary(imodel)
             endif	
 c	gdpm volume
-            sx1gdpm = sx1save*(1.-vfrac_primary(imodel))
-
+            if(gdpm_flag.ne.11) then
+             vfrac_pri = vfrac_primary(imodel)
+             sx1gdpm = sx1save*(1.-vfrac_pri)
+            else if(gdpm_flag.eq.11) then
+c physically-based fracture model 
+c coordinates in x direction may be wrong
+c will have 22(y) and 33(z) models as well
+             areat_gdpm(i) = sx1save/length_total
+             vfrac_pri = vfrac_primary(imodel)
+             length_sec = dxrg(i)-vfrac_pri
+             gdpm_len = gdpm_vol(imodel,1)*length_sec/wgt_length(imodel)
+             gdpm_left = gdpm_len
+             gdpm_x(imodel,1) = gdpm_left/2.0
+             do j = 2, ngdpm_layers(imodel)
+              gdpm_len = gdpm_vol(imodel,j)
+     &         *length_sec/wgt_length(imodel)
+              gdpm_right = gdpm_len
+              gdpm_x(imodel,j) = gdpm_right/2. + gdpm_left
+              gdpm_left = gdpm_right + gdpm_left    
+             enddo                    
+             sx1(i) = sx1save*vfrac_pri/dxrg(i)
+             sx1gdpm = sx1save*(dxrg(i)-vfrac_pri)/dxrg(i)
+            endif
 c	Loop to determine the gdpm node volumes
 
             do j = 1, ngdpm_layers(imodel)
@@ -353,12 +381,14 @@ c	of the primary grid, and all of the node numbers are
 c	the same
 c	Only go up to nelm(i+1)-1, because nelm(i+1) may be a
 c	gdpm node. We handle that case after this loop
+c     we store only uppper diagonal area/dis
          do j = nelm(i)+1, nelm(i+1)-1
             jcounter = jcounter + 1
             j_old = nelm_primary(i)+jcounter
             istrw(j-neq-1) = istrw_primary(j_old-neq_primary-1)
             iw = abs(istrw(j-neq-1))
-            if(nelm(j).ne.i) then
+c gaz 112409   if(nelm(j).ne.i) then            
+            if(nelm(j).gt.i) then
                sx(iw,isox) = 
      2            sx_primary(iw,isox)
                sx(iw,isoy) =
@@ -421,12 +451,102 @@ c     Compute area/distance term, stor in sx array
          call gdpm_area
 
       end do
-
-
+c
+c correct fracture connections by volume fraction
+c this is only valid for model 11 because
+c vfrac_primary is the width of the fracture
+c probably have to redefine the whole sx and istrw arrays 
+c (this will enlarge the array in most cases)
+c scale the sx (area/d) by the primary 
+c
+      if(gdpm_flag.eq.11) then 
+c find neighbors in x direction       
+       call gdkm_connect(1) 
+c adjust spacing and connections   
+       call gdkm_connect(2)        
+       i1 = nelm(neq+1) + 1
+       if(isoy.ne.1) then
+        allocate(sx_dum(i1,3))
+        allocate(istrw_new(i1-neq-1))
+       else
+        allocate(sx_dum(i1-neq-1,1))
+        allocate(istrw_new(i1-neq-1))
+       endif
+        sx_dum = 0.0
+        istrw_new = 0   
+        iw_c = 0 
+        do i = 1,neq
+        if(i.le.neq_primary) then
+         imodel = igdpm(i)
+         if(imodel.gt.0) then
+          vfac = vfrac_primary(imodel)
+         else
+          vfac = 1.0
+         endif
+        else
+         imodel = 0
+         vfac = 1.0
+        endif
+         i1 = nelmdg(i)+1     
+         i2 = nelm(i+1)
+          do jj = i1,i2
+           kb = nelm(jj)
+           iw = istrw(jj-neq-1)
+           if(kb.le.neq_primary) then
+c primariy  to primary connection         
+            imodel = igdpm(kb)
+            if(imodel.gt.0) then
+             vfackb = vfrac_primary(imodel)
+            else
+             vfackb = 1.0
+            endif  
+            vfacmin = min(vfac,vfackb)          
+           else
+            imodel = 0
+            vfacmin = 1.
+           endif
+           iw_c = iw_c + 1
+           istrw_new(jj-neq-1) = iw_c
+           sx_1 = sx(iw,isox)
+           sx_2 = sx(iw,isoy)
+           sx_3 = sx(iw,isoz)
+           sx_dum(iw_c,isox) = vfacmin*sx_1 
+           sx_dum(iw_c,isoy) = vfacmin*sx_2
+           sx_dum(iw_c,isoz) = vfacmin*sx_3           
+          enddo
+         enddo
+      nr = iw_c +1
+      deallocate(sx)
+      if(isoy.ne.1) then
+       allocate(sx(nr,3)) 
+       do i = 1,nr
+        sx(i,1) = sx_dum(i,1)
+        sx(i,2) = sx_dum(i,2)
+        sx(i,3) = sx_dum(i,3)
+       enddo
+      else
+       allocate(sx(nr,3))
+       do i = 1,nr
+        sx(i,1) = sx_dum(i,1)
+       enddo       
+      endif
+      i1 = nelm(neq+1) + 1 -(neq+1)
+      do i = 1,i1
+       istrw(i) = istrw_new(i)
+      enddo 
       deallocate(sx_primary)
-      if(allocated(voL_gdpm)) deallocate(vol_gdpm)
-
-
+      deallocate(istrw_new)
+      deallocate(sx_dum)
+      call gdkm_connect(-1)
+      endif
+c    deallocate memory      
+      if(allocated(vol_gdpm)) deallocate(vol_gdpm)
+      if(allocated(gdpm_x)) deallocate(gdpm_x)
+      if(allocated(gdpm_vol)) deallocate(gdpm_vol)
+      if(allocated(vfrac_primary).and.gdkm_flag.eq.0) 
+     &  deallocate(vfrac_primary)
+      if(allocated(wgt_length)) deallocate(wgt_length)
+      
       return
 
       contains
@@ -468,9 +588,12 @@ c     GAZ 4-20-2001
 c     Volume calculated by difference between adjacent nodes
 c     times the Area which is read in palace of the primary fraction
 c     vfrac_primary(imodel) contains the area
-
-         if(j.eq.1) then
 c     assumes primary node starts at x=0
+
+         if(j.eq.1.and.ngdpm_layers(imodel).eq.1) then
+          sx1(n_n_n) = gdpm_x(imodel,1)* 
+     2                 vfrac_primary(imodel)*area_factor         
+         else if(j.eq.1) then
           sx1(n_n_n) = (gdpm_x(imodel,j+1)+gdpm_x(imodel,j))/2.*
      2                 vfrac_primary(imodel)*area_factor
          else if(j.eq.ngdpm_layers(imodel)) then
@@ -542,7 +665,17 @@ c     ratio of shell volume to total sphere volume
 
          sx1(n_n_n) = sx1gdpm*(r_high**3-r_low**3)/
      2        gdpm_x(imodel,ngdpm_layers(imodel))**3
+     
+      else  if(gdpm_flag.eq.11) then
 
+
+c     Physical Fracture Model (x direction)
+    
+c      length-weighted fractions of total volume
+
+         sx1(n_n_n) = gdpm_vol(imodel,j)*sx1save
+        continue
+  
       else
 
 
@@ -716,6 +849,46 @@ c     Compute sx, stor in sx(iposition,isox)
             sx(nposition,isoz) = 0.
          end if
 
+
+c     Physical fracture model (model 11)
+
+      else if(gdpm_flag.eq.11) then
+         if(connected_node.le.neq_primary) then
+            primary_node = connected_node
+            imodel = igdpm(primary_node)
+c     Need to compute gdpm volume
+c     sx1(primary_node) is the volume of only the 
+c     primary portion
+c     length_total is length of secondary material
+c     length_pri is length of primary material
+c            sx1gdpm = sx1(primary_node)*(1.-vfrac_primary(imodel))
+c     2           /vfrac_primary(imodel)
+ 
+             length_total = dxrg(primary_node)
+             length_pri = vfrac_primary(imodel)
+            
+            gdpm_counter = 1
+            delx_gdpm = gdpm_x(imodel,1)*length_total+0.5*length_pri
+         else
+            gdpm_counter = gdpm_counter + 1
+            delx_gdpm = (gdpm_x(imodel,gdpm_counter)
+     2           -gdpm_x(imodel,gdpm_counter-1))*length_total
+         end if
+         
+c     Compute sx, stor in sx(iposition,isox)
+         sx(nposition,isox) = -sx1save/(delx_gdpm*length_total)
+         if(isoy.eq.1) then
+            if(icnl.eq.0) then
+               sx(nposition,isox) = sx(nposition,isox)/3.
+            else
+               sx(nposition,isox) = sx(nposition,isox)/2.
+            end if
+         else
+            sx(nposition,isoy) = 0.
+            sx(nposition,isoz) = 0.
+         end if
+
+
 c     Parallel fracture model
 
       else
@@ -739,7 +912,7 @@ c            sx1gdpm = sx1save*(1.-vfrac_primary(imodel))
             gdpm_counter = gdpm_counter + 1
             delx_gdpm = gdpm_x(imodel,gdpm_counter)
      2           -gdpm_x(imodel,gdpm_counter-1)
-         end if
+         end if        
          
 c     Compute sx, stor in sx(iposition,isox)
          sx(nposition,isox) = -sx1gdpm/(delx_gdpm*length_total)

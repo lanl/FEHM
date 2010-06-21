@@ -871,9 +871,9 @@ c
 c     calculate the gridblock length in the gravity direction
 c     
             if(.not.allocated(dzrg))then
-               allocate(dzrg(neq))
+               allocate(dzrg(neq))                
             endif 
-            do i = 1,neq
+            do i = 1,neq_primary
                i1=nelm(i)+1
                i2=nelm(i+1)
                hmid=cord(i,igrav)

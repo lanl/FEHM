@@ -101,7 +101,13 @@ c**** read flow data ****
                pflow(i) = sktmp(i)
                esk(i) = esktmp(i)
                wellim(i) = aiped(i) * 1.0e+06
-               ka(i) = -1
+               ka(i) = -1             
+            else if (katmp(i).eq.-2) then
+c outflow only                        
+               pflow(i) = sktmp(i)
+               esk(i) = esktmp(i)
+               wellim(i) = aiped(i) * 1.0e+06
+               ka(i) = -2               
             else if (katmp(i).eq.-23.or.katmp(i).eq.-24) then
 c free drainage                
                esk(i) = esktmp(i)
@@ -109,7 +115,7 @@ c free drainage
 	         pflow(i) = 0.0
                ka(i) = katmp(i)
             else if (katmp(i).eq.-3) then
-c seepage face  - 2 phase and wtsi
+c seepage face  - 2 phase and wtsi  
                pflow(i) = sktmp(i)
                esk(i) = esktmp(i)
                wellim(i) = abs(aiped(i)) * 1.0e+06

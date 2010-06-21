@@ -773,6 +773,8 @@ c bhl_12/8/05
       if(allocated(ngdpm_layers)) deallocate(ngdpm_layers)
       if(allocated(vfrac_primary)) deallocate(vfrac_primary)
       if(allocated(gdpm_x)) deallocate(gdpm_x)
+      if(allocated(gdpm_vol)) deallocate(gdpm_vol)
+      if(allocated(wgt_length)) deallocate(wgt_length)       
       if(allocated(group)) deallocate(group)
       if(allocated(fzero)) deallocate(fzero)
       if(allocated(pos)) deallocate(pos)

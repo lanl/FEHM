@@ -333,12 +333,13 @@ c
 c           tdumx=sjsix*(tdumt*alphab+pdumt*bulkb)*efac
 c           tdumy=sjsiy*(tdumt*alphab+pdumt*bulkb)*efac
 c           tdumz=sjsiz*(tdumt*alphab+pdumt*bulkb)*efac
-             
+c             
 c calculate stresses 
-
+c
       ddx=du(kb)-dui
       ddy=dv(kb)-dvi
       ddz=dw(kb)-dwi
+c      
       xx=e1bar*sisjx*ddx
       xy=e2bar*sisjy*ddy
       xz=e2bar*sisjz*ddz
@@ -358,14 +359,14 @@ c
       termx=termx+(xx+xy+xz)
       termy=termy+(yx+yy+yz)
       termz=termz+(zx+zy+zz)
-      tauxy=tauxy+xyx+xyy
+      tauxy=tauxy+xyx+xyy   
       tauyz=tauyz+yzy+yzz
       tauzx=tauzx+zxx+zxz 
 
       enddo
-      str_x(i)=(shpi+shti-termx/vol)
-      str_y(i)=(shpi+shti-termy/vol)
-      str_z(i)=(shpi+shti-termz/vol)
+      str_x(i)=(shpi+shti+termx/vol)
+      str_y(i)=(shpi+shti+termy/vol)
+      str_z(i)=(shpi+shti+termz/vol)
       str_xy(i)=tauxy/vol
       str_yz(i)=tauyz/vol
       str_xz(i)=tauzx/vol

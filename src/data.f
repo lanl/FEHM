@@ -28,6 +28,7 @@ CD2 06-DEC-93    Z. Dash        22      Add prolog.
 CD2              G. Zyvoloski           Initial implementation.
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/data.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:42:48   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -378,6 +379,7 @@ C *** integers in davidi.h
 C from comwt
       irich = 0
       ifdm_elem = 0
+      nr_stop = 0
 
 c initialize scalar reals in comai
       aiaa   =   1.0
@@ -477,9 +479,16 @@ C added phi_inc to comai so it only needs to be computed in one place
       vtot   =   0.0
       tol_phase = 1.e-4
       strd_iter = 0.99
+      p_stop = 0.0
+      pa_stop = 0.0
+      t_stop = 0.0
+      s_stop = 0.0 
+      co2f_stop = 0.0
+      h_stop = 0.0     
 c logical variables in comai
       wflux_flag = .false.
       vflux_flag = .false.
+      eflux_flag = .false.
 
 c zero out include combi
       if(irun.eq.1) then

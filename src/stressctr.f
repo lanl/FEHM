@@ -90,7 +90,7 @@
 	 real*8 dmeewi, dmeewkb, deneewi, deneewkb
 
        integer jmia,mdkb
-       integer iws
+       integer iws, max_zone_number
        real*8 sjsix,sjsiy,sjsiz,alpkb,alphab,alpi
        real*8 bulkkb,bulki,bulkb,tdumt,pdumt,elev
 	 real*8 termt, termp, bulk_mod
@@ -111,6 +111,7 @@
             
 	parameter (area_tol = 1.d-18)
 	parameter(dis_tol=1.d-12)
+	parameter(max_zone_number = 1000)
       if(istrs.eq.0) return  
 
       if(iflg.eq.0) then
@@ -154,7 +155,7 @@ c      allocate (nvfcl(n0))
 	allocate (vol_temp(n0))
       allocate (vol_strain0(n0))
       allocate (idum_str(n0,3))
-      allocate (dum_str(n0,3))
+      allocate (dum_str(max_zone_number,3))
       allocate (iarea_str(n0,3))
       allocate (area_str(n0,3))
 c arrays for stress derivatives in mass and energy equations

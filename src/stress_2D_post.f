@@ -1,4 +1,4 @@
-      subroutine stress_2D_post(i)
+       subroutine stress_2D_post(i)
 C**********************************************************************
 CD1
 CD1 PURPOSE
@@ -237,7 +237,6 @@ c reference rock density
       roli=denr(i)
 	bforcex = 0.0d0
 	bforcey = 0.0d0
-
 c      
 c
 c form constants for i>neq
@@ -351,8 +350,8 @@ c
      
 
       enddo
-      str_x(i)=(shpi+shti+termx/vol)
-      str_y(i)=(shpi+shti+termy/vol)
+      str_x(i)=(-shpi-shti+termx/vol)
+      str_y(i)=(-shpi-shti+termy/vol)
       
       str_xy(i)=+tauxy/vol
 

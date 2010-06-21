@@ -28,60 +28,6 @@
 !D2              G. Zyvoloski           Initial implementation.
 !D2
 !D2 $Log:   /pvcs.config/fehm90/src/comdi.f_a  $
-!D2 
-!D2    Rev 2.5   06 Jan 2004 10:42:28   pvcs
-!D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
-!D2 
-!D2    Rev 2.4   29 Jan 2003 08:56:42   pvcs
-!D2 FEHM Version 2.20, STN 10086-2.20-00
-!D2 
-!D2    Rev 2.3   14 Nov 2001 13:05:28   pvcs
-!D2 FEHM Version 2.12, STN 10086-2.12-00
-!D2 
-!D2    Rev 2.2   06 Jun 2001 13:22:24   pvcs
-!D2 FEHM Version 2.11, STN 10086-2.11-00
-!D2 
-!D2    Rev 2.1   30 Nov 2000 11:56:36   pvcs
-!D2 FEHM Version 2.10, STN 10086-2.10-00
-!D2 
-!D2    Rev 2.0   Fri May 07 14:39:34 1999   pvcs
-!D2 FEHM Version 2.0, SC-194 (Fortran 90)
-!D2 
-!D2    Rev 1.11   Thu Apr 25 13:38:16 1996   hend
-!D2 Updated for long/trans dispersion (ldsp)
-!D2 
-!D2    Rev 1.10   Mon Mar 04 15:58:36 1996   hend
-!D2 Removed uneccessary calculations from coneq1 and added trac input option
-!D2 
-!D2    Rev 1.9   Tue Jan 09 14:31:56 1996   llt
-!D2 gaz changes
-!D2 
-!D2    Rev 1.8   12/15/95 11:09:56   gaz
-!D2 inlarged dimension of cp1-4 and rlp1-25 to n0
-!D2 
-!D2    Rev 1.7   07/27/95 17:07:46   gaz
-!D2 changed mdnode,mdnodes to integer
-!D2 
-!D2    Rev 1.6   07/27/95 11:26:24   llt
-!D2 minor correction to mdnode
-!D2 
-!D2    Rev 1.5   07/27/95 11:14:14   gaz
-!D2 gaz added mdnode(n0,5) and pointer
-!D2 
-!D2    Rev 1.4   06/01/95 17:53:12   llt
-!D2 increased fluxes to 500
-!D2 
-!D2    Rev 1.3   04/10/95 16:51:44   llt
-!D2 changed dimension for iflx1 and iflx2
-!D2 
-!D2    Rev 1.2   01/28/95 14:07:04   llt
-!D2 water balance equation was modified
-!D2 
-!D2    Rev 1.1   03/18/94 16:23:00   gaz
-!D2 Added solve_new and cleaned up memory management.
-!D2 
-!D2    Rev 1.0   01/20/94 10:21:56   pvcs
-!D2 original version in process of being certified
 !D2
 !c 12/14/94 gaz added arrays thic,mdnodes
 !***********************************************************************
@@ -801,6 +747,8 @@
       real*8, allocatable :: rlzf(:)
       real*8, allocatable :: drlzf(:)
       real*8, allocatable :: dzrg(:)
+      real*8, allocatable :: dxrg(:)
+      real*8, allocatable :: dyrg(:)
  
       integer ngrad, igrad, igrad0
       integer, allocatable :: igradf_temp(:)  

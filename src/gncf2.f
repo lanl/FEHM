@@ -464,6 +464,38 @@ c     recall jacobian information
                enddo
             endif
          if(nrq.eq.13) then
+c                     
+c     nk*(dnj/dx)
+c     recall jacobian information
+            a11=aj(neu,1)
+            a12=aj(neu,2)
+            detja=aj(neu,10)
+            do k=1,nsl
+               knum=(k-1)*nsl
+               do jz=1,nsl
+                  ij=knum+jz
+                  bcoef(neu,ij)=bcoef(neu,ij)+
+     *                 wr(nga,k)*(a11*wxr(nga,jz)+a12*wyr(nga,jz))*dnga
+               enddo
+            enddo
+         endif         
+         if(nrq.eq.14) then
+c     
+c     nk*(dnj/dy)
+c     recall jacobian information
+            a21=aj(neu,4)
+            a22=aj(neu,5)
+            detja=aj(neu,10)
+            do k=1,nsl
+               knum=(k-1)*nsl
+               do jz=1,nsl
+                  ij=knum+jz
+                  bcoef(neu,ij)=bcoef(neu,ij)+
+     *                 wr(nga,k)*(a21*wxr(nga,jz)+a22*wyr(nga,jz))*dnga
+               enddo
+            enddo
+         endif  
+         if(nrq.eq.17) then
 c     
 c     (dnk/dx)*nj
 c     recall jacobian information
@@ -479,7 +511,7 @@ c     recall jacobian information
                enddo
             enddo
          endif
-         if(nrq.eq.14) then
+         if(nrq.eq.18) then
 c     
 c     (dnk/dy)*nj
 c     recall jacobian information
@@ -494,39 +526,7 @@ c     recall jacobian information
      *                 wr(nga,jz)*(a21*wxr(nga,k)+a22*wyr(nga,k))*dnga
                enddo
             enddo
-         endif
-         if(nrq.eq.17) then
-c     
-c     nk*(dnj/dx)
-c     recall jacobian information
-            a11=aj(neu,1)
-            a12=aj(neu,2)
-            detja=aj(neu,10)
-            do k=1,nsl
-               knum=(k-1)*nsl
-               do jz=1,nsl
-                  ij=knum+jz
-                  bcoef(neu,ij)=bcoef(neu,ij)+
-     *                 wr(nga,k)*(a11*wxr(nga,jz)+a12*wyr(nga,jz))*dnga
-               enddo
-            enddo
-         endif         
-         if(nrq.eq.18) then
-c     
-c     nk*(dnj/dy)
-c     recall jacobian information
-            a21=aj(neu,4)
-            a22=aj(neu,5)
-            detja=aj(neu,10)
-            do k=1,nsl
-               knum=(k-1)*nsl
-               do jz=1,nsl
-                  ij=knum+jz
-                  bcoef(neu,ij)=bcoef(neu,ij)+
-     *                 wr(nga,k)*(a21*wxr(nga,jz)+a22*wyr(nga,jz))*dnga
-               enddo
-            enddo
-         endif         
+         endif                
          endif
       endif
 c     

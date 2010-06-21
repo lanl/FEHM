@@ -403,7 +403,7 @@ c
       integer nsizea1
       integer nmat_save,dry_nodes,jm
       integer np, i1, i2, ij, ijj, ibp_max
-      integer iwellp_chk
+      integer iwellp_chk, iparchek
       real*8 aij, apiv
       real*8 fdum2
       real*8 facr
@@ -414,9 +414,26 @@ c
       real*8, allocatable :: a_save(:)
       real*8 a11, a22, adiag_tol, bp_max, bp_maxc, bp_tol
       parameter(adiag_tol=1.d-10)
+      parameter(iparchek = 0)
       integer jj
-
       neqp1=neq+1
+c test of coefficients
+       if(iparchek.eq.1) then
+       write(ierr,*) 'fe coef. upper diag'
+       write(ierr,*)
+       do i = 1,neq
+        i1 = nelmdg(i)+1
+        i2 = nelm(i+1)
+        do j = i1,i2
+         kb = nelm(j)
+         iw = istrw(j-neqp1)
+         a11 = sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz)
+         write(ierr,355)i,kb,iw,a11
+        enddo
+       enddo   
+355   format(i6,1x,i6,1x,i6,1x,f12.3)        
+       stop
+       endif
 c     zero out arrays
       do 10 i=1,neq
          bp(i+nrhs(1))=0.0
@@ -479,7 +496,7 @@ c no accumulation term in the wellbore
                call add_accumulation(id)   
             else if(ianpe.ne.0.and.irdof.ne.13) then
                call geneq2_ani_2p(id)
-               call add_accumulation(id)                                          
+               call add_accumulation(id)                            
             else if(irich.ne.0) then
                call geneq2_rich(id)
                call add_accumulation(id)	

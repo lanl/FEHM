@@ -237,7 +237,7 @@ C**********************************************************************
       real*8 smind,smaxd,smind_t,smaxd_t,sminc, smaxc
       real*8 pmin_ice,pmax_ice
       real*8 tmin_ice,tmax_ice
-      parameter(smind = -2.,smaxd = 5.,smind_t = -0.5,smaxd_t = 1.5)
+      parameter(smind = -2.,smaxd = 5.,smind_t = -0.1,smaxd_t = 1.1)
 	parameter(sminc = -0.15   , smaxc = 1.15)
       parameter(pmin_ice=-1.0,pmax_ice=200.0)
       parameter(tmin_ice=-10.0,tmax_ice=400.0)
@@ -305,7 +305,9 @@ c
                   pl=phi(i)
 c     
                   ieo=iieos(i)
-                  if(ieo.gt.2) ieo=2
+                  if(ieo.gt.2) then
+                   if(pmax(ieo).le.0.0) ieo = 1
+                  endif
 c     
                   tl=t(i)
                   sl=s(i)
@@ -424,6 +426,7 @@ c
 
  9000 continue
       if(mlz.eq.1) then
+c         time_ieos(i) = 0.0d0
          if (iout .ne. 0) then
             write(iout, 9010) l, day
             write(iout, 9011) i, cord(ii,1), cord(ii,2),

@@ -336,7 +336,7 @@ C***********************************************************************
       integer kz,iz2,iz2p,i1,i2,ipivt,sehindexl,sehindexv,neqp1
       integer ireaddum, inptread, open_file
       integer locunitnum, kk, j
-      integer max_gdpm_layers, ngdpm_models, nsize_layer
+      integer  ngdpm_models, nsize_layer
       integer, allocatable :: itemporary(:)
       integer idum1, idum2, ilines, i
       integer icount, tprp_num
@@ -874,13 +874,13 @@ c need to know if rel perm factor is used
          idpdp = 1
 
 c	Section for determining Generalized Dual Porosity Model (GDPM)
-c	parameters
+c	and Generalized Dual Permeability Model (GDKM)parameters
          
-      else if(macro .eq. 'gdpm') then
-
+      else if(macro .eq. 'gdpm'.or. macro .eq. 'gdkm') then
+         if(macro .eq. 'gdkm') gdkm_flag = 1
          call start_macro(inpt, locunitnum, macro)
          read (locunitnum, *) gdpm_flag, ngdpmnodes
-         max_gdpm_layers = 0
+         maxgdpmlayers = 0
          ngdpm_models = 0
 
 c	Code scans the file to determine the number of models and the
@@ -894,7 +894,7 @@ c	sizes can be set and arrays allocated in allocmem
             ngdpm_models = ngdpm_models + 1
             read(locunitnum,*) nsize_layer,adumm,(adumm,i=1,
      &      nsize_layer)
-            max_gdpm_layers = max(nsize_layer,max_gdpm_layers)
+            maxgdpmlayers = max(nsize_layer,maxgdpmlayers)
             goto 1000
          end if
 
@@ -905,11 +905,13 @@ c       in any of the models
 c     Allocate arrays needed for gdpm
 
          ngdpm_models = max(1,ngdpm_models)
-         max_gdpm_layers = max(1,max_gdpm_layers)
+         maxgdpmlayers = max(1,maxgdpmlayers)
          if(.not.allocated(ngdpm_layers)) then
             allocate(ngdpm_layers(0:ngdpm_models))
             allocate(vfrac_primary(0:ngdpm_models))
-            allocate(gdpm_x(0:ngdpm_models,max_gdpm_layers))
+            allocate(gdpm_x(0:ngdpm_models,maxgdpmlayers))
+            allocate(gdpm_vol(0:ngdpm_models,maxgdpmlayers))
+            allocate(wgt_length(ngdpm_models))
             ngdpm_layers = 0
             vfrac_primary = 0.
             gdpm_x = 0.

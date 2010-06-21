@@ -412,7 +412,10 @@ c
          icount = icountc
 c
 c symbolically factor remaining rows
-c
+c 
+         do i = 1, neq
+           dum(i) = 0
+         end do
          do kp = 2, neq
           if(igaus(kp).ge.itparr+1) then
             i1 = b(kp) + 1
@@ -420,9 +423,6 @@ c
 
 c initialize working vector
 
-            do i = 1, neq
-               dum(i) = 0
-            end do
             minkb=neq
             maxkb=1
             do i=i1,i2
@@ -452,7 +452,7 @@ c
 
             do i = minkb,maxkb
                idd = dum(i)
-
+               dum(i) = 0
                if(idd.ne. 0 ) then
                   icount=icount+1
                   nop(icount) = i

@@ -251,8 +251,13 @@
       integer, allocatable ::  iczani(:)
 
       real*8, allocatable ::   gdpm_x(:,:)
+      real*8, allocatable ::   gdpm_vol(:,:)
       real*8, allocatable ::   vfrac_primary(:)
-
+      real*8, allocatable ::   wgt_length(:)
+      real*8, allocatable ::   areat_gdpm(:)
+      integer, allocatable ::   iconn_gdkm(:,:)
+      integer, allocatable ::   nelm_gdkm(:,:)
+      
       real*8, allocatable ::   sx(:,:)
       real*8, allocatable ::   sx_primary(:,:)
       real*8, allocatable ::   sx1(:)
@@ -347,6 +352,10 @@ c
       real*8, allocatable ::   parmwel1(:)
       real*8, allocatable ::   parmwel2(:)
       real*8, allocatable ::   parmwel3(:)
+c
+c origin for coordinate system (only used for structured grids)
+c   
+      real*8 x_orig, y_orig, z_orig  
       
       end module combi
 

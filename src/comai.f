@@ -412,6 +412,7 @@
       integer             isptr7, isptr8, isptr9, idoff, rlp_flag
       integer             nprttrc, irlp_fac, interface_flag
       integer             neq_primary, ngdpm_actual, gdpm_flag
+      integer             gdkm_flag, nr_stop
       integer             ngdpmnodes, maxgdpmlayers, ianpe, ipara
       integer             maxsolve, iflux_ts, inobr, isubbc, isubm
       integer             bin_flag, app_flag, ldna, iflxn, pres_flag
@@ -457,9 +458,12 @@ c GAZ 11/02/08
       real*8              contim_rip, histime, aiar, tims_trans
       real*8              daycs_save, daycf_save, dayhf_save, dayhs_save
       real*8              day_save_ss, fdum_last, aiaa_save, daymax_save
-C gaz 11-06-2007
+c gaz 11-06-2007
       real*8              rho1grav,h_to_p
       real*4              vernum
+c gaz 11-29-2009   
+      real*8              p_stop,t_stop,s_stop,pa_stop
+      real*8              co2f_stop,h_stop    
 
       real*8              strd_iter, strd_rich, tol_phase
 
@@ -477,7 +481,8 @@ C gaz 11-06-2007
 
       logical tpor_flag, compute_flow, hist_flag, reverse_flow, boun_out
       logical out_zones, spercent, mass_read, pres_read, co2_read
-      logical connect_out, resid_out, wflux_flag, vflux_flag, fperm_flag
+      logical connect_out, resid_out, wflux_flag, vflux_flag
+      logical eflux_flag,fperm_flag
 
       end module comai
 

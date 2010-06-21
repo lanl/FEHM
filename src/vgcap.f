@@ -316,7 +316,7 @@ c     upper saturation cutoff
          hp = 0.0 
          dhp= 0.0
 c gaz  02-18-08
-         dhp = bc3
+         hp = bc3/sl**ncut + bc4
          dhp = -bc3*ncut/sl**(ncut+1)
          ireg = 100
       endif

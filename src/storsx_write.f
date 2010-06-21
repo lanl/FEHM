@@ -144,7 +144,7 @@ c     for non-gdpm case neq = neq_primary
          if(istrs.ne.0) then
             iwtotl_strs = ncont_primary - neqp1
             if(icnl.eq.0) then
-               ncoef=12
+               ncoef=15
             else
                ncoef=8
             endif

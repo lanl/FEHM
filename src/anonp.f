@@ -741,6 +741,7 @@ C***********************************************************************
       integer nelu, neluc, nelucd, neqp1, neu, nfd, nfu, node, nodeu
       integer nj, nsc, nsl, nslu, nt, ncoef, numgb(8)
       integer ii, ipivkb, neq_total, n0_save, ipmax, lcnt, lcnt2
+      integer ib_min, ib_max
 
 c using storage for a matrix
       real*8, allocatable ::  vole(:)
@@ -1210,14 +1211,19 @@ c     the connectivity matrix and the coefficient counter
 c     can now be constructed
 c     
 c     
-c     
+c    
+      if (iout .ne. 0) write(iout, 1010)
+      if (iptty .ne. 0) write(iptty, 1010)
+ 1010 format (' >>>>>> Starting connectivity calcs <<<<<< ') 
       ncon(1) = neq+1
       incon = neq+1
-      do 2000 i = 1, neq
 c     zero out connectivity
-         do 2001 kk = 1, neq
-            idum(kk) = 0
- 2001    continue
+      do  kk = 1, neq
+         idum(kk) = 0
+      enddo
+      do 2000 i = 1, neq
+       ib_min = neq
+       ib_max = 1
 c     connect node to itself
          idum(i)  = i
          nt = nodeuf(i)
@@ -1241,6 +1247,8 @@ c     coding for 3-d elements
                do in = 1, ns
                   node = nelm((nele-1)*ns+in)
                   if (node .ne. 0) then
+                   ib_min = min(ib_min,node)
+                   ib_max = max(ib_max,node)
                      if (nsl.ne.8.or.iortho.eq.0) then
                         idum(node) = node
                      else
@@ -1253,6 +1261,8 @@ c     coding for 2-d elements
                do in = 1, ns
                   node = nelm((nele-1)*ns+in)
                   if (node .ne. 0) then
+                   ib_min = min(ib_min,node)
+                   ib_max = max(ib_max,node)
                      if (nsl.ne.4.or.iortho.eq.0) then
                         idum(node) = node
                      else
@@ -1268,10 +1278,11 @@ c     call md_nodes to add multiply defined nodes
 c     
 c        call md_nodes(1,idum,i)                              
 
-         do ib = 1, neq
+         do ib = ib_min,ib_max
             if(idum(ib).ne.0) then
                incon = incon+1
                ncon(incon) = idum(ib)
+               idum(ib) = 0
             endif
             if(ib.eq.i) nelmdg(i) = incon
          enddo
@@ -1329,7 +1340,7 @@ c     found match
                   istrw(ie-neqp1) = istrw(ig1-neqp1)
                enddo
                do ie = ipiv+1, i2
-                  kb = ncon(ie)
+                  kb = ncon(ie)  
                   isx = isx+1
                   istrw(ie-neqp1) = isx
                enddo
@@ -1377,7 +1388,10 @@ c     code for multiple defined nodes
          enddo
       endif
 c     
-c  
+c 
+      if (iout .ne. 0) write(iout, 1009)
+      if (iptty .ne. 0) write(iptty, 1009)
+ 1009 format (' >>>>>> Finished connectivity calcs <<<<<< ') 
       if (iout .ne. 0) write(iout, 2009)
       if (iptty .ne. 0) write(iptty, 2009)
  2009 format (' >>>>>> Starting FE coef. calcs <<<<<< ')   
@@ -1403,9 +1417,9 @@ c
          if(.not.allocated(istrws)) allocate(istrws(i3))
          if(allocated(sxs)) deallocate(sxs)
          if(icnl.eq.0) then
-            ncoef = 12
+            ncoef = 15
          else
-            ncoef = 6
+            ncoef = 8
          endif
 	 allocate(sxs(i3,ncoef))
 c     GAZ 011109 new storage for finv flow simulations	 

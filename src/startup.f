@@ -415,10 +415,13 @@ C***********************************************************************
       integer, allocatable :: ncon_temp(:)
       integer, allocatable :: nop_temp(:)      
       integer i1,i2,ipiv,icnt
-      integer count, num_zone
+      integer count, num_zone, ic_sym
       integer nsbb,idofdum,neidum
       real*8 very_small, fac_nop, fac_mult
+c symmetry check on = 1, off = 0      
+      parameter (ic_sym = 0)
       parameter (very_small= 1.d-30)
+
 c     Calculate rho1grav
 c      rho1grav = crl(1,1)*(9.81d-6)
 c      rho1grav = 997.*9.81d-6
@@ -566,8 +569,12 @@ c**** complete pest information(if interpolation is used) ****
      &    call split(0)
       if (lda .le. 0.and.irun.eq.1) then
          if(ivf.ne.-1) then
-            if(ianpe.eq.0) call anonp
-            if(ianpe.ne.0) call anonp_ani
+            if(ianpe.eq.0) then
+             call anonp
+            else if(ianpe.ne.0) then
+             call anonp_ani
+             if (ico2.ge.0) call fd_calc_heat(1)
+            endif
          else
             call structured(1)
             call structured(3)
@@ -597,23 +604,7 @@ c gaz 1-24-2003
          deallocate(ncon_temp)
          call md_nodes(5,0,ncon_size)
       endif
-c gaz 11-09-2001 allocation of istrw_itfc and istrw_cold
-c done here after call to anonp,storsx, or structured
-c still could ne changed in add_gdpm
-      ncon_size=nelm(neq_primary+1)
-      if(idpdp.eq.0) then
-         if (.not. allocated (istrw_itfc)) 
-     &        allocate(istrw_itfc(ncon_size))
-         if (.not. allocated (istrw_cold))
-     &        allocate(istrw_cold(ncon_size))
-      else
-         if (.not. allocated (istrw_itfc)) 
-     &        allocate(istrw_itfc(2*ncon_size))
-         if (.not. allocated (istrw_cold))
-     &        allocate(istrw_cold(2*ncon_size))
-      end if
-      istrw_itfc = 0
-      istrw_cold = 0
+
 c gaz 11-11-2001 moved this before call to add_gdpm
       if (icnl .ne. 0)  then
          call radius
@@ -626,8 +617,36 @@ c     RJP 12/13/06 modified to add river_ctr for wellbore
 c trying to maintain compatibility of add_gdpm and river_ctr
       if (irun.eq.1) then
 c add gdpm connections
+c calculate the dimensions on a control volume  
+c neq_primary still defined as gdpm primary grid    
+         call area_length_calc(3) 
+c         
          if (gdpm_flag .ne. 0) call add_gdpm
-
+c
+c calculate connectivity for generalized permeability mode
+c
+c         
+         if (gdkm_flag .eq. 1) call gdkm_calc(1)
+c neq_primary now defined as full grid          
+c
+c gaz 11-09-2001 allocation of istrw_itfc and istrw_cold
+c done here after call to anonp,storsx, or structured
+c still could ne changed in add_gdpm   
+       ncon_size=nelm(neq+1)
+       nelmd = ncon_size
+      if(idpdp.eq.0) then
+         if (.not. allocated (istrw_itfc)) 
+     &        allocate(istrw_itfc(ncon_size))
+         if (.not. allocated (istrw_cold))
+     &        allocate(istrw_cold(ncon_size))
+      else
+         if (.not. allocated (istrw_itfc)) 
+     &        allocate(istrw_itfc(2*ncon_size))
+         if (.not. allocated (istrw_cold))
+     &        allocate(istrw_cold(2*ncon_size))
+      end if
+      istrw_itfc = 0
+      istrw_cold = 0         
 c add river or well connections
          if (nriver .ne. 0) then
 c river_ctr(1) call is made in incoord
@@ -648,8 +667,10 @@ c call sx_combine to break connections to fixed type BCs
          if (irun.eq.1.and.inobr.eq.0) call sx_combine(1)
       else
          if (irun.eq.1.and.inobr.eq.0) call sx_combine_ani(1)
-      endif
+      endif     
+c        
 c call fluxo now to calculate neighbors if necessary
+c
       call flxo(1)
 
 c allocate space for velocity and alpha connection terms (seh)
@@ -870,7 +891,20 @@ c load_omr_flux_array from ptrac1 to fehmn.f where ptrac1 used to be called
 
 c simplify connectivity based on porosity=0.0
 c only for isotropic problems (ianpe=0)
-c
+c  
+        i1 = 0           
+        do i = 1,n
+         if(nelm(i)+1.eq.nelm(i+1).and.ps(i).gt.0.0d0) then
+          i1 = i1 + 1
+          write(ierr,*) 'WARNING isolated node (w por> 0) ',i
+	   endif
+       enddo
+       if(i1.gt.0) then
+        if(iptty.ne.0) write(iptty,*)
+     &   'WARNING isolated nodes with por> 0 exist: see fehmn.err'
+        if(iout.ne.0) write(iout,*)
+     &   'WARNING isolated nodes with por> 0 exist: see fehmn.err'     
+       endif
          if(ianpe.eq.0) then
             call   simplify_ncon
      &           (0,nelm,nelmdg,nop,istrw,ib,neq,idof,ka,ps,i)
@@ -904,7 +938,11 @@ c
             endif
          end if
       end if
+c      
+c check connectivity      
 c
+       if(ic_sym.eq.1)call connectivity_symmetry_test(1)
+c       
 c call reordering algorithm here
 c
       call renum(1)
@@ -1222,11 +1260,7 @@ c     being computed
 
 c modify volumes and heat capacities to affect boundary conditions
       call bcon(1)
-c
-c calculate areas for use in flow through boundary conditions
-c
-c      moved below
-c      call area_flow_bc(1)     
+
 c      
 c**** initialize ngas varibles ****
       call co2ctr (6)
@@ -1332,7 +1366,7 @@ c     nonisothermal problem
 c
 c calculate areas for use in flow through boundary conditions
 c
-      call area_flow_bc(1)     
+      call area_length_calc(1)     
 c      
       if(compute_flow ) then
 c**** initialize some variables **** 

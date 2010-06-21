@@ -128,13 +128,68 @@ C***********************************************************************
 
       integer ndex(2)
       integer i, id, neqp1, nsizea, nsizea1 
+      integer iparchek,kb,jj,i1,i2,i3,i4,j
+      real a11     
       real*8 dumn(100),term
       real*8, allocatable :: sto5(:,:)
       real*8, allocatable :: dum(:)
       real*8  facr, fdum2, tollr, tolls, tmch_new, tmch_old, bp_max
+      parameter(iparchek = 0)
       save tmch_old
       neqp1=neq+1
-c     zero out arrays
+c test of coefficients
+       if(iparchek.eq.1) then
+       write(ierr,*) 'fe coef. neighbors'
+       write(ierr,*)
+       do i = 1,neq
+        write(ierr,*)' vol node ', i,' = ', sx1(i)
+        i1 = nelm(i)+1
+        i2 = nelmdg(i)-1
+        do j = i1,i2
+         kb = nelm(j)
+         i3 = nelmdg(kb)+1
+         i4 = nelm(kb+1)
+         do jj = i3,i4
+         if(nelm(jj).eq.i) then
+          iw = istrw(jj-neqp1)
+          if(iw.gt.0) then
+           a11 = sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz)
+          else
+           a11 = 0.0
+          endif
+          write(ierr,355)i,kb,iw,a11
+          go to 899
+         endif
+        enddo
+899     continue         
+       enddo        
+        i1 = nelmdg(i)+1
+        i2 = nelm(i+1)        
+        do j = i1,i2
+         kb = nelm(j)
+         iw = istrw(j-neqp1)
+          if(iw.gt.0) then
+           a11 = sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz)
+          else
+           a11 = 0.0
+          endif
+         write(ierr,355)i,kb,iw,a11
+        enddo        
+       enddo   
+355   format(i6,1x,i6,1x,i6,1x,f12.3)        
+       stop
+       endif    
+c     zero out arrays       
+c
+c  check for possible stopping on variable changes
+c
+      if(iad.ge.1) then
+       if(nr_stop.eq.2) then
+        fdum=-1.0
+        go to 999
+       endif
+      endif
+c           
       do i=1,neq
          bp(i+nrhs(1))=0.0
          bp(i+nrhs(2))=0.0
@@ -148,6 +203,8 @@ c     zero out arrays
       do id=1,neq
         if(iriver.eq.2.and.id.gt.neq_primary) then
          call geneq1_well(id)
+        else if(ianpe.ne.0) then 
+         call geneq1_ani(id)
         else
          call geneq1(id)
         endif
@@ -197,7 +254,7 @@ c
          do i=1,neq
             bp_max= max(abs(bp(i+nrhs(1))),abs(bp(i+nrhs(2))),bp_max) 
          enddo
-	 if(bp_max.lt.tmch) then
+	 if(bp_max.lt.tmch.and.nr_stop.eq.0) then
          fdum=-1.0
          go to 999
        else

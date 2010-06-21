@@ -250,5 +250,7 @@ c**** reset stress solution ****
       if ( istrs .ne. 0 )  then
          call stressctr(-10,0)
       end if
+c**** reset time_ieos
+      time_ieos = 0.0d0      
       return
       end

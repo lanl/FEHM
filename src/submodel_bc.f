@@ -26,6 +26,7 @@
 !D2 Initial implementation: Date 9-Jan-02, Programmer: George Zyvoloski
 !D2
 !D2 $Log:   /pvcs.config/fehm90/src/submodel_bc.f_a  $
+!D2 $Log:   /pvcs.config/fehm90/src/submodel_bc.f_a  $
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:44:16   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003

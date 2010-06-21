@@ -146,10 +146,10 @@ c  adjust impedance or connection to represnt a variety of
 c  near-wellbore analytic solutions
 c
 c  first check for applied impedance model that is not associated with a source or sink
-c
-          do i = 1,n0
-           if(ka(i).eq.0) izonewel1(i) = 0
-          enddo
+c gaz 061210 
+c          do i = 1,n0
+c           if(ka(i).eq.0) izonewel1(i) = 0
+c          enddo
 c          
           do i = 1,n0
 c ij is the model number (in numerical sequence)          

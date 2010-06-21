@@ -1310,7 +1310,7 @@ c   (need) to put derivative terms in later (gaz)
               permsd = wellim(mi)*rol/xvisl
              endif
             endif            
-            if(pldif.le.0.0d00.and.wellim(mi).lt.0.0d0) permsd=0.0d0
+            if(pldif.le.0.0d00.and.kq.eq.-2) permsd=0.0d0
             qdis=permsd*(pldif)
             sk(mi)=qdis
             dq(mi)=permsd

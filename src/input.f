@@ -906,12 +906,19 @@ c will be output
                         write (ierr, *) 'No air/vapor phase in problem',
      &                       ' Vapor fluxes will not be output'
                      end if
+                  else if (cmsg(i)(1:3) .eq. 'hea') then   
+                    if(ico2.ge.0) then
+                     eflux_flag = .true.
+                    else
+                     write (ierr, *) 'No heat in problem',
+     &                       ' Heat fluxes will not be output'
+                    endif
                   end if
                end if
             end do
          else
             wflux_flag = .true.
-            if (irdof .ne. 13 .and. jswitch .eq. 0) 
+            if ((irdof .ne. 13 .or. ifree .ne. 0) .and. jswitch .eq. 0) 
      &           vflux_flag = .true.
          end if
          read(inpt,*) nflxz
@@ -935,7 +942,7 @@ c     Loop over each zone for determining izoneflxz array
 
 
 c**** read in Generalized dual porosity information
-      else  if (macro .eq. 'gdpm') then
+      else  if (macro .eq. 'gdpm'.or. macro .eq. 'gdkm') then
 
          call ingdpm
 
@@ -1249,6 +1256,7 @@ c**** these are minimum relative permeabilities *****
          if (idpdp .eq. 1) joff = 4
 c         read (inpt,*) strd_rich, tol_phase 
          read (inpt, '(a80)') wdd1
+c    0.95  1.e-5  0.001 0.001        
          read (wdd1,*,end = 598) strd_rich, tol_phase, pchng, schng 
           go to 599
  598      continue
@@ -1282,7 +1290,10 @@ c**** solution and integration type ****
          else
             idof = 2
          end if
-
+      else if (macro .eq. 'nrst') then
+c*** NR stopping criterea based on variable changes
+       nr_stop = 1
+       call nr_stop_ctr(0)
       else if (macro .eq. 'solv') then
 c**** solv (doesn't do anything yet) ****
 

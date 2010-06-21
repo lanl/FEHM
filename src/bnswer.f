@@ -337,7 +337,10 @@ c     gaz-commented out 9-2-2003
          call icectr(-6,0)
 c     if (mlz.eq.-1) goto 2000
       endif
-
+c
+c  very new call outbound here gaz 120709
+c      call outbnd
+c
 c     call appropriate sub to generate equations
       if(idof_stress.ge.5) then
 c 3d coupled THM
@@ -425,8 +428,8 @@ c     RJP 04/10/07 added following
       if(epe.le.0.) goto 2000
 c     
 c     check if varibles are out of bounds
-c     
-      call outbnd
+c      outbnd moved higher
+      call outbnd 
       if(mlz.ne.0) goto 2000
       goto 1000
  2000 continue

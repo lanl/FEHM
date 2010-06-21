@@ -181,9 +181,6 @@ c      integer, allocatable ::   itstress(:)
       integer iz4m1
       integer imd,iwd    
 
-  
-
-
 c changed by avw -- entered here by seh
       neqp1=neq+1
       ldna=nelm(neqp1)-neqp1
@@ -439,25 +436,22 @@ c z equation derivatives
       a(iau+nmat(7))=a(iau+nmat(7))+zx
       a(iau+nmat(8))=a(iau+nmat(8))+zy
       a(iau+nmat(9))=a(iau+nmat(9))+zz   
-
-
       enddo
 c
 c add thermal expansion and biot terms
 c
-
 	do jm = ii1,ii2
       kb = nelm(jm)
 	iws = istrws(jm-neqp1)
 
 c x term for pore pressure and thermal expansion term
-         sjsix=sxs(iws,7)
+         sjsix=sxs(iws,13)
 c y term for pore pressure and thermal expansion term
-         sjsiy=sxs(iws,8)
+         sjsiy=sxs(iws,14)
 c z term for pore pressure and thermal expansion term
 c sign is due to internal non-traditional numbering of hex grid
 c need to check things on other grids.
-         sjsiz=-sxs(iws,9)        
+         sjsiz=-sxs(iws,15)        
             e1kb = e1(kb)
             e2kb = e2(kb)
             e3kb = e3(kb)
@@ -497,7 +491,6 @@ c
          bp(iz+nrhs(1))=bp(iz+nrhs(1))+tdumx
          bp(iz+nrhs(2))=bp(iz+nrhs(2))+tdumy 
          bp(iz+nrhs(3))=bp(iz+nrhs(3))+tdumz 
-
       enddo
       
       return

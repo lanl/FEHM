@@ -456,6 +456,10 @@ c     z assumes z(nz+1)is lowest elevation
                enddo
             enddo
          endif
+c set grid origins         
+       x_orig = x0
+       y_orig = y0
+       z_orig = z0   
       else if (iflg.eq.1) then
 c     generate connectivity and coefficient file
 c     assume block-centered grid
@@ -751,9 +755,9 @@ c     write coordinates to a file
             nunit = open_file(fdm_name,'unknown')
          end if
          write (nunit,'(a)') 
-     &        'Coordinates & volumes for finite difference gridblocks'
-         write(nunit,*) neq
-         do i=1,neq
+     &  'Coordinates & volumes for primary finite difference gridblocks'
+         write(nunit,*) neq_primary
+         do i=1,neq_primary
             write(nunit,'(i9,1x,1p,3(g15.6,1x),g12.4)') 
      &           i,(cord(i,j),j=1,3),sx1(i)
          enddo

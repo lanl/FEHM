@@ -59,7 +59,7 @@
       real*8, allocatable :: scaley(:)
       real*8, allocatable :: scalez(:)
 
-      integer i, ir
+      integer i
  
       allocate(scalex(n0))
       allocate(scaley(n0))
@@ -93,29 +93,6 @@ c**** read permeability scaling data ****
       end do
 
       macroread(22) = .TRUE.
-
-      if (nrlp .ne. 0) then
-c     Assign scaling factors for rlp models
-         if (.not. allocated(xfperm)) then
-c     use fperm arrays for temporary storage for later model assignment
-            allocate(xfperm(n0),yfperm(n0),zfperm(n0))
-            xfperm = scalex
-            yfperm = scaley
-            zfperm = scalez
-         else
-c     If rlp has already been read, these arrays have been allocated
-c     and a model assignment needs to be made
-            do i = 1, n0
-               ir = irlp(i)
-               if (ir  .ne. 0) then
-                  xfperm(ir) = scalex(i)
-                  yfperm(ir) = scaley(i)
-                  zfperm(ir) = scalez(i)
-               end if
-            end do
-         end if
-      end if
-
       deallocate(scalex)
       deallocate(scaley)
       deallocate(scalez)

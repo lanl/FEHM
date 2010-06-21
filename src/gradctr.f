@@ -58,16 +58,16 @@ CD4
       use commeth
       implicit none
 
-      integer iflg,icode, izone, inode, idir,iroot
-      integer mi,neqp1,i,i1,i2,j,jj,ja,ngrad_max
-      integer open_file,igradm
+      integer iflg,icode, izone, inode, idir, iroot,neq_total
+      integer mi,neqp1,i,i1,i2,j,jj,ja,ngrad_max,i_2nd
+      integer open_file,igradm, imodel, jk, node_second_0
       character*80 gradm_name
       character*5 dgradm
       character*80 gradmod_root
       logical grad_dum
       character*3 grad_all
       parameter(ngrad_max= 50)
-      real*8 dist 
+      real*8 dist,var_inode 
 
 c================================================================
       if(igrad.eq.0) return
@@ -178,9 +178,14 @@ c     &    status ='unknown')
          read(j,*) (izonef(i),i=1,n0)
 c    
          if(iread.le.0) then
-c code with no restart file is present                 
+c code with no restart file is present     
+          if(gdpm_flag.ge.3.and.gdpm_flag.le.6) then  
+           neq_total = neq_primary
+          else
+           neq_total = neq
+          endif          
             do izone=1,ngrad
-               do inode=1,n0
+               do inode=1,neq_total
                   if(izonef(inode).eq.izone_grad(izone)
      &                  .or.izone_grad(izone).eq.-1) then
                      idir = idirg(izone)
@@ -211,6 +216,30 @@ c RJP 04/10/07 added the following part for CO2
                      endif
                   endif
                enddo
+c  calgulate variables from gradients for gdpm and gdkm    
+             if(gdpm_flag.ge.3.and.gdpm_flag.le.6) then
+               do inode=1,neq_primary
+                 imodel = igdpm(inode)
+                 if(ngdpm_layers(imodel).ne.0) then
+                  if(izonef(inode).eq.izone_grad(izone))then
+c notice that the gdpm nodes are 1D   
+                   node_second_0 = nelm(nelm(inode+1))             
+                   do jk = 1, ngdpm_layers(imodel)
+                     i_2nd = node_second_0 + (jk-1)
+                     idir = idirg(izone)
+                     dist =  cord(inode,1) - cord(i_2nd,1)
+                     if(igradf(izone).eq.11) then
+                        var_inode = pho(inode)
+                        pho(i_2nd) = var_inode + grad1(izone)*dist
+                     else if(igradf(izone).eq.12) then
+                        var_inode = to(inode)
+                        to(i_2nd)= var_inode + grad1(izone)*dist   
+                     endif
+                   enddo
+                   endif
+                  endif
+               enddo                
+             endif      
             enddo
          else
             do izone=1,ngrad

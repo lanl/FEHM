@@ -299,13 +299,14 @@ c     note repeated element types
 c     note repeated nodal geometries
 c     
       if (istrs.ne.0) then
-         nterm=22
          if(icnl.eq.0) then
+            nterm = 25         
             ns1 = 11
-            ns2 = 22
+            ns2 = 25
          else
+            nterm = 18
             ns1 = 11
-            ns2 = 16
+            ns2 = 18
          endif
       else
          nterm=04
@@ -391,13 +392,11 @@ c
                   arem = mod(dble(neu),tenth) 
                   if(arem.eq.0.and.nga.eq.ni.and.printc) then
                      icrem = icrem + 10
-                     if (iout.ne.0) write(iout,*)
-     &                    'calcs for coef number = ',nrq  ,' 
-     &                    percent complete = ', icrem
-                     if (iptty.ne.0) write(iptty,*)
-     &                    'calcs for coef number = ',nrq  ,' 
-     &                    percent complete = ', icrem
+                     if (iout.ne.0) write(iout,1600) nrq, icrem
+                     if (iptty.ne.0) write(iptty,1600) nrq, icrem
                   endif
+1600   format(1x,'calcs for coef number = ',i5,1x,
+     &   'percent complete = ',i5)               
                   nele=ineluf(neu)
 c     calculate number of nodes
                   nsl=nsf(nele)
@@ -430,11 +429,11 @@ c     assemble sx(lz,nrq) from bcoef(nele,ij)
 c     loop on unique node groups
 c     
             isx=0
+            dumm=0
             do noder=1,nodeu
 c     find representative node of that group
                i=inoduf(noder)
 c     perform calculations on node i
-               dumm=0
                i7=1
                i8=iplace(i)
                do j=i7,i8
@@ -471,6 +470,7 @@ c     use mass lumping for capacitance term
                   do iq=i1,i2
                      kb=ncon(iq)
                      sx1(i)=sx1(i)+dumm(kb)
+                     dumm(kb) = 0.0
                   enddo
                endif
                if ( nrq.ne.1.and.nrq.le.4 )  then
@@ -479,6 +479,7 @@ c     rest of terms
                      kb=ncon(iq)
                      isx=isx+1
                      sx(isx,nrq-1)=sx(isx,nrq-1)+dumm(kb)
+                     dumm(kb) = 0.0
                   enddo
                   
                   go to  777
@@ -504,6 +505,7 @@ c     geometric coefficients (xy,xz,yz) for stress equations
                      kb=ncon(iq)
                      isx=isx+1
                      sxs(isx,nrs)=sxs(isx,nrs)+dumm(kb)
+                     dumm(kb) = 0.0
                   enddo
                endif
                if ( nrq.ge.ns2-2.and.nrq.le.ns2 )  then
@@ -513,6 +515,7 @@ c     geometric coefficients (xy,xz,yz) for stress equations
                      kb=ncon(iq)
                      isx=isx+1
                      sxs(isx,nrs)=sxs(isx,nrs)+dumm(kb)
+                     dumm(kb) = 0.0
                   enddo
                endif
                endif

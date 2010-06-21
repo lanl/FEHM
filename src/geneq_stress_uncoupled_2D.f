@@ -409,9 +409,9 @@ c
 	iws = istrws(jm-neqp1)
 
 c x term for pore pressure and thermal expansion term
-         sjsix=-sxs(iws,3)
+         sjsix=sxs(iws,7)
 c y term for pore pressure and thermal expansion term
-         sjsiy=-sxs(iws,4)
+         sjsiy=sxs(iws,8)
     
             e1kb = e1(kb)
             e2kb = e2(kb)

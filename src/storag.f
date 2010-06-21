@@ -400,17 +400,17 @@ c
       if(ist5.gt.nszom) then
          nszom  =  ist5                              
          if (iout .ne. 0) then
-            write(iout,*) 'Warning (Issued from GZSOLVE)'
+            write(iout,*) 'Warning (Issued from GZSOLVE-storag)'
             write(iout,*) 'Storage for acceleration method changed '
          end if
          if ( iatty .gt. 0 ) then
-            write(iatty,*) 'Warning (Issued from GZSOLVE)'
+            write(iatty,*) 'Warning (Issued from GZSOLVE-storag)'
             write(iatty,*) 'Storage for acceleration method changed '
          end if
       else
          nszom = ist5
       end if
- 100  format ('Fatal error in GZSOLVE')
+ 100  format ('Fatal error in GZSOLVE-storag')
  200  format ('Not enough space allocated in the ', 4a, ' array')
  9000 continue
       if( error_flag .ne. 0 ) then

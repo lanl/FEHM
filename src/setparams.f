@@ -26,6 +26,7 @@ CD2
 CD2 06-DEC-93    Z. Dash        22      Initial implementation.
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/setparams.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:43:52   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -342,6 +343,7 @@ c set some parameters
 c	gdpm nodes
       ngdpmnodes = 0
       gdpm_flag = 0
+      gdkm_flag = 0
       iwellp_flag = 0
       nwellphy = 0
 

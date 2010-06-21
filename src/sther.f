@@ -223,18 +223,46 @@ C**********************************************************************
       use comai
       implicit none
 
-      real*8 tsat,psat
+      real*8 tsat,psat,dtsatp
       real*8 visl0,visl1,t0,t1,coef0,coef1
       integer i,iieosd
 
       if ( iieosd .eq. 0 )  then
-c     read input when apprpriate
-         read (inpt  ,   *)  iieosd,ipsat,itsat
-         read (inpt  ,   *)  ew1,ew2,ew3,ew4,ew5,ew6,ew7,ew8,ew9,
+c     read input when appropriate
+         ipsat = 0
+         read (inpt  ,'(a80)') wdd1
+         read(wdd1,*) iieosd,itsat
+         if(itsat.eq.2) then
+          read(wdd1,*) iieosd,itsat,tsat,psat,dtsatp
+         endif
+         read (inpt  ,   *)  ew1,ew2,ew3,ew4,ew5,ew6,ew7,ew8,ew9, 
      2        ew10,ew11
          read (inpt  ,   *)  ev1,ev2,ev3,ev4,ev5,ev6,ev7,ev8,ev9,
      2        ev10,ev11
-         if ( itsat .ne. 0 )  then
+         if ( itsat .eq. 2)  then
+c   linear saturation line 
+            ipsat = 0
+            tsa0=tsat-dtsatp*psat
+            tspa1=dtsatp
+            tspa2=0.0
+            tspa3=0.0
+            tspa4 = 0.0
+            tsb0=1.0
+            tspb1=0.0
+            tspb2=0.0
+            tspb3=0.0
+            tspb4=0.0
+            psa0=psat-tsat/dtsatp
+            psta1=1./dtsatp
+            psta2=0.0
+            psta3=0.0
+            psta4=0.0
+            psb0=1.0
+            pstb1=0.0
+            pstb2=0.0
+            pstb3=0.0
+
+         else if ( itsat .ne. 0 )  then
 c     set ipsat=1 always when itsat ne 0
             ipsat=1
 c     if vapor phase(itsat<0) set tsat=-1000.(this will keep it vapor)
@@ -266,7 +294,7 @@ c     if liquid phase(itsat>0) set tsat=+1000.(this will keep it liquid)
          iieosd=-iieosd
       else
 c     linear expressions for thermo functions
-c     
+c     exceptions are liquid viscosity and vapor density 
 c     ew1-liquid reference pressure
 c     ew2-liquid reference temperature
 c     ew3-liquid reference density
@@ -344,7 +372,8 @@ c        coef1=-ew11/(visl1*t1-visl0*t0)
 c        coef0=visl0*(1.0+coef1*t0)
 c        cvl(11,iieosd)=1.0
 c        cvl(15,iieosd)=coef1                         
-c        cvl( 1,iieosd)=coef0                         
+c        cvl( 1,iieosd)=coef0  
+      if(ew11.ne.0) then           
          t0=ew2
          t1=t0+1.0
          visl0=ew9
@@ -353,17 +382,22 @@ c        cvl( 1,iieosd)=coef0
          coef0=visl0*(coef1+t0)
          cvl(11,iieosd)=coef1
          cvl(15,iieosd)=1.0                           
-         cvl( 1,iieosd)=coef0                         
+         cvl( 1,iieosd)=coef0   
+      else
+         cvl(11,iieosd) = 1.
+         visl0=ew9
+         cvl( 1,iieosd)=visl0
+      endif                      
          cvv(11,iieosd)=1.0
          cvv( 1,iieosd)=ev9-ev10*ev1-ev11*ev2
          cvv( 2,iieosd)=ev10
          cvv( 5,iieosd)=ev11
-
+    
 c     set maximum limits large
-         pmin(iieosd)=0.0
-         pmax(iieosd)=200.0
-         tmin(iieosd)=0.0
-         tmax(iieosd)=600.0
+         pmin(iieosd)=-2.
+         pmax(iieosd)=1000.0
+         tmin(iieosd)=-200.
+         tmax(iieosd)=1500.0
 
 c     change coefficient set to iieosd
       end if

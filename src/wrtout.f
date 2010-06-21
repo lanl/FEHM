@@ -28,6 +28,7 @@ CD2 11-JAN-96    S. Henderson   22      Add prolog.
 CD2              G. Zyvoloski           Initial implementation.
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/wrtout.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:44:32   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -452,8 +453,10 @@ c     Compute flux passing thorugh a zone
             if(nflxz.ne.0) then
 
                call flxz (1, 0.d0)
+               call eflxz(1, 0.d0)
 
             end if
+                    
 c     
 c**** printout global mass and energy flows ****
 c     
