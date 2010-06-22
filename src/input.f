@@ -907,18 +907,18 @@ c will be output
      &                       ' Vapor fluxes will not be output'
                      end if
                   else if (cmsg(i)(1:3) .eq. 'hea') then   
-                    if(ico2.ge.0) then
-                     eflux_flag = .true.
-                    else
-                     write (ierr, *) 'No heat in problem',
+                     if(ico2.ge.0) then
+                        eflux_flag = .true.
+                     else
+                        write (ierr, *) 'No heat in problem',
      &                       ' Heat fluxes will not be output'
-                    endif
+                     endif
                   end if
                end if
             end do
          else
             wflux_flag = .true.
-            if ((irdof .ne. 13 .or. ifree .ne. 0) .and. jswitch .eq. 0) 
+            if (irdof .ne. 13 .and. jswitch .eq. 0) 
      &           vflux_flag = .true.
          end if
          read(inpt,*) nflxz
@@ -1292,8 +1292,8 @@ c**** solution and integration type ****
          end if
       else if (macro .eq. 'nrst') then
 c*** NR stopping criterea based on variable changes
-       nr_stop = 1
-       call nr_stop_ctr(0)
+         nr_stop = 1
+         call nr_stop_ctr(0)
       else if (macro .eq. 'solv') then
 c**** solv (doesn't do anything yet) ****
 

@@ -318,6 +318,8 @@ c     upper saturation cutoff
 c gaz  02-18-08
          hp = bc3/sl**ncut + bc4
          dhp = -bc3*ncut/sl**(ncut+1)
+c ugta version 14-Jun-10, used following
+c        dhp = 0.0
          ireg = 100
       endif
       return
