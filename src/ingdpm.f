@@ -69,12 +69,15 @@
       
 
 c     gdpm_flag: if nonzero, determines the geometry of the matrix. 
-c     1: parallel plate fractures,
+c     1: parallel plate fractures
 c     2: spherical geometry
 c     3: 1-d column geometry (edge)
 c     4: 1-d column geometry (edge,based on total area)
 c     5: 1-d column geometry (block-centered)
 c     6: 1-d column geometry (bc,based on total area)
+c    11: parallel plate fractures x dir is orthogonal to fracture
+c    12: parallel plate fractures y dir is orthogonal to fracture
+c    13: parallel plate fractures y dir is orthogonal to fracture
       read(inpt,*) gdpm_flag, ngdpmnodes
 
       imodel = 0
@@ -89,8 +92,9 @@ c     6: 1-d column geometry (bc,based on total area)
      2        (gdpm_x(imodel,i),i=1,ngdpm_layers(imodel))
          goto 1000
       end if
-c     Change fron edge coordinates to block centers
-      if(gdpm_flag.eq.4.or.gdpm_flag.eq.3) then
+c     Change from edge coordinates to block centers
+c      if(gdpm_flag.eq.4.or.gdpm_flag.eq.3.or.gdpm_flag.eq.1) then
+      if(gdpm_flag.eq.4.or.gdpm_flag.eq.3) then      
          do i = 1, imodel
             gdpm_left = gdpm_x(i,1)
             gdpm_x(i,1) = gdpm_x(i,1)/2.0
@@ -99,9 +103,27 @@ c     Change fron edge coordinates to block centers
                gdpm_x(i,j) = (gdpm_right+gdpm_left)/2.0
                gdpm_left = gdpm_right        
             enddo
-         enddo
+         enddo      
       endif
-
+c     special fracture model
+c     vfrac_primary is the fracture width
+c     the other are normalized lengths (to the total dxrg(defined later)
+      if(gdpm_flag.eq.11) then      
+         do i = 1, imodel
+            wgt_length(i) = gdpm_x(i,1)
+            gdpm_vol(i,1) = gdpm_x(i,1)
+            gdpm_left = gdpm_x(i,1)
+            gdpm_x(i,1) = gdpm_x(i,1)/2.0
+            do j = 2, ngdpm_layers(i)
+               gdpm_vol(i,j) = gdpm_x(i,j)
+               wgt_length(i) = wgt_length(i) + gdpm_x(i,j)
+               gdpm_right = gdpm_x(i,j)
+               gdpm_x(i,j) = gdpm_right/2. + gdpm_left
+               gdpm_left = gdpm_right + gdpm_left     
+            enddo
+ 
+         enddo      
+      endif
 c     Set flag to identify which nodes have each gdpm model
       narrays = 1
       itype(1) = 4
