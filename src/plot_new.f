@@ -25,7 +25,7 @@
 !D2 Initial implementation: 6-FEB-04,  Programmer: Z. Dash
 !D2
 !D2 $Log:   /pvcs.config/fehm90/src/inhist.f_a  $
-!D2 
+!D2
 !***********************************************************************
 !D3
 !D3  REQUIREMENTS TRACEABILITY
@@ -1119,6 +1119,7 @@ C RJP 08/09/07
       if (ishisfz .ne. 0) then
 ! Output zone fluxes
          call flxz (2, ptime)
+         call eflxz(2, ptime)
       end if
 ! RJP 7/5/07 added following for co2 zone fluxes
       if (ishiscfz .ne. 0) then

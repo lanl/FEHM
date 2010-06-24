@@ -22,16 +22,10 @@
 !D2
 !D2 FEHM Version 3.0
 !D2 
-!D2 Initial implementation: ?, Programmer: George Zyvoloski
-!D2 11-Nov-2009
-!D2 $Log:   /pvcs.config/fehm90/src/inflo3.f_a  $
+!D2 Initial implementation: 11-Nov-2009, Programmer: George Zyvoloski
 !D2
-!D2    Rev 2.5   06 Jan 2004 10:43:06   pvcs
-!D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
-!D2 
-!D2    Rev 2.4   29 Jan 2003 09:08:18   pvcs
-!D2 FEHM Version 2.20, STN 10086-2.20-00
-!D2 
+!D2 $Log:   /pvcs.config/fehm90/src/area_flow_bc.f_a  $
+!D2
 !***********************************************************************
 !D3
 !D3 REQUIREMENTS TRACEABILITY

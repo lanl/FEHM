@@ -210,6 +210,7 @@
       character*11 dumdate, dumflag
       character*8 dumtime
       character*4 :: geom_type = ''
+      logical gdpm_read
       logical, dimension (2) :: read_trac = .FALSE.
       logical, dimension (2) :: read_ptrk = .FALSE.
       logical, dimension (2) :: read_temp = .FALSE.
@@ -223,6 +224,7 @@
 
       mass_read = .FALSE.
       co2_read = .FALSE.
+      gdpm_read = .FALSE.
       inquire (iread, opened = ex)
       if (ex) close (iread)
       open (iread,file=nmfil(6),status=cstats(6),form=cform(6))
@@ -311,6 +313,7 @@ c this is old style input
             read(iread,'(a4)') wdd1(17:20)
             ncount=neq
             if(wdd1(13:16).eq.'dpdp') ncount=neq+neq
+c            if(wdd1(13:16).eq.'dpdp') gdpm_read = .TRUE.
             if(wdd1(17:20).eq.'dual') ncount=neq+neq+neq
             if (wdd1(1:4).eq.'ngas' .or. wdd1(1:4).eq.'wnga') then
                if(iriver.ne.0 .and. wdd1 .eq. 'ngas') 
@@ -509,9 +512,14 @@ c Use values from input
             backspace (iread)
             read (iread, *) ncount, geom_type
             modneq = mod(ncount,neq)
-            modneq_primary = mod(ncount,neq_primary)
+            if(geom_type.eq.'gdpm') gdpm_read = .TRUE.
+            if (gdpm_read) then
+               modneq_primary = 0
+            else
+               modneq_primary = mod(ncount,neq_primary)
+            end if
             if (modneq .ne. 0 .or. modneq_primary .ne. 0) goto 2000
-             do
+            do
                read (iread ,'(a11)', end = 100) dumflag
                select case (dumflag(1:4))
                case ('temp')

@@ -539,6 +539,8 @@
                            prnt_flxzvar(3) = .TRUE.
                         case ('bou', 'BOU')   ! Boundary
                            prnt_flxzvar(4) = .TRUE.
+                        case ('hco', 'HCO')   ! Heat Conduction
+                           prnt_flxzvar(5) = .TRUE.                
                         end select
                      end if
                   end do
@@ -577,6 +579,22 @@
                         write(ishisfzz, 6005) verno, jdate, jtime
                      end select
                   end if
+                  if (eflux_flag) then
+                     fname = ''
+                     flxzone = ''
+                     write (flxzone, '(i5.5)') iflxz(i)
+                     fname =  root(1:iroot) // '_eflxz' // flxzone // 
+     &                    hissfx
+                     ishisfzz = ishisfz + i + 800
+                     open (unit=ishisfzz, file=fname, form='formatted')
+                     select case (form_flag)
+                     case (0)
+                        write(ishisfzz, 6000) verno, jdate, jtime, 
+     &                       trim(wdd)
+                     case (1)
+                        write(ishisfzz, 6005) verno, jdate, jtime
+                     end select
+                  end if                  
                end do
             else
                if (iout .ne. 0) write(iout, 6050)
