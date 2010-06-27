@@ -75,6 +75,7 @@
       integer, allocatable :: nelm_temp(:)
       integer, allocatable :: istrw_temp(:)
       real*8, allocatable :: sx_12(:,:)
+      real*8, allocatable :: sx_temp(:,:)
       parameter(tol_cos = 1.d-8)
 c
       neqp1 = neq +1
@@ -184,6 +185,11 @@ c assume all gdkm nodes are double sided
        allocate(idum1(neq))  
        idum1 = 0          
        allocate(sx_12(neq,2))
+       if(isoy.eq.1) then
+        allocate(sx_temp(nr+2*neq,1))
+       else
+        allocate(sx_temp(nr+2*neq,3))
+       endif      
        ic = neq  
 c save original connectivity (and stor file pointer)      
         do i = 1,neq_primary
@@ -226,7 +232,7 @@ c primary connection is kb_pos
            endif
           else
 c kb_pos has no gdkm nodes- connect to primary nodel 
-c remember teh reciprocal relationship
+c remember the reciprocal relationship
            idump(i_pos) = kb_pos
            idumn(kb_pos) = i_pos
            sx_12(i,1) = -(area_i)
@@ -243,8 +249,15 @@ c since i is a gdpm node  find the +x and -x last gdpm nodes
        enddo
 c now add new connection
 c will leave connection from i to kb_pos (may need it later- for stress)
-       ii = neq+1
+       ii = neqp1
        iww = nr
+       if(isoy.eq.1) then
+        sx_temp(1:nr,1) = sx(1:nr,1)
+       else
+        sx_temp(1:nr,1) = sx(1:nr,1)
+        sx_temp(1:nr,2) = sx(1:nr,2)
+        sx_temp(1:nr,3) = sx(1:nr,3)
+       endif
        do i = 1, neq
         kbmin = neq
         kbmax = 0
@@ -261,10 +274,11 @@ c will leave connection from i to kb_pos (may need it later- for stress)
          iww = iww+1
          nelm_temp(ii) = idump(i)
          istrw_temp(ii-neqp1) = iww
-         sx(iww,1) = sx_12(i,1)
+         sx_temp(iww,1) = sx_12(i,1)
         endif        
         do kb = kbmin, kbmax
          iw = idum1(kb)
+         idum1(kb) = 0
          if(iw.ne.0) then
           ii = ii +1
           nelm_temp(ii)= kb
@@ -272,17 +286,38 @@ c will leave connection from i to kb_pos (may need it later- for stress)
           if(kb.eq.i) nelmdg(i) = ii
          endif
         enddo
-        if(i.lt.neq_primary.and.idump(i).ne.0) then
+        if(i.lt.neq_primary.and.idumn(i).ne.0) then
          ii = ii+1
          iww = iww+1
-         nelm_temp(ii) = idump(i)
+         nelm_temp(ii) = idumn(i)
          istrw_temp(ii-neqp1) = iww
-         sx(iww,1) = sx_12(i,1)         
+         sx_temp(iww,1) = sx_12(i,1)         
         endif
+        nelm_temp(i+1) = ii
        enddo 
-c copy nelm_temp and            
+c copy nelm_temp to nelm  
+       deallocate(sx,nelm,istrw) 
+       if(isoy.eq.1)then
+        allocate(sx(iww,1))
+       else
+        allocate(sx(iww,3))
+       endif
+       allocate(istrw(ii-neqp1))
+       allocate(nelm(ii))
+       if(isoy.eq.1) then
+        sx(1:iww,1) = sx_temp(1:iww,1)
+       else
+        sx(1:nr,1) = sx_temp(1:nr,1)
+        sx(1:nr,2) = sx_temp(1:nr,2)
+        sx(1:nr,3) = sx_temp(1:nr,3)
+        sx(nr+1:iww,1) = 3.*sx_temp(nr+1:iww,1)
+        sx(nr+1:iww,2) = 0.0
+        sx(nr+1:iww,2) = 0.0
+       endif
+       nelm(1:ii) = nelm_temp(1:ii)
+       istrw(1:ii-neqp1) = istrw_temp(1:ii-neqp1)
+       deallocate(idump,idumn,nelm_temp,istrw_temp,sx_temp)         
        endif 
-       deallocate(idump,idumn,nelm_temp,istrw_temp)
       else if(iflg.eq.-1) then    
        deallocate(iconn_gdkm)
       endif
