@@ -235,6 +235,8 @@ c Values from the restart file will not be used
          dum_type = 'dual'
       else if (idpdp .ne. 0) then
          dum_type = 'dpdp'
+      else if (gdpm_flag.ne.0) then
+         dum_type = 'gdpm'         
       else
          dum_type = 'nddp'
       end if

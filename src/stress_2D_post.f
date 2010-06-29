@@ -298,8 +298,8 @@ c
 c          
 c recall geometric integrals, calculated in gencof.
 c 2-d 
-      sisjx=sxs(iws,3)
-      sisjy=sxs(iws,4)
+            sisjx=sxs(iws,3)
+            sisjy=sxs(iws,4)
 c average material properties                     
             e1kb = e1(kb)
             e2kb = e2(kb)

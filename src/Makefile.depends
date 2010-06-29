@@ -2,7 +2,7 @@
 accum_derivative.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 accum_derivative.o: comgi.o comii.o comrxni.o comsplitts.o davidi.o
 accum_term.o: comai.o comci.o comdi.o comdti.o comii.o davidi.o
-add_gdpm.o: comai.o combi.o comdti.o
+add_gdpm.o: comai.o combi.o comdi.o comdti.o
 air_combine.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 air_combine.o: comhi.o comii.o commeth.o davidi.o
 air_rdof.o: comai.o comci.o comdi.o comdti.o comii.o
@@ -18,6 +18,8 @@ allocmem.o: comzeoli.o davidi.o
 anonp.o: comai.o combi.o comdi.o comdti.o comei.o comsi.o
 anonp_ani.o: comai.o combi.o comdi.o comdti.o comei.o
 area_flow_bc.o: comai.o combi.o comci.o comdi.o comdti.o comki.o davidi.o
+area_length_calc.o: comai.o combi.o comci.o comdi.o comdti.o comji.o comki.o
+area_length_calc.o: davidi.o
 area_vol_weightctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 area_vol_weightctr.o: comgi.o comii.o comrxni.o davidi.o
 avs_io.o: avsio.o comai.o combi.o comchem.o comdi.o comdti.o commeth.o comriv.o
@@ -68,6 +70,8 @@ coneq1_gdpm.o: comfi.o comflow.o comgi.o comji.o comrxni.o comxi.o davidi.o
 coneq1mdnode.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o
 coneq1mdnode.o: comfi.o comflow.o comgi.o comji.o comrxni.o davidi.o
 connections_list.o: comai.o combi.o
+connectivity_symmmetry_test.o: comai.o combi.o comci.o comdi.o comdti.o comei.o
+connectivity_symmmetry_test.o: comfi.o comgi.o davidi.o
 contr.o: avsio.o comai.o combi.o comci.o comdi.o comdti.o comhi.o comii.o
 contr.o: compart.o comsi.o comwt.o comxi.o davidi.o
 contrc.o: comai.o combi.o comdi.o comdti.o comxi.o
@@ -86,7 +90,6 @@ data.o: comflow.o comgi.o comhi.o comii.o comji.o compart.o comrtd.o comrxni.o
 data.o: comsplitts.o comwt.o comzone.o davidi.o
 datchk.o: comai.o combi.o comdi.o comdti.o comfi.o comii.o compart.o comxi.o
 datchk.o: davidi.o
-dated.o: comai.o
 daycrl.o: comai.o combi.o comci.o comdi.o comdti.o comgi.o compart.o
 daycrl.o: comsplitts.o davidi.o
 diagnostics.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comgi.o
@@ -127,10 +130,14 @@ dualta.o: comgi.o comhi.o comji.o comrxnb.o comrxni.o
 dualtx.o: comai.o combi.o comdi.o comdti.o comei.o comfi.o comgi.o comhi.o
 dvacalc.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 dvacalc.o: comhi.o davidi.o
+eflxz.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comflow.o comji.o
+eflxz.o: davidi.o
 enthp.o: comai.o combi.o comdi.o comdti.o comfi.o comii.o
 evaporation.o: comai.o combi.o comdi.o comevap.o
 explicit.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
 explicit.o: comgi.o comji.o davidi.o
+fd_calc_heat.o: comai.o combi.o comci.o comdi.o comdti.o comji.o comki.o
+fd_calc_heat.o: davidi.o
 fehmn.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o comevap.o
 fehmn.o: comfi.o comflow.o compart.o comriv.o comrtd.o comrxni.o comsi.o
 fehmn.o: comsplitts.o comsptr.o comwt.o comxi.o davidi.o interpolate.o
@@ -147,6 +154,9 @@ flxo.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
 flxo.o: comgi.o comxi.o davidi.o
 flxz.o: comai.o combi.o comco2.o comdi.o comdti.o comflow.o davidi.o
 ftime.o: compfrac.o
+gdkm_calc.o: comai.o combi.o comci.o comdi.o comdti.o comji.o comki.o davidi.o
+gdkm_connect_.o: comai.o combi.o comci.o comdi.o comdti.o comji.o comki.o
+gdkm_connect_.o: davidi.o
 gdpm_corr.o: comai.o combi.o comdti.o comei.o comki.o davidi.o
 gdpm_geneqh.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 gdpm_geneqh.o: comflow.o comgi.o comhi.o comji.o davidi.o
@@ -157,6 +167,8 @@ gencon.o: comhi.o comji.o comrxnb.o comrxni.o davidi.o
 gendat.o: comai.o combi.o comci.o comdti.o
 geneq1.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
 geneq1.o: comgi.o comhi.o comji.o comriv.o davidi.o
+geneq1_ani.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+geneq1_ani.o: comflow.o comgi.o comji.o davidi.o
 geneq1_stress.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 geneq1_stress.o: comflow.o comgi.o comhi.o comji.o comsi.o davidi.o
 geneq1_stress_coupl.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
@@ -338,6 +350,8 @@ new_loc_omr.o: comai.o combi.o comdi.o comsk.o comsptr.o
 node_midedge_box_size.o: combi.o
 normal.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 normal.o: comhi.o davidi.o
+nr_stop_ctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+nr_stop_ctr.o: comflow.o comgi.o comii.o comji.o comki.o comxi.o davidi.o
 open_file.o: comai.o
 outbnd.o: comai.o combi.o comco2.o comdi.o comdti.o comfi.o comii.o commeth.o
 outbnd.o: davidi.o
