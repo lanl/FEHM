@@ -637,32 +637,35 @@ c     saturations are never zeroed out, report what is in array
                ic1 = ic2 + 1
             end if
          end if
-         if (ihead.eq.1 .and. iohead .eq. 1 .and. size_head .ne. 1) then
-            if (ps(i) .le. 0.) then
-               hdum = 0.d0
-            else
-               hdum = head(i)
+         if (iohead .eq. 1) then
+c zvd - 12-Jul-2010 distinguish between regular head output and chead
+            if (ichead .eq. 1) then
+               if (ps(i) .le. 0.) then
+                  hdum = 0.d0
+               else
+                  call headctr(4, i   ,pho(i), hdum)
+c                  hdum = max(hdum,0.0d00)
+               end if
+               write(vstring,110) dls(1:k), hdum
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+           
+            else if (ihead.eq.1 .and. size_head .ne. 1) then
+               if (ps(i) .le. 0.) then
+                  hdum = 0.d0
+               else
+                  hdum = head(i)
 c     might need help in the 
-               if (irdof .ne. 13 .or. ifree .ne. 0) then
-                  if (s(i).lt.sattol+rlptol) hdum = head_id
-               endif 
+                  if (irdof .ne. 13 .or. ifree .ne. 0) then
+                     if (s(i).lt.sattol+rlptol) hdum = head_id
+                  endif 
+               end if
+               write(vstring,110) dls(1:k), hdum
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
             end if
-            write(vstring,110) dls(1:k), hdum
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
-         end if
-         if (ichead .eq. 1 .and. iohead .eq. 1) then
-            if (ps(i) .le. 0.) then
-               hdum = 0.d0
-            else
-               call headctr(4, i   ,pho(i), hdum)
-               hdum = max(hdum,0.0d00)
-            end if
-            write(vstring,110) dls(1:k), hdum
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
          end if
          if (ioporosity .eq. 1) then
             write(vstring,110) dls(1:k), ps(i)

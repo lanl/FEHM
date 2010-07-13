@@ -604,21 +604,23 @@ c         call headctr(0,0,0.0,0.0)
 c
 c**** output in terms of head, not pressures   ****
 c
-         backspace inpt
-         read(inpt,'(a80)') input_msg 
-         read(input_msg,*,end= 995) macro, head0, temp0, pres0, sat_ich,
-     &	    head_id
-         go to 1005
- 995     head0 = 0.0
-         temp0 = 20.0
-         pres0 = 0.1   
-         sat_ich = 0.0
-         head_id= 0.0
- 1005    continue
-         call water_density(temp0, pres0,rol0)
-         ichead=1
-         if(.not.allocated(head)) allocate(head(n0))
-
+c zvd 12-Jul-2010 Only activate if this isn't a head problem         
+         if (ihead .eq. 0) then
+            backspace inpt
+            read(inpt,'(a80)') input_msg 
+            read(input_msg,*,end= 995) macro, head0, temp0, pres0, 
+     &           sat_ich, head_id
+            go to 1005
+ 995        head0 = 0.0
+            temp0 = 20.0
+            pres0 = 0.1   
+            sat_ich = 0.0
+            head_id= 0.0
+ 1005       continue
+            call water_density(temp0, pres0,rol0)
+            ichead=1
+            if(.not.allocated(head)) allocate(head(n0))
+         end if
       else if (macro .eq. 'bous') then
 c constant densities etc for flow terms
          read(inpt,*) icons
