@@ -95,9 +95,9 @@ c arrays for welltype = 2
 	real*8, allocatable ::  delyw2(:)
 	real*8, allocatable ::  delzw2(:)
 
-	real*8, allocatable ::  vel_v_well2(:)	  
-	real*8, allocatable ::  vel_l_well2(:)	
-	real*8, allocatable ::  vel_m_well2(:)	
+c	real*8, allocatable ::  vel_v_well2(:)	  
+c	real*8, allocatable ::  vel_l_well2(:)	
+c	real*8, allocatable ::  vel_m_well2(:)	
 	real*8, allocatable ::  sx_w(:,:)				 
       real*8, allocatable ::  seg_cos(:,:)
       
