@@ -1797,7 +1797,8 @@ c........................................................
 
       use comai, only : ierr, iptty 
 
-      real*8 vomr
+      integer i,np1,ip
+      real*8 xp1,yp1,zp1,vomrx,vomry,vomrz,vomr
 
       write(ierr,*)'pollock_intersect_plane. Sign of velocity wrong.'
       write(ierr,*)'i,np1,ip,xp1,yp1,zp1,vomrx,vomry,vomrz,vomr-ip'
