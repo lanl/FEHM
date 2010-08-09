@@ -381,9 +381,11 @@ c     Zero out derivative arrays
       end if
       
       if (iz.eq.1) then
-         gmres = 0
-         b = 0
-         piv = 0
+         endpos = kgmres + nbd + nstorepiv
+         bigblock(1:endpos) = 0.d0
+c         gmres = 0.d0
+c         b = 0.d0
+c         piv = 0.d0
       endif
       
       return
