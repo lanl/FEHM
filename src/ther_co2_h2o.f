@@ -153,7 +153,8 @@ c     are in g
          drl_vg = 0.0
          drl_ww = 0.0
          drl_wg = 0.0
-         
+         mid = iad
+         mid = l
          do mid=1,neq
             mi=mid+ndummy
 c     calculate multi-phase relative perms.
@@ -1247,6 +1248,18 @@ c     gaz 2-19-04 added gas relative perms
                   dprmya=0.d0
                   dprmyc=0.d0
                endif
+c gaz 09-02-2010               
+               if((pldif.le.0.0d00).and.(kq.eq.-1)) then
+                  permsd1=wellco2(mi)
+                  dprmp=0.d0
+                  dprmt=0.d0
+                  dprmw=0.d0
+                  dprmya=0.d0
+                  dprmyc=0.d0
+                  qdis=permsd1*pldif
+                  skco2(mi)=qdis
+                  dq(mi)=permsd1+dprmp*pldif
+               endif               
                if(idof_co2.eq.2) then
                   permsd1=wellco2(mi)
                   dprmp = 0.d0
