@@ -49,7 +49,6 @@ c
       use comgi
       use comei
       use comdi
-
       use comci
       use combi
       use comdti
@@ -149,7 +148,7 @@ c
       real*8 redu
       real*8 divpkbction_factor
       real*8 grav_air
-      real*8 grav_term
+      real*8 grav_term 
 
       real*8 e1i,e2i,e3i,e1kb,e2kb,e3kb
       real*8 e1bar,e2bar,e3bar
@@ -163,27 +162,32 @@ c
 	real*8 pyy,pyz,pzx,pzy,pzz
 	real*8 fad,fbd,fcd
       real*8 pdumi,tdumi,pdumkb,tdumkb,pdumt,tdumt,roli
-	real*8 tdumx,tdumy,tdumz,udumx,udumy
+	real*8 tdumx,tdumy,tdumz
 	real*8 bforcex,bforcey,bforcez
 	real*8 dtdumxp,dtdumxt
 	real*8 dtdumyp,dtdumyt
 	real*8 dtdumzp,dtdumzt
       real*8 sixsjx,siysjy,sizsjz,sixsjy
-      real*8 siysjx,sixsjz,sizsjx,siysjz 
+      real*8 siysjx,sixsjz,sizsjx,siysjz
       real*8 sizsjy,sjsix,sjsiy,sjsiz
-
+      real*8 sinsjx,sinsjy,sixsjn,siysjn,sinsjn
 c      integer, allocatable ::   itstress(:)
       integer iws
 
       parameter(dis_tol=1.d-12)
-
+      
       logical bit
       integer isl
       integer iz4m1
       integer imd,iwd    
 
-  
-
+      real*8 pi2,cordi
+      real*8 e1bar_2pi, e1bar_2pir, e1bar_2pidr
+      real*8 e2bar_2pi, e2bar_2pir, e2bar_2pidr
+      real*8 e3bar_2pi, e3bar_2pir, e3bar_2pidr
+      real*8 xxn,xnn1,xnn2,xny,yyn
+            
+      pi2    =  6.283185
 
 c changed by avw -- entered here by seh
       neqp1=neq+1
@@ -239,6 +243,7 @@ c pore pressure and thermal expansion terms
       pdumi=phi(i) - phini(i)
 c reference rock density
       roli=denr(i)
+      cordi = cord(i,1)
 c      
 c
 c form constants for i>neq
@@ -252,7 +257,7 @@ c
 c
       iz4m1 = 4*(iz-1)+1
 c
-C?zvd      idg=nelmdg(i-icd)-ii1+1
+c
       neqp1=neq+1
 c define diagonal term for connectivity
       jmi=nelmdg(i-icd)
@@ -294,7 +299,6 @@ c
 	   endif
 	   bp(iz+nrhs(1)) = bforcex
 	   bp(iz+nrhs(2)) = bforcey
-	   radi=cord(iz,3)
 c
 c 2-d geometry 
 c
@@ -304,23 +308,32 @@ c
             neighc=it9(jm)
             iw = it10(jm)
             iws=itstress(jm)    
-            iau=it11(jm)
-		  radkb=0.5*(radi+cord(kz,3))
-c		  radkb = 1.	 
-		     
+            iau=it11(jm)	     
           
 c     
 c recall shape function integrals, calculated in gencof
+c careful with symmetry! (see temperature terms below)
 c
 c   xx term
-         sixsjx=sx(iw,1)*radkb
+         sixsjx=sxs(iws,5)
 c   yy term
-         siysjy=sx(iw,2)*radkb
+         siysjy=sxs(iws,6)
 c   xy term
-         sixsjy=sxs(iws,1)*radkb 
+         sixsjy=sxs(iws,1) 
 c   yx term
-         siysjx=sxs(iws,2)*radkb
-                            
+         siysjx=sxs(iws,2)
+
+c   nx term
+         sinsjx=sxs(iws,3)
+c   ny term
+         sinsjy=sxs(iws,4)
+c   xn term
+         sixsjn=sxs(iws,7) 
+c   yn term
+         siysjn=sxs(iws,8)
+c   nn   (THINK ABOUT THIS ONE!)                   
+         sinsjn=sxs(iws,9)   
+          radkb = 0.5*(cordi+cord(kb,1))+dis_tol      
             e1kb = e1(kb)
             e2kb = e2(kb)
             e3kb = e3(kb)
@@ -328,35 +341,46 @@ c   yx term
             e2bar=2.*e2i*e2kb/(e2i+e2kb + dis_tol)
             e3bar=2.*e3i*e3kb/(e3i+e3kb + dis_tol)
             
+c radial terms (D11 = e1bar, D12 = e3bar, D44 = e2bar)
+
+            e1bar_2pi = e1bar*pi2  
+            e1bar_2pir = e1bar*pi2*radkb
+            e1bar_2pidr = e1bar*pi2/radkb  
+            e2bar_2pi = e2bar*pi2  
+            e2bar_2pir = e2bar*pi2*radkb
+            e2bar_2pidr = e2bar*pi2/radkb 
+            e3bar_2pi = e3bar*pi2  
+            e3bar_2pir = e3bar*pi2*radkb
+            e3bar_2pidr = e3bar*pi2/radkb                     
             dukb=du(kb)
             dvkb=dv(kb)
-            dwkb=dw(kb)   
             
 c
 c compute the terms in the stiffness matrix  k(i,j)
 c
-         xxx = e1bar*sixsjx
-         xyy = e3bar*siysjy
-         
-         xyx=e3bar*siysjx
-         xxy=e2bar*sixsjy
-         
-         
-         yxy=e3bar*sixsjy
-         yyx=e2bar*siysjx
-         yyy=e1bar*siysjy
-         yxx=e3bar*sixsjx
-         
-         
-         
-         
+      
+c rr term
+         xxx = e1bar_2pir*sixsjx
+         xxn = e2bar_2pi*sixsjn
+         xnn1 = e2bar_2pidr*sinsjn
+         xnn2 = e1bar_2pidr*sinsjn
+         xyy = e3bar_2pir*siysjy
+c rz term                 
+         xny=e2bar_2pi*sinsjx
+         xyx=e3bar_2pir*siysjx
+c zr term               
+         yyn=e2bar_2pi*siysjn
+         yxy=e3bar_2pir*sixsjy
+c zz terms
+         yyy=e1bar_2pir*siysjy
+         yxx=e2bar_2pir*sixsjx                                
 c
 c form stiffness matrix
 c
-         xx=xxx+xyy
-         xy=xyx+xxy
+         xx=xxx+xxn+xnn1+xnn2+xyy
+         xy=xny+xyx
          
-         yx=yxy+yyx
+         yx=yxy+yyn
          yy=yyy+yxx
          
          
@@ -409,21 +433,16 @@ c y equation derivatives
       enddo
 c
 c add thermal expansion and biot terms
-c add u/r term for radial stresses
-c might not work for dpdp etc(should change kb to kz0
 c
 
 	do jm = ii1,ii2
-         kb = nelm(jm)
-	   iws = istrws(jm-neqp1)
-	   iau=jm-neqp1
-         radkb=0.5*(radi+cord(kb,3))
-c	   radkb = 1.
-	   
+      kb = nelm(jm)
+	iws = istrws(jm-neqp1)
+
 c x term for pore pressure and thermal expansion term
-         sjsix=-sxs(iws,3)*radkb
+         sjsix=sxs(iws,7)
 c y term for pore pressure and thermal expansion term
-         sjsiy=-sxs(iws,4)*radkb
+         sjsiy=sxs(iws,8)
     
             e1kb = e1(kb)
             e2kb = e2(kb)
@@ -437,25 +456,23 @@ c boit term
             bulkkb=bulk(kb)
             bulkb=2.*bulkkb*bulki/(bulkkb+bulki + dis_tol)
             efac = 3.d0*e2bar + 2.d0*e3bar
-
-           tdumt=t(kb)-tini(kb)
-           pdumt=phi(kb)-phini(kb)
+            if(istrs_coupl.eq.-99) then
+             tdumt=t(kb)-tini(kb)
+             pdumt=phi(kb)-phini(kb)
+	      else
+             tdumt=t(kb)-tini(kb)
+             pdumt=phi(kb)-phini(kb)
+	      endif
 c
            tdumx=sjsix*(tdumt*alphab+pdumt*bulkb)*efac
            tdumy=sjsiy*(tdumt*alphab+pdumt*bulkb)*efac
-
-	     udumx=sjsix*e3bar*0.
-	     udumy=sjsiy*e3bar*0.
-
-           a(iau+nmat(1))=a(iau+nmat(1))+udumx   
-           a(iau+nmat(3))=a(iau+nmat(3))+udumy 
           
 c         
 c form residuals of the stress balance equations
 c
 	      
-         bp(iz+nrhs(1))=bp(iz+nrhs(1))+tdumx+udumx*du(kb)
-         bp(iz+nrhs(2))=bp(iz+nrhs(2))+tdumy+udumy*du(kb)
+         bp(iz+nrhs(1))=bp(iz+nrhs(1))+tdumx
+         bp(iz+nrhs(2))=bp(iz+nrhs(2))+tdumy 
 
       enddo
       
