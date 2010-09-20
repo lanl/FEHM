@@ -1478,7 +1478,10 @@ c
                dench(ja)=dencht+denci(ja)*dtotc
                dencj(ja) = denci(ja)
                denci(ja) = 0.
-               anlo(ja) = an(ja)
+c Do we need to do this here? This is done at start of cnswer?
+c We will need to have old value for call to cfluxz so if we have to do
+c this it should be after call to cfluxz
+c               anlo(ja) = an(ja)
 c      ------------------------------------------------------------------
 c      PHS 3/28/05 adding integration of sink at each node for Don Neeper
                sinkint(ja) = sinkint(ja) + rcss(ja)*dtotc
