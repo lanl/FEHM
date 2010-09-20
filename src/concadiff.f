@@ -82,7 +82,7 @@ C**********************************************************************
 !      use comdti
       implicit none
       
-      real*8 diffcoeff, temp, temp2, poros, satr, vpr, tpr
+      real*8 diffcoeff, temp, temp2, poros, satr, vpr, tpr, satr2
       real*8 theta,p0,t0
       integer flag,mflg
 
@@ -99,9 +99,17 @@ C  Conca - from the fit given on the Neptune 2003 Diffusion write-up
 c  Uses MQ for the air-phase since Conca is water only 
 c  For MQ2 in the Vapor use Thetaresid Vapor = 666
 
+      if (satr .gt. 1.0) then
+         satr2 = 1.0
+      else if (satr .lt. 0.) then
+         satr2 = 0.
+      else
+         satr2 = satr
+      end if
+
 ! flag = 1 Liquid
       if (flag.eq.1) then
-         temp=satr*poros
+         temp=satr2*poros
          select case (mflg)
          case (0)            ! Constant diffusion
             concadiff = diffcoeff
@@ -118,7 +126,7 @@ C Note 1e-4 term in line above is to convert to m2/s from cm2/s
          end select
 ! flag = 2 Vapor
       else if (flag .eq. 2) then
-         temp=(1-satr)*poros
+         temp=(1-satr2)*poros
          select case (mflg)
          case (0)      ! Constant diffusion
             concadiff = diffcoeff
