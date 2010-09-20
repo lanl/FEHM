@@ -463,8 +463,8 @@ c     derivatives wrt water-rich phase fraction (fracw)
             dlwkb = -pxy*dpcpw(kb) 
             dlawi=dlwi*axyf+axyd*fid1*dilwi
             dlawkb=dlwkb*axyf+axyd*fid*dilwkb
-            dlewi=dlwi*aexyf+axyd*fid1*(dilwi*enwi+dili*dewwi)
-            dlewkb=dlwkb*aexyf+axyd*fid*(dilwkb*enwkb+dilkb*dewwkb)
+            dlewi=dlwi*aexyf+axyd*fid1*(dilwi*enwi+dili*dewi)
+            dlewkb=dlwkb*aexyf+axyd*fid*(dilwkb*enwkb+dilkb*dewkb)
 
 c     derivatives wrt co2 mass fraction in water-rich phase (yc)
 
@@ -539,6 +539,13 @@ c
 c     
             bp(iz+nrhs(2))=bp(iz+nrhs(2))+aexy
             bp(kz+nrhs(2))=bp(kz+nrhs(2))-aexy
+c            if(iz.eq.1.and.kz.eq.2.and.iad.le.10) then
+c             write(ierr,*) 'l ', l,'iad ',iad,'connection = ' , iz,kz
+c             write(ierr,*)'axy,aexy aexy/axy 1-2 water rich-h2o'
+c             write(ierr,*) axy, aexy,aexy/axy
+c             write(ierr,*) 'fid,fid1,dilkb,dili,enwkb,enwi'
+c             write(ierr,*) fid,fid1,dilkb,dili,enwkb,enwi
+c            endif
             a(jmia+nmat(6))=a(jmia+nmat(6))+dlepi
             a(jmia+nmat(7))=a(jmia+nmat(7))+dleei
             a(ial+nmat(6))=a(ial+nmat(6))-dlepi
@@ -652,9 +659,15 @@ c
                dgcwkb=0.0
                dgcyckb=0.0
                dgcyakb=0.0
-               enckb=co2_prop(3*neq+kb)
-               deckb=co2_prop(5*neq+kb)
-               decekb=co2_prop(4*neq+kb)
+c               enckb=co2_prop(3*neq+kb)
+c               deckb=co2_prop(5*neq+kb)
+c               decekb=co2_prop(4*neq+kb)
+               enwkb=wat_prop(5*neq+kb)
+               dewkb=wat_prop(6*neq+kb)
+               dewekb=wat_prop(7*neq+kb)
+               dewwkb=0.0
+               dewyckb=0.0
+               dewyakb=0.0
                decwkb=0.0
                decyckb=0.0
                decyakb=0.0
@@ -670,6 +683,12 @@ c
                decwkb=0.0
                decyckb=0.0
                decyakb=0.0
+               enwkb=wat_prop(5*neq+kb)
+               dewkb=wat_prop(6*neq+kb)
+               dewekb=wat_prop(7*neq+kb)
+               dewwkb=0.0
+               dewyckb=0.0
+               dewyakb=0.0
             endif
 
             dvpi=-pvxy+0.5*sx4h*dgcpi*(cord(kz,igrav)-cord(iz,igrav))
@@ -679,17 +698,18 @@ c
             if(icesd.eq.2) dvei = 0.d0
             if(icesd.eq.2) dvekb = 0.d0
             vxyf=(fid*divkb+fid1*divi)
-            vexyf=(fid*divkb*enckb+fid1*divi*enci)
+c   gaz      vexyf=(fid*divkb*enckb+fid1*divi*enci)
+            vexyf=(fid*divkb*enwkb+fid1*divi*enwi)
             vxy=vxyd*vxyf
             vexy=vxyd*vexyf
             dvapi=dvpi*vxyf+vxyd*fid1*divpi
             dvapkb=dvpkb*vxyf+vxyd*fid*divpkb
             dvaei=dvei*vxyf+vxyd*fid1*divei
             dvaekb=dvekb*vxyf+vxyd*fid*divekb
-            dvepi=dvpi*vexyf+vxyd*fid1*(divpi*enci+divi*deci)
-            dvepkb=dvpkb*vexyf+vxyd*fid*(divpkb*enckb+divkb*deckb)
-            dveei=dvei*vexyf+vxyd*fid1*(divei*enci+divi*decei)
-            dveekb=dvekb*vexyf+vxyd*fid*(divekb*enckb+divkb*decekb)
+            dvepi=dvpi*vexyf+vxyd*fid1*(divpi*enwi+divi*dewi)
+            dvepkb=dvpkb*vexyf+vxyd*fid*(divpkb*enwkb+divkb*dewkb)
+            dveei=dvei*vexyf+vxyd*fid1*(divei*enwi+divi*dewei)
+            dveekb=dvekb*vexyf+vxyd*fid*(divekb*enwkb+divkb*dewekb)
 c     changed by avw -- entered here by seh
             a_vxy(iau+nmatavw)=vxy
             a_vxy(ial+nmatavw)=-vxy
@@ -698,8 +718,8 @@ c     derivatives wrt water-rich phase fraction (fw)
 
             dvawi=vxyd*fid1*divwi
             dvawkb=vxyd*fid*divwkb
-            dvewi=vxyd*fid1*(divwi*enci)
-            dvewkb=vxyd*fid*(divwkb*enckb)
+            dvewi=vxyd*fid1*(divwi*enwi)
+            dvewkb=vxyd*fid*(divwkb*enwkb)
 
 c     derivatives wrt co2 mass fraction in water-rich phase (yc)
 
@@ -707,8 +727,8 @@ c     derivatives wrt co2 mass fraction in water-rich phase (yc)
             dvyckb = 0.5*sx4h*dgcyckb*(cord(kz,igrav)-cord(iz,igrav))
             dvayci=vxyd*fid1*divyci
             dvayckb=vxyd*fid*divyckb
-            dveyci=vxyd*fid1*(divyci*enci)
-            dveyckb=vxyd*fid*(divyckb*enckb)
+            dveyci=vxyd*fid1*(divyci*enwi)
+            dveyckb=vxyd*fid*(divyckb*enwkb)
 
             if(iprtype.eq.4) then
                if(ico2dis(i).eq.0) then
@@ -750,8 +770,8 @@ c     derivatives wrt air mass fraction in water-rich phase (ya)
             dvyakb = 0.5*sx4h*dgcyakb*(cord(kz,igrav)-cord(iz,igrav))
             dvayai=vxyd*fid1*divyai
             dvayakb=vxyd*fid*divyakb
-            dveyai=vxyd*fid1*(divyai*enci)
-            dveyakb=vxyd*fid*(divyakb*enckb)
+            dveyai=vxyd*fid1*(divyai*enwi)
+            dveyakb=vxyd*fid*(divyakb*enwkb)
 
             bp(iz+nrhs(1))=bp(iz+nrhs(1))+vxy
             bp(kz+nrhs(1))=bp(kz+nrhs(1))-vxy
@@ -766,6 +786,7 @@ c     derivatives wrt air mass fraction in water-rich phase (ya)
 c     
             bp(iz+nrhs(2))=bp(iz+nrhs(2))+vexy
             bp(kz+nrhs(2))=bp(kz+nrhs(2))-vexy
+
             a(jmia+nmat(6))=a(jmia+nmat(6))+dvepi
             a(jmia+nmat(7))=a(jmia+nmat(7))+dveei
             a(ial+nmat(6))=a(ial+nmat(6))-dvepi
@@ -828,7 +849,6 @@ c     add heat conduction for water-only problem
             a(jml+nmat(7))=a(jml+nmat(7))-heatc
          enddo
       endif
-
 
 c     add accumulation terms
 

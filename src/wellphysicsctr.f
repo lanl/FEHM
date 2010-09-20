@@ -279,7 +279,7 @@ c     fix surface tension
 c     
 c     sg is the CO2 gas fraction         
 c     for now set vsgf = vvol (see discussion after eq 5, Shi et al,2005)   
-               vvol = vel_m_well2(ii)   
+c              vvol = vel_m_well2(ii)   
                vvol = 0.0
                vsgf = 1.0
                beta = max(sg, fv*sg*abs(vvol)/vsgf)        
