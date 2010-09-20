@@ -305,7 +305,8 @@ c     lower residual cutoff
           rl = 0.0
           drls= 0.0
 c     upper residual cutoff
-       else if(star.gt.1.0) then
+c     gaz 091210
+       else if(star.ge.1.0) then
           rl = 1.0
           drls= 0.0
        endif

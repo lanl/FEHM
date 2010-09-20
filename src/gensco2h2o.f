@@ -188,7 +188,21 @@ c
 c     normalize the equations
 c     
       allocate(dumn(108))
-      
+c      write (ierr,*) 'l = ',l,' iad = ',iad
+c      do id = 1,neq
+c       if(kaco2(id).ne.0) then
+c       jj = nelmdg(id)-neqp1
+c       write (ierr,*) 'node = ',id
+c       write (ierr,*) 'phase state ', ices(id)
+c       write (ierr,*) 'P ',phi(id),' T ', t(id)
+c      write (ierr,*) 'dq(id)',dq(id)
+c       write (ierr,*) a(jj+nmat(1)),a(jj+nmat(4)),a(jj+nmat(9))
+c       write (ierr,*) bp(id+nrhs(1)),bp(id+nrhs(2)),bp(id+nrhs(3))
+c       endif
+c       if(abs(bp(id+nrhs(2))).gt.1.e5) then
+c        write (ierr,*) 'bad node ',id, bp(id+nrhs(2))
+c       endif
+c      enddo      
 c  gaz 2-27-03
        if(inorm.ne.0) then
         call normal_dof(neq,a,bp,nelm,nmat,nrhs,nelmdg

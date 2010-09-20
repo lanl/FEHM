@@ -92,6 +92,16 @@ c     will over-ride above co2 production
       real*8 dvisvyc, dvisvw, demwyc, denwyc, denwya
       real*8 vpartial,dvpardt
       real*8 xs, dxsw, dxsg, denwfw, denwfg, s1, s2, ds1dw, ds1dg
+c new variables
+      real*8 enx,denxp,denxe,denxyc,denxya
+      real*8 sig_tot, sig_wrich, sig_co2rich    
+      real*8 dsig_wrichp,dsig_wriche,dsig_wrichw,dsig_wrichya
+      real*8 dsig_wrichyc,dsig_co2richp,dsig_co2riche,dsig_co2richw
+      real*8 dsig_co2richya,dsig_co2richyc,dhwe,dhle,denww,dhve
+      real*8 sig_co2liq, sig_co2vap
+      real*8 dsig_co2vapp,dsig_co2vape,dsig_co2vapw,dsig_co2vapyc
+      real*8 dsig_co2liqp,dsig_co2liqe,dsig_co2liqw,dsig_co2liqyc
+      real*8 dsig_co2vapya,dsig_co2liqya
       parameter (fracwmin=0.1)
       integer iflg,duma
       
@@ -646,15 +656,15 @@ c     RJP 4/7/07 It is assumed that for CO2-water problem pflow(mi) will always
 c     be greater than zero.
                pldif=pl-pflow(mi)
 c     if(kaco2(mi).lt.0) then
-c     if((kaco2(mi).eq.-1).or.(kaco2(mi).eq.-4).or.
-c     &		(kaco2(mi).eq.-2)) then
-c     permsd1=permsd
-c     dprmp = 0.d0
-c     dprmt = 0.d0
-c     dprmw = 0.d0
-c     dprmyc = 0.d0
-c     dprmya = 0.d0
-c     else
+c         if((kaco2(mi).eq.-1).or.(kaco2(mi).eq.-4).or.
+c    &		(kaco2(mi).eq.-2)) then
+c               permsd1=permsd
+c                dprmp = 0.d0
+c               dprmt = 0.d0
+c               dprmw = 0.d0
+c               dprmyc = 0.d0
+c               dprmya = 0.d0
+c           else
                permsd1=permsd*(rlw*row*ywat/visw+
      &              rll*rol*xwat/visl)
                dprmp=permsd*(rlw*ywat*(drowp/visw-
@@ -669,7 +679,7 @@ c     else
      &              drllw*xwat*rol/visl)
                dprmyc=permsd*(rlw*(-row+ywat*drowyc)/visw)
                dprmya=permsd*(rlw*(-row+ywat*drowya)/visw)
-c     endif
+c        endif
 c     else
 c     permsd1=permsd
 c     dprmp = 0.d0
@@ -862,17 +872,46 @@ c
                endif
 
                if(qdis.gt.0.0) then
-                  
+c     define flow split  
+                  sig_tot = dql + dqv    
+                  sig_wrich = dql/sig_tot  
+                  sig_co2rich  = 1. -  sig_wrich 
+                  dsig_wrichp  = (diwp(mi)/sig_tot)*(1.0 - dql/sig_tot)
+                  dsig_wriche  = (diwe(mi)/sig_tot)*(1.0 - dql/sig_tot)
+                  dsig_wrichw  = (diww(mi)/sig_tot)*(1.0 - dql/sig_tot)
+                  dsig_wrichya = (diwya(mi)/sig_tot)*(1.0 - dql/sig_tot)
+                  dsig_wrichyc = (diwyc(mi)/sig_tot)*(1.0 - dql/sig_tot)
+c 
+                  dsig_co2richp  = -dsig_wrichp  
+                  dsig_co2riche  = -dsig_wriche  
+                  dsig_co2richw  = -dsig_wrichw  
+                  dsig_co2richya = -dsig_wrichya 
+                  dsig_co2richyc = -dsig_wrichyc 
+c                  
 c     organize source terms and derivatives
-                  hprod=xwat*enl+ywat*enw
-c     hprod=enl+enw
-                  dhprdp=denlp*xwat+ywat*denwp
-                  dhprde=denlt*xwat+ywat*denwt
-                  if(icesd.eq.2) dhprde=ywat*denwfg
-                  dhprdw=0.d0
-                  if(icesd.eq.2) dhprdw = ywat*denwfw
-                  dhprdyc=-enw+ywat*denwyc
-                  dhprdya=-enw+ywat*denwya
+                  hprod=sig_wrich*enw + sig_co2rich*enl
+c  
+                  dhprdp = dsig_wrichp*enw + sig_wrich*denwp+
+     &            dsig_co2richp*enl + sig_co2rich*denlp  
+c     
+                  dhwe=denwt
+                  if(icesd.eq.2) dhwe=denwfg                  
+c rajesh needs to check dhle
+                  dhle=denlt
+                  if(icesd.eq.2) dhle = 0.0
+                  dhprde = dsig_wriche*enw + sig_wrich*dhwe+
+     &            dsig_co2riche*enl + sig_co2rich*dhle 
+c                 dhprdw=0.d0
+                  denww = 0.0
+                  dhprdw = dsig_wrichw*enw +
+     &            dsig_co2richw*enl
+c 
+                  dhprdyc = dsig_wrichyc*enw + sig_wrich*denwyc+
+     &            dsig_co2richyc*enl + sig_co2rich*denlyc 
+c     
+                  dhprdya = dsig_wrichya*enw + sig_wrich*denwya+
+     &            dsig_co2richya*enl + sig_co2rich*denlya      
+c
                   qh(mi)=hprod*qdis
                   dqh(mi)=dhprdp*qdis+hprod*dq(mi)
                   deqh(mi)=dhprde*qdis+hprod*dqt(mi)
@@ -1149,7 +1188,7 @@ c     gaz 2-19-04 added gas relative perms
                skco2(mi)=0.0
                permsd=wellco2(mi)
                pldif=pl-pflowco2(mi)
-               if((kq.eq.-1).or.(kq.eq.-4)) then
+               if((kq.eq.-4)) then
                   permsd1=permsd
                   dprmp=0.d0
                   dprmt=0.d0
@@ -1208,6 +1247,18 @@ c     gaz 2-19-04 added gas relative perms
                   dprmya=0.d0
                   dprmyc=0.d0
                endif
+c gaz 09-02-2010               
+               if((pldif.le.0.0d00).and.(kq.eq.-1)) then
+                  permsd1=wellco2(mi)
+                  dprmp=0.d0
+                  dprmt=0.d0
+                  dprmw=0.d0
+                  dprmya=0.d0
+                  dprmyc=0.d0
+                  qdis=permsd1*pldif
+                  skco2(mi)=qdis
+                  dq(mi)=permsd1+dprmp*pldif
+               endif               
                if(idof_co2.eq.2) then
                   permsd1=wellco2(mi)
                   dprmp = 0.d0
@@ -1472,28 +1523,29 @@ c     transport in CO2-rich phase.
 
                if(qdis.gt.0.0) then
 c     organize source terms and derivatives
-                  if((frac_cg+frac_cl).gt.0.d0) then
-                     s1 = frac_cg/(frac_cg+frac_cl)
-                     s2 = 1-s1
-                     ds1dw = 1.d0/(frac_cg+frac_cl)*(frac_cg+frac_cl)
-                     ds1dg =  1.d0/(frac_cg+frac_cl)
-                     ds1dw = -ds1dw*frac_cl
-                  else
-                     s1 = 0.d0
-                     s2 = 0.d0
-                     ds1dw = 0.d0
-                     ds1dg = 0.d0
-                  endif
-                  hprod = frac_cg*env+frac_cl*enl+enw
-                  dhprdp=frac_cg*denvp+frac_cl*denlp+denwp
-                  dhprde=frac_cg*denvt+frac_cl*denlt+denwt
-                  dhprdw=(env-enl)
-                  if(icesd.eq.2) then
-                     dhprde=(env-enl)
-                     dhprdw=-enl
-                  endif
-                  dhprdyc=denwyc
-                  dhprdya=0.0
+c replace with lines below
+c                 if((frac_cg+frac_cl).gt.0.d0) then
+c                    s1 = frac_cg/(frac_cg+frac_cl)
+c                    s2 = 1-s1
+c                    ds1dw = 1.d0/(frac_cg+frac_cl)*(frac_cg+frac_cl)
+c                    ds1dg =  1.d0/(frac_cg+frac_cl)
+c                    ds1dw = -ds1dw*frac_cl
+c                 else
+c                    s1 = 0.d0
+c                    s2 = 0.d0
+c                    ds1dw = 0.d0
+c                    ds1dg = 0.d0
+c                 endif
+c                 hprod = frac_cg*env+frac_cl*enl
+c                 dhprdp=frac_cg*denvp+frac_cl*denlp
+c                 dhprde=frac_cg*denvt+frac_cl*denlt
+c                 dhprdw=(env-enl)
+c                 if(icesd.eq.2) then
+c                    dhprde=(env-enl)
+c                    dhprdw=-enl
+c                 endif
+c                 dhprdyc=0.0
+c                 dhprdya=0.0
 
 c     hprod = s1*env+s2*enl+enw
 c     dhprdp=s1*denvp+s2*denlp+denwp
@@ -1505,7 +1557,124 @@ c     dhprdw=-ds1dw*enl
 c     endif
 c     dhprdyc=denwyc
 c     dhprdya=0.0
-                  
+c     define flow split  
+c     define CO2 flow split  
+                if(icesd.eq.3) then
+                  sig_tot = diw(mi) + div(mi) + dtol
+                  sig_wrich = dql/sig_tot  
+                  sig_co2rich  = 1. -  sig_wrich 
+
+                  dsig_wrichp  = (diwp(mi)/sig_tot) - 
+     &                        (diw(mi)/sig_tot**2)*(diwp(mi) + divp(mi))
+                  dsig_wriche  = (diwe(mi)/sig_tot) - 
+     &                        (diw(mi)/sig_tot**2)*(diwe(mi) + dive(mi))
+                  dsig_wrichw  = (diww(mi)/sig_tot) - 
+     &                        (diw(mi)/sig_tot**2)*(diww(mi) + divw(mi))
+                  dsig_wrichya = (diwya(mi)/sig_tot) - 
+     &                      (diw(mi)/sig_tot**2)*(diwya(mi) + divya(mi))
+                  dsig_wrichyc = (diwyc(mi)/sig_tot) - 
+     &                      (diw(mi)/sig_tot**2)*(diwyc(mi) + divyc(mi))
+c 
+                  dsig_co2richp  = -dsig_wrichp  
+                  dsig_co2riche  = -dsig_wriche  
+                  dsig_co2richw  = -dsig_wrichw  
+                  dsig_co2richya = -dsig_wrichya 
+                  dsig_co2richyc = -dsig_wrichyc 
+                  enx = env
+                  denxp = denvp
+                  denxe = denvt     
+                  denxyc = denvyc
+                  denxya = denvya                               
+                else if(icesd.eq.1.or.icesd.eq.4) then
+                  sig_tot = diw(mi) + dil(mi) + dtol 
+                  sig_wrich = diw(mi)/sig_tot  
+                  sig_co2rich  = 1. -  sig_wrich 
+
+                  dsig_wrichp  = (diwp(mi)/sig_tot) - 
+     &                        (diw(mi)/sig_tot**2)*(diwp(mi) + dilp(mi))
+                  dsig_wriche  = (diwe(mi)/sig_tot) - 
+     &                        (diw(mi)/sig_tot**2)*(diwe(mi) + dile(mi))
+                  dsig_wrichw  = (diww(mi)/sig_tot) - 
+     &                        (diw(mi)/sig_tot**2)*(diww(mi) + dilw(mi))
+                  dsig_wrichya = (diwya(mi)/sig_tot) - 
+     &                      (diw(mi)/sig_tot**2)*(diwya(mi) + dilya(mi))
+                  dsig_wrichyc = (diwyc(mi)/sig_tot) - 
+     &                      (diw(mi)/sig_tot**2)*(diwyc(mi) + dilyc(mi))
+c 
+                  dsig_co2richp  = -dsig_wrichp  
+                  dsig_co2riche  = -dsig_wriche  
+                  dsig_co2richw  = -dsig_wrichw  
+                  dsig_co2richya = -dsig_wrichya 
+                  dsig_co2richyc = -dsig_wrichyc                 
+                  enx = enl
+                  denxp = denlp
+                  denxe = denlt
+                  denxyc = denlyc
+                  denxya = denlya
+                else if(icesd.eq.2) then
+                  sig_tot = diw(mi) + dil(mi) + div(mi) + dtol
+                  sig_wrich = diw(mi)/sig_tot 
+                  sig_co2vap  = dil(mi)/sig_tot
+                  sig_co2vap  = div(mi)/sig_tot 
+                  dsig_wrichp  = (diwp(mi)/sig_tot) - 
+     &            (diw(mi)/sig_tot**2)*(diwp(mi) + dilp(mi) + divp(mi))
+                  dsig_wriche  = (diwe(mi)/sig_tot) - 
+     &            (diw(mi)/sig_tot**2)*(diwe(mi) + dile(mi)+ dive(mi))
+                  dsig_wrichw  = (diww(mi)/sig_tot) - 
+     &            (diw(mi)/sig_tot**2)*(diww(mi) + dilw(mi)+ divw(mi))
+                  dsig_wrichya = (diwya(mi)/sig_tot) - 
+     &         (diw(mi)/sig_tot**2)*(diwya(mi) + dilya(mi)+ divya(mi))
+                  dsig_wrichyc = (diwyc(mi)/sig_tot) - 
+     &         (diw(mi)/sig_tot**2)*(diwyc(mi) + dilyc(mi)+ divya(mi))
+     
+                  dsig_co2vapp  = (dilp(mi)/sig_tot) - 
+     &            (dil(mi)/sig_tot**2)*(diwp(mi) + dilp(mi) + divp(mi))
+                  dsig_co2vape  = (dile(mi)/sig_tot) - 
+     &            (dil(mi)/sig_tot**2)*(diwe(mi) + dile(mi)+ dive(mi))
+                  dsig_co2vapw  = (dilw(mi)/sig_tot) - 
+     &            (dil(mi)/sig_tot**2)*(diww(mi) + dilw(mi)+ divw(mi))
+                  dsig_co2vapya = (dilya(mi)/sig_tot) - 
+     &         (dil(mi)/sig_tot**2)*(diwya(mi) + dilya(mi)+ divya(mi))
+                  dsig_co2vapyc = (dilyc(mi)/sig_tot) - 
+     &         (dil(mi)/sig_tot**2)*(diwyc(mi) + dilyc(mi)+ divya(mi)) 
+     
+                  dsig_co2vapp  = (divp(mi)/sig_tot) - 
+     &            (div(mi)/sig_tot**2)*(diwp(mi) + dilp(mi) + divp(mi))
+                  dsig_co2vape  = (dive(mi)/sig_tot) - 
+     &            (div(mi)/sig_tot**2)*(diwe(mi) + dile(mi)+ dive(mi))
+                  dsig_co2vapw  = (divw(mi)/sig_tot) - 
+     &            (div(mi)/sig_tot**2)*(diww(mi) + dilw(mi)+ divw(mi))
+                  dsig_co2vapya = (divya(mi)/sig_tot) - 
+     &         (div(mi)/sig_tot**2)*(diwya(mi) + dilya(mi)+ divya(mi))
+                  dsig_co2vapyc = (divyc(mi)/sig_tot) - 
+     &         (div(mi)/sig_tot**2)*(diwyc(mi) + dilyc(mi)+ divya(mi))  
+                endif
+c                  
+c     organize source terms and derivatives
+                  hprod=sig_wrich*enw + sig_co2rich*enx
+c  
+                  dhprdp = dsig_wrichp*enw + sig_wrich*denwp+
+     &            dsig_co2richp*enx + sig_co2rich*denxp  
+c     
+                  dhwe=denwt
+                  if(icesd.eq.2) dhwe=denwfg                  
+c rajesh needs to check dhle
+
+                  if(icesd.eq.2) dhle = 0.0
+                  dhprde = dsig_wriche*enw + sig_wrich*dhwe+
+     &            dsig_co2riche*enx + sig_co2rich*denxe 
+c                 dhprdw=0.d0
+                  denww = 0.0
+                  dhprdw = dsig_wrichw*enw +
+     &            dsig_co2richw*enx
+c 
+                  dhprdyc = dsig_wrichyc*enw + sig_wrich*denwyc+
+     &            dsig_co2richyc*enx + sig_co2rich*denxyc 
+c     
+                  dhprdya = dsig_wrichya*enw + sig_wrich*denwya+
+     &            dsig_co2richya*enx + sig_co2rich*denxya      
+c
+                                  
                   qhco2(mi)=hprod*skco2(mi)
                   dqh(mi)=dhprdp*skco2(mi)+hprod*dq(mi)
                   deqh(mi)=dhprde*skco2(mi)+hprod*dqt(mi)
@@ -1984,6 +2153,6 @@ c     heat conduction only
       endif
       
       deallocate(sto1)
-
+     
       return
       end
