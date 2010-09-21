@@ -155,7 +155,7 @@ c first lt i (if i2<i1 then no nodes lt)
            endif 
            sx2c=abs(sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz))
            dis = sqrt((cord1-cord1j)**2 + (cord2-cord2j)**2 +
-     &          + (cord3-cord3j)**2)      
+     &          (cord3-cord3j)**2)      
            it10(j) = kb
            t1(j) = sx2c*dis
           enddo  
@@ -174,7 +174,7 @@ c next gt i (but only primary nodes; hence the "-1"
            endif 
            sx2c=abs(sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz))
            dis = sqrt((cord1-cord1j)**2 + (cord2-cord2j)**2 +
-     &          + (cord3-cord3j)**2)      
+     &          (cord3-cord3j)**2)      
            it10(j) = kb
            t1(j) = sx2c*dis
           enddo  
@@ -264,7 +264,7 @@ c note special numbering for gdpm nodes
 c now find closest node kb gdpm node to i gdpm node  
 c can work with square of distance
               dis2 = (cord1-cord1jg)**2 + (cord2-cord2jg)**2 +
-     &          + (cord3-cord3jg)**2
+     &             (cord3-cord3jg)**2
               if(dis2.lt.dis2min) then
                kcm = kc
                dis2min = dis2
@@ -280,7 +280,7 @@ c calculated area/dis term
 c connect to primary node  
              idum(kb) = 1
              dis = sqrt((cord1-cord1j)**2 + (cord2-cord2j)**2 +
-     &          + (cord3-cord3j)**2)    
+     &            (cord3-cord3j)**2)    
              sxdum(kb) = -areat*vol_frac/dis
             endif
            enddo

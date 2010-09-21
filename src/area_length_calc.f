@@ -109,7 +109,7 @@ c general fixed pressure or head BC
                 cord3j = cord(kb,3)
                endif 
                dis = sqrt((cord1-cord1j)**2 + (cord2-cord2j)**2 +
-     &          + (cord3-cord3j)**2)                   
+     &              (cord3-cord3j)**2)                   
                 sx2c=abs(sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz))
                 areat = max(sx2c*dis,areat)
  200          continue
@@ -155,7 +155,7 @@ c free drainage condition
                 cord3j = cord(kb,3)
                endif 
                dis = sqrt((cord1-cord1j)**2 + (cord2-cord2j)**2 +
-     &          + (cord3-cord3j)**2)                   
+     &              (cord3-cord3j)**2)                   
                disz2 = cord(kb,igrav)-cord(i,igrav)
                cosz = abs(disz2)/dis
                if(cosz.gt.0.0) then
@@ -213,7 +213,7 @@ c constant head or pressure, physically based impedance
                 cord3j = cord(kb,3)
                endif 
                dis = sqrt((cord1-cord1j)**2 + (cord2-cord2j)**2 +
-     &          + (cord3-cord3j)**2)                   
+     &              (cord3-cord3j)**2)                   
                disz2 = cord(kb,idir)-cord(i,idir)
                cosz = abs(disz2)/dis
                if(cosz.ge.0.0) then
@@ -260,7 +260,7 @@ c find areas of all connecting (complete) gridblocks
            endif 
            sx2c=abs(sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz))
            dis = sqrt((cord1-cord1j)**2 + (cord2-cord2j)**2 +
-     &          + (cord3-cord3j)**2)      
+     &          (cord3-cord3j)**2)      
            it10(j) = kb
            t1(j) = sx2c*dis
           enddo  

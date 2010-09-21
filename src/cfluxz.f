@@ -45,10 +45,12 @@
 
       use comai
       use combi
+      use comci, only : rolf
       use comdi
       use comdti
       use comflow
       use comchem
+      use compart, only : pcnsk
       use comxi
 !      use davidi
 
@@ -58,6 +60,7 @@
       integer open_file, iroot, is, ie, iname
       integer, allocatable :: icfile(:)
       real*8 ptime, sumfout, sumsink, sumsource, sumboun, sumfin,sum_vap
+      real*8 ancell, anlocell, sumcell, sumcello, sumdelta, cellh2o
       character*80 string, formstring
       character*85, allocatable :: flux_string(:)
       character*150 cflx_name, cflx_root, string2
@@ -164,6 +167,8 @@ c     into other parts of the zone
             sumsource = 0.
             sumboun = 0.0
             sum_vap = 0.0
+            sumcell = 0.
+            sumcello = 0.
             md=0
 c     Loop over all nodes
             do inode = 1, n0
@@ -185,11 +190,25 @@ c     Determine if node is part of the zone being summed
                   md = md+1
                   inodec = inode + npn
 c     Add boundary condition sources
-                  if (sk(inode) .lt. 0.) then
+                  if (pcnsk(inodec) .eq. -1) then
+                     sumboun=sumboun + rcss(inodec)
+                  else if (sk(inode) .lt. 0.) then
 ! Incoming
                      sumboun=sumboun + sk(inode)*cnsk(inodec)
                   else
                      sumboun=sumboun + sk(inode)*an(inodec)
+                  end if
+c     Compute mass in cell (moles/kg H2O *  kg / m^3 H2O * m^3 cell)
+                  cellh2o = rolf(inodec) * sx1(inodec) * ps(inodec) 
+     &                 * s(inodec)
+                  ancell = an(inodec) * cellh2o
+                  anlocell = anlo(inodec) * cellh2o
+                  sumcell = sumcell + ancell
+                  sumcello = sumcello + anlocell
+                  if (rcss(inodec) .gt. 0.) then
+                     sumsink = sumsink + rcss(inodec)
+                  else if (rcss(inodec) .lt. 0.) then
+                     sumsource = sumsource + rcss(inodec)
                   end if
 c     calculate vapor out (assume zero if in at this time)
 !               if(irdof.ne.13.or.ifree.ne.0) then
@@ -199,8 +218,11 @@ c     calculate vapor out (assume zero if in at this time)
 !               endif
 c     Set index for looping through a_axy depending on whether
 c     the node is a fracture or matrix node
-                  i1 = nelm(inneq)+1
-                  i2 = nelm(inneq+1)
+c                  i1 = nelm(inneq)+1
+c                  i2 = nelm(inneq+1)
+c Skip this, we are summing total moles in zone to find change
+                  i1 = 1
+                  i2 = 0
 c     loop over every connecting node
                   do iconn = i1, i2
                      indexa_axy = iconn-neq-1+addnode
@@ -235,6 +257,14 @@ c     add to source sum
                   end do
                end if
             end do
+            sumdelta = (sumcell - sumcello) / dtotc
+            sumfin = sumsource
+            sumfout = sumsink
+            if (sumdelta .gt. 0.) then
+               sumfout = sumfout +sumdelta
+            else
+               sumfin = sumfin + sumdelta
+            end if
 c     Write results
 ! Fluxes (moles/day) are written to concentration flux history file
             flux_string(izone) = ''

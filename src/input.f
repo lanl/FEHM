@@ -604,20 +604,23 @@ c         call headctr(0,0,0.0,0.0)
 c
 c**** output in terms of head, not pressures   ****
 c
-         backspace inpt
-         read(inpt,'(a80)') input_msg 
-         read(input_msg,*,end= 995) macro, head0, temp0, pres0, sat_ich,
-     &	    head_id
-         go to 1005
- 995     head0 = 0.0
-         temp0 = 20.0
-         pres0 = 0.1   
-         sat_ich = 0.0
-         head_id= 0.0
- 1005    continue
-         call water_density(temp0, pres0,rol0)
-         ichead=1
-         if(.not.allocated(head)) allocate(head(n0))
+c zvd 12-Jul-2010 Only activate if this isn't a head problem         
+         if (ihead .eq. 0) then
+            backspace inpt
+            read(inpt,'(a80)') input_msg 
+            read(input_msg,*,end= 995) macro, head0, temp0, pres0, 
+     &           sat_ich, head_id
+            go to 1005
+ 995        head0 = 0.0
+            temp0 = 20.0
+            pres0 = 0.1   
+            sat_ich = 0.0
+            head_id= 0.0
+ 1005       continue
+            call water_density(temp0, pres0,rol0)
+            ichead=1
+            if(.not.allocated(head)) allocate(head(n0))
+         end if
 
       else if (macro .eq. 'bous') then
 c constant densities etc for flow terms
@@ -942,7 +945,7 @@ c     Loop over each zone for determining izoneflxz array
 
 
 c**** read in Generalized dual porosity information
-      else  if (macro .eq. 'gdpm'.or. macro .eq. 'gdkm') then
+      else  if (macro .eq. 'gdpm' .or. macro .eq. 'gdkm') then
 
          call ingdpm
 
@@ -1250,19 +1253,21 @@ c**** read in relative permeability information ****
       else if (macro .eq. 'frlp') then
 c**** read in relative permeability factors ****
 c**** these are minimum relative permeabilities *****
-         call infrlp        
+         call infrlp
+
       else if (macro .eq. 'rich') then
          jswitch = 1
          if (idpdp .eq. 1) joff = 4
 c         read (inpt,*) strd_rich, tol_phase 
          read (inpt, '(a80)') wdd1
-c    0.95  1.e-5  0.001 0.001        
+c     0.95  1.e-5  0.001 0.001
          read (wdd1,*,end = 598) strd_rich, tol_phase, pchng, schng 
-          go to 599
- 598      continue
-           pchng = 0.005
-           schng = 0.005
- 599      continue        
+         go to 599
+ 598     continue
+         pchng = 0.005
+         schng = 0.005
+ 599     continue
+
 c**** rock densities, etc ****
       else if (macro .eq. 'rock') then
 c**** rock densities, etc ****
@@ -1290,10 +1295,12 @@ c**** solution and integration type ****
          else
             idof = 2
          end if
+
       else if (macro .eq. 'nrst') then
 c*** NR stopping criterea based on variable changes
          nr_stop = 1
          call nr_stop_ctr(0)
+
       else if (macro .eq. 'solv') then
 c**** solv (doesn't do anything yet) ****
 
@@ -1496,7 +1503,7 @@ c**** check if air macro called if head macro called
          time_ieos = 0.0d0
       endif 
 
-      end
+      end subroutine input
 
 
 

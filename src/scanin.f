@@ -2083,7 +2083,8 @@ c need porosity model
 	          i = i + 1
 	          if(idumm.eq.1) then
  	           read(locunitnum,*) idumm
-	          else if (idumm .eq. 2 .or. idumm .eq. 4) then
+c	          else if (idumm .eq. 2 .or. idumm .eq. 4) then
+	          else if (idumm .eq. 2) then
                      read(locunitnum,*) idumm, (adumm, ja = 1, 9) 
 	          else if (idumm .eq. 3) then
                      read(locunitnum,*) idumm, (adumm, ja = 1, 9) 
@@ -2153,4 +2154,4 @@ c need porosity model
       stop
  55   format ("Missing '", a, "' statement in input. STOPPING")
  56   format ("Check macro: ", a)
-      end
+      end subroutine scanin

@@ -159,6 +159,12 @@ c Force old style output if wellbore macro is invoked for now
       else
 c Look at rstw array to determine if initial pressures and temperatures
 c should be output. All original variables will be output for 'old'
+         if (iriver .ne. 0) then
+            header_flag = 'old'
+            write (ierr, 10)
+            if (iout .ne. 0) write(iout, 10)
+            if (iptty .ne. 0) write(iptty, 10)
+         end if
          if (.not. allocated(rstw)) rstw_num = 0
          do i = 1, rstw_num
             if (rstw(i) .eq. 'pini') then
@@ -167,6 +173,8 @@ c should be output. All original variables will be output for 'old'
             end if
          end do
       end if
+ 10   format (/, 'WARNING: New format restart output not supported for ',
+     &     'models using well / river macro', /)
 
       call dated (jdate,jtime)
       inquire (isave, opened = ex)
