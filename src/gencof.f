@@ -406,6 +406,7 @@ c     jacobian information is calculated and stored on nrq=1
 c     
 c     three dimensional elements
                   if ( icnl.eq.0 )  then
+                     if(nrq.eq.1) intg = 1
                      if ( nga.le.nsl )  then
                         if(nsl.ge.6) icsh=1
                         call gncf3(nrq,nele,nga,neu,nsl,icsh,neluc,aj)
@@ -469,8 +470,10 @@ c
 c     use mass lumping for capacitance term
                   do iq=i1,i2
                      kb=ncon(iq)
-                     sx1(i)=sx1(i)+dumm(kb)
-                     dumm(kb) = 0.0
+                     if(kb.eq.i) then
+                      sx1(i)=sx1(i)+dumm(kb)
+                      dumm(kb) = 0.0
+                     endif
                   enddo
                endif
                if ( nrq.ne.1.and.nrq.le.4 )  then

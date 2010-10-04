@@ -1030,11 +1030,13 @@ c
 c     nk*njz
          do k=1,nsl
             knum=(k-1)*nsl
-            do jz=1,nsl
-               ij=knum+jz
-               bcoef(neu,ij)=bcoef(neu,ij)+w(nga,k)*w(nga,jz)*dnga*
-     &              aj(neu,10)
-            enddo
+c            do jz=1,nsl
+c               ij=knum+jz
+c               bcoef(neu,ij)=bcoef(neu,ij)+w(nga,k)*w(nga,jz)*dnga*
+c     &              aj(neu,10)
+c            enddo
+            ij = knum + k
+            bcoef(neu,ij)=bcoef(neu,ij)+w(nga,k)*dnga*aj(neu,10)
          enddo
       endif
       if ( nrq.eq.2.or.nrq.eq.20 )  then

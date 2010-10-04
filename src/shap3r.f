@@ -178,13 +178,16 @@ CPS END shap3r
 CPS
 C***********************************************************************
 
+
       use combi
       use comdti
       use comai
       implicit none
 
+
       integer i,nga,nsl
       real*8 tintg
+
 
       nsl=8
 c define local coordinates,integration types
@@ -210,14 +213,14 @@ c local coordinates
       yd(6)=-1.0
       yd(7)=1.0
       yd(8)=1.0
-      zd(1)=1.0
-      zd(2)=1.0
-      zd(3)=1.0
-      zd(4)=1.0
-      zd(5)=-1.0
-      zd(6)=-1.0
-      zd(7)=-1.0
-      zd(8)=-1.0
+      zd(1)=-1.0
+      zd(2)=-1.0
+      zd(3)=-1.0
+      zd(4)=-1.0
+      zd(5)= 1.0
+      zd(6)= 1.0
+      zd(7)= 1.0
+      zd(8)= 1.0
 c define integration points
       si(nga)=xd(nga)*tintg
       eta(nga)=yd(nga)*tintg
@@ -230,6 +233,7 @@ c define integration points
       wzr(nga,i)=0.125*zd(i)*(1.+xd(i)*si(nga))*(1.+yd(i)*eta(nga))
       dr(nga)=1.
    20 continue
+
 
       return 
       end

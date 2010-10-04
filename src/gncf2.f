@@ -544,7 +544,8 @@ c     nk*njz
                   knum=(k-1)*nsl
                   do jz=1,nsl
                      ij=knum+jz
-                     bcoef(neu,ij)=bcoef(neu,ij)+w(nga,k)*w(nga,jz)*area
+c                     bcoef(neu,ij)=bcoef(neu,ij)+w(nga,k)*w(nga,jz)*area
+                     bcoef(neu,ij)=bcoef(neu,ij)+w(nga,k)*area
                   enddo
                enddo
             endif

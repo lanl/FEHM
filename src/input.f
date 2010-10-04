@@ -948,7 +948,10 @@ c**** read in Generalized dual porosity information
       else  if (macro .eq. 'gdpm' .or. macro .eq. 'gdkm') then
 
          call ingdpm
+      else  if (macro .eq. 'enri') then
 
+         call enrich_ctr(0)
+         
       else  if (macro .eq. 'hflx') then
 c**** read in heat source term(w) ****
          call inhflx(macro)
