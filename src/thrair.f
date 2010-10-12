@@ -322,6 +322,7 @@ c
       use comfi
       use comgi
       use comii
+      use comrlp, only : rlpnew
       use comrxni
       use comwt
       use davidi
@@ -372,9 +373,17 @@ c
          
 c     get relative perms
          if(iad.lt.abs(iexrlp).or.abs(iexrlp).eq.0) then
-            call rlperm(ndummy,1)
+            if (rlpnew) then
+               call rlp_cap(ndummy)
+            else
+               call rlperm(ndummy,1)
+            end if
          else if(iad.eq.abs(iexrlp)) then
-            call rlperm(ndummy,1)
+            if (rlpnew) then
+               call rlp_cap(ndummy)
+            else
+               call rlperm(ndummy,1)
+            end if
             call pcp_save(0,neq,ndummy,0,pcp,dpcef,rlf,drlef,
      &           rvf,drvef,s,pcp0,dpcps0,rlf0,drlfs0,
      &           rvf0,drvfs0,s0)
@@ -390,7 +399,7 @@ c     get relative perms
             enddo
          endif
 c     get capillary pressures
-         call cappr(1,ndummy)
+         if (.not. rlpnew) call cappr(1,ndummy)
 
       endif
 c     

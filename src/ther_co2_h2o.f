@@ -23,19 +23,20 @@
 !D3 
 !**********************************************************************
 
-      use comrxni
-      use comii
-      use comgi
-      use comfi
-      use comei
-      use comdi
-      use comci
-      use combi
-      use comdti
       use comai
+      use combi
+      use comci
       use comco2
+      use comdi
+      use comdti
+      use comei
+      use comfi
+      use comgi
+      use comii
       use commeth
       use comriv
+      use comrlp, only : rlpnew
+      use comrxni
       implicit none
 
       integer ndummy,mid,mi,ieosd,kq,icesd
@@ -154,18 +155,22 @@ c     are in g
          drl_ww = 0.0
          drl_wg = 0.0
          
-         do mid=1,neq
-            mi=mid+ndummy
+         if (rlpnew) then
+            call rlp_cap(ndummy)
+         else
+            do mid=1,neq
+               mi=mid+ndummy
 c     calculate multi-phase relative perms.
-            call rlperm_co2(ndummy,0,mi,rl_w(mi),
-     &           drl_ww(mi),drl_wg(mi),rl_l(mi),drl_lw(mi),drl_lg(mi),
-     &           rl_v(mi),drl_vw(mi),drl_vg(mi))
+               call rlperm_co2(ndummy,0,mi,rl_w(mi),
+     &              drl_ww(mi),drl_wg(mi),rl_l(mi),drl_lw(mi),
+     &              drl_lg(mi),rl_v(mi),drl_vw(mi),drl_vg(mi))
 c     calculate multi-phase cap. pres.
-            call rlperm_co2(ndummy,1,mi,pcp(mi),
-     &           dpcpw(mi),dpcpg(mi),pcg(mi),dpcgw(mi),dpcgg(mi),
-     &           dum1,dum2,dum3)
-            phi(mi)=phico2(mi)-pcp(mi)
-         enddo
+               call rlperm_co2(ndummy,1,mi,pcp(mi),
+     &              dpcpw(mi),dpcpg(mi),pcg(mi),dpcgw(mi),dpcgg(mi),
+     &              dum1,dum2,dum3)
+               phi(mi)=phico2(mi)-pcp(mi)
+            enddo
+         end if
 c     
 c     RJP 02/09/07. All the thermodynamic properties are now calculated 
 c     here and stored in arrays for later.	 

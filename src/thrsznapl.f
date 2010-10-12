@@ -273,17 +273,18 @@ CPS END thrair
 CPS 
 C**********************************************************************
 
+      use comai
+      use combi
+      use comci
+      use comdi
+      use comdti
+      use comei
+      use comfi
+      use comgi
+      use comii
+      use comrlp, only : rlpnew
       use comrxni
       use davidi
-      use comii
-      use comgi
-      use comfi
-      use comei
-      use comdi
-      use comci
-      use combi
-      use comdti
-      use comai
       implicit none
 
       integer ndummy,mid,mi,ieosd,kq
@@ -313,11 +314,15 @@ c
 c
       dtin=1.0/dtot
 c     get relative perms
-      call rlperm(ndummy,1)
+      if (rlpnew) then
+         call rlp_cap(ndummy)
+      else
+         call rlperm(ndummy,1)
+      end if
 c     calculate variable porosity if enabled
       if(iporos.ne.0) call porosi(1)
 c     get capillary pressures
-      call cappr(1,ndummy)
+      if (.not. rlpnew) call cappr(1,ndummy)
 
 c     dependent variables vap p and sl
 c     misc. constants

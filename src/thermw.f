@@ -769,16 +769,18 @@ CPS END thermw
 CPS
 C**********************************************************************
 
-      use comrxni
-      use comii
-      use comgi
-      use comfi
-      use comei
-      use comdi
-      use comci
-      use combi
-      use comdti
       use comai
+      use combi
+      use comci
+      use comdi
+      use comdti
+      use comei
+      use comfi
+      use comgi
+      use comii
+      use comrlp, only : rlpnew
+      use comrxni
+
       implicit none
 
       integer ndummy,iieosl,mid,mi,ieosd,iieosd,kq
@@ -825,7 +827,7 @@ C**********************************************************************
 
       integer i_mem_rlp
       save i_mem_rlp
-     
+      
       real*8, allocatable :: s0(:)
       real*8, allocatable :: pcp0(:)
       real*8, allocatable :: dpcps0(:)
@@ -833,9 +835,9 @@ C**********************************************************************
       real*8, allocatable :: drlfs0(:)
       real*8, allocatable :: rvf0(:)
       real*8, allocatable :: drvfs0(:)
- 
+      
       allocate(sto1(n0*2))
-c
+c     
 c     rol  -  density liquid
 c     rov  -  density vapour
 c     enl  -  enthalpy liquid
@@ -846,40 +848,48 @@ c     rl   -  relative permeability of liquid phase
 c     rv   -  relative permeability of vapour phase
 c     tfun -  temperature
 c     sw   -  saturation liquid
-c
-**** Avg molecular weight is set to molecular weight of water ****
+c     
+****  Avg molecular weight is set to molecular weight of water ****
       if(abs(iexrlp).ne.0.and.i_mem_rlp.eq.0) then
-        i_mem_rlp=1
-        allocate(s0(n),pcp0(n),dpcps0(n),rlf0(n))
-        allocate(drlfs0(n),rvf0(n),drvfs0(n))       
+         i_mem_rlp=1
+         allocate(s0(n),pcp0(n),dpcps0(n),rlf0(n))
+         allocate(drlfs0(n),rvf0(n),drvfs0(n))       
       endif
 
 c     get relative perms
-       if(iad.lt.abs(iexrlp).or.abs(iexrlp).eq.0) then
-        call rlperm(ndummy,1)
-       else if(iad.eq.abs(iexrlp)) then
-        call rlperm(ndummy,1)
-        call pcp_save(0,neq,ndummy,0,pcp,dpcef,rlf,drlef,
-     &                rvf,drvef,s,pcp0,dpcps0,rlf0,drlfs0,
-     &                rvf0,drvfs0,s0)
-       else if(iad.gt.abs(iexrlp)) then
-        call pcp_save(2,neq,ndummy,0,pcp,dpcef,rlf,drlef,
-     &                rvf,drvef,s,pcp0,dpcps0,rlf0,drlfs0,
-     &                rvf0,drvfs0,s0)
-        do mid=1,neq
-         mi=mid+ndummy
-         drlpf(mi)=0.0          
-         drvpf(mi)=0.0          
-        enddo
-       endif
+      if(iad.lt.abs(iexrlp).or.abs(iexrlp).eq.0) then
+         if (rlpnew) then
+            call rlp_cap(ndummy)
+         else
+            call rlperm(ndummy,1)
+         end if
+      else if(iad.eq.abs(iexrlp)) then
+         if (rlpnew) then
+            call rlp_cap(ndummy)
+         else
+            call rlperm(ndummy,1)
+         end if
+         call pcp_save(0,neq,ndummy,0,pcp,dpcef,rlf,drlef,
+     &        rvf,drvef,s,pcp0,dpcps0,rlf0,drlfs0,
+     &        rvf0,drvfs0,s0)
+      else if(iad.gt.abs(iexrlp)) then
+         call pcp_save(2,neq,ndummy,0,pcp,dpcef,rlf,drlef,
+     &        rvf,drvef,s,pcp0,dpcps0,rlf0,drlfs0,
+     &        rvf0,drvfs0,s0)
+         do mid=1,neq
+            mi=mid+ndummy
+            drlpf(mi)=0.0          
+            drvpf(mi)=0.0          
+         enddo
+      endif
       iieosl=0
       dtin=1.0/dtot
 
-c generate relative permeabilities
-c calculate pressure dependant porosity and derivatives
+c     generate relative permeabilities
+c     calculate pressure dependant porosity and derivatives
       if(iporos.ne.0) call porosi(1)
-c call capillary pressure models
-      call cappr(1,ndummy)
+c     call capillary pressure models
+      if (.not. rlpnew) call cappr(1,ndummy)
       ifree1 = 0
       do mid=1,neq
          mi=mid+ndummy
@@ -896,9 +906,9 @@ c     undo equivalence relations for relative perms
          drv=drvef(mi)
          drvp=drvpf(mi)
          if(igrav.ne.0) then
-          p_energy = -grav*cord(mi,igrav)
+            p_energy = -grav*cord(mi,igrav)
          else
-          p_energy = 0.0d0
+            p_energy = 0.0d0
          endif
 
 c     adjust coefficients for thermo fits
@@ -1303,12 +1313,12 @@ c     form pressure dependent flow term
             endif
             permsd=abs(wellim(mi))
             if(iwelimd.ne.0)then
-c 
-c peaceman solution only available for models kq(-1,-2,1)
-c   (need) to put derivative terms in later (gaz)  
-             if(izonewel1(mi).ne.0) then
-              permsd = wellim(mi)*rol/xvisl
-             endif
+c     
+c     peaceman solution only available for models kq(-1,-2,1)
+c     (need) to put derivative terms in later (gaz)  
+               if(izonewel1(mi).ne.0) then
+                  permsd = wellim(mi)*rol/xvisl
+               endif
             endif            
             if(pldif.le.0.0d00.and.kq.eq.-2) permsd=0.0d0
             qdis=permsd*(pldif)
@@ -1542,7 +1552,7 @@ c     add heat source term
             endif
          endif
 
-c gaz 2-26-2002
+c     gaz 2-26-2002
          if(ieosd.eq.0) then
 
 c     heat conduction only
@@ -1561,17 +1571,17 @@ c     heat conduction only
             sto1(mi+neq)=denrd*tl
             deef(mi)=denrd*dtin
          endif
-       if(kq.eq.1) then
-c
-c check for peaceman calculation
-c       
+         if(kq.eq.1) then
+c     
+c     check for peaceman calculation
+c     
             if(iwelimd.ne.0)then        
-             if(izonewel1(mi).ne.0) then
-              permsd = wellim(mi)*rolf(mi)/xvisl
-             endif
-             pflow(mi)=phi(mi) - sk(mi)/permsd
+               if(izonewel1(mi).ne.0) then
+                  permsd = wellim(mi)*rolf(mi)/xvisl
+               endif
+               pflow(mi)=phi(mi) - sk(mi)/permsd
             endif
-        endif               
+         endif               
       enddo
 
 c     modify accumulation terms for volume changes

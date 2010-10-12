@@ -842,7 +842,7 @@ c     ***** COMMON Block iice *****
       end if
 c     ***** COMMON Block fddi1 *****
       allocate(ieos(n0),ieos_ch(n0),iieos(n0),iporf(n0))
-      if (rlp_flag .eq. 1) then
+      if (rlp_flag .eq. 1 .or. nrlp .ne. 0) then
          allocate(icap(n0), irlp(n0))
       else
          allocate(icap(1), irlp(1))

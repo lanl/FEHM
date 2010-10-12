@@ -12,7 +12,7 @@
 #   DEBUG=ON    Compile with -g, -C flags
 #***********************************************************************
 # GNU Make version 3.79.1 or later should be used
-# gmake (make) should be executed form the directory where the objects 
+# gmake (make) should be executed from the directory where the objects 
 # will reside.
 # Edit SRCDIR to point to the directory where the source code is located
 # Edit FC,LIBRARY,FFLAGS for your environment and compiler 

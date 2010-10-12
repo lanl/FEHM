@@ -1246,8 +1246,14 @@ c**** read in radiation source term(w) ****
          emiss = emiss * 5.6697e-8
          call inhflx(macro)
 
+      else if (macro .eq. 'rlpm') then
+c**** read in relative permeability information ****
+c     new model
+         call inrlp
+
       else if (macro .eq. 'rlp ') then
 c**** read in relative permeability information ****
+c     original model
          call rlperm (0,0)
 
       else if (macro .eq. 'frlp') then

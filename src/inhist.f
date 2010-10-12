@@ -46,10 +46,11 @@
       use combi, only : prnt_flxzvar
       use comco2, only : icarb
       use comdi
+      use comrlp, only : ishisrlp, delta_sat, num_sat, sat_out
       use comsi, only : ihms
+      use comwt, only : wt_flag
       use comxi
       use comzone
-      use comwt, only : wt_flag
       use davidi
       implicit none
 
@@ -976,6 +977,39 @@
                   end if
                end select
             end select
+         case ('rel', 'REL')
+! Output table of relative permeability and cappillary pressure values
+            fname = root(1:iroot) // '_rlp'
+            select case (form_flag)
+            case (1)
+               fname = trim(fname) // '.dat'
+            case (2)
+               fname = trim(fname) // '.csv'
+            end select 
+            call parse_string(chdum,imsg,msg,xmsg,cmsg,nwds)
+! Set defaults
+            num_sat = 0
+            delta_sat = 0.05
+            if (nwds .gt. 1) then
+               if ( msg(2) .eq. 2) then
+! Read spacing for saturation output
+                  delta_sat = xmsg(2)
+               else if ( msg(2) .eq. 3 .and. cmsg(2) .eq. 'list') then
+! Read a list of saturation values for output
+                 read (inpt, *) num_sat
+                 allocate (sat_out(num_sat))
+                 backspace inpt
+                 read (inpt, *) num_sat, (sat_out(i), i = 1, num_sat)
+               end if
+            end if
+            ishisrlp = ishis + 500
+            open (unit=ishisrlp, file=fname, form='formatted')
+            select case (form_flag)
+            case (0)
+               write(ishisrlp, 6000) verno, jdate, jtime, trim(wdd)
+            case (1)
+               write(ishisrlp, 6005) verno, jdate, jtime
+            end select            
          case ('glo', 'GLO')
 ! Output global variables
             fname =  root(1:iroot) // '_glob' // hissfx

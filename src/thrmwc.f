@@ -1004,16 +1004,18 @@ c
 c this subroutine calculates equation coeffients and derivatives
 c mixture of water and air,co2
 
+      use comai
       use combi
       use comci
       use comdi
+      use comdti
       use comei
       use comfi
       use comgi
       use comii
+      use comrlp, only : rlpnew
       use comrxni
-      use comdti
-      use comai
+
       implicit none
 
       integer ndummy
@@ -1462,9 +1464,17 @@ c
 
 c     get relative perms
       if(iad.lt.abs(iexrlp).or.abs(iexrlp).eq.0) then
-         call rlperm(ndummy,1)
+         if (rlpnew) then
+            call rlp_cap(ndummy)
+         else
+            call rlperm(ndummy,1)
+         end if
       else if(iad.eq.abs(iexrlp)) then
-         call rlperm(ndummy,1)
+         if (rlpnew) then
+            call rlp_cap(ndummy)
+         else
+            call rlperm(ndummy,1)
+         end if
          call pcp_save(0,neq,ndummy,0,pcp,dpcef,rlf,drlef,
      &        rvf,drvef,s,pcp0,dpcps0,rlf0,drlfs0,
      &        rvf0,drvfs0,s0)
@@ -1483,11 +1493,12 @@ c     get relative perms
 c
 c generate relative permeabilities
 c
-      call rlperm(ndummy,1)
+      if (.not. rlpnew) call rlperm(ndummy,1)
 c
 c call capillary pressure routine
 c
-      call cappr(1,ndummy)
+c      call cappr(1,ndummy)
+      if (.not. rlpnew) call cappr(1,ndummy)
 c
 
       do 100 mid=1,neq
