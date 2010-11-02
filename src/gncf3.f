@@ -1292,7 +1292,7 @@ c     recall jacobian information
       endif
       if ( nrq.eq.24 )  then
 c     nk*(dnjz/dy)
-c     recall jacobian information
+c     recall jacobian information 
          a21=aj(neu,4)
          a22=aj(neu,5)
          a23=aj(neu,6)

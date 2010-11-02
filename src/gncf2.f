@@ -382,16 +382,17 @@ c     assemble global derivatives
 c     
          if(nrq.eq.1) then
 c     nk*njz
-            do k=1,nsl
-               knum=(k-1)*nsl
-               do jz=1,nsl
-                  ij=knum+jz
-                  bcoef(neu,ij)=bcoef(neu,ij)+wr(nga,k)*wr(nga,jz)*
+               do k=1,nsl
+                  knum=(k-1)*nsl
+c                  do jz=1,nsl
+                     ij=knum+k
+                     bcoef(neu,ij)=bcoef(neu,ij)+wr(nga,k)*
      &                 dnga*aj(neu,10)
+c                    ij = knum + k
+c                    bcoef(neu,ij)=bcoef(neu,ij)+w(nga,k)*dnga*aj(neu,10)
+c                  enddo
                enddo
-            enddo
-            
-         endif
+        endif        
        if(nrq.eq.2.or.nrq.eq.15) then     
 c     (d(nk/dx)*(dnjz/dx)
 c     recall jacobian information
@@ -542,11 +543,12 @@ c
 c     nk*njz
                do k=1,nsl
                   knum=(k-1)*nsl
-                  do jz=1,nsl
-                     ij=knum+jz
+c                  do jz=1,nsl
+c                     ij=knum+jz
 c                     bcoef(neu,ij)=bcoef(neu,ij)+w(nga,k)*w(nga,jz)*area
+                     ij = knum + k
                      bcoef(neu,ij)=bcoef(neu,ij)+w(nga,k)*area
-                  enddo
+c                  enddo
                enddo
             endif
             if(nrq.eq.2) then

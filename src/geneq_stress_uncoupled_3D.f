@@ -152,7 +152,8 @@ c
 
       real*8 e1i,e2i,e3i,e1kb,e2kb,e3kb
       real*8 e1bar,e2bar,e3bar
-	real*8 efac,bulki,bulkkb,bulkb,alpi,alpkb,alphab
+	real*8 efac,efaci, efackb, bulki,bulkkb,bulkb,alpi,alpkb,alphab
+	real*8 ealphai, ealphakb, ebulki, ebulkkb, ealphabar, ebulkbar
       real*8 dui,dvi,dwi,dukb,dvkb,dwkb
       real*8 xxx,xyy,xzz,xyx,xxy,xzx,yxy
       real*8 yyx,yyy,yxx,yzz,yzy,yyz,zxz
@@ -451,19 +452,39 @@ c y term for pore pressure and thermal expansion term
 c z term for pore pressure and thermal expansion term
 c sign is due to internal non-traditional numbering of hex grid
 c need to check things on other grids.
-         sjsiz=-sxs(iws,15)        
+         sjsiz=sxs(iws,15)        
             e1kb = e1(kb)
             e2kb = e2(kb)
             e3kb = e3(kb)
             e1bar=2.*e1i*e1kb/(e1i+e1kb + dis_tol)
             e2bar=2.*e2i*e2kb/(e2i+e2kb + dis_tol)
             e3bar=2.*e3i*e3kb/(e3i+e3kb + dis_tol)
+
             alpkb=alp(kb)
             alphab=2.*alpi*alpkb/(alpi+alpkb + dis_tol)
 c boit term
             bulkkb=bulk(kb)
             bulkb=2.*bulkkb*bulki/(bulkkb+bulki + dis_tol)
-            efac = 3.d0*e2bar + 2.d0*e3bar
+
+            efaci = 3.0d0*e2i + 2.0d0*e3i
+            ealphai = efaci*alpi
+            ebulki  = efaci*bulki
+
+            efackb = 3.0d0*e2kb + 2.0d0*e3kb
+            ealphakb = efackb*alpkb
+            ebulkkb  = efackb*bulkkb
+
+            ealphabar = 2.0d0*ealphai*ealphakb
+            ealphabar = ealphabar/(ealphai + ealphakb + dis_tol)
+            ebulkbar = 2.0d0*ebulki*ebulkkb
+            ebulkbar = ebulkbar/(ebulki + ebulkkb + dis_tol)
+
+            ealphabar = 2.0d0*ealphabar - ealphai
+            ebulkbar  = 2.0d0*ebulkbar  - ebulki
+
+c            efac = 2.0d0*efaci*efackb/(efaci + efackb + dis_tol)
+c            efac = 2.0d0*efac - efaci
+
 c
 c big change gaz 121807
 c
@@ -481,9 +502,16 @@ c             pdumt=phi(kb)-pho(kb)
              pdumt=phi(kb)-phini(kb)
 	      endif
 c
-           tdumx=sjsix*(tdumt*alphab+pdumt*bulkb)*efac
-           tdumy=sjsiy*(tdumt*alphab+pdumt*bulkb)*efac
-           tdumz=sjsiz*(tdumt*alphab+pdumt*bulkb)*efac
+c           tdumx=sjsix*(tdumt*alphab+pdumt*bulkb)*efac
+c           tdumy=sjsiy*(tdumt*alphab+pdumt*bulkb)*efac
+c           tdumz=sjsiz*(tdumt*alphab+pdumt*bulkb)*efac
+
+! Sai 10/08/2010 : Using modified averaging that produces analytically correct solutions
+! for simple boundary conditions
+           tdumx=sjsix*(tdumt*ealphabar+pdumt*ebulkbar)
+           tdumy=sjsiy*(tdumt*ealphabar+pdumt*ebulkbar)
+           tdumz=sjsiz*(tdumt*ealphabar+pdumt*ebulkbar)
+
 c         
 c form residuals of the stress balance equations
 c
@@ -515,7 +543,7 @@ c
       implicit none
       integer i1,i2,jj,kb,jjkb
       integer i,iflg,iz,neqp1,jji,krdu,krdv,krdw
-	real*8 boun_mult,fac
+	real*8 boun_mult,fac, delu, delv, delw
 	real*8 du_boun, dv_boun, dw_boun
       real*8 forcx_boun, forcy_boun, forcz_boun
 	real*8 xboun, yboun, zboun
@@ -532,7 +560,12 @@ c check for x fixed displacement
            do jj= i1,i2
             kb = nelm(jj)
             if(kr(kb,1).eq.1) then
+            ! Neighboring node has fixed u displacement
              jjkb = jj-neqp1
+             delu = disp(kb,1) - du(kb)
+             bp(i+nrhs(1)) = bp(i+nrhs(1)) - a(jjkb+nmat(1))*delu
+             bp(i+nrhs(2)) = bp(i+nrhs(2)) - a(jjkb+nmat(4))*delu
+             bp(i+nrhs(3)) = bp(i+nrhs(3)) - a(jjkb+nmat(7))*delu
              a(jjkb+nmat(1)) = 0.0d0
              a(jjkb+nmat(4)) = 0.0d0
              a(jjkb+nmat(7)) = 0.0d0
@@ -548,7 +581,8 @@ c check for x fixed displacement
             enddo
             jji = nelmdg(i)-neqp1
             a(jji+nmat(1)) = 1.
-		  bp(i+nrhs(1)) = 0.0d0		     
+		    ! bp(i+nrhs(1)) = 0.0d0
+		    bp(i+nrhs(1)) = (du(i) - disp(i,1))
 		else if(krdu.eq.-1) then
 c    added force
 	     forcx_boun = forc(i,1)
@@ -561,7 +595,12 @@ c           i2 = nelm(i+1)
            do jj= i1,i2
             kb = nelm(jj)
             if(kr(kb,2).eq.2) then
-             jjkb = jj-neqp1         
+            ! Neighboring node has fixed v displacement
+             jjkb = jj-neqp1
+             delv = disp(kb,2) - dv(kb)
+             bp(i+nrhs(1)) = bp(i+nrhs(1)) - a(jjkb+nmat(2))*delv
+             bp(i+nrhs(2)) = bp(i+nrhs(2)) - a(jjkb+nmat(5))*delv
+             bp(i+nrhs(3)) = bp(i+nrhs(3)) - a(jjkb+nmat(8))*delv
              a(jjkb+nmat(2)) = 0.0d0
              a(jjkb+nmat(5)) = 0.0d0
              a(jjkb+nmat(8)) = 0.0d0         
@@ -577,7 +616,8 @@ c           i2 = nelm(i+1)
             enddo
            jji = nelmdg(i)-neqp1
            a(jji+nmat(5)) = 1.	
-		 bp(i+nrhs(2)) = 0.0d0		       		     
+		   ! bp(i+nrhs(2)) = 0.0d0
+		   bp(i+nrhs(2)) = (dv(i) - disp(i,2))
 		else if(krdv.eq.-2) then
 c    added force
 	     forcy_boun = forc(i,2)
@@ -589,7 +629,12 @@ c           i2 = nelm(i+1)
            do jj= i1,i2
             kb = nelm(jj)
             if(kr(kb,3).eq.3) then
-             jjkb = jj-neqp1         
+             jjkb = jj-neqp1
+             delw = disp(kb,3) - dw(kb)
+            ! Neighboring node has fixed w displacement
+             bp(i+nrhs(1)) = bp(i+nrhs(1)) - a(jjkb+nmat(3))*delw
+             bp(i+nrhs(2)) = bp(i+nrhs(2)) - a(jjkb+nmat(6))*delw
+             bp(i+nrhs(3)) = bp(i+nrhs(3)) - a(jjkb+nmat(9))*delw
              a(jjkb+nmat(3)) = 0.0d0
              a(jjkb+nmat(6)) = 0.0d0
              a(jjkb+nmat(9)) = 0.0d0         
@@ -605,7 +650,8 @@ c           i2 = nelm(i+1)
             enddo
            jji = nelmdg(i)-neqp1
            a(jji+nmat(9)) = 1.	
-		 bp(i+nrhs(3)) = 0.0d0		       		     
+		   ! bp(i+nrhs(3)) = 0.0d0
+		   bp(i+nrhs(3)) = (dw(i) - disp(i,3))
 		else if(krdw.eq.-3) then
 c    added force
 	     forcz_boun = forc(i,3)

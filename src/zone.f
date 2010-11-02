@@ -321,7 +321,7 @@ C***********************************************************************
       real*8 xg, xz(8), yg, yz(8), zg, zz(8)
       real*8 tol_zone, zxy_min, zxy_max 
       integer imodel, j, n_n_n
-      integer zone_dpadd
+      integer zone_dpadd, i3d_2d
 
       integer, allocatable :: ncord(:)
 
@@ -341,8 +341,19 @@ c     Dual perm or dual porosity value to add to get zones
       end if
 
  50   continue
-
-      read (infile, '(a4)')  macro
+      i3d_2d = 0
+      read (infile, '(a80)')  wdd1
+      read (wdd1,*) macro
+      do i = 5,77
+       if(wdd1(i:i+3).eq.'conv') i3d_2d = 1
+      enddo
+      if(i3d_2d.eq.1.and.icnl.eq.0) then
+       write(ierr,*) 'i3d_2d parameter ignored for 3d problem'
+       if(iout.ne.0) 
+     &   write(iout,*) 'i3d_2d parameter ignored for 3d problem'
+       if(iptty.ne.0) 
+     &   write(iptty,*) 'i3d_2d parameter ignored for 3d problem'     
+      endif
       if (macro .eq. 'zone'.or.macro .eq. 'zonn')  then
          cmacro = macro
          if(macro .ne. 'zonn') then
@@ -363,13 +374,30 @@ c check if list or nnum occurs
      &          macro .ne. 'xyli'.and. macro.ne. 'all ' ) then
                backspace  infile
                if (izone .ne. izonel) nin = 0
-               read (infile, *) (xz(i), i = 1, nsl)
-               read (infile, *) (yz(i), i = 1, nsl)
-               if (icnl .eq. 0) then
+               if(i3d_2d.eq.0.or.icnl.eq.0) then
+                read (infile, *) (xz(i), i = 1, nsl)
+                read (infile, *) (yz(i), i = 1, nsl)
+                if (icnl .eq. 0) then
 c**** 3-d calculation ****
-                  read (infile, *)  (zz(i), i = 1, nsl)
-               end if
-               call setzone(izone, nin, ncord, nsl, xz, yz, zz)
+                   read (infile, *)  (zz(i), i = 1, nsl)
+                end if
+                call setzone(izone, nin, ncord, nsl, xz, yz, zz)
+               else
+c 3-d zones in 2D model (for consistency when extracting slices in 3d)               
+                read (infile, *) (xz(i), i = 1, 8)
+                xz(3) = xz(2)
+                xz(4) = xz(1)                 
+                xz(1) = xz(5)
+                xz(2) = xz(6)
+                read (infile, *) (yz(i), i = 1, 8)
+c note we overwrite yz with zz                 
+                read (infile, *) (zz(i), i = 1, 8)
+                yz(1) = zz(5)
+                yz(2) = zz(6)
+                yz(3) = zz(2)
+                yz(4) = zz(1)
+                call setzone(izone, nin, ncord, nsl, xz, yz, zz)  
+               endif
             else if(macro .eq. 'xyli') then
 c read in nodes in zone from xy list
                nxy = 0
@@ -429,8 +457,14 @@ c read in coordinates for nodes in zone
                   if(icnl .eq. 0) then
                      read(ltest, *, end = 80, err = 80) xg, yg, zg
                   else
-                     read(ltest, *, end = 80, err = 80) xg, yg
+                     if(i3d_2d.eq.1) then
+                      read(ltest, *, end = 80, err = 80) xg, yg, zg
+                      yg = zg
+                      zg = 0.0
+                     else
+                      read(ltest, *, end = 80, err = 80) xg, yg
                      zg = 0.0
+                    endif
                   end if
                else
                   goto 80

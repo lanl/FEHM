@@ -518,6 +518,18 @@ c
             xco2 = xc(mi)
             xwat = xw(mi)
             xair = xa(mi)		
+               diw(mi)=0.0
+               diwp(mi)=0.0
+               diwe(mi)=0.0
+               diww(mi)=0.0
+               diwyc(mi)=0.0
+               diwya(mi)=0.0
+               div(mi)=0.0
+               divp(mi)=0.0
+               dive(mi)=0.0
+               divw(mi)=0.0
+               divyc(mi)=0.0
+               divya(mi)=0.0
             cp=denr(mi)*cpr(mi)
             por=ps(mi)
             dporpl=dporp(mi)
@@ -807,18 +819,6 @@ c     zvd 07-Aug-08 added following line
                rov = co2_prop(9*neq+mi)
 c     zvd 07-Aug-08
                dstm(mi)=por*rov*sv*vol
-               diw(mi)=0.0
-               diwp(mi)=0.0
-               diwe(mi)=0.0
-               diww(mi)=0.0
-               diwyc(mi)=0.0
-               diwya(mi)=0.0
-               div(mi)=0.0
-               divp(mi)=0.0
-               dive(mi)=0.0
-               divw(mi)=0.0
-               divyc(mi)=0.0
-               divya(mi)=0.0
 c     
 c     modify flow terms for new upwind scheme
 c     .First calculate transfer through water-rich phase
@@ -1065,6 +1065,24 @@ c     phase information now contained in array ices
             icesd=ices(mi)
             pl=phico2(mi)
             tl=tco2(mi)
+               diw(mi)=0.0
+               diwp(mi)=0.0
+               diwe(mi)=0.0
+               diww(mi)=0.0
+               diwyc(mi)=0.0
+               diwya(mi)=0.0
+               dil(mi)=0.0
+               dilp(mi)=0.0
+               dile(mi)=0.0
+               dilw(mi)=0.0
+               dilyc(mi)=0.0
+               dilya(mi)=0.0
+               div(mi)=0.0
+               divp(mi)=0.0
+               dive(mi)=0.0
+               divw(mi)=0.0
+               divyc(mi)=0.0
+               divya(mi)=0.0           
             dtps=dtpsc(mi)
             frac_w= fw(mi)
             frac_cl=fl(mi)
@@ -1428,24 +1446,6 @@ c     RJP 03/27/07. diw notes transport through water-rich phase
 c     dil notes transport through co2-rich liquid phase (only present
 c     for 3-phase problem, 2-phase CO2 & water)
 c     div notes transport through co2-rich vapor phase
-               diw(mi)=0.0
-               diwp(mi)=0.0
-               diwe(mi)=0.0
-               diww(mi)=0.0
-               diwyc(mi)=0.0
-               diwya(mi)=0.0
-               dil(mi)=0.0
-               dilp(mi)=0.0
-               dile(mi)=0.0
-               dilw(mi)=0.0
-               dilyc(mi)=0.0
-               dilya(mi)=0.0
-               div(mi)=0.0
-               divp(mi)=0.0
-               dive(mi)=0.0
-               divw(mi)=0.0
-               divyc(mi)=0.0
-               divya(mi)=0.0
                dql=rlw*yco2*row/visw
 c     transport in water-rich phase.
                diw(mi)=dql

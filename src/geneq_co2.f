@@ -523,6 +523,9 @@ c gaz  080810
 c           enwkb=wat_prop(5*neq+kb)
 c           dewkb=wat_prop(6*neq+kb)
 c           dewekb=wat_prop(7*neq+kb) 
+            enwkb = 0.0
+            dewkb = 0.0
+            dewekb = 0.0
             enckb=co2_prop(12*neq+kb)
             deckb=co2_prop(14*neq+kb)
             decekb=co2_prop(13*neq+kb)
