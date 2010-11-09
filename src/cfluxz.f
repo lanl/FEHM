@@ -261,9 +261,9 @@ c     add to source sum
             sumfin = sumsource
             sumfout = sumsink
             if (sumdelta .gt. 0.) then
-               sumfout = sumfout +sumdelta
-            else
                sumfin = sumfin + sumdelta
+            else
+               sumfout = sumfout +sumdelta
             end if
 c     Write results
 ! Fluxes (moles/day) are written to concentration flux history file
