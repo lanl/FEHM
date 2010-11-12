@@ -78,7 +78,7 @@
       parameter(eostol=0.0001d00)
       parameter(eosmg=1.0001d00)
       parameter(eosml=0.9999d0)
-      parameter(strd_co2=0.7d0)
+      parameter(strd_co2=0.9d0)
       parameter(strd1=1.0d0)
       parameter(tolw=1.d-90, zero_e=1.e-10)
       parameter(mwc=44.d0,mww=18.d0)

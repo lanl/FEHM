@@ -2100,7 +2100,8 @@ c need porosity model
          i = 0
          do
             read(locunitnum,'(a80)') dumstring
-            if (null1(dumstring)) exit
+c            if (null1(dumstring)) exit
+            if(dumstring(1:9).eq.'stressend') exit
             if(dumstring(1:9).eq.'permmodel') then
                do 
                   read(locunitnum,'(a80)') dumstring
@@ -2133,10 +2134,12 @@ c	          else if (idumm .eq. 2 .or. idumm .eq. 4) then
                enddo
             endif
          enddo
-         allocate(ispmt(i))
-         allocate(spm1f(i),spm2f(i),spm3f(i),spm4f(i),spm5f(i))
-         allocate(spm6f(i),spm7f(i),spm8f(i),spm9f(i),spm10f(i))
-         allocate(spm11f(i),spm12f(i),spm13f(i),spm14f(i))
+         if(i.ge.1) then
+          allocate(ispmt(i))
+          allocate(spm1f(i),spm2f(i),spm3f(i),spm4f(i),spm5f(i))
+          allocate(spm6f(i),spm7f(i),spm8f(i),spm9f(i),spm10f(i))
+          allocate(spm11f(i),spm12f(i),spm13f(i),spm14f(i))
+         endif
          call done_macro(locunitnum)
          
       end if

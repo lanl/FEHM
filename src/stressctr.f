@@ -332,12 +332,12 @@ c
 c
 c  set zone call within stress module
 c
-        else if(macro1.eq.'zone      ') then
+        else if(macro1(1:4).eq.'zone') then
           macro = macro1(1:4)
           cnum_stress = cnum_stress + 1
           call zone(cnum_stress, inpt)
           
-        else if(macro1.eq.'zonn      ') then
+        else if(macro1(1:4).eq.'zonn') then
           macro = macro1(1:4)
           cnum_stress = cnum_stress + 1
           call zone(cnum_stress, inpt)

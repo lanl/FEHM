@@ -1295,19 +1295,19 @@ c gaz 09-02-2010
                dqya(mi)=dprmya*pldif
                if((kq.eq.-4).or.(kq.eq.-5)) then
                   if(icesd.eq.3) then					
-                     skco2(mi) = skco2(mi)*yco2+permsd*(fg(mi)-
+                     skco2(mi) = skco2(mi)*yco2+permsd1*(fg(mi)-
      &                    flowco2s(mi))
-                     dqw(mi) = dqw(mi)-permsd
+                     dqw(mi) = dqw(mi)-permsd1
                      dqyc(mi) = dqyc(mi)+permsd1*pldif
                   elseif(icesd.eq.2) then
-                     skco2(mi) = skco2(mi)*yco2+permsd*(fg(mi)-
+                     skco2(mi) = skco2(mi)*yco2+permsd1*(fg(mi)-
      &                    flowco2s(mi))
-                     dqt(mi) = dqt(mi)+permsd
+                     dqt(mi) = dqt(mi)+permsd1
                      dqyc(mi) = dqyc(mi)+permsd1*pldif
                   else
-                     skco2(mi) = skco2(mi)*yco2+permsd*(fl(mi)-
+                     skco2(mi) = skco2(mi)*yco2+permsd1*(fl(mi)-
      &                    flowco2s(mi))
-                     dqw(mi) = dqw(mi)-permsd
+                     dqw(mi) = dqw(mi)-permsd1
                      dqyc(mi) = dqyc(mi)+permsd1*pldif
                   endif
                endif
