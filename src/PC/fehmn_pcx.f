@@ -1362,41 +1362,6 @@ c................................................
             end if
          endif
 
-         nsave = 1
-
-         if (.not. ex) then
-            if(in(1).eq.0) then
-               if( tscounter .eq. 1 .or. in(1) .eq. 0
-     2              .or. tims .eq. tims_save) then
-                  if (allocated(itc) .and. nicg .gt. 1) then
-                     if (itc(nicg-1).gt.0) then
-!                    call disk (nsave)
-                        if (isave .ne. 0) call diskwrite
-                        if (iflxn .eq. 1) call flxn
-                     endif
-                  else
-!                 call disk (nsave)
-                     if (isave .ne. 0) call diskwrite
-                     if (iflxn .eq. 1) call flxn
-                  end if
-!               if(contim.ge.0) then
-                  if(istrs_coupl.ne.-2.and.istrs_coupl.ne.-1) then
-! contr will be called below in stress_uncoupled for a stress solution
-                     call contr (1)
-                     call contr (-1)
-                  end if
-                  call river_ctr(6)               
-!               else
-!                  call contr_days (1)
-!                  call contr_days (-1)
-!               endif
-                  istea_pest = 0
-                  call pest(1)
-c     **** call pest to calculate sensitivities if necessary
-                  call pest(2)
-               end if
-            end if
-         end if
 c     
 c     gaz 1-6-2002
 c     printout submodel boundary conditions if necessary
@@ -1430,6 +1395,45 @@ c
            istrs_coupl = -2
          endif 
          call stress_uncoupled(2)
+
+c zvd 30-Jun-10
+c Move call to disk_write and contr after call to stress_uncoupled
+         nsave = 1
+
+         if (.not. ex) then
+            if(in(1).eq.0) then
+               if( tscounter .eq. 1 .or. in(1) .eq. 0
+     2              .or. tims .eq. tims_save) then
+                  if (allocated(itc) .and. nicg .gt. 1) then
+                     if (itc(nicg-1).gt.0) then
+!                    call disk (nsave)
+                        if (isave .ne. 0) call diskwrite
+                        if (iflxn .eq. 1) call flxn
+                     endif
+                  else
+!                 call disk (nsave)
+                     if (isave .ne. 0) call diskwrite
+                     if (iflxn .eq. 1) call flxn
+                  end if
+!               if(contim.ge.0) then
+                  if(istrs_coupl.ne.-2.and.istrs_coupl.ne.-1) then
+! contr will be called below in stress_uncoupled for a stress solution
+c contr was called in stress_uncoupled above
+                     call contr (1)
+                     call contr (-1)
+                  end if
+                  call river_ctr(6)               
+!               else
+!                  call contr_days (1)
+!                  call contr_days (-1)
+!               endif
+                  istea_pest = 0
+                  call pest(1)
+c     **** call pest to calculate sensitivities if necessary
+                  call pest(2)
+               end if
+            end if
+         end if
 
 c     New convention is to make days the - of its value to
 c     write to the output history file, then change it back
