@@ -305,9 +305,15 @@ c
 c     RJP 05/18/08 diffusivity related terms
 c     
             diffkb=diff(kb)*ps(kb)
-            df2t=2.*diffi*diffkb/(diffi+diffkb)
-            df3t=2.*diffi*diffkb/(diffi+diffkb)
-            dfzt=2.*diffi*diffkb/(diffi+diffkb)
+            if (diffi .eq. 0. .or. diffkb .eq. 0) then
+               df2t = 0.d0
+               df3t = 0.d0
+               dfzt = 0.d0
+            else
+               df2t=2.*diffi*diffkb/(diffi+diffkb)
+               df3t=2.*diffi*diffkb/(diffi+diffkb)
+               dfzt=2.*diffi*diffkb/(diffi+diffkb)
+            end if
             pvikb=phico2(kb)
             phikb=phi(kb)
             plikb=pvikb-pcg(kb)
@@ -397,8 +403,13 @@ c
 c     RJP 05/18/08 added diffusivity terms
 c     
             diffkb=diff(kb)*ps(kb)
-            df2t=2.*diffi*diffkb/(diffi+diffkb)
-            df3t=2.*diffi*diffkb/(diffi+diffkb)
+            if (diffi .eq. 0. .or. diffkb .eq. 0) then
+                df2t = 0.d0
+                df3t = 0.d0
+            else
+                df2t=2.*diffi*diffkb/(diffi+diffkb)
+                df3t=2.*diffi*diffkb/(diffi+diffkb)
+            end if
 c     
             sx2t=2.*thxi*thxkb/(thxi+thxkb)
             sx3t=2.*thyi*thykb/(thyi+thykb)
@@ -522,14 +533,11 @@ c
 c gaz  080810           
 c           enwkb=wat_prop(5*neq+kb)
 c           dewkb=wat_prop(6*neq+kb)
-c           dewekb=wat_prop(7*neq+kb) 
-            enwkb = 0.0
-            dewkb = 0.0
-            dewekb = 0.0
+c           dewekb=wat_prop(7*neq+kb)
             enckb=co2_prop(12*neq+kb)
             deckb=co2_prop(14*neq+kb)
             decekb=co2_prop(13*neq+kb)
-            decwkb= 0.0
+            decwkb= 0.d0
             dewwkb=0.d0
             dewyckb=wat_prop(11*neq+kb)
             dewyakb=0.d0
@@ -581,33 +589,33 @@ c     derivatives wrt co2 mass fraction in water-rich phase
                   dwawi=dwayci
                   dwewi=dweyci
                else
-				if(ices(i).eq.2) then
-					dwapi=dwapi+dwayci*dmol(i)
-     &				+dwayci*dmol(i+neq)
-					dwepi=dwepi+dweyci*dmol(i)
-     &				+dweyci*dmol(i+neq)
-				else
-					dwapi=dwapi+dwayci*dmol(i)
-					dwaei=dwaei+dwayci*dmol(i+neq)
-					dwepi=dwepi+dweyci*dmol(i)
-					dweei=dweei+dweyci*dmol(i+neq)
-				endif
+                  if(ices(i).eq.2) then
+                     dwapi=dwapi+dwayci*dmol(i)
+     &                    +dwayci*dmol(i+neq)
+                     dwepi=dwepi+dweyci*dmol(i)
+     &                    +dweyci*dmol(i+neq)
+                  else
+                     dwapi=dwapi+dwayci*dmol(i)
+                     dwaei=dwaei+dwayci*dmol(i+neq)
+                     dwepi=dwepi+dweyci*dmol(i)
+                     dweei=dweei+dweyci*dmol(i+neq)
+                  endif
                endif
                if(ico2dis(kb).eq.0) then
                   dwawkb=dwayckb
                   dwewkb=dweyckb
                else
-				if(ices(kb).eq.2) then
-					dwapkb=dwapkb+dwayckb*dmol(i)
-     &				+dwayckb*dmol(i+neq)
-					dwepkb=dwepkb+dweyckb*dmol(i)
-     &				+dweyckb*dmol(i+neq)
-				else
-					dwapkb=dwapkb+dwayckb*dmol(i)
-					dwaekb=dwaekb+dwayckb*dmol(i+neq)
-					dwepkb=dwepkb+dweyckb*dmol(i)
-					dweekb=dweekb+dweyckb*dmol(i+neq)
-				endif
+                  if(ices(kb).eq.2) then
+                     dwapkb=dwapkb+dwayckb*dmol(i)
+     &                    +dwayckb*dmol(i+neq)
+                     dwepkb=dwepkb+dweyckb*dmol(i)
+     &                    +dweyckb*dmol(i+neq)
+                  else
+                     dwapkb=dwapkb+dwayckb*dmol(i)
+                     dwaekb=dwaekb+dwayckb*dmol(i+neq)
+                     dwepkb=dwepkb+dweyckb*dmol(i)
+                     dweekb=dweekb+dweyckb*dmol(i+neq)
+                  endif
                endif
             endif
             
@@ -617,15 +625,15 @@ c     derivatives wrt air mass fraction in water-rich phase
             dwyakb = 0.5*sx4d*dgwyakb*(cord(kz,igrav)-cord(iz,igrav))
             dwayai = dwyai*axyf+axyd*fid1*diwyai
             dwayakb = dwyakb*axyf+axyd*fid*diwyakb
-            dweyai = dwyai*aexyf+axyd*fid1*(diwyai*enwi+diwi*dewyai)
-            dweyakb = dwyakb*aexyf+axyd*fid*(diwyakb*enwkb+diwkb*
+            dweyai = dwyai*aexyf+axyd*fid1*(diwyai*enci+diwi*dewyai)
+            dweyakb = dwyakb*aexyf+axyd*fid*(diwyakb*enckb+diwkb*
      &           dewyakb)
 
 c     
 c     RJP 07/05/07 added new co2 flux arrays c_axy and c_vxy
 c     
-c     c_axy(iau+nmatavw)=axy
-c     c_axy(ial+nmatavw)=-axy
+            c_axy(iau+nmatavw)=axy
+            c_axy(ial+nmatavw)=-axy
 
             bp(iz+nrhs(3))=bp(iz+nrhs(3))+axy
             bp(kz+nrhs(3))=bp(kz+nrhs(3))-axy
@@ -800,33 +808,33 @@ c     derivatives wrt co2 mass fraction in water-rich phase (yc)
                   dvawi=dvayci
                   dvewi=dveyci
                else
-				if(ices(i).eq.2) then
-					dvapi=dvapi+dvayci*dmol(i)
-     &				+dvayci*dmol(i+neq)
-					dvepi=dvepi+dveyci*dmol(i)
-     &				+dveyci*dmol(i+neq)
-				else
-	                dvapi=dvapi+dvayci*dmol(i)
-					dvaei=dvaei+dvayci*dmol(i+neq)
-					dvepi=dvepi+dveyci*dmol(i)
-					dveei=dveei+dveyci*dmol(i+neq)
-				endif
+                  if(ices(i).eq.2) then
+                     dvapi=dvapi+dvayci*dmol(i)
+     &                    +dvayci*dmol(i+neq)
+                     dvepi=dvepi+dveyci*dmol(i)
+     &                    +dveyci*dmol(i+neq)
+                  else
+                     dvapi=dvapi+dvayci*dmol(i)
+                     dvaei=dvaei+dvayci*dmol(i+neq)
+                     dvepi=dvepi+dveyci*dmol(i)
+                     dveei=dveei+dveyci*dmol(i+neq)
+                  endif
                endif
                if(ico2dis(kb).eq.0) then
                   dvawkb=dvayckb
                   dvewkb=dveyckb
                else
-				if(ices(kb).eq.2) then
-					dvapkb=dvapkb+dvayckb*dmol(i)
-     &				+dvayckb*dmol(i+neq)
-					dvepkb=dvepkb+dveyckb*dmol(i)
-     &				+dveyckb*dmol(i+neq)
-				else
-					dvapkb=dvapkb+dvayckb*dmol(i)
-					dvaekb=dvaekb+dvayckb*dmol(i+neq)
-					dvepkb=dvepkb+dveyckb*dmol(i)
-					dveekb=dveekb+dveyckb*dmol(i+neq)
-				endif
+                  if(ices(kb).eq.2) then
+                     dvapkb=dvapkb+dvayckb*dmol(i)
+     &                    +dvayckb*dmol(i+neq)
+                     dvepkb=dvepkb+dveyckb*dmol(i)
+     &                    +dveyckb*dmol(i+neq)
+                  else
+                     dvapkb=dvapkb+dvayckb*dmol(i)
+                     dvaekb=dvaekb+dvayckb*dmol(i+neq)
+                     dvepkb=dvepkb+dveyckb*dmol(i)
+                     dveekb=dveekb+dveyckb*dmol(i+neq)
+                  endif
                endif
             endif
 
@@ -1019,33 +1027,33 @@ c     derivatives wrt co2 mass fraction in water-rich phase (yc)
                   dlawi=dlayci
                   dlewi=dleyci
                else
-				if(ices(i).eq.2) then
-					dlapi=dlapi+dlayci*dmol(i)
-     &				+dlayci*dmol(i+neq)
-					dlepi=dlepi+dleyci*dmol(i)
-     &				+dleyci*dmol(i+neq)
-				else
-					dlapi=dlapi+dlayci*dmol(i)
-					dlaei=dlaei+dlayci*dmol(i+neq)
-					dlepi=dlepi+dleyci*dmol(i)
-					dleei=dleei+dleyci*dmol(i+neq)
-				endif
+                  if(ices(i).eq.2) then
+                     dlapi=dlapi+dlayci*dmol(i)
+     &                    +dlayci*dmol(i+neq)
+                     dlepi=dlepi+dleyci*dmol(i)
+     &                    +dleyci*dmol(i+neq)
+                  else
+                     dlapi=dlapi+dlayci*dmol(i)
+                     dlaei=dlaei+dlayci*dmol(i+neq)
+                     dlepi=dlepi+dleyci*dmol(i)
+                     dleei=dleei+dleyci*dmol(i+neq)
+                  endif
                endif
                if(ico2dis(kb).eq.0) then
                   dlawkb=dlayckb
                   dlewkb=dleyckb
                else
-				if(ices(kb).eq.2) then
-					dlapkb=dlapkb+dlayckb*dmol(i)
-     &				+dlayckb*dmol(i+neq)
-					dlepkb=dlepkb+dleyckb*dmol(i)
-     &				+dleyckb*dmol(i+neq)
-				else
-					dlapkb=dlapkb+dlayckb*dmol(i)
-					dlaekb=dlaekb+dlayckb*dmol(i+neq)
-					dlepkb=dlepkb+dleyckb*dmol(i)
-					dleekb=dleekb+dleyckb*dmol(i+neq)
-				endif
+                  if(ices(kb).eq.2) then
+                     dlapkb=dlapkb+dlayckb*dmol(i)
+     &                    +dlayckb*dmol(i+neq)
+                     dlepkb=dlepkb+dleyckb*dmol(i)
+     &                    +dleyckb*dmol(i+neq)
+                  else
+                     dlapkb=dlapkb+dlayckb*dmol(i)
+                     dlaekb=dlaekb+dlayckb*dmol(i+neq)
+                     dlepkb=dlepkb+dleyckb*dmol(i)
+                     dleekb=dleekb+dleyckb*dmol(i+neq)
+                  endif
                endif
             endif
 
@@ -1211,35 +1219,35 @@ c     mass balance terms
                a(jmia+nmat(15))=a(jmia+nmat(15))-diffc*yci*dgwyai
                a(ial+nmat(15))=a(ial+nmat(15))+diffc*yci*dgwyai
             else
-			if(ices(i).eq.2) then
-               a(jmia+nmat(11))=a(jmia+nmat(11))-diffc*yci*(dgwpi+
-     &              dgwyci*dmol(i)+dgwyci*dmol(i+neq))
-               a(ial+nmat(11))=a(ial+nmat(11))+diffc*yci*(dgwpi+
-     &              dgwyci*dmol(i)+dgwyci*dmol(i+neq))
-               a(jmia+nmat(13))=a(jmia+nmat(13))-diffc*yci*dgwwi
-               a(ial+nmat(13))=a(ial+nmat(13))+diffc*yci*dgwwi
+               if(ices(i).eq.2) then
+                  a(jmia+nmat(11))=a(jmia+nmat(11))-diffc*yci*(dgwpi+
+     &                 dgwyci*dmol(i)+dgwyci*dmol(i+neq))
+                  a(ial+nmat(11))=a(ial+nmat(11))+diffc*yci*(dgwpi+
+     &                 dgwyci*dmol(i)+dgwyci*dmol(i+neq))
+                  a(jmia+nmat(13))=a(jmia+nmat(13))-diffc*yci*dgwwi
+                  a(ial+nmat(13))=a(ial+nmat(13))+diffc*yci*dgwwi
                a(jmia+nmat(14))=a(jmia+nmat(14))-diffc*(yci*dgwyci+rowi)
-               a(ial+nmat(14))=a(ial+nmat(14))+diffc*(yci*dgwyci+rowi)
-               a(jmia+nmat(15))=a(jmia+nmat(15))-diffc*yci*dgwyai
-               a(ial+nmat(15))=a(ial+nmat(15))+diffc*yci*dgwyai
-			else
-				a(jmia+nmat(11))=a(jmia+nmat(11))-diffc*yci*(dgwpi+
-     &              dgwyci*dmol(i))
-				a(ial+nmat(11))=a(ial+nmat(11))+diffc*yci*(dgwpi+
-     &              dgwyci*dmol(i))
-				a(jmia+nmat(12))=a(jmia+nmat(12))-diffc*yci*(dgwei+
-     &              dgwyci*dmol(i+neq))
-				a(ial+nmat(12))=a(ial+nmat(12))+diffc*yci*(dgwei+
-     &              dgwyci*dmol(i+neq))
-				a(jmia+nmat(13))=a(jmia+nmat(13))-diffc*yci*dgwwi
-				a(ial+nmat(13))=a(ial+nmat(13))+diffc*yci*dgwwi
-				a(jmia+nmat(14))=a(jmia+nmat(14))-
-     &				diffc*(yci*dgwyci+rowi)
-				a(ial+nmat(14))=a(ial+nmat(14))+
-     &				diffc*(yci*dgwyci+rowi)
-				a(jmia+nmat(15))=a(jmia+nmat(15))-diffc*yci*dgwyai
-				a(ial+nmat(15))=a(ial+nmat(15))+diffc*yci*dgwyai
-			endif
+                a(ial+nmat(14))=a(ial+nmat(14))+diffc*(yci*dgwyci+rowi)
+                  a(jmia+nmat(15))=a(jmia+nmat(15))-diffc*yci*dgwyai
+                  a(ial+nmat(15))=a(ial+nmat(15))+diffc*yci*dgwyai
+               else
+                  a(jmia+nmat(11))=a(jmia+nmat(11))-diffc*yci*(dgwpi+
+     &                 dgwyci*dmol(i))
+                  a(ial+nmat(11))=a(ial+nmat(11))+diffc*yci*(dgwpi+
+     &                 dgwyci*dmol(i))
+                  a(jmia+nmat(12))=a(jmia+nmat(12))-diffc*yci*(dgwei+
+     &                 dgwyci*dmol(i+neq))
+                  a(ial+nmat(12))=a(ial+nmat(12))+diffc*yci*(dgwei+
+     &                 dgwyci*dmol(i+neq))
+                  a(jmia+nmat(13))=a(jmia+nmat(13))-diffc*yci*dgwwi
+                  a(ial+nmat(13))=a(ial+nmat(13))+diffc*yci*dgwwi
+                  a(jmia+nmat(14))=a(jmia+nmat(14))-
+     &                 diffc*(yci*dgwyci+rowi)
+                  a(ial+nmat(14))=a(ial+nmat(14))+
+     &                 diffc*(yci*dgwyci+rowi)
+                  a(jmia+nmat(15))=a(jmia+nmat(15))-diffc*yci*dgwyai
+                  a(ial+nmat(15))=a(ial+nmat(15))+diffc*yci*dgwyai
+               endif
             endif
          else
             a(jmia+nmat(11))=a(jmia+nmat(11))-diffc*yci*dgwpi

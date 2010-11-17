@@ -57,15 +57,16 @@
       use comdti
       use comki  
       use comai
+      use comco2
 
       implicit none
 
       integer, allocatable :: kq_dum(:), icount(:)
       integer i,j,ii,ij,jj,kb,i1,i2,neqp1,max_var,iflg
-      integer inr_chkp,inr_chks,inr_chkt,nr_write
+      integer inr_chkp,inr_chks,inr_chks2,inr_chkt,nr_write
       character*4 vard
       logical nr_chk
-      real*8 value,pnrmax,snrmax,tnrmax,hnrmax,panrmax
+      real*8 value,pnrmax,snrmax,snr2max,tnrmax,hnrmax,panrmax
       parameter (max_var = 10)
       save nr_write
       
@@ -108,6 +109,8 @@ c
          read(wdd1,*) vard(1:1),s_stop 
         else if(vard(1:3).eq.'sat'.and.vard(4:4).eq.' ') then
          read(wdd1,*) vard(1:3),s_stop
+        else if(vard(1:1).eq.'s'.and.vard(2:2).eq.'2') then
+         read(wdd1,*) vard(1:2),s2_stop         
         endif
        endif
       enddo
@@ -115,14 +118,17 @@ c
 c
 c check for sufficient closure terms
 c
-       if(ico2.lt.0) then
-        if(p_stop.le.0.0) nr_chk = .false.
-       endif
-       if(ico2.eq.0) then
+       if(icarb.lt.0) then
         if(p_stop.le.0.0) nr_chk = .false.
         if(t_stop.le.0.0) nr_chk = .false.
-       endif  
-       if(ico2.gt.0) then
+        if(s_stop.le.0.0) nr_chk = .false.     
+        if(s2_stop.le.0.0) nr_chk = .false.                     
+       else if(ico2.lt.0) then
+        if(p_stop.le.0.0) nr_chk = .false.
+       else if(ico2.eq.0) then
+        if(p_stop.le.0.0) nr_chk = .false.
+        if(t_stop.le.0.0) nr_chk = .false.  
+       else if(ico2.gt.0) then
         if(p_stop.le.0.0) nr_chk = .false.
         if(t_stop.le.0.0) nr_chk = .false.
         if(pa_stop.le.0.0) nr_chk = .false.      
@@ -147,7 +153,49 @@ c
 c  iteration control
 c   
        nr_stop = 2
-       if(ico2.lt.0) then
+       if(icarb.ne.0) then
+         pnrmax = 0.0
+         snrmax = 0.0
+         snr2max = 0.0
+         tnrmax = 0.0
+         inr_chkp= 0
+         inr_chks= 0
+         inr_chks2= 0
+         inr_chkt= 0      
+        do i = 1,n
+         if(p_stop.ne.0.0.and.abs(bp(i+nrhs(1))).gt.pnrmax) then
+          pnrmax = abs(bp(i+nrhs(1)))
+          inr_chkp= i
+         endif
+         if(ices(i).eq.2) then
+           if(s_stop.ne.0.0.and.abs(bp(i+nrhs(2))).gt.snrmax) then
+            snrmax = abs(bp(i+nrhs(2)))
+            inr_chks= i
+           endif
+           if(s2_stop.ne.0.0.and.abs(bp(i+nrhs(3))).gt.snr2max) then
+            snr2max = abs(bp(i+nrhs(3)))
+            inr_chks2= i
+          endif         
+         else if(ices(i).ne.2) then      
+          if(t_stop.ne.0.0.and.abs(bp(i+nrhs(2))).gt.tnrmax) then
+           tnrmax = abs(bp(i+nrhs(2)))
+           inr_chkt= i
+          endif
+          if(s_stop.ne.0.0.and.abs(bp(i+nrhs(3))).gt.snrmax) then
+            snrmax = abs(bp(i+nrhs(3)))
+            inr_chks= i
+          endif
+         endif
+        enddo
+        if(p_stop.ne.0.0.and.pnrmax.gt.p_stop) nr_stop = 3
+        if(s_stop.ne.0.0.and.snrmax.gt.s_stop) nr_stop = 3 
+        if(t_stop.ne.0.0.and.tnrmax.gt.t_stop) nr_stop = 3  
+        if(s2_stop.ne.0.0.and.snr2max.gt.s2_stop) nr_stop = 3 
+        if(nr_write.ne.0) then
+         write(ierr,50) 
+     &    l,iad,inr_chkp,pnrmax,inr_chks,snrmax,inr_chkt,tnrmax       
+        endif       
+       else if(ico2.lt.0) then
          pnrmax = 0.0
          snrmax = 0.0
          hnrmax = 0.0
@@ -162,8 +210,7 @@ c
         if(p_stop.ne.0.0.and.pnrmax.gt.p_stop) nr_stop = 3
         if(p_stop.ne.0.0.and.snrmax.gt.s_stop) nr_stop = 3    
         if(h_stop.ne.0.0.and.pnrmax.gt.h_stop) nr_stop = 3      
-       endif
-       if(ico2.eq.0) then
+       else if(ico2.eq.0) then
          pnrmax = 0.0
          snrmax = 0.0
          tnrmax = 0.0
@@ -192,11 +239,10 @@ c
         if(nr_write.ne.0) then
          write(ierr,50) 
      &    l,iad,inr_chkp,pnrmax,inr_chks,snrmax,inr_chkt,tnrmax       
-        endif
-       endif  
+        endif 
 50     format(1x,'TS',1x,i5,' NR',1x,i3,' i pres',1x,i7,1x,g12.5,
      &    ' i sat',1x,i7,1x,g12.5,' i t',1x,i7,1x,g12.5)         
-       if(ico2.gt.0) then
+       else if(ico2.gt.0) then
          pnrmax = 0.0
          snrmax = 0.0
          tnrmax = 0.0

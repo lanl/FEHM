@@ -1319,7 +1319,7 @@ c     code for no multiple defined nodes
             nt = nodeuf(id)
             int = inoduf(nt)
             if(id.eq.int) then
-               i1 = ncon(id)+1
+                i1 = ncon(id)+1
                i2 = ncon(id+1)
                ipiv = nelmdg(id)
 c     previously defined nodes

@@ -48,6 +48,16 @@ C***********************************************************************
       real*8 tmch1
       parameter (tmch1=1d-3)
       parameter (iprint=0,inorm = 1)
+
+c
+c  check for possible stopping on variable changes
+c
+      if(iad.ge.1) then
+       if(nr_stop.eq.2) then
+        fdum=-1.0
+        go to 999
+       endif
+      endif
       
       neqp1=neq+1
       nmatd=nelm(neqp1)-neqp1

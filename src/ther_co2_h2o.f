@@ -159,8 +159,8 @@ c     are in g
             mi=mid+ndummy
 c     calculate multi-phase relative perms.
             call rlperm_co2(ndummy,0,mi,rl_w(mi),
-     &           drl_ww(mi),drl_wg(mi),rl_l(mi),drl_lw(mi),drl_lg(mi),
-     &           rl_v(mi),drl_vw(mi),drl_vg(mi))
+     &              drl_ww(mi),drl_wg(mi),rl_l(mi),drl_lw(mi),
+     &              drl_lg(mi),rl_v(mi),drl_vw(mi),drl_vg(mi))
 c     calculate multi-phase cap. pres.
             call rlperm_co2(ndummy,1,mi,pcp(mi),
      &           dpcpw(mi),dpcpg(mi),pcg(mi),dpcgw(mi),dpcgg(mi),
@@ -212,6 +212,8 @@ c
             xco2 = xc(mi)
             xwat = xw(mi)
             xair = xa(mi)
+            dporpl=dporp(mi)
+            dportl=dport(mi)            
 
             if(ico2prop_flg.eq.1) then
                wat_prop(mi) = row
@@ -369,9 +371,19 @@ c
 
                icesd=ices(mi)
                tl=tco2(mi)
-               xs = fg(mi)/(fg(mi)+fl(mi))
-               dxsg = 1.d0/(fg(mi)+fl(mi))
-               dxsw = fg(mi)/((1-fw(mi))*(1-fw(mi)))
+               if (fg(mi) .eq. 0.) then
+                  xs = 0.d0
+                  dxsg = 0.d0
+                  dxsw = 0.d0
+               else
+                  xs = fg(mi)/(fg(mi)+fl(mi))
+                  dxsg = 1.d0/(fg(mi)+fl(mi))
+                  if (fw(mi) .eq. 1.) then
+                     dxsw = 0.
+                  else
+                     dxsw = fg(mi)/((1-fw(mi))*(1-fw(mi)))
+                  end if
+               end if
                if(icesd.eq.2) then
 c     two phase (gas/liquid) conditions
 c     calculate phase-change temperature and dt/dp

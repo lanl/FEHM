@@ -783,8 +783,9 @@ c     make corrections for solid-liquid-gas mixture
 c     
             call icectr(2,ndummy)
 c RJP 04/10/07 added CO2 part
-         else if(icarb.eq.1) then
-            call icectrco2(2,ndummy)
+c this is now in bnswer 111410 (gaz)
+c         else if(icarb.eq.1) then
+c            call icectrco2(2,ndummy)
          endif
 c
       endif
