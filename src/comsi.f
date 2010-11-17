@@ -59,6 +59,29 @@
       real*8, allocatable ::  e1(:)
       real*8, allocatable ::  e2(:)
       real*8, allocatable ::  e3(:)
+c s kelkar 12/6/09 axisymmetric anisotropy
+      logical stress_anisotropy
+        real*8, allocatable ::  elastic_mod_t(:)
+        real*8, allocatable ::  poisson_t(:)
+        real*8, allocatable ::  e4(:)
+        real*8, allocatable ::  ezz(:)
+        real*8, allocatable ::  shearmod_t(:)
+c......................................
+c k yoshioka 3/2/10 orthotropy
+      logical stress_orthotropy
+      real*8, allocatable :: elastic_mod_2(:)
+      real*8, allocatable :: elastic_mod_3(:)
+      real*8, allocatable :: poisson_13(:)
+      real*8, allocatable :: poisson_23(:)
+      real*8, allocatable :: shearmod_12(:)
+      real*8, allocatable :: shearmod_13(:)
+      real*8, allocatable :: shearmod_23(:)
+      real*8, allocatable :: e5(:)
+      real*8, allocatable :: e6(:)
+      real*8, allocatable :: bulk1(:)
+      real*8, allocatable :: bulk2(:)
+      real*8, allocatable :: bulk3(:)
+c.........................................      
       real*8, allocatable ::  bulk(:)
       real*8, allocatable ::  alp(:)
       real*8, allocatable ::  du(:) 
@@ -88,13 +111,17 @@
       real*8, allocatable ::  str_x(:) 
       real*8, allocatable ::  str_y(:)
       real*8, allocatable ::  str_z(:)
+      real*8, allocatable ::  str_x0(:)
+      real*8, allocatable ::  str_y0(:)
+      real*8, allocatable ::  str_z0(:)
+      logical residual_stress
 c Bai model      
       real*8, allocatable ::  estr_x0(:)
       real*8, allocatable ::  estr_y0(:)
       real*8, allocatable ::  estr_z0(:)
-      real*8, allocatable ::  str_xy0(:)
-      real*8, allocatable ::  str_xz0(:)
-      real*8, allocatable ::  str_yz0(:)
+      real*8, allocatable ::  estr_xy0(:)
+      real*8, allocatable ::  estr_xz0(:)
+      real*8, allocatable ::  estr_yz0(:)
 c Failure + Bai displacement
       real*8, allocatable ::  es_f_x0(:,:)  
       real*8, allocatable ::  es_f_y0(:,:)
@@ -110,6 +137,9 @@ c     ___________________________________________
       real*8, allocatable ::  str_xy(:) 
       real*8, allocatable ::  str_xz(:)
       real*8, allocatable ::  str_yz(:)
+      real*8, allocatable ::  str_xy0(:)
+      real*8, allocatable ::  str_xz0(:)
+      real*8, allocatable ::  str_yz0(:)
       real*8, allocatable ::  asxx(:) 
       real*8, allocatable ::  asyy(:)
       real*8, allocatable ::  disp(:,:)
@@ -274,10 +304,13 @@ c     dimension a12mpf(n0),a12mef(n0),a12eef(n0)
       
       integer, allocatable ::  iarea_str(:,:)  
       real*8, allocatable ::  area_str(:,:)  
+      
+      real*8 frac_vol
 
 c     For Min model
       real*8 ipmd4_fx,ipmd4_br,ipmd4_bmx,ipmd4_alx,ipmd4_aly
       real*8 ipmd4_fdx,ipmd4_dmx,ipmd4_gmx,ipmd4_kc
       real*8 ipmd4_fy,ipmd4_btx,ipmd4_bty, ipmd4_fdy,ipmd4_gmy
+      
       
       end module comsi
