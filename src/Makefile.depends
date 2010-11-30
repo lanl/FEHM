@@ -46,6 +46,7 @@ cell_time.o: comdti.o comflow.o
 cfluxz.o: comai.o combi.o comchem.o comci.o comdi.o comdti.o comflow.o
 cfluxz.o: compart.o comxi.o
 check_rlp.o: comai.o comci.o comdi.o comrlp.o
+check_rlp_carb.o: comai.o comci.o comco2.o comdi.o comrlp.o
 chemod.o: comai.o combi.o comchem.o comci.o comco2.o comdi.o comdti.o comrxni.o
 chemod.o: davidi.o
 cliffnodes.o: comai.o comsk.o comsptr.o
@@ -103,11 +104,11 @@ directional_search.o: comai.o comsk.o comsptr.o
 diskc.o: comai.o combi.o comchem.o comdi.o comdti.o comrxni.o
 diskp.o: comai.o combi.o comdti.o compart.o comrxni.o
 diskread.o: comai.o combi.o comco2.o comdi.o comdti.o comfi.o comflow.o comii.o
-diskread.o: commeth.o compart.o comriv.o comxi.o davidi.o
+diskread.o: commeth.o compart.o comriv.o comsi.o comxi.o davidi.o
 diskwrite.o: comai.o combi.o comco2.o comdi.o comdti.o comfi.o comflow.o
 diskwrite.o: comii.o commeth.o compart.o comriv.o comxi.o davidi.o
 diskwrite_new.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comfi.o
-diskwrite_new.o: comflow.o comii.o commeth.o compart.o comriv.o comxi.o
+diskwrite_new.o: comflow.o comii.o commeth.o compart.o comriv.o comsi.o comxi.o
 diskwrite_new.o: davidi.o
 dispersion_divergence.o: comai.o comdi.o comsptr.o
 dispersion_divergence_omr.o: comai.o comdi.o comsptr.o
@@ -145,7 +146,7 @@ fd_calc_heat.o: comai.o combi.o comci.o comdi.o comdti.o comji.o comki.o
 fd_calc_heat.o: davidi.o
 fehmn.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o comevap.o
 fehmn.o: comfi.o comflow.o compart.o comriv.o comrtd.o comrxni.o comsi.o
-fehmn.o: comsplitts.o comsptr.o comwt.o comxi.o davidi.o interpolate.o
+fehmn.o: comsk.o comsplitts.o comsptr.o comwt.o comxi.o davidi.o interpolate.o
 fimpf.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o davidi.o
 find_closest_curve.o: comai.o compfrac.o
 find_v_3lsq.o: comsptr.o
@@ -329,7 +330,7 @@ input.o: comai.o combi.o comchem.o comci.o comco2.o comdi.o comdti.o comevap.o
 input.o: compart.o comriv.o comrxni.o comsi.o comsplitts.o comsptr.o comwt.o
 input.o: davidi.o
 inrestart.o: comai.o combi.o comxi.o
-inrlp.o: comai.o comco2.o comdi.o comdti.o comki.o comrlp.o
+inrlp.o: comai.o comco2.o comcomp.o comdi.o comdti.o comki.o comrlp.o
 inrock.o: comai.o comdi.o comdti.o comki.o
 insptr.o: comai.o combi.o comdi.o comdti.o comki.o compart.o compfrac.o comsk.o
 insptr.o: comsptr.o comxi.o
@@ -413,8 +414,8 @@ resettrc.o: comai.o comci.o comdi.o comdti.o
 resetv.o: comai.o comci.o comco2.o comdi.o comdti.o comfi.o davidi.o
 river_ctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 river_ctr.o: comii.o comriv.o comrxni.o comxi.o davidi.o
-rlp_cap.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o comfi.o
-rlp_cap.o: comhi.o comki.o comrlp.o
+rlp_cap.o: comai.o combi.o comci.o comco2.o comcomp.o comdi.o comdti.o comei.o
+rlp_cap.o: comfi.o comhi.o comki.o comrlp.o
 rlp_cap_table.o: comrlp.o
 rlp_frac.o: comai.o combi.o comci.o comdi.o comdti.o
 rlp_frac2.o: comai.o combi.o comci.o comdi.o comdti.o
@@ -460,7 +461,7 @@ startup.o: comrlp.o comsi.o comsptr.o comwt.o comzone.o davidi.o
 steady.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comsplitts.o
 steady.o: comsteady.o davidi.o
 sther.o: comai.o comdi.o comdti.o comii.o
-stone_rlp.o: comrlp.o
+stone_rlp.o: comai.o comco2.o comcomp.o comrlp.o
 storage_derivatives.o: comci.o comdti.o davidi.o
 storsx.o: comai.o combi.o comdti.o comxi.o
 storsx_read.o: comai.o combi.o comdti.o comsi.o comxi.o

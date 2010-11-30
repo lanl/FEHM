@@ -91,6 +91,8 @@ C***********************************************************************
          else if (begin.eq.1) then
             ndex(entrynum,1)=i
             begin=0
+         else if (i .eq. line_length) then
+            ndex(entrynum,2)=i
          else
             continue
          endif

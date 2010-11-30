@@ -1,4 +1,4 @@
-      subroutine check_rlp
+      subroutine check_rlp_carb
 !***********************************************************************
 ! Copyright 2010 Los Alamos National Security, LLC  All rights reserved
 ! Unless otherwise indicated,  this information has been authored by an 
@@ -23,38 +23,51 @@
       use comai, only : form_flag, idpdp, ierr, neq, nrlp, wdd
       use comrlp, only : ishisrlp, rlpnew, delta_sat, num_sat, sat_out
       use comci, only : rlf, rvf
-      use comdi, only : ieos, irlp, pcp, s, icap
+      use comco2
+      use comdi, only : ieos, irlp, pcp, icap
 
       implicit none
-      integer i, j, ndummy, neqtemp
+      integer i, j, mi, ndummy, neqtemp
       integer, allocatable :: ieostemp(:)
       integer, allocatable :: irlptemp(:)
       integer, allocatable :: icaptemp(:)
-      real*8, allocatable  :: stemp(:)
+      real*8, allocatable  :: fwtemp(:)
+      real*8, allocatable  :: fltemp(:)
+      real*8, allocatable  :: fgtemp(:)
       real*8, allocatable  :: pcptemp(:)
-      real*8, allocatable  :: rlftemp(:)
-      real*8, allocatable  :: rvftemp(:)
+      real*8, allocatable  :: pcgtemp(:)
+      real*8, allocatable  :: rlwtemp(:)
+      real*8, allocatable  :: rlltemp(:)
+      real*8, allocatable  :: rlvtemp(:)
+      real*8 :: dum1, dum2, dum3
       character*100 form_string, title_string
       
       neqtemp = neq
       if (idpdp .ne. 0) then
-         allocate (stemp(2*neq), ieostemp(2*neq), irlptemp(2*neq))
-         allocate (pcptemp(2*neq), rlftemp(2*neq), rvftemp(2*neq))
-         allocate (icaptemp(2*neq))
+         allocate (fwtemp(2*neq), fltemp(2*neq), fgtemp(2*neq))
+         allocate (ieostemp(2*neq), irlptemp(2*neq), icaptemp(2*neq))
+         allocate (pcptemp(2*neq), pcgtemp(2*neq))
+         allocate (rlwtemp(2*neq), rlltemp(2*neq), rlvtemp(2*neq))
       else
-         allocate (stemp(neq), ieostemp(neq), irlptemp(neq))
-         allocate (pcptemp(neq), rlftemp(neq), rvftemp(neq))
-         allocate (icaptemp(neq))
+         allocate (fwtemp(neq), fltemp(neq), fgtemp(neq))
+         allocate (ieostemp(neq), irlptemp(neq), icaptemp(neq))
+         allocate (pcptemp(neq), pcgtemp(neq))
+         allocate (rlwtemp(neq), rlltemp(neq), rlvtemp(neq))
       end if
+
       ndummy = 0
 
-      stemp = s
+      fwtemp = fw
+      fltemp = fl
+      fgtemp = fg
       ieostemp = ieos
       irlptemp = irlp
       icaptemp = icap
       pcptemp = pcp
-      rlftemp = rlf
-      rvftemp = rvf
+      pcgtemp = pcg
+      rlwtemp = rl_w
+      rlltemp = rl_l
+      rlvtemp = rl_v
 
       if (num_sat .eq. 0) then
          neq = 1 / delta_sat + 1
@@ -64,13 +77,16 @@
 
       do i = 1, neq
          if (num_sat .eq. 0) then
-            s(i) = (i - 1) * delta_sat
+            fw(i) = (i - 1) * delta_sat
+            fl(i) = 1 - fw(i)
          else
-            s(i) = sat_out(i)
+            fw(i) = sat_out(i)
+            fl(i) = 1 - fw(i)
          end if
          ieos(i) = 2
          if (idpdp .ne. 0) then
-            s(i + neq) = s(i)
+            fw(i + neq) = fw(i)
+            fl(i + neq) = fl(i)
             ieos(i + neq) = 2
          end if
       end do
@@ -79,7 +95,8 @@
      &     "Capillary pressure"
       if (form_flag .eq. 1) then
          form_string = 'variables = "Saturation" ' //
-     &        '"Liquid" "Vapor" "Capillary pressure"'
+     &        '"Liquid" "Vapor" "Capillary pressure" '
+c     &       , '"drl_ww" "drl_lw" "drl_lg"'
          write(ishisrlp, '(a)') trim(form_string)
          write(ishisrlp, 230) 50., 95., trim(title_string)
          write(ishisrlp, 230) 50., 90., trim(wdd)
@@ -112,16 +129,25 @@
             call rlp_cap(0)
             if (idpdp .ne. 0) call rlp_cap(neq)
          else
-            call rlperm(0,1)
-            call cappr(1,0)
+            do mi = 1, neq
+c     calculate multi-phase relative perms.
+               call rlperm_co2(0,0,mi,rl_w(mi),
+     &              drl_ww(mi),drl_wg(mi),rl_l(mi),drl_lw(mi),
+     &              drl_lg(mi),rl_v(mi),drl_vw(mi),drl_vg(mi))
+c     calculate multi-phase cap. pres.
+               call rlperm_co2(0,1,mi,pcp(mi),
+     &              dpcpw(mi),dpcpg(mi),pcg(mi),dpcgw(mi),dpcgg(mi),
+     &              dum1,dum2,dum3)
+            end do
             if (idpdp .ne. 0) then
-               call rlperm(neq,1)
-               call cappr(1,neq)
+c                  call rlperm(neq,1)
+c                  call cappr(1,neq)
             end if 
          end if
          do i = 1, neq
-            write (ishisrlp, '(4(g16.9, 1x))') s(i), rlf(i), rvf(i),
-     &           pcp(i)
+            write (ishisrlp, '(7(g16.9, 1x))') fw(i), rl_w(i), 
+     &           rl_l(i), pcp(i)
+c     &              rl_l(i), pcp(i), drl_ww(i), drl_lw(i), drl_lg(i)
          end do
          if (idpdp .ne. 0) then
             if (form_flag .eq. 1) then
@@ -130,23 +156,28 @@
             else
             end if              
             do i = neq + 1, 2*neq
-               write (ishisrlp, '(4(g16.9, 1x))') s(i), rlf(i), rvf(i),
-     &              pcp(i)
+               write (ishisrlp, '(7(g16.9, 1x))') fw(i), rl_w(i),
+     &              rl_l(i), pcp(i) 
+c     &              rl_l(i), pcp(i), drl_ww(i), drl_lw(i), drl_lg(i)
             end do
          end if
       end do
 
-      s = stemp
-      ieos = ieostemp
-      irlp = irlptemp
-      icap = icaptemp
+      fw = fwtemp
+      fl = fltemp
+      fg = fgtemp
+      ieostemp = ieos
+      irlptemp = irlp
+      icaptemp = icap
       pcp = pcptemp
-      rlf = rlftemp 
-      rvf = rvftemp
+      pcg = pcgtemp
+      rl_w = rlwtemp
+      rl_l = rlltemp
+      rl_v = rlvtemp
       neq = neqtemp
 
-      deallocate (stemp, ieostemp, irlptemp,  icaptemp,  
-     &     pcptemp, rlftemp, rvftemp)
+      deallocate (fwtemp, fltemp, fgtemp, ieostemp, irlptemp, icaptemp, 
+     &     pcptemp, pcgtemp, rlwtemp, rlltemp, rlvtemp)
       close (ishisrlp)
 
  230  format ("text X=", f4.1, " Y=", f4.1, " AN=center T=", '"',
@@ -154,4 +185,4 @@
  240  format ('zone t = "model ', i4, '"')
  245  format ('zone t = "model ', i4, ' matrix"')
 
-      end subroutine check_rlp
+      end subroutine check_rlp_carb

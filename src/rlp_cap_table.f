@@ -30,10 +30,11 @@
       i2 = tblindx(itbl , 2)
 
       do i = i1, i2 - 1
-         if (sw .lt. rlp_table(i, 1) .and. i .eq. i1) then
+         if (sw .le. rlp_table(i, 1) .and. i .eq. i1) then
             cp = rlp_table(i1, iparam)
             dpcp = 0.
-         else if (sw .gt. rlp_table(i, 1) .and. i .eq. i2) then
+            return
+         else if (sw .ge. rlp_table(i + 1, 1) .and. i + 1 .eq. i2) then
             cp = rlp_table(i2, iparam)
             dpcp = 0.
             return
@@ -42,6 +43,7 @@
             dpcp = (rlp_table(i + 1, iparam) - rlp_table(i, iparam)) /
      &           (rlp_table(i + 1, 1) - rlp_table(i, 1))
             cp = rlp_table(i, iparam) + dpcp * (sw - rlp_table(i, 1))
+            return
          end if
       end do
 

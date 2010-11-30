@@ -22,6 +22,7 @@
 
       use comai
       use combi
+      use comcomp, only: ioil, pcpow, pcpog, rl_g
       use comci
       use comco2
       use comdi
@@ -38,19 +39,22 @@
       parameter(scutm = 1.d-03)
       parameter(hmin = 1.d-18)
       parameter(darcyf = 1.d12)
-      parameter(tol_l  = 1.d-5)
-      parameter(tol_u  = 1.d-5)
+c     tol_l and tol_u are lower and upper cutoff saturations
+      parameter(tol_l  = 1.d-2)
+      parameter(tol_u  = 1.d-2)
       parameter(su_cut = 0.99d00)
 c      parameter(su_cut = 0.70d00)
 
       integer i, j, k, ndummy, mrlp, it, ir, iphase, lphase, phase(3)
-      integer ieosd, mi, icouple, ir2, irf, i2, aphase, itbl
+      integer ieosd, mi, icouple, ir2, irf, i2, aphase, itbl, iclmn
+      integer rphase, cap_select
       integer :: ireg = 1
       real*8 alpha,beta,alamda,alpi,smcut,slcut,ds,dhp,dhp1
       real*8 rp1,rp2,rp3,rp4,denom,star,hp,hp1,b1,s_star
       real*8 akf,akm,porf,permb,sl,sl1,sl2,rp5,rp6,rp7
       real*8 smcutm,smcutf,alpham,alamdam,facf,cp1,cp3,sw,sg
       real*8 rl, rv, drls, drvs, rl1, rv1, drls1, drvs1, cp, dpcp
+      real*8 drlw, drlg, drlk, drvw, drvg, drvk, drtw, drtg, drtk
       real*8 skip,dum1,dum2,dum3,dummy,rlc,drlc,rt,drt,drl_wk     
       logical null1,ex
       character model_type*10
@@ -64,7 +68,10 @@ c     zero everything
          dpcpw=0
          dpcpg=0 
          rl_w=0.;drl_ww=0.;drl_wg=0.;rl_l=0.;drl_lw=0.;drl_lg=0.
-         rl_v=0.;drl_vw=0.;drl_vg=0.		   
+         rl_v=0.;drl_vw=0.;drl_vg=0.
+      else if (ioil .ne. 0) then
+         pcpow = 0.; pcpog = 0.
+         rl_w=0.; rl_l=0.; rl_g = 0.
       else
          if (ndummy .eq. 0) then
             rlf = 0.; rvf = 0.; drlef = 0.; drvef = 0.
@@ -88,41 +95,89 @@ c No relative permeability model is specified
                mrlp = 3
             end if
          end if
-
          
+         k = 0
          phase(2) = 0 
          phase(3) = 0
 c     determine which phases are active
-         if (icarb .eq. 0) then
+         if (ioil .eq. 1) then
+c     oil/gas
+            if (fw(mi) .ge. 1.0) then
+c     single phase (water)
+               phase(1) = rlp_pos(it, 1)
+               rl_w(mi) = 1.
+            else if (fl(mi) .ge. 1.0) then
+c     single phase oil
+               phase(1) = rlp_pos(it, 7)
+               rl_l(mi) = 1.
+            else if (fg(mi) .ge. 1.0) then
+c     single phase gas
+               phase(1) = rlp_pos(it, 8)
+               rl_g(mi) = 1.
+            else if (fw(mi) .gt. 0.0) then
+c     oil with water 
+               phase(1) = rlp_pos(it, 1)
+               if (fl(mi).gt.0. .and. fg(mi).eq.0.) then
+c     water/oil 
+                  k = 7
+                  phase(2) = rlp_pos(it, 7)
+               else if (fl(mi).eq.0. .and. fg(mi).gt.0.) then
+c     water/gas
+                  k = 9
+                  phase(2) = rlp_pos(it, 8)
+               else if (fl(mi).eq.0. .and. fg(mi).eq.0.) then
+c     water/kerogen
+c     single phase (water)
+                  phase(1) = rlp_pos(it, 1)
+                  rl_w(mi) = 1.
+               else
+c     we're 3-phase
+c     gas
+                  phase(2) = rlp_pos(it, 8)
+c     oil
+                  phase(3) = rlp_pos(it, 7)
+               endif
+            else
+c     no water (oil / gas)
+c     gas
+               phase(1) = rlp_pos(it, 8)
+c     oil
+               phase(2) = rlp_pos(it, 7)
+            endif
+
+         else if (icarb .eq. 0) then
+            k = 1
             if (ieosd.eq.1) then
 c     single phase (water)
                phase(1) = rlp_pos(it, 1)
+               rlf(mi) = 1.
             else if (ieosd .eq. 3) then
-c     single phase (air)
+c     single phase (air or vapor)
                phase(1) = rlp_pos(it, 2)
                if (phase(1) .eq. 0) phase(1) = rlp_pos(it, 5)
-             else
+               rvf(mi) = 1.
+            else
 c     **  air/water or water/vapor	 
-               k = 1
-               sw = s(mi)
                phase(1) = rlp_pos(it, 1)
                phase(2) = rlp_pos(it, 2)
                if (phase(2) .eq. 0) phase(2) = rlp_pos(it, 5)
             end if
          else
 c     co2
-            if (fw(mi) .eq. 1.0) then
+            if (fw(mi) .ge. 1.0) then
 c     single phase (water)
                phase(1) = rlp_pos(it, 1)
-            else if (fl(mi) .eq. 1.0) then
+               rl_w(mi) = 1.
+            else if (fl(mi) .ge. 1.0) then
 c     single phase (liquid/sc CO2)
                phase(1) = rlp_pos(it, 3)
-            else if (fg(mi) .eq. 1.0) then
+               rl_l(mi) = 1.
+            else if (fg(mi) .ge. 1.0) then
 c     single phase (gaseous CO2)
                phase(1) = rlp_pos(it, 4)
+               rl_v(mi) = 1.
             else if (fw(mi) .gt. 0.0) then
 c     co2 with water 
-               sw = fw(mi)
                phase(1) = rlp_pos(it, 1)
                if (ices(mi) .eq. 1 .or. ices(mi) .eq. 4) then
 c     water/co2 liquid 
@@ -134,59 +189,56 @@ c     water/co2 gas
                   phase(2) = rlp_pos(it, 4)
                else
 c     we're 3-phase
-                  k = 0
                   phase(2) = rlp_pos(it, 3)
                   phase(3) = rlp_pos(it, 4)
                endif
             else
 c     no water (liquid co2 / gas co2)
-               sw = fl(mi)
                k = 4
                phase(1) = rlp_pos(it, 3)
                phase(2) = rlp_pos(it, 4)
             endif
          end if
 
-         if (phase(2) .eq. 0) then
-c     single phase conditions
-            select case (rlp_phase(it, phase(1)))
-            case (1)
-c     single phase (water)
-               rlf(mi) = 1.
-            case (2)
-c     single phase (air)
-               rvf(mi) = 1.
-            case (-1)
-c     single phase (water - co2 problem)
-               rl_w(mi) = 1.
-            case (3)
-c     single phase (liquid/sc CO2)
-               rl_l(mi) = 1.
-            case (4)
-c     single phase (gaseous CO2)
-               rl_v(mi) = 1.
-            end select
-
-         else if (mrlp .ne. 0) then
-c     ** first handle two-phase cases 
-c     phase(1) wetting; phase(2) non-wetting
-            if (phase(3) .eq. 0) then
-               aphase = 2
-            else
-               aphase = 3
-            end if
-c ***************
-c Need to make sure we are using the parameters assigned to the active phase if we have a 3 phase problem and only 2-phases are active
-c**************
+         if (mrlp .ne. 0) then
 c     calculate capillary pressure
-            do icouple = 1, aphase - 1
-               if (k .ne. 0) then
-                  iphase = cap_pos(it, k)
-                  if (iphase .eq. 0) exit
-               else
+            do icouple = 1, 2
+               iphase = 0
+               if (cap_coupling(it,icouple) .eq. 0) exit
+               cap_select = cap_coupling(it,icouple)
+               iphase = cap_pos(it, cap_select)
+               if (iphase .eq. 0) then
+                  cap_select = 0
                end if
+
+c     Assign saturation for wetting phase (based on coupling)
+               select case (cap_select)
+               case (1, 5)
+c     air/water or vapor/water
+                  sw = s(mi)
+               case (2, 3, 7, 8)
+c     co2/water (liquid or gas) or oil/water or gas/water
+                  sw = fw(mi)
+               case (4)
+c     co2 gas/co2 water
+                  sw = fl(mi)
+               case (6)
+c     methane_hydrate/water
+c
+               case (9)
+c     gas/oil
+                  sw = fl(mi)
+               case default
+c     No capillary model
+                  cap_select = 0
+               end select
+
                j = (iphase - 1) * max_cp
-               select case (cap_type(it, iphase))
+               if (iphase .ne. 0) then
+                  cap_select = cap_type(it, iphase)
+               end if
+
+               select case (cap_select)
                case (1)
 c     Linear
                   call linear(sw, cap_param(it, j + 1),
@@ -268,18 +320,25 @@ c     Brooks-Corey
      &                    cap_param(it, j + 3), pcg(mi), dpcgw(mi), 
      &                    dpcgg(mi))
                   end if
-               case (5, 6, 7)
+               case (5, 6, 7, 9)
 c     Van Genuchten
                   if(rlp_fparam(it, 7) .eq. 0. .or. 
      &                 icarb .ne. 0) then
                 
-                     call vgcap(sw, cap_param(it, j + 1), 
-     &                    cap_param(it, j + 2), cap_param(it, j + 3), 
-     &                    cap_param(it, j + 4), vg1(it, iphase), 
-     &                    vg2(it, iphase), vg3(it, iphase), 
-     &                    vg4(it, iphase), cap_param(it, j + 6),
-     &                    su_cut, cp1s(it, iphase), cp2s(it, iphase),
-     &                    pcp(mi), dpcp, ireg)
+                     if (cap_select .eq. 9) then
+                        call vgcap_ek(sw, cap_param(it, j + 1), 
+     &                       cap_param(it, j + 2), cap_param(it, j + 3),
+     &                       cap_param(it, j + 4), cap_param(it, j + 5),
+     &                       cap_param(it, j + 6), pcp(mi), dpcp)
+                     else
+                        call vgcap(sw, cap_param(it, j + 1), 
+     &                       cap_param(it, j + 2), cap_param(it, j + 3),
+     &                       cap_param(it, j + 4), vg1(it, iphase), 
+     &                       vg2(it, iphase), vg3(it, iphase), 
+     &                       vg4(it, iphase), cap_param(it, j + 6),
+     &                       su_cut, cp1s(it, iphase), cp2s(it, iphase),
+     &                       pcp(mi), dpcp, ireg)
+                     end if
                      hp = pcp(mi)
                      dhp = dpcp
                      if (icarb .eq. 0) then
@@ -341,42 +400,105 @@ c     we're just using matrix cap pressure here
                      end if
                   end if
 c     conversion to MPa
-                  pcp(mi) = 9.8e-3 * pcp(mi)
-                  if (icarb .eq. 0) then
-                     dpcef(mi) = 9.8e-3 * dpcef(mi)
-                  else
-                     dpcpw(mi) = 9.8e-3 * dpcpw(mi)
-                     dpcpg(mi)= -1. * dpcpw(mi)
+                  if (cap_select .ne. 9) then
+                     pcp(mi) = 9.8e-3 * pcp(mi)
+                     if (icarb .eq. 0) then
+                        dpcef(mi) = 9.8e-3 * dpcef(mi)
+                     else
+                        dpcpw(mi) = 9.8e-3 * dpcpw(mi)
+                        dpcpg(mi)= -1. * dpcpw(mi)
+                     end if
                   end if
                case (8)
 c     values from table, called with wetting phase saturation, table number
-                  itbl = rlp_param(it, j + 1)
+                  itbl = cap_param(it, j + 1)
                   call rlp_cap_table (sw, itbl, 4, cp, dpcp)
-
+                  if(ioil.eq.1) then
+                     select case(cap_coupling(it,iphase))
+                     case (9)
+c     oil/gas
+                        pcpog(mi) = cp
+                        pcpog(mi+neq) = 0.d0
+                        pcpog(mi+2*neq) = dpcp
+                        pcpog(mi+3*neq) = 0.d0
+                     case (7)
+c     oil/water
+                        pcpow(mi) = cp
+                        pcpow(mi+neq) = dpcp
+                        pcpow(mi+2*neq) = 0.d0
+                        pcpow(mi+3*neq) = 0.d0
+                     end select
+                  elseif (icarb .eq. 0) then
+                     pcp(mi) = cp
+                     dpcef(mi) = dpcp
+                  else
+                     select case(cap_coupling(it,iphase))
+                     case (2, 3)
+c     co2_liquid/water or co2_gas/water
+                        pcp(mi) = cp
+                        dpcpw(mi) = dpcp
+                        dpcpg(mi)= -1. * dpcpw(mi)
+                     case (4)
+c     co2_gas/co2_liquid
+                        pcg(mi) = cp
+                        dpcgw(mi) = dpcp
+                        dpcgg(mi)= -1. * dpcpw(mi)
+                     end select
+                  end if       
                end select
             end do
+
 c     now do rlp *******************************************
+c     ** first handle two-phase cases 
+c     phase(1) wetting; phase(2) non-wetting
+c ***************
+c Need to make sure we are using the parameters assigned to the active phase if we have a 3 phase problem and only 2-phases are active
+c**************
+            if (phase(3) .eq. 0) then
+               if (phase(2) .eq. 0) THEN
+                  aphase = 1
+c     if we have a single phase, rel perm was already assigned so we could skip calculations, but for now do them anyway so if a table is used all values are read from table
+               else
+                  aphase = 2
+               end if
+            else
+               aphase = 3
+            end if
             lphase = 0
             do i2 = 1, aphase
                iphase = phase (i2)
+               if (i2 .eq. 1) lphase = iphase
                ir = (iphase - 1) * max_rp
                irf = (iphase - 1) * max_rpf
-               select case (rlp_phase(it, iphase))
+               if (rlp_type(it, iphase) .eq. 8) then
+c     Tables use saturation of the wetting phase
+                  rphase = rlp_param(it, ir + 3)
+               else if (rlp_type(it, iphase) .eq. 4 .or.
+     &                 rlp_type(it, iphase) .eq. 5) then
+c     Corey, Brooks-Corey uses saturation of the wetting phase
+                  rphase = rlp_phase(it, 1)
+               else
+                  rphase = rlp_phase(it, iphase)
+               end if
+               select case (rphase)
                case (1)
 c     Water
                   sw = s(mi)
                case (-1)
-c     Water (co2 problem)
+c     Water (co2 or oil problem)
                   sw = fw(mi)
                case(2, 5)
-c     Air
+c     Air or Vapor (water)
                   sw = 1.0 - s(mi)
-               case (3)
-c     Liquid or super-critical CO2
+               case (3, 7)
+c     Liquid or super-critical CO2 or oil
                   sw = fl(mi)
-               case (4)
-c     Gaseous co2
+               case (4, 8)
+c     Gaseous co2 or gas for oil problem
                   sw = fg(mi)
+               case default
+c     Saturation is undefined
+                  stop
                end select
 
                select case (rlp_type(it, iphase))
@@ -472,7 +594,8 @@ c     air/vapor
                            drvef(mi) = drvs
                         case (3)
 c     liquid co2
-                           if (k .eq. 4) then
+                           if (rlp_phase(it, iphase) .eq. rphase) then
+c     if this is the wetting phase
                               rl_l(mi) = rl
                               drl_lw(mi) = drls
                            else
@@ -502,7 +625,7 @@ c     Special case, all three phases active
                      sl = fl(mi)
                      call brooks_corey_rlp(sw, rlp_param(it, ir + 1),
      &                    rlp_param(it, ir + 3), rl_w(mi), drl_ww(mi), 
-     &                    rl_l(mi), drl_lw(mi))
+     &                    drl_wg(mi), rl_l(mi), drl_lw(mi), drl_lg(mi))
                      call brooks_corey_rlp3(sw, sl, 
      &                    rlp_param(it, ir + 1), rlp_param(it, ir + 3),
      &                    rlp_param(it, ir2 + 1), rl_l(mi), drl_lw(mi),
@@ -764,28 +887,79 @@ c     gaseous co2
                   end if
                case (8)
 c     values from table, called with wetting phase saturation, table number
-                  itbl = rlp_param(it, j + 1)
-                  call rlp_cap_table (sw, itbl, 2, rt, drt)
+                  itbl = rlp_param(it, ir + 1)
+                  iclmn = rlp_param(it, ir + 2)
+                  call rlp_cap_table (sw, itbl, iclmn, rt, drt)
                   select case (rlp_phase(it, iphase))
                   case (1)
-                     rl_w(mi) = rt
-                     drl_ww(mi) = drt
+c     water
+                     rlf(mi) = rt
+                     drlef(mi) = drt
+                  case (-1)
+                     if(icarb.eq.1) then
+                        rl_w(mi) = rt
+                        drl_ww(mi) = drt
+                     elseif(ioil.eq.1) then
+                        rl_w(mi) = rt
+                        rl_w(mi+neq) = drt
+                     endif
+                  case (2, 5)
+c     air/vapor
+                     rvf(mi) = rt
+                     drvef(mi) = drt
+                  case (3)
+c     liquid co2
+                     rl_l(mi) = rt
+                     drl_lw(mi) = drt
+                  case (4)
+c     gaseous co2
+                     rl_v(mi) = rt
+                     drl_vw(mi) = drt 
                   case (7)
-c                     rl_g(mi) = rt
-                     drl_wg(mi) = drt
+c     oil
+                     rl_l(mi) = rt
+                     rl_l(mi+neq) = drt
+                  case (8)
+c     gas
+                     rl_g(mi) = rt
+                     rl_g(mi+2*neq) = drt
+                  case (9)
+c     oil_water
+c                     rl_ow(mi) = rt
+c                     drl_ow(mi) = drt
+                  case (10)
+c     oil_gas
+c                     rl_og(mi) = rt
+c                     drl_og(mi) = drt
                   end select
 
                case (9)
-                  itbl = rlp_param(it, j + 1)
-                  call rlp_cap_table (sw, itbl, 3, rl, drls)
-                  call rlp_cap_table (rlp_param(it, j+3), itbl, 3, rlc, 
-     &                 drlc)
-                  itbl = rlp_param(it, j + 2)
-                  call rlp_cap_table (sw, itbl, 3, rv, drvs)
-                  call stone_rlp(rlc, drlc, rl_w(mi), rl_v(mi), rl, 
-     &                 drls, rv, drvs, rt, drt)
+c     water saturation
+                  sw = fw(mi)
+c     oil_water
+                  itbl = rlp_param(it, ir + 1)
+                  call rlp_cap_table (sw, itbl, 3, rl, drlw)
+                  drlg = 0.d0
+                  drlk = 0.d0
+c     oil relative perm in presence of connate water only
+                  sw = rlp_param(it, ir + 3)
+                  call rlp_cap_table (sw, itbl, 3, rlc, drlc)
+				
+c     gas saturation
+                  sw = fg(mi)
+c     oil_gas
+                  itbl = rlp_param(it, ir + 2)
+                  call rlp_cap_table (sw, itbl, 3, rv, drvg)
+                  drvw = 0.d0
+                  drvk = 0.d0
+c	call stone model
+                  call stone_rlp(rlc, drlc, mi, 
+     &                 rl, drlw, drlg, drlk, rv, drvw, drvg, drvk,
+     &                 rt, drtw, drtg, drtk)
                   rl_l(mi) = rt
-c                  drl_wk(mi) = drt
+                  rl_l(mi+neq) = drtw
+                  rl_l(mi+2*neq) = drtg
+                  rl_l(mi+3*neq) = drtk
                end select
             end do
          else

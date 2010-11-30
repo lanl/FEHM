@@ -157,6 +157,10 @@ c     are in g
          
          if (rlpnew) then
             call rlp_cap(ndummy)
+            do mid=1,neq
+               mi=mid+ndummy
+               phi(mi)=phico2(mi)-pcp(mi)
+            end do
          else
             do mid=1,neq
                mi=mid+ndummy
@@ -216,7 +220,9 @@ c
             xco2 = xc(mi)
             xwat = xw(mi)
             xair = xa(mi)
-
+            dporpl=dporp(mi)
+            dportl=dport(mi)
+            
             if(ico2prop_flg.eq.1) then
                wat_prop(mi) = row
                wat_prop(neq+mi) = drowp
@@ -373,9 +379,19 @@ c
 
                icesd=ices(mi)
                tl=tco2(mi)
-               xs = fg(mi)/(fg(mi)+fl(mi))
-               dxsg = 1.d0/(fg(mi)+fl(mi))
-               dxsw = fg(mi)/((1-fw(mi))*(1-fw(mi)))
+               if (fg(mi) .eq. 0.) then
+                  xs = 0.d0
+                  dxsg = 0.d0
+                  dxsw = 0.d0
+               else
+                  xs = fg(mi)/(fg(mi)+fl(mi))
+                  dxsg = 1.d0/(fg(mi)+fl(mi))
+                  if (fw(mi) .eq. 1.) then
+                     dxsw = 0.
+                  else
+                     dxsw = fg(mi)/((1-fw(mi))*(1-fw(mi)))
+                  end if
+               end if
                if(icesd.eq.2) then
 c     two phase (gas/liquid) conditions
 c     calculate phase-change temperature and dt/dp

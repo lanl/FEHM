@@ -32,16 +32,16 @@ c     and in Preuss(2002)
       denom = 1.0-rp1-rp2
       star=(sl-rp1)/denom
       ds = 1.0/denom
-      if(star.le.0.0) then
+      if(star.lt.0.d0) then
          rv = 1.0
-      else if(star.ge.1.0) then
+      else if(star.gt.1.d0) then
          rl = 1.0
       else
          rl = star**4
          drls = 4.0*star**3*ds
-         rv=(1.0-star)**2*(1.0-star**2)
-         drvs=(-2.0*(1.0-star)*(1.0-star**2)+
-     $        (1.0-star)**2*(-2.0*star))*ds
+         rv=(1.0d0-star)**2*(1.0d0-star**2)
+         drvs=(2.0*(1.0-star)*(1.0-star**2)+
+     $        (1.0-star)**2*(-2.0*star))*(-ds)
       endif
 
       end subroutine corey

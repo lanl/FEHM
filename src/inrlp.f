@@ -22,6 +22,7 @@
 
       use comai
       use comco2, only : icarb
+      use comcomp, only : ioil
       use comdi, only : irlp
       use comdti, only : n0
       use comki
@@ -33,13 +34,13 @@
       integer :: lastrun = 0
       integer :: lasttbl = 0
       integer i, it, j, j2, jt, k, k2, maxphase, maxcpl, ndx, nparams
-      integer table_unit, open_file, cn, tblnum
-      integer nwds, imsg(10), msg(10)
+      integer table_unit, open_file, cn, tblnum, ip, ip2
+      integer nwds, imsg(20), msg(20)
       integer, allocatable :: irlptmp(:)
-      real*8 xmsg(10)
+      real*8 xmsg(20)
       real*8 scutm, smcut
-      parameter(scutm = 1.d-03, maxphase = 8, maxcpl = 10)
-      character*32 cmsg(10), dum_string
+      parameter(scutm = 1.d-03, maxphase = 10, maxcpl = 10)
+      character*32 cmsg(20), dum_string
       character*80 chdum
       character*200 table_file
       logical null1, null_new
@@ -122,22 +123,79 @@ c j is the current phase number
             end if
             tblnum = imsg(2)
             nparams = imsg(3)
-            select case (cmsg(4))
-            case ('water', 'WATER')
-               rlp_phase(i, j) = 1
-            case ('gas', 'GAS')
-               rlp_phase(i, j) = 8
-            case ('liquid', 'LIQUID')
-               rlp_phase(i, j) = 9
-            end select
-            select case (cmsg(5))
+            if (nparams .eq. 3) then
+               ip = 1
+            else if (nparams .eq. 4) then
+               ip = 2
+            end if
+            do ip2 = 1, ip
+               if (ip2 .eq. 2) then
+                  j = j + 1
+                  rlp_type(i, j) = 8
+               end if
+               select case (cmsg(3 + ip2))
+               case ('h2o_liquid','H2O_LIQUID','water','WATER')
+                  if (icarb .eq. 0 .and. ioil.eq.0) then
+                     rlp_phase(i, j) = 1
+                  else
+                     rlp_phase(i, j) = -1
+                  end if
+               case ('air','AIR')
+                  rlp_phase(i, j) = 2
+               case ('h2o_gas','H2O_GAS','vapor','VAPOR')
+                  rlp_phase(i, j) = 5
+               case ('co2_gas','CO2_GAS')
+                  rlp_phase(i, j) = 4
+               case ('co2_liquid','CO2_LIQUID')
+                  rlp_phase(i, j) = 3
+               case ('co2_sc','CO2_SC')
+                  rlp_phase(i, j) = 3
+               case ('methane_hydrate','METHANE_HYDRATE')
+                  rlp_phase(i, j) = 6
+               case ('oil', 'OIL')
+                  rlp_phase(i, j) = 7
+               case ('gas', 'GAS')
+                  rlp_phase(i, j) = 8
+               case ('oil_water', 'OIL_WATER')
+                  rlp_phase(i, j) = 9
+               case ('oil_gas', 'OIL_GAS')
+                  rlp_phase(i, j) = 10
+               end select
+               rlp_pos(i, abs(rlp_phase(i, j))) = j
+               k = (j - 1) * max_rp
+               rlp_param(i, k + 1) = it
+               rlp_param(i, k + 2) = ip2 + 1
+               if (ip2 .eq. 1) then
+                  rlp_param(i, k + 3) = rlp_phase(i, j)
+               else
+                  rlp_param(i, k + 3) = rlp_phase(i, j - 1)
+               end if
+            end do
+            select case (cmsg(3 + ip2))
+            case ('air/water', 'water/air')
+               cap_coupling(i, k2) = 1
+            case ('water/co2_liquid', 'co2_liquid/water')
+               cap_coupling(i, k2) = 2
+            case ('water/co2_gas', 'co2_gas/water')
+               cap_coupling(i, k2) = 3
+            case ('co2_liquid/co2_gas', 'co2_gas/co2_liquid')
+               cap_coupling(i, k2) = 4
+            case ('water/vapor', 'vapor/water')
+               cap_coupling(i, k2) = 5
+            case ('air/vapor', 'vapor/air')
+               cap_coupling(i, k2) = 6
             case ('water/oil', 'oil/water')
                cap_coupling(i, k2) = 7
+            case ('gas/water', 'water/gas')
+               cap_coupling(i, k2) = 8
             case ('gas/oil', 'oil/gas')
                cap_coupling(i, k2) = 9
             case ('liquid/gas', 'gas/liquid')
                cap_coupling(i, k2) = 10
             end select
+            cap_pos(i, cap_coupling(i, k2)) = k2
+            k = (k2 - 1) * max_cp
+            cap_param(i, k + 1) = it
             k2 = k2 + 1
             read (inpt, '(a80)') chdum
             if (chdum(1:4) .eq. 'file') then
@@ -159,8 +217,8 @@ c Data is found on the following lines
                backspace (inpt)
             end if
             do
-               read (table_unit, '(a80)') chdum
-c Input is terminated with a blank line or 'end')
+               read (table_unit, '(a80)', end = 5) chdum
+c Input is terminated with a blank line or 'end' or end-of-file)
                if (null_new(chdum) .or. chdum(1:3) .eq. 'end') exit
                ndx = ndx + 1
                read (chdum, *) (rlp_table(ndx,cn), cn = 1, nparams)
@@ -170,16 +228,17 @@ c Capillary pressure is put into position 4
                   rlp_table(ndx,3) = 0.
                end if
             end do
-            lasttbl = it
+ 5          lasttbl = it
             tblindx(it, 2) = ndx
             if (table_unit .ne. inpt) close (table_unit)
             cmsg(2) = 'tabular'
+c End of case 'tabular'
          case ('air', 'AIR')
             rlp_phase(i, j) = 2
          case ('h2o_gas','H2O_GAS','vapor','VAPOR')
             rlp_phase(i, j) = 5
          case ('h2o_liquid','H2O_LIQUID','water','WATER')
-            if (icarb .eq. 0) then
+            if (icarb .eq. 0 .and. ioil .eq. 0) then
                rlp_phase(i, j) = 1
             else
                rlp_phase(i, j) = -1
@@ -196,6 +255,10 @@ c Capillary pressure is put into position 4
             rlp_phase(i, j) = 7
          case ('gas', 'GAS')
             rlp_phase(i, j) = 8
+         case ('oil_water', 'OIL_WATER')
+            rlp_phase(i, j) = 9
+         case ('oil_gas', 'OIL_GAS')
+            rlp_phase(i, j) = 10
          case ('cap','CAP')
             select case (cmsg(2))
             case ('air/water', 'water/air')
@@ -208,7 +271,7 @@ c Capillary pressure is put into position 4
                cap_coupling(i, k2) = 4
             case ('water/vapor', 'vapor/water')
                cap_coupling(i, k2) = 5
-            case ('air/vapor', 'vapor/air')
+            case ('methane_hydrate/water', 'water/methane_hydrate')
                cap_coupling(i, k2) = 6
             case ('oil/water', 'water/oil')
                cap_coupling(i, k2) = 7
@@ -216,6 +279,8 @@ c Capillary pressure is put into position 4
                cap_coupling(i, k2) = 8
             case ('oil/gas', 'gas/oil')
                cap_coupling(i, k2) = 9
+            case ('liquid/gas', 'gas/liquid')
+               cap_coupling(i, k2) = 10
             case default
                write (ierr, 40) trim(cmsg(2)), rlp_group(i)
                stop
@@ -262,13 +327,15 @@ c Read parameters associated with capillary model
                cap_param(i, k + 5) = xmsg(8) + imsg(8)
                cap_param(i, k + 6) = xmsg(9) + imsg(9)
             case ('vg', 'vg_cp', 'vg_cap', 'vg_capeq', 'vg_cpeq',
-     &              'vg_cpneq', 'vg_capneq')
+     &              'vg_cpneq', 'vg_capneq', 'vg_ek')
                if (nwds .lt. 6) write(ierr, 60) 6, cmsg(3), rlp_group(i)
                if (cmsg(3) .eq. 'vg') then
                   cap_type(i, k2) = 5
                else if (cmsg(3) .eq. 'vg_cpneq' .or. cmsg(3) .eq. 
      &                 'vg_capneq') then
                   cap_type(i, k2) = 7
+               else if (cmsg(3) .eq. 'vg_ek') then
+                  cap_type(i, k2) = 9
                else
                   cap_type(i, k2) = 6
                end if
@@ -308,8 +375,8 @@ c Read parameters associated with capillary model
                stop
             end select
             k2 = k2 + 1
-         else
-            rlp_pos(i, rlp_phase(i, j)) = j
+         else if (cmsg(1) .ne. 'table' .and. cmsg(1) .ne. 'TABLE') then
+            rlp_pos(i, abs(rlp_phase(i, j))) = j
 c     Read parameters associated with rlp phase
             k = (j - 1) * max_rp
             select case (cmsg(2))
@@ -351,7 +418,7 @@ c     Restrict to two-phase models
                   write (ierr, 30) trim(cmsg(3)), lastmodel
                   stop
                end if
-               if (cmsg(3) .eq. 'vg') then
+               if (cmsg(2) .eq. 'vg') then
                   rlp_type(i, j) = 6
                else
                   rlp_type(i, j) = 7
@@ -397,7 +464,8 @@ c     Restrict to two-phase models
                end do
             case ('stone')
 c For 3-phase water/oil/gas, oil rel perm in terms of krow and krog
-c Table corresponding to water or gas phase (?)
+c Table corresponding to oil_water, oil_gas phase and
+c connate water saturation
                rlp_type(i, j) = 9
                rlp_param(i, k+1) = it - 1
                rlp_param(i, k+2) = it

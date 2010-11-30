@@ -692,14 +692,15 @@ c     and number of entries in each table
                   read (inpt, '(a80)') filename
                   idum = open_file (filename, 'old')
                   do
-                     read (idum, '(a80)') dumstring
+                     read (idum, '(a80)', end = 24) dumstring
                      if (null_new(dumstring) .or.  dumstring(1:3) .eq. 
      &                    'end' .or. dumstring(1:3) .eq. 'END') exit
-                     call parse_string(dumstring, imsg, msg, xmsg, 
+                     call parse_string2(dumstring, imsg, msg, xmsg, 
      &                    cmsg, nwds)
 c Don't count header lines (header lines should start with a character)
                      if (msg(1) .ne. 3) ntblines = ntblines + 1
                   end do
+ 24               close (idum)
                else
                   backspace (inpt)
                   do

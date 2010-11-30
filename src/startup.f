@@ -1294,6 +1294,7 @@ c gaz 10-18-2001     call sice (1)
                call icectrco2(3,0)
                call icectrco2(-3,0)
                call icectrco2(-33,0)
+               if (ishisrlp .ne. 0) call check_rlp_carb
                call icectrco2(-35,0)
             else
                call varchk (0, 0)
@@ -1569,7 +1570,9 @@ c
 
 ! zvd - 07-Oct-2010 Add optional printout of rlp table
       if (ishisrlp .ne. 0) then
-         call check_rlp
+         if (icarb .eq. 0) then
+            call check_rlp
+         end if
       end if
 
       deallocate(idum1,idum2)
