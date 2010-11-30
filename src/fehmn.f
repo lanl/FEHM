@@ -462,6 +462,7 @@ C***********************************************************************
       use comrtd, only : maxmix_flag
       use comrxni
       use comsi
+      use comsk, only : save_omr
       use comsplitts
       use comsptr
       use comwt
@@ -712,10 +713,14 @@ c     rip avs output flag  - initialize
 c s kelkar may 20 09 moved call to load_omr_flux_array from ptrac1 here
 c s kelkar may 28 09 moved call to init_sptr_params from ptrac1 here
 c where ptrac1 used to be called
+c zvd - 19Nov2010
+c     Moved call to sptr_save here, needs to be called after call
+c     to load_omr_flux_array
             call init_sptr_params
             if (.not. compute_flow) then
                if (.not. sptr_exists) then
-                  call load_omr_flux_array                  
+                  call load_omr_flux_array
+                  if (save_omr) call sptr_save (1)
                endif
                if(.not.random_flag) then
 c                  if(allocated(sx)) deallocate(sx)
