@@ -65,11 +65,11 @@ C***********************************************************************
       integer imsg(max_entries)
       integer msg(max_entries)
       real*8 xmsg(max_entries)
-      character*32 cmsg(max_entries)
-      integer nwds
-      logical finished
+      character*32 cmsg(max_entries), word
+      integer nwds, ifdebug
+      logical finished, isint, isrl
 
-      integer ndex(max_entries,2),i,begin,entrynum,isinteger,isreal,i2
+      integer ndex(max_entries,2),i,begin,entrynum
 
       imsg = 0
       xmsg = 0.
@@ -77,6 +77,7 @@ C***********************************************************************
       msg = 0
       nwds = 0
 	
+      ifdebug = 0
       line_length = len(line)
       entrynum=1
       begin=1
@@ -101,42 +102,158 @@ C***********************************************************************
       nwds=entrynum
 
       do i=1,nwds
-         isinteger=1
-         isreal=1
-         do i2=ndex(i,1),ndex(i,2)
-            if (ndex(i,1) .eq. ndex(i,2)) then
-c check if just have +, -, e, E, d, or D
-               if ( (line(i2:i2).eq.'+') .or. (line(i2:i2).eq.'-') .or.
-     &              (line(i2:i2).eq.'e') .or. (line(i2:i2).eq.'E') .or.
-     &              (line(i2:i2).eq.'d') .or. (line(i2:i2).eq.'D') ) 
-     &              then
-                  isreal = 0
-                  isinteger = 0
-                  exit
-               end if
+         isint = .false.
+         isrl = .false.
+         word = line(ndex(i,1):ndex(i,2))
+
+         if (ifdebug .eq. 1) then
+            write (6, *) 'ndex ', ndex(i,1), ndex(i,2)
+            write (6, *) 'string ', line(ndex(i,1):ndex(i,2))
+         end if
+
+         call isinteger (word, imsg(i), isint)
+
+         if (.not. isint) then
+            call isreal (word, xmsg(i), isrl)
+            if (.not. isrl) then
+               cmsg(i) = word
+               msg(i) = 3
+            else
+               msg(i) = 2
             end if
-            if ((line(i2:i2).ne.'+').and.(line(i2:i2).ne.'-').and.
-     &           ((iachar(line(i2:i2)).gt.57).or.
-     &           (iachar(line(i2:i2)).lt.48))) isinteger=0
-            if ((line(i2:i2).ne.'+').and.(line(i2:i2).ne.'-').and.
-     &           ((iachar(line(i2:i2)).gt.57).or.
-     &           (iachar(line(i2:i2)).lt.48)).and.
-     &           (line(i2:i2).ne.'.').and.
-     &           (line(i2:i2).ne.'E').and.
-     &           (line(i2:i2).ne.'e').and.
-     &           (line(i2:i2).ne.'D').and.
-     &           (line(i2:i2).ne.'d')) isreal=0
-         enddo
-         if ((isreal.eq.1).and.(isinteger.eq.0)) then
-            msg(i)=2
-            read(line(ndex(i,1):ndex(i,2)),*) xmsg(i)
-         else if (isinteger.eq.1) then
-            msg(i)=1
-            read(line(ndex(i,1):ndex(i,2)),*) imsg(i)
          else
-            msg(i)=3
-            cmsg(i)=line(ndex(i,1):ndex(i,2))
-         endif
+            msg(i) = 1
+         end if
+         
       enddo
 
       end
+
+      subroutine isinteger (word, int, isintgr)
+
+      implicit none
+      logical isintgr
+      integer len,int,i,j,iflag,m,itop,ibot
+      character*(*) word
+
+C     integer is +- numbers
+      len = len_trim(word)
+      iflag=1
+      int=0
+      j=1
+      if(word(1:1).eq.'-') then
+         iflag=-1
+         j=2
+      elseif(word(1:1).eq.'+') then
+         j=2
+      endif
+      do i=j,len
+         m=ichar(word(i:i))
+         itop=ichar('9')
+         ibot=ichar('0')
+         if(m.ge.ibot.and.m.le.itop) then
+            int=int*10 + m-ibot
+         else
+            isintgr=.false.
+            return
+         endif
+      enddo
+      isintgr=.true.
+      int=iflag*int
+
+      end subroutine isinteger
+
+      subroutine isreal (word, xnum, isrl)
+
+      implicit none
+      integer len,int,j,iflag,ii,m,ibot,itop
+      character*(*) word
+      logical isrl
+      real*8 xnum,power,ten
+
+      len = len_trim(word)
+      isrl=.false.
+      ten=10.0d0
+      xnum=0.0d0
+      iflag=1
+      j=1
+      if(word(1:1).eq.'-') then
+         iflag=-1
+         j=j+1
+      elseif (word(1:1).eq.'+') then
+         j=j+1
+      endif
+C     look for base
+      int=0
+      ii=j
+      itop=ichar('9')
+      ibot=ichar('0')
+      m=ichar(word(ii:ii))
+      if ((m.gt.itop.or.m.lt.ibot).and.word(ii:ii).ne.'.') then
+         isrl=.false.
+         return
+      endif
+      do while (m.ge.ibot.and.m.le.itop)
+         int=int*10+m-ichar('0')
+         ii=ii+1
+         m=ichar(word(ii:ii))
+      enddo
+      if(word(ii:ii).eq.'.') then
+C     get fraction part of base
+         ii=ii+1
+         if(ii.gt.len) then
+            isrl=.true.
+            xnum=int*iflag
+            go to 9999
+         endif
+         xnum=int
+         power=.1d0
+         m=ichar(word(ii:ii))
+         do while (m.ge.ibot.and.m.le.itop)
+            xnum=xnum+(m-ibot)*power
+            power=power*.1d0
+            ii=ii+1
+            m=ichar(word(ii:ii))
+         enddo
+         xnum=xnum*iflag
+         if(ii.gt.len) then
+            isrl=.true.
+            go to 9999
+         endif
+      endif
+
+      if(word(ii:ii).eq.'e'.or.word(ii:ii).eq.'E'.or.
+     *     word(ii:ii).eq.'+'.or.word(ii:ii).eq.'-'.or.
+     *     word(ii:ii).eq.'d'.or.word(ii:ii).eq.'D') then
+         if(ii.eq.len) go to 9999
+         if(xnum.eq.0.0d0.and.int.eq.0.and.ii.eq.1) go to 9999
+         if(xnum.eq.0d0) xnum=int*iflag
+         iflag=1
+         if(word(ii:ii).eq.'-') iflag=-1
+C     get exponent
+         ii=ii+1
+         int=0
+         if(word(ii:ii).eq.'+') ii=ii+1
+         if(word(ii:ii).eq.'-') then
+            ii=ii+1
+            iflag=-1
+         endif
+         m=ichar(word(ii:ii))
+         do while
+     *        (m.ge.ibot.and.m.le.itop.and.
+     *        ii.le.len)
+            int=int*10+m-ichar('0')
+            ii=ii+1
+            m=ichar(word(ii:ii))
+         enddo
+         if(ii.le.len) go to 9999
+         if(iflag.eq.1) then
+            xnum=xnum*ten**int
+         else
+            xnum=xnum/ten**int
+         endif
+         isrl=.true.
+      endif
+ 9999 continue
+      return
+      end subroutine isreal
