@@ -461,11 +461,12 @@ C***********************************************************************
       use comriv
       use comrtd, only : maxmix_flag
       use comrxni
+      use comsi
+      use comsk, only : save_omr
       use comsplitts
       use comsptr
       use comwt
       use comxi
-      use comsi
       use davidi
       use property_interpolate
 c     added combi and comflow to get izonef and a_axy arrays
@@ -687,13 +688,10 @@ c**** call to set up area coefficients for md nodes
 c**** call data checking routine ****
          call datchk
 c gaz 050809 moved to startup
+c
 c calculate initial stress field and displacements
 c 
 c         call stress_uncoupled(1)
-c 
-c reset boundary conditions for principal stresses (fraction of lithostatic)
-c
-c         call stressctr(3,0) 
 c         
 	 if(ico2.lt.0) then
             if (iout .ne. 0) write(iout,834) ifree1
@@ -738,7 +736,7 @@ c                  if(allocated(sx)) deallocate(sx)
 c                  if(allocated(istrw)) deallocate(istrw)
                end if
             end if
-c            call ptrac1
+c     call ptrac1
          endif
 
 c     If block only entered if the code is being called to 
@@ -762,6 +760,7 @@ c set up time-spaced coupling
            timestress0 = days
            timestress = timestress0 + daystress
          endif
+        if(istrs.ne.0.and.istrs_coupl.eq.0) go to 170
 c Before the time step loop create the partitions for zones
 
          call paractr(1)
@@ -820,21 +819,22 @@ c*** water table rise modification
             water_table_old = in(7)
 c*** adjust timestep size
             call timcrl
+
 c
 c  manage the stress calls when ihms = istrs_coupl = -4
 c
-           istresscall = 0
+            istresscall = 0
 c           
-           if(ihms.eq.-4) then
-            if(days.ge.timestress) then
-             istrs_coupl = -3
-             timestress0 = timestress
-             timestress = timestress0 + daystress
-            else
-             istrs_coupl = ihms
+            if(ihms.eq.-4) then
+               if(days.ge.timestress) then
+                  istrs_coupl = -3
+                  timestress0 = timestress
+                  timestress = timestress0 + daystress
+               else
+                  istrs_coupl = ihms
+               endif
             endif
-           endif
-
+           
 c     Call evaporation routine if this is an evaporation problem
             if (evaporation_flag) call evaporation(2)
 
@@ -1144,12 +1144,12 @@ c calculate stresses
                   call stressctr(13,0)	
 c allocate memory for permeability update if necessay
                   call stress_perm(-1,0)
-c update permeabilities (explicit)                  	
-                  call stress_perm(1,0)		
+c update permeabilities (explicit)
+                  call stress_perm(1,0)			            
 c deallocate memory for permeability update if necessay
-                  call stress_perm(-2,0)                  	            
+                  call stress_perm(-2,0)               	        
 c update peaceman term for wellbore pressure
-                   if(isubwd.ne.0)call wellimped_ctr(1)                		            
+                  if(isubwd.ne.0)call wellimped_ctr(1)
                endif 
                do ja = 1,n
                   to (ja) = t(ja)
@@ -1267,6 +1267,7 @@ c     &           dabs(inflow_thstime), dabs(inen_thstime))
             else
                call plot (1, tmavg, pravg)
             end if
+
 c**** call wellbore pressures
            if(isubwd. ne.0) call wellimped_ctr(4)
 c check for steady state solution
@@ -1381,41 +1382,6 @@ c................................................
             end if
          endif
 
-         nsave = 1
-
-         if (.not. ex) then
-            if(in(1).eq.0) then
-               if( tscounter .eq. 1 .or. in(1) .eq. 0
-     2              .or. tims .eq. tims_save) then
-                  if (allocated(itc) .and. nicg .gt. 1) then
-                     if (itc(nicg-1).gt.0) then
-!                    call disk (nsave)
-                        if (isave .ne. 0) call diskwrite
-                        if (iflxn .eq. 1) call flxn
-                     endif
-                  else
-!                 call disk (nsave)
-                     if (isave .ne. 0) call diskwrite
-                     if (iflxn .eq. 1) call flxn
-                  end if
-!               if(contim.ge.0) then
-                  if(istrs_coupl.ne.-2.and.istrs_coupl.ne.-1) then
-! contr will be called below in stress_uncoupled for a stress solution
-                     call contr (1)
-                     call contr (-1)
-                  end if
-                  call river_ctr(6)               
-!               else
-!                  call contr_days (1)
-!                  call contr_days (-1)
-!               endif
-                  istea_pest = 0
-                  call pest(1)
-c     **** call pest to calculate sensitivities if necessary
-                  call pest(2)
-               end if
-            end if
-         end if
 c     
 c     gaz 1-6-2002
 c     printout submodel boundary conditions if necessary
@@ -1448,8 +1414,47 @@ c
          if(istresscall.eq.0.and.ihms.eq.-4)then
            istrs_coupl = -2
          endif 
+
          call stress_uncoupled(2)
 
+c zvd 30-Jun-10
+c Move call to disk_write and contr after call to stress_uncoupled
+         nsave = 1
+
+         if (.not. ex) then
+            if(in(1).eq.0) then
+               if( tscounter .eq. 1 .or. in(1) .eq. 0
+     2              .or. tims .eq. tims_save) then
+                  if (allocated(itc) .and. nicg .gt. 1) then
+                     if (itc(nicg-1).gt.0) then
+!                    call disk (nsave)
+                        if (isave .ne. 0) call diskwrite
+                        if (iflxn .eq. 1) call flxn
+                     endif
+                  else
+!                 call disk (nsave)
+                     if (isave .ne. 0) call diskwrite
+                     if (iflxn .eq. 1) call flxn
+                  end if
+!               if(contim.ge.0) then
+                  if(istrs_coupl.ne.-2.and.istrs_coupl.ne.-1) then
+! contr will be called below in stress_uncoupled for a stress solution
+c contr was called in stress_uncoupled above
+                     call contr (1)
+                     call contr (-1)
+                  end if
+                  call river_ctr(6)               
+!               else
+!                  call contr_days (1)
+!                  call contr_days (-1)
+!               endif
+                  istea_pest = 0
+                  call pest(1)
+c     **** call pest to calculate sensitivities if necessary
+                  call pest(2)
+               end if
+            end if
+         end if
 c     New convention is to make days the - of its value to
 c     write to the output history file, then change it back
 c     after calling plot. days needs to be correct if the
@@ -1594,6 +1599,8 @@ c     file name for #1 is ff00001.ini, etc.
             end do
 
             if (iptty .gt. 0) write(iptty,*) 
+     2           'Reading a new restart file: ', ffname
+            write(iptty,*) 
      2           'Reading a new restart file: ', ffname
 
 

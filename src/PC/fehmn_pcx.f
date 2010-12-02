@@ -11,7 +11,7 @@
 !  nor the University makes any warranty, express or implied, or 
 !  assumes any liability or responsibility for the use of this software.
 C***********************************************************************
-CD1 
+CD1
 CD1 PURPOSE
 CD1
 CD1 Finite Element Heat and Mass Transfer in porous media.
@@ -467,7 +467,6 @@ C***********************************************************************
       use comsptr
       use comwt
       use comxi
-      use comsi
       use davidi
       use property_interpolate
 c     added combi and comflow to get izonef and a_axy arrays
@@ -680,14 +679,11 @@ c**** call to set up area coefficients for md nodes
 c**** call data checking routine ****
          call datchk
 c gaz 050809 moved to startup
+c
 c calculate initial stress field and displacements
 c 
 c         call stress_uncoupled(1)
-c 
-c reset boundary conditions for principal stresses (fraction of lithostatic)
-c
-c         call stressctr(3,0) 
-c               
+c         
 	 if(ico2.lt.0) then
             if (iout .ne. 0) write(iout,834) ifree1
             if (iptty .ne. 0) write(iptty,834) ifree1
@@ -725,14 +721,13 @@ c     to load_omr_flux_array
                if (.not. sptr_exists) then
                   call load_omr_flux_array
                   if (save_omr) call sptr_save (1)
-               end if
                endif
                if(.not.random_flag) then
 c                  if(allocated(sx)) deallocate(sx)
 c                  if(allocated(istrw)) deallocate(istrw)
                end if
             end if
-c            call ptrac1
+c     call ptrac1
          endif
 
 c     If block only entered if the code is being called to 
@@ -746,12 +741,12 @@ c  change to 4 in new version of rip
          end if
 
 c  stop simulation after stress calc for certain stress input
-         if(istrs.ne.0.and.istrs_coupl.eq.0) go to 170
 c set up time-spaced coupling         
          if(istrs_coupl.eq.-4) then
-           timestress0 = days
-           timestress = timestress0 + daystress
+            timestress0 = days
+            timestress = timestress0 + daystress
          endif
+        if(istrs.ne.0.and.istrs_coupl.eq.0) go to 170
 c Before the time step loop create the partitions for zones
 
          call paractr(1)
@@ -810,20 +805,21 @@ c*** water table rise modification
             water_table_old = in(7)
 c*** adjust timestep size
             call timcrl
+
 c
 c  manage the stress calls when ihms = istrs_coupl = -4
 c
-           istresscall = 0
+            istresscall = 0
 c           
-           if(ihms.eq.-4) then
-            if(days.ge.timestress) then
-             istrs_coupl = -3
-             timestress0 = timestress
-             timestress = timestress0 + daystress
-            else
-             istrs_coupl = ihms
+            if(ihms.eq.-4) then
+               if(days.ge.timestress) then
+                  istrs_coupl = -3
+                  timestress0 = timestress
+                  timestress = timestress0 + daystress
+               else
+                  istrs_coupl = ihms
+               endif
             endif
-           endif
            
 c     Call evaporation routine if this is an evaporation problem
             if (evaporation_flag) call evaporation(2)
@@ -1131,15 +1127,15 @@ c update displacements
 c update volume strains
                   call stressctr(-6,0)
 c calculate stresses
-                  call stressctr(13,0)		            
+                  call stressctr(13,0)	
 c allocate memory for permeability update if necessay
                   call stress_perm(-1,0)
-c update permeabilities (explicit)                  	
-                  call stress_perm(1,0)		
+c update permeabilities (explicit)
+                  call stress_perm(1,0)			            
 c deallocate memory for permeability update if necessay
-                  call stress_perm(-2,0)
+                  call stress_perm(-2,0)               	        
 c update peaceman term for wellbore pressure
-                   if(isubwd.ne.0)call wellimped_ctr(1)
+                  if(isubwd.ne.0)call wellimped_ctr(1)
                endif 
                do ja = 1,n
                   to (ja) = t(ja)
@@ -1257,6 +1253,7 @@ c     &           dabs(inflow_thstime), dabs(inen_thstime))
             else
                call plot (1, tmavg, pravg)
             end if
+
 c**** call wellbore pressures
            if(isubwd. ne.0) call wellimped_ctr(4)
 c check for steady state solution
@@ -1403,6 +1400,7 @@ c
          if(istresscall.eq.0.and.ihms.eq.-4)then
            istrs_coupl = -2
          endif 
+
          call stress_uncoupled(2)
 
 c zvd 30-Jun-10
@@ -1443,7 +1441,6 @@ c     **** call pest to calculate sensitivities if necessary
                end if
             end if
          end if
-
 c     New convention is to make days the - of its value to
 c     write to the output history file, then change it back
 c     after calling plot. days needs to be correct if the
@@ -1588,6 +1585,8 @@ c     file name for #1 is ff00001.ini, etc.
             end do
 
             if (iptty .gt. 0) write(iptty,*) 
+     2           'Reading a new restart file: ', ffname
+            write(iptty,*) 
      2           'Reading a new restart file: ', ffname
 
 
