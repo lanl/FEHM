@@ -210,8 +210,18 @@ c  now we're doing the co2 part
 c co2 properties, if we're above min co2 sat
                   b2=1.D0/(1.d0-rp1-rp2)
                   s_hat=min(1.d0,(sw-rp1)*b2)
-                  prop2=(1.d0-s_hat)**2.d0*(1.d0-s_hat**2.D0)
-                  dprop21=-b2
+                  prop2=(1.d0-s_hat)**2.d0*(1.d0-s_hat**2.d0)
+                  if (prop2 .gt. 1.0d0) then
+                     prop2 = 1.d0
+                     dprop21 = 0.d0
+                  else if (prop2 .lt. 0.0d0) then
+                     prop2 = 0.d0
+                     dprop21 = 0.d0
+                  else
+                     dprop21=(2.0*(1.d0-s_hat)*(1.d0-s_hat**2.d0) +
+     &                    (1.d0-s_hat)**2.d0*2.0*(-s_hat))*(-b2)
+c                  dprop21=-b2
+                  end if
                   dprop22=0.
                else
 c co2 properties, if we're at or below min co2 sat

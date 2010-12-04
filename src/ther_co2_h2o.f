@@ -23,19 +23,20 @@
 !D3 
 !**********************************************************************
 
-      use comrxni
-      use comii
-      use comgi
-      use comfi
-      use comei
-      use comdi
-      use comci
-      use combi
-      use comdti
       use comai
+      use combi
+      use comci
       use comco2
+      use comdi
+      use comdti
+      use comei
+      use comfi
+      use comgi
+      use comii
       use commeth
       use comriv
+      use comrlp, only : rlpnew
+      use comrxni
       implicit none
 
       integer ndummy,mid,mi,ieosd,kq,icesd
@@ -101,8 +102,8 @@ c new variables
       real*8 sig_co2liq, sig_co2vap
       real*8 dsig_co2vapp,dsig_co2vape,dsig_co2vapw,dsig_co2vapyc
       real*8 dsig_co2liqp,dsig_co2liqe,dsig_co2liqw,dsig_co2liqyc
-      real*8 dsig_co2vapya,dsig_co2liqya
-      parameter (fracwmin=0.1)
+      real*8 dsig_co2vapya,dsig_co2liqya,vis_tol
+      parameter (fracwmin=0.1,vis_tol = 1.d-12)
       integer iflg,duma
       
       save dprmya
@@ -153,20 +154,27 @@ c     are in g
          drl_vg = 0.0
          drl_ww = 0.0
          drl_wg = 0.0
-         mid = iad
-         mid = l
-         do mid=1,neq
-            mi=mid+ndummy
+         
+         if (rlpnew) then
+            call rlp_cap(ndummy)
+            do mid=1,neq
+               mi=mid+ndummy
+               phi(mi)=phico2(mi)-pcp(mi)
+            end do
+         else
+            do mid=1,neq
+               mi=mid+ndummy
 c     calculate multi-phase relative perms.
-            call rlperm_co2(ndummy,0,mi,rl_w(mi),
-     &              drl_ww(mi),drl_wg(mi),rl_l(mi),drl_lw(mi),
-     &              drl_lg(mi),rl_v(mi),drl_vw(mi),drl_vg(mi))
+               call rlperm_co2(ndummy,0,mi,rl_w(mi),
+     &           drl_ww(mi),drl_wg(mi),rl_l(mi),drl_lw(mi),drl_lg(mi),
+     &           rl_v(mi),drl_vw(mi),drl_vg(mi))
 c     calculate multi-phase cap. pres.
-            call rlperm_co2(ndummy,1,mi,pcp(mi),
-     &           dpcpw(mi),dpcpg(mi),pcg(mi),dpcgw(mi),dpcgg(mi),
-     &           dum1,dum2,dum3)
-            phi(mi)=phico2(mi)-pcp(mi)
-         enddo
+               call rlperm_co2(ndummy,1,mi,pcp(mi),
+     &              dpcpw(mi),dpcpg(mi),pcg(mi),dpcgw(mi),dpcgg(mi),
+     &              dum1,dum2,dum3)
+               phi(mi)=phico2(mi)-pcp(mi)
+            enddo
+         end if
 c     
 c     RJP 02/09/07. All the thermodynamic properties are now calculated 
 c     here and stored in arrays for later.	 
@@ -213,8 +221,8 @@ c
             xwat = xw(mi)
             xair = xa(mi)
             dporpl=dporp(mi)
-            dportl=dport(mi)            
-
+            dportl=dport(mi)
+            
             if(ico2prop_flg.eq.1) then
                wat_prop(mi) = row
                wat_prop(neq+mi) = drowp
@@ -377,7 +385,7 @@ c
                   dxsw = 0.d0
                else
                   xs = fg(mi)/(fg(mi)+fl(mi))
-                  dxsg = 1.d0/(fg(mi)+fl(mi))
+                  dxsg = 1.d0/(fg(mi)+fl(mi))+fg(mi)/(fg(mi)+fl(mi))**2
                   if (fw(mi) .eq. 1.) then
                      dxsw = 0.
                   else
@@ -595,7 +603,7 @@ c
                denlw=0.d0
                denlya=0.d0
                denlyc=0.d0
-               visl=co2_prop(6*neq+mi)
+               visl=co2_prop(6*neq+mi) + vis_tol
                dvislt=co2_prop(7*neq+mi)
                dvislp=co2_prop(8*neq+mi)
                dvislya=0.d0
@@ -614,7 +622,7 @@ c
                denlw=0.d0
                denlya=0.d0
                denlyc=0.d0
-               visl=co2_prop(15*neq+mi)
+               visl=co2_prop(15*neq+mi)+ vis_tol
                dvislt=co2_prop(16*neq+mi)
                dvislp=co2_prop(17*neq+mi)
                dvislya=0.d0
@@ -629,7 +637,7 @@ c
             enw=wat_prop(5*neq+mi)
             denwp=wat_prop(6*neq+mi)
             denwt=wat_prop(7*neq+mi)
-            visw=wat_prop(8*neq+mi)
+            visw=wat_prop(8*neq+mi) + vis_tol
             dviswp=wat_prop(9*neq+mi)
             dviswt=wat_prop(10*neq+mi)
             denwyc=wat_prop(11*neq+mi)
@@ -831,6 +839,18 @@ c     zvd 07-Aug-08 added following line
                rov = co2_prop(9*neq+mi)
 c     zvd 07-Aug-08
                dstm(mi)=por*rov*sv*vol
+               diw(mi)=0.0
+               diwp(mi)=0.0
+               diwe(mi)=0.0
+               diww(mi)=0.0
+               diwyc(mi)=0.0
+               diwya(mi)=0.0
+               div(mi)=0.0
+               divp(mi)=0.0
+               dive(mi)=0.0
+               divw(mi)=0.0
+               divyc(mi)=0.0
+               divya(mi)=0.0
 c     
 c     modify flow terms for new upwind scheme
 c     .First calculate transfer through water-rich phase
@@ -1174,7 +1194,7 @@ c
             denvw=0.d0
             denvya=0.d0
             denvyc=0.d0
-            visv=co2_prop(15*neq+mi)
+            visv=co2_prop(15*neq+mi) + vis_tol
             dvisvt=co2_prop(16*neq+mi)
             dvisvp=co2_prop(17*neq+mi)
             dvisvya=0.d0
@@ -1189,7 +1209,7 @@ c
             enw=wat_prop(5*neq+mi)
             denwp=wat_prop(6*neq+mi)
             denwt=wat_prop(7*neq+mi)
-            visw=wat_prop(8*neq+mi)
+            visw=wat_prop(8*neq+mi) + vis_tol
             dviswp=wat_prop(9*neq+mi)
             dviswt=wat_prop(10*neq+mi)
             denwyc=wat_prop(11*neq+mi)
@@ -1458,6 +1478,24 @@ c     RJP 03/27/07. diw notes transport through water-rich phase
 c     dil notes transport through co2-rich liquid phase (only present
 c     for 3-phase problem, 2-phase CO2 & water)
 c     div notes transport through co2-rich vapor phase
+               diw(mi)=0.0
+               diwp(mi)=0.0
+               diwe(mi)=0.0
+               diww(mi)=0.0
+               diwyc(mi)=0.0
+               diwya(mi)=0.0
+               dil(mi)=0.0
+               dilp(mi)=0.0
+               dile(mi)=0.0
+               dilw(mi)=0.0
+               dilyc(mi)=0.0
+               dilya(mi)=0.0
+               div(mi)=0.0
+               divp(mi)=0.0
+               dive(mi)=0.0
+               divw(mi)=0.0
+               divyc(mi)=0.0
+               divya(mi)=0.0
                dql=rlw*yco2*row/visw
 c     transport in water-rich phase.
                diw(mi)=dql
@@ -1829,7 +1867,7 @@ c
                denlw=0.d0
                denlya=0.d0
                denlyc=0.d0
-               visl=co2_prop(6*neq+mi)
+               visl=co2_prop(6*neq+mi) + vis_tol
                dvislt=co2_prop(7*neq+mi)
                dvislp=co2_prop(8*neq+mi)
                dvislya=0.d0
@@ -1848,7 +1886,7 @@ c
                denlw=0.d0
                denlya=0.d0
                denlyc=0.d0
-               visl=co2_prop(15*neq+mi)
+               visl=co2_prop(15*neq+mi) + vis_tol
                dvislt=co2_prop(16*neq+mi)
                dvislp=co2_prop(17*neq+mi)
                dvislya=0.d0
@@ -1863,7 +1901,7 @@ c
             enw=wat_prop(5*neq+mi)
             denwp=wat_prop(6*neq+mi)
             denwt=wat_prop(7*neq+mi)
-            visw=wat_prop(8*neq+mi)
+            visw=wat_prop(8*neq+mi) + vis_tol
             dviswp=wat_prop(9*neq+mi)
             dviswt=wat_prop(10*neq+mi)
 

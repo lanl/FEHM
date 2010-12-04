@@ -196,6 +196,7 @@
       use commeth
       use compart
       use comriv
+      use comsi
       use comxi
       use davidi
       implicit none
@@ -210,7 +211,6 @@
       character*11 dumdate, dumflag
       character*8 dumtime
       character*4 :: geom_type = ''
-      logical gdpm_read
       logical, dimension (2) :: read_trac = .FALSE.
       logical, dimension (2) :: read_ptrk = .FALSE.
       logical, dimension (2) :: read_temp = .FALSE.
@@ -221,10 +221,18 @@
       logical, dimension (2) :: read_mass = .FALSE.
       logical, dimension (2) :: read_co2 = .FALSE.
       logical, dimension (2) :: read_pini = .FALSE.
+      logical, dimension (2) :: read_disx = .FALSE.
+      logical, dimension (2) :: read_disy = .FALSE.
+      logical, dimension (2) :: read_disz = .FALSE.
+      logical, dimension (2) :: read_strx = .FALSE.
+      logical, dimension (2) :: read_stry = .FALSE.
+      logical, dimension (2) :: read_strz = .FALSE.
+      logical, dimension (2) :: read_strxy = .FALSE.
+      logical, dimension (2) :: read_strxz = .FALSE.
+      logical, dimension (2) :: read_stryz = .FALSE.
 
       mass_read = .FALSE.
       co2_read = .FALSE.
-      gdpm_read = .FALSE.
       inquire (iread, opened = ex)
       if (ex) close (iread)
       open (iread,file=nmfil(6),status=cstats(6),form=cform(6))
@@ -253,6 +261,19 @@
             end if
             if (iccen .ne. 0) read_trac(1) = .TRUE.
             if (ptrak) read_ptrk(1) = .TRUE.
+            if (istrs .eq. 1) then
+               read_disx(1) = .TRUE. 
+               read_disy(1) = .TRUE.
+               read_disz(1) = .TRUE. 
+               read_strx(1) = .TRUE. 
+               read_stry(1) = .TRUE. 
+               read_strxy(1) = .TRUE.
+               if (icnl .eq. 0) then
+                  read_strz(1) = .TRUE.
+                  read_strxz(1) = .TRUE.
+                  read_stryz(1) = .TRUE.
+               end if
+            end if
          case ('temp')
             read_temp(1) = .TRUE.
          case ('pres')
@@ -274,6 +295,44 @@
          case ('pini')
             read_pini(1) = .TRUE.
             ipini = 1
+         case ('disp')
+            read_disx(1) = .TRUE. 
+            read_disy(1) = .TRUE.
+            if (icnl .eq. 0 ) read_disz(1) = .TRUE.             
+         case ('disx')
+            read_disx(1) = .TRUE.
+         case ('disy')
+            read_disy(1) = .TRUE.
+         case ('disz')
+            if (icnl .eq. 0 ) read_disz(1) = .TRUE.
+         case ('strs', 'stre')
+               residual_stress = .TRUE.
+               read_strx(1) = .TRUE. 
+               read_stry(1) = .TRUE. 
+               read_strxy(1) = .TRUE.
+               allocate (str_x0(n0))
+               allocate (str_y0(n0))
+               allocate (str_xy0(n0))
+               if (icnl .eq. 0) then
+                  read_strz(1) = .TRUE.
+                  read_strxz(1) = .TRUE.
+                  read_stryz(1) = .TRUE.
+                  allocate (str_z0(n0))
+                  allocate (str_xz0(n0))
+                  allocate (str_yz0(n0))
+               end if
+         case ('strx')
+            read_strx(1) = .TRUE.
+         case ('stry')
+            read_stry(1) = .TRUE.
+         case ('strz')
+            if (icnl .eq. 0 ) read_strz(1) = .TRUE.
+         case ('stxy')
+            read_strxy(1) = .TRUE.
+         case ('stxz')
+            if (icnl .eq. 0 ) read_strxz(1) = .TRUE.
+         case ('styz')
+            if (icnl .eq. 0 ) read_stryz(1) = .TRUE.
          case ('none')
 c Values from the restart file will not be used
          end select
@@ -313,7 +372,6 @@ c this is old style input
             read(iread,'(a4)') wdd1(17:20)
             ncount=neq
             if(wdd1(13:16).eq.'dpdp') ncount=neq+neq
-c            if(wdd1(13:16).eq.'dpdp') gdpm_read = .TRUE.
             if(wdd1(17:20).eq.'dual') ncount=neq+neq+neq
             if (wdd1(1:4).eq.'ngas' .or. wdd1(1:4).eq.'wnga') then
                if(iriver.ne.0 .and. wdd1 .eq. 'ngas') 
@@ -512,12 +570,7 @@ c Use values from input
             backspace (iread)
             read (iread, *) ncount, geom_type
             modneq = mod(ncount,neq)
-            if(geom_type.eq.'gdpm') gdpm_read = .TRUE.
-            if (gdpm_read) then
-               modneq_primary = 0
-            else
-               modneq_primary = mod(ncount,neq_primary)
-            end if
+            modneq_primary = mod(ncount,neq_primary)
             if (modneq .ne. 0 .or. modneq_primary .ne. 0) goto 2000
             do
                read (iread ,'(a11)', end = 100) dumflag
@@ -637,7 +690,7 @@ c Phase-state of CO2
      &                    'phase-state of co2'
                      read_co2(2) = .FALSE.
                   end if
-              case ('mass')
+               case ('mass')
                   if (dumflag(1:9) .ne. 'mass flux') then
                      if (read_mass(1)) then
                         if (.not. allocated(mass_var)) 
@@ -667,7 +720,106 @@ c Initial pressures and temps
                      if (iptty .ne. 0)write (iptty, 400) 
      &                    'initial pressure and temperature'
                   end if
-               case default
+               case ('xdis')
+                  if (read_disx(1)) then
+                     read(iread, *)  ( du (mi) , mi=1,ncount )
+                     read_disx(2) = .TRUE.
+                  else
+                     read (iread, *) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 
+     &                    'x displacement'
+                     if (iptty .ne. 0)write (iptty, 400) 
+     &                    'x displacement'
+                  end if
+               case ('ydis')
+                  if (read_disy(1)) then
+                     read(iread, *)  ( dv (mi) , mi=1,ncount )
+                     read_disy(2) = .TRUE.
+                  else
+                     read (iread, *) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 
+     &                    'y displacement'
+                     if (iptty .ne. 0)write (iptty, 400) 
+     &                    'y displacement'
+                  end if
+               case ('zdis')
+                  if (read_disz(1)) then
+                     read(iread, *)  ( dw (mi) , mi=1,ncount )
+                     read_disz(2) = .TRUE.
+                  else
+                     read (iread, *) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 
+     &                    'z displacement'
+                     if (iptty .ne. 0)write (iptty, 400) 
+     &                    'z displacement'
+                  end if
+               case ('xstr')
+                  if (read_strx(1)) then
+                     read(iread, *)  ( str_x0 (mi) , mi=1,ncount )
+                     read_strx(2) = .TRUE.
+                  else
+                     read (iread, *) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 
+     &                    'x stress'
+                     if (iptty .ne. 0)write (iptty, 400) 
+     &                    'x stress'
+                  end if
+               case ('ystr')
+                  if (read_stry(1)) then
+                     read(iread, *)  ( str_y0 (mi) , mi=1,ncount )
+                     read_stry(2) = .TRUE.
+                  else
+                     read (iread, *) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 
+     &                    'y stress'
+                     if (iptty .ne. 0)write (iptty, 400) 
+     &                    'y stress'
+                  end if
+               case ('xyst')
+                  if (read_strxy(1)) then
+                     read(iread, *)  ( str_xy0 (mi) , mi=1,ncount )
+                     read_strxy(2) = .TRUE.
+                  else
+                     read (iread, *) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 
+     &                    'xy stress'
+                     if (iptty .ne. 0)write (iptty, 400) 
+     &                    'xy stress'
+                  end if
+               case ('zstr')
+                  if (read_strz(1)) then
+                     read(iread, *)  ( str_z0 (mi) , mi=1,ncount )
+                     read_strz(2) = .TRUE.
+                  else
+                     read (iread, *) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 
+     &                    'z stress'
+                     if (iptty .ne. 0)write (iptty, 400) 
+     &                    'z stress'
+                  end if
+               case ('xzst')
+                  if (read_strxz(1)) then
+                     read(iread, *)  ( str_xz0 (mi) , mi=1,ncount )
+                     read_strxz(2) = .TRUE.
+                  else
+                     read (iread, *) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 
+     &                    'xz stress'
+                     if (iptty .ne. 0)write (iptty, 400) 
+     &                    'xz stress'
+                  end if
+               case ('yzst')
+                  if (read_stryz(1)) then
+                     read(iread, *)  ( str_yz0 (mi) , mi=1,ncount )
+                     read_stryz(2) = .TRUE.
+                  else
+                     read (iread, *) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 
+     &                    'yz stress'
+                     if (iptty .ne. 0)write (iptty, 400) 
+     &                    'yz stress'
+                  end if
+              case default
                   backspace (iread)
                   exit
                end select
@@ -1082,6 +1234,105 @@ c Initial pressures and temps
      &                    'initial pressure and temperature'
                      if (iptty .ne. 0)write (iptty, 400)  
      &                    'initial pressure and temperature'
+                  end if
+               case ('xdis')
+                  if (read_disx(1)) then
+                     read(iread)  ( du (mi) , mi=1,ncount )
+                     read_disx(2) = .TRUE.
+                  else
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 
+     &                    'x displacement'
+                     if (iptty .ne. 0)write (iptty, 400) 
+     &                    'x displacement'
+                  end if
+               case ('ydis')
+                  if (read_disy(1)) then
+                     read(iread)  ( dv (mi) , mi=1,ncount )
+                     read_disy(2) = .TRUE.
+                  else
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 
+     &                    'y displacement'
+                     if (iptty .ne. 0)write (iptty, 400) 
+     &                    'y displacement'
+                  end if
+               case ('zdis')
+                  if (read_disz(1)) then
+                     read(iread)  ( dw (mi) , mi=1,ncount )
+                     read_disz(2) = .TRUE.
+                  else
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 
+     &                    'z displacement'
+                     if (iptty .ne. 0)write (iptty, 400) 
+     &                    'z displacement'
+                  end if
+               case ('xstr')
+                  if (read_strx(1)) then
+                     read(iread)  ( str_x0 (mi) , mi=1,ncount )
+                     read_strx(2) = .TRUE.
+                  else
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 
+     &                    'x stress'
+                     if (iptty .ne. 0)write (iptty, 400) 
+     &                    'x stress'
+                  end if
+               case ('ystr')
+                  if (read_stry(1)) then
+                     read(iread)  ( str_y0 (mi) , mi=1,ncount )
+                     read_stry(2) = .TRUE.
+                  else
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 
+     &                    'y stress'
+                     if (iptty .ne. 0)write (iptty, 400) 
+     &                    'y stress'
+                  end if
+               case ('xyst')
+                  if (read_strxy(1)) then
+                     read(iread)  ( str_xy0 (mi) , mi=1,ncount )
+                     read_strxy(2) = .TRUE.
+                  else
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 
+     &                    'xy stress'
+                     if (iptty .ne. 0)write (iptty, 400) 
+     &                    'xy stress'
+                  end if
+               case ('zstr')
+                  if (read_strz(1)) then
+                     read(iread)  ( str_z0 (mi) , mi=1,ncount )
+                     read_strz(2) = .TRUE.
+                  else
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 
+     &                    'z stress'
+                     if (iptty .ne. 0)write (iptty, 400) 
+     &                    'z stress'
+                  end if
+               case ('xzst')
+                  if (read_strxz(1)) then
+                     read(iread)  ( str_xz0 (mi) , mi=1,ncount )
+                     read_strxz(2) = .TRUE.
+                  else
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 
+     &                    'xz stress'
+                     if (iptty .ne. 0)write (iptty, 400) 
+     &                    'xz stress'
+                  end if
+               case ('yzst')
+                  if (read_stryz(1)) then
+                     read(iread)  ( str_yz0 (mi) , mi=1,ncount )
+                     read_stryz(2) = .TRUE.
+                  else
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 
+     &                    'yz stress'
+                     if (iptty .ne. 0)write (iptty, 400) 
+     &                    'yz stress'
                   end if
                case default
                   exit

@@ -269,6 +269,11 @@ c
                else
                   read (iread ,   *)  ( an(mi+npn) , mi=1,n )
                end if
+               if (icns(iq) .eq. -2) then
+                  anv(1+npn:n+npn) = an(1+npn:n+npn)
+               else
+                  anl(1+npn:n+npn) = an(1+npn:n+npn)
+               end if
                if (ischk .ne. 0) then
                   write(ischk, *)
                   write(ischk, *) 'Concentrations for species ', iq,

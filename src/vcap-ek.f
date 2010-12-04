@@ -1,5 +1,5 @@
       subroutine vgcap_ek	( sl, slr, smr,alpha, beta,smcut, 
-     2	sucut,hp, dhp)
+     2     sucut,hp, dhp)
 ! this calculates capillary pressure (hp) as a function of liquid saturation (sl)
 ! slr = minimum residual saturation
 ! smr = maximum residual saturation
@@ -43,353 +43,38 @@
       star=(sl-slr)/denom
       ds = 1.0/denom
       if(sl.gt.smcut.and.sl.lt.sucut) then
-            termstar1 = star**alpi
-            termstar2 = star*termstar1
-            termb1 = 1./termstar1 - 1.
-            termb2 = termb1**(-alamda)
-            hp = 1./alpha * termb1*termb2
-            dhp = (1.-alamda)/alpha * termb2 * (-alpi/termstar2) * ds
-         elseif(sl.le.smcut)  then
-	star2=(smcut-slr)/denom
-            termstar1 = star2**alpi
-            termstar2 = star2*termstar1
-            termb1 = 1./termstar1 - 1.
-            termb2 = termb1**(-alamda)
-            hp_cut = 1./alpha * termb1*termb2
-	dhp=hp_cut/smcut
-	hp=hp_cut+(smcut-sl)*dhp
-	dhp=-1.*dhp
-	else
-	star2=(sucut-slr)/denom
-            termstar1 = star2**alpi
-            termstar2 = star2*termstar1
-            termb1 = 1./termstar1 - 1.
-            termb2 = termb1**(-alamda)
-            hp_cut = 1./alpha * termb1*termb2
-	dhp=hp_cut/(1.d0-sucut)
-	hp=hp_cut-(sl-sucut)*dhp
-	dhp=-1.*dhp
-	endif
-       if(sl.lt.0.0.or.sl.gt.1.0) then
+         termstar1 = star**alpi
+         termstar2 = star*termstar1
+         termb1 = 1./termstar1 - 1.
+         termb2 = termb1**(-alamda)
+         hp = 1./alpha * termb1*termb2
+         dhp = (1.-alamda)/alpha * termb2 * (-alpi/termstar2) * ds
+      elseif(sl.le.smcut)  then
+         star2=(smcut-slr)/denom
+         termstar1 = star2**alpi
+         termstar2 = star2*termstar1
+         termb1 = 1./termstar1 - 1.
+         termb2 = termb1**(-alamda)
+         hp_cut = 1./alpha * termb1*termb2
+         dhp=hp_cut/smcut
+         hp=hp_cut+(smcut-sl)*dhp
+         dhp=-1.*dhp
+      else
+         star2=(sucut-slr)/denom
+         termstar1 = star2**alpi
+         termstar2 = star2*termstar1
+         termb1 = 1./termstar1 - 1.
+         termb2 = termb1**(-alamda)
+         hp_cut = 1./alpha * termb1*termb2
+         dhp=hp_cut/(1.d0-sucut)
+         hp=hp_cut-(sl-sucut)*dhp
+         dhp=-1.*dhp
+      endif
+c      if(sl.lt.0.0.or.sl.gt.1.0) then
+      if(sl.lt.1.d-6 .or. sl.gt.1.0) then
 c     lower residual cutoff
          hp = 0.
          dhp= 0.0
       endif
       return
       end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

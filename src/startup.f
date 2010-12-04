@@ -376,26 +376,26 @@ CPS END startup
 CPS
 C***********************************************************************
 
-      use comflow
+      use comai
+      use combi
+      use comci
+      use comco2
       use comcouple
-
-      use davidi
-      use comgi
+      use comdi
+      use comdti
       use comei
       use comfi
-      use comdi
-      use comci
-      use combi
-      use comdti
-      use comai
+      use comflow
+      use comgi
       use comii
-      use comwt
-      use compart, only : ptrak
-      use comsptr, only : sptrak
-      use comzone
       use commeth
-      use comco2
+      use compart, only : ptrak
+      use comrlp, only : ishisrlp
       use comsi, only : idof_stress
+      use comsptr, only : sptrak
+      use comwt
+      use comzone
+      use davidi
       implicit none
 
       integer icall, dummyint, j, iconv_tmp
@@ -413,7 +413,7 @@ C***********************************************************************
       integer, allocatable :: idum1(:)
       integer, allocatable :: idum2(:)
       integer, allocatable :: ncon_temp(:)
-      integer, allocatable :: nop_temp(:)      
+      integer, allocatable :: nop_temp(:)
       integer i1,i2,ipiv,icnt
       integer count, num_zone, ic_sym
       integer nsbb,idofdum,neidum
@@ -1300,6 +1300,7 @@ c gaz 10-18-2001     call sice (1)
                call icectrco2(3,0)
                call icectrco2(-3,0)
                call icectrco2(-33,0)
+               if (ishisrlp .ne. 0) call check_rlp_carb
                call icectrco2(-35,0)
             else
                call varchk (0, 0)
@@ -1570,6 +1571,13 @@ c
                   qh(i) = a_vxy(nelmdg(i) - neq - 1) 
                end if
             end do
+         end if
+      end if
+
+! zvd - 07-Oct-2010 Add optional printout of rlp table
+      if (ishisrlp .ne. 0) then
+         if (icarb .eq. 0) then
+            call check_rlp
          end if
       end if
 

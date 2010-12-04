@@ -947,8 +947,10 @@ c     co2-water problem, includes phase-change, no CO2 dissolution
                      fw(i) = fw(i) - bp(i3)*strd
                      if (icesd.eq.3) then
                         fg(i) = 1.d0-fw(i)
+                        fl(i) = 0.0
                      else
                         fl(i) = 1.d0-fw(i)
+                        fg(i) = 0.0
                      endif
                      if (phico2(i) .ge. 0. .and. phico2(i) .lt. 0.1)
      &                    phico2(i) = 0.1

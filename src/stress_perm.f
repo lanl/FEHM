@@ -613,6 +613,14 @@ c
      &                  +abs((dw(kbx2)-dw(kbx1))/2)/disx
                epsyz12 = abs((dv(kbz2)-dv(kbz1))/2)/disz
      &                  +abs((dw(kby2)-dw(kby1))/2)/disy
+     
+               dispxy12 = 0.d0
+               dispxz12 = 0.d0
+               dispyx12 = 0.d0
+               dispyz12 = 0.d0
+               dispzx12 = 0.d0
+               dispzy12 = 0.d0  
+
                
             if(str_x(i)-phi(i).gt.0) then
                 dispyx12 = (disy+e3(i)/ksy)*epsxy12

@@ -302,6 +302,7 @@ C***********************************************************************
       use comdti
       use compart
       use comriv
+      use comrlp, only : rlpnew, ntable, ntblines
       use comrxni
       use comsi
       use comsk
@@ -318,7 +319,7 @@ C***********************************************************************
       logical blank
       integer ith, iscan, isorp
 
-      logical null1, opened, done, ok
+      logical null1, opened, done, ok, null_new
       integer idumm, ja, jb, jc, numtime
       character* 4 cdumm, macro, ctmp
       real*8 adumm, rdum1
@@ -336,7 +337,7 @@ C***********************************************************************
       integer kz,iz2,iz2p,i1,i2,ipivt,sehindexl,sehindexv,neqp1
       integer ireaddum, inptread, open_file
       integer locunitnum, kk, j
-      integer  ngdpm_models, nsize_layer
+      integer ngdpm_models, nsize_layer
       integer, allocatable :: itemporary(:)
       integer idum1, idum2, ilines, i
       integer icount, tprp_num
@@ -448,7 +449,8 @@ c zvd 17-Aug-09 move boun flag initializations here
 ! Check for other macros that may use 'end' keyword
                else if (dumstring(1:4) .eq. 'boun' .or. dumstring(1:4)
      &                 .eq. 'hist' .or. dumstring(1:4) .eq. 'rest' .or.
-     &                 dumstring(1:4) .eq. 'stea') then
+     &                 dumstring(1:4) .eq. 'stea' .or. dumstring(1:4) 
+     &                 .eq. 'rlpm') then
                   exit
                end if
             end do
@@ -476,7 +478,8 @@ c zvd 17-Aug-09 move boun flag initializations here
 ! Check for other macros that may use 'end' keyword
             else if (dumstring(1:4) .eq. 'boun' .or. dumstring(1:4)
      &              .eq. 'cont' .or. dumstring(1:4) .eq. 'rest' .or.
-     &              dumstring(1:4) .eq. 'stea') then
+     &              dumstring(1:4) .eq. 'stea' .or. dumstring(1:4) 
+     &              .eq. 'rlpm') then
                exit
             end if
          end do
@@ -570,6 +573,7 @@ c     eg drift flux
 
          call done_macro(locunitnum)              
       else if (macro.eq.'rlp ') then
+c     old model
 c     find number of relative perm models 
 c     use nrlp (comai.h) to transfer size of rlp arrays
 c     no longer use variable ichng so value can be saved
@@ -593,11 +597,11 @@ c     check for read from other file
             elseif(idumm.eq.2) then
                read(locunitnum,*) idumm,(adumm,ja=1,4)
             elseif(idumm.eq.3) then
-               read(locunitnum,*) idumm,(adumm,ja=1,6) 
+               read(locunitnum,*) idumm,(adumm,ja=1,6)
             elseif(idumm.eq.-4) then
                read(locunitnum,*) idumm,(adumm,ja=1,15)
             elseif(idumm.eq.4) then
-               read(locunitnum,*) idumm,(adumm,ja=1,15)               
+               read(locunitnum,*) idumm,(adumm,ja=1,15)
             elseif(idumm.eq.5) then
                read(locunitnum,*) idumm,(adumm,ja=1,6)
             elseif(idumm.eq.6) then
@@ -662,6 +666,52 @@ c Undefined rlp model, stop
  12      format ('STOP: Error in rlp macro at entry', i3, 
      &        'Invalid model specified: ', i3)
  21      continue
+         call done_macro(locunitnum)
+
+      else if (macro .eq. 'rlpm') then
+         call start_macro(inpt, locunitnum, macro)
+         if (.not. rlpnew) nrlp = 0
+         rlp_flag = 1
+         rlpnew = .true.
+         idum2 = 0
+         do
+            read (inpt, '(a80)') dumstring
+            if (null1(dumstring) .or. dumstring(1:3) .eq. 'end' .or. 
+     &           dumstring(1:3) .eq. 'END') then
+               exit
+            else if (dumstring(1:5) .eq. 'group' .or. dumstring(1:5)
+     &              .eq. 'GROUP') then
+               nrlp = nrlp + 1
+            else if (dumstring(1:3) .eq. 'tab' .or. dumstring(1:3)
+     &              .eq. 'TAB') then
+c Count number of tables that will be read, 
+c     and number of entries in each table
+               ntable = ntable + 1
+               read (inpt, '(a80)') dumstring
+               if (dumstring(1:4) .eq. 'file') then
+                  read (inpt, '(a80)') filename
+                  idum = open_file (filename, 'old')
+                  do
+                     read (idum, '(a80)', end = 24) dumstring
+                     if (null_new(dumstring) .or.  dumstring(1:3) .eq. 
+     &                    'end' .or. dumstring(1:3) .eq. 'END') exit
+                     call parse_string2(dumstring, imsg, msg, xmsg, 
+     &                    cmsg, nwds)
+c Don't count header lines (header lines should start with a character)
+                     if (msg(1) .ne. 3) ntblines = ntblines + 1
+                  end do
+ 24               close (idum)
+               else
+                  backspace (inpt)
+                  do
+                     read (inpt, '(a80)') dumstring
+                     if (null_new(dumstring) .or.  dumstring(1:3) .eq. 
+     &                    'end' .or. dumstring(1:3) .eq. 'END') exit
+                     ntblines = ntblines + 1
+                  end do
+               end if
+            end if
+         end do
          call done_macro(locunitnum)
 
       else if (macro.eq.'boun') then
@@ -860,23 +910,23 @@ c need to know if rel perm factor is used
          iflxc = iflxc +1
          call start_macro(inpt, locunitnum, macro)
          read(locunitnum,*) nflx
-         ivelo = 1
+          ivelo = 1
          nflxt = nflxt + nflx
          call done_macro(locunitnum)
       else if (macro .eq. 'dvel') then
          iflxc = iflxc +1
          call start_macro(inpt, locunitnum, macro)
          read(locunitnum,*) nflx
-         ivelo = -1
+          ivelo = -1
          nflxt = nflxt + nflx
          call done_macro(locunitnum)
       else if (macro .eq. 'dpdp') then
          idpdp = 1
 
 c	Section for determining Generalized Dual Porosity Model (GDPM)
-c	and Generalized Dual Permeability Model (GDKM)parameters
+c	and Generalized Dual Permeability Model (GDKM) parameters
          
-      else if(macro .eq. 'gdpm'.or. macro .eq. 'gdkm') then
+      else if(macro .eq. 'gdpm' .or. macro .eq. 'gdkm') then
          if(macro .eq. 'gdkm') gdkm_flag = 1
          call start_macro(inpt, locunitnum, macro)
          read (locunitnum, *) gdpm_flag, ngdpmnodes
@@ -917,36 +967,8 @@ c     Allocate arrays needed for gdpm
             gdpm_x = 0.
          end if
 
-
          call done_macro(locunitnum)
-c	Section for determining Element enrichment)
          
-      else if(macro .eq. 'enri') then
-  
-         call start_macro(inpt, locunitnum, macro)
-         read (locunitnum, *) enri_flag, nenrinodes
-         maxenrichlayers = 0
-         ienrich_models = 0
-
-c	Code scans the file to determine the number of models and the
-c	maximum number of node points in the matrix so that array
-c	sizes can be set and arrays allocated in allocmem
-         
- 1010    continue
-         read(locunitnum,'(a80)') dumstring
-         if (.not.null1(dumstring)) then
-            backspace locunitnum
-            ienrich_models = ienrich_models + 1
-            read(locunitnum,*) nsize_layer,adumm,(adumm,i=1,
-     &      nsize_layer)
-            maxenrichlayers = max(nsize_layer,maxenrichlayers)
-            goto 1010
-         end if
-c
-c     Allocate arrays needed for enri
-c
-
-         call done_macro(locunitnum)         
 c     RJP 12/14/06 added following for river/wellbore	      
 c     Section for determining implicit river or well model (riv )
 c     parameters
@@ -2100,8 +2122,7 @@ c need porosity model
          i = 0
          do
             read(locunitnum,'(a80)') dumstring
-c            if (null1(dumstring)) exit
-            if(dumstring(1:9).eq.'stressend') exit
+            if (null1(dumstring)) exit
             if(dumstring(1:9).eq.'permmodel') then
                do 
                   read(locunitnum,'(a80)') dumstring
@@ -2134,12 +2155,10 @@ c	          else if (idumm .eq. 2 .or. idumm .eq. 4) then
                enddo
             endif
          enddo
-         if(i.ge.1) then
-          allocate(ispmt(i))
-          allocate(spm1f(i),spm2f(i),spm3f(i),spm4f(i),spm5f(i))
-          allocate(spm6f(i),spm7f(i),spm8f(i),spm9f(i),spm10f(i))
-          allocate(spm11f(i),spm12f(i),spm13f(i),spm14f(i))
-         endif
+         allocate(ispmt(i))
+         allocate(spm1f(i),spm2f(i),spm3f(i),spm4f(i),spm5f(i))
+         allocate(spm6f(i),spm7f(i),spm8f(i),spm9f(i),spm10f(i))
+         allocate(spm11f(i),spm12f(i),spm13f(i),spm14f(i))
          call done_macro(locunitnum)
          
       end if

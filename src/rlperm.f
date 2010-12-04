@@ -445,7 +445,8 @@ c
       parameter(darcyf = 1.d12)
       parameter(tol_l  = 1.d-5)
       parameter(tol_u  = 1.d-5)
-      parameter(su_cut = 0.7d00)
+      parameter(su_cut = 0.99d00)
+c      parameter(su_cut = 0.7d00)
 
 
       integer iz,ndummy,i,irlpd,mi,ieosd,it,ir,j,num_models

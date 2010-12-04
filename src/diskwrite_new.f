@@ -143,6 +143,7 @@
       use compart
       use comco2
       use comriv
+      use comsi
       use comxi
       use davidi
       implicit none
@@ -162,6 +163,8 @@
       logical :: write_flux = .FALSE.
       logical :: write_co2  = .FALSE.
       logical :: write_pini = .FALSE.
+      logical :: write_disp(3) = .FALSE.
+      logical :: write_strs(6) = .FALSE.
 
       call dated (jdate,jtime)
       inquire (isave, opened = ex)
@@ -208,6 +211,18 @@ c Use value of numflux that was read in
             end if
             if (iccen .ne. 0) write_trac = .TRUE.
             if (ptrak) write_ptrk = .TRUE.
+            if (istrs .ne. 0) then
+               if (icnl .eq. 0) then
+                  write_strs = .TRUE.
+                  write_disp = .TRUE.
+               else
+                  write_strs(1) = .TRUE.
+                  write_strs(2) = .TRUE.
+                  write_strs(4) = .TRUE.
+                  write_disp(1) = .TRUE.
+                  write_disp(2) = .TRUE.
+               end if
+            end if
          case ('temp')
             write_temp = .TRUE.
          case ('pres')
@@ -221,22 +236,79 @@ c Use value of numflux that was read in
          case ('gasp')
             write_gasp = .TRUE.
          case ('co2')
-            write_co2 = .TRUE.
+            if (icarb .eq. 1) then
+               write_co2 = .TRUE.
+            else
+               if (iout .ne. 0) then
+                  write(iout, 100) 
+     &                 'Non-co2 problem, co2 parameters'
+               end if  
+            end if
          case ('mass') 
             write_mass = .TRUE.
          case ('pini')
             write_pini = .TRUE.
+         case ('disp')
+            write_disp = .TRUE.
+            if (icnl .ne. 0) write_disp(3) = .FALSE.
+         case ('disx')
+            write_disp(1) = .TRUE.
+         case ('disy')
+            write_disp(2) = .TRUE.
+         case ('disz')
+            if (icnl .eq. 0) write_disp(3) = .TRUE.
+         case ('strs', 'stre')
+            if (icnl .eq. 0) then
+               write_strs = .TRUE.
+            else
+               write_strs(1) = .TRUE.
+               write_strs(2) = .TRUE.
+               write_strs(4) = .TRUE.
+            end if
+         case ('strx')
+            write_strs(1) = .TRUE.
+         case ('stry')
+            write_strs(2) = .TRUE.
+         case ('strz')
+            if (icnl .eq. 0 ) write_strs(3) = .TRUE.
+         case ('stxy')
+            write_strs(4) = .TRUE.
+         case ('stxz')
+            if (icnl .eq. 0 ) write_strs(5) = .TRUE.
+         case ('styz')
+            if (icnl .eq. 0 ) write_strs(6) = .TRUE.
          case ('none')
 c Values from the restart file will not be used
          end select
       end do
+      
+      if (istrs .eq. 0) then
+         do i = 1, 3
+            if (write_disp(i)) then
+               write_disp = .FALSE.
+               if (iout .ne. 0) then
+                  write(iout, 100) 
+     &                 'Non-stress problem, displacements'
+               end if 
+               exit
+            end if
+         end do
+         do i = 1, 6
+            if (write_strs(i)) then
+               write_strs = .FALSE.
+               if (iout .ne. 0) then
+                  write(iout, 100) 
+     &                 'Non-stress problem, stresses'
+               end if 
+               exit
+            end if
+         end do
+      end if
 
       if (idualp .ne. 0) then
          dum_type = 'dual'
       else if (idpdp .ne. 0) then
          dum_type = 'dpdp'
-      else if (gdpm_flag.ne.0) then
-         dum_type = 'gdpm'         
       else
          dum_type = 'nddp'
       end if
@@ -299,6 +371,44 @@ c Formatted output
             write(isave, '(a11)') 'inipressure'            
             write(isave, 6002)  ( phini (mi) , mi=1,n )
          end if
+         if (write_disp(1)) then
+            write(isave, '(a11)') 'xdisplacmnt'
+            write(isave, 6002)  ( du (mi) , mi=1,n )
+         end if
+         if (write_disp(2)) then
+            write(isave, '(a11)') 'ydisplacmnt'
+            write(isave, 6002)  ( dv (mi) , mi=1,n )
+         end if
+         if (write_disp(3)) then
+            write(isave, '(a11)') 'zdisplacmnt'
+            write(isave, 6002)  ( dw (mi) , mi=1,n )
+         end if
+         if (write_strs(1)) then
+            write(isave, '(a11)') 'xstress    '
+            write(isave, 6002)  ( str_x (mi) , mi=1,n )
+         end if
+         if (write_strs(2)) then
+            write(isave, '(a11)') 'ystress    '
+            write(isave, 6002)  ( str_y (mi) , mi=1,n )
+         end if
+         if (write_strs(4)) then
+            write(isave, '(a11)') 'xystress   '
+            write(isave, 6002)  ( str_xy (mi) , mi=1,n )
+         end if
+         if (icnl .eq. 0) then
+            if (write_strs(3)) then
+               write(isave, '(a11)') 'zstress    '
+               write(isave, 6002)  ( str_z (mi) , mi=1,n )
+            end if
+            if (write_strs(5)) then
+               write(isave, '(a11)') 'xzstress   '
+               write(isave, 6002)  ( str_xz (mi) , mi=1,n )
+            end if
+            if (write_strs(6)) then
+               write(isave, '(a11)') 'yzstress   '
+               write(isave, 6002)  ( str_yz (mi) , mi=1,n )
+            end if
+         end if  
          if (flux_flag(1:2) .eq. 'no') then
             write (isave, '(a11)') flux_flag
          else
@@ -426,6 +536,53 @@ c Unformatted output
             write (isave) dummy_string
             write(isave)  ( phini (mi) , mi=1,n )
          end if
+         if (write_disp(1)) then
+            dummy_string = 'xdisplacmnt'
+            write (isave) dummy_string
+            write(isave)  ( du (mi) , mi=1,n )
+         end if
+         if (write_disp(2)) then
+            dummy_string = 'ydisplacmnt'
+            write (isave) dummy_string
+           write(isave)  ( dv (mi) , mi=1,n )
+         end if
+         if (write_disp(3)) then
+            dummy_string = 'zdisplacmnt'
+            write (isave) dummy_string
+            write(isave)  ( dw (mi) , mi=1,n )
+         end if
+         if (write_strs(1)) then
+            dummy_string = 'xstress    '
+            write (isave) dummy_string
+            write(isave)  ( str_x (mi) , mi=1,n )
+         end if
+         if (write_strs(2)) then
+            dummy_string = 'ystress    '
+            write (isave) dummy_string
+            write(isave)  ( str_y (mi) , mi=1,n )
+         end if
+         if (write_strs(4)) then
+            dummy_string = 'xystress   '
+            write (isave) dummy_string
+            write(isave)  ( str_xy (mi) , mi=1,n )
+         end if
+         if (icnl .eq. 0) then
+            if (write_strs(3)) then
+               dummy_string = 'zstress    '
+               write (isave) dummy_string
+               write(isave)  ( str_z (mi) , mi=1,n )
+            end if
+            if (write_strs(5)) then
+               dummy_string = 'xzstress   '
+               write (isave) dummy_string
+               write(isave)  ( str_xz (mi) , mi=1,n )
+            end if
+            if (write_strs(6)) then
+               dummy_string = 'yzstress   '
+               write (isave) dummy_string
+               write(isave)  ( str_yz (mi) , mi=1,n )
+            end if
+         end if  
 
          if (flux_flag(1:2) .eq. 'no') then
             write (isave) flux_flag
@@ -452,10 +609,8 @@ c Unformatted output
                      write (isave) numflux
                      write (isave) (a_axy(i), i = 1,numflux)
                      if (iout .ne. 0) then
-                        write(iout,*) 'WARNING: Liquid only problem, ',
-     &                       'vapor flux'
-                        write(iout,*) 'can not be written to restart ',
-     &                       'file'
+                        write(iout, 100) 
+     &                       'Liquid only problem, vapor flux'
                      end if
                   end if
                else if (flux_flag(1:3) .eq. 'liq') then
@@ -471,10 +626,8 @@ c Unformatted output
                      flux_flag = 'no fluxes  '
                      write (isave, '(a11)') flux_flag
                      if (iout .ne. 0) then
-                        write(iout, *) 'WARNING: Liquid only problem,',
-     &                       ' vapor flux'
-                        write(iout, *) 'can not be written to restart',
-     &                       ' file'
+                        write(iout, 100) 
+     &                       'Liquid only problem, vapor flux'
                      end if
                   end if
                end if
@@ -490,6 +643,8 @@ c Unformatted output
 
       close  ( isave )
       
+ 100  format ('WARNING: ', a, ' can not be written to restart file')
+
       return
       end
       

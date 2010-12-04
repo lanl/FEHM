@@ -1,5 +1,11 @@
-      subroutine vgrlps(iflg, sl, star, alpha, beta, sl1, sl2, tol_l,
-     2     tol_u, rl, drls, rv, drvs )
+      subroutine vgrlp2( sl, alpha, beta, hmin,
+     2     hp, dhp, rl, drls, rv, drvs, iflg )
+! calculates rel perms as a function of capillary pressure (hp)
+! iflag <=1:  rv = 1-rl
+! iflag = 1  rv calculatated according to rosangela
+! inputs required:  sl, alpha,beta,hmin,hp,dhp,iflag
+! returned: rl, drls, rv, drvs 
+!
 !***********************************************************************
 !  Copyright, 2004,  The  Regents  of the  University of California.
 !  This program was prepared by the Regents of the University of 
@@ -20,20 +26,35 @@ CD1 van Genuchten model.
 CD1
 C**********************************************************************
 CD2
-CD2 REVISION HISTORY
+CD2 REVISION HISTORY 
 CD2
 CD2 Revision                    ECD
 CD2 Date         Programmer     Number  Comments
 CD2
 CD2 3-3-94       Bruce Robinson        Initial implementation
 CD2                                     
-CD2 $Log:   /pvcs.config/fehm90/src/vgrlps.f_a  $
+CD2 $Log:   /pvcs.config/fehm90/src/vgrlp.f_a  $
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:44:28   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
 !D2 
-!D2    Rev 2.4   29 Jan 2003 09:24:40   pvcs
+!D2    Rev 2.4   29 Jan 2003 09:23:02   pvcs
 !D2 FEHM Version 2.20, STN 10086-2.20-00
+!D2 
+!D2    Rev 2.3   14 Nov 2001 13:29:12   pvcs
+!D2 FEHM Version 2.12, STN 10086-2.12-00
+!D2 
+!D2    Rev 2.2   06 Jun 2001 13:28:40   pvcs
+!D2 FEHM Version 2.11, STN 10086-2.11-00
+!D2 
+!D2    Rev 2.1   30 Nov 2000 12:13:28   pvcs
+!D2 FEHM Version 2.10, STN 10086-2.10-00
+!D2 
+!D2    Rev 2.0   Fri May 07 14:48:14 1999   pvcs
+!D2 FEHM Version 2.0, SC-194 (Fortran 90)
+CD2 
+CD2    Rev 1.6   Fri Sep 26 15:14:10 1997   llt
+CD2 gaz changes
 CD2 
 CD2    Rev 1.5   Fri Feb 02 14:14:54 1996   hend
 CD2 Updated Requirements Traceability
@@ -166,9 +187,9 @@ C**********************************************************************
 CD7
 CD7 SPECIAL COMMENTS
 CD7 
-CD7 Requirements from SDN: 10086-RD-2.20-00
-CD7   SOFTWARE REQUIREMENTS DOCUMENT (RD) for the 
-CD7   FEHM Application Version 2.20
+CD7  Requirements from SDN: 10086-RD-2.20-00
+CD7    SOFTWARE REQUIREMENTS DOCUMENT (RD) for the
+CD7    FEHM Application Version 2.20
 CD7
 C**********************************************************************
 CD8
@@ -218,165 +239,91 @@ CPS
 CPS END vgcalc
 CPS
 C**********************************************************************
-! calculates van genuchten rlperm as a function of saturation (sl)
-! alpha is not used
-! iflg = 1: rv=1-rl
-! iflg=2 :  more complicated calculation of rv
-! requires iflg, sl, star,beta, sl1,sl2,tol_l,tol_u
-! returns rl, drls, rv, drvs
-C**********************************************************************
 
       implicit none
 
-      integer iflg
-
       real*8 sl  
-      real*8 star
-      real*8 star1
-      real*8 starm1
       real*8 alpha
       real*8 beta
+      real*8 hp
+      real*8 dhp
       real*8 rl
       real*8 drls
       real*8 rv
       real*8 drvs
-      real*8 tol_l
-      real*8 tol_u
-      real*8 sl1
-      real*8 sl2
-      real*8 dstar
-      real*8 dstarm1
+      real*8 hmin
+
 
       real*8 alamda
-      real*8 alamdai
-      real*8 alamda2
+      real*8 dahp
       real*8 term1
-      real*8 term2
-      real*8 term3
-      real*8 term4
+      real*8 ahp
+      real*8 al2
       real*8 dterm1
+      real*8 ratio
+      real*8 term2
+      real*8 terma
+      real*8 dratio
+      real*8 dterma
       real*8 dterm2
-      real*8 dterm3
-      real*8 dterm4
-      real*8 rlp_l
-      real*8 rlp_u
-      real*8 rvp_l
-      real*8 rvp_u
+      real*8 termhp1
+      real*8 termhp2
+      real*8 ahp1
+      real*8 termahp1
+      real*8 termahp2
 c
-c rlperms as a function of saturation 
+      real*8 term3,term4,term5,term6
+      real*8 term7,term8
 c
-      if(iflg.eq.0) then
-c calculate interpolated values
-      else if(iflg.ne.0) then
-       dstar = 1.0/(sl2-sl1)
-       if(star.gt.tol_l.and.star.lt.1.0-tol_u) then
+      integer iflg
+c
+c check for minumum capillary pressure
+c
+
+      if (hp .lt. hmin ) hp=hmin
+      if(sl .gt.0.0.and.sl .lt.1.00) then
 c     calculate the relative permeability
-          alamda = 1.0-1.0/beta
-          alamdai = 1.0/alamda
-          term1 = sqrt(star)
-          term2 = star**alamdai
-          term3 = (1.0-term2)**alamda
-          term4 = (1.0-term3)**2
-          dterm1 = 0.5/term1
-          dterm2 = alamdai*star**(alamdai-1.0)
-          dterm3 = -alamda/(1.0-term2)**(1.0-alamda)*dterm2
-          dterm4 = -2.0*(1.0-term3)*dterm3
-          rl=term1*term4
-          drls = (dterm1*term4+term1*dterm4)*dstar
-       else if(star.gt.0.0.and.star.le.tol_l) then
+         alamda = 1.0-1.0/beta
+         al2 = alamda/2.0
+         termhp1 = alpha*hp
+         termhp2 = termhp1**(beta-1.)
+         ahp = termhp1*termhp2
+         dahp = beta*termhp2*alpha
+         ahp1 = 1. + ahp
+         termahp1 = ahp1**al2
+         termahp2 = ahp1 * termahp1
+         term1 = 1. / termahp1
+         dterm1 = -al2 / termahp2
+         ratio =ahp/ahp1
+         terma=(1.0-ratio**alamda)
+         term2 = terma*terma
+         dratio = 1.0/ahp1-ahp/ahp1**2
+         dterma=-alamda/ratio**(1.0-alamda)*dratio
+         dterm2 = 2.0*terma*dterma
+         rl = term1*term2
+         drls=(dterm1*term2+term1*dterm2)*dhp*dahp
+      else if(sl .le.0.0) then
 c     lower residual cutoff
-          star1= tol_l
-          alamda = 1.0-1.0/beta
-          alamdai = 1.0/alamda
-          term1 = sqrt(star1)
-          term2 = star1**alamdai
-          term3 = (1.0-term2)**alamda
-          term4 = (1.0-term3)**2
-          rlp_l=term1*term4
-          rl = rlp_l/tol_l*star
-          drls= rlp_l/tol_l*dstar
+         rl = 0.0
+         drls= 0.0
 c     upper residual cutoff
-       else if(star.ge.1.0-tol_u.and.star.lt.1.0) then
-          star1= 1.0-tol_u
-          alamda = 1.0-1.0/beta
-          alamdai = 1.0/alamda
-          term1 = sqrt(star1)
-          term2 = star1**alamdai
-          term3 = (1.0-term2)**alamda
-          term4 = (1.0-term3)**2
-          rlp_u=term1*term4
-          rl = (rlp_u-1.0)/(tol_u)*(1.0-star)+1.0
-          drls= -(rlp_u-1.0)/(tol_u)*dstar
-       else if(star.lt.0.0) then
-c     lower residual cutoff
-          rl = 0.0
-          drls= 0.0
-c     upper residual cutoff
-c     gaz 091210
-       else if(star.ge.1.0) then
-          rl = 1.0
-          drls= 0.0
-       endif
+      else
+         rl = 1.0
+         drls= 0.0
       endif
-      if(iflg.eq.1) then
-c rv is 1. -rl
-       rv = 1.-rl
-       drvs=-drls
-      else if(iflg.eq.2) then
-c rv has own vg function
-       dstar = 1.0/(sl2-sl1)
-       starm1 = 1.0-star
-       dstarm1 = -dstar
-       if(starm1.gt.tol_l.and.starm1.lt.1.0-tol_u) then
-c     calculate the relative permeability
-          alamda = 1.0-1.0/beta
-          alamdai = 1.0/alamda
-          alamda2 = 2.0*alamda
-          term1 = sqrt(starm1)
-          term2 = star**alamdai
-          term3 = (1.0-term2)**alamda2
-          dterm1 = -0.5/term1
-          dterm2 = alamdai*star**(alamdai-1.0)
-          if(alamda2-1.0.lt.0.0) then
-           dterm3 = -alamda2/(1.0-term2)**(1.0-alamda2)*dterm2
-          else
-           dterm3 = -alamda2*(1.0-term2)**(alamda2-1.0)*dterm2
-          endif
-          rv=term1*term3
-          drvs = (dterm1*term3+term1*dterm3)*dstar
-       else if(starm1.gt.0.0.and.starm1.le.tol_l) then
-c     lower residual cutoff
-          star1= tol_l
-          alamda = 1.0-1.0/beta
-          alamdai = 1.0/alamda
-          alamda2 = 2.0*alamda
-          term1 = sqrt(star1)
-          term2 = (1.0-star1)**alamdai
-          term3 = (1.0-term2)**alamda2
-          rvp_l=term1*term3
-          rv = rvp_l/tol_l*starm1
-          drvs= rvp_l/tol_l*dstarm1
-c     upper residual cutoff
-       else if(starm1.ge.1.0-tol_u.and.starm1.lt.1.0) then
-          star1= 1.0-tol_u
-          alamda = 1.0-1.0/beta
-          alamdai = 1.0/alamda
-          alamda2 = 2.0*alamda
-          term1 = sqrt(star1)
-          term2 = (1.0-star1)**alamdai
-          term3 = (1.0-term2)**alamda2
-          rvp_u=term1*term3
-          rv = rvp_u/tol_u*(1.0-starm1)+1.0       
-          drvs= -rvp_u/tol_u*dstarm1
-       else if(starm1.le.0.0) then
-c     lower residual cutoff
-          rv = 0.0
-          drvs= 0.0
-c     upper residual cutoff
-       else if(starm1.ge.1.0) then
-          rv = 1.0
-          drvs= 0.0
-       endif
+      if(iflg.le.1) then
+         rv = 1.-rl
+         drvs=-drls
+      else 
+c     part added by rosangela (sept 2002)
+         term3=term1*term1
+         term4=(1-term3)**(1/2)
+         term5=term3**(1./alamda)
+         term6=(1-term5)**(2*alamda)
+         term7=term3**(1./beta-1.)
+         term8=(1/(1-term3))+4*term7*(1/(1-term5))
+         rv=term4*term6
+         drvs=(-0.5)*rv*term8
       endif
 
-      end subroutine vgrlps
+      end subroutine vgrlp2

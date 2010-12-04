@@ -322,7 +322,9 @@ c         end if
 c      end if
 
 ! Added to save static arrays for calculations once they have been computed zvd 20-Apr-04
-      if (.not. sptr_exists .and. save_omr) call sptr_save (1)
+c zvd 19-Nov-2010
+! Moved to fehmn, needs to be called after call to load_omr_flux_array
+!      if (.not. sptr_exists .and. save_omr) call sptr_save (1)
 
       return
 

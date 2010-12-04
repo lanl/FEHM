@@ -44,7 +44,7 @@
 
       use comai
       use combi
-      use comco2, only : c_axy, c_vxy, skco2
+      use comco2, only : c_axy, c_vxy, skco2, icarb
       use comdi
       use comdti
       use comflow
@@ -60,14 +60,14 @@
       real*8 ptime, out_tol
       character*18 value_string
       character*24 form_string
-      character*90, allocatable :: flux_string(:)
+      character*90, allocatable :: flux_string(:), fluxv_string(:)
       logical matrix_node
 
-      parameter (out_tol = 1.e-30)
+      parameter (out_tol = 1.e-15)
       
       if (.not. allocated(sumfout)) then
          allocate (md(nflxz))
-         if (wflux_flag .and. vflux_flag) then
+         if (wflux_flag .and. vflux_flag .or. icarb .ne. 0) then
              allocate (sumfout(nflxz,2), sumsink(nflxz,2))
              allocate (sumsource(nflxz,2), sumboun(nflxz,2))
           else
@@ -95,13 +95,14 @@ c     Fluxes are written to tty and output file
       else
 c     Fluxes are written to flux history file
          if (.not. allocated (flux_string)) 
-     &        allocate (flux_string(nflxz))
+     &        allocate (flux_string(nflxz), fluxv_string(nflxz))
       end if
 c     Compute fluxes out of zone (>0), leaving out flues
 c     into other parts of the zone
 
       if (flxz_flag .eq. 3) then
          ic = 1
+         iv = 2
       else
          if (wflux_flag .and. vflux_flag) then
             ii = 1
@@ -155,6 +156,7 @@ c     loop over every connecting node
                   indexa_axy = iconn-neq-1+addnode
 c     add to sum if it is flow out of the node
 c     RJP 07/05/07 changed for CO2 flux
+c     ZVD 10/28/10 add CO2 in vapor
                   if (flxz_flag.eq.3) then
                      if(c_axy(indexa_axy).gt.0.) then
 c     add to sum only if the connecting node is not also
@@ -176,6 +178,28 @@ c     add to source sum
                         if(nelm(iconn).eq.inneq) then
                            sumsource(izone,ic) = sumsource(izone,ic) + 
      &                          c_axy(indexa_axy)
+                        end if
+                     end if
+                     if(c_vxy(indexa_axy).gt.0.) then
+c     add to sum only if the connecting node is not also
+c     in the zone or else the connecting node is itself, i.e.
+c     the value is a sink term
+                        if(izoneflxz(idummy+nelm(iconn))
+     2                       .ne.izone.or.nelm(iconn)
+     3                       .eq.inneq) then
+                           sumfout(izone,iv) = sumfout(izone,iv) + 
+     &                          c_vxy(indexa_axy)
+c     sum_vap = sum_vap + c_vxy(indexa_axy)
+                           if(nelm(iconn).eq.inneq) then
+                              sumsink(izone,iv) = sumsink(izone,iv) + 
+     &                             c_vxy(indexa_axy)
+                           end if
+                        end if
+                     else if(c_vxy(indexa_axy).lt.0.) then
+c     add to source sum
+                        if(nelm(iconn).eq.inneq) then
+                           sumsource(izone,iv) = sumsource(izone,iv) + 
+     &                          c_vxy(indexa_axy)
                         end if
                      end if
                   else
@@ -347,20 +371,34 @@ c     Fluxes are written to flux history file
      &           sumfout(izone,ic) = 0.d0
             if (abs(sumboun(izone,ic)) .lt. out_tol)  
      &           sumboun(izone,ic) = 0.d0
-            if (form_flag .le. 1) then
+             if (abs(sumsource(izone,iv)) .lt. out_tol) 
+     &           sumsource(izone,iv) = 0.d0
+            if (abs(sumsink(izone,iv)) .lt. out_tol)  
+     &           sumsink(izone,iv) = 0.d0
+            if (abs(sumfout(izone,iv)) .lt. out_tol)  
+     &           sumfout(izone,iv) = 0.d0
+c            if (abs(sumboun(izone,iv)) .lt. out_tol)  
+c     &           sumboun(izone,iv) = 0.d0
+           if (form_flag .le. 1) then
                write (flux_string(izone), 1050) sumsource(izone,ic), 
      &              sumsink(izone,ic), sumfout(izone,ic), 
      &              sumboun(izone,ic)
+               write (fluxv_string(izone), 1050) sumsource(izone,iv), 
+     &              sumsink(izone,iv), sumfout(izone,iv)
             else
                write (flux_string(izone), 1055) sumsource(izone,ic), 
      &              sumsink(izone,ic), sumfout(izone,ic), 
      &              sumboun(izone,ic)
+               write (fluxv_string(izone), 1055) sumsource(izone,iv), 
+     &              sumsink(izone,iv), sumfout(izone,iv)
             end if
             ishiscfzz = ishiscfz + izone
             if (form_flag .le. 1) then
-               write (ishiscfzz, 1051) ptime, trim(flux_string(izone))
+               write (ishiscfzz, 1052) ptime, trim(flux_string(izone)),
+     &              trim(fluxv_string(izone))
             else
-               write (ishiscfzz, 1057) ptime, trim(flux_string(izone))
+               write (ishiscfzz, 1057) ptime, trim(flux_string(izone)),
+     &              trim(fluxv_string(izone))
             end if
             call flush(ishiscfzz)
          end do
@@ -373,8 +411,10 @@ c     Fluxes are written to flux history file
  1047 format('(g16.9, ', i3, '(a))')
  1050 format(4(g16.9, 1x), g16.9)
  1051 format(g16.9, 1x, a)
+ 1052 format(g16.9, 2(1x, a))
  1055 format(4(", ", g16.9))
  1056 format(5(", ", g16.9))
  1057 format(g16.9, a)
+ 1058 format(g16.9, a, ', ', a)
 
       end
