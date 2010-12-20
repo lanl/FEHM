@@ -19,7 +19,7 @@ CD2
 CD2 04-04-2007   R. Pawar   N/A     Initial implementation
 CD2                                     
 CD2 $Log:   /pvcs.config/fehm90/src/rlperm_hyd.f_a  $
-CD2 
+CD2
 C**********************************************************************
 c
 c calculates relative permiabilities and derivatives
@@ -232,6 +232,8 @@ c co2 properties, if we're at or below min co2 sat
             else
 c     cap pressure
 c these 2 are set according to Preuss(2004)
+               alpha=1./rp7
+               beta=1.d0/(1.d0-rp3)
                slr=0.;smr=1.
 c these are flexible
                smcut=rp5;sucut=1.0-rp6

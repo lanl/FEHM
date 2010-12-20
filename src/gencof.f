@@ -415,6 +415,8 @@ c     three dimensional elements
                         call gncf3(nrq,nele,nga,neu,nsl,icsh,neluc,aj)
                      endif
                   endif
+c reset integration type                  
+                  intg = intgo
 c     two dimensional elements
                   if ( icnl.ne.0 )  then
                      if(nrq.eq.1) intg = -1

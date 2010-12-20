@@ -968,6 +968,34 @@ c     Allocate arrays needed for gdpm
          end if
 
          call done_macro(locunitnum)
+c	Section for determining Element enrichment)
+         
+      else if(macro .eq. 'enri') then
+  
+         call start_macro(inpt, locunitnum, macro)
+         read (locunitnum, *) enri_flag, nenrinodes
+         maxenrichlayers = 0
+         ienrich_models = 0
+
+c	Code scans the file to determine the number of models and the
+c	maximum number of node points in the matrix so that array
+c	sizes can be set and arrays allocated in allocmem
+         
+ 1010    continue
+         read(locunitnum,'(a80)') dumstring
+         if (.not.null1(dumstring)) then
+            backspace locunitnum
+            ienrich_models = ienrich_models + 1
+            read(locunitnum,*) nsize_layer,adumm,(adumm,i=1,
+     &      nsize_layer)
+            maxenrichlayers = max(nsize_layer,maxenrichlayers)
+            goto 1010
+         end if
+c
+c     Allocate arrays needed for enri
+c
+
+         call done_macro(locunitnum) 
          
 c     RJP 12/14/06 added following for river/wellbore	      
 c     Section for determining implicit river or well model (riv )
@@ -2155,10 +2183,12 @@ c	          else if (idumm .eq. 2 .or. idumm .eq. 4) then
                enddo
             endif
          enddo
-         allocate(ispmt(i))
-         allocate(spm1f(i),spm2f(i),spm3f(i),spm4f(i),spm5f(i))
-         allocate(spm6f(i),spm7f(i),spm8f(i),spm9f(i),spm10f(i))
-         allocate(spm11f(i),spm12f(i),spm13f(i),spm14f(i))
+         if(i.ge.1) then
+          allocate(ispmt(i))
+          allocate(spm1f(i),spm2f(i),spm3f(i),spm4f(i),spm5f(i))
+          allocate(spm6f(i),spm7f(i),spm8f(i),spm9f(i),spm10f(i))
+          allocate(spm11f(i),spm12f(i),spm13f(i),spm14f(i))
+         endif
          call done_macro(locunitnum)
          
       end if

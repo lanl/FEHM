@@ -439,6 +439,7 @@ c GAZ 11/02/08
       integer             ivboun, itert_s,itotal_s,itotals_s
       integer             ifdm_elem, ienrich, enri_flag
       integer             nenrinodes
+      integer             ibcfar
       real*8              pchng, schng 
       
       integer :: irun = 0

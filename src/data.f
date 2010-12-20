@@ -379,6 +379,7 @@ C *** integers in davidi.h
 C from comwt
       irich = 0
       ifdm_elem = 0
+      ibcfar = 0
       nr_stop = 0
 
 c initialize scalar reals in comai
