@@ -65,8 +65,9 @@ C***********************************************************************
       integer imsg(max_entries)
       integer msg(max_entries)
       real*8 xmsg(max_entries)
+      real*8 rnum
       character*32 cmsg(max_entries), word
-      integer nwds, ifdebug
+      integer nwds, ifdebug, inum
       logical finished, isint, isrl
 
       integer ndex(max_entries,2),i,begin,entrynum
@@ -111,18 +112,21 @@ C***********************************************************************
             write (6, *) 'string ', line(ndex(i,1):ndex(i,2))
          end if
 
-         call isinteger (word, imsg(i), isint)
+         call isinteger (word, inum, isint)
 
          if (.not. isint) then
-            call isreal (word, xmsg(i), isrl)
+            imsg(i) = 0
+            call isreal (word, rnum, isrl)
             if (.not. isrl) then
                cmsg(i) = word
                msg(i) = 3
             else
                msg(i) = 2
+               xmsg(i) = rnum
             end if
          else
             msg(i) = 1
+            imsg(i) = inum
          end if
          
       enddo
