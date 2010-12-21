@@ -174,16 +174,16 @@ c and to saturation for capillary pressure interpolation
             prop3=0.
             dprop31=0.
             dprop32=0.
+            alpha=1./rp7
+c alpha is 1/Po
+            beta=1.d0/(1.d0-rp3)
+c beta is Van Genuchten's n; rp3 is Van Genuchten's m = Preuss's lambda
             if(iz.eq.0) then
 c we're calculating rel perms
 
 c first we calculate the water part
                iflg=1
 c	star=s_star
-               alpha=1./rp7
-c alpha is 1/Po
-               beta=1.d0/(1.d0-rp3)
-c beta is Van Genuchten's n; rp3 is Van Genuchten's m = Preuss's lambda
                sl1=rp1
                sl2=1.
 c sl2 is maximum liquid saturation
