@@ -379,6 +379,7 @@ C *** integers in davidi.h
 C from comwt
       irich = 0
       ifdm_elem = 0
+      ibcfar = 0
       nr_stop = 0
 
 c initialize scalar reals in comai
@@ -483,6 +484,7 @@ C added phi_inc to comai so it only needs to be computed in one place
       pa_stop = 0.0
       t_stop = 0.0
       s_stop = 0.0 
+      s2_stop = 0.0
       co2f_stop = 0.0
       h_stop = 0.0     
 c logical variables in comai

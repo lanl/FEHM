@@ -1218,6 +1218,15 @@ c read permeability from daniil and out in permeability file
         write(*,*) 'file perm_fehm_ner.macro created'
         pause
         stop
-457     format(3(1x,i8),1p,3(1x,g14.6))     
+457     format(3(1x,i8),1p,3(1x,g14.6))   
+      case(-900)
+      open(unit = 97,file='fehm_volumes',status='unknown')  
+      sum_volj = 0.0
+      do i = 1,n
+       sum_volj = sum_volj + sx1(i)
+       write(97,'(i8,1x,f15.6)') i,sx1(i)
+      enddo 
+       write(97,*) 'volume total ', sum_volj
+      stop
       end select
       end

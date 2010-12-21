@@ -520,7 +520,13 @@ c and the max degrees of freedom necessary for the tracer solution
             mdof = 1
          end if
       end if
-
+c
+c for stress simulation isotropic coefficients not allowed
+c
+      if (istrs.ne.0) then
+        isoy = 2
+        isoz = 3
+      endif
 c**** set eos cofficient set eq to 1 since fit was good ****
 c****          the entire range only done if iieos(i) = 0 ****
       if (iwelb .ne. 1)  then

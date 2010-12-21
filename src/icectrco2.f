@@ -885,6 +885,9 @@ c
 c     update variables with N-R corrections           
 c     
 c     
+            if(nr_stop.ne.0.and.iad.ge.1)then
+             call nr_stop_ctr(1)
+            endif
             if(iprtype.eq.1) then
 c     water-only problem
                nr1=nrhs(1)
@@ -944,8 +947,10 @@ c     co2-water problem, includes phase-change, no CO2 dissolution
                      fw(i) = fw(i) - bp(i3)*strd
                      if (icesd.eq.3) then
                         fg(i) = 1.d0-fw(i)
+                        fl(i) = 0.0
                      else
                         fl(i) = 1.d0-fw(i)
+                        fg(i) = 0.0
                      endif
                      if (phico2(i) .ge. 0. .and. phico2(i) .lt. 0.1)
      &                    phico2(i) = 0.1
@@ -1101,7 +1106,7 @@ c     call EOS routines water
          elseif(iflg.eq.-4) then
 c     first ckeck for temperature-specified source terms
 c     need to comment out call in main routine for water if meth is activated
-            if(iad.eq.0) then
+c            if(iad.eq.0) then
 c     only for first iteration
                do ii=1,neq
                   ij=ii+ndummy
@@ -1140,7 +1145,7 @@ c     calculate phase-change pressure and dp/dt
                               endif
                            else
                               call co2_properties(4,ices(ij),
-     &                             pflowco2(ij),
+     &                             phico2(ij),
      &                             -eskco2(ij),dum1,duma,dumb,dumc)
                            endif
                         else
@@ -1171,7 +1176,7 @@ c     calculate phase-change pressure and dp/dt
                      endif
                   endif
                enddo
-            endif                
+c            endif                
          elseif(iflg.eq.4) then
 c     call equation generation and load jacobian array
             

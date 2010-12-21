@@ -350,8 +350,8 @@ c
      
 
       enddo
-      str_x(i)=(-shpi-shti+termx/vol)
-      str_y(i)=(-shpi-shti+termy/vol)
+      str_x(i)=-(+shpi+shti+termx/vol)
+      str_y(i)=-(+shpi+shti+termy/vol)
       
       str_xy(i)=+tauxy/vol
 

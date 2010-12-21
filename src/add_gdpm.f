@@ -337,7 +337,8 @@ c	gdpm volume
 c physically-based fracture model 
 c coordinates in x direction may be wrong
 c will have 22(y) and 33(z) models as well
-             areat_gdpm(i) = sx1save/length_total
+c             areat_gdpm(i) = sx1save/length_total
+             areat_gdpm(i) = sx1save/dxrg(i)
              vfrac_pri = vfrac_primary(imodel)
              length_sec = dxrg(i)-vfrac_pri
              gdpm_len = gdpm_vol(imodel,1)*length_sec/wgt_length(imodel)
@@ -530,7 +531,7 @@ c primariy  to primary connection
         sx(i,1) = sx_dum(i,1)
        enddo       
       endif
-      i1 = nelm(neq+1) + 1 -(neq+1)
+      i1 = nelm(neq+1) -(neq+1)
       do i = 1,i1
        istrw(i) = istrw_new(i)
       enddo 

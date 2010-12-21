@@ -326,6 +326,8 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
          aiaa = smult
 
       else if(iflg.eq.1) then
+        divisor = 1.
+        divisore = 1.
          if (svar_flag) then
             isteady=-1
          else

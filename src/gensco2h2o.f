@@ -48,6 +48,16 @@ C***********************************************************************
       real*8 tmch1
       parameter (tmch1=1d-3)
       parameter (iprint=0,inorm = 1)
+
+c
+c  check for possible stopping on variable changes
+c
+      if(iad.ge.1) then
+       if(nr_stop.eq.2) then
+        fdum=-1.0
+        go to 999
+       endif
+      endif
       
       neqp1=neq+1
       nmatd=nelm(neqp1)-neqp1
@@ -81,6 +91,7 @@ c     calculations.  It is assumed that tracer/reactants are
 c     carried in liquid (water).
 c
       diltrac=dil
+      
 c RJP 02/05/07
 c Generate water specific equation
 c follwoing is modified form of original geneq2_h2o subroutine for 
@@ -138,8 +149,12 @@ c
 c   enforce equilibrium conditions as necessary
 c
       call co2h2o_combine(1,idofm)
-
+c remove farfield BC from NR residual calculation      
+      call bc_far_ctr(2)
+      
+c
 c     print out before manipulating or normalizing arrays
+c
       if(iprint.ne.0) then
        id =1
        write(*,*) 'node = ',id
@@ -188,21 +203,6 @@ c
 c     normalize the equations
 c     
       allocate(dumn(108))
-c      write (ierr,*) 'l = ',l,' iad = ',iad
-c      do id = 1,neq
-c       if(kaco2(id).ne.0) then
-c       jj = nelmdg(id)-neqp1
-c       write (ierr,*) 'node = ',id
-c       write (ierr,*) 'phase state ', ices(id)
-c       write (ierr,*) 'P ',phi(id),' T ', t(id)
-c      write (ierr,*) 'dq(id)',dq(id)
-c       write (ierr,*) a(jj+nmat(1)),a(jj+nmat(4)),a(jj+nmat(9))
-c       write (ierr,*) bp(id+nrhs(1)),bp(id+nrhs(2)),bp(id+nrhs(3))
-c       endif
-c       if(abs(bp(id+nrhs(2))).gt.1.e5) then
-c        write (ierr,*) 'bad node ',id, bp(id+nrhs(2))
-c       endif
-c      enddo      
 c  gaz 2-27-03
        if(inorm.ne.0) then
         call normal_dof(neq,a,bp,nelm,nmat,nrhs,nelmdg
@@ -344,6 +344,11 @@ c
       call storage_derivatives(0,1)
 
  999  continue
+c
+c
+c remove farfield BC from NR parameter corrections  
+c         
+      call bc_far_ctr(2)
       
       if(islord.ne.0) call switch(nmat,nmatb,islord,idofm,2,nsizea1)
       if(islord.ne.0) call switchb(bp,nrhs,nrhsb,islord,idofm,2,neq)

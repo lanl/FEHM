@@ -72,6 +72,7 @@
       endif
 c      if(sl.lt.0.0.or.sl.gt.1.0) then
       if(sl.lt.1.d-6 .or. sl.gt.1.0) then
+c      if( sl.gt.1.0) then
 c     lower residual cutoff
          hp = 0.
          dhp= 0.0

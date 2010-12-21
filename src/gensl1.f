@@ -134,8 +134,8 @@ C***********************************************************************
       real*8, allocatable :: sto5(:,:)
       real*8, allocatable :: dum(:)
       real*8  facr, fdum2, tollr, tolls, tmch_new, tmch_old, bp_max
-      parameter(iparchek = 0)
       save tmch_old
+      parameter(iparchek =0)
       neqp1=neq+1
 c test of coefficients
        if(iparchek.eq.1) then

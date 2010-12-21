@@ -107,7 +107,7 @@ c      if(gdpm_flag.eq.4.or.gdpm_flag.eq.3.or.gdpm_flag.eq.1) then
       endif
 c     special fracture model
 c     vfrac_primary is the fracture width
-c     the other are normalized lengths (to the total dxrg(defined later)
+c     the other are normalized lengths
       if(gdpm_flag.eq.11) then      
          do i = 1, imodel
             wgt_length(i) = gdpm_x(i,1)
@@ -121,7 +121,11 @@ c     the other are normalized lengths (to the total dxrg(defined later)
                gdpm_x(i,j) = gdpm_right/2. + gdpm_left
                gdpm_left = gdpm_right + gdpm_left     
             enddo
- 
+            wgt_length(i) =  wgt_length(i)
+     &       /(dxrg(i)-vfrac_primary(imodel))
+            do j = 2, ngdpm_layers(i)
+             gdpm_x(i,j) = gdpm_x(i,j)/wgt_length(i)
+            enddo          
          enddo      
       endif
 c     Set flag to identify which nodes have each gdpm model

@@ -355,7 +355,29 @@ c
 c
 c origin for coordinate system (only used for structured grids)
 c   
-      real*8 x_orig, y_orig, z_orig  
+      real*8 x_orig, y_orig, z_orig 
+      
+c
+c arrays for enri macro (gdkm did not work out so far)
+c     
+      integer nei_enrich,maxenrichlayers,ienrich_models
+      integer, allocatable :: ienrich_dir(:)
+      integer, allocatable :: ienrich_model(:)
+      integer, allocatable :: ienrich_layers(:)      
+      integer, allocatable :: ipl_enrich(:)
+      integer, allocatable :: nei_enrich_id(:)      
+      integer, allocatable :: nelm_enrich(:)      
+      integer, allocatable :: nop_enrich(:,:)
+      integer, allocatable :: noo_enrich(:,:)
+      integer, allocatable :: nei_enrich_list(:)  
+c
+c far field boundary conditions
+c
+      integer imodels_far
+      integer, allocatable :: ibc_far(:)
+      integer, allocatable :: ibc_far_zone(:)
+      real*8, allocatable :: acorr_far(:)
+      real*8, allocatable :: sumfar(:,:)      
       
       end module combi
 

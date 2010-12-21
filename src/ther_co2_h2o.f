@@ -102,8 +102,8 @@ c new variables
       real*8 sig_co2liq, sig_co2vap
       real*8 dsig_co2vapp,dsig_co2vape,dsig_co2vapw,dsig_co2vapyc
       real*8 dsig_co2liqp,dsig_co2liqe,dsig_co2liqw,dsig_co2liqyc
-      real*8 dsig_co2vapya,dsig_co2liqya
-      parameter (fracwmin=0.1)
+      real*8 dsig_co2vapya,dsig_co2liqya,vis_tol
+      parameter (fracwmin=0.1,vis_tol = 1.d-12)
       integer iflg,duma
       
       save dprmya
@@ -166,8 +166,8 @@ c     are in g
                mi=mid+ndummy
 c     calculate multi-phase relative perms.
                call rlperm_co2(ndummy,0,mi,rl_w(mi),
-     &              drl_ww(mi),drl_wg(mi),rl_l(mi),drl_lw(mi),
-     &              drl_lg(mi),rl_v(mi),drl_vw(mi),drl_vg(mi))
+     &           drl_ww(mi),drl_wg(mi),rl_l(mi),drl_lw(mi),drl_lg(mi),
+     &           rl_v(mi),drl_vw(mi),drl_vg(mi))
 c     calculate multi-phase cap. pres.
                call rlperm_co2(ndummy,1,mi,pcp(mi),
      &              dpcpw(mi),dpcpg(mi),pcg(mi),dpcgw(mi),dpcgg(mi),
@@ -385,7 +385,7 @@ c
                   dxsw = 0.d0
                else
                   xs = fg(mi)/(fg(mi)+fl(mi))
-                  dxsg = 1.d0/(fg(mi)+fl(mi))
+                  dxsg = 1.d0/(fg(mi)+fl(mi))+fg(mi)/(fg(mi)+fl(mi))**2
                   if (fw(mi) .eq. 1.) then
                      dxsw = 0.
                   else
@@ -538,6 +538,18 @@ c
             xco2 = xc(mi)
             xwat = xw(mi)
             xair = xa(mi)		
+               diw(mi)=0.0
+               diwp(mi)=0.0
+               diwe(mi)=0.0
+               diww(mi)=0.0
+               diwyc(mi)=0.0
+               diwya(mi)=0.0
+               div(mi)=0.0
+               divp(mi)=0.0
+               dive(mi)=0.0
+               divw(mi)=0.0
+               divyc(mi)=0.0
+               divya(mi)=0.0
             cp=denr(mi)*cpr(mi)
             por=ps(mi)
             dporpl=dporp(mi)
@@ -591,7 +603,7 @@ c
                denlw=0.d0
                denlya=0.d0
                denlyc=0.d0
-               visl=co2_prop(6*neq+mi)
+               visl=co2_prop(6*neq+mi) + vis_tol
                dvislt=co2_prop(7*neq+mi)
                dvislp=co2_prop(8*neq+mi)
                dvislya=0.d0
@@ -610,7 +622,7 @@ c
                denlw=0.d0
                denlya=0.d0
                denlyc=0.d0
-               visl=co2_prop(15*neq+mi)
+               visl=co2_prop(15*neq+mi)+ vis_tol
                dvislt=co2_prop(16*neq+mi)
                dvislp=co2_prop(17*neq+mi)
                dvislya=0.d0
@@ -625,7 +637,7 @@ c
             enw=wat_prop(5*neq+mi)
             denwp=wat_prop(6*neq+mi)
             denwt=wat_prop(7*neq+mi)
-            visw=wat_prop(8*neq+mi)
+            visw=wat_prop(8*neq+mi) + vis_tol
             dviswp=wat_prop(9*neq+mi)
             dviswt=wat_prop(10*neq+mi)
             denwyc=wat_prop(11*neq+mi)
@@ -1085,6 +1097,24 @@ c     phase information now contained in array ices
             icesd=ices(mi)
             pl=phico2(mi)
             tl=tco2(mi)
+               diw(mi)=0.0
+               diwp(mi)=0.0
+               diwe(mi)=0.0
+               diww(mi)=0.0
+               diwyc(mi)=0.0
+               diwya(mi)=0.0
+               dil(mi)=0.0
+               dilp(mi)=0.0
+               dile(mi)=0.0
+               dilw(mi)=0.0
+               dilyc(mi)=0.0
+               dilya(mi)=0.0
+               div(mi)=0.0
+               divp(mi)=0.0
+               dive(mi)=0.0
+               divw(mi)=0.0
+               divyc(mi)=0.0
+               divya(mi)=0.0           
             dtps=dtpsc(mi)
             frac_w= fw(mi)
             frac_cl=fl(mi)
@@ -1164,7 +1194,7 @@ c
             denvw=0.d0
             denvya=0.d0
             denvyc=0.d0
-            visv=co2_prop(15*neq+mi)
+            visv=co2_prop(15*neq+mi) + vis_tol
             dvisvt=co2_prop(16*neq+mi)
             dvisvp=co2_prop(17*neq+mi)
             dvisvya=0.d0
@@ -1179,7 +1209,7 @@ c
             enw=wat_prop(5*neq+mi)
             denwp=wat_prop(6*neq+mi)
             denwt=wat_prop(7*neq+mi)
-            visw=wat_prop(8*neq+mi)
+            visw=wat_prop(8*neq+mi) + vis_tol
             dviswp=wat_prop(9*neq+mi)
             dviswt=wat_prop(10*neq+mi)
             denwyc=wat_prop(11*neq+mi)
@@ -1297,19 +1327,19 @@ c gaz 09-02-2010
                dqya(mi)=dprmya*pldif
                if((kq.eq.-4).or.(kq.eq.-5)) then
                   if(icesd.eq.3) then					
-                     skco2(mi) = skco2(mi)*yco2+permsd*(fg(mi)-
+                     skco2(mi) = skco2(mi)*yco2+permsd1*(fg(mi)-
      &                    flowco2s(mi))
-                     dqw(mi) = dqw(mi)-permsd
+                     dqw(mi) = dqw(mi)-permsd1
                      dqyc(mi) = dqyc(mi)+permsd1*pldif
                   elseif(icesd.eq.2) then
-                     skco2(mi) = skco2(mi)*yco2+permsd*(fg(mi)-
+                     skco2(mi) = skco2(mi)*yco2+permsd1*(fg(mi)-
      &                    flowco2s(mi))
-                     dqt(mi) = dqt(mi)+permsd
+                     dqt(mi) = dqt(mi)+permsd1
                      dqyc(mi) = dqyc(mi)+permsd1*pldif
                   else
-                     skco2(mi) = skco2(mi)*yco2+permsd*(fl(mi)-
+                     skco2(mi) = skco2(mi)*yco2+permsd1*(fl(mi)-
      &                    flowco2s(mi))
-                     dqw(mi) = dqw(mi)-permsd
+                     dqw(mi) = dqw(mi)-permsd1
                      dqyc(mi) = dqyc(mi)+permsd1*pldif
                   endif
                endif
@@ -1837,7 +1867,7 @@ c
                denlw=0.d0
                denlya=0.d0
                denlyc=0.d0
-               visl=co2_prop(6*neq+mi)
+               visl=co2_prop(6*neq+mi) + vis_tol
                dvislt=co2_prop(7*neq+mi)
                dvislp=co2_prop(8*neq+mi)
                dvislya=0.d0
@@ -1856,7 +1886,7 @@ c
                denlw=0.d0
                denlya=0.d0
                denlyc=0.d0
-               visl=co2_prop(15*neq+mi)
+               visl=co2_prop(15*neq+mi) + vis_tol
                dvislt=co2_prop(16*neq+mi)
                dvislp=co2_prop(17*neq+mi)
                dvislya=0.d0
@@ -1871,7 +1901,7 @@ c
             enw=wat_prop(5*neq+mi)
             denwp=wat_prop(6*neq+mi)
             denwt=wat_prop(7*neq+mi)
-            visw=wat_prop(8*neq+mi)
+            visw=wat_prop(8*neq+mi) + vis_tol
             dviswp=wat_prop(9*neq+mi)
             dviswt=wat_prop(10*neq+mi)
 

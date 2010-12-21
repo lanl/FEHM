@@ -437,7 +437,9 @@ c GAZ 11/02/08
       integer             iwellp_flag
       integer             istrs_coupl, iax_b, ipini
       integer             ivboun, itert_s,itotal_s,itotals_s
-      integer             ifdm_elem
+      integer             ifdm_elem, ienrich, enri_flag
+      integer             nenrinodes
+      integer             ibcfar
       real*8              pchng, schng 
       
       integer :: irun = 0
@@ -462,7 +464,7 @@ c gaz 11-06-2007
       real*8              rho1grav,h_to_p
       real*4              vernum
 c gaz 11-29-2009   
-      real*8              p_stop,t_stop,s_stop,pa_stop
+      real*8              p_stop,t_stop,s_stop,pa_stop,s2_stop
       real*8              co2f_stop,h_stop    
 
       real*8              strd_iter, strd_rich, tol_phase

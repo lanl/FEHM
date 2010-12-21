@@ -160,7 +160,8 @@ c     call mmgetblk ("sxtot","sx_combine",ipsxtot,nr,
 c     &        2, icode)
 c     
          do i=1,nr
-            sxtot(i)=-sqrt(sx(i,1)**2+sx(i,2)**2+sx(i,3)**2)
+c            sxtot(i)=-sqrt(sx(i,1)**2+sx(i,2)**2+sx(i,3)**2)
+            sxtot(i) = sx(i,1)+sx(i,2)+sx(i,3)
             sx(i,1)=0.0
             sx(i,2)=0.0
             sx(i,3)=0.0
@@ -177,13 +178,22 @@ c     divide into directional components
                iw=istrw(jj-neqp1)
                xkb=cord(kb,1)
                ykb=cord(kb,2)
-               zkb=cord(kb,3)
-               dis2=(xkb-xi)**2+(ykb-yi)**2+(zkb-zi)**2
-               if(dis2.gt.0.0) then
+               if(icnl.eq.0) then
+                zkb=cord(kb,3)
+                dis2=(xkb-xi)**2+(ykb-yi)**2+(zkb-zi)**2
+                if(dis2.gt.0.0) then
                   area_dis=sxtot(iw)          
                   sx(iw,1)=area_dis*(xkb-xi)**2/dis2
                   sx(iw,2)=area_dis*(ykb-yi)**2/dis2
                   sx(iw,3)=area_dis*(zkb-zi)**2/dis2
+                endif                
+               else
+                dis2=(xkb-xi)**2+(ykb-yi)**2
+                 if(dis2.gt.0.0) then
+                  area_dis=sxtot(iw)          
+                  sx(iw,1)=area_dis*(xkb-xi)**2/dis2
+                  sx(iw,2)=area_dis*(ykb-yi)**2/dis2
+                endif
                endif
             enddo      
          enddo      

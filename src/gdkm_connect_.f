@@ -56,7 +56,7 @@
       implicit none
 
       integer i,icode,iflg,neqp1,i1,i2,jj,kb,kc,ii
-      integer i3,i4,kk,idir,imodel,j,kcmin
+      integer i3,i4,kk,idir,imodel,j,kcmin,iparchek
       real*8 area_i,area_kb,sx2c,dism,areat,tol_cos
       real*8 cord1,cord2,cord3,cord1j,cord2j,cord3j
       real*8 dis2,dis2i,disx2, disy2, disz2
@@ -69,12 +69,15 @@
       real*8 cord_kb_pos_neg, cord_i_pos, area_kb_pos
       real*8  cord_i_neg, area_kb_neg
       real*8 disx_max,disx_min
+      real*8 a11
       integer, allocatable :: idum1(:)
       integer, allocatable :: idump(:)
       integer, allocatable :: idumn(:)
       integer, allocatable :: nelm_temp(:)
       integer, allocatable :: istrw_temp(:)
       real*8, allocatable :: sx_12(:,:)
+      real*8, allocatable :: sx_temp(:,:)
+      parameter(iparchek = 1)
       parameter(tol_cos = 1.d-8)
 c
       neqp1 = neq +1
@@ -180,10 +183,16 @@ c assume all gdkm nodes are double sided
        ngdkm = neq-neq_primary
        nsize = nelm(neqp1)+5*ngdkm +ngdkm
        allocate(nelm_temp(nsize))
+       nelm_temp(1) = neqp1
        allocate(istrw_temp(nsize-neqp1))
        allocate(idum1(neq))  
        idum1 = 0          
        allocate(sx_12(neq,2))
+       if(isoy.eq.1) then
+        allocate(sx_temp(nr+2*neq,1))
+       else
+        allocate(sx_temp(nr+2*neq,3))
+       endif      
        ic = neq  
 c save original connectivity (and stor file pointer)      
         do i = 1,neq_primary
@@ -226,10 +235,10 @@ c primary connection is kb_pos
            endif
           else
 c kb_pos has no gdkm nodes- connect to primary nodel 
-c remember teh reciprocal relationship
+c remember the reciprocal relationship
            idump(i_pos) = kb_pos
            idumn(kb_pos) = i_pos
-           sx_12(i,1) = -(area_i)
+           sx_12(kb_pos,1) = -(area_i)
      &         /(cord(kb_pos,1)-cord_i_pos)                    
          endif    
          endif
@@ -243,8 +252,17 @@ c since i is a gdpm node  find the +x and -x last gdpm nodes
        enddo
 c now add new connection
 c will leave connection from i to kb_pos (may need it later- for stress)
-       ii = neq+1
+       ii = neqp1
        iww = nr
+       if(isoy.eq.1) then
+        sx_temp(1:nr,1) = sx(1:nr,1)
+       else
+        sx_temp(1:nr,1) = sx(1:nr,1)
+        sx_temp(1:nr,2) = sx(1:nr,2)
+        sx_temp(1:nr,3) = sx(1:nr,3)
+       endif
+c loop on all nodes  
+       idum1 = 0
        do i = 1, neq
         kbmin = neq
         kbmax = 0
@@ -254,35 +272,106 @@ c will leave connection from i to kb_pos (may need it later- for stress)
          kb = nelm(jj)
          kbmin = min(kbmin,kb)
          kbmax = max(kbmax,kb)
-         idum1(kb) = istrw(jj-neqp1)
+         if(kb.ne.i) then
+          idum1(kb) = istrw(jj-neqp1)
+         else
+          idum1(kb) = -1
+         endif
         enddo
         if(i.gt.neq_primary.and.idump(i).ne.0) then
-         ii = ii+1
-         iww = iww+1
-         nelm_temp(ii) = idump(i)
-         istrw_temp(ii-neqp1) = iww
-         sx(iww,1) = sx_12(i,1)
-        endif        
+         iww = iww + 1
+         sx_temp(iww,1) = sx_12(i,1)
+         kb = idump(i)
+         kbmin = min(kbmin,kb)
+         kbmax = max(kbmax,kb)
+         idum1(kb) = iww
+        endif   
+        if(i.lt.neq_primary.and.idumn(i).ne.0) then
+         iww = iww + 1
+         sx_temp(iww,1) = sx_12(i,1)         
+         kb =  idumn(i)
+         kbmin = min(kbmin,kb)
+         kbmax = max(kbmax,kb)
+         idum1(kb) = iww     
+        endif             
         do kb = kbmin, kbmax
          iw = idum1(kb)
+         idum1(kb) = 0
          if(iw.ne.0) then
           ii = ii +1
           nelm_temp(ii)= kb
-          istrw_temp(ii-neqp1) = iw
+          istrw_temp(ii-neqp1) = max(iw,0)
           if(kb.eq.i) nelmdg(i) = ii
          endif
         enddo
-        if(i.lt.neq_primary.and.idump(i).ne.0) then
-         ii = ii+1
-         iww = iww+1
-         nelm_temp(ii) = idump(i)
-         istrw_temp(ii-neqp1) = iww
-         sx(iww,1) = sx_12(i,1)         
-        endif
+        nelm_temp(i+1) = ii
        enddo 
-c copy nelm_temp and            
+c copy nelm_temp to nelm  
+       deallocate(sx,nelm,istrw) 
+       if(isoy.eq.1)then
+        allocate(sx(iww,1))
+       else
+        allocate(sx(iww,3))
+       endif
+       allocate(istrw(ii-neqp1))
+       allocate(nelm(ii))
+       if(isoy.eq.1) then
+        sx(1:iww,1) = sx_temp(1:iww,1)
+       else
+        sx(1:nr,1) = sx_temp(1:nr,1)
+        sx(1:nr,2) = sx_temp(1:nr,2)
+        sx(1:nr,3) = sx_temp(1:nr,3)
+        sx(nr+1:iww,1) = 3.*sx_temp(nr+1:iww,1)
+        sx(nr+1:iww,2) = 0.0
+        sx(nr+1:iww,2) = 0.0
+       endif
+       nelm(1:ii) = nelm_temp(1:ii)
+       istrw(1:ii-neqp1) = istrw_temp(1:ii-neqp1)
+       deallocate(idump,idumn,nelm_temp,istrw_temp,sx_temp)       
+      neqp1=neq+1
+c test of coefficients
+       if(iparchek.eq.1) then
+       write(ierr,*) 'fe coef. neighbors'
+       write(ierr,*)
+       do i = 1,neq
+        write(ierr,*)' vol node ', i,' = ', sx1(i)
+        i1 = nelm(i)+1
+        i2 = nelmdg(i)-1
+        do j = i1,i2
+         kb = nelm(j)
+         i3 = nelmdg(kb)+1
+         i4 = nelm(kb+1)
+         do jj = i3,i4
+         if(nelm(jj).eq.i) then
+          iw = istrw(jj-neqp1)
+          if(iw.gt.0) then
+           a11 = sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz)
+          else
+           a11 = 0.0
+          endif
+          write(ierr,355)i,kb,iw,a11
+          go to 899
+         endif
+        enddo
+899     continue         
+       enddo        
+        i1 = nelmdg(i)+1
+        i2 = nelm(i+1)        
+        do j = i1,i2
+         kb = nelm(j)
+         iw = istrw(j-neqp1)
+          if(iw.gt.0) then
+           a11 = sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz)
+          else
+           a11 = 0.0
+          endif
+         write(ierr,355)i,kb,iw,a11
+        enddo        
+       enddo   
+355   format(i6,1x,i6,1x,i6,1x,f12.3)        
+       stop
+       endif   
        endif 
-       deallocate(idump,idumn,nelm_temp,istrw_temp)
       else if(iflg.eq.-1) then    
        deallocate(iconn_gdkm)
       endif

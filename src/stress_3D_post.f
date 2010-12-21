@@ -309,7 +309,7 @@ c recall geometric integrals, calculated in gencof.
 c might be 7 8 9 gaz 11-2-2006
       sisjx=sxs(iws,7)
       sisjy=sxs(iws,8)
-      sisjz=-sxs(iws,9)
+      sisjz=sxs(iws,9)
 c average material properties                     
             e1kb = e1(kb)
             e2kb = e2(kb)
@@ -317,6 +317,9 @@ c average material properties
             e1bar=2.*e1i*e1kb/(e1i+e1kb + dis_tol)
             e2bar=2.*e2i*e2kb/(e2i+e2kb + dis_tol)
             e3bar=2.*e3i*e3kb/(e3i+e3kb + dis_tol)
+c            e1bar = 0.5*(e1i+e1kb)
+c            e2bar = 0.5*(e2i+e2kb)
+c            e3bar = 0.5*(e3i+e3kb)
 c thermal conductivity
 c            alpkb=alp(kb)
 c            alphab=2.*alpi*alpkb/(alpi+alpkb + dis_tol)

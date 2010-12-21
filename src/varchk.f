@@ -419,7 +419,7 @@ C**********************************************************************
       parameter(eosmg=1.0001)
       parameter(eosml=0.99)
       parameter(eostol=0.0001)
-      parameter(stepl=0.9)
+      parameter(stepl=0.95)
       parameter(pcimin=0.0)
       parameter(phase_mult=1.00)
       parameter(phase_sat=1.0d-9)
@@ -510,20 +510,24 @@ c     change to 2-phase
                   if(tl.ge.tboil*phase_mult.
      &				and.days.ge.time_ieos(ij)) then
                      ieosdc=2
-                     s(ij)=eosml
+c                     s(ij)=eosml
+                     s(ij)=1.                    
                      t(ij)=tboil
                      time_ieos(ij) = days + time_ch
+c                     call phase_balance_ctr(1,ij,phi(ij),t(ij),s(ij))
                   endif
 c
                elseif(ieosd.eq.2) then
 c
 c     2-phase conditions
 c
-                  if(sl.ge.1..and.days.ge.time_ieos(ij)) then
+                  if(sl.gt.1..and.days.ge.time_ieos(ij)) then
 c     change to liquid only conditions
                      ieosdc=1
+c                     t(ij)=psatl(pl,pcp(ij),dpcef(ij),
+c     2                    dtsatp,dpsats,1)*eosml
                      t(ij)=psatl(pl,pcp(ij),dpcef(ij),
-     2                    dtsatp,dpsats,1)*eosml
+     2                    dtsatp,dpsats,1)     
                      s(ij)=1.0
                      time_ieos(ij) = days + time_ch
                   elseif(s(ij).le.0.0.and.days.ge.time_ieos(ij)) then
@@ -779,8 +783,9 @@ c     make corrections for solid-liquid-gas mixture
 c     
             call icectr(2,ndummy)
 c RJP 04/10/07 added CO2 part
-         else if(icarb.eq.1) then
-            call icectrco2(2,ndummy)
+c this is now in bnswer 111410 (gaz)
+c         else if(icarb.eq.1) then
+c            call icectrco2(2,ndummy)
          endif
 c
       endif
