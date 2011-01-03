@@ -66,6 +66,30 @@ c s kelkar 12/6/09 axisymmetric anisotropy
         real*8, allocatable ::  e4(:)
         real*8, allocatable ::  ezz(:)
         real*8, allocatable ::  shearmod_t(:)
+
+c......................................
+c sai - variables needed for plasticity
+       integer iPlastic, initPlastic, assemblePlastic
+       integer NumPlasticModels
+
+       integer, allocatable :: row(:,:,:), col(:,:,:)
+ 
+       integer, allocatable::  plasticModel(:)
+       integer, allocatable::  modelNumber(:)
+
+       real*8, allocatable ::  plasticParam1(:)
+       real*8, allocatable ::  plasticParam2(:)
+       
+       real*8, allocatable ::  yield_stress(:)
+       real*8, allocatable ::  hardening(:)
+ 
+       real*8, allocatable ::  strain_xx(:)
+       real*8, allocatable ::  strain_yy(:)
+       real*8, allocatable ::  strain_zz(:)
+       real*8, allocatable ::  strain_xy(:)
+       real*8, allocatable ::  strain_yz(:)
+       real*8, allocatable ::  strain_zx(:)
+ 
 c......................................
 c k yoshioka 3/2/10 orthotropy
       logical stress_orthotropy

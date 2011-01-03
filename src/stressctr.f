@@ -44,7 +44,8 @@
       use davidi
       use comsi
       use comsplitts 
-      
+      use comfem
+ 
       implicit none
 
       integer iflg,i,ndummy,md,j,k,isstr_temp, neqp1
@@ -92,7 +93,7 @@
        integer jmia,mdkb
        integer iws, max_zone_number
        real*8 sjsix,sjsiy,sjsiz,alpkb,alphab,alpi
-       real*8 bulkkb,bulki,bulkb,tdumt,pdumt,elev
+       real*8 bulkkb,bulki,bulkb,tdumt,pdumt,elev,sq3
 	 real*8 termt, termp, bulk_mod
 	 real*8 grav_save, sdepth, gdepth
 	 character*24 hist_str
@@ -108,6 +109,9 @@
       real*8 dvol_strainu_i, dvol_strainv_i, dvol_strainw_i
       real*8 strx,strxgrad 
       integer open_file
+
+      real*8, allocatable ::  modulus(:), nu(:)
+      integer itmp,el
             
 	parameter (area_tol = 1.d-18)
 	parameter(dis_tol=1.d-12)
@@ -150,6 +154,13 @@ c      allocate (nvfcl(n0))
 
       allocate (disp(n0,3))
       allocate (forc(n0,3))
+
+      allocate(strain_xx(n0))
+      allocate(strain_yy(n0))
+      allocate(strain_zz(n0))
+      allocate(strain_xy(n0))
+      allocate(strain_yz(n0))
+      allocate(strain_zx(n0))
 
       allocate (vol_strain(n0))
 	allocate (vol_temp(n0))
@@ -456,8 +467,8 @@ c set default
 	          default(1) = 1
 	          igroup = 1
 	          call initdata2( inpt, ischk, n0, narrays,
-	2           itype, default, macroread(8), macro, igroup, ireturn,
-	3           i4_1=ispm(1:n0))	        
+     2           itype, default, macroread(8), macro, igroup, ireturn,
+     3           i4_1=ispm(1:n0))	        
 	          
 	          
 c     ****** end of input loop
@@ -487,6 +498,111 @@ c if they exist (from restart file)
 c
          ipini = 1
                
+        else if(macro1.eq.'fem       ') then
+
+          ifem = 1
+
+          ! Copy information about elements from nelm to elnode
+          allocate(elnode(nei, ns))
+          do i = 1,nei
+            do j = 1,ns
+              elnode(i, j) = nelm((i-1)*ns + j)
+            enddo
+          enddo
+
+          ! gauss-point information
+          if((icnl.eq.0) .and. (ns.eq.8)) then
+            numgausspoints = 8
+            allocate(gpcord(numgausspoints, 3))
+            allocate(gpweight(numgausspoints))
+            allocate(detJ(nei, numgausspoints))
+            allocate(Psi(nei, numgausspoints, ns))
+            allocate(dPsidX(nei, numgausspoints, ns))
+            allocate(dPsidY(nei, numgausspoints, ns))
+            allocate(dPsidZ(nei, numgausspoints, ns))
+            allocate(fem_stress(nei, numgausspoints, 6))
+            allocate(fem_strain(nei, numgausspoints, 6))
+            allocate(iPsi(ns, ns))
+
+            fem_stress = 0.0d0
+            fem_strain = 0.0d0
+
+            sq3 = 1.0d0/sqrt(3.0d0)
+            gpcord(1,1) = -sq3
+            gpcord(1,2) = -sq3
+            gpcord(1,3) = -sq3
+            gpweight(1) = 1.0d0
+
+            gpcord(2,1) =  sq3
+            gpcord(2,2) = -sq3
+            gpcord(2,3) = -sq3
+            gpweight(2) = 1.0d0
+
+            gpcord(3,1) =  sq3
+            gpcord(3,2) =  sq3
+            gpcord(3,3) = -sq3
+            gpweight(3) = 1.0d0
+
+            gpcord(4,1) = -sq3
+            gpcord(4,2) =  sq3
+            gpcord(4,3) = -sq3
+            gpweight(4) = 1.0d0
+
+            gpcord(5,1) = -sq3
+            gpcord(5,2) = -sq3
+            gpcord(5,3) =  sq3
+            gpweight(5) = 1.0d0
+
+            gpcord(6,1) =  sq3
+            gpcord(6,2) = -sq3
+            gpcord(6,3) =  sq3
+            gpweight(6) = 1.0d0
+
+            gpcord(7,1) =  sq3
+            gpcord(7,2) =  sq3
+            gpcord(7,3) =  sq3
+            gpweight(7) = 1.0d0
+
+            gpcord(8,1) = -sq3
+            gpcord(8,2) =  sq3
+            gpcord(8,3) =  sq3
+            gpweight(8) = 1.0d0
+
+            call fem_shapefunctions_3r()
+
+          else if((icnl.ne.0) .and. (ns.eq.4)) then
+            numgausspoints = 4
+            allocate(gpcord(numgausspoints, 2))
+            allocate(gpweight(numgausspoints))
+            allocate(detJ(nei, numgausspoints))
+            allocate(Psi(nei, numgausspoints, ns))
+            allocate(dPsidX(nei, numgausspoints, ns))
+            allocate(dPsidY(nei, numgausspoints, ns))
+            allocate(dPsidZ(nei, numgausspoints, ns))
+            allocate(fem_stress(nei, numgausspoints, 3))
+            allocate(fem_strain(nei, numgausspoints, 3))
+
+            fem_stress = 0.0d0
+            fem_strain = 0.0d0
+
+            gpcord(1,1) = -sq3
+            gpcord(1,2) = -sq3
+            gpweight(1) = 1.0d0
+
+            gpcord(2,1) =  sq3
+            gpcord(2,2) = -sq3
+            gpweight(2) = 1.0d0
+
+            gpcord(3,1) =  sq3
+            gpcord(3,2) =  sq3
+            gpweight(3) = 1.0d0
+
+            gpcord(4,1) = -sq3
+            gpcord(4,2) =  sq3
+            gpweight(4) = 1.0d0
+
+          endif
+
         else if(macro1.eq.'stressboun') then
          ilithod = 0
          ilithgrad = 0	  
@@ -662,6 +778,65 @@ c    multiplier for lithostatic load
 	    call initdata2( inpt, ischk, n0, narrays,
      &        itype, default, macroread(8), macro, igroup, ireturn,
      &        r8_1 = elastic_mod(1:n0),r8_2 = poisson(1:n0))
+        else if(macro1.eq.'plastic   ') then
+
+         iPlastic = 1
+         ! Define the different flags for the plasticctr subroutine
+         initPlastic = 1
+         assemblePlastic = 2
+         call plasticctr(initPlastic)
+
+         read(inpt,*) NumPlasticModels
+         write(iout,*) 'Number of plastic models being used : ',
+     &                  NumPlasticModels
+         if(.not.allocated(plasticModel)) then
+           allocate(plasticModel(1:NumPlasticModels))
+           allocate(modulus(1:NumPlasticModels))
+           allocate(nu(1:NumPlasticModels))
+           allocate(plasticParam1(1:NumPlasticModels))
+           allocate(plasticParam2(1:NumPlasticModels))
+         endif
+         
+         if(.not.allocated(modelNumber)) then
+           allocate(modelNumber(1:n0))
+         endif
+
+         i = 0
+         j = 0
+         ex = .false.
+         do i=1,NumPlasticModels
+           read(inpt,*) itmp
+           backspace inpt
+           
+           if(itmp.eq.1) then
+             ! Isotropic, linear elastic solid
+             read(inpt,*) plasticModel(i), modulus(i), nu(i)
+           else if (itmp.eq.2) then                          
+             ! von-Mises plasticity model
+             ! plasticParam1 = yield stress
+             ! plasticParam2 = hardening parameter
+             read(inpt,*) plasticModel(i), modulus(i), nu(i),
+     &       plasticParam1(i), plasticParam2(i)
+           endif
+           
+           write(iout,*) 'Model number ',i,' of ', NumPlasticModels, 
+     &     ' is plastic model ', plasticModel(i)
+         end do
+c set default
+         modelNumber = 1
+         narrays = 1
+         itype(1) = 4
+         default(1) = 1
+         igroup = 1
+         call initdata2( inpt, ischk, n0, narrays,
+     &    itype, default, macroread(8), macro, igroup, ireturn,
+     &    i4_1=modelNumber(1:n0))
+
+         do i=1,n0
+           elastic_mod(i) = modulus(modelNumber(i))
+           poisson(i) = nu(modelNumber(i))
+         enddo
+
         else if(macro1.eq.'biot     ') then
 
          igroup = 1
@@ -1748,11 +1923,15 @@ c	  vol_strain0 = vol_strain
 c
 c calculate stresses (now improved at the cost of more storage gaz - 111106)
 c    
-      if(icnl.eq.0) then 
-c 3D  
-	do i = 1,neq
-	 call stress_3D_post(i)
-	enddo
+      if(icnl.eq.0) then
+c 3D
+        if(ifem.eq.1) then
+          call stress_3D_post_fem()
+        else
+          do i = 1,neq
+           call stress_3D_post(i)
+          enddo
+        endif
       else
 c 2D
 	do i = 1,neq

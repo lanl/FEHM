@@ -389,8 +389,10 @@ c
       use combi
       use comdti
       use comai
-	use comsi
-	use comwt
+      use comsi
+      use comwt
+      use comfem
+
       implicit none
 
       real*8, allocatable :: sto5(:,:)
@@ -434,24 +436,25 @@ c  zero out arrays
 
 c
       a=0.0d0
-c
 
-      do  id=1,neq
-c     
-c     decide on equation type
-c              
-         if(icnl.eq.0) then
-	       call geneq_stress_uncoupled_3D(id)   
-	   else
-	     write(*,*) 'Stopping in gensl_stress_3D (icnl ne 0)'
-		 stop
-	   endif	    
-      enddo
-
+      if(ifem .eq. 1) then
+          call geneq_stress_fem_3D()
+      else
+        do  id=1,neq
+          if(icnl.eq.0) then
+               call geneq_stress_uncoupled_3D(id)
+          else
+             write(*,*) 'Stopping in gensl_stress_3D (icnl ne 0)'
+             stop
+          endif 
+        enddo
+      endif
+      
 c
 c apply boundary conditions
 c
       call stress_boun3(1,0)
+
 c
 c
 c write our AX=B for testing
