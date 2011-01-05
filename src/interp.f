@@ -63,7 +63,7 @@
       use compfrac      
       implicit none
 
-      real*8 par1v, par2v, par3v, concv, timev
+      real*8 par1v, par2v, par3v, concv, timev, interp_bilin
       real*8 timec(8), dltime, ftime, interp2, interp4, interp8
       integer fm, ilow, ihigh, jlow, jhigh, klow, khigh
       integer ith, cur_node
@@ -261,9 +261,15 @@ C Find time values
                timec(2) = ftime (ilow, jhigh, klow, fm, concv)
                timec(3) = ftime (ihigh, jlow, klow, fm, concv)
                timec(4) = ftime (ihigh, jhigh, klow, fm, concv)
-               dltime = interp4 (param1(ilow), param1(ihigh), par1v,
-     .              param2(jlow), param2(jhigh), par2v, 
-     .              timec(1), timec(2), timec(3), timec(4))
+               if (curve_structure .eq. 0) then
+                  dltime = interp_bilin (param1(ilow), param1(ihigh), 
+     .                 par1v, param2(jlow), param2(jhigh), par2v, 
+     .                 timec(1), timec(2), timec(3), timec(4))
+               else
+                  dltime = interp4 (param1(ilow), param1(ihigh), par1v,
+     .                 param2(jlow), param2(jhigh), par2v, 
+     .                 timec(1), timec(2), timec(3), timec(4))
+               end if
                if(numparams.le.2) then
                   timev = 10.0 ** dltime 
                else

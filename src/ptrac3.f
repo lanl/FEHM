@@ -880,6 +880,15 @@ c
 
       if (iprto .eq. -1) then
          if(upcoming_node.ne.current_node) then
+            if (current_node .eq. lastnode(np1)) then
+! We shouldn't be here because we should have moved somewhere else during the previous step
+               write (ierr, *) 
+     &              'Particle exiting same node as last output'
+               write (ierr, 9002)part_id(np1,1),ttpo(np1),lastnode(np1),
+     &              xo(np1), yo(np1), zo(np1)
+               write (ierr, 9002) part_id(np1,1),sptr_time,current_node,
+     &              xcoordw, ycoordw, zcoordw
+            end if
             if (xyz_flag) then
                write(isptr2,9002) part_id(np1,1),sptr_time,current_node,
      &              xcoordw, ycoordw, zcoordw    
@@ -892,6 +901,7 @@ c
             xo(np1) = xcoordw
             yo(np1) = ycoordw
             zo(np1) = zcoordw
+            lastnode(np1) = current_node
             call flush (isptr2)
          else if (path_done .and. xyz_flag) then
             write(isptr2,9002) part_id(np1,1),sptr_time,current_node,
@@ -911,6 +921,7 @@ c
             xo(np1) = xcoordw
             yo(np1) = ycoordw
             zo(np1) = zcoordw
+            lastnode(np1) = current_node
             call flush (isptr2)
          else if (path_done .and. xyz_flag) then
                write(isptr2) part_id(np1,1),sptr_time,current_node,

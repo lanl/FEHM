@@ -140,7 +140,7 @@ c     Reflect particle forward in x direction
                   else
                      done = .true.
                   end if
-                  if(irray(ijkv(ipart),0).lt.0) done=.true.
+c                  if(irray(ijkv(ipart),0).lt.0) done=.true.
                   
 c     Internal subroutine to determine if particle has previously
 c     or just now reached a btc zone
