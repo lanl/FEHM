@@ -26,6 +26,8 @@ avs_io.o: avsio.o comai.o combi.o comchem.o comdi.o comdti.o commeth.o comriv.o
 avs_io.o: comrxni.o comwt.o comxi.o davidi.o
 avs_write_cord.o: comai.o
 avs_write_struc.o: comai.o
+bc_far_ctr.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o comfi.o
+bc_far_ctr.o: comflow.o comgi.o comii.o comji.o comki.o comxi.o davidi.o
 bcon.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comgi.o comsplitts.o
 bcon.o: davidi.o
 bnswer.o: comai.o combi.o comco2.o comdi.o comdti.o comei.o comgi.o comsi.o
@@ -64,6 +66,8 @@ co2h2o_combine.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o
 co2h2o_combine.o: comfi.o comgi.o comhi.o davidi.o
 coeffc.o: comai.o
 compute_exit_new.o: comai.o combi.o comdi.o comflow.o comsk.o comsptr.o
+compute_strains.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+compute_strains.o: comflow.o comgi.o comji.o comsi.o davidi.o
 concadiff.o: comai.o
 concen.o: comai.o combi.o comci.o comdi.o comdti.o comgi.o compart.o
 coneq1.o: comai.o combi.o comci.o comco2.o comcouple.o comdi.o comdti.o comei.o
@@ -95,7 +99,6 @@ data.o: comflow.o comgi.o comhi.o comii.o comji.o compart.o comrtd.o comrxni.o
 data.o: comsplitts.o comwt.o comzone.o davidi.o
 datchk.o: comai.o combi.o comdi.o comdti.o comfi.o comii.o compart.o comxi.o
 datchk.o: davidi.o
-dated.o: comai.o
 daycrl.o: comai.o combi.o comci.o comdi.o comdti.o comgi.o compart.o
 daycrl.o: comsplitts.o davidi.o
 diagnostics.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comgi.o
@@ -138,6 +141,12 @@ dvacalc.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 dvacalc.o: comhi.o davidi.o
 eflxz.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comflow.o comji.o
 eflxz.o: davidi.o
+elastic_stiffness.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+elastic_stiffness.o: comflow.o comgi.o comji.o comsi.o davidi.o
+elastic_stress_update.o: comai.o combi.o comci.o comdi.o comdti.o comei.o
+elastic_stress_update.o: comfi.o comflow.o comgi.o comji.o comsi.o davidi.o
+enrich_ctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+enrich_ctr.o: comflow.o comgi.o comii.o comji.o comki.o comxi.o davidi.o
 enthp.o: comai.o combi.o comdi.o comdti.o comfi.o comii.o
 evaporation.o: comai.o combi.o comdi.o comevap.o
 explicit.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
@@ -147,6 +156,16 @@ fd_calc_heat.o: davidi.o
 fehmn.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o comevap.o
 fehmn.o: comfi.o comflow.o compart.o comriv.o comrtd.o comrxni.o comsi.o
 fehmn.o: comsk.o comsplitts.o comsptr.o comwt.o comxi.o davidi.o interpolate.o
+fem_elastic_stiffness.o: comai.o comfem.o comsi.o
+fem_elastic_stress_update.o: comai.o comfem.o comsi.o
+fem_material_stiffness.o: comai.o comfem.o comsi.o
+fem_material_stress_update.o: comai.o comfem.o comsi.o
+fem_shapefunctions_3r.o: comai.o combi.o comfem.o
+fem_update_stress.o: comai.o comdi.o comfem.o comsi.o
+fem_vonMises_stiffness.o: comai.o combi.o comci.o comdi.o comdti.o comei.o
+fem_vonMises_stiffness.o: comfem.o comfi.o comflow.o comgi.o comji.o comsi.o
+fem_vonMises_stiffness.o: davidi.o
+fem_vonMises_stress_update.o: comai.o comfem.o comsi.o
 fimpf.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o davidi.o
 find_closest_curve.o: comai.o compfrac.o
 find_v_3lsq.o: comsptr.o
@@ -221,6 +240,8 @@ geneq_hyd_equil.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 geneq_hyd_equil.o: comflow.o comgi.o comhi.o comji.o commeth.o davidi.o
 geneq_meth.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 geneq_meth.o: comflow.o comgi.o comhi.o comji.o commeth.o davidi.o
+geneq_stress_fem_3D.o: comai.o combi.o comdi.o comei.o comfem.o comgi.o comsi.o
+geneq_stress_fem_3D.o: davidi.o
 geneq_stress_uncoupled_2D.o: comai.o combi.o comci.o comdi.o comdti.o comei.o
 geneq_stress_uncoupled_2D.o: comfi.o comflow.o comgi.o comji.o comsi.o davidi.o
 geneq_stress_uncoupled_2D_FEM_rad.o: comai.o combi.o comci.o comdi.o comdti.o
@@ -257,7 +278,7 @@ gensl4.o: comhi.o davidi.o
 gensl_stress_2D.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o
 gensl_stress_2D.o: comfi.o comgi.o comhi.o comsi.o comwt.o davidi.o
 gensl_stress_3D.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o
-gensl_stress_3D.o: comfi.o comgi.o comhi.o comsi.o comwt.o davidi.o
+gensl_stress_3D.o: comfem.o comfi.o comgi.o comhi.o comsi.o comwt.o davidi.o
 gensl_stress_coupled_3D.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o
 gensl_stress_coupled_3D.o: comei.o comfi.o comgi.o comhi.o comsi.o comwt.o
 gensl_stress_coupled_3D.o: davidi.o
@@ -345,6 +366,10 @@ load_omr_flux_array.o: comsk.o comsptr.o davidi.o
 loadpcnsk.o: comai.o combi.o comdi.o comdti.o compart.o
 massflow.o: comai.o combi.o comci.o comdi.o comdti.o comflow.o compart.o
 massflow.o: davidi.o
+material_stiffness.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+material_stiffness.o: comflow.o comgi.o comji.o comsi.o davidi.o
+material_stress_update.o: comai.o combi.o comci.o comdi.o comdti.o comei.o
+material_stress_update.o: comfi.o comflow.o comgi.o comji.o comsi.o davidi.o
 mdnodes.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 mdnodes.o: davidi.o
 methh2o_combine.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
@@ -357,8 +382,9 @@ new_loc_omr.o: comai.o combi.o comdi.o comsk.o comsptr.o
 node_midedge_box_size.o: combi.o
 normal.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 normal.o: comhi.o davidi.o
-nr_stop_ctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
-nr_stop_ctr.o: comflow.o comgi.o comii.o comji.o comki.o comxi.o davidi.o
+nr_stop_ctr.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o
+nr_stop_ctr.o: comfi.o comflow.o comgi.o comii.o comji.o comki.o comxi.o
+nr_stop_ctr.o: davidi.o
 open_file.o: comai.o
 outbnd.o: comai.o combi.o comco2.o comdi.o comdti.o comfi.o comii.o commeth.o
 outbnd.o: davidi.o
@@ -369,14 +395,18 @@ part_track.o: comsptr.o davidi.o
 peint.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comii.o
 pest.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
 pest.o: comgi.o comji.o comxi.o davidi.o
+phase_balance_ctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+phase_balance_ctr.o: comflow.o comgi.o comii.o comji.o comki.o comrxni.o
+phase_balance_ctr.o: comxi.o davidi.o
+plasticctr.o: comai.o comsi.o
 plot.o: comai.o combi.o comco2.o comdi.o comdti.o comfi.o comii.o comwt.o
 plot.o: davidi.o
 plot_co2.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o comfi.o
 plot_co2.o: comhi.o comki.o
 plot_hyd.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comhi.o
 plot_hyd.o: comki.o commeth.o
-plot_new.o: comai.o combi.o comco2.o comdi.o comdti.o comfi.o comii.o comsi.o
-plot_new.o: comwt.o comzone.o davidi.o
+plot_new.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comfi.o comii.o
+plot_new.o: comsi.o comwt.o comzone.o davidi.o
 plotc1.o: comai.o combi.o comchem.o comci.o comdi.o comdti.o compart.o
 plotc1.o: comrxni.o comsptr.o
 pod_derivatives.o: comai.o comci.o comdi.o comsptr.o comxi.o
@@ -471,6 +501,8 @@ stress_2D_post.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 stress_2D_post.o: comflow.o comgi.o comji.o comsi.o davidi.o
 stress_3D_post.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 stress_3D_post.o: comflow.o comgi.o comji.o comsi.o davidi.o
+stress_3D_post_fem.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfem.o
+stress_3D_post_fem.o: comfi.o comflow.o comgi.o comji.o comsi.o davidi.o
 stress_combine.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 stress_combine.o: comgi.o comhi.o comsi.o davidi.o
 stress_fluid_mech_props.o: comai.o combi.o comci.o comdi.o comdti.o comei.o
@@ -482,8 +514,9 @@ stress_perm.o: comii.o comji.o comki.o comsi.o comxi.o davidi.o
 stress_uncoupled.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 stress_uncoupled.o: comgi.o comii.o comki.o comsi.o comsplitts.o comxi.o
 stress_uncoupled.o: davidi.o
-stressctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
-stressctr.o: comii.o comji.o comki.o comsi.o comsplitts.o comxi.o davidi.o
+stressctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfem.o comfi.o
+stressctr.o: comgi.o comii.o comji.o comki.o comsi.o comsplitts.o comxi.o
+stressctr.o: davidi.o
 structured.o: comai.o combi.o comdi.o comdti.o comxi.o
 subdivide_rtd.o: comrtd.o
 submodel_bc.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
@@ -541,6 +574,8 @@ vg_regions.o: comai.o comdi.o comdti.o
 vgcap_fit2.o: comai.o comrlp.o
 vgcap_inv_calc.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 vgcap_inv_calc.o: comhi.o comii.o comki.o comwt.o
+vonMises_stiffness.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+vonMises_stiffness.o: comflow.o comgi.o comji.o comsi.o davidi.o
 wellimped_ctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 wellimped_ctr.o: comflow.o comgi.o comii.o comji.o comki.o comxi.o davidi.o
 wellphysicsctr.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o
