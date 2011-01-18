@@ -40,8 +40,8 @@
       parameter(hmin = 1.d-18)
       parameter(darcyf = 1.d12)
 c     tol_l and tol_u are lower and upper cutoff saturations
-      parameter(tol_l  = 1.d-2)
-      parameter(tol_u  = 1.d-2)
+      parameter(tol_l  = 1.d-5)
+      parameter(tol_u  = 1.d-5)
       parameter(su_cut = 0.99d00)
 c      parameter(su_cut = 0.70d00)
 
@@ -266,14 +266,14 @@ c     linear forsythe(1988) model  cp=f(S)
 c     
                   pcp(mi)=cap_param(it, j + 1)*(cap_param(it, j + 2)-sw)
                   if (icarb .eq. 0) then
-                     if (pcp(mi).lt.0.0) then
+                     if (pcp(mi).le.0.0) then
                         pcp(mi) = 0.0
                         dpcef(mi) = 0.
                      else
                         dpcef(mi) = -cap_param(it, j + 1)
                      end if
                   else
-                     if(pcp(mi).lt.0.0) then
+                     if(pcp(mi).le.0.0) then
                         pcp(mi)=0.0
                         dpcpw(mi)=0.0
                      else
