@@ -1,4 +1,5 @@
-      subroutine fem_material_stress_update(i, j, gp_stress, gp_strain)
+      subroutine fem_material_stress_update(i, j, gp_stress, gp_strain,
+     &     gp_strain_mech,DSai)
       
       use comsi, only: iPlastic, plasticModel, modelNumber
       use comai, only: iout, iptty, ns
@@ -7,8 +8,11 @@
       implicit none
       integer                      :: i, j
       real*8,  dimension(6)        :: gp_stress, gp_strain
+      real*8,  dimension(6)        :: gp_strain_mech
+      real*8 xgp,ygp,zgp
+      real*8,  dimension(6, 6)     :: DSai
 
-      integer                      :: itmp, iModel, k
+      integer                      :: itmp, iModel, k,i1
 
       if(iPlastic.eq.0) then
         write(iout,*) '***ERROR : material stress update routine called 

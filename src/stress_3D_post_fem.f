@@ -156,7 +156,7 @@ c      integer, allocatable ::   itstress(:)
       integer    :: node(8)
       real*8 val
       real*8 :: Dmat(6,6), sol(8)
-      real*8 :: intsig(6), cvol(neq)
+      real*8 :: intsig(6), intstrain(6), cvol(neq)
       real*8, allocatable :: kmat(:)
       real*8 deltaT, deltaP, alphadT, betadP
       real*8 kmat_gp
@@ -184,6 +184,7 @@ c      integer, allocatable ::   itstress(:)
           do j=1,numgausspoints
             fac = detJ(el, j)*gpweight(j)
             intsig = intsig + fem_stress(el, j, :)*fac
+            intstrain = intstrain + fem_strain(el, j, :)*fac
             onedV = onedV + fac
           enddo
 
@@ -195,6 +196,14 @@ c      integer, allocatable ::   itstress(:)
             str_xy(node(k)) = str_xy(node(k)) + intsig(4)
             str_yz(node(k)) = str_yz(node(k)) + intsig(5)
             str_xz(node(k)) = str_xz(node(k)) + intsig(6)
+
+            strain_xx(node(k)) = strain_xx(node(k)) + intstrain(1)
+            strain_yy(node(k)) = strain_yy(node(k)) + intstrain(2)
+            strain_zz(node(k)) = strain_zz(node(k)) + intstrain(3)
+            strain_xy(node(k)) = strain_xy(node(k)) + intstrain(4)
+            strain_yz(node(k)) = strain_yz(node(k)) + intstrain(5)
+            strain_zx(node(k)) = strain_zx(node(k)) + intstrain(6)
+
           enddo
         enddo
 
@@ -206,6 +215,13 @@ c      integer, allocatable ::   itstress(:)
         str_xy = str_xy/cvol
         str_yz = str_yz/cvol
         str_xz = str_xz/cvol
+
+        strain_xx = strain_xx/cvol
+        strain_yy = strain_yy/cvol
+        strain_zz = strain_zz/cvol
+        strain_xy = strain_xy/cvol
+        strain_yz = strain_yz/cvol
+        strain_zx = strain_zx/cvol
 
         return
       else

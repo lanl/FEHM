@@ -2177,6 +2177,17 @@ c	          else if (idumm .eq. 2 .or. idumm .eq. 4) then
                      read(locunitnum,*) idumm,(adumm,ja=1,9)         
                   else if(idumm.eq.11) then
                      read(locunitnum,*) idumm,(adumm,ja=1,3)
+                     read(locunitnum,*) idumm,(adumm,ja=1,3)
+                  else if(idumm.eq.21) then
+                     read(locunitnum,*) idumm,(adumm,ja=1,13)
+                  else if(idumm.eq.22) then
+                     read(locunitnum,*) idumm,(adumm,ja=1,10)
+                  else if(idumm.eq.222) then
+                     read(locunitnum,*) idumm,(adumm,ja=1,9)
+                  else if(idumm.eq.91) then
+c                     open(unit=97,file='debug_permmodel_91.dat')
+                     read(locunitnum,*) 
+                     read(locunitnum,*)
                   else
                      read(locunitnum,*) idumm             
                   endif

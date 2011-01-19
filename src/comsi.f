@@ -29,15 +29,23 @@
 !D2
 !***********************************************************************
 
+      integer flag_permmodel
+
       integer icycs,ipsps,iinp,minks,inst,ipchng,nnx,ihms,nvfc 
       integer nomass,noheat,noydis,localx,localy,ifrac,idof_stress
       integer ibp_stress, ibodyforce, ipermstr, initcalc, istrshis 
       integer ispmd,ipermstr1,ipermstr2,ipermstr3
       integer ipermstr4,ipermstr5,ipermstr6,ipermstr7,ipermstr8
-      integer ipermstr11
+      integer ipermstr11,ipermstr21,ipermstr22,ipermstr222
+      integer ipermstr91
       integer istresscall,ilitho,iad_strs,istresspor,idisp_rel
       integer cnum_stress, ilithgrad, permfile
       
+      integer isNonlinear, Nonlin_model_flag, flag_principal
+      integer flag_excess_shear
+
+     
+      real*8 friction_out,strength_out
       real*8 daystr,fpor,fric,wo,fwght,fupwt,fdnwt,tol_stress
       real*8 tptch,pchmin,pchmax,tchmin,tchmax,coftol,bp_stress
       real*8 bpx,bpy,bpz,tol_stress1,abs_tol_stress,bp_update
@@ -60,7 +68,7 @@
       real*8, allocatable ::  e2(:)
       real*8, allocatable ::  e3(:)
 c s kelkar 12/6/09 axisymmetric anisotropy
-      logical stress_anisotropy
+      logical stress_anisotropy_in,stress_anisotropy_use
         real*8, allocatable ::  elastic_mod_t(:)
         real*8, allocatable ::  poisson_t(:)
         real*8, allocatable ::  e4(:)
@@ -335,6 +343,19 @@ c     For Min model
       real*8 ipmd4_fx,ipmd4_br,ipmd4_bmx,ipmd4_alx,ipmd4_aly
       real*8 ipmd4_fdx,ipmd4_dmx,ipmd4_gmx,ipmd4_kc
       real*8 ipmd4_fy,ipmd4_btx,ipmd4_bty, ipmd4_fdy,ipmd4_gmy
-      
-      
+
+c s kelkar      
+      integer flag_strainout_first 
+      integer flag_strain_output, ifile_strain,n_incr
+      integer nentries, nentries_young
+      real*8, allocatable ::  e_ini(:), poisson_ini(:)
+      real*8, allocatable ::   dNuedt(:)
+      real*8, allocatable ::  dEdt(:)
+      real*8, allocatable ::  xtan_min(:)        
+      real*8, allocatable ::  disp0(:,:)
+      real*8, allocatable ::  k_strs91(:,:)
+      real*8, allocatable ::  e_temp91(:,:)
+
+      real*8 knx_stressperm, kny_stressperm,knz_stressperm
+
       end module comsi

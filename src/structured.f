@@ -75,6 +75,9 @@ c     modflow only input variables
       character*120 fdm_name
       character*132 modchar      
 c     
+      integer mbabs
+      real*8 xtemp
+
       real*8 delx, dely, delz
       real*8 afaczp, afaczpl
       real*8 afacyp, afacypl
@@ -270,15 +273,19 @@ c     read in other data if not a modflow file
                if (null1(wdd1)) go to 25 
                backspace incoor
                if(keyword.eq.'poin') then
-                  read (incoor, *) mb, x(iabs(mb))
+                  read (incoor, *) mb, xtemp
+                  mbabs=iabs(mb)
+                  x(mbabs)=xtemp
                   if (mb .lt. 0) 
-     &                 call interpolate_structured(x,iabs(mb), mc)
+     &                 call interpolate_structured(x,mbabs, mc)
                else
-                  read (incoor, *) mb, dx(iabs(mb))
+                  read (incoor, *) mb, xtemp
+                  mbabs=iabs(mb)
+                  dx(mbabs)=xtemp
                   if (mb .lt. 0) 
-     &                 call interpolate_structured(dx,iabs(mb), mc)
+     &                 call interpolate_structured(dx,mbabs, mc)
                endif
-               mc = iabs(mb)
+               mc = mbabs
             enddo        
  25         continue
             do i = 1,ny+1
@@ -286,15 +293,19 @@ c     read in other data if not a modflow file
                if (null1(wdd1)) go to 26 
                backspace incoor
                if(keyword.eq.'poin') then
-                  read (incoor, *) mb, y(iabs(mb))
+                  read (incoor, *) mb, xtemp
+                  mbabs=iabs(mb)
+                  y(mbabs)=xtemp
                   if (mb .lt. 0) 
-     &                 call interpolate_structured(y,iabs(mb), mc)
+     &                 call interpolate_structured(y,mbabs, mc)
                else
-                  read (incoor, *) mb, dy(iabs(mb))
+                  read (incoor, *) mb, xtemp
+                  mbabs=iabs(mb)
+                  dy(mbabs)=xtemp
                   if (mb .lt. 0) 
-     &                 call interpolate_structured(dy,iabs(mb), mc)
+     &                 call interpolate_structured(dy,mbabs, mc)
                endif
-               mc = iabs(mb)
+               mc = mbabs
             enddo        
  26         continue
             if(keyword.eq.'vart') then
@@ -303,10 +314,12 @@ c     read in other data if not a modflow file
                   read (incoor, '(a80)') wdd1
                   if (null1(wdd1)) go to 28 
                   backspace incoor
-                  read (incoor, *) mb, thic(iabs(mb))
+                  read (incoor, *) mb, xtemp
+                  mbabs=iabs(mb)
+                  thic(mbabs)=xtemp
                   if (mb .lt. 0) 
-     &                 call interpolate_structured(thic,iabs(mb), mc)
-                  mc = iabs(mb)
+     &                 call interpolate_structured(thic,mbabs, mc)
+                  mc = mbabs
                enddo
  28            continue
             else if(keyword.eq.'varz') then
@@ -315,10 +328,12 @@ c     read in other data if not a modflow file
                   read (incoor, '(a80)') wdd1
                   if (null1(wdd1)) go to 30 
                   backspace incoor
-                  read (incoor, *) mb, thic(iabs(mb))
+                  read (incoor, *) mb, xtemp
+                  mbabs=iabs(mb)
+                  thic(mbabs)=xtemp
                   if (mb .lt. 0) 
-     &                 call interpolate_structured(thic,iabs(mb), mc)
-                  mc = iabs(mb)
+     &                 call interpolate_structured(thic,mbabs, mc)
+                  mc = mbabs
                enddo
  30            continue
                allocate(ztop(0:nxny))
@@ -326,10 +341,12 @@ c     read in other data if not a modflow file
                   read (incoor, '(a80)') wdd1
                   if (null1(wdd1)) go to 29 
                   backspace incoor
-                  read (incoor, *) mb, ztop(iabs(mb))
+                  read (incoor, *) mb, xtemp
+                  mbabs=iabs(mb)
+                  ztop(mbabs)=xtemp
                   if (mb .lt. 0) 
-     &                 call interpolate_structured(ztop,iabs(mb), mc)
-                  mc = iabs(mb)
+     &                 call interpolate_structured(ztop,mbabs, mc)
+                  mc = mbabs
                enddo
  29            continue
             else
@@ -338,15 +355,19 @@ c     read in other data if not a modflow file
                   if (null1(wdd1)) go to 27 
                   backspace incoor
                   if(keyword.eq.'poin') then
-                     read (incoor, *) mb, z(iabs(mb))
+                     read (incoor, *) mb, xtemp
+                  mbabs=iabs(mb)
+                  z(mbabs)=xtemp
                      if (mb .lt. 0) 
-     &                    call interpolate_structured(z,iabs(mb), mc)
+     &                    call interpolate_structured(z,mbabs, mc)
                   else
-                     read (incoor, *) mb, dz(iabs(mb))
+                     read (incoor, *) mb, xtemp
+                  mbabs=iabs(mb)
+                  dz(mbabs)=xtemp
                      if (mb .lt. 0) 
-     &                    call interpolate_structured(dz,iabs(mb), mc)
+     &                    call interpolate_structured(dz,mbabs, mc)
                   endif
-                  mc = iabs(mb)
+                  mc = mbabs
                enddo        
  27            continue
             endif

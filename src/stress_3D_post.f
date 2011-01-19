@@ -54,9 +54,10 @@ c
       use comdti
       use comai
       use comsi
+      use comfem
       implicit none
 
-      integer i
+      integer i, li
       integer icd
       integer ii1
       integer ii2
@@ -183,6 +184,15 @@ c
       real*8 vol,sxd,syd,tauxy,tauyz,tauzx,ctherm,biot,erat
 	real*8 epi,eti,dpd,dt,shti,shpi
 
+c s kelkar 12/11/09 axisymmetric anisotropy
+	real*8  ezzi,ezzkb,ezzbar,efacxy,efacz 
+	real*8 shtixy,shtiz,shpixy,shpiz, e4i,e4kb,e4bar
+        real*8 sheari, shearkb,shearbar,efac_ks,betat,efac_betat  
+c..................................................................
+      real*8 eigenvec(3,3),alambda(3)
+      real*8 onedV, fac
+      integer j
+
 c      integer, allocatable ::   itstress(:)
       integer iws
 
@@ -192,190 +202,456 @@ c      integer, allocatable ::   itstress(:)
       integer isl
       integer iz4m1
       integer imd,iwd    
+c.......................................
+      integer k
+      integer    :: ContrElem, el
+      integer :: node
+      real*8 val
+      real*8 :: Dmat(6,6), sol(8)
+      real*8 :: rhs1(8), rhs2(8), rhs3(8), rhs4(8), rhs5(8), rhs6(8)
+      real*8, allocatable :: kmat(:)
+      real*8 deltaT, deltaP, alphadT, betadP
+      real*8 kmat_gp
+      real*8 xdV, ydV, zdV
 
-  
+      if(ifem.eq.1) then
+        allocate(kmat(neq))
+        kmat = 0.d00
 
+        ContrElem = 0
+        str_x(i) = 0.0d0
+        str_y(i) = 0.0d0
+        str_z(i) = 0.0d0
+        str_xy(i) = 0.0d0
+        str_yz(i) = 0.0d0
+        str_xz(i) = 0.0d0
 
-c changed by avw -- entered here by seh
-      neqp1=neq+1
-      ldna=nelm(neqp1)-neqp1
-      if(i.gt.neq) then
-         nmatavw=ldna
+        strain_xx(i) = 0.0d0
+        strain_yy(i) = 0.0d0
+        strain_zz(i) = 0.0d0
+        strain_xy(i) = 0.0d0
+        strain_yz(i) = 0.0d0
+        strain_zx(i) = 0.0d0
+
+        onedV = 0.0d0
+
+        do el=1,nei
+          do k=1,ns 
+            if(elnode(el,k).eq.i) then
+              ContrElem = ContrElem + 1
+
+              do j=1,numgausspoints
+                fac = detJ(el,j)*gpweight(j)
+
+                e1bar = 0.0d0
+                e2bar = 0.0d0
+                e3bar = 0.0d0
+
+                ! Get alpha*deltaT and beta*deltaP at gausspoint
+                alphadT = 0.0d0
+                betadP  = 0.0d0
+                do li=1,ns
+                  node = elnode(el, li)
+                  deltaT = t(node) - tini(node)
+                  deltaP = phi(node) - phini(node)
+
+                  alphadT = alphadT + 
+     &                      Psi(el, j, li)*alp(node)*deltaT
+                  betadP  = betadP  +
+     &                      Psi(el, j, li)*bulk(node)*deltaP
+                  e1bar = e1bar + Psi(el, j, li)*e1(node)
+                  e2bar = e2bar + Psi(el, j, li)*e2(node)
+                  e3bar = e3bar + Psi(el, j, li)*e3(node)
+
+                enddo
+
+                if(iPlastic.eq.1) then
+                  call fem_material_stiffness(el, j, Dmat)
+                else
+                  Dmat = 0.0d0
+                  Dmat(1,1) = e1bar
+                  Dmat(1,2) = e2bar
+                  Dmat(1,3) = e2bar
+                  Dmat(2,1) = e2bar
+                  Dmat(2,2) = e1bar
+                  Dmat(2,3) = e2bar
+                  Dmat(3,1) = e2bar
+                  Dmat(3,2) = e2bar
+                  Dmat(3,3) = e1bar
+                  Dmat(4,4) = e3bar
+                  Dmat(5,5) = e3bar
+                  Dmat(6,6) = e3bar
+                endif
+                  
+                kmat_gp = (Dmat(1,1) + Dmat(1,2) + Dmat(1,3))
+                kmat(i) = kmat(i) + kmat_gp*fac
+                onedV = onedV + 1.0d0*fac
+
+                rhs1(j) = fem_stress(el, j, 1) + 
+     &                    kmat_gp*(alphadT + betadP)
+                rhs2(j) = fem_stress(el, j, 2) +
+     &                    kmat_gp*(alphadT + betadP)
+                rhs3(j) = fem_stress(el, j, 3) +
+     &                    kmat_gp*(alphadT + betadP)
+                rhs4(j) = fem_stress(el, j, 4)
+                rhs5(j) = fem_stress(el, j, 5)
+                rhs6(j) = fem_stress(el, j, 6)
+              enddo 
+
+              sol = matmul(iPsi, rhs1)
+              str_x(i) = str_x(i) + sol(k)
+              sol = matmul(iPsi, rhs2)
+              str_y(i) = str_y(i) + sol(k)
+              sol = matmul(iPsi, rhs3)
+              str_z(i) = str_z(i) + sol(k)
+              sol = matmul(iPsi, rhs4)
+              str_xy(i) = str_xy(i) + sol(k)
+              sol = matmul(iPsi, rhs5)
+              str_yz(i) = str_yz(i) + sol(k)
+              sol = matmul(iPsi, rhs6)
+              str_xz(i) = str_xz(i) + sol(k)
+
+            endif
+          enddo
+        enddo
+        
+        kmat(i) = kmat(i)/onedV
+        
+        tdumt = alp(i)*(t(i) - tini(i))
+        pdumt = bulk(i)*(phi(i) - phini(i))
+
+        str_x(i) = str_x(i)/ContrElem - kmat(i)*(tdumt + pdumt)
+        str_y(i) = str_y(i)/ContrElem - kmat(i)*(tdumt + pdumt)
+        str_z(i) = str_z(i)/ContrElem - kmat(i)*(tdumt + pdumt)
+        str_xy(i) = str_xy(i)/ContrElem
+        str_yz(i) = str_yz(i)/ContrElem
+        str_xz(i) = str_xz(i)/ContrElem
+
+!        str_x(i) = str_x(i)/onedV
+!        str_y(i) = str_y(i)/onedV
+!        str_z(i) = str_z(i)/onedV
+!        str_xy(i) = str_xy(i)/onedV
+!        str_yz(i) = str_yz(i)/onedV
+!        str_xz(i) = str_xz(i)/onedV
+
+!        strain_xx(i) = strain_xx(i)/onedV
+!        strain_yy(i) = strain_yy(i)/onedV
+!        strain_zz(i) = strain_zz(i)/onedV
+!        strain_xy(i) = strain_xy(i)/onedV
+!        strain_yz(i) = strain_yz(i)/onedV
+!        strain_zx(i) = strain_zx(i)/onedV
+
+        deallocate(kmat)
+
+c     s kelkar change signs of diagonal stress components to be 
+c     compatible with standard FEHM
+        str_x(i) = -str_x(i)
+        str_y(i) = -str_y(i)
+        str_z(i) = -str_z(i)
+
       else
-         nmatavw=0
-      endif
-      if(icons.le.abs(maxit)) then
-       grav_air=0.0
-      else
-       grav_air=grav
-      endif
-
-c
-c zero out temporary storage
-c
-c      if(.not.allocated(itstress)) then
-c       allocate(itstress(200))
-c      endif
-
-c
-c fluid and grid properties at node i
-c
-      sx1d=sx1(i)
-      vol = sx1d
-      pvii=phi(i)     
-      phii=pvii
-      ti=t(i)
-      swi=s(i)
-      e1i = e1(i)
-      e2i = e2(i)
-      e3i = e3(i)
-c recall displacements at the node i
-      dui = du(i)
-      dvi = dv(i)
-      dwi = dw(i)
-
-c reference rock density
-      roli=denr(i)
-	bforcex = 0.0d0
-	bforcey = 0.0d0
-	bforcez = 0.0d0
-c      
-c
-c form constants for i>neq
-c
-      if(i.gt.neq.and.idualp.eq.0) then
-         icd=neq
-      else
-         icd=0
-      endif
-      iz=i-icd
-c
-      iz4m1 = 4*(iz-1)+1
-c
-
-      neqp1=neq+1
-c define diagonal term for connectivity
-      jmi=nelmdg(i-icd)
-c define diagonal term for jacobian matrix 
-      jmia=jmi-neqp1
-      
-      ii1=nelm(i-icd)+1
-      ii2=nelm(i-icd+1)
-      idg=nelmdg(i-icd)-ii1+1
-      
-      iq=0
-      do jm=ii1,ii2
-	  kb=nelm(jm)+icd
-	 
-        iq=iq+1
-        it8(iq)=kb
-        itstress(iq) = istrws(jm-neqp1) 
-        	 
-      enddo
-
-      termx=0.
-      termy=0.
-      termz=0.
-      tauxy=0.
-      tauyz=0.
-      tauzx=0.
-
-
-	ctherm=alp(i)
-c  ctherm=coef of temp expansion,  biot=1./3h from biot's paper
-      biot=bulk(i)
-      erat=e2i/e1i
-      efac=3.d0*e2i+2.d0*e3i
-c stress due to temp and pore pressure changes
-      epi=efac*biot
-      eti=efac*ctherm
-      dpd=phi(i)-phini(i)
-      dt=t(i)-tini(i)
-c changed 5-25-08 gaz
-      shti=(eti*dt)
-      shpi=(epi*dpd)
-
-c
-c 3-d geometry 
-c
+c......................................
+c     changed by avw -- entered here by seh
+         neqp1=neq+1
+         ldna=nelm(neqp1)-neqp1
+         if(i.gt.neq) then
+            nmatavw=ldna
+         else
+            nmatavw=0
+         endif
+         if(icons.le.abs(maxit)) then
+            grav_air=0.0
+         else
+            grav_air=grav
+         endif
+         
+c     
+c     zero out temporary storage
+c     
+c     if(.not.allocated(itstress)) then
+c     allocate(itstress(200))
+c     endif
+         
+c     
+c     fluid and grid properties at node i
+c     
+         sx1d=sx1(i)
+         vol = sx1d
+         pvii=phi(i)     
+         phii=pvii
+         ti=t(i)
+         swi=s(i)
+c     recall displacements at the node i
+         dui = du(i)
+         dvi = dv(i)
+         dwi = dw(i)
+         
+c     reference rock density
+         roli=denr(i)
+         bforcex = 0.0d0
+         bforcey = 0.0d0
+         bforcez = 0.0d0
+c     
+c     
+c     form constants for i>neq
+c     
+         if(i.gt.neq.and.idualp.eq.0) then
+            icd=neq
+         else
+            icd=0
+         endif
+         iz=i-icd
+c     
+         iz4m1 = 4*(iz-1)+1
+c     
+         
+         neqp1=neq+1
+c     define diagonal term for connectivity
+         jmi=nelmdg(i-icd)
+c     define diagonal term for jacobian matrix 
+         jmia=jmi-neqp1
+         
+         ii1=nelm(i-icd)+1
+         ii2=nelm(i-icd+1)
+         idg=nelmdg(i-icd)-ii1+1
+         
+         iq=0
+         do jm=ii1,ii2
+            kb=nelm(jm)+icd
+            
+            iq=iq+1
+            it8(iq)=kb
+            itstress(iq) = istrws(jm-neqp1) 
+            
+         enddo
+         
+         termx=0.
+         termy=0.
+         termz=0.
+         tauxy=0.
+         tauyz=0.
+         tauzx=0.
+         
+         
+         ctherm=alp(i)
+c     ctherm=coef of temp expansion,  biot=1./3h from biot's paper
+         biot=bulk(i)
+         e1i = e1(i)
+         e2i = e2(i)
+         e3i = e3(i)
+         erat=e2i/e1i
+         dpd=phi(i)-phini(i)
+         dt=t(i)-tini(i)
+c     s kelkar 12/11/09 axisymmetric anisotropy.........................
+         if(stress_anisotropy_use) then
+            ezzi= ezz(i)
+            e4i=e4(i)
+            sheari=shearmod_t(i)
+            efacxy= (e1i+e2i+e4i)
+            efacz = 2.0d0*e4i + ezzi
+c     pore pressure terms. See Keita's notes dated 2/25/2010, Here 
+c     efacxy is defined as efacxy=3*Hp=(C11+C12+C13) and  
+c     bulk()=beta_p/3Hp or  beta_p=bulk*efacxy. Then
+c     Ks=Hp/(1-beta_p)=(efacxy/3)/(1-efacxy*bulkb). then beta_t 
+c     calculated from
+c     betat=1-Ht/Ks=1-(efacz/3)/Ks where efacz=3*Ht=(2C13+C33)
+c     also define efac_betat=betat/efacz for consistancy of notation
+            efac_ks=(efacxy/3.0)/(1.0-efacxy*biot)
+            betat=1.0-(efacz/3.0)/efac_ks
+            efac_betat=1.0/efacz-1.0/(3.0*efac_ks)
+            shtixy=efacxy*ctherm*tdumt
+            shpixy=efacxy*biot*dpd
+            shtiz=efacz*ctherm*tdumt
+            shpiz=efacz*efac_betat*dpd
+            str_x(i)=(shpixy+shtixy)
+            str_y(i)=(shpixy+shtixy)
+            str_z(i)=(shpiz+shtiz)
+c.......................................................
+         else
+            efac=3.d0*e2i+2.d0*e3i
+c     stress due to temp and pore pressure changes
+            epi=efac*biot
+            eti=efac*ctherm
+c     changed 5-25-08 gaz
+            shti=(eti*dt)
+            shpi=(epi*dpd)
+            str_x(i)=(shpi+shti)
+            str_y(i)=(shpi+shti)
+            str_z(i)=(shpi+shti)
+         endif
+         
+c     
+c     3-d geometry 
+c     
          do jm=1,iq
             kb=it8(jm)
             kz=kb-icd          
-        
+            
             iws=itstress(jm)    
-         	     
-          
-c recall geometric integrals, calculated in gencof.
-c might be 7 8 9 gaz 11-2-2006
-      sisjx=sxs(iws,7)
-      sisjy=sxs(iws,8)
-      sisjz=sxs(iws,9)
-c average material properties                     
+            
+            
+c     recall geometric integrals, calculated in gencof.
+c     might be 7 8 9 gaz 11-2-2006
+            sisjx=sxs(iws,7)
+            sisjy=sxs(iws,8)
+            sisjz=-sxs(iws,9)
+c     average material properties                     
             e1kb = e1(kb)
             e2kb = e2(kb)
             e3kb = e3(kb)
             e1bar=2.*e1i*e1kb/(e1i+e1kb + dis_tol)
             e2bar=2.*e2i*e2kb/(e2i+e2kb + dis_tol)
             e3bar=2.*e3i*e3kb/(e3i+e3kb + dis_tol)
-c            e1bar = 0.5*(e1i+e1kb)
-c            e2bar = 0.5*(e2i+e2kb)
-c            e3bar = 0.5*(e3i+e3kb)
-c thermal conductivity
-c            alpkb=alp(kb)
-c            alphab=2.*alpi*alpkb/(alpi+alpkb + dis_tol)
-c biot term
-c            bulkkb=bulk(kb)
-c            bulkb=2.*bulkkb*bulki/(bulkkb+bulki + dis_tol)
-c            efac = 3.d0*e2bar + 2.d0*e3bar
-
-c           tdumkb=t(kb)-tini(kb)
-c           pdumkb=phi(kb)-phini(kb)
-c           tdumt=0.5*(tdumkb+tdumi)
-c	     pdumt=0.5*(pdumkb+pdumi)
-c
-c           tdumx=sjsix*(tdumt*alphab+pdumt*bulkb)*efac
-c           tdumy=sjsiy*(tdumt*alphab+pdumt*bulkb)*efac
-c           tdumz=sjsiz*(tdumt*alphab+pdumt*bulkb)*efac
-c             
-c calculate stresses 
-c
-      ddx=du(kb)-dui
-      ddy=dv(kb)-dvi
-      ddz=dw(kb)-dwi
-c      
-      xx=e1bar*sisjx*ddx
-      xy=e2bar*sisjy*ddy
-      xz=e2bar*sisjz*ddz
-      yx=e2bar*sisjx*ddx
-      yy=e1bar*sisjy*ddy
-      yz=e2bar*sisjz*ddz
-      zx=e2bar*sisjx*ddx
-      zy=e2bar*sisjy*ddy
-      zz=e1bar*sisjz*ddz
-      xyx=e3bar*sisjy*ddx
-      xyy=e3bar*sisjx*ddy
-      yzy=e3bar*sisjz*ddy
-      yzz=e3bar*sisjy*ddz
-      zxx=e3bar*sisjz*ddx
-      zxz=e3bar*sisjx*ddz
-c
-      termx=termx+(xx+xy+xz)
-      termy=termy+(yx+yy+yz)
-      termz=termz+(zx+zy+zz)
-      tauxy=tauxy+xyx+xyy   
-      tauyz=tauyz+yzy+yzz
-      tauzx=tauzx+zxx+zxz 
-
-      enddo
-      str_x(i)=(shpi+shti+termx/vol)
-      str_y(i)=(shpi+shti+termy/vol)
-      str_z(i)=(shpi+shti+termz/vol)
-      str_xy(i)=tauxy/vol
-      str_yz(i)=tauyz/vol
-      str_xz(i)=tauzx/vol
-
+c     s kelkar 12/5/09 axisymmetric anisotropy.........................
+            if(stress_anisotropy_use) then
+               ezzkb = ezz(kb)
+               e4kb = e4(kb)
+               shearkb=shearmod_t(kb)
+               ezzbar= 2.*ezzi*ezzkb/(ezzi+ezzkb + dis_tol)
+               e4bar= 2.*e4i*e4kb/(e4i+e4kb + dis_tol)
+               shearbar= 2.*sheari*shearkb
+               shearbar=shearbar/(sheari+shearkb+dis_tol)
+            endif
+c     thermal conductivity
+c     alpkb=alp(kb)
+c     alphab=2.*alpi*alpkb/(alpi+alpkb + dis_tol)
+c     biot term
+c     bulkkb=bulk(kb)
+c     bulkb=2.*bulkkb*bulki/(bulkkb+bulki + dis_tol)
+c     efac = 3.d0*e2bar + 2.d0*e3bar
+            
+c     tdumkb=t(kb)-tini(kb)
+c     pdumkb=phi(kb)-phini(kb)
+c     tdumt=0.5*(tdumkb+tdumi)
+c     pdumt=0.5*(pdumkb+pdumi)
+c     
+c     tdumx=sjsix*(tdumt*alphab+pdumt*bulkb)*efac
+c     tdumy=sjsiy*(tdumt*alphab+pdumt*bulkb)*efac
+c     tdumz=sjsiz*(tdumt*alphab+pdumt*bulkb)*efac
+            
+c     calculate stresses 
+            
+            ddx=du(kb)-dui
+            ddy=dv(kb)-dvi
+            ddz=dw(kb)-dwi
+c     s kelkar 12/5/09 axisymmetric anisotropy.........................
+c     e1=c11, e2=c12=c21, e3=c66, e4=c13, and ezz=c33
+c     these goto isotropic limit when Ep=Et and Nue-p=Nue-t
+            if(stress_anisotropy_use) then
+               xx=e1bar*sisjx*ddx
+               xy=e2bar*sisjy*ddy
+               xz=e4bar*sisjz*ddz
+               yx=e2bar*sisjx*ddx
+               yy=e1bar*sisjy*ddy
+               yz=e4bar*sisjz*ddz
+               zx=e4bar*sisjx*ddx
+               zy=e4bar*sisjy*ddy
+               zz=ezzbar*sisjz*ddz
+               xyx=e3bar*sisjy*ddx
+               xyy=e3bar*sisjx*ddy
+               yzy=shearbar*sisjz*ddy
+               yzz=shearbar*sisjy*ddz
+               zxx=shearbar*sisjz*ddx
+               zxz=shearbar*sisjx*ddz
+               
+            else
+               xx=e1bar*sisjx*ddx
+               xy=e2bar*sisjy*ddy
+               xz=e2bar*sisjz*ddz
+               yx=e2bar*sisjx*ddx
+               yy=e1bar*sisjy*ddy
+               yz=e2bar*sisjz*ddz
+               zx=e2bar*sisjx*ddx
+               zy=e2bar*sisjy*ddy
+               zz=e1bar*sisjz*ddz
+               xyx=e3bar*sisjy*ddx
+               xyy=e3bar*sisjx*ddy
+               yzy=e3bar*sisjz*ddy
+               yzz=e3bar*sisjy*ddz
+               zxx=e3bar*sisjz*ddx
+               zxz=e3bar*sisjx*ddz
+            endif
+c     
+            termx=termx+(xx+xy+xz)
+            termy=termy+(yx+yy+yz)
+            termz=termz+(zx+zy+zz)
+            tauxy=tauxy+xyx+xyy
+            tauyz=tauyz+yzy+yzz
+            tauzx=tauzx+zxx+zxz 
+            
+         enddo
+         str_x(i)=(str_x(i)+termx/vol)
+         str_y(i)=(str_y(i)+termy/vol)
+         str_z(i)=(str_z(i)+termz/vol)
+         str_xy(i)=tauxy/vol
+         str_yz(i)=tauyz/vol
+         str_xz(i)=tauzx/vol
+         
+         if(flag_principal.eq.1) then
+            call principal_stress_3D(i,alambda,eigenvec)
+c     save the eigenvlaues in str_z,str)y,str_x in decreasing order
+c     str_z is the max principal stress
+            str_x(i)= alambda(1)
+            str_y(i)= alambda(2)
+            str_z(i)= alambda(3)
+c     save two direction cosins of max principal direction 
+c     in str_xz,str_yz
+            str_xz(i) = eigenvec(1,3)
+            str_yz(i) = eigenvec(2,3)
+c     save the first dir cos for the min principal direction in str_x
+c     the rest of the dir cos values can be obtained from 
+c     ortho-normality
+            str_xy(i) = eigenvec(1,1)
+         endif
+         
+      endif
       
       return
       end
+      
+c................................................................
 
+      subroutine principal_stress_3D(i,alambda,eigenvec)
 
+      use comai
+      use comsi
+
+      implicit none
+      integer i
+      real*8 AMAT(3,3), eigenvec(3,3),alambda(3)
+      real*8 AI1,AI2,AI3
+
+      AMAT=0.0
+      AMAT(1,1) = str_x(i)
+      AMAT(2,2) = str_y(i)
+      AMAT(3,3) = str_z(i)
+      AMAT(1,2) = str_xy(i)
+      AMAT(1,3) = str_xz(i)
+      AMAT(2,3) = str_yz(i)
+      AMAT(2,1) = AMAT(1,2)
+      AMAT(3,2) = AMAT(2,3)
+      AMAT(1,3) = AMAT(3,1)
+      
+! Compute the invariants for the matrix
+      AI1 = AMAT(1,1) + AMAT(2,2) + AMAT(3,3)
+      AI2 = AMAT(1,1)*AMAT(2,2) + AMAT(2,2)*AMAT(3,3) 
+      AI2 = AI2 + AMAT(3,3)*AMAT(1,1) - AMAT(1,2)*AMAT(1,2) 
+     &     - AMAT(2,3)*AMAT(2,3)  - AMAT(3,1)*AMAT(3,1)
+      AI3 = AMAT(1,1)*(AMAT(2,2)*AMAT(3,3) - AMAT(2,3)*AMAT(3,2))
+      AI3 = AI3 + AMAT(1,2)*(AMAT(2,3)*AMAT(3,1) - AMAT(2,1)*AMAT(3,3))
+      AI3 = AI3 + AMAT(1,3)*(AMAT(2,1)*AMAT(3,2) - AMAT(3,1)*AMAT(2,2))
+      
+! Solve the characteristic equation for the eigenvalues
+      call solve_cubic(-AI1, AI2,-AI3,alambda)
+      
+! Make the matrix tridiagonal using Householder transformation
+      call reduce_to_tridiagonal(AMAT)
+      
+! Solve for the eigenvectors
+      call eigenvectors(AMAT, alambda, eigenvec)
+      
+      return
+
+      end
+
+c.......................................................................

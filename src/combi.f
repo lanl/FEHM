@@ -296,6 +296,8 @@
       real*8, allocatable ::   sx_y(:)
       real*8, allocatable ::   sx_z(:)
 
+      real*8, allocatable ::   dnidnj(:,:)
+
 c arrays for interface reduction
       integer nitfcpairs, ncoldpairs
       integer nitfcitfc, nitfcsizes

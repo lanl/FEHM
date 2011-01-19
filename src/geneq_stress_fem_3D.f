@@ -11,7 +11,7 @@
 
       implicit none
 
-      integer                      :: i,j,k,l,m,ii1,ii2
+      integer                      :: i,j,k,li,m,ii1,ii2
       integer                      :: nodei, nodej, jmia, iau
       integer, dimension(8)        :: node
       real*8,  dimension(6, 24)    :: B
@@ -92,9 +92,9 @@
 
           do k=1,8
             nodei = node(k)
-            do l=1,8
-              if(l.ne.k) then
-                nodej = node(l)
+            do li=1,8
+              if(li.ne.k) then
+                nodej = node(li)
                 ! diagonal entry
                 jmia = nelmdg(nodei) - (neq + 1)
                 ! (i,j) entry
@@ -107,7 +107,7 @@
                   endif
                 enddo
   
-                nodalK = BtDB(3*k-2:3*k, 3*l-2:3*l)
+                nodalK = BtDB(3*k-2:3*k, 3*li-2:3*li)
                 a(iau + nmat(1)) = a(iau + nmat(1)) + nodalK(1,1)*fac
                 a(iau + nmat(2)) = a(iau + nmat(2)) + nodalK(1,2)*fac
                 a(iau + nmat(3)) = a(iau + nmat(3)) + nodalK(1,3)*fac

@@ -247,6 +247,7 @@ c bhl_12/8/05
       if(allocated(nelmdg)) deallocate(nelmdg)
       if(allocated(sx1)) deallocate(sx1)
       if(allocated(sxs)) deallocate(sxs)
+      if(allocated(dnidnj)) deallocate(dnidnj)
       if(allocated(cord)) deallocate(cord)
       if(allocated(dp)) deallocate(dp)
       if(allocated(dr)) deallocate(dr)
