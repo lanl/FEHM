@@ -100,7 +100,6 @@ data.o: comflow.o comgi.o comhi.o comii.o comji.o compart.o comrtd.o comrxni.o
 data.o: comsplitts.o comwt.o comzone.o davidi.o
 datchk.o: comai.o combi.o comdi.o comdti.o comfi.o comii.o compart.o comxi.o
 datchk.o: davidi.o
-dated.o: comai.o
 daycrl.o: comai.o combi.o comci.o comdi.o comdti.o comgi.o compart.o
 daycrl.o: comsplitts.o davidi.o
 diagnostics.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comgi.o
@@ -411,8 +410,8 @@ plot_co2.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o comfi.o
 plot_co2.o: comhi.o comki.o
 plot_hyd.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comhi.o
 plot_hyd.o: comki.o commeth.o
-plot_new.o: comai.o combi.o comco2.o comdi.o comdti.o comfi.o comii.o comsi.o
-plot_new.o: comwt.o comzone.o davidi.o
+plot_new.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comfi.o comii.o
+plot_new.o: comsi.o comwt.o comzone.o davidi.o
 plotc1.o: comai.o combi.o comchem.o comci.o comdi.o comdti.o compart.o
 plotc1.o: comrxni.o comsptr.o
 pod_derivatives.o: comai.o comci.o comdi.o comsptr.o comxi.o

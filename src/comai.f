@@ -424,6 +424,8 @@ c RJP 12/13/06 added nriver below
 c ZVD 05/01/07 added form_flag, ishisc, ishiswc
 c ZVD 08/05/09 added ishisp2, ishisp3, ishiscsl, ishiscsg
       integer             form_flag, ishisc, ishiswc, ishisp2, ishisp3
+c ZVD 01/05/11 added ihisef
+      integer             ishisef
 c RJP added for history of carbon mass
       integer             ishiscm, ishiscmf, ishiscmd
       integer             ishiscfz, ishiscsl, ishiscsg 

@@ -193,7 +193,7 @@ c     input is read properly)
       end if
 ! ZVD 05/05 - added for increasing btc time steps
 !     set default value for dtmn
-      dtmn = dtmx
+      dtmn = abs(dtmx)
 
 c     assign iprt (only integers allowed)
       iprt = imsg(2)
@@ -345,7 +345,11 @@ c if freez_time is gt.0, then ptrac3 is called only at the end of the
 c flow calculations, and for a velocity frozen at that time,  
 c particle tracks are calculated for freez_time days
                if(nwds.ge.5) then
-                  freez_time  = xmsg(5)
+                  if (msg(5).eq.1) then
+                     freez_time  = imsg(5)
+                  else
+                     freez_time  = xmsg(5)
+                  end if
                else
                   freez_time  = 0
                end if

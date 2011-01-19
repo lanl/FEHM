@@ -26,7 +26,7 @@
 	if(s.ge.r1) then
 	   r=1.0
 	   dr=0.
-	   if(s.le.r2) then
+	   if(s.lt.r2) then
 	      d=r2-r1
 	      r=(s-r1)/d
 	      dr=1/d

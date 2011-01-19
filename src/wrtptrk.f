@@ -123,30 +123,36 @@ c bhl_5/15/08
          allocate (num_left(nspeci))
          num_left = 0
          if (abs(prnt_rst) .ge. 10) then
-            if (nmfil(10) .ne. nmfily(3) .and. nmfil(10) .ne. ' ') 
-     &           then
-               call file_prefix(nmfil(10), iroot)
-               if (iroot .gt. 100) iroot = 100
-               ptrk_root(1:iroot) = nmfil(10)(1:iroot)
-            else
-               if (nmfil(5) .ne. nmfily(3) .and. nmfil(5) .ne. ' ') 
+            if (null1(root_name)) then
+               if (nmfil(10) .ne. nmfily(3) .and. nmfil(10) .ne. ' ') 
      &              then
-                  call file_prefix(nmfil(5), iroot)
+                  call file_prefix(nmfil(10), iroot)
                   if (iroot .gt. 100) iroot = 100
-                  ptrk_root(1:iroot) = nmfil(5)(1:iroot)
+                  ptrk_root(1:iroot) = nmfil(10)(1:iroot)
                else
-                  if (nmfil(2)(1:1) .eq. ' ' ) then
-                     write (ierr, *) 'FILE ERROR: nmfil2 file: ', 
-     &                    nmfil(2),
-     &                    ' unable to determine contour file prefix'
-                     stop
-                  else
-                     call file_prefix(nmfil(2), iroot)
+                  if (nmfil(5) .ne. nmfily(3) .and. nmfil(5) .ne. ' ') 
+     &                 then
+                     call file_prefix(nmfil(5), iroot)
                      if (iroot .gt. 100) iroot = 100
-                     ptrk_root(1:iroot) = nmfil(2)(1:iroot)
+                     ptrk_root(1:iroot) = nmfil(5)(1:iroot)
+                  else
+                     if (nmfil(2)(1:1) .eq. ' ' ) then
+                        write (ierr, *) 'FILE ERROR: nmfil2 file: ', 
+     &                       nmfil(2),
+     &                       ' unable to determine contour file prefix'
+                        stop
+                     else
+                        call file_prefix(nmfil(2), iroot)
+                        if (iroot .gt. 100) iroot = 100
+                        ptrk_root(1:iroot) = nmfil(2)(1:iroot)
+                     end if
                   end if
                end if
-            endif
+            else
+               iroot = len_trim (root_name)
+               if (iroot .gt. 100) iroot = 100
+               ptrk_root(1:iroot) = root_name(1:iroot) 
+            end if
             ptrk_name = ''
             num_left = 0
             if (abs(prnt_rst) .ge. 20) then

@@ -84,6 +84,7 @@
       ishiss = 0
       ishisf = 0
       ishise = 0
+      ishisef = 0
       ishishm = 0
       ishisfz = 0
       ishiswt = 0
@@ -497,7 +498,7 @@
             end select
          case ('ent', 'ENT')
 ! Output enthalpy in MJ/kg
-            fname =  root(1:iroot) // '_flow' // hissfx
+            fname =  root(1:iroot) // '_enth' // hissfx
             ishise = ishis + 150
             open (unit=ishise, file=fname, form='formatted')
             select case (form_flag)
@@ -505,6 +506,21 @@
                write(ishise, 6000) verno, jdate, jtime, trim(wdd)
             case (1)
                write(ishise, 6005) verno, jdate, jtime
+            end select
+c            if (out_zones) then
+c               ozflag = ozflag + 1
+c               eflag = ozflag
+c            end if
+         case ('efl', 'EFL', 'mjs', 'MJS')
+! Output enthalpy flow in MJ/s
+            fname =  root(1:iroot) // '_eflow' // hissfx
+            ishise = ishis + 150
+            open (unit=ishisef, file=fname, form='formatted')
+            select case (form_flag)
+            case (0)
+               write(ishisef, 6000) verno, jdate, jtime, trim(wdd)
+            case (1)
+               write(ishisef, 6005) verno, jdate, jtime
             end select
             if (out_zones) then
                ozflag = ozflag + 1

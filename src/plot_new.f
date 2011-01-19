@@ -45,6 +45,7 @@
 
       use comai
       use combi
+      use comci, only : enlf, envf
       use comco2, only : icarb, denco2h, fl, fg, fw, phico2, xc, yc
       use comdi
       use comdti
@@ -334,6 +335,13 @@ c            write(ishis, '(a4)')  '    '
             info_string = info_string(ic1:ic2) // 'Enthalpy '
             ic2 = len_trim(info_string) + 1
             title_string = 'Enthalpy (MJ/kg)'
+            call plot_header(ishise,var_num,form2_string)
+         end if
+         if (ishisef .ne. 0 ) then
+! Ouput enthalpy in MJ/s
+            info_string = info_string(ic1:ic2) // 'Enthalpy Flow'
+            ic2 = len_trim(info_string) + 1
+            title_string = 'Enthalpy Flow (MJ/s)'
             call plot_header(ishise,var_num,form2_string)
          end if
          if (ishishm .ne. 0 ) then
@@ -1062,14 +1070,27 @@ c water only problem
       if (ishise .ne. 0 ) then
 ! Output enthalpy in MJ/kg
          if (out_zones) then
-            write(ishise, form2_string) ptime,
-     &           (max(qh(nskw(i)), 1.d-20), i= 1, m),
-     &           (avg_values(j,eflag), j=1,node_azones)
+c average currently computed for qh
+c            write(ishise, form2_string) ptime,
+c     &           (enlf(nskw(i)), i= 1, m),
+c     &           (avg_values(j,eflag), j=1,node_azones)
          else
             write(ishise, form2_string) ptime,
-     &           (max(qh(nskw(i)), 1.d-20), i= 1, m)
+     &           (enlf(nskw(i)), i= 1, m)
          end if
          call flush(ishise)
+      end if
+      if (ishisef .ne. 0 ) then
+! Output enthalpy flow in MJ/s
+         if (out_zones) then
+            write(ishisef, form2_string) ptime,
+     &           (qh(nskw(i)), i= 1, m),
+     &           (avg_values(j,eflag), j=1,node_azones)
+         else
+            write(ishisef, form2_string) ptime,
+     &           (qh(nskw(i)), i= 1, m)
+         end if
+         call flush(ishisef)
       end if
       if (ishishm .ne. 0 ) then
 ! Output humidity
