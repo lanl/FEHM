@@ -170,6 +170,12 @@ c      integer, allocatable ::   itstress(:)
         str_xy = 0.0d0
         str_yz = 0.0d0
         str_xz = 0.0d0
+        strain_xx = 0.0d0        
+        strain_yy = 0.0d0        
+        strain_zz = 0.0d0        
+        strain_xy = 0.0d0        
+        strain_yz = 0.0d0        
+        strain_zy = 0.0d0        
         cvol = 0.0d0
 
         do el=1,nei
@@ -180,6 +186,7 @@ c      integer, allocatable ::   itstress(:)
 
           intsig = 0.0d0
           onedV = 0.0d0
+          intstrain = 0.0d0
 
           do j=1,numgausspoints
             fac = detJ(el, j)*gpweight(j)
