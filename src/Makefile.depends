@@ -160,9 +160,12 @@ fehmn.o: comsk.o comsplitts.o comsptr.o comwt.o comxi.o davidi.o interpolate.o
 fem_elastic_stiffness.o: comai.o comfem.o comsi.o
 fem_elastic_stress_update.o: comai.o comfem.o comsi.o
 fem_material_stiffness.o: comai.o comfem.o comsi.o
+fem_material_stiffness_2D.o: comai.o comfem.o comsi.o
 fem_material_stress_update.o: comai.o comfem.o comsi.o
+fem_shapefunctions_2r.o: comai.o combi.o comfem.o
 fem_shapefunctions_3r.o: comai.o combi.o comfem.o
 fem_update_stress.o: comai.o comdi.o comfem.o comsi.o
+fem_update_stress_2D.o: comai.o comdi.o comfem.o comsi.o
 fem_vonMises_stiffness.o: comai.o combi.o comci.o comdi.o comdti.o comei.o
 fem_vonMises_stiffness.o: comfem.o comfi.o comflow.o comgi.o comji.o comsi.o
 fem_vonMises_stiffness.o: davidi.o
@@ -243,6 +246,8 @@ geneq_meth.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 geneq_meth.o: comflow.o comgi.o comhi.o comji.o commeth.o davidi.o
 geneq_plastic_3D.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 geneq_plastic_3D.o: comflow.o comgi.o comji.o comsi.o davidi.o
+geneq_stress_fem_2D_XY.o: comai.o combi.o comdi.o comei.o comfem.o comgi.o
+geneq_stress_fem_2D_XY.o: comsi.o davidi.o
 geneq_stress_fem_3D.o: comai.o combi.o comdi.o comei.o comfem.o comgi.o comsi.o
 geneq_stress_fem_3D.o: davidi.o
 geneq_stress_uncoupled_2D.o: comai.o combi.o comci.o comdi.o comdti.o comei.o
@@ -279,7 +284,7 @@ gensl3.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comgi.o davidi.o
 gensl4.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 gensl4.o: comhi.o davidi.o
 gensl_stress_2D.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o
-gensl_stress_2D.o: comfi.o comgi.o comhi.o comsi.o comwt.o davidi.o
+gensl_stress_2D.o: comfem.o comfi.o comgi.o comhi.o comsi.o comwt.o davidi.o
 gensl_stress_3D.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o
 gensl_stress_3D.o: comfem.o comfi.o comgi.o comhi.o comsi.o comwt.o davidi.o
 gensl_stress_coupled_3D.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o
@@ -504,6 +509,8 @@ storsx_write.o: comai.o combi.o comdti.o comsi.o comxi.o
 stream_tube.o: comsk.o comsptr.o
 stress_2D_post.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 stress_2D_post.o: comflow.o comgi.o comji.o comsi.o davidi.o
+stress_2D_post_fem.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfem.o
+stress_2D_post_fem.o: comfi.o comflow.o comgi.o comji.o comsi.o davidi.o
 stress_3D_post.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfem.o
 stress_3D_post.o: comfi.o comflow.o comgi.o comji.o comsi.o davidi.o
 stress_3D_post_fem.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfem.o

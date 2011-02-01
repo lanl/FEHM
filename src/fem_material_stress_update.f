@@ -1,5 +1,24 @@
       subroutine fem_material_stress_update(i, j, gp_stress, gp_strain,
      &     gp_strain_mech,DSai)
+!***********************************************************************
+! Copyright 2011 Los Alamos National Security, LLC  All rights reserved
+! Unless otherwise indicated,  this information has been authored by an
+! employee or employees of the Los Alamos National Security, LLC (LANS),
+! operator of the  Los  Alamos National  Laboratory  under Contract  No.
+! DE-AC52-06NA25396  with  the U. S. Department  of  Energy.  The  U. S.
+! Government   has   rights  to  use,  reproduce,  and  distribute  this
+! information.  The  public may copy  and  use this  information without
+! charge, provided that this  Notice and any statement of authorship are
+! reproduced on all copies.  Neither  the  Government nor LANS makes any
+! warranty,   express   or   implied,   or   assumes  any  liability  or
+! responsibility for the use of this information.      
+!***********************************************************************
+! 
+! Top level code to call the correct stress update routine when the 
+! 'plastic' submacro is used with 'fem' computations
+! 
+! Author : Sai Rapaka
+!
       
       use comsi, only: iPlastic, plasticModel, modelNumber
       use comai, only: iout, iptty, ns

@@ -1,4 +1,4 @@
-      subroutine stress_3D_post_fem()
+      subroutine stress_2D_post_fem()
 !***********************************************************************
 ! Copyright 2011 Los Alamos National Security, LLC  All rights reserved
 ! Unless otherwise indicated,  this information has been authored by an
@@ -174,14 +174,22 @@ c      integer, allocatable ::   itstress(:)
       integer    :: ContrElem, el
       integer    :: node(8)
       real*8 val
-      real*8 :: Dmat(6,6), sol(8)
-      real*8 :: intsig(6), intstrain(6), cvol(neq)
+      real*8 :: Dmat(3,3)
+      real*8 :: intsig(3), intstrain(3), cvol(neq)
       real*8, allocatable :: kmat(:)
       real*8 deltaT, deltaP, alphadT, betadP
       real*8 kmat_gp
       real*8 xdV, ydV, zdV
 
       if(ifem.eq.1) then
+
+        if(icnl.ne.1) then
+          write(iout,*) 'ERROR: 2D FEM Stress computations only 
+     &                   enabled in XY plane'
+          write(iptty,*) 'ERROR: 2D FEM Stress computations only 
+     &                   enabled in XY plane'
+          stop
+        endif
 
         str_x = 0.0d0
         str_y = 0.0d0
@@ -206,7 +214,7 @@ c      integer, allocatable ::   itstress(:)
           enddo
 
           intsig = 0.0d0
-          intstrain = 0.0d0
+          intstrain = 0.d0
           onedV = 0.0d0
 
           do j=1,numgausspoints
@@ -220,17 +228,17 @@ c      integer, allocatable ::   itstress(:)
             cvol(node(k)) = cvol(node(k)) + onedV
             str_x(node(k)) = str_x(node(k)) + intsig(1)
             str_y(node(k)) = str_y(node(k)) + intsig(2)
-            str_z(node(k)) = str_z(node(k)) + intsig(3)
-            str_xy(node(k)) = str_xy(node(k)) + intsig(4)
-            str_yz(node(k)) = str_yz(node(k)) + intsig(5)
-            str_xz(node(k)) = str_xz(node(k)) + intsig(6)
+            !str_z(node(k)) = str_z(node(k)) + intsig(3)
+            str_xy(node(k)) = str_xy(node(k)) + intsig(3)
+            !str_yz(node(k)) = str_yz(node(k)) + intsig(5)
+            !str_xz(node(k)) = str_xz(node(k)) + intsig(6)
 
             strain_xx(node(k)) = strain_xx(node(k)) + intstrain(1)
             strain_yy(node(k)) = strain_yy(node(k)) + intstrain(2)
-            strain_zz(node(k)) = strain_zz(node(k)) + intstrain(3)
-            strain_xy(node(k)) = strain_xy(node(k)) + intstrain(4)
-            strain_yz(node(k)) = strain_yz(node(k)) + intstrain(5)
-            strain_zx(node(k)) = strain_zx(node(k)) + intstrain(6)
+            !strain_zz(node(k)) = strain_zz(node(k)) + intstrain(3)
+            strain_xy(node(k)) = strain_xy(node(k)) + intstrain(3)
+            !strain_yz(node(k)) = strain_yz(node(k)) + intstrain(5)
+            !strain_zx(node(k)) = strain_zx(node(k)) + intstrain(6)
 
           enddo
         enddo

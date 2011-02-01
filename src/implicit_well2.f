@@ -780,7 +780,7 @@ c   aligned with z axis
    	         pnya = 1.e-6*pny(nodew)
    	         aperm = sqrt(pnxa*pnya)
    	         term1 = (pnya/pnxa)**0.25 + (pnxa/pnya)**0.25
-   	         term2 = sqrt(sqrt(pnya/pnxa)*delx*delx + sqrt(pnxa/pnya)*
+   	   term2 = sqrt(sqrt(pnya/pnxa)*delx*delx + sqrt(pnxa/pnya)*
      &	               dely*dely) 
     	         r0 = 0.28*term2/term1	         
    	         aperm = sqrt(pnxa*pnya)

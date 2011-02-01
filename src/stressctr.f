@@ -1,4 +1,18 @@
       subroutine stressctr(iflg,ndummy) 
+!***********************************************************************
+! Copyright 2011 Los Alamos National Security, LLC  All rights reserved
+! Unless otherwise indicated,  this information has been authored by an
+! employee or employees of the Los Alamos National Security, LLC (LANS),
+! operator of the  Los  Alamos National  Laboratory  under Contract  No.
+! DE-AC52-06NA25396  with  the U. S. Department  of  Energy.  The  U. S.
+! Government   has   rights  to  use,  reproduce,  and  distribute  this
+! information.  The  public may copy  and  use this  information without
+! charge, provided that this  Notice and any statement of authorship are
+! reproduced on all copies.  Neither  the  Government nor LANS makes any
+! warranty,   express   or   implied,   or   assumes  any  liability  or
+! responsibility for the use of this information.      
+!***********************************************************************
+
 !**********************************************************************
 !D1
 !D1 PURPOSE
@@ -681,7 +695,8 @@ c.............................................................
 
             call fem_shapefunctions_3r()
 
-          else if((icnl.ne.0) .and. (ns.eq.4)) then
+          ! 2D Fem in X-Y plane
+          else if((icnl.eq.1) .and. (ns.eq.4)) then
             numgausspoints = 4
             allocate(gpcord(numgausspoints, 2))
             allocate(gpweight(numgausspoints))
@@ -689,12 +704,13 @@ c.............................................................
             allocate(Psi(nei, numgausspoints, ns))
             allocate(dPsidX(nei, numgausspoints, ns))
             allocate(dPsidY(nei, numgausspoints, ns))
-            allocate(dPsidZ(nei, numgausspoints, ns))
             allocate(fem_stress(nei, numgausspoints, 3))
             allocate(fem_strain(nei, numgausspoints, 3))
 
             fem_stress = 0.0d0
             fem_strain = 0.0d0
+
+            sq3 = 1.0d0/sqrt(3.0d0)
 
             gpcord(1,1) = -sq3
             gpcord(1,2) = -sq3
@@ -711,6 +727,8 @@ c.............................................................
             gpcord(4,1) = -sq3
             gpcord(4,2) =  sq3
             gpweight(4) = 1.0d0
+
+            call fem_shapefunctions_2r()
 
           endif
 c...........................................................                 
@@ -2417,10 +2435,14 @@ c 3D
 
       else
 c 2D
-	do i = 1,neq
-	 call stress_2D_post(i)
-	enddo
-	endif
+        if(ifem.eq.1) then
+          call stress_2D_post_fem()
+        else
+          do i = 1,neq
+            call stress_2D_post(i)
+          enddo
+        endif
+      endif
       continue
       else if(iflg.eq.14) then
 c
