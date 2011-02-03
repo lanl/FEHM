@@ -1,4 +1,4 @@
-      subroutine fem_material_stiffness(i, j, D)
+      subroutine fem_material_stiffness_2D(i, j, D)
 !***********************************************************************
 ! Copyright 2011 Los Alamos National Security, LLC  All rights reserved
 ! Unless otherwise indicated,  this information has been authored by an
@@ -24,7 +24,7 @@
       use comfem
 
       implicit none
-      real*8,  dimension(6,6)      :: D
+      real*8,  dimension(3,3)      :: D
       integer                      :: i, j, itmp
       integer                      :: iModel, k
       real *8                      :: e1bar, e2bar, e3bar
@@ -69,4 +69,4 @@
         call fem_vonMises_stiffness(i, j, D)
       endif
       
-      end subroutine fem_material_stiffness
+      end subroutine fem_material_stiffness_2D

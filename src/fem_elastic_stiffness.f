@@ -1,4 +1,23 @@
       subroutine fem_elastic_stiffness(i, j, D)
+!***********************************************************************
+! Copyright 2011 Los Alamos National Security, LLC  All rights reserved
+! Unless otherwise indicated,  this information has been authored by an
+! employee or employees of the Los Alamos National Security, LLC (LANS),
+! operator of the  Los  Alamos National  Laboratory  under Contract  No.
+! DE-AC52-06NA25396  with  the U. S. Department  of  Energy.  The  U. S.
+! Government   has   rights  to  use,  reproduce,  and  distribute  this
+! information.  The  public may copy  and  use this  information without
+! charge, provided that this  Notice and any statement of authorship are
+! reproduced on all copies.  Neither  the  Government nor LANS makes any
+! warranty,   express   or   implied,   or   assumes  any  liability  or
+! responsibility for the use of this information.      
+!***********************************************************************
+!
+! Returns the 6x6 material stiffness (D) matrix for a linear, isotropic,
+! elastic solid when the 'plastic' submacro is used with 'fem' computations
+!
+! Author : Sai Rapaka
+!
       
       use comai, only: iout, iptty, ns
       use comsi, only: modelNumber, plasticModel, elastic_mod, poisson
