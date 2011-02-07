@@ -1,23 +1,4 @@
       subroutine stress_3D_post_fem()
-!***********************************************************************
-! Copyright 2011 Los Alamos National Security, LLC  All rights reserved
-! Unless otherwise indicated,  this information has been authored by an
-! employee or employees of the Los Alamos National Security, LLC (LANS),
-! operator of the  Los  Alamos National  Laboratory  under Contract  No.
-! DE-AC52-06NA25396  with  the U. S. Department  of  Energy.  The  U. S.
-! Government   has   rights  to  use,  reproduce,  and  distribute  this
-! information.  The  public may copy  and  use this  information without
-! charge, provided that this  Notice and any statement of authorship are
-! reproduced on all copies.  Neither  the  Government nor LANS makes any
-! warranty,   express   or   implied,   or   assumes  any  liability  or
-! responsibility for the use of this information.      
-!***********************************************************************
-! 
-! Integrates the stresses and strains from the gausspoints onto the nodes
-! when using 'fem' computations
-! 
-! Author : Sai Rapaka
-!
 
       use comflow
       use davidi
@@ -189,14 +170,12 @@ c      integer, allocatable ::   itstress(:)
         str_xy = 0.0d0
         str_yz = 0.0d0
         str_xz = 0.0d0
-
-        strain_xx = 0.0d0
-        strain_yy = 0.0d0
-        strain_zz = 0.0d0
-        strain_xy = 0.0d0
-        strain_yz = 0.0d0
-        strain_zx = 0.0d0
-
+        strain_xx = 0.0d0        
+        strain_yy = 0.0d0        
+        strain_zz = 0.0d0        
+        strain_xy = 0.0d0        
+        strain_yz = 0.0d0        
+        strain_zx = 0.0d0        
         cvol = 0.0d0
 
         do el=1,nei
@@ -206,8 +185,8 @@ c      integer, allocatable ::   itstress(:)
           enddo
 
           intsig = 0.0d0
-          intstrain = 0.0d0
           onedV = 0.0d0
+          intstrain = 0.0d0
 
           do j=1,numgausspoints
             fac = detJ(el, j)*gpweight(j)

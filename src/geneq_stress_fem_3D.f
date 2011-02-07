@@ -1,30 +1,11 @@
       subroutine geneq_stress_fem_3D()
-!***********************************************************************
-! Copyright 2011 Los Alamos National Security, LLC  All rights reserved
-! Unless otherwise indicated,  this information has been authored by an
-! employee or employees of the Los Alamos National Security, LLC (LANS),
-! operator of the  Los  Alamos National  Laboratory  under Contract  No.
-! DE-AC52-06NA25396  with  the U. S. Department  of  Energy.  The  U. S.
-! Government   has   rights  to  use,  reproduce,  and  distribute  this
-! information.  The  public may copy  and  use this  information without
-! charge, provided that this  Notice and any statement of authorship are
-! reproduced on all copies.  Neither  the  Government nor LANS makes any
-! warranty,   express   or   implied,   or   assumes  any  liability  or
-! responsibility for the use of this information.      
-!***********************************************************************
-! 
-! Assembles the mechanical equations for 'fem' computations in three
-! dimensions
-! 
-! Author : Sai Rapaka
-!
 
       use comai, only: nei, neq, ns, igrav, grav
       use combi, only: nelm, nelmdg
       use comdi, only: denr
       use comei, only: a
       use comgi, only: bp
-      use comsi, only: e1, e2, e3, iPlastic, ibodyforce
+      use comsi, only: e1, e2, e3, iPlastic,ibodyforce
       use comfem
       use davidi,only: nmat, nrhs
 
