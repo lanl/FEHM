@@ -495,11 +495,12 @@ C***********************************************************************
       integer idum, j, jj
       real tmpli
       logical null1
+      logical :: mptr_call = .false.
       character*80 input_msg, dummy_line
       character*4 macro, macro1, chard
-      integer cnum,iieosd,inptorig,kk,msg(4),nwds,imsg(4)
-      real*8 xmsg(4), dummyreal, simnum
-      character*32 cmsg(4)
+      integer cnum,iieosd,inptorig,kk,msg(6),nwds,imsg(6)
+      real*8 xmsg(6), simnum
+      character*32 cmsg(6)
 
       sssol = 'no  '
       altc = 'fehm'
@@ -608,16 +609,25 @@ c zvd 12-Jul-2010 Only activate if this isn't a head problem
          if (ihead .eq. 0) then
             backspace inpt
             read(inpt,'(a80)') input_msg 
-            read(input_msg,*,end= 995) macro, head0, temp0, pres0, 
-     &           sat_ich, head_id
-            go to 1005
- 995        head0 = 0.0
-            temp0 = 20.0
-            pres0 = 0.1   
-            sat_ich = 0.0
-            head_id= 0.0
- 1005       continue
-            call water_density(temp0, pres0,rol0)
+            call parse_string(input_msg,imsg,msg,xmsg,cmsg,nwds)
+c            read(input_msg,*,end= 995) macro, head0, temp0, pres0, 
+c     &           sat_ich, head_id
+            if (nwds .gt. 1) then
+               head0 = xmsg(2)
+               temp0 = xmsg(3)
+               pres0 = xmsg(4)
+               sat_ich = xmsg(5)
+               head_id = xmsg(6)
+            else
+c            go to 1005
+ 995           head0 = 0.0
+               temp0 = 20.0
+               pres0 = 0.1   
+               sat_ich = 0.0
+               head_id= 0.0
+            end if
+c 1005       continue
+            call water_density(temp0, pres0, rol0)
             ichead=1
             if(.not.allocated(head)) allocate(head(n0))
          end if
@@ -1073,7 +1083,7 @@ c**** multiply defined nodes ****
       else if (macro .eq. 'mptr') then
 c**** particle tracking ****
 c     inmptr is called in part_track instead of here
-
+         mptr_call = .true.
          read(inpt,*)nspeci,maxlayers,max_particles
 	   read(inpt,*)pout,prnt_rst
            read(inpt,'(a4)') macro1
@@ -1393,7 +1403,7 @@ c**** thickness information ****
       else if (macro .eq. 'trac') then
 c**** tracer data ****
          iccen = 1
-         call concen (0,0,dummyreal)
+         call concen (0,0)
 
       else if (macro .eq. 'user') then
 c**** call user subroutine during input with argument kk ****
@@ -1515,6 +1525,8 @@ c**** check if air macro called if head macro called
          allocate (time_ieos(n0))
          time_ieos = 0.0d0
       endif 
+
+      if (.not. mptr_call) close (inpt)
 
       end subroutine input
 
