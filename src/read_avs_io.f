@@ -475,8 +475,8 @@ c     illegal character found
       enddo
 
  100  format (1x,'-----------------------------------------------')
- 110  format (1x,'WARNING: ', a)
- 120  format (1x,'There will be no AVS output for ', a)
+ 110  format (1x,'WARNING: ', a, a)
+ 120  format (1x,'There will be no AVS output for ', a, a)
       
 
  9999 if (ioformat .eq. 1) then
@@ -534,8 +534,8 @@ c     illegal character found
          write(iptty, 100) 
       end if
         
-      if(iopressure .ne. 0 .or. iovelocity .ne. 0 .or. ioflx .ne. 0) 
-     &     then
+      if(iopressure .ne. 0 .or. iovelocity .ne. 0 .or. ioflx .ne. 0
+     &   .or. iodensity .ne. 0) then
          if((ioliquid .eq. 0) .and. (iovapor .eq. 0)) then
             write(ierr, 100)
             if (iptty .ne. 0) write(iptty, 100)
@@ -572,7 +572,18 @@ c     illegal character found
                end if
                ioflx = 0
             end if
-            write(ierr, 100)
+            if (iodensity .ne. 0) then
+               write(ierr, 110)
+     &              'Density defined, but not Vapor or Liquid'
+               write(ierr, 120) 'density' 
+               if (iptty .ne. 0) then
+                  write(iptty, 110)
+     &                 'Density defined, but not Vapor or Liquid'
+                  write(iptty, 120) 'density ' 
+               end if
+               ioflx = 0
+            end if
+           write(ierr, 100)
             if (iptty .ne. 0) write(iptty, 100)
          end if
       else
@@ -581,22 +592,28 @@ c     illegal character found
             if (iptty .ne. 0) write(iptty, 100)
             if(iovapor .ne. 0) then
                write(ierr, 110)
-     &              'Vapor defined, but not pressure, velocity or flux'
+     &              'Vapor defined, but not pressure, velocity, ',
+     &              'density or flux'
                if (iptty .ne. 0) write(iptty, 110)
-     &              'Vapor defined, but not pressure, velocity or flux'
+     &              'Vapor defined, but not pressure, velocity, ',
+     &              'density or flux'
                iovapor = 0
             endif
             if(ioliquid .ne. 0) then
                write(ierr, 110)
-     &              'Liquid defined, but not pressure, velocity or flux'
+     &              'Liquid defined, but not pressure, velocity, ',
+     &              'density or flux'
                if (iptty .ne. 0) write(iptty, 110)
-     &              'Liquid defined, but not pressure, velocity or flux'
+     &              'Liquid defined, but not pressure, velocity, ',
+     &              'density or flux'
                ioliquid = 0
             endif
-            write(ierr, 120) 'scalar pressure or velocity or flux'
+            write(ierr, 120) 'scalar pressure, velocity, ',
+     &           'density or flux'
             write(ierr, 100)
             if (iptty .ne. 0) then
-               write(iptty, 120) 'scalar pressure or velocity or flux'
+               write(iptty, 120) 'scalar pressure, velocity,  ',
+     &           'density or flux'
                write(iptty, 100)
             end if
          end if
