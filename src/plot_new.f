@@ -382,22 +382,24 @@ c RJP 04/30/07 added following for outputting time-dependent CO2 mass
             title_string = 'Dissolved CO2 mass fraction'
             call plot_header(ishiscmd, var_num, form2_string)
          end if
-         if (ishiscsl .ne. 0 ) then
+         if(icarb.ne.0) then
+            if (ishiscsl .ne. 0 ) then
 ! Output CO2 Liquid Saturation
-            info_string = info_string(ic1:ic2) // 
-     &           'CO2 liquid saturation '
-            ic2 = len_trim(info_string) + 1
-            title_string = 'CO2 Liquid Saturation'
-            call plot_header(ishiscsl, m, form1_string)
-         end if
-         if (ishiscsg .ne. 0 ) then
+               info_string = info_string(ic1:ic2) // 
+     &              'CO2 liquid saturation '
+               ic2 = len_trim(info_string) + 1
+               title_string = 'CO2 Liquid Saturation'
+               call plot_header(ishiscsl, m, form1_string)
+            end if
+            if (ishiscsg .ne. 0 ) then
 ! Output CO2 Gas Saturation
-            info_string = info_string(ic1:ic2) // 
-     &           'CO2 gaseous saturation '
-            ic2 = len_trim(info_string) + 1
-            title_string = 'CO2 Gaseous Saturation'
-            call plot_header(ishiscsg, m, form1_string)
-         end if
+               info_string = info_string(ic1:ic2) // 
+     &              'CO2 gaseous saturation '
+               ic2 = len_trim(info_string) + 1
+               title_string = 'CO2 Gaseous Saturation'
+               call plot_header(ishiscsg, m, form1_string)
+            end if
+         endif
          if (ishisfz .ne. 0) then
 ! Output zone fluxes
  240        format ('(a, ', i3, '(a))')
@@ -481,20 +483,21 @@ c RJP 04/30/07 added following for outputting time-dependent CO2 mass
                title_string = trim(zone_string) // ' CO2 Flux (kg/s)'
                if (form_flag .eq. 1) then
                   formz_string = 'variables = "' // trim(time_string) //
-     &                 '"' // ' "Source" "Sink" "Net" "Boundary"' //
-     &                 ' "SourceG" "SinkG" "NetG"'
+     &                 '"' // ' "Source" "Sink" "Net In" "Net Out" ' //
+     &                 '"Boundary" "SourceG" "SinkG" "NetGIn" "NetGOut"'
                   write(ishiscfzz, '(a)') trim(formz_string)
                   write(ishiscfzz, 230) 50., 95., trim(wdd)
                   write(ishiscfzz, 230) 50., 90., trim(title_string)
                else if (form_flag .eq. 2) then
                   formz_string = trim(zone_string) // ", " //
      &                 trim(time_string) // 
-     &                 ", Source, Sink, Net, Boundary, " //
-     &                 ", SourceG, SinkG, NetG"
+     &                 ", Source, Sink, Net In, Net Out, Boundary, " //
+     &                 ", SourceG, SinkG, NetGIn NetGOut"
                   write(ishiscfzz, '(a)') trim(formz_string)
                else
                   formz_string = trim(time_string) //
-     &                 " Source Sink Net Boundary SourceG SinkG NetG"
+     &                 " Source Sink NetIn NetOut Boundary SourceG" //
+     &				 " SinkG NetGIn NetGOut"
                   write(ishiscfzz, '(a)') trim(title_string)
                   write(ishiscfzz, '(a)') trim(formz_string)
                end if
