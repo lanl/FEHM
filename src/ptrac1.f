@@ -660,9 +660,13 @@ c ZVD added option to write initial position to abbreviated output file
             end if
             do np1 = 1, num_part
 c ZVD added option for transient where particle start time is saved but
-c     initial node is set to 0 
+c     initial node is set to 0
+c ZVD 07-Feb-2011 negative of starting node is now output 
+c (this way particles that have been excluded can be distinguished from
+c particles that have a delayed start time) 
                if (trans_flag) then
-                  current_node = 0
+c                  current_node = 0
+                  current_node = -ijkv(np1)
                else
                   current_node = ijkv(np1)
                end if
