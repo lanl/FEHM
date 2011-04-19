@@ -120,7 +120,7 @@ C***********************************************************************
       implicit none
 
       real*8 totalflin,totalein,curinflow,cureinflow
-      real*8 phod, dummyreal, dumconv, dumconv1, rolconv
+      real*8 phod, dumconv, dumconv1, rolconv
       real*8 aiter, aminkt, years, dayold, sl, eqd, rhomd
       real*8 hmd, rqd, tas, tassem, tdum, pdum, pres_out, qtmp
       integer ilev, mlev, il, i, md
@@ -447,6 +447,10 @@ c
 c     compute and printout fluxes
 c     
             call flxo(2)
+c
+c     compute and printout fluxes for CO2
+c
+            if(icarb.eq.1)  call flxo(3)
 
 c     Compute flux passing thorugh a zone
 
@@ -700,7 +704,7 @@ c     if(iptty.gt.0) write(iptty ,6044)  ichng
  40   continue
       
       call   river_ctr (6)      
-      call  concen  ( 2,0,dummyreal )
+      call  concen  ( 2,0 )
       call  stress  ( 2 )
       call  paractr (3)
 
