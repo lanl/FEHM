@@ -73,6 +73,13 @@
       numparams = numpars
       open (121, file = tfilename, status = 'old', action = 'read')
 
+      sigma_low = 1.d10
+      sigma_high = 0.d0
+      omega_low = 1.d10
+      omega_high = 0.d0
+      par3_low = 1.d10
+      par3_high = 0.d0
+
       read(121,'(a4)') dummy_string
       if(dummy_string(1:4).eq.'free') then
          read(121,*) (log_flag(i),i=1,numparams)
@@ -81,7 +88,7 @@
 
 c     Input used to be 1 parameter, now it's 2. This section of code
 c     checks for the number of parameters input. If only 1,
-c     set the second parameter weight_facto to the old hirdwired
+c     set the second parameter weight_factor to the old hardwired
 c     value of 1.e-3 to make code behave as before. Otherwise,
 c     set the value
 
@@ -131,18 +138,32 @@ c     code accounts for that
          read (121, *) nump1
          allocate (param1 (nump1))
          read (121,*) (param1(i), i= 1, nump1) 
+         do i = 1, nump1
+            sigma_low(1) = min (sigma_low(1), param1(i))
+            sigma_high(1) = max (sigma_high(1), param1(i))
+         end do
          read (121, *) nump2
          allocate (param2 (nump2))
          read (121, *) (param2(i), i= 1, nump2)
+         do i = 1, nump2
+            omega_low(1) = min(omega_low(1), param2(i))
+            omega_high(1) = max(omega_high(1), param2(i))
+         end do
          if (numparams .gt. 2) then
             read (121, *) nump3
             allocate (param3 (nump3))
             read (121, *) (param3(i), i= 1, nump3)
+            do i = 1, nump3
+               par3_low(1) = min(par3_low(1), param3(i))
+               par3_high(1) = max(par3_high(1), param3(i))
+            end do
             d4 = 4
          else
             nump3 = 1
             allocate (param3 (nump3))
             param3 = 0.
+            par3_low = 0.
+            par3_high = 0.
             d4 = 1
          end if
       end if
@@ -161,9 +182,18 @@ c     code accounts for that
      .                 n = 1, numparams)
                   if(curve_structure.gt.0) then
                      param1(i) = dum(1)
+                     sigma_low(1) = min (sigma_low(1), dum(1))
+                     sigma_high(1) = max (sigma_high(1), dum(2))
                      param2(i) = dum(2)
+                     omega_low(1) = min (omega_low(1), dum(1))
+                     omega_high(1) = max (omega_high(1), dum(2))
                      if(numparams.gt.2) then
                         param3(i) = max(1.d-10,dum(3))
+                        par3_low(1) = min (par3_low(1), dum(3))
+                        par3_high(1) = max (par3_high(1), dum(3))
+                     else
+                        par3_low = 0.
+                        par3_high = 0.
                      end if
                   end if
                   do m = 1, nump(i,j,k,l)
@@ -199,6 +229,12 @@ c                     xconvert = (param1(i)+param2(i))/
             enddo
          enddo
       enddo
+      sigma_low(2) = sigma_high(1)
+      sigma_high(2) = sigma_low(1)
+      omega_low(2) = omega_high(1)
+      omega_high(2) = omega_low(1)
+      par3_low(2) = par3_high(1)
+      par3_high(2) = par3_low(1)
       ipartout = 0
       read(121,'(a3)',end=2000) output_flag
       if(output_flag(1:3).eq.'out') then

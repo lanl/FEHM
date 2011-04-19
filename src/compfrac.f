@@ -66,7 +66,12 @@
       real, allocatable, dimension(:,:,:) :: wt_curve
       real weight_factor
 !Maximum fracture flow fraction (upper limit) used in transfer function curves
-      real*8 :: ffmax = 0.99        
+      real*8 :: ffmax = 0.99
+! Parameters to monitor range of values sampled in curves, first value
+! will be max or min value in the curves, second value will be the
+! max or min value sampled during calculations        
+      real*8 :: sigma_low(2), sigma_high(2), omega_low(2), omega_high(2)
+      real*8 :: par3_low(2), par3_high(2)
       real*8, allocatable, dimension(:) :: param1 
       real*8, allocatable, dimension(:) :: param2
       real*8, allocatable, dimension(:) :: param3
