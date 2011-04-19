@@ -18,7 +18,7 @@
 # Edit FC,LIBRARY,FFLAGS for your environment and compiler 
 #***********************************************************************
 
-SRCDIR = ./
+SRCDIR = /scratch/ymp/zvd/FEHM_V3.00open/src/
 WORKDIR = ./
 INCDIR = ./
 OBJDIR = ./
@@ -40,23 +40,23 @@ endif
 
 # Linux OS ------------------------------
 ifeq (${OPSYS}, Linux)
-OSTAG =
+OSTAG = pgi${BIT}
 ifeq (${BIT},64)
-FC = gfortran
-LIBRARY = 
-TARGET =
+FC = /opt/pgi/linux86-64/6.2/bin/pgf90
+LIBRARY = -L/opt/pgi/linux86-64/6.2/lib
+TARGET = k8-64e
 else
-FC = gfortran
-LIBRARY = 
-TARGET =
+FC = /opt/pgi/linux86/6.2/bin/pgf90
+LIBRARY = -L/opt/pgi/linux86/6.2/lib
+TARGET = px
 endif
 DFLAG =
 LD = /usr/bin/ld
 ifeq (${DEBUG}, ON)
-FFLAGS = -g -C
+FFLAGS = -g -C -Kieee -Mlfs -tp ${TARGET}
 else
 #FFLAGS = -O1 -Kieee -Mlfs -tp ${TARGET} 
-FFLAGS = -O3
+FFLAGS = -fast -Kieee -Mlfs -tp ${TARGET} 
 endif
 STATIC = -Bstatic
 endif

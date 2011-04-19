@@ -100,6 +100,7 @@ data.o: comflow.o comgi.o comhi.o comii.o comji.o compart.o comrtd.o comrxni.o
 data.o: comsplitts.o comwt.o comzone.o davidi.o
 datchk.o: comai.o combi.o comdi.o comdti.o comfi.o comii.o compart.o comxi.o
 datchk.o: davidi.o
+dated.o: comai.o
 daycrl.o: comai.o combi.o comci.o comdi.o comdti.o comgi.o compart.o
 daycrl.o: comsplitts.o davidi.o
 diagnostics.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comgi.o
@@ -156,7 +157,8 @@ fd_calc_heat.o: comai.o combi.o comci.o comdi.o comdti.o comji.o comki.o
 fd_calc_heat.o: davidi.o
 fehmn.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o comevap.o
 fehmn.o: comfi.o comflow.o compart.o comriv.o comrtd.o comrxni.o comsi.o
-fehmn.o: comsk.o comsplitts.o comsptr.o comwt.o comxi.o davidi.o interpolate.o
+fehmn.o: comsk.o comsplitts.o comsptr.o comuserc.o comwt.o comxi.o davidi.o
+fehmn.o: interpolate.o
 fem_elastic_stiffness.o: comai.o comfem.o comsi.o
 fem_elastic_stress_update.o: comai.o comfem.o comsi.o
 fem_material_stiffness.o: comai.o comfem.o comsi.o
@@ -179,8 +181,8 @@ flow_boundary_conditions.o: comai.o combi.o comci.o comdi.o comdti.o comei.o
 flow_boundary_conditions.o: comfi.o comii.o comki.o comxi.o davidi.o
 flux_net.o: comai.o combi.o comci.o comdi.o comflow.o comgi.o comji.o davidi.o
 flxn.o: comai.o combi.o comflow.o davidi.o
-flxo.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
-flxo.o: comgi.o comxi.o davidi.o
+flxo.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o comfi.o
+flxo.o: comflow.o comgi.o comxi.o davidi.o
 flxz.o: comai.o combi.o comco2.o comdi.o comdti.o comflow.o davidi.o
 ftime.o: compfrac.o
 gdkm_calc.o: comai.o combi.o comci.o comdi.o comdti.o comji.o comki.o davidi.o
@@ -401,7 +403,7 @@ outbnd.o: davidi.o
 paractr.o: com_part.o comai.o combi.o comdi.o comdti.o comgi.o davidi.o
 part_track.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 part_track.o: comflow.o comgi.o comhi.o comji.o compart.o compfrac.o comsk.o
-part_track.o: comsptr.o davidi.o
+part_track.o: comsptr.o comuserc.o davidi.o
 peint.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comii.o
 pest.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
 pest.o: comgi.o comji.o comxi.o davidi.o
