@@ -1,4 +1,4 @@
-      subroutine part_track(begin_time,end_time,hmon,lstep,in)
+      subroutine part_track(begin_time,end_time,hmon,lstep)
 !***********************************************************************
 !  Copyright, 2004,  The  Regents  of the  University of California.
 !  This program was prepared by the Regents of the University of 
@@ -269,6 +269,7 @@ c
       use comai
       use comsk
       use comsptr,  only : tprpflag
+      use comuserc, only : in
 
       implicit none
 
@@ -336,7 +337,7 @@ c bhl_12/8/05
 	
       real*8 external pore_radius
       real*8 plugtime_dbl
-      real*8 begin_time, end_time, thistime, in(*)
+      real*8 begin_time, end_time, thistime
 
       real plugtime,theta_disp,theta_diff,ran_sp
       real satmat,timecell, current_time, matpor
@@ -344,6 +345,7 @@ c bhl_12/8/05
       real, parameter:: yearindays=365.25, dayinsecs=86400.
 
       logical filtered, filt_option, stuck
+      logical sigma_flag, omega_flag, par3_flag
       real weight(4)
       integer points(4)
 
@@ -781,6 +783,34 @@ c bhl_5/15/08
          end do
       end if
 
+c Check range of parameters used for transfer functions
+      if (pfrac_read) then
+         sigma_flag = .false.
+         omega_flag = .false.
+         par3_flag = .false.
+         if ((sigma_low(1) .gt. sigma_low(2)) .or.
+     &        sigma_high(1) .lt. sigma_high(2)) sigma_flag = .true.
+         if ((omega_low(1) .gt. omega_low(2)) .or.
+     &        omega_high(1) .lt. omega_high(2)) omega_flag = .true.
+         if ((par3_low(1) .gt. par3_low(2)) .or.
+     &        par3_high(1) .lt. par3_high(2)) par3_flag = .true.
+         write (ierr, 10)
+         write (ierr, 11) sigma_low(1), sigma_high(1), 
+     2        omega_low(1), omega_high(1), par3_low(1), par3_high(1)
+         write (ierr, 12)
+         write (ierr, 11) sigma_low(2), sigma_high(2), 
+     2        omega_low(2), omega_high(2), par3_low(2), par3_high(2)
+         if (sigma_flag .or. omega_flag .or. par3_flag) then
+            write (ierr, 14)
+         end if
+ 10      format ('Diffusion model defined parameter space:')
+ 11      format ('min sigma = ', g16.9, ' max sigma = ', g16.9, /,
+     2        'min omega = ', g16.9, ' max omega = ', g16.9, /,
+     3        'min par3  = ', g16.9, ' max par3  = ', g16.9) 
+ 12      format ('Range needed (min/max parameter values used):')
+ 14      format ('***** WARNING ***** ',
+     2        'Found values outside of defined parameter space')
+      end if
       if (allocated(frac)) deallocate(frac)
 
       return
@@ -2672,7 +2702,11 @@ c     correct transfer function curve
                 end if
                 if(r.le.prob_fm)then
                                 !this particle will move into the matrix
-                   fm=2
+                   if (nump3 .ne. 1) then
+                      fm=2
+                   else
+                      fm=1
+                   end if
                    oldbox=box(i,ith) 
                    box(i,ith)=box(i,ith)+neq
                    add_fact=nelm(neq+1)-neq-1
@@ -2844,6 +2878,7 @@ c     with simple search algorithm
            else
               klow=1
               khigh=1
+              fm=1
            end if
         
            a1=param1(ilow)
@@ -2867,6 +2902,7 @@ c     with simple search algorithm
            t7=conc(ihigh,jhigh,klow,fm,nump(ihigh,jhigh,klow,fm))
            t8=conc(ihigh,jhigh,khigh,fm,nump(ihigh,jhigh,khigh,fm))
 
+c           if (nump3 .eq. 1) fm = fmtmp
 
            d1 = dsqrt( (a1 - av)**2 +(b1 - bv)**2 + (c1 - cv)**2 )
            
