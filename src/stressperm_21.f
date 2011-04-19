@@ -173,7 +173,7 @@ c we are rotating back, using the inverse of rm
       fac_p=0.
       fac=0.
       sfac=excess_shear/spm7f(iispmd)
-      sfac=min(1.,sfac)
+      sfac=min(1.d0,sfac)
       fac_p(1,1)=1.0 + (spm11f(iispmd)-1)*sfac
       fac_p(2,2)=1.0 + (spm12f(iispmd)-1)*sfac
       fac_p(3,3)=1.0 + (spm13f(iispmd)-1)*sfac
