@@ -32,6 +32,7 @@
       real*8,  dimension(3, 8)     :: B
       real*8,  dimension(3, 3)     :: D
       real*8,  dimension(3)        :: gp_stress, gp_strain
+      real*8,  dimension(6)        :: gp_strain_mech
       real*8,  dimension(8)        :: disp
 
       real*8                       :: e1bar, e2bar, e3bar
@@ -83,7 +84,8 @@
       gp_strain(2) = gp_strain(2) - alphadeltaT - betadeltaP
 
       if(iPlastic.eq.1) then
-        call fem_material_stress_update(i, j, gp_stress, gp_strain)
+        call fem_material_stress_update(i, j, gp_stress, gp_strain, 
+     &        gp_strain_mech, D)
       else
         D = 0.0d0
         D(1,1) = e1bar
