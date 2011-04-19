@@ -138,8 +138,11 @@ c     Lognormal distribution of RTDs
 
          read(inpt,*) meanlt, std_devlt
          rtdcount = 501
-         allocate(time_rtd(rtdcount))
-         allocate(rtd(rtdcount))
+         if (.not. allocated(time_rtd)) then
+            allocate(time_rtd(rtdcount))
+            allocate(rtd(rtdcount))
+         end if
+         
          time_rtd = 0.
          rtd = 0.
 

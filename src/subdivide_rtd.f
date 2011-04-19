@@ -46,7 +46,7 @@ c     5. Subdivide f(t) curve
       use comrtd
       implicit none
       integer i
-      integer j
+      integer j,isize2
       real*8 fractional_area
       real*8 tfinal, slope_exp, fcurve_final
       real*8 previous_time
@@ -68,10 +68,22 @@ c     is negative - BAR 6-15-2004
 c     Allocate space for final subdivided rtd arrays
 
       nsubdiv = max(1,subdiv)*rtdcount
+      if (.not. allocated(time_subdiv)) then
       allocate(time_subdiv(nsubdiv))
       allocate(rtd_subdiv(nsubdiv))
       allocate(capf(nsubdiv))
       allocate(cumi(nsubdiv))
+      else
+        isize2=size(time_subdiv,1)
+        if(isize2.ne.nsubdiv) then
+            deallocate(time_subdiv,rtd_subdiv,capf,cumi)
+            allocate(time_subdiv(nsubdiv))
+            allocate(rtd_subdiv(nsubdiv))
+            allocate(capf(nsubdiv))
+            allocate(cumi(nsubdiv))
+        end if
+      end if
+
       time_subdiv = 0.
       rtd_subdiv = 0.
       capf = 0.

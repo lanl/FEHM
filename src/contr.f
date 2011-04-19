@@ -333,7 +333,7 @@ C***********************************************************************
 
       implicit none
 
-      real*8 dummyreal, px, py, pz
+      real*8 px, py, pz
       real*8 anld,anvd
       real*8 phihd, sdum, hddum, phipcp
       real*8 dumconv, dumconv1, pdum, tdum, rolconv
@@ -674,7 +674,7 @@ c**** selected input quantities ****
          end if
 
          if (inj .ne. 0) then
-            call  concen (5,0,dummyreal)
+            call  concen (5,0)
          end if
          if(ichead.ne.0) then
             ihead = 0

@@ -198,7 +198,6 @@ C***********************************************************************
       use comai
       implicit none
 
-      real*8 dummyreal
       integer i,j,np2,inj
       
 c**** 2-dimension , 3-dimension output ****
@@ -269,7 +268,7 @@ c
  6110       format(i8,(5e13.7))
          enddo
 
-         call concen (5,0,dummyreal)
+         call concen (5,0)
 
       endif
 

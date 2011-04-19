@@ -84,12 +84,26 @@ C***********************************************************************
       integer ispecies, j, k, k1, curcolumn
       integer, allocatable :: nsindex(:)
       integer nsnodes, iread1, nszones, mi, mim
+cSPC
+      integer kdflag, irip, jjj, sflag
+      real*8  deltat, in3_old
+            
       real*8 srmiml, rc_ss_erosion, drc_ss_erosion
       real*8 inflrate, molesin, molesout
+cSPC  add for transformation factor
+      real*8 transform_kd(8,10)
+      integer flag_kd, i1,j1
+            
       logical used
       integer icount, open_file
       character*100 filename
-
+cSPC
+      save kdflag,in3_old
+      save transform_kd,flag_kd
+      
+           
+      if(ripfehm.EQ.0) then
+      
       if ((iz.eq.0).and.(iuserc.ne.-9324)) then
 C Initialization
          iuserc=-9324
@@ -497,5 +511,74 @@ c       molesin -> moles/kg
          
       end if
       
+      else
+c---------------------------------------------------------
+c   Phil and Hari  6/2004 - 9/2004
+c   This section is for Tracer transport coupled 
+c   with Goldsim.  The input flux is calculated from
+c   the mass/time 
+Ci  also, feed in kd from in(*) array
+c   AND check to see if deltat is negative and reset
+c   meaning that a new realization is underway!
+c---------------------------------------------------------
+	 
+          if (in(1).eq.0) flag_kd = 0.
+        if((i.eq.1).AND.(in(1).GT.0)) then
+        
+          if (flag_kd.eq.0) then
+            open(222,file='transformation_matrix.txt')
+            do j1 = 1,10
+	          read(222,*) (transform_kd(i1,j1) , i1=1,8)
+	          write(iaunit,*) 'transform1',i1,j1,transform_Kd(1,j1)
+            end do
+            close(222)
+            flag_kd=666
+          end if
+
+c        write(66,*)'nspeci', nspeci, nsp
+c--- Changes to SUPER INDEXING  9 28 04  IN(8+in(7)-1+nsp)
+          if(in3_old.NE.in(3)) kdflag = 0
+	    if((iadsfl(nsp,1).eq.66).and.(kdflag.ne.1))then
+c		  a1adfl(nsp,1) = in(8+in(7)-1+nsp)
+		  a1adfl(nsp,1) = in(8+in(7)-1+nsp)*
+     &                 transform_kd((int(in(6))-4),int(in(2)))
+         write(iaunit,*) 'transform2',in(2),in(6),nsp,
+     &      transform_kd((int(in(6))-4),int(in(2))),a1adfl(nsp,1)
+	      if(nsp.eq.nspeci) then
+		   kdflag = 1
+	       in3_old = in(3)
+	      end if
+c	     write(66,*) 'iadsfl', iadsfl(nsp,1), 'a1adfl', a1adfl(nsp,1)
+	    endif
+
+	    deltat = (in(1) - in1save)*3600.*24.*365.25
+
+c-------- 9-14-2004  PHS reset deltat when new realization
+	    if(deltat.LE.0.0) then
+	      in1save = 0.0
+            deltat = (in(1) - in1save)*3600.*24.*365.25
+	    end if
+
+c	  ispecies = 1 + npn/n0
+c       PHS Hari changing to reflect nspeci+nsp = current spec 
+c          in the in(xx) array there are 4 things after             
+          sflag = in(7+nsp)
+c             getflux = in(11+2*nspeci+sflag)/deltat
+cSPC comment: this is for areaG run with Kd specified
+          getflux = in(11+2*nspeci+sflag)/deltat
+cSPC comment: for without doing the Kd option, shall use follow line
+c          getflux = in(11+ nspeci+sflag)/deltat
+          
+c	    write(66,*) int(in(6)),nsp,i, days
+c		   write(66,*) 'USERC deltat ',deltat   
+c	    write(66,*) 'userc', (in(j), j=1,18)
+
+          rc_ss   = -getflux
+          drc_ss  = 0.
+c	       write(66,*) getflux, 'getflux'
+c	       write(66,*) ' getflux i ', getflux, in(1), i,nsp
+        endif         
+      endif
+	
       return
       end

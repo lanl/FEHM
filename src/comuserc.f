@@ -19,13 +19,14 @@
 !D1
 !***********************************************************************
 
-
       integer iuchk, iuserc, nu_zones, nu_points
       integer :: usroption = 0
       integer, allocatable :: prodzones(:)
       integer, allocatable :: inflzones(:)
       integer, allocatable :: nodeindex(:)
+      integer :: iaunit = 0
 
+      real(8) :: in1save
       real(8) :: erosion_factor = 0.d0
       real(8) :: timeCl36start
       real(8), allocatable :: userconc(:,:)
@@ -33,5 +34,7 @@
       real(8), allocatable :: usertime(:)
       real(8), allocatable :: moles_recycle(:,:)
       real(8), allocatable :: recycle_factor(:)
+
+      real(8), allocatable :: in(:)
 
       end module comuserc

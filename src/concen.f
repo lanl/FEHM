@@ -1,4 +1,4 @@
-      subroutine  concen  ( iz, lstep, in )
+      subroutine  concen  ( iz, lstep )
 !***********************************************************************
 !  Copyright, 2004,  The  Regents  of the  University of California.
 !  This program was prepared by the Regents of the University of 
@@ -299,7 +299,6 @@ c
       implicit none
       
       integer iz,hmon, lstep
-      real(8) in(*)
       real(8) begin_time, end_time
 c hmon is 1 if heat and mass solution is active
 
@@ -320,7 +319,7 @@ c hmon is 1 if heat and mass solution is active
             end if
             begin_time=8.64d4*days-dtot
             end_time=8.64d4*days
-             call part_track(begin_time,end_time,hmon,lstep,in)
+            call part_track(begin_time,end_time,hmon,lstep)
 
          else if (iz.eq.2) then
             if ((days.le.daycs).or.(days.gt.daycf)) return

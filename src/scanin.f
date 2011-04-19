@@ -968,8 +968,8 @@ c     Allocate arrays needed for gdpm
          end if
 
          call done_macro(locunitnum)
-c	Section for determining Element enrichment)
          
+c     Section for determining Element enrichment
       else if(macro .eq. 'enri') then
   
          call start_macro(inpt, locunitnum, macro)
@@ -1135,6 +1135,16 @@ c     need to know if noncondensible present
       else if (macro .eq. 'trac') then
          iccen = 1
          call start_macro(inpt, locunitnum, macro)
+         
+c---------  Hari added  6/10/04
+         read(locunitnum,'(a80)') dummy_line
+         if(dummy_line(1:3).eq.'rip') then
+            read(locunitnum,'(a80)') dummy_line
+         else
+            backspace(locunitnum)
+         end if
+c---------------------- Hari         
+ 
          read (locunitnum, '(a5)') dumstring
          if (dumstring(1:5) .eq. 'userc') then
 c check for file keyword, and read past filename if present
@@ -2176,7 +2186,6 @@ c	          else if (idumm .eq. 2 .or. idumm .eq. 4) then
 	          else if(idumm.eq.8) then
                      read(locunitnum,*) idumm,(adumm,ja=1,9)         
                   else if(idumm.eq.11) then
-                     read(locunitnum,*) idumm,(adumm,ja=1,3)
                      read(locunitnum,*) idumm,(adumm,ja=1,3)
                   else if(idumm.eq.21) then
                      read(locunitnum,*) idumm,(adumm,ja=1,13)

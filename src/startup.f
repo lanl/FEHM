@@ -404,7 +404,7 @@ C***********************************************************************
       integer ncon_size,ncon_size_orig
       integer open_file
       integer idb_file, if_debug
-      real*8 tajj, tasii, tyming, dummyreal
+      real*8 tajj, tasii, tyming
       real*4 caz(2)
       real*8 rnwn1, rnwn2, rnwn3, rnwn, rnwd1, rnwd2, rnwd3, rnwd
       real*8 xmin_bbox, ymin_bbox, zmin_bbox
@@ -1450,7 +1450,7 @@ c
 !      endif
 
 c**** initalize concentration ****
-      if (iccen .ne. 0)  call concen (-1,0,dummyreal)
+      if (iccen .ne. 0)  call concen (-1,0)
 
       call pest(1)
 

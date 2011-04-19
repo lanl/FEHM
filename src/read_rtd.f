@@ -47,7 +47,7 @@ c     4. read f(t)
       use comrtd, only : rtdcount, time_rtd, rtd
       implicit none
       logical done
-      integer i, iocntl
+      integer i, iocntl,isize
       real*8 tdummy
       real*8 rtddummy
       real*8 fractional_area,pivottime,fact0,factfinal, factor
@@ -66,11 +66,17 @@ c     Add 25 more spaces for extrapolated tail of curve
       rtdcount = rtdcount + 25
 
 c     Allocate space in rtd arrays
-
       if (.not. allocated(time_rtd)) then
          allocate(time_rtd(rtdcount))
          allocate(rtd(rtdcount))
+      else
+         isize=size(time_rtd,1)
+         if(isize.ne.rtdcount) then
+            deallocate(time_rtd,rtd)
+            allocate(time_rtd(rtdcount),rtd(rtdcount))
+         end if       
       end if
+
       time_rtd = 0.
       rtd = 0.
 

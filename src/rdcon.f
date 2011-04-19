@@ -531,6 +531,8 @@ C**********************************************************************
       character*5 user_macro
       character*4 zmacro
       character*3 nstring
+cSPC
+      character*3 string3
       character*80 input_msg
       character*100 zone_file
       integer msg(16)
@@ -560,6 +562,14 @@ C**********************************************************************
 c
 c input tracer data
 c
+c  Hari  6/10/04  -------------
+         read(inpt,'(a3)') string3
+         if(string3(1:3) .eq. 'rip') then
+            read(inpt,*) ripfehm
+         else
+            backspace inpt
+         endif
+cHari ----------------------------------
          read(inpt,'(a5)') user_macro
          if(user_macro(1:5) .eq. 'userc' ) then
             backspace inpt

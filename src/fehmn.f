@@ -1,4 +1,4 @@
-      subroutine fehmn(method, state, in, out)
+      subroutine fehmn(method, state, ing, out)
 !***********************************************************************
 !  Copyright, 1993, 2004,  The  Regents of the University of California.
 !  This program was prepared by the Regents of the University of 
@@ -465,6 +465,7 @@ C***********************************************************************
       use comsk, only : save_omr
       use comsplitts
       use comsptr
+      use comuserc, only : in
       use comwt
       use comxi
       use davidi
@@ -486,11 +487,11 @@ C!DEC$ ATTRIBUTES dllexport, c :: fehmn
 C!DEC$ ATTRIBUTES value :: method
 C!DEC$ ATTRIBUTES reference :: method
 C!DEC$ ATTRIBUTES reference :: state
-C!DEC$ ATTRIBUTES reference :: in
+C!DEC$ ATTRIBUTES reference :: ing
 C!DEC$ ATTRIBUTES reference :: out
 
       integer(4) method, state
-      real(8) in(*), out(*)
+      real(8) ing(*), out(*)
 
 c     irun is a counter for each realization in a multiple simulation
 c     run of fehm. It is initialized to 0 in comai
@@ -523,6 +524,9 @@ c*** water table rise modification
       save flowflag, ichk, tassem, tasii, tscounter,
      &     contr_riptot, tims_save, day_saverip, in3save,
      &     water_table_old
+
+      allocate(in(3))
+      in = ing(1:3)
 
       inquire(unit=6,opened=it_is_open)
       if(method.eq.2) then
@@ -1170,7 +1174,7 @@ c**** obtain concentration solution ****
                in(3) = irun + .0001
             end if
          
-            call concen (1,tscounter,in)
+            call concen (1,tscounter)
             in(3) = in3save
          
 c compute kg out of system this time step

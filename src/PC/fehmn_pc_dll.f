@@ -1,4 +1,4 @@
-      subroutine fehmn(method, state, in, out)
+      subroutine fehmn(method, state, ing, out)
 !***********************************************************************
 !  Copyright, 1993, 2004,  The  Regents of the University of California.
 !  This program was prepared by the Regents of the University of 
@@ -465,6 +465,7 @@ C***********************************************************************
       use comsk, only : save_omr
       use comsplitts
       use comsptr
+      use comuserc, only : in, iaunit
       use comwt
       use comxi
       use davidi
@@ -485,11 +486,11 @@ c     For UNIX versions, these lines are ignored as comments.
 !DEC$ ATTRIBUTES dllexport, c :: fehmn
 !DEC$ ATTRIBUTES value :: method
 !DEC$ ATTRIBUTES reference :: state
-!DEC$ ATTRIBUTES reference :: in
+!DEC$ ATTRIBUTES reference :: ing
 !DEC$ ATTRIBUTES reference :: out
 
       integer(4) method, state
-      real(8) in(*), out(*)
+      real(8) ing(*), out(*)
 
 c     irun is a counter for each realization in a multiple simulation
 c     run of fehm. It is initialized to 0 in comai
@@ -518,10 +519,13 @@ c*** water table rise modification
       integer is_ch
       integer :: is_ch_t = 0
       integer :: out_flag = 0
+      integer :: size_old = 0
 
       save flowflag, ichk, tassem, tasii, tscounter,
      &     contr_riptot, tims_save, day_saverip, in3save,
      &     water_table_old
+
+      allocate (in(3))
 
       if(method.eq.2) then
 c	When run from Goldsim, the normal fehm screen output gets
@@ -541,7 +545,7 @@ c     Cleanup - close all files before starting a new realization
 	
          if (isave .ne. 0) call diskwrite
          write (iptty,*) 'Method = ', method
-         write (iptty,*) 'in(*) = ', (in(i), i=1,n_input_arguments)
+         write (iptty,*) 'in(*) = ', (ing(i), i=1,n_input_arguments)
          do i = 1, 99
             inquire(unit=i,opened=it_is_open)
             if(it_is_open) then
@@ -592,7 +596,7 @@ c         number_of_outbuffers = out(2)
       elseif(method.eq.0) then
          if (ripfehm .eq. 1) then
             write (iptty,*) 'Method = ', method
-            write (iptty,*) 'in(*) = ', (in(i), i=1,n_input_arguments)
+            write (iptty,*) 'in(*) = ', (ing(i), i=1,n_input_arguments)
          end if
 c     Initialize
          tscounter = 0
@@ -610,7 +614,7 @@ c     Increase counter for simulation number
          if (ripfehm .ne. 0) then
             irun = irun + 1
          else
-            irun = in(1)
+            irun = ing(1)
          end if   
 
 c**** set version number ****
@@ -655,15 +659,15 @@ c**** call co2_properties_interpolation_lookup_table RJP 04/09/07
      &        'filename')
 
 c**** read and write data ****
-         in3save = in(3)
-         if(in(3).eq.0) then
-            in(3) = irun + .0001
+         in3save = ing(3)
+         if(ing(3).eq.0) then
+            ing(3) = irun + .0001
          end if
          
-         call infiles(in(3))
+         call infiles(ing(3))
          if (nriver .ne. 0) call river_ctr(33)
 
-         in(3) = in3save
+         ing(3) = in3save
 c**** modify gravity to reflect vector value ****
 
 c transferred to fehmn.f(GAZ 2/19/97)
@@ -746,7 +750,31 @@ c  change to 4 in new version of rip
       elseif(method.eq.1) then
          if (ripfehm .eq. 1) then
             write (iptty,*) 'Method = ', method
-            write (iptty,*) 'in(*) = ', (in(i), i=1,n_input_arguments)
+            write (iptty,*) 'in(*) = ', (ing(i), i=1,n_input_arguments)
+cSPC 9/23/09
+            if (ptrak) then
+               index_N_large=int(in(8))*2+9
+               size_of_in = 9 + 5 + (ing(9) * (2 + nspeci)) + 
+     &              (ing(index_N_large) * ( 1 + 2 * nspeci))
+            else
+               size_of_in = 7+ing(7)*3+4
+            end if
+        
+            if (not(allocated(in))) then
+               allocate(in(size_of_in))
+            else if (size_old .le. size_of_in) then
+               deallocate(in)
+               allocate(in(size_of_in))
+            end if
+            size_old = size (in)
+            in=ing(1:size_of_in)
+            if(in(3).EQ.(in3_old+1.0)) then
+               method_dum = 0
+               qcout_old = 0.0
+               in3_old = in(3)
+            endif
+         else
+            in = ing
          end if
          ex = .FALSE.
          if(maxmix_flag.ne.0) then
@@ -802,7 +830,7 @@ c     Or in a conventional simulation with heat and mass solution
 c
             tscounter = tscounter + 1
 c       Don't use input value of initial time step anymore
-c         if(abs(tscounter).eq.1.and.in(3).ne.0.) then
+c         if(abs(tscounter).eq.1.and.ing(3).ne.0.) then
 c            day_saverip = overf
 c         end if
 
@@ -813,10 +841,10 @@ c**** time step control via iteration count ****
 c
 c     Set current index for flow field catalog number (rip option)
 c
-            flowflag = int(in(2))
+            flowflag = int(ing(2))
 cHari 3/1/07
 c*** water table rise modification
-            water_table_old = in(7)
+            water_table_old = ing(7)
 c*** adjust timestep size
             call timcrl
 
@@ -845,10 +873,10 @@ c
             if(move_wt.eq.1) call wtsictr(7)
 
             dtot = day * 86400.0
-c     No longer do this because GoldSim enters with in(1) = 0
+c     No longer do this because GoldSim enters with ing(1) = 0
 c     the first time, so we don't need to have the user input the
 c     initial delta time  
-c         if(abs(tscounter).eq.1.and.in(1).ne.0.) then
+c         if(abs(tscounter).eq.1.and.ing(1).ne.0.) then
 c            dtot = 86400.*day_saverip
 c         end if
 
@@ -1179,13 +1207,13 @@ c**** calculate velocities ****
             if(compute_flow .or. iccen .eq. 1) call veloc
 
 c**** obtain concentration solution ****
-            in3save = in(3)
-            if(in(3).eq.0) then
-               in(3) = irun + .0001
+            in3save = ing(3)
+            if(ing(3).eq.0) then
+               ing(3) = irun + .0001
             end if
          
             call concen (1,tscounter,in)
-            in(3) = in3save
+            ing(3) = in3save
          
 c compute kg out of system this time step
             qtoti = qtot - qtoti
@@ -1422,8 +1450,8 @@ c Move call to disk_write and contr after call to stress_uncoupled
          nsave = 1
 
          if (.not. ex) then
-            if(in(1).eq.0) then
-               if( tscounter .eq. 1 .or. in(1) .eq. 0
+            if(ing(1).eq.0) then
+               if( tscounter .eq. 1 .or. ing(1) .eq. 0
      2              .or. tims .eq. tims_save) then
                   if (allocated(itc) .and. nicg .gt. 1) then
                      if (itc(nicg-1).gt.0) then
@@ -1512,8 +1540,8 @@ c     Add call to routine to transfer particle information to out(i)
 c     array for rip simulations
 
          if(n_input_arguments .ne. 0) then
-            if(int(in(n_input_arguments+1)).ne.0
-     2           .and.int(in(n_input_arguments+4)).ne.0)
+            if(int(ing(n_input_arguments+1)).ne.0
+     2           .and.int(ing(n_input_arguments+4)).ne.0)
      3           call loadoutarray
          end if
 
@@ -1556,16 +1584,16 @@ c     Subroutine riptime - scope is local to fehmn
       character*5 ch5
 
       wtrise_flag = .false.
-      if(in(1).ne.0.) then
-         tims = abs(in(1))*365.25
+      if(ing(1).ne.0.) then
+         tims = abs(ing(1))*365.25
 
 c     Read in new flow field if the input flag has changed from the 
 c     Previous time step
 
-c         if(int(in(2)).ne.flowflag) then
+c         if(int(ing(2)).ne.flowflag) then
 c*** water table rise modification
-         if( (int(in(2)).ne.flowflag) .or.
-     &        (abs(in(7)-water_table_old).gt.1.d-6) ) then
+         if( (int(ing(2)).ne.flowflag) .or.
+     &        (abs(ing(7)-water_table_old).gt.1.d-6) ) then
 c*** water table rise modification
 
 c     Flag adjusted to tell particle tracker that new
@@ -1576,7 +1604,7 @@ c     flow field is being read in
 c*** water table rise modification
 c zvd 21-Jul-08 Always make water table adjustment when a new flow 
 c field is read
-            water_table = in(7)
+            water_table = ing(7)
             wtrise_flag = .true.
 c*** water table rise modification
 
@@ -1586,7 +1614,7 @@ c     Define file name except for the number
 
 c     Create number such that 1 is 10001, 2 is 10002, etc.
 
-            ncall = int(in(2)) + 10000
+            ncall = int(ing(2)) + 10000
 c     Write then number to ch5 character string
 
             write(ch5,'(i5)') ncall
@@ -1642,17 +1670,17 @@ c     number and rewind file
 
 
          end if
-      elseif(in(3).ne.0) then
+      elseif(ing(3).ne.0) then
 c bhl 2005
 c     Read in new flow field if the input flag has changed from the 
 c     Previous time step
 
-c         if(int(in(2)).ne.flowflag) then
+c         if(int(ing(2)).ne.flowflag) then
 c*** water table rise modification
-         if( (int(in(2)).ne.flowflag) .or.
-     &        (abs(in(7)-water_table_old).gt.1.d-6) ) then
+         if( (int(ing(2)).ne.flowflag) .or.
+     &        (abs(ing(7)-water_table_old).gt.1.d-6) ) then
 c*** water table rise modification
-            write(ierr,*)'in(2):',in(2)
+            write(ierr,*)'in(2):',ing(2)
             write(ierr,*)'flowflag:',flowflag
 
 
@@ -1662,8 +1690,8 @@ c     flow field is being read in
             tscounter = -tscounter
 
 c*** water table rise modification
-            if(abs(in(7)-water_table_old).gt.1.d-6) then
-               water_table = in(7)
+            if(abs(ing(7)-water_table_old).gt.1.d-6) then
+               water_table = ing(7)
                wtrise_flag = .true.
             else
                wtrise_flag = .false.
@@ -1676,7 +1704,7 @@ c     Define file name except for the number
 
 c     Create number such that 1 is 10001, 2 is 10002, etc.
 
-            ncall = int(in(2)) + 10000
+            ncall = int(ing(2)) + 10000
 c     Write then number to ch5 character string
 
             write(ch5,'(i5)') ncall
@@ -1735,7 +1763,7 @@ c     number and rewind file
 
 c bhl 2005
 c     tims = overf
-c     We are here if it is a GoldSim run and in(1) = 0
+c     We are here if it is a GoldSim run and ing(1) = 0
 c     Here we want the code to take a very small time step, essentially
 c     zero. This is done by the user setting a low value of daymin
 c     in the ctrl macro
@@ -1744,7 +1772,7 @@ c     Run batch file on first timestep
          if(abs(tscounter).eq.1) then
             string_call(1:14) = 'fehmn_ts0.bat '
 
-            ncall = int(in(2)) + 10000
+            ncall = int(ing(2)) + 10000
 
 c     Write then number to ch5 character string
 
@@ -1757,9 +1785,9 @@ c     character at a time. Start w/ digit 15
             end do
             string_call(19:19) = ' '
 
-c     Do the same with in(3)
+c     Do the same with ing(3)
 
-            ncall = int(in(3)) + 10000
+            ncall = int(ing(3)) + 10000
 
 c     Write then number to ch5 character string
 
@@ -1800,14 +1828,14 @@ c     Subroutine loadoutarray - scope is local to fehmn
       save out_save, time_dump, cur_time_save
 
 cHari 3/1/07    
-c     Before V 2.23, in(4) was the correct index, but now it is 
-c     in(8) because two random number seeds, a flag, and the 
+c     Before V 2.23, ing(4) was the correct index, but now it is 
+c     ing(8) because two random number seeds, a flag, and the 
 c     water table elevation were added to the interface before M_fine
-c     Now, M_fine is in(8). The number added to get to index_N_large 
+c     Now, M_fine is ing(8). The number added to get to index_N_large 
 c     is now 9 instead of 5
 c     BAR 2-9-2005
 
-      index_N_large=int(in(8))*2+9
+      index_N_large=int(ing(8))*2+9
 
 c     As of V 2.23, we now use a flag to decide whether there are
 c     nflow_frac inputs of fracture fractional flow data to
@@ -1815,32 +1843,32 @@ c     handle, or if the array skips that input and proceeds
 c     directly to number_of_species. This flag is used in the 
 c     if block below. BAR 2-9-2005
 
-      if(int(in(6)).eq.1) then
+      if(int(ing(6)).eq.1) then
 c     flow fraction data exists
-         index_temp = index_N_large+int(in(index_N_large))+1
-         nflow_frac = int(in(index_temp))
-         index_in_species=index_N_large+int(in(index_N_large))+
+         index_temp = index_N_large+int(ing(index_N_large))+1
+         nflow_frac = int(ing(index_temp))
+         index_in_species=index_N_large+int(ing(index_N_large))+
      2        nflow_frac+2
-         number_of_species = int(in(index_in_species))
+         number_of_species = int(ing(index_in_species))
       else
 c     no flow fraction data
-         index_in_species=index_N_large+int(in(index_N_large))+1
-         number_of_species = int(in(index_in_species))
+         index_in_species=index_N_large+int(ing(index_N_large))+1
+         number_of_species = int(ing(index_in_species))
       end if
-c     index_in_species=index_N_large+int(in(index_N_large))+1
-c     number_of_species = int(in(index_in_species))
+c     index_in_species=index_N_large+int(ing(index_N_large))+1
+c     number_of_species = int(ing(index_in_species))
 CHari if number of species is > 45 then we assume that flow
 CHari fractions are in use and we are really being passed nspecies*nlarge
 
 c     if(number_of_species.gt.45)then
 c     nflow_frac = number_of_species
-c     index_in_species=index_N_large+int(in(index_N_large))+
+c     index_in_species=index_N_large+int(ing(index_N_large))+
 c     2      nflow_frac+2
-c     number_of_species = int(in(index_in_species))
+c     number_of_species = int(ing(index_in_species))
 c     endif
       index_in_flag=index_in_species+1
       index_out_buffer=index_in_flag+2
-      number_of_outbuffers = int(in(index_out_buffer))
+      number_of_outbuffers = int(ing(index_out_buffer))
 
 
 c     Number of output buffers is the total number
@@ -2051,7 +2079,7 @@ c     scope is local to fehmn
       integer iznum, inode, nmedia, indexarray
       integer number_of_zones
 
-c     number_of_outbuffers = int(in(n_input_arguments+4))
+c     number_of_outbuffers = int(ing(n_input_arguments+4))
 
 c     Number of output buffers is the total number
 c     The water table is split into zones, and for
