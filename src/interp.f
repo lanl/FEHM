@@ -70,6 +70,13 @@
       real weight(4)
       integer points(4)
 
+      sigma_low(2) = min (sigma_low(2), par1v)
+      sigma_high(2) = max (sigma_high(2), par1v)
+      omega_low(2) = min (omega_low(2), par2v)
+      omega_high(2) = max (omega_high(2), par2v)
+      par3_low(2) = min (par3_low(2), par3v)
+      par3_high(2) = max (par3_high(2), par3v)
+     
       if(curve_structure.eq.1) then
 
 c     Free format structure - find closest curve and set indices
