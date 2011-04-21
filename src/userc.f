@@ -540,8 +540,8 @@ c--- Changes to SUPER INDEXING  9 28 04  IN(8+in(7)-1+nsp)
           if(in3_old.NE.in(3)) kdflag = 0
 	    if((iadsfl(nsp,1).eq.66).and.(kdflag.ne.1))then
 c		  a1adfl(nsp,1) = in(8+in(7)-1+nsp)
-		  a1adfl(nsp,1) = in(8+in(7)-1+nsp)*
-     &                 transform_kd((int(in(6))-4),int(in(2)))
+               a1adfl(nsp,1) = in(8+int(in(7))-1+nsp)*
+     &              transform_kd((int(in(6))-4),int(in(2)))
          write(iaunit,*) 'transform2',in(2),in(6),nsp,
      &      transform_kd((int(in(6))-4),int(in(2))),a1adfl(nsp,1)
 	      if(nsp.eq.nspeci) then
