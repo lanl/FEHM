@@ -12,12 +12,9 @@
 ! warranty,   express   or   implied,   or   assumes  any  liability  or
 ! responsibility for the use of this information.      
 !***********************************************************************
-
-C***********************************************************************
 CD1
 CD1
 CD1  This subroutine changes variable in air-water problems
-
 CD1
 C***********************************************************************
 CD2
@@ -27,8 +24,8 @@ CD2
 CD2    Rev 1.0   02/18/08 10:24:20   GAZ
 CD2 original version in process of being certified
 CD2 
-C*************
-CD1  PURPOSE **********************************************************
+C***********************************************************************
+CD1  PURPOSE 
 CD3
 CD3  REQUIREMENTS TRACEABILITY
 CD3
