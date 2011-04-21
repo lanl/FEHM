@@ -329,11 +329,11 @@ C***********************************************************************
       integer matnum,itemp,jj,ii,idum
       character*80 dumstring
       character*100 dummy_line, filename
-      integer msg(11)
+      integer msg(20)
       integer nwds
-      real*8 xmsg(11)
-      integer imsg(11)
-      character*32 cmsg(11)
+      real*8 xmsg(20)
+      integer imsg(20)
+      character*32 cmsg(20)
       integer kz,iz2,iz2p,i1,i2,ipivt,sehindexl,sehindexv,neqp1
       integer ireaddum, inptread, open_file
       integer locunitnum, kk, j
