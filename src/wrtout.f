@@ -492,12 +492,12 @@ c
      &           e14.6,' kg')
             if(ntty.eq.2) 
      &           write(iout,792) qtoti,qtoti/(day*8.64e4),curinflow,
-     &           curinflow/(day*8.64e4),toutfl,toutfl/(day*8.64e4),
-     &           totalflin,totalflin/(day*8.64e4)
+     &           curinflow/(day*8.64e4),toutfl,toutfl/(days*8.64e4),
+     &           totalflin,totalflin/(days*8.64e4)
             if (iatty.gt.0) write(iatty,792) qtoti,
      &           qtoti/(day*8.64e4),curinflow,
-     &           curinflow/(day*8.64e4),toutfl,toutfl/(day*8.64e4),
-     &           totalflin,totalflin/(day*8.64e4)
+     &           curinflow/(day*8.64e4),toutfl,toutfl/(days*8.64e4),
+     &           totalflin,totalflin/(days*8.64e4)
  792        format(/,1x,'Water discharge this time step: ',e14.6,' kg ',
      &           '(',e12.6,' kg/s)',/,1x,'Water input this time ',
      &           'step:     ',e14.6,' kg (',e12.6,' kg/s)',/,1x,
@@ -508,20 +508,20 @@ c
                if (ntty.eq.2)
      &              write(iout,791) qtotei,qtotei/(day*8.64e4),
      &              cureinflow,cureinflow/(day*8.64e4),teoutf,
-     &              teoutf/(day*8.64e4),totalein,totalein/(day*8.64e4)
+     &              teoutf/(days*8.64e4),totalein,totalein/(days*8.64e4)
                if (iatty.gt.0.) write(iatty,791) qtotei,
      &              qtotei/(day*8.64e4),cureinflow,
-     &              cureinflow/(day*8.64e4),teoutf,teoutf/(day*8.64e4),
-     &              totalein,totalein/(day*8.64e4)
+     &              cureinflow/(day*8.64e4),teoutf,teoutf/(days*8.64e4),
+     &              totalein,totalein/(days*8.64e4)
             else if(ico2.lt.0) then
                if (ntty.eq.2)
      &              write(iout,793) qtotei,qtotei/(day*8.64e4),
      &              cureinflow,cureinflow/(day*8.64e4),teoutf,
-     &              teoutf/(day*8.64e4),totalein,totalein/(day*8.64e4)
+     &              teoutf/(days*8.64e4),totalein,totalein/(days*8.64e4)
                if (iatty.gt.0.) write(iatty,793) qtotei,
      &              qtotei/(day*8.64e4),cureinflow,
-     &              cureinflow/(day*8.64e4),teoutf,teoutf/(day*8.64e4),
-     &              totalein,totalein/(day*8.64e4)
+     &              cureinflow/(day*8.64e4),teoutf,teoutf/(days*8.64e4),
+     &              totalein,totalein/(days*8.64e4)
             endif
  791        format(/,1x,'Enthalpy discharge this time step: ',e13.6,
      &           ' MJ (',e12.6,' MJ/s)',/,1x,'Enthalpy input this ',
@@ -656,18 +656,18 @@ c
                   write(iptty,797) amass,asteam,aener
                endif
                write(iptty,792) qtoti,qtoti/(day*8.64e4),curinflow,
-     &              curinflow/(day*8.64e4),toutfl,toutfl/(day*8.64e4),
-     &              totalflin,totalflin/(day*8.64e4)
+     &              curinflow/(day*8.64e4),toutfl,toutfl/(days*8.64e4),
+     &              totalflin,totalflin/(days*8.64e4)
                if(ico2.ge.0.or.ice.ne.0) then
                   write(iout,791) qtotei,qtotei/(day*8.64e4),cureinflow,
      &                 cureinflow/(day*8.64e4),teoutf,
-     &                 teoutf/(day*8.64e4),
-     &                 totalein,totalein/(day*8.64e4)
+     &                 teoutf/(days*8.64e4),
+     &                 totalein,totalein/(days*8.64e4)
                else if(ico2.lt.0) then
                   write(iout,793) qtotei,qtotei/(day*8.64e4),cureinflow,
      &                 cureinflow/(day*8.64e4),teoutf,
-     &                 teoutf/(day*8.64e4),
-     &                 totalein,totalein/(day*8.64e4)
+     &                 teoutf/(days*8.64e4),
+     &                 totalein,totalein/(days*8.64e4)
                endif
                if(ico2.ge.0.or.ice.ne.0) then
                   write(iptty,787) qt,qte
@@ -679,18 +679,18 @@ c
             endif
             if (ntty.eq.2.or.ntty.eq.1) then
                write(iout,792) qtoti,qtoti/(day*8.64e4),curinflow,
-     &              curinflow/(day*8.64e4),toutfl,toutfl/(day*8.64e4),
-     &              totalflin,totalflin/(day*8.64e4)
+     &              curinflow/(day*8.64e4),toutfl,toutfl/(days*8.64e4),
+     &              totalflin,totalflin/(days*8.64e4)
                if(ico2.ge.0.or.ice.ne.0) then
                   write(iout,791) qtotei,qtotei/(day*8.64e4),cureinflow,
      &                 cureinflow/(day*8.64e4),teoutf,
-     &                 teoutf/(day*8.64e4),
-     &                 totalein,totalein/(day*8.64e4)
+     &                 teoutf/(days*8.64e4),
+     &                 totalein,totalein/(days*8.64e4)
                else if(ico2.lt.0) then
                   write(iout,793) qtotei,qtotei/(day*8.64e4),cureinflow,
      &                 cureinflow/(day*8.64e4),teoutf,
-     &                 teoutf/(day*8.64e4),
-     &                 totalein,totalein/(day*8.64e4)
+     &                 teoutf/(days*8.64e4),
+     &                 totalein,totalein/(days*8.64e4)
                endif
             endif
             
