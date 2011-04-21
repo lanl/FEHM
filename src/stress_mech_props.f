@@ -81,8 +81,6 @@ c s kelkar may 2010, tmeperature dependant properties
 
       integer                      :: itmp, iModel
       real*8,  dimension(6)        :: gp_stress, gp_strain
-      real*8,  dimension(6)        :: gp_strain_mech
-      real*8,  dimension(6, 6)     :: DSai
       real*8 bulk_tol, bulk_mod
 
       parameter(bulk_tol=1.d-12)
