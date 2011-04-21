@@ -525,7 +525,7 @@ c*** water table rise modification
      &     contr_riptot, tims_save, day_saverip, in3save,
      &     water_table_old
 
-      allocate (in(3))
+      if (.not. allocated(in)) allocate (in(3))
       in = ing(1:3)
 
       inquire(unit=6,opened=it_is_open)
@@ -806,7 +806,7 @@ c
             flowflag = int(in(2))
 cHari 3/1/07
 c*** water table rise modification
-            water_table_old = in(7)
+            if (ripfehm .ne. 0) water_table_old = in(7)
 c*** adjust timestep size
             call timcrl
 
