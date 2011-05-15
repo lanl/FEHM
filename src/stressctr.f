@@ -11,8 +11,6 @@
 ! reproduced on all copies.  Neither  the  Government nor LANS makes any
 ! warranty,   express   or   implied,   or   assumes  any  liability  or
 ! responsibility for the use of this information.      
-!***********************************************************************
-
 !**********************************************************************
 !D1
 !D1 PURPOSE
@@ -95,6 +93,7 @@
       real*8 biot,erat,efac,epi,dpd,shpi,stress_min_prin,lith_min
       real*8 ctherm,eti,shti,lith_damage_fac,str_eff,pterm
       real*8 xdV, ydV, zdV
+      real*8 :: pp_fac = 1.
       integer el
       
       real*8 denf, por, por_new, sx1d
@@ -1497,7 +1496,7 @@ c iflg=4 calculate nonlinear material properties
      
 c iflg=5 calculate stress fluid interaction properties
       else if(iflg.eq.5) then
-       call stress_fluid_mech_props(0,Nonlin_model_flag,0)           
+         call stress_fluid_mech_props(0,0)           
  
 c update volumetric strain
       else if(iflg.eq.-6) then 
@@ -2159,8 +2158,8 @@ c     s kelkar nov 5,2010 output plane of max excess shear
                       strength = strength_out
                    endif
                    call principal_stress_3D(md,alambda,eigenvec)
-                   call max_excess_shear(md,friction,strength,
-     &                  alambda,eigenvec,excess_shear,shear_angle )
+                   call max_excess_shear(md,friction,strength,alambda,
+     &                  pp_fac,eigenvec,excess_shear,shear_angle )
                    shear_angle = shear_angle*180./pi
                    if(ntty.eq.2) write(iout,8120)  
      &                  md, str_x(md), str_y(md), str_z(md), 
@@ -2294,8 +2293,8 @@ c     s kelkar nov 5,2010 output plane of max excess shear
                       strength = strength_out
                    endif
                    call principal_stress_3D(md,alambda,eigenvec)
-                   call max_excess_shear(md,friction,strength,
-     &                  alambda,eigenvec,excess_shear,shear_angle )
+                   call max_excess_shear(md,friction,strength,alambda,
+     &                  pp_fac,eigenvec,excess_shear,shear_angle )
                    shear_angle = shear_angle*180./pi
                    if(ntty.eq.2) write(iout,8120)  
      &                  md, str_x(md), str_y(md), str_z(md), 
@@ -2443,7 +2442,7 @@ c 2D
           enddo
         endif
       endif
-      continue
+
       else if(iflg.eq.14) then
 c
 c write special history plot for stress 

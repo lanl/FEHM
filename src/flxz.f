@@ -55,7 +55,7 @@
       integer flxz_flag, indexa_axy, inneq, inode, izone
       integer ii, iv, ic
       integer, allocatable :: md(:)
-      real*8, allocatable :: sumfout(:,:), sumsink(:,:)
+      real*8, allocatable :: sumfout(:,:), sumfin(:,:), sumsink(:,:)
       real*8, allocatable :: sumsource(:,:), sumboun(:,:)
       real*8 ptime, out_tol
       character*18 value_string
@@ -70,9 +70,11 @@
          if (wflux_flag .and. vflux_flag .or. icarb .ne. 0) then
              allocate (sumfout(nflxz,2), sumsink(nflxz,2))
              allocate (sumsource(nflxz,2), sumboun(nflxz,2))
+		   allocate (sumfin(nflxz,2))
           else
              allocate (sumfout(nflxz,1), sumsink(nflxz,1))
              allocate (sumsource(nflxz,1), sumboun(nflxz,1))
+		   allocate (sumfin(nflxz,1))
          end if
       end if
              
@@ -114,6 +116,7 @@ c     into other parts of the zone
          end if
       end if
 
+	sumfin = 0.
       sumfout = 0.
       sumsink = 0.
       sumsource = 0.
@@ -175,10 +178,16 @@ c     sum_vap = sum_vap + c_vxy(indexa_axy)
                         end if
                      else if(c_axy(indexa_axy).lt.0.) then
 c     add to source sum
-                        if(nelm(iconn).eq.inneq) then
-                           sumsource(izone,ic) = sumsource(izone,ic) + 
+                        if(izoneflxz(idummy+nelm(iconn))
+     2                       .ne.izone.or.nelm(iconn)
+     3                       .eq.inneq) then
+	                     sumfin(izone,ic) = sumfin(izone,ic) + 
      &                          c_axy(indexa_axy)
-                        end if
+	                     if(nelm(iconn).eq.inneq) then
+			               sumsource(izone,ic) = sumsource(izone,ic) + 
+     &                          c_axy(indexa_axy)
+				         end if
+					  end if
                      end if
                      if(c_vxy(indexa_axy).gt.0.) then
 c     add to sum only if the connecting node is not also
@@ -197,10 +206,16 @@ c     sum_vap = sum_vap + c_vxy(indexa_axy)
                         end if
                      else if(c_vxy(indexa_axy).lt.0.) then
 c     add to source sum
+                        if(izoneflxz(idummy+nelm(iconn))
+     2                       .ne.izone.or.nelm(iconn)
+     3                       .eq.inneq) then
+	                     sumfin(izone,iv) = sumfin(izone,iv) + 
+     &                          c_vxy(indexa_axy)
                         if(nelm(iconn).eq.inneq) then
                            sumsource(izone,iv) = sumsource(izone,iv) + 
      &                          c_vxy(indexa_axy)
-                        end if
+					  end if
+					  endif
                      end if
                   else
                      if(wflux_flag .and. a_axy(indexa_axy).gt.0.) then
@@ -367,6 +382,8 @@ c     Fluxes are written to flux history file
      &           sumsource(izone,ic) = 0.d0
             if (abs(sumsink(izone,ic)) .lt. out_tol)  
      &           sumsink(izone,ic) = 0.d0
+            if (abs(sumfin(izone,ic)) .lt. out_tol)  
+     &           sumfin(izone,ic) = 0.d0
             if (abs(sumfout(izone,ic)) .lt. out_tol)  
      &           sumfout(izone,ic) = 0.d0
             if (abs(sumboun(izone,ic)) .lt. out_tol)  
@@ -375,22 +392,26 @@ c     Fluxes are written to flux history file
      &           sumsource(izone,iv) = 0.d0
             if (abs(sumsink(izone,iv)) .lt. out_tol)  
      &           sumsink(izone,iv) = 0.d0
+            if (abs(sumfin(izone,iv)) .lt. out_tol)  
+     &           sumfin(izone,iv) = 0.d0
             if (abs(sumfout(izone,iv)) .lt. out_tol)  
      &           sumfout(izone,iv) = 0.d0
 c            if (abs(sumboun(izone,iv)) .lt. out_tol)  
 c     &           sumboun(izone,iv) = 0.d0
            if (form_flag .le. 1) then
                write (flux_string(izone), 1050) sumsource(izone,ic), 
-     &              sumsink(izone,ic), sumfout(izone,ic), 
-     &              sumboun(izone,ic)
+     &              sumsink(izone,ic), sumfin(izone,ic),  
+     &              sumfout(izone,ic), sumboun(izone,ic)
                write (fluxv_string(izone), 1050) sumsource(izone,iv), 
-     &              sumsink(izone,iv), sumfout(izone,iv)
+     &              sumsink(izone,iv), sumfin(izone,iv), 
+     &			  sumfout(izone,iv)
             else
                write (flux_string(izone), 1055) sumsource(izone,ic), 
-     &              sumsink(izone,ic), sumfout(izone,ic), 
-     &              sumboun(izone,ic)
+     &              sumsink(izone,ic), sumfin(izone,ic),  
+     &              sumfout(izone,ic), sumboun(izone,ic)
                write (fluxv_string(izone), 1055) sumsource(izone,iv), 
-     &              sumsink(izone,iv), sumfout(izone,iv)
+     &              sumsink(izone,iv), sumfin(izone,iv),
+     &			  sumfout(izone,iv)
             end if
             ishiscfzz = ishiscfz + izone
             if (form_flag .le. 1) then

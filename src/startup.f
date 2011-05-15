@@ -1295,8 +1295,8 @@ c gaz 10-18-2001     call sice (1)
          if(ice.eq.0) then
             if(icarb.eq.1) then
                call icectrco2(-1,0)
-               call icectrco2(14,0)
                call icectrco2(-34,0)
+               call icectrco2(14,0)
                call icectrco2(3,0)
                call icectrco2(-3,0)
                call icectrco2(-33,0)

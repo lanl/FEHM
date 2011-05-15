@@ -85,7 +85,7 @@
       real*8 sl,sg,sw, pl, tl, tsolid
       real*8 denc,dencp,denct,enc,encp,enct,visc,viscp,visct
       real*8 denw,denwp,denwt,enw,enwp,enwt,visw,viswp,viswt
-      real*8 ycmax, xwp, xcp, xcpb, mwc, mww, xc_prime
+      real*8 ycmax, xwp, xcp, xcpb, mwc, mww, xc_prime, tmp1
       integer ico2d, ico2dc
       parameter(pcrit=7.377d0, tcrit=30.98)
       character*8 macro1
@@ -333,6 +333,7 @@ c           dpcp4 = 0.00
             xoc = 0.0
             yow = 0.0
             xow = 0.0
+		  dmol = 0.0
             inico2flg = 0
             macro = "carb "
 c     
@@ -374,7 +375,7 @@ c
                         pl=phico2(i)
                         iced = ices(i)
                         call co2_properties(2,iced,pl,dumb,dum1,duma,
-     &                       tliquid,dumc)
+     &                       tliquid,dumc,duma)
                         tco2(i)=tliquid
                      else if (abs (ices(i)) .eq. 3) then
                         tco2(i) =  sktmp(i)
@@ -686,7 +687,8 @@ c
                pl=phico2(ij)
                tl=tco2(ij)
                if(iced.eq.4) then
-                  call co2_properties(1,iced,pl,tl,dum1,icedc,dumb,dumc)
+                  call co2_properties(1,iced,pl,tl,dum1,icedc,dumb,dumc,
+     &			duma)
                   if(icedc.eq.3) then
                      tco2(ij)=tl
                      fg(ij) = fl(ij)
@@ -695,7 +697,8 @@ c
                      tco2(ij)=tl
                   endif
                elseif(iced.eq.3) then
-                  call co2_properties(1,iced,pl,tl,dum1,icedc,dumb,dumc)
+                  call co2_properties(1,iced,pl,tl,dum1,icedc,dumb,dumc,
+     &			duma)
                   if(icedc.eq.4) then
                      fl(ij) = fg(ij)
                      fg(ij) = 0.d0
@@ -703,7 +706,7 @@ c
                      if(icedc.eq.1) then
                         if(pl.lt.pcrit) then
                            call co2_properties(2,iced,pl,dumb,dum1,duma,
-     &                          tliquid,dumc)
+     &                          tliquid,dumc,duma)
                            if(fw(ij).lt.1.d0) then
                               icedc=2
                               fg(ij) = fg(ij)*0.9d0
@@ -721,7 +724,7 @@ c     gas-liquid conditions
                   sg=fg(ij)
                   sl=fl(ij)
                   call co2_properties(2,iced,pl,dumb,dum1,duma,tliquid,
-     &                 dumc)
+     &                 dumc,duma)
                   tco2(ij) = tliquid
                   if(sg.le.0.0) then
 c     liquid only can form                  
@@ -737,12 +740,13 @@ c     gas only can form
                   t(ij)=tco2(ij)
                elseif(iced.eq.1) then
 c     liquid only conditions
-                  call co2_properties(1,iced,pl,tl,dum1,icedc,dumb,dumc)
+                  call co2_properties(1,iced,pl,tl,dum1,icedc,dumb,dumc,
+     &			duma)
                   if(pl.lt.pcrit) then
                      if(icedc.eq.3) then
                         if(tl.lt.tcrit) then
                            call co2_properties(2,iced,pl,dumb,dum1,duma,
-     &                          tliquid,dumc)
+     &                          tliquid,dumc,duma)
                            if(fw(ij).lt.1.d0) then
                               icedc=2
                               fl(ij)=fl(ij)*0.9d0
@@ -759,6 +763,9 @@ c     liquid only conditions
 c     check if dissolved co2 is reached max.
 c     if water dissolving in co2 is activated, calculate partial pressure
 c     of co2
+c RJP added below 03/14/2011. This should be activated only for 
+c carb option '4' where dissolution comes into play.
+			if(iprtype.ge.4) then			
                if(iwatdis.eq.1) then
 c     calculate phase-change pressure and dp/dt
                   call h2o_properties(5,2,tl,dum1,dum2,dum3,
@@ -772,11 +779,12 @@ c     calculate phase-change pressure and dp/dt
                xcpb=(xcp/mwc)+(xwp/mww)
                xc_prime = xcp/(mwc*xcpb)
                call co2_properties(10,1,phico2(ij),tco2(ij),csalt(ij),
-     &              1,xc_prime,tem)
+     &              1,xc_prime,tem,ij)
                ycmax = tem(1)
                if(ico2d.eq.0) then
                   if(yc(ij).ge.ycmax) then
                      ico2dis(ij)=1
+				   ico2dc=ico2dis(ij)
                      yc(ij) = ycmax
                      yw(ij) = 1.d0 - yc(ij)
                      if(icedc.eq.2) then
@@ -802,6 +810,7 @@ c     calculate phase-change pressure and dp/dt
                         dmol(ij+neq) = tem(3)
                      else
                         ico2dis(ij) = 0
+				   ico2dc=ico2dis(ij)
 c     fw(ij)= 1.d0
 c     fl(ij)= 0.d0
                         yc(ij) = ycmax*0.999999d0
@@ -814,7 +823,8 @@ c     fl(ij)= 0.d0
                      dmol(ij+neq) = tem(3)
                   endif
                endif
-               if(icedc.ne.iced) then
+			 endif
+               if((icedc.ne.iced).or.(ico2dc.ne.ico2d)) then
                   strd = strd_co2
                else
                   strd = strd1
@@ -836,11 +846,12 @@ c
                tl=tco2(ij)
                iced = ices(ij)
                if(iced.ne.2) then
-                  call co2_properties(1,iced,pl,tl,dum1,icedc,dumb,dumc)
+                  call co2_properties(1,iced,pl,tl,dum1,icedc,dumb,dumc,
+     &			duma)
                   ices(ij)=icedc
                else
                   call co2_properties(2,iced,pl,dumb,dum1,duma,
-     &                 tliquid,dumc)
+     &                 tliquid,dumc,duma)
                   tco2(ij)=tliquid
                endif
 c     
@@ -859,7 +870,7 @@ c     calculate phase-change pressure and dp/dt
                xcpb=(xcp/mwc)+(xwp/mww)
                xc_prime = xcp/(mwc*xcpb)
                call co2_properties(10,1,phico2(ij),tco2(ij),csalt(ij),
-     &              1,xc_prime,tem)
+     &              1,xc_prime,tem,ij)
                xc(ij) = xc_prime
                xw(ij) = 1.d0 - xc(ij)
                if(iprtype.ge.4) then
@@ -891,7 +902,8 @@ c     RJP 11/09/06 Introduced new state check routine for initialization
             do ii=1, neq
                pl = phico2(ii)
                tl = tco2(ii)
-               call co2_properties(1,duma,pl,tl,dum1,ices(ii),dumb,dumc)
+               call co2_properties(1,duma,pl,tl,dum1,ices(ii),dumb,dumc,
+     &		 duma)
             enddo
 c     
          elseif(iflg.eq.2) then
@@ -1030,8 +1042,8 @@ c     state.
                      else
                         yc(i) = yc(i) - bp(i3)*strd
                      endif
-                     if (phico2(i) .ge. 0. .and. phico2(i) .lt. 0.1)
-     &                    phico2(i) = 0.1
+c                     if (phico2(i) .ge. 0. .and. phico2(i) .lt. 0.1)
+c     &                    phico2(i) = 0.1
                   else
                      phico2(i)=phico2(i)-bp(i1)*strd
                      fg(i) = fg(i) - bp(i2)*strd
@@ -1046,8 +1058,8 @@ c     endif
                         yc(i) = yc(i) - bp(i3)*strd
                      endif
                      fl(i) = 1.d0-fg(i)-fw(i)
-                     if (phico2(i) .ge. 0. .and. phico2(i) .lt. 0.1)
-     &                    phico2(i) = 0.1
+c                     if (phico2(i) .ge. 0. .and. phico2(i) .lt. 0.1)
+c     &                    phico2(i) = 0.1
                   endif
                   t(i) = tco2(i)
                   if(iwatdis.eq.1) then
@@ -1131,7 +1143,7 @@ c     only for first iteration
                         if(abs(kaco2(ij)).gt.0) then
                            if(kaco2(ij).eq.2) then
                               call co2_properties(4,ices(ij),phico2(ij),
-     &                             -eskco2(ij),dum1,duma,dumb,dumc)
+     &                             -eskco2(ij),dum1,duma,dumb,dumc,duma)
                               call h2o_properties(9,1,phi(ij),
      &                             -eskco2(ij),csalt(ij),
      &                             dum3,ensrc,dum4,dum5,dum6,dum7)
@@ -1148,7 +1160,8 @@ c     calculate phase-change pressure and dp/dt
                               xcpb=(xcp/mwc)+(xwp/mww)
                               xc_prime = xcp/(mwc*xcpb)
                               call co2_properties(10,1,phico2(ij),
-     &                             -eskco2(ij),csalt(ij),1,xc_prime,tem)
+     &                             -eskco2(ij),csalt(ij),1,xc_prime,tem,
+     &							 duma)
                               if((flowco2s(ij).lt.tem(1)).and.
      &                             (flowco2s(ij).ne.0d0))then
                                  sk(ij) = skco2(ij)*(1-flowco2s(ij))
@@ -1158,19 +1171,18 @@ c     calculate phase-change pressure and dp/dt
                                  skco2(ij) = skco2(ij)*tem(1)
                               endif
                            else
-                              call co2_properties(4,ices(ij),
-     &                             phico2(ij),
-     &                             -eskco2(ij),dum1,duma,dumb,dumc)
+                              call co2_properties(4,ices(ij),phico2(ij),
+     &                             -eskco2(ij),dum1,duma,dumb,dumc,duma)
                            endif
                         else
                            call co2_properties(4,ices(ij),phico2(ij),
-     &                          -eskco2(ij),dum1,duma,dumb,dumc)
+     &                          -eskco2(ij),dum1,duma,dumb,dumc,duma)
                         endif
                         eflowco2(ij)=dumc(4)
                      endif
                   elseif((kaco2(ij).eq.-4).or.(kaco2(ij).eq.-5)) then
                      call co2_properties(4,ices(ij),phico2(ij),
-     &                    tco2(ij),dum1,duma,dumb,dumc)
+     &                    tco2(ij),dum1,duma,dumb,dumc,duma)
                      eflowco2(ij)=dumc(4)
                   else						
                      eflowco2(ij)=eskco2(ij)
@@ -1417,25 +1429,29 @@ c
 c     initialize variables
             
             do i = 1, neq
-               i1 = nelm(i)+1
-               i2 = nelm(i+1)
-               do j = i1, i2
-                  kb = nelm(j)
-                  if((ka(i).eq.0).or.(kaco2(i).eq.0))then
-                     if((kaco2(kb).eq.-3).or.(kaco2(kb).eq.-5))then
-                        ii = istrw(j-neq-1)
-                        wellim(kb) = abs(sx(ii,isox)+sx(ii,isoy)+
-     &                       sx(ii,isoz))*(pnx(kb)+pny(kb)+pnz(kb))/3.d0
-                        wellco2(kb) = wellim(kb)
+			if((kaco2(i).eq.-3).or.(kaco2(i).eq.-5)) then
+				tmp1 = 0.d0
+				i1 = nelm(i)+1
+				i2 = nelm(i+1)
+				do j = i1, i2
+					kb = nelm(j)
+					if((ka(kb).eq.0).or.(kaco2(kb).eq.0))then
+						ii = istrw(j-neq-1)
+						if(ii.ne.0) then
+						tmp1 = max(tmp1,abs(sx(ii,isox)+sx(ii,isoy)+
+     &                       sx(ii,isoz)))
+						endif
                      endif
-                  endif
-               enddo
+                  enddo
+				wellim(i) = tmp1*(pnx(i)+pny(i)+pnz(i))/3.d0
+                  wellco2(i) = 10.d0*wellim(i)
+               endif
             enddo
             if (.not. co2_read) then
                do i=1,n
                   if(ices(i).eq.2) then
                      call co2_properties(2,ices(i),pl,dumb,dum1,duma,
-     &                    tliquid,dumc)
+     &                    tliquid,dumc,duma)
                      tco2(i)=tliquid
                   else
                      tco2(i)= toco2(i)
@@ -1494,7 +1510,7 @@ c     calculate phase-change pressure and dp/dt
                do i=1,n
                   if(ices(i).eq.2) then
                      call co2_properties(2,ices(i),pl,dumb,dum1,duma,
-     &                    tliquid,dumc)
+     &                    tliquid,dumc,duma)
                      tco2(i)=tliquid
                   else
                      tco2(i)= toco2(i)
@@ -1894,7 +1910,7 @@ c     fol = 0.d0
                   pl = phico2(ii)
                   tl = tco2(ii)
                   call co2_properties(1,duma,pl,tl,dum1,
-     &                 ices(ii),dumb,dumc)
+     &                 ices(ii),dumb,dumc,duma)
                enddo
                iceso = ices
                ieos = 1
@@ -1996,9 +2012,11 @@ c     calculate pressure  and dp/dt
 c     two phase (gas/liquid) conditions
                   
 c     calculate phase-change temperature and dt/dp
-                  call co2_properties(2,icesd,pl,dumb,dum1,duma,tl,dumc)
+                  call co2_properties(2,icesd,pl,dumb,dum1,duma,tl,dumc,
+     &			duma)
                   dtps=dumc(1)
-                  call co2_properties(3,icesd,dumb,tl,dum1,duma,pl,dumc)
+                  call co2_properties(3,icesd,dumb,tl,dum1,duma,pl,dumc,
+     &			duma)
                   psatd=dumc(1)
                else
                   tl=tco2(i)

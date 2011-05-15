@@ -1,4 +1,4 @@
-subroutine co2_properties(iflg,iphase,var1,var2,var3,istate,var4,var5)
+subroutine co2_properties(iflg,iphase,var1,var2,var3,istate,var4,var5,var6)
 !***********************************************************************
 ! Copyright 2011 Los Alamos National Security, LLC  All rights reserved
 ! Unless otherwise indicated,  this information has been authored by an
@@ -15,6 +15,10 @@ subroutine co2_properties(iflg,iphase,var1,var2,var3,istate,var4,var5)
 
 
   use property_interpolate
+  use comco2, only: co2_prop
+  use comdi, only: ices
+  use comai, only: neq
+
   implicit none
   real*8 mol, mco2, mco22
   real*8 var1,var2,var3,var4,var5(9)
@@ -26,7 +30,7 @@ subroutine co2_properties(iflg,iphase,var1,var2,var3,istate,var4,var5)
   real*8 tauco2_na_cl, dtauco2_na_cldp, dtauco2_na_cldt
   real*8 temperature, pressure,rhs,drhsdp,drhsdt,dmco2dp,dmco2dt
   real*8 mco21, dmco21dp,dmco21dt,dmco21dxc,dmco2dx,dvar4dt,dvar4dp
-  integer iflg, iphase, iphase1, ifail, istate, icode(9)
+  integer iflg, iphase, iphase1, ifail, istate, icode(9), var6
   character*200 interpfile, amessage
   !     units are P : MPa
   !     T : degree celsius
@@ -210,18 +214,11 @@ subroutine co2_properties(iflg,iphase,var1,var2,var3,istate,var4,var5)
         endif
      endif
 
-     fg = c1+(c2+c3*t+(c4/t)+(c5/(t-150.d0)))*p+(c6+c7*t+(c8/t))*p*p  &
-          +(c9+c10*t+(c11/t))*dlog(p)+((c12+c13*t)/p)+(c14/t)+(c15*t*t)
-
-     dfgdp = (c2+c3*t+(c4/t)+(c5/(t-150.d0)))+2.*(c6+c7*t+(c8/t))*p  &
-          +(c9+c10*t+(c11/t))/p-((c12+c13*t)/(p*p))
-
-!     dfgdp = dfgdp*10.d0
-
-     dfgdt = (c3-(c4/(t*t))-(c5/((t-150.d0)*(t-150.d0))))*p+ &
-          (c7-(c8/(t*t)))*p*p+(c10-(c11/(t*t)))*dlog(p)+(c13/p) &
-          -c14/(t*t)+2*c15*t
-
+	if(ices(var6).eq.3) then
+		call co2_fugacity(var1,t,co2_prop(9*neq+var6),fg,dfgdp,dfgdt)
+	else
+		call co2_fugacity(var2,t,co2_prop(var6),fg,dfgdp,dfgdt)
+	endif
      liq_cp = 28.9447706d0 + (-0.0354581768d0*t) + (-4770.67077d0/t)  &
           +(1.02782768d-5*t*t) + (33.8126098/(630-t)) + (9.0403714d-3*p)  &
           +(-1.14934031d-3*p*dlog(t)) + (-0.307405726*p/t)  &
@@ -288,6 +285,10 @@ subroutine co2_properties(iflg,iphase,var1,var2,var3,istate,var4,var5)
           ((mco21+dexp(rhs))*(mco21+dexp(rhs)))
 
 
+!	 mco2 = 0.016*var1
+!	 dmco2dp = 0.0016d0
+!	 dmco2dt = 0.00d0
+!	 dmco2dx = 0.d0
      var5(1) = mco2
      var5(2) = dmco2dp*10.d0
      var5(3) = dmco2dt

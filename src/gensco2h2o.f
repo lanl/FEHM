@@ -91,7 +91,7 @@ c    call to ther_co2_h2o to get rel perms & thermodynamic properties
 c    for water-rich phase and co2-rich phase. The thermodynamic properties 
 c    are now stored in arrays and are accessed during formation of eqns.
 c
-        call ther_co2_h2o(0,0)
+c        call ther_co2_h2o(0,0)
 c
 c     water component: add heat-mass contribution of water
 c     Conservation of water-mass equation
@@ -369,6 +369,9 @@ c
 
 c   enforce thermal equilibrium( set t2 = t1)
 
+	do i = 1, idofm*neq
+		if(dabs(bp(i)).le.1d-15) bp(i) = 0.d0
+	enddo
       call co2h2o_combine(2,idofm)
 
       return

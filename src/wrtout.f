@@ -447,6 +447,10 @@ c
 c     compute and printout fluxes
 c     
             call flxo(2)
+c
+c     compute and printout fluxes for CO2
+c
+            if(icarb.eq.1)  call flxo(3)
 
 c     Compute flux passing thorugh a zone
 

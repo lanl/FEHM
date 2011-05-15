@@ -141,8 +141,12 @@ c RJP added for turning off CO2 injection wells
          end if	
          if(days.ge.shut_time*365.25) then
             do i = 1, neq
-               if(skco2(i).lt.0.d0) skco2(i) = 0
-            enddo
+               if(kaco2(i).eq.-4) then
+                  wellco2(i) = 0.d0
+               elseif(skco2(i).lt.0.d0) then
+                  skco2(i) = 0
+               endif
+           enddo
          endif
 c RJP added 10/17/07 for changing the saturations for goldsim
       case(998)

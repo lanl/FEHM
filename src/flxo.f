@@ -129,10 +129,10 @@ c
       use comdti
       use comxi
       use comai
-
+      use comco2, only : icarb, c_axy, c_vxy
       implicit none
 
-      integer chngsign, iroot
+      integer chngsign, iroot, ifile(2), open_file
       integer i, i1, i2, if, iff1, ii, iii, iz, j, jj, jjj, kb
       integer neqp1, nflx_old, nmatavw, nmat2avw,  node1, node2
       real*8  area_t, axyf
@@ -143,6 +143,7 @@ c
       real*8  x1, x2, y1, y2, z00, z1, z2
       real*8  x_flx, y_flx, z_flx
       real(8) :: axy = 0., vxy = 0.
+      character(200) :: internode_file_root, internode_file
       logical null1
       parameter(z00=0.0d00, tolf = 1.d-50)
 
@@ -165,21 +166,24 @@ c
      &              then
 ! Use output file prefix to name internode flux output file if it exists
                   call file_prefix(nmfil(5), iroot)
-                  if (iroot .gt. 94) iroot = 94
-                  open(83,file=nmfil(5)(1:iroot)//
-     +                 '.internode_fluxes.out',status='unknown')
+                  internode_file_root = nmfil(5)(1:iroot)
+                  ifile(1) = open_file (nmfil(5)(1:iroot), 'unknown')
                else 
 ! Use input file prefix to name internode flux output file
                   call file_prefix(nmfil(2), iroot)
-                  if (iroot .gt. 94) iroot = 94
-                  open(83,file=nmfil(2)(1:iroot)//
-     +                 '.internode_fluxes.out',status='unknown')
-               endif
+                  internode_file_root = nmfil(5)(1:iroot)
+              endif
             else
                iroot = len_trim (root_name)
-               if (iroot .gt. 94) iroot = 94
-               open(83,file=root_name(1:iroot)//
-     +              '.internode_fluxes.out',status='unknown')
+               internode_file_root = root_name(1:iroot)
+            end if
+            internode_file = internode_file_root(1:iroot) //
+     &           '.internode_fluxes.out'
+            ifile(1) = open_file (internode_file, 'unknown')
+            if (icarb .ne. 0) then
+               internode_file = internode_file_root(1:iroot) //
+     &               '.internode_co2_fluxes.out'
+               ifile(2) = open_file (internode_file, 'unknown')
             end if
             nflx_old = 0
          else
@@ -247,7 +251,7 @@ c
                 enddo
             endif
          enddo
-      else if(iz.eq.2) then
+      else if(iz.eq.2.or.iz.eq.3) then
 c     
 c     extract fluxes or velocities
 c     
@@ -276,19 +280,35 @@ c
 c     use internode fluxes already stored         
 c     axy=a_axy(jj-neqp1)
 c     vxy=a_vxy(jj-neqp1)
-                  
-                  if(i.gt.neq.and.j.gt.neq) then
-                     axy=a_axy(jj-neqp1+nmatavw)
-                     if (irdof .ne. 13 .and. jswitch .eq. 0) 
-     &                    vxy=a_vxy(jj-neqp1+nmatavw)
-                  else if (i.le.neq.and.j.le.neq) then
-                     axy=a_axy(jj-neqp1)
-                     if (irdof .ne. 13 .and. jswitch .eq. 0) 
-     &                    vxy=a_vxy(jj-neqp1)
-                  else
-                     axy=a_axy(nmat2avw+i)
-                     if (irdof .ne. 13 .and. jswitch .eq. 0) 
-     &                    vxy=a_vxy(nmat2avw+i)
+
+                  if(iz.eq.2) then
+                     if(i.gt.neq.and.j.gt.neq) then
+                        axy=a_axy(jj-neqp1+nmatavw)
+                        if (irdof .ne. 13 .and. jswitch .eq. 0) 
+     &                       vxy=a_vxy(jj-neqp1+nmatavw)
+                     else if (i.le.neq.and.j.le.neq) then
+                        axy=a_axy(jj-neqp1)
+                        if (irdof .ne. 13 .and. jswitch .eq. 0) 
+     &                       vxy=a_vxy(jj-neqp1)
+                     else
+                        axy=a_axy(nmat2avw+i)
+                        if (irdof .ne. 13 .and. jswitch .eq. 0) 
+     &                       vxy=a_vxy(nmat2avw+i)
+                     endif
+                  elseif(iz.eq.3) then
+                     if(i.gt.neq.and.j.gt.neq) then
+                        axy=c_axy(jj-neqp1+nmatavw)
+                        if (irdof .ne. 13 .and. jswitch .eq. 0) 
+     &                       vxy=c_vxy(jj-neqp1+nmatavw)
+                     else if (i.le.neq.and.j.le.neq) then
+                        axy=c_axy(jj-neqp1)
+                        if (irdof .ne. 13 .and. jswitch .eq. 0) 
+     &                       vxy=c_vxy(jj-neqp1)
+                     else
+                        axy=c_axy(nmat2avw+i)
+                        if (irdof .ne. 13 .and. jswitch .eq. 0) 
+     &                       vxy=c_vxy(nmat2avw+i)
+                     endif
                   endif
                   
                   if(ivelo.lt.0) then
@@ -360,8 +380,9 @@ c     mass fluxes
 c     
 c     write out fluxes or velocities
 c     
+	if(iz.eq.2) then
          if(ivelo.ge.0) then
-            if (iptty.gt.0) write(iptty,20)
+	      if (iptty.gt.0) write(iptty,20)
             if (iptty.gt.0) write(iptty,30)
             if (iout .ne. 0) write(iout,20)
             if (iout .ne. 0) write(iout,30)
@@ -371,8 +392,25 @@ c
             if (iout .ne. 0) write(iout,21)
             if (iout .ne. 0) write(iout,35)
          endif
+	elseif(iz.eq.3) then
+         if(ivelo.ge.0) then
+	      if (iptty.gt.0) write(iptty,22)
+            if (iptty.gt.0) write(iptty,30)
+            if (iout .ne. 0) write(iout,22)
+            if (iout .ne. 0) write(iout,30)
+         else
+            if (iptty.gt.0) write(iptty,23)
+            if (iptty.gt.0) write(iptty,35)
+            if (iout .ne. 0) write(iout,23)
+            if (iout .ne. 0) write(iout,35)
+         endif
+	endif
+
+
  20      format(/,20x,'Internode Fluxes')
  21      format(/,20x,'Internode Velocities')
+ 22      format(/,20x,'Internode Fluxes for CO2')
+ 23      format(/,20x,'Internode Velocities for CO2')	
  30      format(1x,'Node1  Node2',11x,'X,Y,Z Vapor Flux(kg/sec)  ',
      &        '        X,Y,Z Liquid Flux (kg/sec)')
  35      format(1x,'Node1  Node2',11x,'X,Y,Z Vapor Vel.(m/sec)  ',
@@ -385,7 +423,7 @@ c
          endif
          if (iout .ne. 0) write(iout,355) jj,nflxc(jj)-iff1+1
          if (iptty .gt. 0) write(iptty,355) jj,nflxc(jj)-iff1+1
-         write(83,356) jj, nflxc(jj)-iff1+1, l, days
+         write(ifile(iz-1),356) jj, nflxc(jj)-iff1+1, l, days
 355      format(10x,2i10,'   (call number,number of pairs)')
 356      format(3i6,1x,e14.6, 
      &        ' (call number,number of pairs,time step,days)')
@@ -411,7 +449,7 @@ c
                  flx12ld=flx12l(if)
                  if(abs(flx12vd).lt.tolf) flx12vd = 0.0d00
                  if(abs(flx12ld).lt.tolf) flx12ld = 0.0d00
-            write(83,40) 
+            write(ifile(iz-1),40) 
      &           iflx1(if),iflx2(if),flx12vd,flx12ld             
             if(icnl.eq.0) then
               if(iptty.gt.0) write(iptty,40) iflx1(if),iflx2(if),
