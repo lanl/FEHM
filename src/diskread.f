@@ -522,7 +522,7 @@ c Use values from input
                         pl = phico2(i)
                         tl = tco2(i)
                         call co2_properties(1,duma,pl,tl,dum1,
-     &                       ices(i),dumb,dumc)
+     &                       ices(i),dumb,dumc,duma)
                      enddo
                      iceso = ices
                      ieos = 1
@@ -1044,7 +1044,7 @@ c Use values from input
                         pl = phico2(i)
                         tl = tco2(i)
                         call co2_properties(1,duma,pl,tl,dum1,
-     &                       ices(i),dumb,dumc)
+     &                       ices(i),dumb,dumc,duma)
                      enddo
                      iceso = ices
                      ieos = 1
@@ -1386,7 +1386,7 @@ c Set CO2 parameters using t and phi
             pl = phico2(i)
             tl = tco2(i)
             call co2_properties(1,duma,pl,tl,dum1,
-     &           ices(i),dumb,dumc)
+     &           ices(i),dumb,dumc,duma)
          enddo
          iceso = ices
          ieos = 1

@@ -182,7 +182,7 @@ c
             if (icarb .ne. 0) then
                internode_file = internode_file_root(1:iroot) //
      &               '.internode_co2_fluxes.out'
-               ifile(1) = open_file (internode_file, 'unknown')
+               ifile(2) = open_file (internode_file, 'unknown')
             end if
             nflx_old = 0
          else

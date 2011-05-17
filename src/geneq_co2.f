@@ -544,18 +544,17 @@ c
             diwyakb=diwya(kb)
             dgwyckb=wat_prop(3*neq+kb)
             dgwyakb=wat_prop(4*neq+kb)
-c gaz  080810           
-c           enwkb=wat_prop(5*neq+kb)
-c           dewkb=wat_prop(6*neq+kb)
-c           dewekb=wat_prop(7*neq+kb)
-            enckb=co2_prop(12*neq+kb)
-            deckb=co2_prop(14*neq+kb)
-            decekb=co2_prop(13*neq+kb)
-            decwkb= 0.d0
+            enwkb=wat_prop(5*neq+kb)
+            dewkb=wat_prop(6*neq+kb)
+            dewekb=wat_prop(7*neq+kb)
+c            enckb=co2_prop(12*neq+kb)
+c            deckb=co2_prop(14*neq+kb)
+c            decekb=co2_prop(13*neq+kb)
+c            decwkb= 0.d0
             dewwkb=0.d0
             dewyckb=wat_prop(11*neq+kb)
             dewyakb=0.d0
-            decyckb = 0.0
+c            decyckb = 0.0
             dwpi=-pxy+0.5*sx4d*wat_prop(neq+i)*(cord(kz,igrav)-
      &           cord(iz,igrav))
             dwpkb=pxy+0.5*sx4d*wat_prop(neq+kb)*(cord(kz,igrav)-
@@ -567,17 +566,17 @@ c           dewekb=wat_prop(7*neq+kb)
             if(icesd.eq.2) dwei=0.d0
             if(icesd.eq.2) dwekb=0.d0
             axyf=(fid*diwkb+fid1*diwi)
-            aexyf=(fid*diwkb*enckb+fid1*diwi*enci)
+            aexyf=(fid*diwkb*enwkb+fid1*diwi*enwi)
             axy=axyd*axyf
             aexy=axyd*aexyf
             dwapi=dwpi*axyf+axyd*fid1*diwpi
             dwapkb=dwpkb*axyf+axyd*fid*diwpkb
             dwaei=dwei*axyf+axyd*fid1*diwei
             dwaekb=dwekb*axyf+axyd*fid*diwekb
-            dwepi=dwpi*aexyf+axyd*fid1*(diwpi*enci+diwi*deci)
-            dwepkb=dwpkb*aexyf+axyd*fid*(diwpkb*enckb+diwkb*deckb)
-            dweei=dwei*aexyf+axyd*fid1*(diwei*enci+diwi*decei)
-            dweekb=dwekb*aexyf+axyd*fid*(diwekb*enckb+diwkb*decekb)
+            dwepi=dwpi*aexyf+axyd*fid1*(diwpi*enwi+diwi*dewi)
+            dwepkb=dwpkb*aexyf+axyd*fid*(diwpkb*enwkb+diwkb*dewkb)
+            dweei=dwei*aexyf+axyd*fid1*(diwei*enwi+diwi*dewei)
+            dweekb=dwekb*aexyf+axyd*fid*(diwekb*enwkb+diwkb*dewekb)
 
 c     derivatives wrt water-rich phase fraction
 
@@ -585,8 +584,8 @@ c     derivatives wrt water-rich phase fraction
             dwwkb = -pxy*dpcpw(kb)
             dwawi=dwwi*axyf+axyd*fid1*diwwi
             dwawkb=dwwkb*axyf+axyd*fid*diwwkb
-            dwewi=dwwi*aexyf+axyd*fid1*(diwwi*enci+diwi*decwi)
-            dwewkb=dwwkb*aexyf+axyd*fid*(diwwkb*enckb+diwkb*decwkb)
+            dwewi=dwwi*aexyf+axyd*fid1*(diwwi*enwi+diwi*dewwi)
+            dwewkb=dwwkb*aexyf+axyd*fid*(diwwkb*enwkb+diwkb*dewwkb)
 
 c     derivatives wrt co2 mass fraction in water-rich phase
 
@@ -594,9 +593,9 @@ c     derivatives wrt co2 mass fraction in water-rich phase
             dwyckb = 0.5*sx4d*dgwyckb*(cord(kz,igrav)-cord(iz,igrav))
             dwayci = dwyci*axyf+axyd*fid1*diwyci
             dwayckb = dwyckb*axyf+axyd*fid*diwyckb
-            dweyci = dwyci*aexyf+axyd*fid1*(diwyci*enci+diwi*decyci)
-            dweyckb = dwyckb*aexyf+axyd*fid*(diwyckb*enckb+diwkb*
-     &           decyckb)
+            dweyci = dwyci*aexyf+axyd*fid1*(diwyci*enwi+diwi*dewyci)
+            dweyckb = dwyckb*aexyf+axyd*fid*(diwyckb*enwkb+diwkb*
+     &           dewyckb)
 
             if(iprtype.eq.4) then
                if(ico2dis(i).eq.0) then
@@ -620,15 +619,15 @@ c     derivatives wrt co2 mass fraction in water-rich phase
                   dwewkb=dweyckb
                else
                   if(ices(kb).eq.2) then
-                     dwapkb=dwapkb+dwayckb*dmol(i)
-     &                    +dwayckb*dmol(i+neq)
-                     dwepkb=dwepkb+dweyckb*dmol(i)
-     &                    +dweyckb*dmol(i+neq)
+                     dwapkb=dwapkb+dwayckb*dmol(kb)
+     &                    +dwayckb*dmol(kb+neq)
+                     dwepkb=dwepkb+dweyckb*dmol(kb)
+     &                    +dweyckb*dmol(kb+neq)
                   else
-                     dwapkb=dwapkb+dwayckb*dmol(i)
-                     dwaekb=dwaekb+dwayckb*dmol(i+neq)
-                     dwepkb=dwepkb+dweyckb*dmol(i)
-                     dweekb=dweekb+dweyckb*dmol(i+neq)
+                     dwapkb=dwapkb+dwayckb*dmol(kb)
+                     dwaekb=dwaekb+dwayckb*dmol(kb+neq)
+                     dwepkb=dwepkb+dweyckb*dmol(kb)
+                     dweekb=dweekb+dweyckb*dmol(kb+neq)
                   endif
                endif
             endif
@@ -639,8 +638,8 @@ c     derivatives wrt air mass fraction in water-rich phase
             dwyakb = 0.5*sx4d*dgwyakb*(cord(kz,igrav)-cord(iz,igrav))
             dwayai = dwyai*axyf+axyd*fid1*diwyai
             dwayakb = dwyakb*axyf+axyd*fid*diwyakb
-            dweyai = dwyai*aexyf+axyd*fid1*(diwyai*enci+diwi*dewyai)
-            dweyakb = dwyakb*aexyf+axyd*fid*(diwyakb*enckb+diwkb*
+            dweyai = dwyai*aexyf+axyd*fid1*(diwyai*enwi+diwi*dewyai)
+            dweyakb = dwyakb*aexyf+axyd*fid*(diwyakb*enwkb+diwkb*
      &           dewyakb)
 
 c     
@@ -839,15 +838,15 @@ c     derivatives wrt co2 mass fraction in water-rich phase (yc)
                   dvewkb=dveyckb
                else
                   if(ices(kb).eq.2) then
-                     dvapkb=dvapkb+dvayckb*dmol(i)
-     &                    +dvayckb*dmol(i+neq)
-                     dvepkb=dvepkb+dveyckb*dmol(i)
-     &                    +dveyckb*dmol(i+neq)
+                     dvapkb=dvapkb+dvayckb*dmol(kb)
+     &                    +dvayckb*dmol(kb+neq)
+                     dvepkb=dvepkb+dveyckb*dmol(kb)
+     &                    +dveyckb*dmol(kb+neq)
                   else
-                     dvapkb=dvapkb+dvayckb*dmol(i)
-                     dvaekb=dvaekb+dvayckb*dmol(i+neq)
-                     dvepkb=dvepkb+dveyckb*dmol(i)
-                     dveekb=dveekb+dveyckb*dmol(i+neq)
+                     dvapkb=dvapkb+dvayckb*dmol(kb)
+                     dvaekb=dvaekb+dvayckb*dmol(kb+neq)
+                     dvepkb=dvepkb+dveyckb*dmol(kb)
+                     dveekb=dveekb+dveyckb*dmol(kb+neq)
                   endif
                endif
             endif
@@ -1058,15 +1057,15 @@ c     derivatives wrt co2 mass fraction in water-rich phase (yc)
                   dlewkb=dleyckb
                else
                   if(ices(kb).eq.2) then
-                     dlapkb=dlapkb+dlayckb*dmol(i)
-     &                    +dlayckb*dmol(i+neq)
-                     dlepkb=dlepkb+dleyckb*dmol(i)
-     &                    +dleyckb*dmol(i+neq)
+                     dlapkb=dlapkb+dlayckb*dmol(kb)
+     &                    +dlayckb*dmol(kb+neq)
+                     dlepkb=dlepkb+dleyckb*dmol(kb)
+     &                    +dleyckb*dmol(kb+neq)
                   else
-                     dlapkb=dlapkb+dlayckb*dmol(i)
-                     dlaekb=dlaekb+dlayckb*dmol(i+neq)
-                     dlepkb=dlepkb+dleyckb*dmol(i)
-                     dleekb=dleekb+dleyckb*dmol(i+neq)
+                     dlapkb=dlapkb+dlayckb*dmol(kb)
+                     dlaekb=dlaekb+dlayckb*dmol(kb+neq)
+                     dlepkb=dlepkb+dleyckb*dmol(kb)
+                     dleekb=dleekb+dleyckb*dmol(kb+neq)
                   endif
                endif
             endif

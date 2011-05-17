@@ -674,6 +674,7 @@ c
             call icectr(1,ndummy)
 c RJP 04/10/07 modified for CO2
          else if(icarb.eq.1) then
+            call icectrco2(-34,ndummy)
             call icectrco2(1,ndummy)
          endif
 c end block for idof.ne.1
@@ -691,11 +692,11 @@ c
          else if(ico2.eq.0) then
 c RJP 04/10/07
             if(icarb.eq.1) then
-               call icectrco2(-34,ndummy)
 c              call icectrco2(3,ndummy)
 c              call icectrco2(-3,ndummy)
-               call icectrco2(33,ndummy)
-               call icectrco2(-35,ndummy)
+c              call icectrco2(33,ndummy)
+			call icectrco2(-34,ndummy)
+              call icectrco2(-35,ndummy)
             else
                call thermw(ndummy)
             end if
