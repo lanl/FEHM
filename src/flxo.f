@@ -146,6 +146,7 @@ c
       character(200) :: internode_file_root, internode_file
       logical null1
       parameter(z00=0.0d00, tolf = 1.d-50)
+      save ifile
 
 c next 3 lines added for andy flow rate arrays
       neqp1=neq+1
