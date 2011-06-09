@@ -1337,7 +1337,7 @@ c
                            daytr=sehmindays
                         endif
                      endif
-                     write(iout,400) id,t1sk(i)
+                     if (iout .ne. 0) write(iout,400) id,t1sk(i)
  400                 format(1x,/,'tracer injection started for node ',
      2                    i7,' at days=',g12.6)
                      icfin=1
@@ -1356,7 +1356,7 @@ c
                         t2sk(i)=daysi+sehmindays
                         daytr=sehmindays
                      endif
-                     write(iout,401) i,t2sk(i)
+                     if (iout .ne. 0) write(iout,401) i,t2sk(i)
                      istop_flag = .true.
  401                 format(1x,/,'tracer injection stopped for node ',
      2                    i7,' at days=',g12.6)
@@ -1389,43 +1389,51 @@ c     Add counter for total SIA iterations
          call resettrc(daytr)
          reset_tracer = .TRUE.
          if (tol_value .eq. 1) then
-            write(iout, *) 'Number of SIA iterations exceeded'
-            write(iout,*) 'Time step reduced to ',daytr,' days'
+            if (iout .ne. 0) then
+               write(iout, 3010)
+               write(iout, 3020) daytr
+            end if
             if( iptty .gt. 0 ) then
-               write(iptty, *) 'Number of SIA iterations exceeded'
-               write(iptty,*) 'Time step reduced to ',daytr,' days'
+               write(iptty, 3010)
+               write(iptty, 3020) daytr
             endif
          elseif (tol_value .eq. 2) then
-            write(iout, *) 'Negative concentration encountered'
-            write(iout,*) 'Time step reduced to ',daytr,' days'
+            if (iout .ne. 0) then
+               write(iout, 3030)
+               write(iout, 3020) daytr
+            end if
             if( iptty .gt. 0 ) then
-               write(iptty, *) 'Negative concentration encountered'
-               write(iptty,*) 'Time step reduced to ',daytr,' days'
+               write(iptty, 3030)
+               write(iptty, 3020) daytr
             endif
          else
-            write(iout, *) 'Newton-Raphson iteration limit ',
-     2                     'exceeded in speciation subroutine.'
-            write(iout,*) 'Time step reduced to ',daytr,' days'
+            if (iout .ne. 0) then
+               write(iout, 3040)
+               write(iout, 3020) daytr
+            end if
             if( iptty .gt. 0 ) then
-               write(iptty, *) 'Newton-Raphson iteration limit ',
-     2                         'exceeded in speciation subroutine.'
-               write(iptty,*) 'Time step reduced to ',daytr,' days'
+               write(iptty, 3040) 
+               write(iptty, 3020) daytr
             endif
          endif
          tol_value = 0
+ 3010    format ('Number of SIA iterations exceeded')
+ 3020    format ('Time step reduced to ', g16.9, ' days')
+ 3030    format ('Negative concentration encountered')
+ 3040    format ('Newton-Raphson iteration limit exceeded in ',
+     2        'speciation subroutine.')
       else
 *** convergence
          if(iprttrc.ge.abs(nprttrc).or.icfin.le.0) then
             if (nprttrc .gt. 0) then
                if (iout .ne. 0 .and. idebug .eq. 1) 
-     1              write(iout,*)'# SIA Iterations ', sia_iter
-     2              ,'(total = ',sia_iter_tot, ' )'
+     1              write(iout, 3050) sia_iter, sia_iter_tot
             endif
          endif
          if(iptty .ne. 0 .and. idebug .eq. 1) then
-            write(iptty,*)'# SIA Iterations ', sia_iter
-     2          ,'(total = ',sia_iter_tot, ' )'
+            write(iptty, 3050) sia_iter, sia_iter_tot
          end if
+ 3050    format ('# SIA Iterations ', i5, ' (total = ', i5, ')')
          reset_tracer = .FALSE.
 c calculate porosity change due to mineral reactions
 c         ps_delta_rxn = 0.
