@@ -73,8 +73,9 @@ c
       character*80 dummy_string
       logical null1
       real*8 dis_tol,vold,cfrac,wfrac
-      integer inode,inneq,izone,matrix_node,idummy
+      integer inode,inneq,izone,idummy
       real*8 sumfout,sumsink,sumsource,sumboun
+      logical matrix_node
       parameter (max_iter = 10, dis_tol = 1.e-8)
 c      
       if(ibcfar.eq.0) return

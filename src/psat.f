@@ -145,7 +145,7 @@ CD5 delp         real*8      Term used in iterative solution
 CD5 tfun         real*8      Intermediate term in calculation
 CD5 tfunn        real*8      Intermediate term in calculation
 CD5 tfund        real*8      Intermediate term in calculation
-CD5 maxitp       real*8      Maximum number of iterations allowed
+CD5 maxitp       int         Maximum number of iterations allowed
 CD5 k            int         Current iteration number in do loop
 CD5 resid        real*8      Residual in iterative calculation
 CD5 drlp         real*8      Intermediate term in calculation
@@ -351,9 +351,9 @@ C***********************************************************************
       use comai
       implicit none
 
-      integer isatf,k
+      integer isatf,k,maxitp
       real*8 tl,dpsatt,x,x2,x3,x4,pfun,pfunn,pfund,dpst,dptsn,dpstd
-      real*8 delp,tfun,tfunn,tfund,maxitp,resid,drlp
+      real*8 delp,tfun,tfunn,tfund,resid,drlp
 
       psat=0.0
       dpsatt=0.0

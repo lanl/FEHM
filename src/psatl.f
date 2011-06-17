@@ -158,7 +158,7 @@ CD5                              saturation
 CD5 tfun         real*8      Intermediate term in calculation
 CD5 tfunn        real*8      Intermediate term in calculation
 CD5 tfund        real*8      Intermediate term in calculation
-CD5 maxitp       real*8      Maximum number of iterations allowed
+CD5 maxitp       int         Maximum number of iterations allowed
 CD5 k            int         Current iteration number in do loop
 CD5 pfun0        real*8      Intermediate term in calculation
 CD5 resid        real*8      Residual in iterative calculation
@@ -284,10 +284,10 @@ C***********************************************************************
       use comai
       implicit none
 
-      integer isatf,k
+      integer isatf,k,maxitp
       real*8 tl,pcaps,dpcaps,dpsatt,dpsats
       real*8 x,x2,x3,x4,pfun,pfunn,pfund,dpst,dptsn,dpstd,psatl0,delp
-      real*8 ddelt,ddels,tfun,tfunn,tfund,maxitp,pfun0,resid,drlp
+      real*8 ddelt,ddels,tfun,tfunn,tfund,pfun0,resid,drlp
 
       psatl=0.0
       dpsatt=0.0
