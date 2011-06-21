@@ -192,7 +192,21 @@ CPS       Set parameter to keep solution vapor if called for
 CPS       Set parameter to keep solution liquid if called for
 CPS       Set other thermodynamic parameters
 CPS     ENDIF
-CPS     
+CPS
+C*****
+C***** AF 10/11/15
+C*****     
+cphs     use ABS(flag)              
+cphs     IF ABS(flag).GT.1 then                     
+cphs           IF ABS(flag).EQ.2 set properties
+cphs           ELSE
+cphs           IF ABS(flag).EQ.3 set properties
+cphs           ELSE
+cphs           IF ABS(flag).EQ.4 set properties
+cphs           (this can be continued to include as many thermo sets as
+cphs             one could use).  But only one at a time.
+cphs     ENDIF
+C*****
 CPS   EXITIF we are now done
 CPS   
 CPS   ENDIF
@@ -221,26 +235,39 @@ C**********************************************************************
       use comdi
       use comdti
       use comai
+      use comtable
       implicit none
+C*****
+C*****AF 11/15/10
+C*****
+c      include 'comtable.h'                ! phs 4/23/99 
+C*****
 
       real*8 tsat,psat,dtsatp
       real*8 visl0,visl1,t0,t1,coef0,coef1
       integer i,iieosd
-
+C*****
+C*****AF 11/15/10
+C*****
+      integer ios                         ! phs 4/23/99
+c      integer ipsat, itsat
+C*****
+      tableFLAG = 0.
+C*****
       if ( iieosd .eq. 0 )  then
 c     read input when appropriate
          ipsat = 0
          read (inpt  ,'(a80)') wdd1
          read(wdd1,*) iieosd,itsat
          if(itsat.eq.2) then
-          read(wdd1,*) iieosd,itsat,tsat,psat,dtsatp
+            read(wdd1,*) iieosd,itsat,tsat,psat,dtsatp
          endif
          read (inpt  ,   *)  ew1,ew2,ew3,ew4,ew5,ew6,ew7,ew8,ew9, 
      2        ew10,ew11
          read (inpt  ,   *)  ev1,ev2,ev3,ev4,ev5,ev6,ev7,ev8,ev9,
      2        ev10,ev11
          if ( itsat .eq. 2)  then
-c   linear saturation line 
+c     linear saturation line 
             ipsat = 0
             tsa0=tsat-dtsatp*psat
             tspa1=dtsatp
@@ -292,6 +319,74 @@ c     if liquid phase(itsat>0) set tsat=+1000.(this will keep it liquid)
       end if
       if ( iieosd .lt. 0 )  then
          iieosd=-iieosd
+
+C*****
+C*****AF 11/15/10
+C*****
+C     else
+C     
+c     end if      ! if ( iieosd .lt. 0 )
+c-------------------------------------------
+c-------CASE 5 is the LOOKUP TABLE
+c-------Uses comtable.h to store the
+c-------values read in from lookup.in   
+c-------tableFLAG = 1 means table is in use!
+c--------------------------------------------LOOKUP TABLE
+
+      else if (iieosd.EQ.5) then 
+
+         tableFLAG = 1
+         iieosd = 1
+         ios    = 0
+         n      = 0
+         pmax(1)   =   0.
+         tmax(1)   =   0.
+         pmin(1)   = 100.
+         tmin(1)   = 100.
+         incp   = 0.0
+         inct   = 0.0
+         nump   = 0
+         numt   = 0
+
+c--------read in the table                     LOOKUP TABLE
+
+         open(unit=1,file='lookup.in')
+C     
+         do while (ios.EQ.0)
+            n = n + 1
+            read(1,101,iostat=ios) (PP(n,i), i=1,11)
+            if(ios.EQ.0) then
+               pmin(1) = min(PP(n,1),pmin(1))
+               tmin(1) = min(PP(n,2),tmin(1))
+               pmax(1) = max(PP(n,1),pmax(1))
+               tmax(1) = max(PP(n,2),tmax(1))
+            end if
+         end do
+         n=n-1
+         close(1)
+c---------LOOKUP TABLE
+         do i = 1,n
+            if (PP(i,1).NE.PP(i+1,1))then
+               nump = nump + 1
+               if(incp.EQ.0) then
+                  incp = ABS(PP(i,1) - PP(i+1,1))
+               end if
+            end if
+C     
+            if (PP(i,2).NE.PP(i+1,2)) then
+               if(inct.EQ.0) then
+                  inct = ABS(PP(i,2) - PP(i+1,2))
+               end if
+            end if
+         end do
+C     
+         numt = n/nump
+c     LOOKUP TABLE
+ 101     FORMAT(f7.3,1x,f9.4,1x,9(e13.6,1x))
+c-------------------------------------------------------
+c--------------------------------------------------DO LINEAR 
+C*****
+C     
       else
 c     linear expressions for thermo functions
 c     exceptions are liquid viscosity and vapor density 
@@ -337,7 +432,7 @@ c     first zero enthalpy terms
             cev(i+10,iieosd)=0.0
          enddo
 
-c set density
+c     set density
          crl(11,iieosd)=1.0
          crl( 1,iieosd)=ew3-ew4*ew1-ew5*ew2
          crl( 2,iieosd)=ew4
@@ -358,49 +453,55 @@ c     set enthalpy
          cev( 5,iieosd)=ev8
 
 c     set viscosity
-c        cvl(11,iieosd)=1.0
-c        cvl( 1,iieosd)=ew9-ew10*ew1-ew11*ew2
-c        cvl( 2,iieosd)=ew10
-c        cvl( 5,iieosd)=ew11
-c        assume derivative wrt t 1 degC
-c        assume assume no pressure dependence of liquid viscosity
-c        t0=ew2
-c        t1=t0+1.0
-c        visl0=ew9
-c        visl1=visl0+ew11
-c        coef1=-ew11/(visl1*t1-visl0*t0)
-c        coef0=visl0*(1.0+coef1*t0)
-c        cvl(11,iieosd)=1.0
-c        cvl(15,iieosd)=coef1                         
-c        cvl( 1,iieosd)=coef0  
-      if(ew11.ne.0) then           
-         t0=ew2
-         t1=t0+1.0
-         visl0=ew9
-         visl1=visl0+ew11
-         coef1=-(visl1*t1-visl0*t0)/ew11
-         coef0=visl0*(coef1+t0)
-         cvl(11,iieosd)=coef1
-         cvl(15,iieosd)=1.0                           
-         cvl( 1,iieosd)=coef0   
-      else
-         cvl(11,iieosd) = 1.
-         visl0=ew9
-         cvl( 1,iieosd)=visl0
-      endif                      
+c     cvl(11,iieosd)=1.0
+c     cvl( 1,iieosd)=ew9-ew10*ew1-ew11*ew2
+c     cvl( 2,iieosd)=ew10
+c     cvl( 5,iieosd)=ew11
+c     assume derivative wrt t 1 degC
+c     assume assume no pressure dependence of liquid viscosity
+c     t0=ew2
+c     t1=t0+1.0
+c     visl0=ew9
+c     visl1=visl0+ew11
+c     coef1=-ew11/(visl1*t1-visl0*t0)
+c     coef0=visl0*(1.0+coef1*t0)
+c     cvl(11,iieosd)=1.0
+c     cvl(15,iieosd)=coef1                         
+c     cvl( 1,iieosd)=coef0  
+         if(ew11.ne.0) then           
+            t0=ew2
+            t1=t0+1.0
+            visl0=ew9
+            visl1=visl0+ew11
+            coef1=-(visl1*t1-visl0*t0)/ew11
+            coef0=visl0*(coef1+t0)
+            cvl(11,iieosd)=coef1
+            cvl(15,iieosd)=1.0                           
+            cvl( 1,iieosd)=coef0   
+         else
+            cvl(11,iieosd) = 1.
+            visl0=ew9
+            cvl( 1,iieosd)=visl0
+         endif                      
          cvv(11,iieosd)=1.0
          cvv( 1,iieosd)=ev9-ev10*ev1-ev11*ev2
          cvv( 2,iieosd)=ev10
          cvv( 5,iieosd)=ev11
-    
+         
 c     set maximum limits large
          pmin(iieosd)=-2.
          pmax(iieosd)=1000.0
          tmin(iieosd)=-200.
          tmax(iieosd)=1500.0
 
+C     
+C*****
+C*****AF
+C     
+      end if                    ! if iieosd .eq. 5
+C     
+C     
 c     change coefficient set to iieosd
-      end if
       do i=1,n0
          iieos(i)=iieosd
       enddo

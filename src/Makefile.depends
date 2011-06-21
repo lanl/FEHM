@@ -59,6 +59,7 @@ cntlin.o: comai.o comxi.o
 cntlio.o: comai.o comxi.o
 co2_array.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 co2_array.o: comhi.o commeth.o davidi.o
+co2_fugacity.o: params_eosco2
 co2_properties.o: comai.o comco2.o comdi.o interpolate.o
 co2ctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 co2ctr.o: comhi.o comii.o comki.o comxi.o davidi.o
@@ -404,7 +405,7 @@ paractr.o: com_part.o comai.o combi.o comdi.o comdti.o comgi.o davidi.o
 part_track.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 part_track.o: comflow.o comgi.o comhi.o comji.o compart.o compfrac.o comsk.o
 part_track.o: comsptr.o comuserc.o davidi.o
-peint.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comii.o
+peint.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comii.o comtable.o
 pest.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
 pest.o: comgi.o comji.o comxi.o davidi.o
 phase_balance_ctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
@@ -502,7 +503,7 @@ startup.o: comei.o comfi.o comflow.o comgi.o comii.o commeth.o compart.o
 startup.o: comrlp.o comsi.o comsptr.o comwt.o comzone.o davidi.o
 steady.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comsplitts.o
 steady.o: comsteady.o davidi.o
-sther.o: comai.o comdi.o comdti.o comii.o
+sther.o: comai.o comdi.o comdti.o comii.o comtable.o
 stone_rlp.o: comai.o comco2.o comcomp.o comrlp.o
 storage_derivatives.o: comci.o comdti.o davidi.o
 storsx.o: comai.o combi.o comdti.o comxi.o
@@ -564,7 +565,7 @@ ther_meth_h2o.o: comgi.o comii.o commeth.o comrxni.o
 thermc.o: comai.o combi.o comchem.o comci.o comcouple.o comdi.o comdti.o
 thermc.o: comfi.o comgi.o comrxni.o davidi.o
 thermw.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
-thermw.o: comii.o comrlp.o comrxni.o
+thermw.o: comii.o comrlp.o comrxni.o comtable.o
 thickness.o: comai.o combi.o comdi.o comdti.o comfi.o comgi.o comrxni.o
 thomeercap.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comhi.o
 thomeercap.o: comki.o
@@ -585,7 +586,7 @@ userc.o: comai.o combi.o comci.o comdi.o comdti.o compart.o comrxni.o
 userc.o: comuserc.o
 uz_wtctr.o: comai.o combi.o comdi.o comdti.o comii.o
 varchk.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o comfi.o
-varchk.o: comgi.o comii.o davidi.o
+varchk.o: comgi.o comii.o comtable.o davidi.o
 varchk_part.o: comai.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o comii.o
 varchk_part.o: davidi.o
 varctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o

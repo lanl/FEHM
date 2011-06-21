@@ -768,6 +768,19 @@ CPS
 CPS END thermw
 CPS
 C**********************************************************************
+C*****
+C***** AF 11/15/10 updated for lookup table
+c----------------------------------------------------------
+cphs  adding lookup table capabilities      4/23/99
+cphs  adding comtable.h 
+cphs  tableFLAG = 1 means use the lookup table for 
+cphs                water properties
+c----------------------------------------------------------
+catf
+catf  modified to give more complete error messages 
+catf  when lookup table errors out
+catf
+c-----------------------------------------------------------
 
       use comai
       use combi
@@ -780,9 +793,13 @@ C**********************************************************************
       use comii
       use comrlp, only : rlpnew
       use comrxni
+      use comtable
 
       implicit none
-
+C*****
+C***** AF 11/15/10
+c      include 'comtable.h'                   ! phs 4/23/99
+C*****
       integer ndummy,iieosl,mid,mi,ieosd,iieosd,kq
       real*8 dtin,dporpl,dportl,xrl,xrv,drl,drv,drlp,drvp,ela0,elpa1
       real*8 elpa2,elpa3,elta1,elta2,elta3,elpta,elp2ta,elpt2a
@@ -819,6 +836,11 @@ C**********************************************************************
       real*8 dhflxp,sbound,cprd,edif,denrd,vfd,rl,dvfp,tfun
       real*8 tfunn,tfund,dtpsn,dtpsd,dpldt,psat,vfcal,rop2,daep2
       real*8 dqv,dhflxe,drovp,drovt
+C*****
+C***** AF 11/15/10
+      real*8 zwp, zwt                                ! phs 4/23/99
+      integer indexp, indext, point(4),izerrFLAG     ! phs 4/23/99
+C*****
       real*8 xa,xa2,xa3,xa4
       real*8 p_energy
       real*8, allocatable :: sto1(:)
@@ -1091,95 +1113,199 @@ c     calculate temperature and dt/dp
          tl2x=tl2*x
          tlx2=tl*x2
          if(ieosd.ne.3) then
-
+C*****
+C*****AF 11/15/10
+c-----------------------------------------
+c     phs      Lookup table if tableFLAG = 1
+c-----------------------------------------
+c     
+            if(tableFLAG.NE.1) then
+c*****
 c     liquid enthalpy
-            enwn1=ela0+elpa1*x+elpa2*x2+elpa3*x3
-            enwn2=elta1*tl+elta2*tl2+elta3*tl3
-            enwn3=elpta*tlx+elpt2a*tl2x+elp2ta*tlx2
-            enwn=enwn1+enwn2+enwn3
-            enwd1=elb0+elpb1*x+elpb2*x2+elpb3*x3
-            enwd2=eltb1*tl+eltb2*tl2+eltb3*tl3
-            enwd3=elptb*tlx+elpt2b*tl2x+elp2tb*tlx2
-            enwd=enwd1+enwd2+enwd3
-            enw=enwn/enwd
-            enl=enw + p_energy
+               enwn1=ela0+elpa1*x+elpa2*x2+elpa3*x3
+               enwn2=elta1*tl+elta2*tl2+elta3*tl3
+               enwn3=elpta*tlx+elpt2a*tl2x+elp2ta*tlx2
+               enwn=enwn1+enwn2+enwn3
+               enwd1=elb0+elpb1*x+elpb2*x2+elpb3*x3
+               enwd2=eltb1*tl+eltb2*tl2+eltb3*tl3
+               enwd3=elptb*tlx+elpt2b*tl2x+elp2tb*tlx2
+               enwd=enwd1+enwd2+enwd3
+               enw=enwn/enwd
+               enl=enw + p_energy
 
 c     derivatives of enthalpy
-            dhwpn1=elpa1+2*elpa2*x+3*elpa3*x2+elpta*tl
-            dhwpn1=enwd*(dhwpn1+elpt2a*tl2+elp2ta*2*tlx)
-            dhwpn2=elpb1+2*elpb2*x+3*elpb3*x2+elptb*tl
-            dhwpn2=enwn*(dhwpn2+elpt2b*tl2+elp2tb*2*tlx)
-            dhwpn=dhwpn1-dhwpn2
-            dhwpd=enwd**2
-            dhwp=dhwpn/dhwpd
-            dhwtn1=elta1+2*elta2*tl+3*elta3*tl2+elpta*x
-            dhwtn1=enwd*(dhwtn1+elpt2a*2*tlx+elp2ta*x2)
-            dhwtn2=eltb1+2*eltb2*tl+3*eltb3*tl2+elptb*x
-            dhwtn2=enwn*(dhwtn2+elpt2b*2*tlx+elp2tb*x2)
-            dhwtn=dhwtn1-dhwtn2
-            dhwtd=enwd**2
-            dhwt=dhwtn/dhwtd
-            dhlt=dhwt
-            dhlp=dhwp
+               dhwpn1=elpa1+2*elpa2*x+3*elpa3*x2+elpta*tl
+               dhwpn1=enwd*(dhwpn1+elpt2a*tl2+elp2ta*2*tlx)
+               dhwpn2=elpb1+2*elpb2*x+3*elpb3*x2+elptb*tl
+               dhwpn2=enwn*(dhwpn2+elpt2b*tl2+elp2tb*2*tlx)
+               dhwpn=dhwpn1-dhwpn2
+               dhwpd=enwd**2
+               dhwp=dhwpn/dhwpd
+               dhwtn1=elta1+2*elta2*tl+3*elta3*tl2+elpta*x
+               dhwtn1=enwd*(dhwtn1+elpt2a*2*tlx+elp2ta*x2)
+               dhwtn2=eltb1+2*eltb2*tl+3*eltb3*tl2+elptb*x
+               dhwtn2=enwn*(dhwtn2+elpt2b*2*tlx+elp2tb*x2)
+               dhwtn=dhwtn1-dhwtn2
+               dhwtd=enwd**2
+               dhwt=dhwtn/dhwtd
+               dhlt=dhwt
+               dhlp=dhwp
 
 c     liquid density
-            rnwn1=dla0+dlpa1*x+dlpa2*x2+dlpa3*x3
-            rnwn2=dlta1*tl+dlta2*tl2+dlta3*tl3
-            rnwn3=dlpta*tlx+dlpt2a*tl2x+dlp2ta*tlx2
-            rnwn=rnwn1+rnwn2+rnwn3
-            rnwd1=dlb0+dlpb1*x+dlpb2*x2+dlpb3*x3
-            rnwd2=dltb1*tl+dltb2*tl2+dltb3*tl3
-            rnwd3=dlptb*tlx+dlpt2b*tl2x+dlp2tb*tlx2
-            rnwd=rnwd1+rnwd2+rnwd3
-            rnw=rnwn/rnwd
-            rol=rnw
-            if(cden) rol = rol+factcden*anl((ispcden-1)*n0+mi)
+               rnwn1=dla0+dlpa1*x+dlpa2*x2+dlpa3*x3
+               rnwn2=dlta1*tl+dlta2*tl2+dlta3*tl3
+               rnwn3=dlpta*tlx+dlpt2a*tl2x+dlp2ta*tlx2
+               rnwn=rnwn1+rnwn2+rnwn3
+               rnwd1=dlb0+dlpb1*x+dlpb2*x2+dlpb3*x3
+               rnwd2=dltb1*tl+dltb2*tl2+dltb3*tl3
+               rnwd3=dlptb*tlx+dlpt2b*tl2x+dlp2tb*tlx2
+               rnwd=rnwd1+rnwd2+rnwd3
+               rnw=rnwn/rnwd
+               rol=rnw
+               if(cden) rol = rol+factcden*anl((ispcden-1)*n0+mi)
 
 
 c     derivatives of density
-            drlpn1=dlpa1+2*dlpa2*x+3*dlpa3*x2+dlpta*tl
-            drlpn1=rnwd*(drlpn1+2*dlp2ta*tlx+dlpt2a*tl2)
-            drlpn2=dlpb1+2*dlpb2*x+3*dlpb3*x2+dlptb*tl
-            drlpn2=rnwn*(drlpn2+2*dlp2tb*tlx+dlpt2b*tl2)
-            drlpn=drlpn1-drlpn2
-            drolpd=rnwd**2
-            drolp=drlpn/drolpd
-            drlen1=dlta1+2*dlta2*tl+3*dlta3*tl2+dlpta*x
-            drlen1=rnwd*(drlen1+dlp2ta*x2+2*dlpt2a*tlx)
-            drlen2=dltb1+2*dltb2*tl+3*dltb3*tl2+dlptb*x
-            drlen2=rnwn*(drlen2+dlp2tb*x2+2*dlpt2b*tlx)
-            drlen=drlen1-drlen2
-            droled=rnwd**2
-            drolt=drlen/droled
+               drlpn1=dlpa1+2*dlpa2*x+3*dlpa3*x2+dlpta*tl
+               drlpn1=rnwd*(drlpn1+2*dlp2ta*tlx+dlpt2a*tl2)
+               drlpn2=dlpb1+2*dlpb2*x+3*dlpb3*x2+dlptb*tl
+               drlpn2=rnwn*(drlpn2+2*dlp2tb*tlx+dlpt2b*tl2)
+               drlpn=drlpn1-drlpn2
+               drolpd=rnwd**2
+               drolp=drlpn/drolpd
+               drlen1=dlta1+2*dlta2*tl+3*dlta3*tl2+dlpta*x
+               drlen1=rnwd*(drlen1+dlp2ta*x2+2*dlpt2a*tlx)
+               drlen2=dltb1+2*dltb2*tl+3*dltb3*tl2+dlptb*x
+               drlen2=rnwn*(drlen2+dlp2tb*x2+2*dlpt2b*tlx)
+               drlen=drlen1-drlen2
+               droled=rnwd**2
+               drolt=drlen/droled
 
 c     liquid viscosity
-            viln1=vla0+vlpa1*x+vlpa2*x2+vlpa3*x3
-            viln2=vlta1*tl+vlta2*tl2+vlta3*tl3
-            viln3=vlpta*tlx+vlpt2a*tl2x+vlp2ta*tlx2
-            viln=viln1+viln2+viln3
-            vild1=vlb0+vlpb1*x+vlpb2*x2+vlpb3*x3
-            vild2=vltb1*tl+vltb2*tl2+vltb3*tl3
-            vild3=vlptb*tlx+vlpt2b*tl2x+vlp2tb*tlx2
-            vild=vild1+vild2+vild3
-            vil=viln/vild
-            xvisl=vil
+               viln1=vla0+vlpa1*x+vlpa2*x2+vlpa3*x3
+               viln2=vlta1*tl+vlta2*tl2+vlta3*tl3
+               viln3=vlpta*tlx+vlpt2a*tl2x+vlp2ta*tlx2
+               viln=viln1+viln2+viln3
+               vild1=vlb0+vlpb1*x+vlpb2*x2+vlpb3*x3
+               vild2=vltb1*tl+vltb2*tl2+vltb3*tl3
+               vild3=vlptb*tlx+vlpt2b*tl2x+vlp2tb*tlx2
+               vild=vild1+vild2+vild3
+               vil=viln/vild
+               xvisl=vil
 
 c     derivatives of liquid viscosity
-            dvlpn1=vlpa1+2*vlpa2*x+3*vlpa3*x2+vlpta*tl
-            dvlpn1=vild*(dvlpn1+2*vlp2ta*tlx+vlpt2a*tl2)
-            dvlpn2=vlpb1+2*vlpb2*x+3*vlpb3*x2+vlptb*tl
-            dvlpn2=viln*(dvlpn2+2*vlp2tb*tlx+vlpt2b*tl2)
-            dvlpn=dvlpn1-dvlpn2
-            dvilpd=vild**2
-            dvislp=dvlpn/dvilpd
-            dvlen1=vlta1+2*vlta2*tl+3*vlta3*tl2+vlpta*x
-            dvlen1=vild*(dvlen1+vlp2ta*x2+2*vlpt2a*tlx)
-            dvlen2=vltb1+2*vltb2*tl+3*vltb3*tl2+vlptb*x
-            dvlen2=viln*(dvlen2+vlp2tb*x2+2*vlpt2b*tlx)
-            dvlen=dvlen1-dvlen2
-            dviled=vild**2
-            dvislt=dvlen/dviled
+               dvlpn1=vlpa1+2*vlpa2*x+3*vlpa3*x2+vlpta*tl
+               dvlpn1=vild*(dvlpn1+2*vlp2ta*tlx+vlpt2a*tl2)
+               dvlpn2=vlpb1+2*vlpb2*x+3*vlpb3*x2+vlptb*tl
+               dvlpn2=viln*(dvlpn2+2*vlp2tb*tlx+vlpt2b*tl2)
+               dvlpn=dvlpn1-dvlpn2
+               dvilpd=vild**2
+               dvislp=dvlpn/dvilpd
+               dvlen1=vlta1+2*vlta2*tl+3*vlta3*tl2+vlpta*x
+               dvlen1=vild*(dvlen1+vlp2ta*x2+2*vlpt2a*tlx)
+               dvlen2=vltb1+2*vltb2*tl+3*vltb3*tl2+vlptb*x
+               dvlen2=viln*(dvlen2+vlp2tb*x2+2*vlpt2b*tlx)
+               dvlen=dvlen1-dvlen2
+               dviled=vild**2
+               dvislt=dvlen/dviled
+C*****
+C*****AF 11/15/10
+c--------------------------------------------------------------------------
+            else    ! USE LOOKUP TABLE       phs 4/23/99         LOOKUP
 
+               izerrFLAG = 0.
+
+               indexp = pmin(1) + incp*dint((pl-pmin(1))/incp)
+               indext = tmin(1) + inct*dint((tl-tmin(1))/inct)
+c---  find 4 points            LOOKUP
+
+               point(1) = 1 + (((indexp-pmin(1))/incp)*numt)
+     x              +  ((indext-tmin(1))/inct)
+               point(2) = point(1) + numt
+               point(3) = point(2) + 1
+               point(4) = point(1) + 1
+c---  
+               if(PP(point(1),3).LT.0) izerrFLAG = 1.
+               if(PP(point(2),3).LT.0) izerrFLAG = 1.
+               if(PP(point(3),3).LT.0) izerrFLAG = 1.
+               if(PP(point(4),3).LT.0) izerrFLAG = 1.
+               if(izerrFLAG.EQ.1.) then
+                  write (ierr, 10)
+                  write (ierr, 20) pl, tl
+                  write (ierr, 30) pmin(1), tmin(1)
+                  write (ierr, 40) point(1),point(2),point(3),point(4)
+                  write (ierr, 50) PP(point(1),3), PP(point(4),3)
+                  write (ierr, 60) PP(point(2),3), PP(point(3),3)
+                  if (iptty .ne. 0) then
+c STOP execution if any lookuppoints are out of bounds.
+c     *****AF
+                     write (iptty, 10)
+                     write (iptty, 20) pl, tl
+                     write (iptty, 30) pmin(1), tmin(1)
+                     write (iptty, 40) point(1),point(2),point(3),
+     $                 point(4)
+                     write (iptty, 50) PP(point(1),3), PP(point(4),3)
+                     write (iptty, 60) PP(point(2),3), PP(point(3),3)
+                  end if
+c     *****AF
+c     *****AF  It would be ideal to just set values to the limits when the limits
+c     *****AF  are exceeded, then tell the user about the problem but let the run
+c     *****AF  continue. Perhaps add this later...
+c     *****AF
+                  stop                                      
+               endif
+ 10            format ('Out of bounds in Thermw.f')
+ 20            format ('Target values of P and T:', 2(1x, g16.9))
+ 30            format ('Min values pmin(1) and tmin(1):', 2(1x, g16.9))
+ 40            format ('point(1), (2), (3), (4):', 4(1x, i6))
+ 50            format ('Rho at T before/after:', 2(1x,g16.9))
+ 60            format ('Rho at P before/after:', 2(1x,g16.9))
+
+c---  compute weights for the P and T direction
+               zwp = (pl-indexp)/incp
+               zwt = (tl-indext)/inct
+c---  find values as function of P+T                 LOOKUP
+
+               rol   = (1-zwp)*(1-zwt)*PP(point(1),3) + (1-zwt)*zwp*
+     &              PP(point(2),3) + zwt*zwp*PP(point(3),3) +
+     &              (1-zwp)*zwt*PP(point(4),3)
+
+               drolp = (1-zwp)*(1-zwt)*PP(point(1),4) + (1-zwt)*zwp*
+     &              PP(point(2),4) + zwt*zwp*PP(point(3),4) +
+     &              (1-zwp)*zwt*PP(point(4),4)
+
+               drolt = (1-zwp)*(1-zwt)*PP(point(1),5) + (1-zwt)*zwp*
+     &              PP(point(2),5) + zwt*zwp*PP(point(3),5) +
+     &              (1-zwp)*zwt*PP(point(4),5)
+
+               enl   = (1-zwp)*(1-zwt)*PP(point(1),6) + (1-zwt)*zwp*
+     &              PP(point(2),6) + zwt*zwp*PP(point(3),6) +
+     &              (1-zwp)*zwt*PP(point(4),6)
+
+               dhlp  = (1-zwp)*(1-zwt)*PP(point(1),7) + (1-zwt)*zwp*
+     &              PP(point(2),7) + zwt*zwp*PP(point(3),7) +
+     &              (1-zwp)*zwt*PP(point(4),7)
+
+               dhlt  = (1-zwp)*(1-zwt)*PP(point(1),8) + (1-zwt)*zwp*
+     &              PP(point(2),8) + zwt*zwp*PP(point(3),8) +
+     &              (1-zwp)*zwt*PP(point(4),8)
+
+               xvisl = (1-zwp)*(1-zwt)*PP(point(1),9) + (1-zwt)*zwp*
+     &              PP(point(2),9) + zwt*zwp*PP(point(3),9) +
+     &              (1-zwp)*zwt*PP(point(4),9)
+
+               dvislp = (1-zwp)*(1-zwt)*PP(point(1),10) + (1-zwt)*zwp*
+     &              PP(point(2),10) + zwt*zwp*PP(point(3),10) +
+     &              (1-zwp)*zwt*PP(point(4),10)
+
+               dvislt = (1-zwp)*(1-zwt)*PP(point(1),11) + (1-zwt)*zwp*
+     &              PP(point(2),11) + zwt*zwp*PP(point(3),11) +
+     x              (1-zwp)*zwt*PP(point(4),11)  ! LOOKUP
+
+
+            end if              !  tableFLAG.NE.1           phs 4/23/99
+c-----------------------------------------------------------------------
+C*****
          endif
 
          if(ieosd.ne.1) then

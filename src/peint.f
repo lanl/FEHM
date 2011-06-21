@@ -68,6 +68,9 @@ CD4  This is a general utility routine used to initialize pressure and
 CD4  temperature fields.
 CD4  
 C***********************************************************************
+C*****
+C*****AF 11/15/10 updated for lookup table
+C*****
 
       use combi
       use comci
@@ -76,7 +79,13 @@ C***********************************************************************
       use comii
       use comdti
       use comai
+      use comtable
       implicit none
+C*****
+C*****AF 11/15/10 updated for lookup table
+C*****
+C      include 'comtable.h'        ! phs 4/24/99
+C*****
 
       integer i, ij, iieosd
       integer ndep, ndep1
@@ -89,6 +98,12 @@ C***********************************************************************
       real*8  rol, rold, roln, rolpd, rolpn
       real*8  rolptd, rolptn, roltd, roltn
       real*8  tl, tl2, tl3
+C*****
+C*****AF 11/15/10 updated for lookup table
+C*****
+      real*8  zwp, zwt ! phs 4/25/99
+      integer indexp, indext, point(4),izerrFLAG ! phs 4/25/99
+C*****
 
       ndep   =  80
       ndep1  =  ndep+1
@@ -127,7 +142,7 @@ c**** heat conduction only ****
 c     loop to calc pressure
 c**** liquid phase only ****
          delx   =  ( cordd-cord0 )/ndep
-C gaz 3-16-2002   depth  =  cord0+delx
+C     gaz 3-16-2002   depth  =  cord0+delx
          depth  =  cord0-delx
          press  =  pein
 
@@ -142,47 +157,102 @@ c**** calculate density ****
                if ( abs( grav ) .gt. zero_t )  then
                   pl     =  press
 c**** chose correct pressure region ****
+C*****
+C*****AF 11/15/10
+C*****
+c     
+c-----------------------------------------------------
+c-----------------use coefficients if tableFLAG.NE.1    phs 4/25/99
+c     
+                  if (tableFLAG.NE.1) then ! phs 4/25/99
+C*****
+C*****AF 11/15/10
+C*****
 c**** liquid density * numerator coefficients ****
-                  dla0   =  crl( 1,iieosd)
-                  dlpa1  =  crl( 2,iieosd)
-                  dlpa2  =  crl( 3,iieosd)
-                  dlpa3  =  crl( 4,iieosd)
-                  dlta1  =  crl( 5,iieosd)
-                  dlta2  =  crl( 6,iieosd)
-                  dlta3  =  crl( 7,iieosd)
-                  dlpta  =  crl( 8,iieosd)
-                  dlp2ta =  crl( 9,iieosd)
-                  dlpt2a =  crl(10,iieosd)
+                     dla0   =  crl( 1,iieosd)
+                     dlpa1  =  crl( 2,iieosd)
+                     dlpa2  =  crl( 3,iieosd)
+                     dlpa3  =  crl( 4,iieosd)
+                     dlta1  =  crl( 5,iieosd)
+                     dlta2  =  crl( 6,iieosd)
+                     dlta3  =  crl( 7,iieosd)
+                     dlpta  =  crl( 8,iieosd)
+                     dlp2ta =  crl( 9,iieosd)
+                     dlpt2a =  crl(10,iieosd)
 c**** liquid density * denomenator coefficients ****
-                  dlb0   =  crl(11,iieosd)
-                  dlpb1  =  crl(12,iieosd)
-                  dlpb2  =  crl(13,iieosd)
-                  dlpb3  =  crl(14,iieosd)
-                  dltb1  =  crl(15,iieosd)
-                  dltb2  =  crl(16,iieosd)
-                  dltb3  =  crl(17,iieosd)
-                  dlptb  =  crl(18,iieosd)
-                  dlp2tb =  crl(19,iieosd)
-                  dlpt2b =  crl(20,iieosd)
+                     dlb0   =  crl(11,iieosd)
+                     dlpb1  =  crl(12,iieosd)
+                     dlpb2  =  crl(13,iieosd)
+                     dlpb3  =  crl(14,iieosd)
+                     dltb1  =  crl(15,iieosd)
+                     dltb2  =  crl(16,iieosd)
+                     dltb3  =  crl(17,iieosd)
+                     dlptb  =  crl(18,iieosd)
+                     dlp2tb =  crl(19,iieosd)
+                     dlpt2b =  crl(20,iieosd)
 
-                  pl2    =  pl**2
-                  pl3    =  pl**3
-                  tl2    =  tl**2
-                  tl3    =  tl**3
-                  pltl   =  pl *tl
-                  pl2tl  =  pl2*tl
-                  pltl2  =  pl *tl2
+                     pl2    =  pl**2
+                     pl3    =  pl**3
+                     tl2    =  tl**2
+                     tl3    =  tl**3
+                     pltl   =  pl *tl
+                     pl2tl  =  pl2*tl
+                     pltl2  =  pl *tl2
 
 c**** liquid density ****
-                  rolpn  =  dla0+dlpa1*pl  +dlpa2 *pl2  +dlpa3 *pl3
-                  roltn  =       dlta1*tl  +dlta2 *tl2  +dlta3 *tl3
-                  rolptn =       dlpta*pltl+dlp2ta*pl2tl+dlpt2a*pltl2
-                  roln   =  rolpn+roltn+rolptn
-                  rolpd  =  dlb0+dlpb1*pl  +dlpb2 *pl2  +dlpb3 *pl3
-                  roltd  =       dltb1*tl  +dltb2 *tl2  +dltb3 *tl3
-                  rolptd =       dlptb*pltl+dlp2tb*pl2tl+dlpt2b*pltl2
-                  rold   =  rolpd+roltd+rolptd
-                  rol    =  roln/rold
+                     rolpn  =  dla0+dlpa1*pl  +dlpa2 *pl2  +dlpa3 *pl3
+                     roltn  =       dlta1*tl  +dlta2 *tl2  +dlta3 *tl3
+                     rolptn =       dlpta*pltl+dlp2ta*pl2tl+dlpt2a*pltl2
+                     roln   =  rolpn+roltn+rolptn
+                     rolpd  =  dlb0+dlpb1*pl  +dlpb2 *pl2  +dlpb3 *pl3
+                     roltd  =       dltb1*tl  +dltb2 *tl2  +dltb3 *tl3
+                     rolptd =       dlptb*pltl+dlp2tb*pl2tl+dlpt2b*pltl2
+                     rold   =  rolpd+roltd+rolptd
+                     rol    =  roln/rold
+C*****
+C*****AF 11/15/10
+C*****
+c----------------------------------------
+                  else          ! if tableFLAG.EQ.1          phs 4/25/99
+
+                     izerrFLAG = 0.
+
+                     indexp = pmin(1) + incp*dint((pl-pmin(1))/incp)
+                     indext = tmin(1) + inct*dint((tl-tmin(1))/inct)
+c---  find 4 points            LOOKUP
+
+                     point(1) = 1 + (((indexp-pmin(1))/incp)*numt)
+     x                    +  ((indext-tmin(1))/inct)
+                     point(2) = point(1) + numt
+                     point(3) = point(2) + 1
+                     point(4) = point(1) + 1
+c---  
+                     if(PP(point(1),3).LT.0) izerrFLAG = 1.
+                     if(PP(point(2),3).LT.0) izerrFLAG = 1.
+                     if(PP(point(3),3).LT.0) izerrFLAG = 1.
+                     if(PP(point(4),3).LT.0) izerrFLAG = 1.
+                     if(izerrFLAG.EQ.1.) then
+                        write(6,*)  'Out of bounds in peinit.f'
+                        stop
+                     endif
+
+
+c---  compute weights for the P and T direction
+                     zwp = (pl-indexp)/incp
+                     zwt = (tl-indext)/inct
+c---  find values as function of P+T                 LOOKUP
+
+                     rol=(1-zwp)*(1-zwt)*PP(point(1),3) + (1-zwt)*zwp*
+     &                    PP(point(2),3) + zwt*zwp*PP(point(3),3) +
+     &                    (1-zwp)*zwt*PP(point(4),3)
+
+                  end if        
+c     tableFLAG or polynomial fit for water density.    phs 4/25/99
+c--------------------------------------------------------------------------
+C*****
+C*****AF 11/15/10
+C*****
+
                   press  =  press-rol*grav*delx
                endif
             endif

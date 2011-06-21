@@ -70,13 +70,13 @@ c
          endif
          
          if(ipermstr8.ne.0) then
-            allocate(frac_flg(neq))
+            if(.not.allocated(frac_flg)) allocate(frac_flg(neq))
             do i = 1,n0
                frac_flg(i) = 0
             enddo
          endif
       endif
-c     
+     
       
 c     
 c     model 3 and model 5 require an initial setup      
