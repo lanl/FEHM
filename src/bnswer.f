@@ -326,8 +326,8 @@ c the following is for fully coupled model
 c     RJP 04/10/07 added 
          if(icarb.eq.1) then
 		call icectrco2(-1,0)
+                call icectrco2(1,0)
 		call icectrco2(-34,0)
-          call icectrco2(1,0)
 c     call icectrco2(22,0)
          endif
       else

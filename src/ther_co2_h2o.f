@@ -1304,7 +1304,7 @@ c     gaz 2-19-04 added gas relative perms
                   endif
                endif
 
-               if((pldif.le.0.0d00)) then
+               if((pldif.le.0.0d00).and.(kq.eq.-2)) then
                   permsd1=0.d0
                   dprmp=0.d0
                   dprmt=0.d0
