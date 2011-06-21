@@ -403,7 +403,9 @@ C**********************************************************************
       use comfi
       use comgi
       use comii
+      use comtable, only : tableFLAG
       use davidi
+  
       implicit none
 
       real*8 psatmn
@@ -506,6 +508,11 @@ c
 c     liquid only state
 c
                   tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,1)
+C*****
+C***** AF 11/15/10
+C*****
+                if(tableFLAG.EQ.1) tboil = 1201.   !  phs 4/27/99
+C*****
 c     change to 2-phase
                   if(tl.ge.tboil*phase_mult.
      &				and.days.ge.time_ieos(ij)) then
@@ -674,8 +681,8 @@ c
             call icectr(1,ndummy)
 c RJP 04/10/07 modified for CO2
          else if(icarb.eq.1) then
-            call icectrco2(-34,ndummy)
             call icectrco2(1,ndummy)
+            call icectrco2(-34,ndummy)
          endif
 c end block for idof.ne.1
       endif
