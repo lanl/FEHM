@@ -228,7 +228,7 @@
 ! Output air/vapor pressure
                      pres_flag = 4
                   else if ((cmsg(2)(1:3) .eq. 'cap' .or. cmsg(2)(1:3) 
-     &                    .eq. 'CAP') .and. ico2 .gt. 0) then
+     &                    .eq. 'CAP') .and. irdof .ne. 13) then
 ! Output capillary pressure
                      pres_flag = 5
                   else if ((cmsg(2)(1:3) .eq. 'co2' .or. cmsg(2)(1:3) 
@@ -258,7 +258,7 @@
      &                    (cmsg(2)(1:3) .eq. 'cap' .or. cmsg(3)(1:3) 
      &                    .eq. 'cap' .or. cmsg(2)(1:3) .eq. 'CAP'
      &                    .or. cmsg(3)(1:3) .eq. 'CAP') .and. 
-     &                    ico2 .gt. 0) then
+     &                    irdof .ne. 13) then
                      pres_flag = 6
                   else if ((cmsg(2)(1:3) .eq. 'air' .or. cmsg(3)(1:3) 
      &                    .eq. 'air' .or. cmsg(2)(1:3) .eq. 'AIR'
@@ -266,7 +266,7 @@
      &                    (cmsg(2)(1:3) .eq. 'cap'  .or. cmsg(3)(1:3) 
      &                    .eq. 'cap' .or. cmsg(2)(1:3) .eq. 'CAP'
      &                    .or. cmsg(3)(1:3) .eq. 'CAP') .and. 
-     &                    ico2 .gt. 0)  then
+     &                    irdof .ne. 13)  then
                      pres_flag = 7
                   else
                      pres_flag = 2
@@ -274,14 +274,17 @@
                      if (iptty .ne. 0) write(iptty, 6040)
                   end if
                case (4)
-                  if (ico2 .gt. 0) then
+                  if (ico2 .gt. 0 .or. irdof .ne. 13) then
+! Output total, air/vapor and capillary pressure
                      pres_flag = 3
                   else
                      if (ihead .eq. 1) then
+! Output total/water pressure
                         pres_flag = 1
                         if (iout .ne. 0) write(iout, 6030)
                         if (iptty .ne. 0) write(iptty, 6030)
                      else
+! Output Total/water and  air/vapor pressure
                         pres_flag = 2
                         if (iout .ne. 0) write(iout, 6040)
                         if (iptty .ne. 0) write(iptty, 6040)
@@ -293,7 +296,7 @@
                if (icarb .ne. 0) then
 ! Output CO2 and water pressure
                   pres_flag = 9
-               else if (ico2 .gt. 0) then
+               else if (ico2 .gt. 0 .or. irdof .ne. 13) then
 ! Output total, air/vapor and capillary pressure
                   pres_flag = 3
                else
