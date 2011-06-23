@@ -36,9 +36,9 @@ c     allocate space for parameters
             allocate(e10(neq))
             allocate(e20(neq))
             allocate(e30(neq))	 
-            pnx0 = pnx
-            pny0 = pny
-            pnz0 = pnz
+            pnx0 = pnx(1:neq)
+            pny0 = pny(1:neq)
+            pnz0 = pnz(1:neq)
             e10 = e1
             e20 = e2
             e30 = e3
@@ -64,16 +64,14 @@ c
             allocate(pnx0(neq))
             allocate(pny0(neq))
             allocate(pnz0(neq))
-            pnx0 = pnx
-            pny0 = pny
-            pnz0 = pnz
+            pnx0 = pnx(1:neq)
+            pny0 = pny(1:neq)
+            pnz0 = pnz(1:neq)
          endif
          
          if(ipermstr8.ne.0) then
             if(.not.allocated(frac_flg)) allocate(frac_flg(neq))
-            do i = 1,n0
-               frac_flg(i) = 0
-            enddo
+            frac_flg = 0
          endif
       endif
      
