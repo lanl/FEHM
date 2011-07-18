@@ -675,7 +675,7 @@ c Undefined rlp model, stop
          rlpnew = .true.
          idum2 = 0
          do
-            read (inpt, '(a80)') dumstring
+            read (locunitnum, '(a80)') dumstring
             if (null1(dumstring) .or. dumstring(1:3) .eq. 'end' .or. 
      &           dumstring(1:3) .eq. 'END') then
                exit
@@ -687,9 +687,9 @@ c Undefined rlp model, stop
 c Count number of tables that will be read, 
 c     and number of entries in each table
                ntable = ntable + 1
-               read (inpt, '(a80)') dumstring
+               read (locunitnum, '(a80)') dumstring
                if (dumstring(1:4) .eq. 'file') then
-                  read (inpt, '(a80)') filename
+                  read (locunitnum, '(a80)') filename
                   idum = open_file (filename, 'old')
                   do
                      read (idum, '(a80)', end = 24) dumstring
@@ -702,9 +702,9 @@ c Don't count header lines (header lines should start with a character)
                   end do
  24               close (idum)
                else
-                  backspace (inpt)
+                  backspace (locunitnum)
                   do
-                     read (inpt, '(a80)') dumstring
+                     read (locunitnum, '(a80)') dumstring
                      if (null_new(dumstring) .or.  dumstring(1:3) .eq. 
      &                    'end' .or. dumstring(1:3) .eq. 'END') exit
                      ntblines = ntblines + 1
