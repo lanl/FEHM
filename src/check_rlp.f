@@ -21,9 +21,10 @@
 !***********************************************************************
       
       use comai, only : form_flag, idpdp, ierr, neq, nrlp, wdd
-      use comrlp, only : ishisrlp, rlpnew, delta_sat, num_sat, sat_out
+      use comrlp, only : ishisrlp, rlpnew, delta_sat, num_sat, sat_out,
+     &     rlp_type, rlp_fparam
       use comci, only : rlf, rvf
-      use comdi, only : ieos, irlp, pcp, s, icap
+      use comdi, only : ieos, irlp, pcp, s, icap, irlpt
 
       implicit none
       integer i, j, ndummy, neqtemp
@@ -34,6 +35,7 @@
       real*8, allocatable  :: pcptemp(:)
       real*8, allocatable  :: rlftemp(:)
       real*8, allocatable  :: rvftemp(:)
+      logical :: vg_model = .false.
       character*100 form_string, title_string
       
       neqtemp = neq
@@ -110,11 +112,19 @@
          end if              
          if (rlpnew) then
             call rlp_cap(0)
-            if (idpdp .ne. 0) call rlp_cap(neq)
+            if (rlp_type(j,1) .eq. 6 .or. rlp_type(j,1) .eq. 7) then
+               if (rlp_fparam(j, 7) .ne. 0.) vg_model = .true.
+            end if
+            if (idpdp .ne. 0 .and. vg_model) call rlp_cap(neq)
          else
             call rlperm(0,1)
             call cappr(1,0)
-            if (idpdp .ne. 0) then
+            if (abs(irlpt(j)) .eq. 4 .or. irlpt(j) .eq. 6 .or. 
+     &           irlpt(j) .eq.7) then
+c     This is a Van Genuchten fracture model
+               vg_model = .true.
+            end if
+            if (idpdp .ne. 0 .and. vg_model) then
                call rlperm(neq,1)
                call cappr(1,neq)
             end if 
@@ -123,7 +133,7 @@
             write (ishisrlp, '(4(g16.9, 1x))') s(i), rlf(i), rvf(i),
      &           pcp(i)
          end do
-         if (idpdp .ne. 0) then
+         if (idpdp .ne. 0 .and. vg_model) then
             if (form_flag .eq. 1) then
                write (ishisrlp, 245) j
             else if (form_flag .eq. 2) then
@@ -133,6 +143,7 @@
                write (ishisrlp, '(4(g16.9, 1x))') s(i), rlf(i), rvf(i),
      &              pcp(i)
             end do
+            vg_model = .false.
          end if
       end do
 
