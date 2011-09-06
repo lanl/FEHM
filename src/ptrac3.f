@@ -2542,7 +2542,7 @@ c...................................
       use comxi
 
       implicit none
-      integer i
+      integer i, j
       logical particles_in_system, opnd
 
       inquire(unit = isptr8, opened = opnd)
@@ -2562,14 +2562,25 @@ c...................................
      &           part_id(i,1), ijkv(i), ttp1(i)
          end if
       end do
+
       if (particles_in_system) then
+         if (nzbtc .ne. 0) then
+            write (isptr8, 101) nzbtc
+            write (isptr8, *) (zbtc(i), i = 1, nzbtc)
+            write (isptr8, *) (totalpart(i), i = 1, nzbtc)
+            do i = 1, num_part
+               if (ijkv(i) .ne. 0 .and. istop(i) .eq. 0) then
+                  write (isptr8, *) (izonebtc(j, i), j = 1, nzbtc)
+               end if
+            end do
+         end if
          write(isptr8,*)
       else
          write(isptr8,*) 'All particles have exited the system'
       end if
       close (isptr8)
  100  format (i8, 3(1x, g16.9), 2(1x, i8), 1x,  g21.14)
-
+ 101  format ('zbtc', i10)
       end subroutine write_sptrs
 
 ******************************************************************

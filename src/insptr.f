@@ -78,7 +78,7 @@
       use comsk
 
       implicit none
-      integer i, iroot, idum, ifile, open_file
+      integer i, iroot, idum, ifile, open_file, lf
       integer jj, flag_count, icliff1, icliff2, icliff3
       character*80 dummy_string, ptitle
       logical null1, done
@@ -89,18 +89,20 @@
       integer nwds
       real*8 xmsg(16)
       integer itabs
-      integer nrandseeds
+      integer nrandseeds, nzbtctmp
       integer, allocatable :: randseeds(:)
+      integer, allocatable :: izonetmp(:,:), zbtctmp(:), tottmp(:)
       integer numparams
       integer numwell,ja,jb,jc,inode, nnwell
       real*8 rwell
       character*100 tfilename, root
       character*100 clfg1name, clfg2name, clfilename
+      character*200 formstring
 !      integer ncoef, max_con
 
 c............... s kelkar Jan 10 07, for colloid diversity model
       integer tprpdum,jjj, realization_num
-      logical nulldum
+      logical nulldum, techead
 c..........................................................
 
 
@@ -282,6 +284,7 @@ c order) ZVD 16-Oct-2006
       trans_flag = .false.
       itensor = -999
       nzbtc = 0
+      techead = .false.
       part_mult = 2.
       part_steps = 10
       part_frac = .1 * num_part
@@ -840,6 +843,10 @@ c     model reduction POD basis functions
                         xyz_flag2 = .true.
                      end if
                   end if
+               else if (msg(2) .eq. 3 .and. (cmsg(2) .eq. 'tec' .or.
+     &            cmsg(2) .eq. 'tecplot')) then
+c     Output btc data with tecplot style header
+                  techead = .true.
                end if
             end if
             
@@ -1202,6 +1209,33 @@ c      read(inpt,*) itm, ist
                part_id(i,2) = ijkv(i)
             end if
          enddo
+! If zone breakthrough was being done
+         read(ifile,'(a80)') dummy_string
+         if (dummy_string(1:4) .eq. 'zbtc') then
+            call parse_string(dummy_string, imsg, msg, xmsg,
+     &           cmsg, nwds)
+            nzbtctmp = imsg(2)
+            allocate (zbtctmp(nzbtctmp), tottmp(nzbtctmp))
+            allocate (izonetmp(nzbtctmp, num_part))
+            read(ifile, *) (zbtctmp(i), i = 1, nzbtctmp)
+            read(ifile, *) (tottmp(i), i = 1, nzbtctmp)
+            do i = 1, num_part
+               read (ifile, *) (izonetmp(jj, i), jj = 1,nzbtctmp)
+            end do 
+            do i = 1, nzbtc
+               do jj = 1, nzbtctmp
+                  if (zbtc(i) .eq. zbtctmp(jj)) then
+                     totalpart(i) = tottmp(jj)
+                     izonebtc(i,1:num_part) = izonetmp(jj,1:num_part)
+                     exit
+                  end if
+               end do
+            end do
+            deallocate (zbtctmp, tottmp, izonetmp) 
+         else
+            backspace ifile
+         end if
+
          x3 = x1
          y3 = y1
          z3 = z1
@@ -1241,20 +1275,32 @@ c      read(inpt,*) itm, ist
       end if
       if (nzbtc .gt. 0) then
          open(isptr3, file = nmfil(19), status = cstats(19))
-         write(isptr3 , 1000)  verno, jdate, jtime
-         write(isptr3 , 1001)  ptitle
-         if (alt_btc) then
-            if (xyz_flag) then
-               if (write_prop(3) .ne. 0) then
-                  write(isptr3 , 1006)
+         if (techead) then
+            write(isptr3 , 2001)  trim(ptitle)
+            formstring = 'VARIABLES = "Time (days)"'
+            lf = 26
+            do jj = 1, nzbtc
+               write (formstring(lf:lf+12), 2002) zbtc(jj)
+               lf = lf + 12
+            end do
+            write(isptr3 , '(a)') trim(formstring)
+            write(isptr3 , 2000)  verno, jdate, jtime
+         else
+            write(isptr3 , 1000)  verno, jdate, jtime
+            write(isptr3 , 1001)  ptitle
+            if (alt_btc) then
+               if (xyz_flag) then
+                  if (write_prop(3) .ne. 0) then
+                     write(isptr3 , 1006)
+                  else
+                     write(isptr3 , 1005)
+                  end if
                else
-                  write(isptr3 , 1005)
+                  write(isptr3 , 1004)
                end if
             else
-               write(isptr3 , 1004)
+               write(isptr3 , 1002)
             end if
-         else
-            write(isptr3 , 1002)
          end if
       end if
       if (sptr_flag) then
@@ -1305,8 +1351,11 @@ c      read(inpt,*) itm, ist
       end if
 
  1000 format(a30, 3x, a11, 3x, a8)
+ 2000 format('TEXT = "', a30, 3x, a11, 3x, a8, '"')
  1001 format(a80)
+ 2001 format('TITLE = "', a, '"')
  1002 format(' Time (days)      Zone1 Particles   . . .')
+ 2002 format(' "Zone ', i4, '"')
  1003 format(' Time (days)',4x, 'x(m)',4x,'y(m)',4x,'z(m)',4x,
      &     'node#',4x,'particle#',4x,'timestep')
  1004 format(2x, 'Time (days)', 7x, 'Particle#', 6x, 'ID', 

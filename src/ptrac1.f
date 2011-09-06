@@ -2392,6 +2392,7 @@ c unformatted
       subroutine init_sptr_params
 
       use comai, only : neq
+      use combi, only : izonef
       use comci, only : rolf
       use comdi, only : denr, diffmfl, ifree, itrc, ps_trac, s
       use compart, only : aperture, kd, matrix_por, secondary
@@ -2399,14 +2400,16 @@ c unformatted
       use davidi, only : irdof
       implicit none
 
-      integer i
+      integer i, np1
       real*8 denominator, rprime, spacing
      
 c     Subroutine to initialize particle tracking parameters
 
       if(nzbtc.gt.0) then
-         izonebtc = 0
+c zvd - initialized in allocmem and used in insptr, don't reset here
+c         izonebtc = 0
       end if
+
 cHari 01-Nov-06 include colloid diversity model (tprpflag=11)
       do i = 1, neq
          if(tprpflag(itrc(i)).eq.1.or.tprpflag(itrc(i)).eq.2.or.
