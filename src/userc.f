@@ -84,51 +84,51 @@ C***********************************************************************
       integer ispecies, j, k, k1, curcolumn
       integer, allocatable :: nsindex(:)
       integer nsnodes, iread1, nszones, mi, mim
-cSPC
-      integer kdflag, irip, jjj, sflag
+c     SPC
+      integer flag_kd2, irip, jjj, sflag
       real*8  deltat, in3_old
-            
+      
       real*8 srmiml, rc_ss_erosion, drc_ss_erosion
       real*8 inflrate, molesin, molesout
-cSPC  add for transformation factor
+c     SPC  add for transformation factor
       real*8 transform_kd(8,10)
-      integer flag_kd, i1,j1
-            
+      integer flag_kd, i1,j1, ii, jj,  tf1
+      
       logical used
       integer icount, open_file
       character*100 filename
-cSPC
-      save kdflag,in3_old
-      save transform_kd,flag_kd
+c     SPC
+      save flag_kd2,in3_old,tf1
+      save transform_kd,flag_kd,  ii, jj
       
-           
+      
       if(ripfehm.EQ.0) then
-      
-      if ((iz.eq.0).and.(iuserc.ne.-9324)) then
-C Initialization
-         iuserc=-9324
-         if (iout .ne. 0) write (iout,*)
-     &        'Solute transport user subroutine is invoked'
-         if (iatty.gt.0) write(iatty,*)
-     &        'Solute transport user subroutine is invoked'
          
+         if ((iz.eq.0).and.(iuserc.ne.-9324)) then
+C     Initialization
+            iuserc=-9324
+            if (iout .ne. 0) write (iout,*)
+     &           'Solute transport user subroutine is invoked'
+            if (iatty.gt.0) write(iatty,*)
+     &           'Solute transport user subroutine is invoked'
+            
 
-         filename = ''
-c zvd 04/26/2007 Allow user to enter name of file for data
-         read (inpt,'(a100)') filename
-         if (filename(1:4) .eq. 'file') then
-            read (inpt,'(a100)') filename
-         else
-            backspace inpt
             filename = ''
-            filename(1:14) = 'userc_data.dat'
-         end if
-         iread1 = open_file(trim(filename),'old')
+c     zvd 04/26/2007 Allow user to enter name of file for data
+            read (inpt,'(a100)') filename
+            if (filename(1:4) .eq. 'file') then
+               read (inpt,'(a100)') filename
+            else
+               backspace inpt
+               filename = ''
+               filename(1:14) = 'userc_data.dat'
+            end if
+            iread1 = open_file(trim(filename),'old')
 
-         read(iread1,*) usroption
-         select case (usroption)
+            read(iread1,*) usroption
+            select case (usroption)
          case (1,2)
-c usroption = 2 Time-varying solute mass flux input at prescribed nodes
+c     usroption = 2 Time-varying solute mass flux input at prescribed nodes
             read(iread1,*) nu_points
             if(.not.allocated(userconc)) then
                allocate(userconc(nspeci,nu_points), usertime(nu_points))
@@ -186,8 +186,8 @@ c usroption = 2 Time-varying solute mass flux input at prescribed nodes
                end do
             end do
          case(5)
-c usroption = 5 Solute recirculation model
-c read number of production/infiltration zones
+c     usroption = 5 Solute recirculation model
+c     read number of production/infiltration zones
             read (iread1, *) erosion_factor
             if (.not. allocated(recycle_factor)) then
                allocate (recycle_factor(nspeci))
@@ -200,12 +200,12 @@ c read number of production/infiltration zones
             end if
             read (iread1, *) (prodzones(j), j = 1, nu_zones)
             read (iread1, *) (inflzones(j), j = 1, nu_zones)
-c convert erosion factor fromm 1/yr to 1/s
+c     convert erosion factor fromm 1/yr to 1/s
             erosion_factor = erosion_factor / (365.25 * 86400.)
          end select
          close(iread1)
       else if (iuserc.eq.-9324) then
-C transient changes
+C     transient changes
          if ((iz.eq.1).and.(usroption.eq.1)) then
             if (l.ne.0) then
                if (iuchk.ne.-9876) then 
@@ -312,7 +312,7 @@ c---------------------------------------------------------
                         i2=nu_points
                         goto 33
                      endif
-                  
+                     
                      jl=0
                      ju=nu_points+1
  303                 if (ju-jl.gt.1) then
@@ -325,7 +325,7 @@ c---------------------------------------------------------
                         goto 303
                      endif
                      i2=jl+1
-                  
+                     
  33                  if (i2.eq.1) then
                         getflux=userconc3(ispecies,curcolumn,1)
                      else
@@ -341,7 +341,7 @@ c---------------------------------------------------------
                end if               
             endif
 c     (nodeindex.NE.0)  phs 2/18/04  
-             
+            
          else if ((iz.eq.2).and.(usroption.eq.4)) then
             if (l.ne.0) then
                ispecies = 1 + npn/n0
@@ -441,7 +441,7 @@ c
                
             endif
          else if ((iz.eq.2).and.(usroption.eq.5)) then
-c Recirculation option
+c     Recirculation option
             if (l .ne. 0) then
                mi = i + npn
                ispecies = 1 + npn/n0
@@ -454,7 +454,7 @@ c Recirculation option
 c     Erosion model
                      if (erosion_factor .ne. 0 .and. scl(mi) .gt.
      &                    zero_t) then
-C Using rate/s 
+C     Using rate/s 
                         rc_ss_erosion = 1.d-3 * erosion_factor 
      &                       * sx1(i) * rolf(i) * scl(mi)
                         drc_ss_erosion = 1.d-3 * erosion_factor 
@@ -462,21 +462,21 @@ C Using rate/s
                         rc_ss = rc_ss + rc_ss_erosion
                         drc_ss = drc_ss + drc_ss_erosion
                      end if
-c                     if (mi .eq. 7022) then
-c                         write(iptty,*) 'userc 7022:', rc_ss
-c                     end if
+c     if (mi .eq. 7022) then
+c     write(iptty,*) 'userc 7022:', rc_ss
+c     end if
                      exit
                   end if
                end do
             end if
 
          else if ((iz.eq.3).and.(usroption.eq.5)) then
-c usroption = 5 Solute recirculation model
-c foreach production zone
+c     usroption = 5 Solute recirculation model
+c     foreach production zone
             moles_recycle = 0.
             do k = 1, nu_zones
-c    determine if the zone is currently producing
-c    if producing
+c     determine if the zone is currently producing
+c     if producing
                inflrate = 0.
                do ispecies = 1, nspeci
                   molesout = 0.
@@ -484,14 +484,14 @@ c    if producing
                   do j = 1, n0
                      mi = j + npn
                      if (izonef(j) .eq. prodzones(k)) then
-c       get the solute production rate (molesout -> moles/s)
+c     get the solute production rate (molesout -> moles/s)
                         if (sk(j) .gt. zero_t) then
                            molesout = molesout + sk(j) * anlo(mi)
                         end if
                      end if
                   end do
                   if (molesout .gt. zero_t .and. ispecies .eq. 1) then
-c determine infiltration for zone (not dependent on species)
+c     determine infiltration for zone (not dependent on species)
                      do j = 1, n0
                         if (izonef(j) .eq. inflzones(k)) then
                            if (abs(sk(j)) .gt. zero_t) then
@@ -500,7 +500,7 @@ c determine infiltration for zone (not dependent on species)
                         end if
                      end do
                   end if
-c       molesin -> moles/kg
+c     molesin -> moles/kg
                   if (inflrate .gt. zero_t) then
                      moles_recycle(k, ispecies) = (molesout / inflrate)
      &                    * recycle_factor(ispecies)
@@ -513,72 +513,74 @@ c       molesin -> moles/kg
       
       else
 c---------------------------------------------------------
-c   Phil and Hari  6/2004 - 9/2004
-c   This section is for Tracer transport coupled 
-c   with Goldsim.  The input flux is calculated from
-c   the mass/time 
-Ci  also, feed in kd from in(*) array
-c   AND check to see if deltat is negative and reset
-c   meaning that a new realization is underway!
+c     Phil and Hari  6/2004 - 4/2011
+c     This section is for Tracer transport coupled 
+c     with Goldsim.  The input flux is calculated from
+c     the mass/time 
+C     i  also, feed in kd from in(*) array
+c     AND check to see if deltat is negative and reset
+c     meaning that a new realization is underway!
 c---------------------------------------------------------
-	 
-          if (in(1).eq.0) flag_kd = 0.
-        if((i.eq.1).AND.(in(1).GT.0)) then
-        
-          if (flag_kd.eq.0) then
-            open(222,file='transformation_matrix.txt')
-            do j1 = 1,10
-	          read(222,*) (transform_kd(i1,j1) , i1=1,8)
-	          write(iaunit,*) 'transform1',i1,j1,transform_Kd(1,j1)
-            end do
-            close(222)
-            flag_kd=666
-          end if
+c---  Changes to SUPER INDEXING  9 28 04  IN(8+in(7)-1+nsp)
 
-c        write(66,*)'nspeci', nspeci, nsp
-c--- Changes to SUPER INDEXING  9 28 04  IN(8+in(7)-1+nsp)
-          if(in3_old.NE.in(3)) kdflag = 0
-	    if((iadsfl(nsp,1).eq.66).and.(kdflag.ne.1))then
-c		  a1adfl(nsp,1) = in(8+in(7)-1+nsp)
-               a1adfl(nsp,1) = in(8+int(in(7))-1+nsp)*
-     &              transform_kd((int(in(6))-4),int(in(2)))
-         write(iaunit,*) 'transform2',in(2),in(6),nsp,
-     &      transform_kd((int(in(6))-4),int(in(2))),a1adfl(nsp,1)
-	      if(nsp.eq.nspeci) then
-		   kdflag = 1
-	       in3_old = in(3)
-	      end if
-c	     write(66,*) 'iadsfl', iadsfl(nsp,1), 'a1adfl', a1adfl(nsp,1)
-	    endif
+         if(in(4).EQ.666) then 	 
 
-	    deltat = (in(1) - in1save)*3600.*24.*365.25
+c     - - - - - - only open and read the transform matrix once.
+            if (flag_kd.NE.666) then
+               open(222,file='transformation_matrix.txt')
+               read(222,*) 
+c     ii=cluster  jj=flowfield 
+               read(222,*) ii,jj
+               write(iaunit,*) 'Transform Matrix  column=cluster row=FF'
+               do j1 = 1,jj
+                  read(222,*) (transform_kd(i1,j1) , i1=1,ii)
+                  write(iaunit,771) (transform_Kd(i1,j1), i1=i,ii)
+               end do
+               close(222)
+               flag_kd=666
+            end if
 
-c-------- 9-14-2004  PHS reset deltat when new realization
-	    if(deltat.LE.0.0) then
-	      in1save = 0.0
-            deltat = (in(1) - in1save)*3600.*24.*365.25
-	    end if
+            if(in3_old.NE.in(3)) flag_kd2 = 0
 
-c	  ispecies = 1 + npn/n0
-c       PHS Hari changing to reflect nspeci+nsp = current spec 
-c          in the in(xx) array there are 4 things after             
-          sflag = in(7+nsp)
-c             getflux = in(11+2*nspeci+sflag)/deltat
-cSPC comment: this is for areaG run with Kd specified
-          getflux = in(11+2*nspeci+sflag)/deltat
-cSPC comment: for without doing the Kd option, shall use follow line
-c          getflux = in(11+ nspeci+sflag)/deltat
-          
-c	    write(66,*) int(in(6)),nsp,i, days
-c		   write(66,*) 'USERC deltat ',deltat   
-c	    write(66,*) 'userc', (in(j), j=1,18)
+            if((i.eq.1).AND.(in(1).GT.0)) then
 
-          rc_ss   = -getflux
-          drc_ss  = 0.
-c	       write(66,*) getflux, 'getflux'
-c	       write(66,*) ' getflux i ', getflux, in(1), i,nsp
-        endif         
+               if(flag_kd2.NE.1) then
+                  write(iaunit,*) 'Transformation in USERC.f '
+                  write(iaunit,*) 'Cluster Flowfield NSP Kd Factor'
+                  tf1 = 666
+               end if
+
+               if((iadsfl(nsp,1).eq.66).and.(flag_kd2.ne.1))then
+		  a1adfl(nsp,1) = in(7+int(in(7))+nsp)*
+     &                 transform_kd(int(in(6)),int(in(2)))
+                  write(iaunit,772) int(in(6)),int(in(2)),nsp,
+     &                 a1adfl(nsp,1),transform_kd(int(in(6)),int(in(2)))
+                  if(nsp.eq.nspeci) then
+                     flag_kd2 = 1
+                     in3_old = in(3)
+                  end if
+               endif
+               
+ 771           format(10(F6.3)) 
+ 772           format(3I6,2x,2G9.3)
+
+c--------4/27/2011  in(5) is now delta T direct from GS in yrs
+               
+               deltat = in(5)*3600.*24.*365.25
+
+c     SPC comment: this is for areaG run with Kd specified
+c     SPC comment: With no Kd option, shall use follow line
+c     getflux = in(11+ nspeci+sflag)/deltat    
+
+               sflag = int(in(7+nsp))
+               getflux = in(11+2*nspeci+sflag)/deltat
+
+               rc_ss   = -getflux
+               drc_ss  = 0.
+
+            endif               ! i EQ 1  
+	 endif                  ! in(4) EQ 666
       endif
-	
+      
       return
       end
