@@ -315,7 +315,7 @@ C***********************************************************************
 
       logical null1, null_new, cdum
       integer cnum, i, infile, izone, izonel, nin, nodez, nsl
-      integer nxy,icnl_old,nin_old,i_old
+      integer nxy, icnl_old, nin_old, i_old, ja, jb, jc
       character* 4 macro, cmacro
       character*80 ltest
       real*8 xg, xz(8), yg, yz(8), zg, zz(8)
@@ -345,14 +345,14 @@ c     Dual perm or dual porosity value to add to get zones
       read (infile, '(a80)')  wdd1
       read (wdd1,*) macro
       do i = 5,77
-       if(wdd1(i:i+3).eq.'conv') i3d_2d = 1
+         if(wdd1(i:i+3).eq.'conv') i3d_2d = 1
       enddo
       if(i3d_2d.eq.1.and.icnl.eq.0) then
-       write(ierr,*) 'i3d_2d parameter ignored for 3d problem'
-       if(iout.ne.0) 
-     &   write(iout,*) 'i3d_2d parameter ignored for 3d problem'
-       if(iptty.ne.0) 
-     &   write(iptty,*) 'i3d_2d parameter ignored for 3d problem'     
+         write(ierr,*) 'i3d_2d parameter ignored for 3d problem'
+         if(iout.ne.0) 
+     &        write(iout,*) 'i3d_2d parameter ignored for 3d problem'
+         if(iptty.ne.0) 
+     &        write(iptty,*) 'i3d_2d parameter ignored for 3d problem'
       endif
       if (macro .eq. 'zone'.or.macro .eq. 'zonn')  then
          cmacro = macro
@@ -371,32 +371,33 @@ c     Determine if zone_dpadd needs to be increased to 1000
 c check if list or nnum occurs
             read(infile, '(a4)') macro
             if (macro .ne. 'list' .and. macro .ne. 'nnum' .and.
-     &          macro .ne. 'xyli'.and. macro.ne. 'all ' ) then
+     &           macro .ne. 'xyli'.and. macro.ne. 'all ' .and.
+     &           macro .ne. 'jajb') then
                backspace  infile
                if (izone .ne. izonel) nin = 0
                if(i3d_2d.eq.0.or.icnl.eq.0) then
-                read (infile, *) (xz(i), i = 1, nsl)
-                read (infile, *) (yz(i), i = 1, nsl)
-                if (icnl .eq. 0) then
+                  read (infile, *) (xz(i), i = 1, nsl)
+                  read (infile, *) (yz(i), i = 1, nsl)
+                  if (icnl .eq. 0) then
 c**** 3-d calculation ****
-                   read (infile, *)  (zz(i), i = 1, nsl)
-                end if
-                call setzone(izone, nin, ncord, nsl, xz, yz, zz)
+                     read (infile, *)  (zz(i), i = 1, nsl)
+                  end if
+                  call setzone(izone, nin, ncord, nsl, xz, yz, zz)
                else
-c 3-d zones in 2D model (for consistency when extracting slices in 3d)               
-                read (infile, *) (xz(i), i = 1, 8)
-                xz(3) = xz(2)
-                xz(4) = xz(1)                 
-                xz(1) = xz(5)
-                xz(2) = xz(6)
-                read (infile, *) (yz(i), i = 1, 8)
+c 3-d zones in 2D model (for consistency when extracting slices in 3d)
+                  read (infile, *) (xz(i), i = 1, 8)
+                  xz(3) = xz(2)
+                  xz(4) = xz(1)                 
+                  xz(1) = xz(5)
+                  xz(2) = xz(6)
+                  read (infile, *) (yz(i), i = 1, 8)
 c note we overwrite yz with zz                 
-                read (infile, *) (zz(i), i = 1, 8)
-                yz(1) = zz(5)
-                yz(2) = zz(6)
-                yz(3) = zz(2)
-                yz(4) = zz(1)
-                call setzone(izone, nin, ncord, nsl, xz, yz, zz)  
+                  read (infile, *) (zz(i), i = 1, 8)
+                  yz(1) = zz(5)
+                  yz(2) = zz(6)
+                  yz(3) = zz(2)
+                  yz(4) = zz(1)
+                  call setzone(izone, nin, ncord, nsl, xz, yz, zz)  
                endif
             else if(macro .eq. 'xyli') then
 c read in nodes in zone from xy list
@@ -405,48 +406,48 @@ c read in nodes in zone from xy list
                i = 0
                read(infile,*) tol_zone, zxy_min, zxy_max
  71            read(infile, '(a80)') ltest
-                  if(.not.null1(ltest)) then
-                     read(ltest, *, end = 81, err = 81) xg, yg
-                     i_old = i
-                     icnl_old=icnl
-                     icnl=1
-                     call near3(xg,yg,0.0,i,0)
-                     icnl=icnl_old
-                     if(i_old.eq.i) go to 71
-                     xg=cord(i,1)
-                     yg=cord(i,2)
-                     nxy = nxy + 1
-                  else
-                     goto 81
-                  end if
-                 xz(1)=xg-tol_zone
-                 xz(2)=xg+tol_zone
-                 xz(3)=xg+tol_zone
-                 xz(4)=xg-tol_zone
-                 xz(5)=xg-tol_zone
-                 xz(6)=xg+tol_zone
-                 xz(7)=xg+tol_zone
-                 xz(8)=xg-tol_zone
-                 yz(1)=yg-tol_zone
-                 yz(2)=yg-tol_zone
-                 yz(3)=yg+tol_zone
-                 yz(4)=yg+tol_zone
-                 yz(5)=yg-tol_zone
-                 yz(6)=yg-tol_zone
-                 yz(7)=yg+tol_zone
-                 yz(8)=yg+tol_zone
-                 zz(1)=zxy_max
-                 zz(2)=zxy_max
-                 zz(3)=zxy_max
-                 zz(4)=zxy_max
-                 zz(5)=zxy_min
-                 zz(6)=zxy_min
-                 zz(7)=zxy_min
-                 zz(8)=zxy_min
-                 nin_old = 0
-                 call setzone(izone, nin_old, ncord(nin+1:neq),
-     &                nsl, xz, yz, zz)
-                 nin=nin+nin_old
+               if(.not.null1(ltest)) then
+                  read(ltest, *, end = 81, err = 81) xg, yg
+                  i_old = i
+                  icnl_old=icnl
+                  icnl=1
+                  call near3(xg,yg,0.0,i,0)
+                  icnl=icnl_old
+                  if(i_old.eq.i) go to 71
+                  xg=cord(i,1)
+                  yg=cord(i,2)
+                  nxy = nxy + 1
+               else
+                  goto 81
+               end if
+               xz(1)=xg-tol_zone
+               xz(2)=xg+tol_zone
+               xz(3)=xg+tol_zone
+               xz(4)=xg-tol_zone
+               xz(5)=xg-tol_zone
+               xz(6)=xg+tol_zone
+               xz(7)=xg+tol_zone
+               xz(8)=xg-tol_zone
+               yz(1)=yg-tol_zone
+               yz(2)=yg-tol_zone
+               yz(3)=yg+tol_zone
+               yz(4)=yg+tol_zone
+               yz(5)=yg-tol_zone
+               yz(6)=yg-tol_zone
+               yz(7)=yg+tol_zone
+               yz(8)=yg+tol_zone
+               zz(1)=zxy_max
+               zz(2)=zxy_max
+               zz(3)=zxy_max
+               zz(4)=zxy_max
+               zz(5)=zxy_min
+               zz(6)=zxy_min
+               zz(7)=zxy_min
+               zz(8)=zxy_min
+               nin_old = 0
+               call setzone(izone, nin_old, ncord(nin+1:neq),
+     &              nsl, xz, yz, zz)
+               nin=nin+nin_old
                go to 71
  81            continue
             else if(macro .eq. 'list') then
@@ -458,13 +459,13 @@ c read in coordinates for nodes in zone
                      read(ltest, *, end = 80, err = 80) xg, yg, zg
                   else
                      if(i3d_2d.eq.1) then
-                      read(ltest, *, end = 80, err = 80) xg, yg, zg
-                      yg = zg
-                      zg = 0.0
+                        read(ltest, *, end = 80, err = 80) xg, yg, zg
+                        yg = zg
+                        zg = 0.0
                      else
-                      read(ltest, *, end = 80, err = 80) xg, yg
-                     zg = 0.0
-                    endif
+                        read(ltest, *, end = 80, err = 80) xg, yg
+                        zg = 0.0
+                     endif
                   end if
                else
                   goto 80
@@ -489,14 +490,23 @@ c read in nodes belonging to zone
                      izonef(ncord(i)) = izone
                   end if
                end do
-             else if(macro .eq. 'all ') then     
-              do i = 1, n0
-               izonef(i) = izone
-              enddo         
+            else if(macro .eq. 'all ') then     
+               do i = 1, n0
+                  izonef(i) = izone
+               enddo
+            else if(macro .eq. 'jajb') then
+               do
+                  read (infile, '(a80)') ltest
+                  if(null_new(ltest)) exit
+                  read (ltest, *) ja, jb, jc
+                  do i = ja, jb, jc
+                     izonef(i) = izone
+                  end do
+               end do
             endif
  6008       format (' **** Invalid input: macro ', a4, ' ****')
  6009       format(' **** Invalid node specified, ', i8, 
-     .        ' is greater than ', 'n0 (', i8, ' ): stopping ****')
+     .           ' is greater than ', 'n0 (', i8, ' ): stopping ****')
 c**** print out nodes in izone ****
             nin = 0
 c     Change to n0 (used to be neq) - BAR 12-15-99
@@ -527,7 +537,7 @@ c     Changed to neq_primary (used to be neq) BAR - 12-15-99
          end do
          if (nin .ne. 0) then
             if (ischk .ne. 0) write(ischk, 6012) nin, cnum
-c            write(ischk, 6011) (ncord(i), i = 1, nin)
+c     write(ischk, 6011) (ncord(i), i = 1, nin)
          end if
  6012    format(/, 1x, i8,
      &        ' nodes not assigned to a zone in call # ', i10)
@@ -563,8 +573,6 @@ c     for example, in a zone with the nnum option
             end do
          end if
 
-
-
 c check for dual porosity or dpdp solution
          if(idualp .eq. 1) then
 c dual porosity solution
@@ -577,11 +585,11 @@ c dual porosity solution
      .              'fracture level zone + ',zone_dpadd*2
             end if
 
-c	This loop changed to set zones to their value plus 100
-c	only if the nodes have not been explicitly set in the
-c	zone definition. This allows the user to set the matrix
-c	nodes in the zone macro and not have the code default
-c	to zone number plus 100 (or 200).
+c     This loop changed to set zones to their value plus 100
+c     only if the nodes have not been explicitly set in the
+c     zone definition. This allows the user to set the matrix
+c     nodes in the zone macro and not have the code default
+c     to zone number plus 100 (or 200).
 c     Loop changed to accomodate the new zone_dpadd variable
 
             do  i = 1, neq
@@ -601,11 +609,11 @@ c dpdp solution
                write(ischk, *) 'first matrix level zone = ',
      .              'fracture level zone + ',zone_dpadd
             end if
-c	This loop changed to set zones to their value plus 100
-c	only if the nodes have not been explicitly set in the
-c	zone definition. This allows the user to set the matrix
-c	nodes in the zone macro and not have the code default
-c	to zone number plus 100.
+c     This loop changed to set zones to their value plus 100
+c     only if the nodes have not been explicitly set in the
+c     zone definition. This allows the user to set the matrix
+c     nodes in the zone macro and not have the code default
+c     to zone number plus 100.
 c     Loop changed to accomodate the new zone_dpadd variable
 
             do i = 1, neq
