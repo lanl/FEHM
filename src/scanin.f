@@ -2111,7 +2111,8 @@ c...................................................................
                end if
                do
                   read (inptread,'(a80)') dummy_line
-                  if (null1(dummy_line)) exit
+                  if (dummy_line(1:4) .eq. 'zbtc' .or.
+     &                 null1(dummy_line)) exit
                   num_part = num_part + 1
                end do
                if (opened) then
