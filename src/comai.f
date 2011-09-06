@@ -426,6 +426,9 @@ c ZVD 08/05/09 added ishisp2, ishisp3, ishiscsl, ishiscsg
       integer             form_flag, ishisc, ishiswc, ishisp2, ishisp3
 c ZVD 01/05/11 added ihisef
       integer             ishisef
+c ZVD 07/21/11 added for viscosity and density history output
+      integer             ishisd, ishisd2, ishisd3, den_flag
+      integer             ishisv, ishisv2, ishisv3, vis_flag
 c RJP added for history of carbon mass
       integer             ishiscm, ishiscmf, ishiscmd
       integer             ishiscfz, ishiscsl, ishiscsg 

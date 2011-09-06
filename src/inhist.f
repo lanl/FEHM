@@ -76,6 +76,7 @@
 ! Default print every 1 million days
       histime = 1.e6
 ! Other flags initialized to 0 -> no output
+      ishisg = 0
       ishisp = 0
       ishisp2 = 0
       ishisp3 = 0
@@ -85,6 +86,8 @@
       ishisf = 0
       ishise = 0
       ishisef = 0
+      ishisd = 0
+      ishisv = 0
       ishishm = 0
       ishisfz = 0
       ishiswt = 0
@@ -224,11 +227,12 @@
 ! Output total/water pressure
                      pres_flag = 1
                   else if ((cmsg(2)(1:3) .eq. 'air' .or. cmsg(2)(1:3) 
-     &                .eq. 'AIR') .and. ihead .ne. 1) then
+     &                    .eq. 'AIR') .and. ihead .ne. 1) then
 ! Output air/vapor pressure
                      pres_flag = 4
                   else if ((cmsg(2)(1:3) .eq. 'cap' .or. cmsg(2)(1:3) 
-     &                    .eq. 'CAP') .and. irdof .ne. 13) then
+     &                    .eq. 'CAP') .and. (irdof .ne. 13 .or.
+     &                    ifree .ne. 0)) then
 ! Output capillary pressure
                      pres_flag = 5
                   else if ((cmsg(2)(1:3) .eq. 'co2' .or. cmsg(2)(1:3) 
@@ -258,7 +262,7 @@
      &                    (cmsg(2)(1:3) .eq. 'cap' .or. cmsg(3)(1:3) 
      &                    .eq. 'cap' .or. cmsg(2)(1:3) .eq. 'CAP'
      &                    .or. cmsg(3)(1:3) .eq. 'CAP') .and. 
-     &                    irdof .ne. 13) then
+     &                    (irdof .ne. 13 .or. ifree .ne. 0)) then
                      pres_flag = 6
                   else if ((cmsg(2)(1:3) .eq. 'air' .or. cmsg(3)(1:3) 
      &                    .eq. 'air' .or. cmsg(2)(1:3) .eq. 'AIR'
@@ -266,7 +270,7 @@
      &                    (cmsg(2)(1:3) .eq. 'cap'  .or. cmsg(3)(1:3) 
      &                    .eq. 'cap' .or. cmsg(2)(1:3) .eq. 'CAP'
      &                    .or. cmsg(3)(1:3) .eq. 'CAP') .and. 
-     &                    irdof .ne. 13)  then
+     &                    (irdof .ne. 13 .or. ifree .ne. 0))  then
                      pres_flag = 7
                   else
                      pres_flag = 2
@@ -274,7 +278,8 @@
                      if (iptty .ne. 0) write(iptty, 6040)
                   end if
                case (4)
-                  if (ico2 .gt. 0 .or. irdof .ne. 13) then
+                  if (ico2 .gt. 0 .or. irdof .ne. 13 .or. ifree .ne. 0)
+     &                 then
 ! Output total, air/vapor and capillary pressure
                      pres_flag = 3
                   else
@@ -364,9 +369,9 @@
             select case (form_flag)
             case (0)
                write(ishisp, 6000) verno, jdate, jtime, trim(wdd)
-               if (ishisp2 .ne. 0) write(ishisp, 6000) verno, jdate, 
+               if (ishisp2 .ne. 0) write(ishisp2, 6000) verno, jdate, 
      &              jtime, trim(wdd)
-               if (ishisp3 .ne. 0) write(ishisp, 6000) verno, jdate, 
+               if (ishisp3 .ne. 0) write(ishisp3, 6000) verno, jdate, 
      &              jtime, trim(wdd)
             case (1)
                write(ishisp, 6005) verno, jdate, jtime
@@ -529,6 +534,341 @@ c            end if
                ozflag = ozflag + 1
                eflag = ozflag
             end if
+
+         case ('den', 'DEN')
+! Output density
+            call parse_string(chdum,imsg,msg,xmsg,cmsg,nwds)
+! Determine which densities to output
+            select case (nwds)
+            case (2)
+               if (cmsg(2)(1:3) .eq. 'wat' .or. 
+     &              cmsg(2)(1:3) .eq. 'WAT') then
+! Output water density
+                  den_flag = 2
+               else if (cmsg(2)(1:3) .eq. 'air' .or. 
+     &                 cmsg(2)(1:3) .eq. 'AIR') then
+! Output air/vapor density
+                  den_flag = 3
+               else if (cmsg(2)(1:3) .eq. 'co2' .or. 
+     &                 cmsg(2)(1:3) .eq. 'CO2') then
+                  if (icarb .ne. 0) then
+                     if (cmsg(2)(1:4) .eq. 'co2l' .or. 
+     &                    cmsg(2)(1:3) .eq. 'CO2l') then
+! Output CO2 liquid density
+                        den_flag = 5
+                     else if (cmsg(2)(1:4) .eq. 'co2l' .or. 
+     &                       cmsg(2)(1:3) .eq. 'CO2l') then
+! Output CO2 gas density
+                        den_flag = 6
+                     else
+! Output CO2 liquid and gas density
+                        den_flag = 9
+                     end if
+                  else
+                     den_flag = 0
+                     if (iout .ne. 0) write(iout, 6067) 'density'
+                     if (iptty .ne. 0) write(iptty, 6067) 'density'
+                  end if
+               end if
+            case (3)
+               if ((cmsg(2)(1:3) .eq. 'wat' .or. cmsg(3)(1:3) 
+     &              .eq. 'wat' .or. cmsg(2)(1:3) .eq. 'WAT' 
+     &              .or. cmsg(3)(1:3) .eq. 'WAT') .and. 
+     &              (cmsg(2)(1:3) .eq. 'air' .or. cmsg(3)(1:3) 
+     &              .eq. 'air' .or. cmsg(2)(1:3) .eq. 'AIR'
+     &              .or. cmsg(3)(1:3) .eq. 'AIR')) then
+! Output water and air/vapor density
+                  den_flag = 1
+               else if ((cmsg(2)(1:3) .eq. 'wat' .or. cmsg(3)(1:3) 
+     &                 .eq. 'wat' .or. cmsg(2)(1:3) .eq. 'WAT' 
+     &                 .or. cmsg(3)(1:3) .eq. 'WAT') .and.
+     &                 (cmsg(2)(1:3) .eq. 'co2' .or. cmsg(3)(1:3) 
+     &                 .eq. 'co2' .or. cmsg(2)(1:3) .eq. 'CO2'
+     &                 .or. cmsg(3)(1:3) .eq. 'CO2')) then
+                  if (icarb .ne. 0) then
+                     if (cmsg(2)(1:4) .eq. 'co2l' .or. cmsg(3)(1:4) 
+     &                    .eq. 'co2l' .or. cmsg(2)(1:4) .eq. 'CO2l'
+     &                    .or. cmsg(3)(1:4) .eq. 'CO2l') then
+! Output water and CO2 liquid density
+                        den_flag = 7
+                     else if (cmsg(2)(1:4) .eq. 'co2g' .or. 
+     &                       cmsg(3)(1:4) .eq. 'co2g' .or. 
+     &                       cmsg(2)(1:4) .eq. 'CO2g' .or. 
+     &                       cmsg(3)(1:4) .eq. 'CO2g') then
+! Output water and CO2 gas density
+                        den_flag = 8
+                     else
+! Output water and CO2 densities
+                        den_flag = 4
+                     end if
+                  else
+                     den_flag = 2
+                     if (iout .ne. 0) write(iout, 6067) 
+     &                    'co2 density'
+                     if (iptty .ne. 0) write(iptty, 6067) 
+     &                    'co2 density'
+                  end if
+               else if ((cmsg(2)(1:4) .eq. 'co2l' .or. cmsg(3)(1:4) 
+     &                 .eq. 'co2l' .or. cmsg(2)(1:4) .eq. 'CO2l' 
+     &                 .or. cmsg(3)(1:4) .eq. 'CO2l') .and.
+     &                 (cmsg(2)(1:4) .eq. 'co2g' .or. cmsg(3)(1:4) 
+     &                 .eq. 'co2g' .or. cmsg(2)(1:4) .eq. 'CO2g'
+     &                 .or. cmsg(3)(1:4) .eq. 'CO2g')) then
+                  if (icarb .ne. 0) then
+                     den_flag = 9
+                  else
+                     if (iout .ne. 0) write(iout, 6067) 
+     &                    'co2 density'
+                     if (iptty .ne. 0) write(iptty, 6067) 
+     &                    'co2 density'
+                  end if
+               end if
+            case default
+! Defaults determined from run parameters
+               if (icarb .ne. 0) then
+! Output CO2 and water densities
+                  den_flag = 4
+               else if (ico2 .gt. 0 .or. irdof .ne. 13 .or. 
+     &                 irdof .ne. 11) then
+! Output water and air/vapor density
+                  den_flag = 1
+               else if (irdof .eq. 13) then
+! Output water density
+                  den_flag = 2
+               else if (irdof .eq. 11) then
+! Output air density
+                  den_flag = 3
+               end if
+            end select
+
+            if (den_flag .ne. 0) then
+               ishisd = ishis + 170
+               chtmp(1) = ''
+               select case (den_flag)
+               case (1)
+                  chtmp(1) = '_denWAT'
+                  chtmp(2) = '_denAIR'
+               case(2)
+                  chtmp(1) = '_denWAT'
+               case(3)
+                  chtmp(1) = '_denAIR'
+               case(4)
+                  chtmp(1) = '_denWAT'
+                  chtmp(2) = '_denCO2l'
+                  chtmp(3) = '_denCO2g'
+               case(5)
+                  chtmp(1) = '_denCO2l'
+               case(6)
+                  chtmp(1) = '_denCO2g'
+               case(7)
+                  chtmp(1) = '_denWAT'
+                  chtmp(2) = '_denCO2l'
+               case(8)
+                  chtmp(1) = '_denWAT'
+                  chtmp(2) = '_denCO2g'
+                case(9)
+                  chtmp(1) = '_denCO2l'
+                  chtmp(2) = '_denCO2g'
+               end select
+               fname =  root(1:iroot) // trim(chtmp(1)) // hissfx
+               open (unit=ishisd, file=fname, form='formatted')
+               if (den_flag .eq. 1 .or. den_flag .eq. 4 .or. 
+     &              den_flag .eq. 7 .or. den_flag .eq. 8 .or.
+     &              den_flag .eq. 9) then
+                  ishisd2 = ishisd + 1
+                  fname = ''
+                  fname =  root(1:iroot) // trim(chtmp(2)) // hissfx
+                  open (unit=ishisd2, file=fname, form='formatted')
+               end if
+               if (den_flag .eq. 4) then
+                  ishisd3 = ishisd2 + 1
+                  fname = ''
+                  fname =  root(1:iroot) // trim(chtmp(3)) // hissfx
+                  open (unit=ishisd3, file=fname, form='formatted')
+               end if
+
+               select case (form_flag)
+               case (0)
+                  write(ishisd, 6000) verno, jdate, jtime, trim(wdd)
+                  if (ishisd2 .ne. 0) write(ishisd2, 6000) verno, 
+     &                 jdate, jtime, trim(wdd)
+                  if (ishisd3 .ne. 0) write(ishisd3, 6000) verno, 
+     &                 jdate, jtime, trim(wdd)
+               case (1)
+                  write(ishisp, 6005) verno, jdate, jtime
+                  if (ishisd2 .ne. 0) write(ishisd2, 6005) verno, 
+     &                 jdate, jtime
+                  if (ishisd3 .ne. 0) write(ishisd3, 6005) verno, 
+     &                 jdate, jtime
+               end select
+            end if
+
+         case ('vis', 'VIS')
+! Output viscosity
+            call parse_string(chdum,imsg,msg,xmsg,cmsg,nwds)
+! Determine which viscosities to output
+            select case (nwds)
+            case (2)
+               if (cmsg(2)(1:3) .eq. 'wat' .or. 
+     &              cmsg(2)(1:3) .eq. 'WAT') then
+! Output water viscosity
+                  vis_flag = 2
+               else if (cmsg(2)(1:3) .eq. 'air' .or. 
+     &                 cmsg(2)(1:3) .eq. 'AIR') then
+! Output air/vapor viscosity
+                  vis_flag = 3
+               else if (cmsg(2)(1:3) .eq. 'co2' .or. 
+     &                 cmsg(2)(1:3) .eq. 'CO2') then
+! CO2 viscosity 
+                  if (icarb .ne. 0) then
+                     if (cmsg(2)(1:4) .eq. 'co2l' .or. 
+     &                    cmsg(2)(1:3) .eq. 'CO2l') then
+                        vis_flag = 5
+                     else if (cmsg(2)(1:4) .eq. 'co2l' .or. 
+     &                       cmsg(2)(1:3) .eq. 'CO2l') then
+                        vis_flag = 6
+                     else
+                        vis_flag = 4
+                     end if
+                  else
+                     vis_flag = 0
+                     if (iout .ne. 0) write(iout, 6067) 'viscosity'
+                     if (iptty .ne. 0) write(iptty, 6067) 'viscosity'
+                  end if
+               end if
+            case (3)
+               if ((cmsg(2)(1:3) .eq. 'wat' .or. cmsg(3)(1:3) 
+     &              .eq. 'watt' .or. cmsg(2)(1:3) .eq. 'WAT' 
+     &              .or. cmsg(3)(1:3) .eq. 'WAT') .and. 
+     &              (cmsg(2)(1:3) .eq. 'air' .or. cmsg(3)(1:3) 
+     &              .eq. 'air' .or. cmsg(2)(1:3) .eq. 'AIR'
+     &              .or. cmsg(3)(1:3) .eq. 'AIR')) then
+! Output water and air/vapor viscosity
+                  vis_flag = 1
+               else if ((cmsg(2)(1:3) .eq. 'wat' .or. cmsg(3)(1:3) 
+     &                 .eq. 'watt' .or. cmsg(2)(1:3) .eq. 'WAT' 
+     &                 .or. cmsg(3)(1:3) .eq. 'WAT') .and.
+     &                 (cmsg(2)(1:3) .eq. 'co2' .or. cmsg(3)(1:3) 
+     &                 .eq. 'co2' .or. cmsg(2)(1:3) .eq. 'CO2'
+     &                 .or. cmsg(3)(1:3) .eq. 'CO2')) then
+                  if (icarb .ne. 0) then
+                     if (cmsg(2)(1:4) .eq. 'co2l' .or. cmsg(3)(1:4) 
+     &                    .eq. 'co2l' .or. cmsg(2)(1:4) .eq. 'CO2l'
+     &                    .or. cmsg(3)(1:4) .eq. 'CO2l') then
+! Output water and CO2 liquid viscosity
+                        vis_flag = 7
+                     else if (cmsg(2)(1:4) .eq. 'co2g' .or. 
+     &                       cmsg(3)(1:4) .eq. 'co2g' .or. 
+     &                       cmsg(2)(1:4) .eq. 'CO2g' .or. 
+     &                       cmsg(3)(1:4) .eq. 'CO2g') then
+! Output water and CO2 gas viscosity
+                        vis_flag = 8
+                     else
+! Output water and CO2 viscosities
+                        vis_flag = 4
+                     end if
+                  else
+                     vis_flag = 2
+                     if (iout .ne. 0) write(iout, 6067) 
+     &                    'co2 viscosity'
+                     if (iptty .ne. 0) write(iptty, 6067) 
+     &                    'co2 viscosity'
+                  end if
+               else if ((cmsg(2)(1:4) .eq. 'co2l' .or. cmsg(3)(1:4) 
+     &                 .eq. 'co2l' .or. cmsg(2)(1:4) .eq. 'CO2l' 
+     &                 .or. cmsg(3)(1:4) .eq. 'CO2l') .and.
+     &                 (cmsg(2)(1:4) .eq. 'co2g' .or. cmsg(3)(1:4) 
+     &                 .eq. 'co2g' .or. cmsg(2)(1:4) .eq. 'CO2g'
+     &                 .or. cmsg(3)(1:4) .eq. 'CO2g')) then
+                  if (icarb .ne. 0) then
+                     vis_flag = 9
+                  else
+                     if (iout .ne. 0) write(iout, 6067) 
+     &                    'co2 viscosity'
+                     if (iptty .ne. 0) write(iptty, 6067) 
+     &                    'co2 viscosity'
+                  end if
+               end if
+            case default
+! Defaults determined from run parameters
+               if (icarb .ne. 0) then
+! Output CO2 and water viscosities
+                  vis_flag = 4
+               else if (ico2 .gt. 0 .or. irdof .ne. 13 .or. 
+     &                 irdof .ne. 11) then
+! Output water and air/vapor viscosity
+                  vis_flag = 1
+               else if (irdof .eq. 13) then
+! Output water viscosity
+                  vis_flag = 2
+               else if (irdof .eq. 11) then
+! Output air viscosity
+                  vis_flag = 3
+               end if
+            end select
+
+            if (vis_flag .ne. 0) then
+               ishisv = ishis + 175
+               chtmp(1) = ''
+               select case (vis_flag)
+               case (1)
+                  chtmp(1) = '_visWAT'
+                  chtmp(2) = '_visAIR'
+               case(2)
+                  chtmp(1) = '_visWAT'
+               case(3)
+                  chtmp(1) = '_visAIR'
+               case(4)
+                  chtmp(1) = '_visWAT'
+                  chtmp(2) = '_visCO2l'
+                  chtmp(3) = '_visCO2g'
+               case(5)
+                  chtmp(1) = '_visCO2l'
+               case(6)
+                  chtmp(1) = '_visCO2g'
+               case(7)
+                  chtmp(1) = '_visWAT'
+                  chtmp(2) = '_visCO2l'
+               case(8)
+                  chtmp(1) = '_visWAT'
+                  chtmp(2) = '_visCO2g'
+                case(9)
+                  chtmp(1) = '_visCO2l'
+                  chtmp(2) = '_visCO2g'
+               end select
+               fname =  root(1:iroot) // trim(chtmp(1)) // hissfx
+               open (unit=ishisv, file=fname, form='formatted')
+               if (vis_flag .eq. 1 .or. vis_flag .eq. 4 .or. 
+     &              vis_flag .eq. 7 .or. vis_flag .eq. 8 .or.
+     &              vis_flag .eq. 9) then
+                  ishisv2 = ishisv + 1
+                  fname = ''
+                  fname =  root(1:iroot) // trim(chtmp(2)) // hissfx
+                  open (unit=ishisv2, file=fname, form='formatted')
+               end if
+               if (vis_flag .eq. 4) then
+                  ishisv3 = ishisv2 + 1
+                  fname = ''
+                  fname =  root(1:iroot) // trim(chtmp(3)) // hissfx
+                  open (unit=ishisv3, file=fname, form='formatted')
+               end if
+
+               select case (form_flag)
+               case (0)
+                  write(ishisv, 6000) verno, jdate, jtime, trim(wdd)
+                  if (ishisv2 .ne. 0) write(ishisd2, 6000) verno, 
+     &                 jdate, jtime, trim(wdd)
+                  if (ishisv3 .ne. 0) write(ishisd3, 6000) verno, 
+     &                 jdate, jtime, trim(wdd)
+               case (1)
+                  write(ishisp, 6005) verno, jdate, jtime
+                  if (ishisv2 .ne. 0) write(ishisd2, 6005) verno, 
+     &                 jdate, jtime
+                  if (ishisv3 .ne. 0) write(ishisd3, 6005) verno, 
+     &                 jdate, jtime
+               end select
+            end if
+
          case ('hum', 'HUM')
 ! Output humidity
             fname =  root(1:iroot) // '_humd' // hissfx
@@ -1108,6 +1448,8 @@ c            end if
      &     'will not be output')
  6066 format('Invalid CO2 output option, ', a,      
      &     'no output will be generated')
+ 6067 format('CO2 not specified for the problem, ', a,      
+     &     ' will not be output')
  6070 format('2-D problem, ', a, ' will not be output')
  6080 format('ihms =', i3, ' Time history for ', a, 
      & ' will not be output')

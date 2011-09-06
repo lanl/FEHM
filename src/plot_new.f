@@ -45,12 +45,14 @@
 
       use comai
       use combi
-      use comci, only : enlf, envf
-      use comco2, only : icarb, denco2h, fl, fg, fw, phico2, xc, yc
+      use comci, only : enlf, envf, rolf, dil, rlf, rovf, div, rvf
+      use comco2, only : icarb, denco2h, fl, fg, fw, phico2, xc, yc,
+     &     co2_prop, wat_prop
       use comdi
       use comdti
       use comfi
       use comii, only : crl
+      use comrlp, only : rlpnew
       use comsi, only : du, dv , dw, str_x, str_y, str_z, str_xy,
      &  str_xz, str_yz, vol_strain, du_ini, dv_ini, dw_ini, idisp_rel
       use comwt
@@ -58,8 +60,8 @@
       use davidi
       implicit none
 
-      integer i, ic1, ic2, igf, mi, length, last_step, j, k
-      integer count, start, end, var_num, ishisfzz, ishiscfzz
+      integer i, ic1, ic2, igf, mi, length, last_step, j, k, ndummy
+      integer count, start, end, var_num, ishisfzz, ishiscfzz, ishisnode
       integer, allocatable :: dumlist(:)
       real*8 pwatersat, psat, dpdummy, headdum, ptime, last_time
       real*8 totalflin, totalein, curinflow, cureinflow
@@ -84,11 +86,22 @@
       save form1_string, form2_string, formh_string
       save formp_string, formcs_string
 
+      ishisnode = ishisp + ishist + ishishd + ishiss + ishisf + ishise
+     &     + ishisef + ishisd + ishisv + ishishm + ishiswt + ishisc
+     &     + ishiswc + ishiscm + ishiscmf + ishiscmd + ishiscsl 
+     &     + ishiscsg + ishisdisx + ishisdisy + ishisdisz
+     &     + ishisstr + ishisstrx + ishisstry + ishisstrz
       if (m .eq. 0 .and. node_azones .eq. 0) then
-         write (ierr, 100)
-         if (iout .ne. 0) write (iout, 100)
-         if (iptty .ne. 0 ) write (iptty, 100)
-         stop
+         if (ishisfz .eq. 0) then
+            write (ierr, 100)
+            if (iout .ne. 0) write (iout, 100)
+            if (iptty .ne. 0 ) write (iptty, 100)
+            stop
+         else if (ishisnode .ne. 0) then
+            if (l .eq. 1) write (ierr, 120)
+            if (iout .ne. 0) write (iout, 120)
+            if (iptty .ne. 0 ) write (iptty, 120)
+         end if
       end if
       if (out_zones .and. ozflag .eq. 0) then
          write (ierr, 110)
@@ -100,6 +113,9 @@
      &     'nodes and/or zones must be defined for history plot output')
  110  format ('***** STOPPING *****', /, 
      &     'node macro for zone averaging must precede hist macro')
+ 120  format ('***** WARNING *****', /, 
+     &     'nodes and/or zones must be defined for history plot output',
+     &     ' other than zone fluxes')
 
             
       if (igf .eq. 0)  then
@@ -154,7 +170,7 @@ c            write(ishis, '(a4)')  '    '
             end do
          end if
 
-         var_num = m + node_azones
+         var_num = max (m + node_azones, 1)
          allocate (var_string(var_num), var_tmp(var_num))
          do i = 1, m
             dumv_string = ''
@@ -172,15 +188,15 @@ c            write(ishis, '(a4)')  '    '
 
          if (form_flag .eq. 1) then
             file_format = 'Tecplot'
-            write (form1_string, 200) m
+            write (form1_string, 200) max (m, 1)
             write (form2_string, 200) var_num
          else if (form_flag .eq. 2) then
             file_format = 'Surfer (csv)'
-            write (form1_string, 210) m
+            write (form1_string, 210) max (m, 1)
             write (form2_string, 210) var_num
          else
             file_format = 'Standard text'
-            write (form1_string, 220) m
+            write (form1_string, 220) max(m, 1)
             write (form2_string, 220) var_num
          end if
  200     format ("('variables = ',", "'", '"', "', a, '", '" ', "',", 
@@ -343,6 +359,132 @@ c            write(ishis, '(a4)')  '    '
             ic2 = len_trim(info_string) + 1
             title_string = 'Enthalpy Flow (MJ/s)'
             call plot_header(ishise,var_num,form2_string)
+         end if
+         if (ishisd .ne. 0) then
+! Output density in kg/m^3
+            select case (den_flag)
+            case (1)
+               title_string = 'Water Density (kg/m^3)'
+               call plot_header(ishisd,var_num,form2_string)
+               title_string = 'Air Density (kg/m^3)'
+               call plot_header(ishisd2,m,form1_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'Water and air density'
+            case (2)
+               title_string = 'Water Density (kg/m^3)'
+               call plot_header(ishisd,var_num,form2_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'Water density'
+            case (3)
+               title_string = 'Air Density (kg/m^3)'
+               call plot_header(ishisd,m,form1_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'Air density'
+            case (4)
+               title_string = 'Water Density (kg/m^3)'
+               call plot_header(ishisd,var_num,form2_string)
+               title_string = 'CO2 liquid Density (kg/m^3)'
+               call plot_header(ishisd2,m,form1_string)
+               title_string = 'CO2 gas Density (kg/m^3)'
+               call plot_header(ishisd3,m,form1_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'Water and CO2 liquid and gas density'
+            case (5)
+               title_string = 'CO2 liquid Density (kg/m^3)'
+               call plot_header(ishisd,m,form1_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'CO2 liquid density'
+            case (6)
+               title_string = 'CO2 gas Density (kg/m^3)'
+               call plot_header(ishisd,m,form1_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'CO2 gas density'
+            case (7)
+               title_string = 'Water Density (kg/m^3)'
+               call plot_header(ishisd,var_num,form2_string)
+               title_string = 'CO2 liquid Density (kg/m^3)'
+               call plot_header(ishisd2,m,form1_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'Water and CO2 liquid density'
+             case (8)
+               title_string = 'Water Density (kg/m^3)'
+               call plot_header(ishisd,var_num,form2_string)
+               title_string = 'CO2 gas Density (kg/m^3)'
+               call plot_header(ishisd2,m,form1_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'Water and CO2 gas density'
+              case (9)
+               title_string = 'CO2 liquid Density (kg/m^3)'
+               call plot_header(ishisd,var_num,form2_string)
+               title_string = 'CO2 gas Density (kg/m^3)'
+               call plot_header(ishisd2,m,form1_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'CO2 liquid and gas density'
+           end select
+            ic2 = len_trim(info_string) + 1
+         end if
+         if (ishisv .ne. 0) then
+! Output viscosity in Pa s
+            select case (vis_flag)
+            case (1)
+               title_string = 'Water Viscosity (Pa s)'
+               call plot_header(ishisv,var_num,form2_string)
+               title_string = 'Air Viscosity (Pa s)'
+               call plot_header(ishisv2,m,form1_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'Water and air viscosity'
+            case (2)
+               title_string = 'Water Viscosity (Pa s)'
+               call plot_header(ishisv,var_num,form2_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'Water viscosity'
+            case (3)
+               title_string = 'Air Viscosity (Pa s)'
+               call plot_header(ishisv,m,form1_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'Air viscosity'
+            case (4)
+               title_string = 'Water Viscosity (Pa s)'
+               call plot_header(ishisv,var_num,form2_string)
+               title_string = 'CO2 liquid Viscosity (Pa s)'
+               call plot_header(ishisv2,m,form1_string)
+               title_string = 'CO2 gas Viscosity (Pa s)'
+               call plot_header(ishisv3,m,form1_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'Water and CO2 liquid and gas viscosity'
+            case (5)
+               title_string = 'CO2 liquid Viscosity (Pa s)'
+               call plot_header(ishisv,m,form1_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'CO2 liquid viscosity'
+            case (6)
+               title_string = 'CO2 gas Viscosity (Pa s)'
+               call plot_header(ishisv,m,form1_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'CO2 gas viscosity'
+            case (7)
+               title_string = 'Water Viscosity (Pa s)'
+               call plot_header(ishisv,var_num,form2_string)
+               title_string = 'CO2 liquid viscosity (Pa s)'
+               call plot_header(ishisv2,m,form1_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'Water and CO2 liquid viscosity'
+             case (8)
+               title_string = 'Water Viscosity (Pa s)'
+               call plot_header(ishisv,var_num,form2_string)
+               title_string = 'CO2 gas Viscosity (Pa s)'
+               call plot_header(ishisv2,m,form1_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'Water and CO2 gas viscosity'
+              case (9)
+               title_string = 'CO2 liquid Viscosity (Pa s)'
+               call plot_header(ishisv,var_num,form2_string)
+               title_string = 'CO2 gas Viscosity (Pa s)'
+               call plot_header(ishisv2,m,form1_string)
+               info_string = info_string(ic1:ic2) // 
+     &              'CO2 liquid and gas viscosity'
+           end select
+           ic2 = len_trim(info_string) + 1
          end if
          if (ishishm .ne. 0 ) then
 ! Ouput humidity
@@ -807,11 +949,11 @@ c**** write number of plot nodes, node numbers and coordinates ****
 ! define form_string for numerical output
          if (form_flag .le. 1) then
 ! Standard or Tecplot
-            write (form1_string, 300) m
+            write (form1_string, 300) max (m, 1)
             write (form2_string, 300) var_num
          else if (form_flag .eq. 2) then
 ! Surfer
-            write (form1_string, 310) m
+            write (form1_string, 310) max (m, 1)
             write (form2_string, 310) var_num
          end if
  300     format ("(g16.9, ", i5, "(1x, g16.9))")
@@ -1094,6 +1236,95 @@ c     &           (avg_values(j,eflag), j=1,node_azones)
      &           (qh(nskw(i)), i= 1, m)
          end if
          call flush(ishisef)
+      end if
+      if (ishisd .ne. 0) then
+! Output density
+         if (den_flag .eq. 1 .or. den_flag .eq. 2) then
+            write(ishisd, form1_string) ptime, (rolf(nskw(i)), i = 1, m)
+            if (den_flag .eq. 1)
+     &           write(ishisd2, form1_string) ptime, 
+     &           (rovf(nskw(i)), i = 1, m)
+         end if
+         if (den_flag .eq. 3) then
+            write(ishisd, form1_string) ptime, (rovf(nskw(i)), i = 1, m)
+         end if
+         if (den_flag .eq. 4 .or. den_flag .eq. 7 .or. 
+     &        den_flag .eq. 8) then
+            write(ishisd, form1_string) ptime, 
+     &           (wat_prop(nskw(i)), i = 1, m)
+            if (den_flag .eq. 4 .or. den_flag .eq. 7) 
+     &           write(ishisd2, form1_string) ptime, 
+     &           (co2_prop(nskw(i)), i = 1, m)
+            if (den_flag .eq. 8) write(ishisd2, form1_string) ptime, 
+     &           (co2_prop(9*neq + nskw(i)), i = 1, m)
+            if (den_flag .eq. 4) write(ishisd3, form1_string) ptime, 
+     &           (co2_prop(9*neq + nskw(i)), i = 1, m)
+         end if
+         if (den_flag .eq. 5 .or. den_flag .eq. 9) then
+            write(ishisd, form1_string) ptime, 
+     &           (co2_prop(nskw(i)), i = 1, m)
+            if (den_flag .eq. 9) write(ishisd2, form1_string) ptime, 
+     &           (co2_prop(9*neq + nskw(i)), i = 1, m)
+         end if
+         if (den_flag .eq. 6) then
+             write(ishisd, form1_string) ptime, 
+     &           (co2_prop(9*neq + nskw(i)), i = 1, m)
+         end if
+         call flush(ishisd)
+         if (ishisd2 .ne. 0) call flush(ishisd2) 
+         if (ishisd3 .ne. 0) call flush(ishisd3) 
+      end if
+      if (ishisv .ne. 0) then
+! Output viscosity
+         if (vis_flag .le. 3) then
+            ndummy = 0
+            if (rlpnew) then
+               call rlp_cap(ndummy)
+            else
+               call rlperm(ndummy,1)
+            end if
+         end if
+         if (vis_flag .eq. 1 .or. vis_flag .eq. 2) then
+            do i = 1, m
+               dumv(i) = rlf(nskw(i)) * rolf(nskw(i)) / dil(nskw(i))
+            end do
+            write(ishisv, form1_string) ptime, (dumv(i), i = 1, m)
+         end if
+         if (vis_flag .eq. 1 .or. vis_flag .eq. 3) then
+            do i = 1, m
+               dumv(i) = rvf(nskw(i)) * rovf(nskw(i)) / div(nskw(i))
+            end do
+            if (vis_flag .eq. 1) then
+               write(ishisv2, form1_string) ptime, (dumv(i), i = 1, m)
+            else
+               write(ishisv, form1_string) ptime, (dumv(i), i = 1, m)
+            end if
+         end if
+         if (vis_flag .eq. 4 .or. vis_flag .eq. 7 .or. 
+     &        vis_flag .eq. 8) then
+            write(ishisv, form1_string) ptime, 
+     &           (wat_prop(8*neq + nskw(i)), i = 1, m)
+            if (vis_flag .eq. 4 .or. vis_flag .eq. 7) 
+     &           write(ishisv2, form1_string) ptime, 
+     &           (co2_prop(6*neq + nskw(i)), i = 1, m)
+            if (vis_flag .eq. 8) write(ishisv2, form1_string) ptime, 
+     &           (co2_prop(15*neq + nskw(i)), i = 1, m)
+            if (vis_flag .eq. 4) write(ishisv3, form1_string) ptime, 
+     &           (co2_prop(15*neq + nskw(i)), i = 1, m)
+         end if
+         if (vis_flag .eq. 5 .or. vis_flag .eq. 9) then
+            write(ishisv, form1_string) ptime, 
+     &           (co2_prop(6*neq + nskw(i)), i = 1, m)
+            if (vis_flag .eq. 9) write(ishisv2, form1_string) ptime, 
+     &           (co2_prop(15*neq + nskw(i)), i = 1, m)
+         end if
+         if (vis_flag .eq. 6) then
+             write(ishisv, form1_string) ptime, 
+     &           (co2_prop(15*neq + nskw(i)), i = 1, m)
+         end if
+         call flush(ishisv)
+         if (ishisv2 .ne. 0) call flush(ishisv2) 
+         if (ishisv3 .ne. 0) call flush(ishisv3) 
       end if
       if (ishishm .ne. 0 ) then
 ! Output humidity
