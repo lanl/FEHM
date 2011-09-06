@@ -285,11 +285,15 @@ c     +     nsizep,2,icode)
         end if
         p = -5
 
-      if (pout.lt.0) then
+      if (pout.eq. -7) then
+         write(istrc,100)
+      else if (pout.lt.0) then
       write(istrc,*) 'Node Number, Time A Particle Left This Node (sec)'
       else
          call plotc1(0,0)
       endif
+ 100  format (2x, 'Particle #', 4x, 'Node Number', 5x, 'Zone', 2x, 
+     &     'Time in node', 3x, 'Current time (sec)')
 
       if (pout.eq.0) then
          if (trak_type(1).eq.1) then

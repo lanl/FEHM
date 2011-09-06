@@ -2446,7 +2446,9 @@ cHari every particle
       
       if(pout.lt.0) then
         if(pout.eq.-7) then
-          write(istrc,*) i,oldbox,izonef(oldbox),timeleft(i,ith)
+c          write(istrc,*) i,oldbox,izonef(oldbox),timeleft(i,ith)
+          write(istrc,*) i,oldbox,izonef(oldbox),timeleft(i,ith),
+     &          current_time
         else
           if((box(i,ith).eq.nskw(1)).or.(box(i,ith)-neq.eq.nskw(1))) 
      +      write(istrc,*) box(i,ith),current_time-start_time(i,ith)
