@@ -249,6 +249,7 @@ C***********************************************************************
 
       use comai
       use comxi
+      use comuserc, only : in
       implicit none
 
       logical opnd
@@ -408,7 +409,7 @@ C***********************************************************************
       cform(29)='formatted'
       cform(30)='formatted'      
       blank=' '
-      nmfil( 1) = 'fehmn.files'
+      if(in(4).NE.666) nmfil( 1) = 'fehmn.files'
       nmfil( 2) = 'fehmn.dat'
       nmfil( 3) = 'fehmn.dat'
       nmfil( 4) = 'fehmn.dat'
@@ -445,12 +446,15 @@ C***********************************************************************
       ex = .false.
       cmdline = ''
 ! Has the control file name been provided on the command line
-      nargc = iargc()
-      if (nargc .ge. 1) then
-         call getarg(1, cmdline)
-         len = len_trim(cmdline)
-         inquire (file = cmdline(1:len), exist = ex)
-         if (ex) nmfil(1) =  cmdline(1:len)
+
+      if(in(4).NE.666) then 
+         nargc = iargc()
+         if (nargc .ge. 1) then
+            call getarg(1, cmdline)
+            len = len_trim(cmdline)
+            inquire (file = cmdline(1:len), exist = ex)
+            if (ex) nmfil(1) =  cmdline(1:len)
+         end if
       end if
 
 ! If the control file name was not entered on the command line,
@@ -466,7 +470,7 @@ C***********************************************************************
       end if
 
 ! Open error output file [if not already open for msim] 
-      ierr = nufilb(14)
+      if(in(4).NE.666) ierr = nufilb(14)
       inquire (ierr, opened = opnd)
       if (.not. opnd) then
          open (ierr, file = nmfil(14), status = cstats(14),
