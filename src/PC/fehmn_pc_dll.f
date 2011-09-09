@@ -525,7 +525,9 @@ c*** water table rise modification
      &     contr_riptot, tims_save, day_saverip, in3save,
      &     water_table_old
 
-      allocate (in(3))
+c zvd 09-Sep-2011 change size of in array to be consistent with iofile
+lc modification for GoldSim 
+      allocate (in(4))
 
       if(method.eq.2) then
 c	When run from Goldsim, the normal fehm screen output gets
