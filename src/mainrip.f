@@ -174,12 +174,12 @@ C!DEC$ ATTRIBUTES reference :: state
 C!DEC$ ATTRIBUTES reference :: in
 C!DEC$ ATTRIBUTES reference :: out
          integer method, state
-         real(8) in(3), out(3)
+         real(8) in(4), out(3)
          end subroutine fehmn
       end interface
       integer return_flag
       integer method, state
-      real(8) in(3), out(3)
+      real(8) in(4), out(3)
       integer nsim, irun
       character(100) pre_string, post_string
       logical file_exists
@@ -188,6 +188,8 @@ c     temporary variables for testing
       real*8 oldtime
       integer its, nts, i, tindex
 
+c zvd 09-Sep-2011 change size of in array to be consistent with iofile
+c modification for GoldSim 
       in = 0.
       out = 0.
 c      ripfehm = 0

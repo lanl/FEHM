@@ -525,8 +525,10 @@ c*** water table rise modification
      &     contr_riptot, tims_save, day_saverip, in3save,
      &     water_table_old
 
-      if (.not. allocated(in)) allocate(in(3))
-      in = ing(1:3)
+c zvd 09-Sep-2011 change size of in array to be consistent with iofile
+c modification for GoldSim 
+      if (.not. allocated(in)) allocate(in(4))
+      in = ing(1:4)
 
       inquire(unit=6,opened=it_is_open)
       if(method.eq.2) then
