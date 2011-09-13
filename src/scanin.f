@@ -745,6 +745,8 @@ c            backspace locunitnum
             iqf=1
          else if(wdd1(1:2).eq.'sw') then
             iqw=1
+         else if(wdd1(1:4).eq.'sco2') then
+            iqco2=1
          else if(wdd1(1:3).eq.'sfh') then
             isf=1
          else if(wdd1(1:2).eq.'sf') then
@@ -759,6 +761,8 @@ c            backspace locunitnum
             iqa=1
          else if(wdd1(1:3).eq.'dsw') then
             iqw=1
+         else if(wdd1(1:5).eq.'dsco2') then
+            iqco2=1
          else if(wdd1(1:3).eq.'dse') then
             iqenth=1
          else if(wdd1(1:2).eq.'si') then

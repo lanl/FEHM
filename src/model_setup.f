@@ -241,6 +241,13 @@ c     new initial value input here 12/3/98 GAZ
          enddo
          sourcee_type(imod)=1
          if(isubmod.le.1) go to 30
+      else if(key(1:4).eq.'sco2') then
+         read(inpt,*) (sourceco2(i,imod),i=1,ntimes)
+         do i=1,ntimes
+            sourceco2(i,imod)= sourceco2(i,imod)+tol_boun
+         enddo
+         sourceco2_type(imod)=1
+         if(isubmod.le.1) go to 30
       else if(key(1:3).eq.'dsa') then
          read(inpt,*) (sourcea(i,imod),i=1,ntimes)
          do i=1,ntimes
@@ -261,6 +268,13 @@ c     new initial value input here 12/3/98 GAZ
             sourcee(i,imod)= sourcee(i,imod)+tol_boun
          enddo
          sourcee_type(imod)=-1
+         if(isubmod.le.1) go to 30
+      else if(key(1:5).eq.'dsco2') then
+         read(inpt,*) (sourceco2(i,imod),i=1,ntimes)
+         do i=1,ntimes
+            sourceco2(i,imod)= sourceco2(i,imod)+tol_boun
+         enddo
+         sourceco2_type(imod)=-1
          if(isubmod.le.1) go to 30
       else if(key(1:2).eq.'s ') then
          read(inpt,*) (saturation(i,imod),i=1,ntimes)

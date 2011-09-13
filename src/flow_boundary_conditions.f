@@ -72,6 +72,7 @@ c
       use comai
       use combi
       use comci
+      use comco2, only : icarb, skco2, kaco2
       use comdi
       use comei
       use comfi
@@ -106,6 +107,8 @@ c
          if (.not. allocated (vtotw)) allocate(vtotw(maxmodel))
          if (.not. allocated (vtota)) allocate(vtota(maxmodel))
          if (.not. allocated (vtote)) allocate(vtote(maxmodel))
+         if (icarb .eq. 1 .and. .not. allocated (vtotco2)) 
+     &        allocate(vtotco2(maxmodel))
          if (.not. allocated (atotd)) allocate(atotd(maxmodel))
          if (.not. allocated (time)) allocate(time(maxtimes,maxmodel))
          if (.not. allocated (time_cycle)) 
@@ -177,6 +180,16 @@ c
             qw = 0.0d00
             sourcew = 0.0d00
             sourcew_type = 0
+         endif
+         if(iqco2.ne.0) then
+            if (.not. allocated (qco2b)) allocate(qco2b(n0))      
+            if (.not. allocated (sourceco2)) 
+     .           allocate(sourceco2(maxtimes,maxmodel))   
+            if (.not. allocated (sourceco2_type)) 
+     .           allocate(sourceco2_type(maxmodel))   
+            qco2b = 0.0d00
+            sourceco2 = 0.0d00
+            sourceco2_type = 0
          endif
          if(iqenth.ne.0) then
             if (.not. allocated (qenth)) allocate(qenth(n0))
@@ -563,6 +576,18 @@ c pure water/heat
                   endif
                endif
             enddo
+            if (icarb .eq. 1) then
+               do i=1,n
+                  if(idum(i).ne.0) then
+                     if(iqco2.ne.0.) then
+                        if(qco2b(i).ne.0.0) then
+                           skco2(i)=qco2b(i)
+                           kaco2(i)=1
+                        endif
+                     endif
+                  endif
+               enddo
+            end if
          else if(ico2.gt.0) then
 c air/water/heat
             call flow_boun(3

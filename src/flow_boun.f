@@ -304,6 +304,7 @@ c     gaz 9-18-00
                   time(i,imod)=time(i-1,imod)
                   if(iqa.ne.0) sourcea(i,imod)=sourcea(i-1,imod)
                   if(iqw.ne.0) sourcew(i,imod)=sourcew(i-1,imod)
+                  if(iqco2.ne.0) sourceco2(i,imod)=sourceco2(i-1,imod)
                   if(iqf.ne.0) sourcef(i,imod)=sourcef(i-1,imod)
                   if(isf.ne.0) seepfac(i,imod)=seepfac(i-1,imod)
                   if(ifd.ne.0) drainar(i,imod)=drainar(i-1,imod)
@@ -334,6 +335,7 @@ c     gaz 9-18-00
                ntimes=ntimes+1
                if(iqa.ne.0) sourcea(1,imod)=0.0
                if(iqw.ne.0) sourcew(1,imod)=0.0
+               if(iqco2.ne.0) sourceco2(1,imod)=0.0
                if(isf.ne.0) seepfac(1,imod)=0.0
                if(ifd.ne.0) drainar(1,imod)=0.0
                if(iqf.ne.0) sourcef(1,imod)=0.0
@@ -353,6 +355,7 @@ c     gaz 9-18-00
             if(time_type(imod).gt.0) then
                if(iqa.ne.0) sourcea(ntimes,imod)=sourcea(1,imod)
                if(iqw.ne.0) sourcew(ntimes,imod)=sourcew(1,imod)
+               if(iqco2.ne.0) sourceco2(ntimes,imod)=sourceco2(1,imod)
                if(isf.ne.0) seepfac(ntimes,imod)=seepfac(1,imod)
                if(ifd.ne.0) drainar(ntimes,imod)=drainar(1,imod)
                if(iqf.ne.0) sourcef(ntimes,imod)=sourcef(1,imod)
@@ -699,6 +702,12 @@ c     vtote(i)=0.0d00
 c     vtota(i)=0.0d00
                      endif
                   endif
+                  if(iqco2.ne.0) then
+                     if(sourceco2_type(i).lt.0) then
+                        vtotw(i)=0.0d00
+c     vtotco2(i)=0.0d00
+                     endif
+                  endif
                   if(ifd.ne.0) then
                      if(drainar_type(i).lt.0) then
                         vtotw(i)=0.0d00
@@ -883,6 +892,12 @@ C
                   if(iqw.ne.0) then
                      if(sourcew_type(imodel).gt.0) then
                         qw(i)=sourcew(abs(time_type(imodel)),imodel)
+                     endif
+                  endif
+                  if(iqco2.ne.0) then
+                     if(sourceco2_type(imodel).gt.0) then
+                        qco2b(i)=sourceco2(abs(time_type(imodel)),
+     &                       imodel)
                      endif
                   endif
                   if(iqf.ne.0) then
@@ -1095,6 +1110,12 @@ C     End Volume/distance weighted cases
      &                       vfac
                      endif
                   endif
+                  if(iqco2.ne.0) then
+                     if(sourceco2_type(imodel).lt.0) then
+                        qco2b(i)=sourceco2(abs(time_type(imodel)),
+     &                       imodel)*vfac
+                     endif
+                  endif
                   if(iqa.ne.0) then
                      if(sourcea_type(imodel).lt.0) then
 c     vfac = sf*vol_nd(i)/vtota(imodel)
@@ -1272,6 +1293,13 @@ C
                            if(sourcew_type(imodel).lt.0) then
                               qw(i)   = time_factor1*qw(i) + 
      &                             time_factor2*sourcew(abs
+     &                             (time_type(imodel))+1,imodel)*vfac
+                           endif
+                        endif
+                        if(iqco2.ne.0) then
+                           if(sourceco2_type(imodel).lt.0) then
+                              qco2b(i)   = time_factor1*qw(i) + 
+     &                             time_factor2*sourceco2(abs
      &                             (time_type(imodel))+1,imodel)*vfac
                            endif
                         endif

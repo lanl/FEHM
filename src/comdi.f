@@ -651,6 +651,7 @@
       integer, allocatable ::  sourcew_type(:)
       integer, allocatable ::  sourcef_type(:)
       integer, allocatable ::  sourcee_type(:)
+      integer, allocatable ::  sourceco2_type(:)
       integer, allocatable ::  seepfac_type(:)
       integer, allocatable ::  drainar_type(:)
       integer, allocatable ::  saturation_type(:)
@@ -675,7 +676,7 @@
       integer, allocatable ::  temperature_ini_type(:)
 
       integer iqa,iqw,iqenth,isatb,ienth,itempb,ipresa,ipresw
-      integer imped,its,imod,isubmod,iqf,icm,isf,ifd
+      integer imped,its,imod,isubmod,iqf,icm,isf,ifd,iqco2
       integer isatb_ini,ipresa_ini,ipresw_ini,itempb_ini
       integer isteady, istdy, isty, iwght, lchange
       integer ixperm,iyperm,izperm
@@ -683,6 +684,7 @@
       real*8, allocatable ::  qa(:) 
       real*8, allocatable ::  qw(:) 
       real*8, allocatable ::  qw0(:) 
+      real*8, allocatable ::  qco2b(:) 
       real*8, allocatable ::  qenth(:) 
       real*8, allocatable ::  satb(:) 
       real*8, allocatable ::  enth(:) 
@@ -703,6 +705,7 @@
       real*8, allocatable :: sourcew(:,:)
       real*8, allocatable :: sourcef(:,:)
       real*8, allocatable :: sourcee(:,:)
+      real*8, allocatable :: sourceco2(:,:)
       real*8, allocatable :: seepfac(:,:)
       real*8, allocatable :: drainar(:,:)
       real*8, allocatable :: saturation(:,:)
@@ -715,7 +718,7 @@
       real*8, allocatable :: permx(:,:)
       real*8, allocatable :: permy(:,:)
       real*8, allocatable :: permz(:,:)
-      real*8, allocatable :: vtotw(:),vtota(:),vtote(:)
+      real*8, allocatable :: vtotw(:),vtota(:),vtote(:),vtotco2(:)
       real*8, allocatable :: atotd(:)
       real*8, allocatable :: steady_time(:)
       integer, allocatable ::  node_ch_model(:,:)
