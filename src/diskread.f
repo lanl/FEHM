@@ -1420,6 +1420,8 @@ c Set CO2 parameters using t and phi
          fg = fog
          toco2 = tco2
          phoco2 = phico2
+         ieos = ieoso
+         ices = iceso
          if (.not. read_temp(2)) then
             t = tco2
             to = tco2

@@ -1280,6 +1280,7 @@ c get cell lengths for wtsi if necessary
          call icectr(6, 0)
       endif
       if(icarb.eq.1) then
+         call icectrco2(14,0)
          call icectrco2(6,0)
       endif
 
@@ -1295,8 +1296,8 @@ c gaz 10-18-2001     call sice (1)
          if(ice.eq.0) then
             if(icarb.eq.1) then
                call icectrco2(-1,0)
+               call icectrco2(1,0)
                call icectrco2(-34,0)
-               call icectrco2(14,0)
                call icectrco2(3,0)
                call icectrco2(-3,0)
                call icectrco2(-33,0)
@@ -1408,6 +1409,7 @@ c**** calculate initial mass and energy for component system ****
             call icectr(7,0)
          elseif(icarb.eq.1) then
             call icectrco2(7,0)
+            call icectrco2(9,0)
          endif
          amass = am0
          aener = ame
