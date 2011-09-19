@@ -209,7 +209,8 @@ C**********************************************************************
       real*8 xmsg(11)
       integer imsg(11)
       character*32 cmsg(11)
-	character*4 por_change
+      character*4 por_change
+      character*10 co2_flag
       logical null1
       
 c ----Users can write codes below----
@@ -236,6 +237,22 @@ c Read in coupling information
       do igrp = 1, ngroups
          read(inpt,*)
       enddo
+
+      co2_couple = 0
+      read(inpt, '(a10)') co2_flag
+      if (co2_flag .eq. 'co2_couple') then
+         if (icarb .eq. 1) then
+            co2_couple = 1
+            if (iout .ne. 0) write(iout,*) 'CO2 coupling with trac ON'
+            if (iptty .ne. 0) write(iptty,*) 'CO2 coupling with trac ON'
+         else
+            write (ierr, *) '**** WARNING **** CO2 coupling not active',
+     &           ' for non-CO2 problem'
+         end if
+      else
+         backspace inpt
+      end if
+
 c Identification numbers and names of components
       read(inpt,*)
       do ic=1,ncpnt
@@ -739,5 +756,4 @@ c read in the surface area of the mineral in m^2
       enddo
  999  return
       end
-
 

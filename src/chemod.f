@@ -146,23 +146,37 @@ c.......Proceed if complexation is involved.
                enddo
 
 c .... Handle dissolved CO2 case
-               if(icarb.eq.1)then
-                 do ic = 1,ncpnt
-	              mi = in+(pcpnt(ic)-1)*n0
-		          if (ifxconc(ic).eq.2.and.cpntnam(ic).eq.'H2CO3')then
- 	                  disco2_flow = (yc(in)/(1-yc(in)))/0.044
-		              totaq(ic) = max(totaq(ic), disco2_flow)
-	                  ifxconc(ic)=1
-	                  call speciate(in,info,tol_value)
-	                  ifxconc(ic)=2
-                        dum = cpnt(ic)
-                        Do i=101,ncplx+100
-                           dum = dum + cplx(i)*spstoic(i,ic)
-                        Enddo
-                        totaq(ic) = dum
-		          endif 
-	            enddo
-	          endif
+c icarb = 1 for co2 flow, should add check to make sure co2 solubility is turned on
+c               if(icarb.eq.1.and.co2_couple.eq.1)then
+!               write(*,*) 'new code'
+c loop over aqueus components
+c                 do ic = 1,ncpnt
+c	              mi = in+(pcpnt(ic)-1)*n0
+c check that we want couple co2 flow solubility to the trac macro
+c		          if (cpntnam(ic).eq.'H2CO3')then
+c convert mass fraction to moles/kg water 
+c	                  disco2_flow = (yc(in)/(1-yc(in)))/0.044
+c if the flow solution solubility is above a specified tolerance we need to adjust the
+c total h2co3
+c                    write(iout,*) 'inside ',in,disco2_flow,totaq(ic)
+c	                  if(disco2_flow.gt.1e-5)then
+c		                 totaq(ic) = disco2_flow+cpnt(ic)
+c                           totaq(ic) = max(disco2_flow,totaq(ic))
+c                          an(mi)=totaq(ic)
+c no need to respeciate since we are just changing the total carbonate conc
+c	                     ifxconc(ic)=1
+c	                  endif
+c	                  call speciate(in,info,tol_value)
+c	                  ifxconc(ic)=2
+c                       dum = cpnt(ic)
+c                        Do i=101,ncplx+100
+c                          dum = dum + cplx(i)*spstoic(i,ic)
+c                       Enddo
+c                        totaq(ic) = dum
+c
+c		          endif 
+c	            enddo
+c	          endif
 
 
 c.........Speciation
@@ -4510,7 +4524,6 @@ c==================================================================
 *     End of DGETF2
 *
       END
-
 
 
 

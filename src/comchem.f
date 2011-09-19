@@ -288,6 +288,8 @@
       integer nimmprt
 
       integer nvapprt
+      
+      integer co2_couple
 
       integer neg_conc_flag
 
