@@ -171,6 +171,7 @@ C***********************************************************************
       use combi, only : corz, izonef, nelm
       use comchem
       use comdi, only : nsurf, izone_surf, izone_surf_nodes, icns
+      use compart, only : ptrak, pout
       use comrxni
       use comdti
       implicit none
@@ -187,10 +188,10 @@ C***********************************************************************
       character*60, allocatable :: title(:)
       character*14 tailstring
       character*8 dual_char
-      character*3 dls
+      character*3 dls, snum
       character*5 char_type
       character*60 fstring
-      character*20 tmpname
+      character*35 tmpname
       character*30 cordname(3)
       character*150 :: string = '', tecstring = '', sharestring = ''
       real*8 write_array(maxcon)
@@ -386,8 +387,29 @@ c---------------------------------------
                end if
                title(j) = trim(dual_char)//trim(cpntnam(iaq))
             case (0)
-               isolid = isolid + 1
-               title(j) = trim(dual_char)//trim(immnam(isolid))
+               if (ptrak) then
+                  write (snum, '(i3)') i
+                  select case (abs(pout))
+                  case (0)
+                     tmpname = "Particles/Fluid mass Species "
+                  case (1)
+                     tmpname = "Particles/Total volume Species "
+                  case (2)
+                     tmpname = "Particles/Fluid volume Species "
+                  case (3, 7)
+                     tmpname = "Number of Particles Species "
+                  case (4)
+                     tmpname = "Cl-36 Species "
+                  case (5)
+                     tmpname = "Mixed Mean Concentration Species "
+                  case (6)
+                     tmpname = "C-14 Species "
+                  end select
+                  title(j) = trim(dual_char) // trim(tmpname) // snum
+               else
+                  isolid = isolid + 1
+                  title(j) = trim(dual_char)//trim(immnam(isolid))
+               end if
             case (-1)
                ivap = ivap + 1
                title(j) = trim(dual_char)//trim(vapnam(ivap))
