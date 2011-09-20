@@ -191,13 +191,14 @@ CPS END read_rxn
 CPS 
 C**********************************************************************
 
+      use comai
       use combi
       use comchem
-      use comrxni
-      use comdi
+      use comco2, only : icarb
       use comcouple
+      use comdi
       use comdti
-      use comai
+      use comrxni
       implicit none
 
 * local variables
