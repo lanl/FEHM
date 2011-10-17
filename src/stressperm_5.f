@@ -39,7 +39,7 @@ c     assumes call has been made to allocate memory
       real*8 amultxy, amultxz, amultyz
       real*8 disx,disy,disz,alpi,dt,efac,phid,pi
 
-      parameter (frac_tol=0.00001)
+      parameter (frac_tol=0.00001, pi=3.1415926535)
 c     
 c     x direction (orthogonal pieces)
 c     
@@ -50,7 +50,8 @@ c
 
       strx_min = spm1f(iispmd)
       stry_min = spm2f(iispmd) 
-      strz_min = spm3f(iispmd) 
+      strz_min = spm3f(iispmd)
+      phid = spm6f(iispmd)
 c     
 c     the parameters in the fully coupled model are replaced 
 c     by initial permeabilities

@@ -34,7 +34,7 @@ subroutine stressperm_8(i)
       real*8  L11,L12,L13,L21,L22,L23,L31,L32,L33
       real*8  frac_tol, disz,disy,disx
       real*8 frac_bx, frac_by, frac_bz
-
+      parameter (pi=3.1415926535)
 
 !     **************failure criteria + stress-perm (for intact rock)
          

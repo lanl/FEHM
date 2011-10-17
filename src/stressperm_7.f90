@@ -34,7 +34,7 @@
       real*8  ksx, ksy, ksz
       real*8 frac_bx, frac_by, frac_bz
 
-      parameter (frac_tol=0.00001)
+      parameter (frac_tol=0.00001, pi=3.1415926535)
 
       iispmd = ispm(i)
 
