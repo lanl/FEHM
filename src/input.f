@@ -494,13 +494,13 @@ C***********************************************************************
       integer i, izone, inode
       integer idum, j, jj
       real tmpli
-      logical null1
+      logical null1, found_end, macro_end, end_macro
       logical :: mptr_call = .false.
       character*80 input_msg, dummy_line
-      character*4 macro, macro1, chard
-      integer cnum,iieosd,inptorig,kk,msg(6),nwds,imsg(6)
-      real*8 xmsg(6), simnum
-      character*32 cmsg(6)
+      character*4 macro, macro1, chard, last_macro
+      integer cnum,iieosd,inptorig,kk,msg(20),nwds,imsg(20)
+      real*8 xmsg(20), simnum
+      character*32 cmsg(20)
 
       sssol = 'no  '
       altc = 'fehm'
@@ -509,14 +509,55 @@ C***********************************************************************
       imsg = 0
       xmsg = 0.
       cmsg = ''
+      macro = ''
+      last_macro = ''
 
       read (inptorig, '(a80)') wdd
 
   100 continue
 
+c     At this point we can read a comment line, a macro or an end macro
       read (inptorig, '(a80)') wdd1
+
       if (wdd1(1:1) .eq. '#') go to 100
+
       read (wdd1, '(a4)') macro
+
+c     Check for end macro line
+      if (macro(1:3) .eq. 'end' .or. macro(1:3) .eq. 'END') then
+c confirm this is the terminator for the last macro read
+         macro_end = end_macro (macro, last_macro, wdd1)
+         if (.not. macro_end) then
+            write (ierr, 798) last_macro
+            if (iptty .ne. 0) write (iptty, 798) last_macro        
+         end if
+         go to 100
+      end if
+ 798  format ( 'WARNING : input title : ', 
+     &     a4, ' unlabeled macro terminator')
+         
+      call parse_string2(wdd1,imsg,msg,xmsg,cmsg,nwds)
+
+      if (nwds .gt. 1) then
+         found_end = .false.
+         do i = 2, nwds
+            if (msg(i) .eq. 3) then
+               if (cmsg(i) .eq. 'off' .or. cmsg(i) .eq. 'OFF') then
+c     This macro will not be used for the simulation, read to end 
+c     of of this macro (flagged as 'end  macro')
+                  call skip_macro (macro, inptorig, found_end)
+                  exit
+               end if
+            end if
+         end do
+         if (found_end) then
+            if (iout .ne. 0) write (iout, 799) macro
+            if (iptty .ne. 0) write (iptty, 799) macro
+            goto 100
+         end if
+      end if
+ 799  format (1x, '**** input title : ', a4, ' **** OFF ****')
+
       if (iout .ne. 0) write(iout, 6000) macro, inptorig
       if (iptty .gt. 0) write(iptty, 6000) macro, inptorig
  6000 format(1x, '**** input title : ', a4, ' **** inpt = ', 
@@ -612,7 +653,7 @@ c zvd 12-Jul-2010 Only activate if this isn't a head problem
             call parse_string(input_msg,imsg,msg,xmsg,cmsg,nwds)
 c            read(input_msg,*,end= 995) macro, head0, temp0, pres0, 
 c     &           sat_ich, head_id
-            if (nwds .gt. 1) then
+            if (nwds .ge. 6) then
                head0 = xmsg(2)
                temp0 = xmsg(3)
                pres0 = xmsg(4)
@@ -1085,61 +1126,61 @@ c**** particle tracking ****
 c     inmptr is called in part_track instead of here
          mptr_call = .true.
          read(inpt,*)nspeci,maxlayers,max_particles
-	   read(inpt,*)pout,prnt_rst
-           read(inpt,'(a4)') macro1
-           if(macro1.eq.'tcur') then
-              read(inpt,'(a80)') dummy_line
-              read(inpt,'(a80)') dummy_line
-           else
-              backspace(inpt)
-           endif
-           read(inpt,'(a4)')macro1
-           if(macro1.eq.'zptr')then
-              read(inpt,'(a4)') macro1
-              read(inpt,'(a4)') macro1
-           else
-              backspace (inpt)
-           end if
-	   read(inpt,*)rseed
+         read(inpt,*)pout,prnt_rst
+         read(inpt,'(a4)') macro1
+         if(macro1.eq.'tcur') then
+            read(inpt,'(a80)') dummy_line
+            read(inpt,'(a80)') dummy_line
+         else
+            backspace(inpt)
+         endif
+         read(inpt,'(a4)')macro1
+         if(macro1.eq.'zptr')then
+            read(inpt,'(a4)') macro1
+            read(inpt,'(a4)') macro1
+         else
+            backspace (inpt)
+         end if
+         read(inpt,*)rseed
 c*** water table rise modification
-           read(inpt,'(a4)')macro
-           if(macro.eq.'wtri')then
-             read(inpt,*) water_table
-           else
-             water_table=-1.d+10
-             backspace (inpt)
-           end if
+         read(inpt,'(a4)')macro
+         if(macro.eq.'wtri')then
+            read(inpt,*) water_table
+         else
+            water_table=-1.d+10
+            backspace (inpt)
+         end if
 c*** water table rise modification
-	   read(inpt,*)daycs,daycf,dayhf,dayhs
+         read(inpt,*)daycs,daycf,dayhf,dayhs
 
 c     The rest of these reads are simply to get to the bottom
 c     of mptr macro. They are read in for real in the call
 c     of inmptr in part_track
 
-           read(inpt,'(a4)')macro1
-           if(macro1.eq.'file')then
-              read(inpt,'(a4)') macro1
-           else
-              backspace (inpt)
-           end if
+         read(inpt,'(a4)')macro1
+         if(macro1.eq.'file')then
+            read(inpt,'(a4)') macro1
+         else
+            backspace (inpt)
+         end if
 c     Handle keyword afm if it is there
-           read(inpt,'(a4)')macro1
-           if(macro1(1:3).ne.'afm')then
-              backspace (inpt)
-           end if
+         read(inpt,'(a4)')macro1
+         if(macro1(1:3).ne.'afm')then
+            backspace (inpt)
+         end if
 c     Read through layer info
 c     maxlayers+1 to make sure we reach the blank line
-           do j = 1, maxlayers+1
-              read(inpt,'(a80)') wdd1
-              if(null1(wdd1)) goto 1320
-           end do
- 1320      continue
- 1321      continue
+         do j = 1, maxlayers+1
+            read(inpt,'(a80)') wdd1
+            if(null1(wdd1)) goto 1320
+         end do
+ 1320    continue
+ 1321    continue
 c     Read through itrc info
-           read(inpt,'(a80)') wdd1
-           if(null1(wdd1)) goto 1322
-           goto 1321
- 1322      continue
+         read(inpt,'(a80)') wdd1
+         if(null1(wdd1)) goto 1322
+         goto 1321
+ 1322    continue
 
 c     loop over each species
 
@@ -1494,6 +1535,7 @@ c**** error occurred ****
          call done_macro (inpt)
       end if
 
+      last_macro = macro
       goto  100
 
  200  continue

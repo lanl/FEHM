@@ -342,7 +342,7 @@ C***********************************************************************
       integer idum1, idum2, ilines, i
       integer icount, tprp_num
       integer jjj, isimnum, realization_num
-      logical nulldum
+      logical nulldum, found_end
 
       real*8 rflag
 
@@ -426,7 +426,23 @@ c zvd 17-Aug-09 move boun flag initializations here
 
  10   continue
       filename = ''
-      read (inpt, '(a4)', END = 50)  macro
+      read (inpt, '(a80)', END = 50) dumstring
+      if (dumstring(1:1) .eq. '#') go to 10
+      read (dumstring, '(a4)') macro
+      call parse_string2(dumstring,imsg,msg,xmsg,cmsg,nwds)
+      if (nwds .gt. 1) then
+c Check for "OFF" keyword for skipping macro
+         found_end = .false.
+         do i = 2, nwds
+            if (msg(i) .eq. 3) then
+               if (cmsg(i) .eq. 'off' .or. cmsg(i) .eq. 'OFF') then
+                  call skip_macro (macro, inpt, found_end)
+                  exit
+               end if
+            end if
+         end do
+         if (found_end) goto 10
+      end if
       if (macro.eq.'stop') then
          go to 40
       else if(macro.eq.'file') then
