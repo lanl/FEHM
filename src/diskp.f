@@ -82,18 +82,19 @@ C***********************************************************************
 
       use comai
       use combi
+      use comdi, only : nspeci
       use comdti
       use compart
       use comrxni
       implicit none
 
-      integer isolflg, i, idum, nwds
+      integer isolflg, i, idum, nwds, j
       real*8 dumm
       character*80 dummy_string
       integer imsg(4),msg(4)
       real*8  xmsg(4)
       character*32 cmsg(4)
-      character*4 ptrkword
+      character*11 ptrkword
       logical read_ptrk
             
 ! zvd 22-Jan-04 Fluxes are no longer read or written in diskp
@@ -135,12 +136,19 @@ c     read in data
             call parse_string(dummy_string,imsg,msg,xmsg,cmsg,nwds)
             num_particles(1) = imsg(1)+xmsg(1)
             rseed = imsg(2)+xmsg(2)
-            if (nwds .eq. 3) then
+            if (rseed .gt. 0) then
                rseed_release=imsg(3)+xmsg(3)
+               nspeci = imsg(4)+xmsg(4)
             else
                rseed_release=abs(rseed)
+               nspeci = imsg(3)+xmsg(3) 
             end if
-           
+            if (nspeci .gt. 1) read(iread) (num_particles(i), i = 1,
+     &           nspeci)
+            box = 0
+            frac_done = 0.
+            theta = 1.
+            timeleft = 0.
             if( rseed .gt. 0 ) then
                if (ischk .ne. 0) then
                   write(ischk,*)
@@ -151,15 +159,19 @@ c     read in data
                   write(ischk,*)
                end if
                if (bin_flag .eq. 1 .or. bin_flag .eq. 2) then
-                  read(iread) (box(i,1),i=1,num_particles(1))
-                  read(iread) (frac_done(i,1),i=1,num_particles(1))
-                  read(iread) (theta(i,1),i=1,num_particles(1))
-                  read(iread) (timeleft(i,1),i=1,num_particles(1))
+                  do j = 1, nspeci
+                     read(iread) (box(i,j),i=1,num_particles(j))
+                     read(iread) (frac_done(i,j),i=1,num_particles(j))
+                     read(iread) (theta(i,j),i=1,num_particles(j))
+                     read(iread) (timeleft(i,j),i=1,num_particles(j))
+                  end do
                else
-                  read(iread,*) (box(i,1),i=1,num_particles(1))
-                  read(iread,*) (frac_done(i,1),i=1,num_particles(1))
-                  read(iread,*) (theta(i,1),i=1,num_particles(1))
-                  read(iread,*) (timeleft(i,1),i=1,num_particles(1))
+                  do j = 1, nspeci
+                     read(iread,*) (box(i,j),i=1,num_particles(j))
+                     read(iread,*) (frac_done(i,j),i=1,num_particles(j))
+                     read(iread,*) (theta(i,j),i=1,num_particles(j))
+                     read(iread,*) (timeleft(i,j),i=1,num_particles(j))
+                  end do
                endif
             else
                if (ischk .ne. 0) then
@@ -177,67 +189,93 @@ c     read in data
                end if
                rseed = -rseed
                if (bin_flag .eq. 1 .or. bin_flag .eq. 2) then
-                  read(iread) (box(i,1),i=1,num_particles(1))
-                  read(iread) (timeleft(i,1),i=1,num_particles(1))
+                  do j = 1, nspeci
+                     read(iread) (box(i,1),i=1,num_particles(1))
+                     read(iread) (timeleft(i,1),i=1,num_particles(1))
+                  end do
                else
-                  read(iread,*) (box(i,1),i=1,num_particles(1))
-                  read(iread,*) (timeleft(i,1),i=1,num_particles(1))
+                  do j = 1, nspeci
+                     read(iread,*) (box(i,j),i=1,num_particles(j))
+                     read(iread,*) (timeleft(i,j),i=1,num_particles(j))
+                  end do
                endif
-               do i = 1, num_particles(1)
-                  frac_done(i,1) = 0.
-                  theta(i,1) = 1.
-               end do
+c               do i = 1, num_particles(1)
+c                  frac_done(i,1) = 0.
+c                  theta(i,1) = 1.
+c               end do
             end if
 c     fix data
-            do i=1,num_particles(1)
-               if (box(i,1).gt.0) then
-                  start_time(i,1)=86400.*days-timeleft(i,1)
-               endif
-            enddo
+            do j = 1, nspeci
+               do i=1,num_particles(j)
+                  if (box(i,j).gt.0) then
+                     start_time(i,j)=86400.*days-timeleft(i,j)
+                  endif
+               end do
+            end do
             restarting = .TRUE.
          endif
          
       else if ((isave.gt.0)) then
 c zvd 6/9/08 prnt_rst values of 41, 42 for GoldSim mass output option
+         ptrkword = 'ptrk       '
          if (bin_flag .eq. 1 .or. bin_flag .eq. 3) then
             select case (prnt_rst)
             case (1, 2, 11, 12, 21, 22, 31, 32, 41, 42)
-               if (header_flag .eq. 'new') write(isave) 'ptrk'
+               if (header_flag .eq. 'new') write(isave) ptrkword
                write(dummy_string, *)  num_particles(1), rseed, 
-     &              rseed_release
+     &              rseed_release, nspeci
+               if (nspeci .gt. 1) write(isave) (num_particles(i),
+     &              i = 1, nspeci)
                write(isave) dummy_string
-               write(isave) (box(i,1),i=1,num_particles(1))
-               write(isave) (frac_done(i,1),i=1,num_particles(1))
-               write(isave) (theta(i,1),i=1,num_particles(1))
-               write(isave) (timeleft(i,1),i=1,num_particles(1))
+               do j = 1, nspeci
+                  write(isave) (box(i,1),i=1,num_particles(1))
+                  write(isave) (frac_done(i,1),i=1,num_particles(1))
+                  write(isave) (theta(i,1),i=1,num_particles(1))
+                  write(isave) (timeleft(i,1),i=1,num_particles(1))
+               end do
             case (-1, -2, -11, -12, -21, -22, -31, -32, -41, -42)
-               if (header_flag .eq. 'new') write(isave,*) 'ptrk'
-               write(dummy_string, *) num_particles(1), -rseed
+               if (header_flag .eq. 'new') write(isave,*) ptrkword
+               write(dummy_string, *) num_particles(1), -rseed, nspeci
+               if (nspeci .gt. 1) write(isave) (num_particles(i),
+     &              i = 1, nspeci)
                write(isave) dummy_string
-               write(isave) (box(i,1),i=1,num_particles(1))
-               write(isave) (timeleft(i,1),i=1,num_particles(1))
+               do j = 1, nspeci
+                  write(isave) (box(i,j),i=1,num_particles(1))
+                  write(isave) (timeleft(i,j),i=1,num_particles(1))
+               end do
             case default
 ! Do nothing, particle data is not written to restart file
             end select
          else
             select case (prnt_rst)
             case (1, 2, 11, 12, 21, 22, 31, 32, 41, 42)
-               if (header_flag .eq. 'new') write(isave,*) 'ptrk'
-               write(isave,*) num_particles(1), rseed, rseed_release
-               write(isave,*) (box(i,1),i=1,num_particles(1))
-               write(isave,*) (frac_done(i,1),i=1,num_particles(1))
-               write(isave,*) (theta(i,1),i=1,num_particles(1))
-               write(isave,*) (timeleft(i,1),i=1,num_particles(1))
+               if (header_flag .eq. 'new') write(isave,'(a4)') 'ptrk'
+               write(isave,*) num_particles(1), rseed, rseed_release,
+     &              nspeci
+               if (nspeci .gt. 1) write(isave, *) (num_particles(i),
+     &              i = 1, nspeci)
+               do j = 1, nspeci
+                  write(isave, 20) (box(i,j),i=1,num_particles(1))
+                  write(isave, 30) (frac_done(i,j),i=1,num_particles(1))
+                  write(isave, 30) (theta(i,j),i=1,num_particles(1))
+                  write(isave, 30) (timeleft(i,j),i=1,num_particles(1))
+               end do
             case (-1, -2, -11, -12, -21, -22, -31, -32 -41, -42)
-               if (header_flag .eq. 'new') write(isave,*) 'ptrk'
-               write(isave,*) num_particles(1), -rseed
-               write(isave,*) (box(i,1),i=1,num_particles(1))
-               write(isave,*) (timeleft(i,1),i=1,num_particles(1))
+               if (header_flag .eq. 'new') write(isave,'(a4)') 'ptrk'
+               write(isave,*) num_particles(1), -rseed, nspeci
+               if (nspeci .gt. 1) write(isave, *) (num_particles(i),
+     &              i = 1, nspeci)
+               do j = 1, nspeci
+                  write(isave, 20) (box(i,j),i=1,num_particles(1))
+                  write(isave, 30) (timeleft(i,j),i=1,num_particles(1))
+               end do
             case default
 ! Do nothing, particle data is not written to restart file
             end select
         end if 
       endif
       
+ 20   format (10i10)
+ 30   format (4g25.16)
       return
       end
