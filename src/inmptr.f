@@ -1261,6 +1261,7 @@ c     cli added to make sure we do not have cases with mass but no particle
                bconfactor(itemp)=bconfactor(temp_aidex_1)
             enddo
          endif
+         npt(ith+1)=ith*n0
       end do
       npt(ith+1)=ith*n0
          
