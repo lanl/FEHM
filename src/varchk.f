@@ -702,8 +702,9 @@ c RJP 04/10/07
 c              call icectrco2(3,ndummy)
 c              call icectrco2(-3,ndummy)
 c              call icectrco2(33,ndummy)
-			call icectrco2(-34,ndummy)
-              call icectrco2(-35,ndummy)
+c              call icectrco2(1,ndummy)
+               call icectrco2(-34,ndummy)
+               call icectrco2(-35,ndummy)
             else
                call thermw(ndummy)
             end if

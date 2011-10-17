@@ -110,10 +110,10 @@ c     will over-ride above co2 production
 c new variables
       real*8 enx,denxp,denxe,denxyc,denxya, vis_tol
 
-	real*8 permsd11, dprmp1, dprmt1, dprmw1
-	real*8 permsd12, dprmp2, dprmt2, dprmw2
-	real*8 permsd13, dprmp3, dprmt3, dprmw3
-	parameter (fracwmin=0.1,vis_tol = 1.d-12)
+      real*8 :: permsd11 = 0., dprmp1 = 0., dprmt1 = 0., dprmw1 = 0.
+      real*8 :: permsd12 = 0., dprmp2 = 0., dprmt2 = 0., dprmw2 = 0.
+      real*8 :: permsd13 = 0., dprmp3 = 0., dprmt3 = 0., dprmw3 = 0.
+      parameter (fracwmin=0.1,vis_tol = 1.d-12)
       integer iflg,duma
       
       save dprmya
@@ -185,10 +185,12 @@ c     calculate multi-phase cap. pres.
                phi(mi)=phico2(mi)-pcp(mi)
             enddo
          end if
+      else if(iflg.eq.11) then
 c     
 c     RJP 02/09/07. All the thermodynamic properties are now calculated 
 c     here and stored in arrays for later.	 
 c     
+
          if(ico2prop_flg.eq.1) then
             rosc=con_prop(1)
             droscp=con_prop(2)
@@ -211,307 +213,305 @@ c
             dviswt=con_prop(18)
          endif
 
-         do mid=1,neq
-            mi=mid+ndummy
+         mi=ndummy
 c     phase information now contained in array ices
-            ieosd=ieos(mi)
-            pl=phico2(mi)
-            tl=t(mi)
-            dtps=dtpsc(mi)
+         ieosd=ieos(mi)
+         pl=phico2(mi)
+         tl=t(mi)
+         dtps=dtpsc(mi)
 c     
 c     terms to account for space taken up with water-rich phase & co2-rich phase
 c     
-            frac_w = fw(mi)
-            frac_cl=fl(mi)
-            frac_cg=fg(mi)
-            yco2 = yc(mi)
-            ywat = yw(mi)
-            yair = ya(mi)
-            xco2 = xc(mi)
-            xwat = xw(mi)
-            xair = xa(mi)
-            dporpl=dporp(mi)
-            dportl=dport(mi)
+         frac_w = fw(mi)
+         frac_cl=fl(mi)
+         frac_cg=fg(mi)
+         yco2 = yc(mi)
+         ywat = yw(mi)
+         yair = ya(mi)
+         xco2 = xc(mi)
+         xwat = xw(mi)
+         xair = xa(mi)
+         dporpl=dporp(mi)
+         dportl=dport(mi)
             
-            if(ico2prop_flg.eq.1) then
-               wat_prop(mi) = row
-               wat_prop(neq+mi) = drowp
-               wat_prop(2*neq+mi) = drowt
-               wat_prop(3*neq+mi) = 0.d0
-               wat_prop(4*neq+mi) = 0.d0
-               wat_prop(5*neq+mi) = enw
-               wat_prop(6*neq+mi) = denwp
-               wat_prop(7*neq+mi) = denwt
-               wat_prop(8*neq+mi) = visw
-               wat_prop(9*neq+mi) = dviswp
-               wat_prop(10*neq+mi) = dviswt
-               call co2_properties(1,duma,pl,tl,dum1,icesd,dumb,value,
-     &			duma)
-                if(icesd.eq.3) then
-                  co2_prop(9*neq+mi) = rosc
-                  co2_prop(10*neq+mi) = drosct
-                  co2_prop(11*neq+mi) = droscp
-                  co2_prop(12*neq+mi) = ensc
-                  co2_prop(13*neq+mi) = densct
-                  co2_prop(14*neq+mi) = denscp
-                  co2_prop(15*neq+mi) = xvisc
-                  co2_prop(16*neq+mi) = dvisct
-                  co2_prop(17*neq+mi) = dviscp
-               else
-                  co2_prop(mi) = rosc
-                  co2_prop(neq+mi) = drosct
-                  co2_prop(2*neq+mi) = droscp
-                  co2_prop(3*neq+mi) = ensc
-                  co2_prop(4*neq+mi) = densct
-                  co2_prop(5*neq+mi) = denscp
-                  co2_prop(6*neq+mi) = xvisc
-                  co2_prop(7*neq+mi) = dvisct
-                  co2_prop(8*neq+mi) = dviscp
-               endif
-
+         if(ico2prop_flg.eq.1) then
+            wat_prop(mi) = row
+            wat_prop(neq+mi) = drowp
+            wat_prop(2*neq+mi) = drowt
+            wat_prop(3*neq+mi) = 0.d0
+            wat_prop(4*neq+mi) = 0.d0
+            wat_prop(5*neq+mi) = enw
+            wat_prop(6*neq+mi) = denwp
+            wat_prop(7*neq+mi) = denwt
+            wat_prop(8*neq+mi) = visw
+            wat_prop(9*neq+mi) = dviswp
+            wat_prop(10*neq+mi) = dviswt
+            call co2_properties(1,duma,pl,tl,dum1,icesd,dumb,value,
+     &           duma)
+            if(icesd.eq.3) then
+               co2_prop(9*neq+mi) = rosc
+               co2_prop(10*neq+mi) = drosct
+               co2_prop(11*neq+mi) = droscp
+               co2_prop(12*neq+mi) = ensc
+               co2_prop(13*neq+mi) = densct
+               co2_prop(14*neq+mi) = denscp
+               co2_prop(15*neq+mi) = xvisc
+               co2_prop(16*neq+mi) = dvisct
+               co2_prop(17*neq+mi) = dviscp
             else
+               co2_prop(mi) = rosc
+               co2_prop(neq+mi) = drosct
+               co2_prop(2*neq+mi) = droscp
+               co2_prop(3*neq+mi) = ensc
+               co2_prop(4*neq+mi) = densct
+               co2_prop(5*neq+mi) = denscp
+               co2_prop(6*neq+mi) = xvisc
+               co2_prop(7*neq+mi) = dvisct
+               co2_prop(8*neq+mi) = dviscp
+            endif
+
+         else
 c     vapor enthalpy and derivatives
 
-               call h2o_properties(1,3,pl,tl,dum2,dum3,
-     &              env,dhvp,dhvt,dum5,dum6)
+            call h2o_properties(1,3,pl,tl,dum2,dum3,
+     &           env,dhvp,dhvt,dum5,dum6)
                
 c     vapor density and derivatives
                
-               call h2o_properties(2,3,pl,tl,dum2,dum3,
-     &              rov,drovp,drovt,dum5,dum6)
+            call h2o_properties(2,3,pl,tl,dum2,dum3,
+     &           rov,drovp,drovt,dum5,dum6)
 
 c     vapor viscosity and derivatives
                
-               call h2o_properties(3,3,pl,tl,dum2,dum3,
-     &              xvisv,dvisvp,dvisvt,dum5,dum6)
+            call h2o_properties(3,3,pl,tl,dum2,dum3,
+     &           xvisv,dvisvp,dvisvt,dum5,dum6)
 
 c     liquid enthalpy and derivatives
 
-               call h2o_properties(1,2,pl,tl,dum2,dum3,
-     &              enl,dhlp,dhlt,dum5,dum6)
+            call h2o_properties(1,2,pl,tl,dum2,dum3,
+     &           enl,dhlp,dhlt,dum5,dum6)
                
 c     liquid density and derivatives
                
-               call h2o_properties(2,2,pl,tl,csalt(mi),dum3,
-     &              rol,drolp,drolt,dum5,dum6)
+            call h2o_properties(2,2,pl,tl,csalt(mi),dum3,
+     &           rol,drolp,drolt,dum5,dum6)
                
 c     liquid viscosity and derivatives
                
-               call h2o_properties(3,2,pl,tl,dum2,dum3,
-     &              xvisl,dvislp,dvislt,dum5,dum6)
+            call h2o_properties(3,2,pl,tl,dum2,dum3,
+     &           xvisl,dvislp,dvislt,dum5,dum6)
 
 c     Calculate density of CO2 dissolved brine. It is assumed the enthalpy
 c     & viscosity of brine do not change due to CO2 dissolution. It is 
 c     also assumed that the density does not change due to air dissolution.
 c     zvd 07-Aug-08 added following lines
-               drolyc=0.d0
-               drolya=0.d0
+            drolyc=0.d0
+            drolya=0.d0
 c     zvd 07-Aug-08
-               if(iprtype.ge.4) then
-                  vpartial=37.51d0-(9.585d-2*tl)+(8.74d-4*(tl**2.d0))-
-     &                 (5.044d-7*(tl**3.d0))
-                  vpartial=vpartial*1d-6
-                  dVpardt = -9.585d-2+(2.d0*8.74d-4*tl)-
-     &                 (3.d0*5.044d-7*(tl**2.d0)) 
-                  dVpardt=dVpardt*1d-6
-                  rol_h2o = rol
+            if(iprtype.ge.4) then
+               vpartial=37.51d0-(9.585d-2*tl)+(8.74d-4*(tl**2.d0))-
+     &              (5.044d-7*(tl**3.d0))
+               vpartial=vpartial*1d-6
+               dVpardt = -9.585d-2+(2.d0*8.74d-4*tl)-
+     &              (3.d0*5.044d-7*(tl**2.d0)) 
+               dVpardt=dVpardt*1d-6
+               rol_h2o = rol
 c     calculate effective molecular weight
-                  emw = yco2*44.d-3+ywat*18.d-3
-                  demwyc=26.d-3
-                  rol_d = 1.d0-((44.d-3-rol_h2o*vpartial)*yco2/emw)
-                  drol_dp = drolp*vpartial*yco2/emw
-                  drol_dt = yco2*(drolt*vpartial+rol_h2o*dVpardt)/emw
-                  drol_dyc = -(44.d-3-rol_h2o*vpartial)*(emw-yco2*
-     &                 demwyc)/(emw*emw)
+               emw = yco2*44.d-3+ywat*18.d-3
+               demwyc=26.d-3
+               rol_d = 1.d0-((44.d-3-rol_h2o*vpartial)*yco2/emw)
+               drol_dp = drolp*vpartial*yco2/emw
+               drol_dt = yco2*(drolt*vpartial+rol_h2o*dVpardt)/emw
+               drol_dyc = -(44.d-3-rol_h2o*vpartial)*(emw-yco2*
+     &              demwyc)/(emw*emw)
 c     if(ico2dis(mi).eq.1) then
 c     drol_dp=drol_dp+drol_dyc*dmol(mi)
 c     drol_dt=drol_dt+drol_dyc*dmol(mi+neq)
 c     endif
-                  drol_dya = 0.0
-                  rol = rol_h2o/rol_d
-                  drolp = (rol_d*drolp-rol_h2o*drol_dp)/(rol_d*rol_d)
-                  drolt = (rol_d*drolt-rol_h2o*drol_dt)/(rol_d*rol_d)
-                  drolyc = -(rol_h2o*drol_dyc)/(rol_d*rol_d)
-                  drolya = 0.0
-               endif           
+               drol_dya = 0.0
+               rol = rol_h2o/rol_d
+               drolp = (rol_d*drolp-rol_h2o*drol_dp)/(rol_d*rol_d)
+               drolt = (rol_d*drolt-rol_h2o*drol_dt)/(rol_d*rol_d)
+               drolyc = -(rol_h2o*drol_dyc)/(rol_d*rol_d)
+               drolya = 0.0
+            endif           
 c     modify derivatives for 2-phase (should now depend on p, not t)
 
-               if(abs(ieosd).eq.2) then
-                  drolp=drolp+drolt*dtps
-                  drovp=drovp+drovt*dtps
-                  dhlp=dhlp+dhlt*dtps
-                  dhvp=dhvp+dhvt*dtps
-                  dvisvp=dvisvp+dvisvt*dtps
-                  dvislp=dvislp+dvislt*dtps
-                  dporpl=dporpl+dportl*dtps
-                  drolt=0.0
-                  drovt=0.0
-                  dhlt=0.0
-                  dhvt=0.0
-                  dvisvt=0.0
-                  dvislt=0.0
-                  dportl=0.0
-                  dtd=1.0
-               endif
+            if(abs(ieosd).eq.2) then
+               drolp=drolp+drolt*dtps
+               drovp=drovp+drovt*dtps
+               dhlp=dhlp+dhlt*dtps
+               dhvp=dhvp+dhvt*dtps
+               dvisvp=dvisvp+dvisvt*dtps
+               dvislp=dvislp+dvislt*dtps
+               dporpl=dporpl+dportl*dtps
+               drolt=0.0
+               drovt=0.0
+               dhlt=0.0
+               dhvt=0.0
+               dvisvt=0.0
+               dvislt=0.0
+               dportl=0.0
+               dtd=1.0
+            endif
 
-               wat_prop(mi) = rol
+            wat_prop(mi) = rol
 c Hari
-               rolf(mi) = rol
-               wat_prop(neq+mi) = drolp
-               wat_prop(2*neq+mi) = drolt
-               wat_prop(3*neq+mi) = drolyc
-               wat_prop(4*neq+mi) = drolya
-               wat_prop(5*neq+mi) = enl
-               wat_prop(6*neq+mi) = dhlp
-               wat_prop(7*neq+mi) = dhlt
-               wat_prop(8*neq+mi) = xvisl
-               wat_prop(9*neq+mi) = dvislp
-               wat_prop(10*neq+mi) = dvislt
+            rolf(mi) = rol
+            wat_prop(neq+mi) = drolp
+            wat_prop(2*neq+mi) = drolt
+            wat_prop(3*neq+mi) = drolyc
+            wat_prop(4*neq+mi) = drolya
+            wat_prop(5*neq+mi) = enl
+            wat_prop(6*neq+mi) = dhlp
+            wat_prop(7*neq+mi) = dhlt
+            wat_prop(8*neq+mi) = xvisl
+            wat_prop(9*neq+mi) = dvislp
+            wat_prop(10*neq+mi) = dvislt
 c     
 c     air properties
 c     
-               roa = 1.292864d0*(273.15d0/(tl+273.15d0))*(pl/0.101325d0)
-               droadp = 1.292864d0*(273.15d0/(tl+273.15d0))/0.101325d0
-               droadt = -1.292864d0*(273.15d0/((tl+273.15d0)*
-     &              (tl+273.15d0)))*(pl/0.101325d0)
-               ena = (1003.7d0+0.025656d0*tl+0.00045457d0*tl*
-     &              tl-2.7107d-7*tl*tl*tl)*tl*1.d-6
-               denadt = (1003.7d0+2.d0*0.025656d0*tl+3.d0*
-     &              0.00045457d0*tl*tl-4.d0*2.7107d-7*tl*tl*tl)*1.d-6
-               denadp = 0.d0
-               visca = 1.82d-5
-               dvisadp = 0.d0
-               dvisadt = 0.d0
+            roa = 1.292864d0*(273.15d0/(tl+273.15d0))*(pl/0.101325d0)
+            droadp = 1.292864d0*(273.15d0/(tl+273.15d0))/0.101325d0
+            droadt = -1.292864d0*(273.15d0/((tl+273.15d0)*
+     &           (tl+273.15d0)))*(pl/0.101325d0)
+            ena = (1003.7d0+0.025656d0*tl+0.00045457d0*tl*
+     &           tl-2.7107d-7*tl*tl*tl)*tl*1.d-6
+            denadt = (1003.7d0+2.d0*0.025656d0*tl+3.d0*
+     &           0.00045457d0*tl*tl-4.d0*2.7107d-7*tl*tl*tl)*1.d-6
+            denadp = 0.d0
+            visca = 1.82d-5
+            dvisadp = 0.d0
+            dvisadt = 0.d0
 c     
 c     RJP 02/09/07 Calculate CO2-rich phase properties. We are assuming
 c     the properties of CO2-rich phase are mol fraction weighted properties
 c     of CO2+air+water vapor
 c     
 
-               icesd=ices(mi)
-               tl=tco2(mi)
-               if (fg(mi) .eq. 0.) then
-                  xs = 0.d0
-                  dxsg = 0.d0
-                  dxsw = 0.d0
+            icesd=ices(mi)
+            tl=tco2(mi)
+            if (fg(mi) .eq. 0.) then
+               xs = 0.d0
+               dxsg = 0.d0
+               dxsw = 0.d0
+            else
+               xs = fg(mi)/(fg(mi)+fl(mi))
+               dxsg = 1.d0/(fg(mi)+fl(mi))+fg(mi)/(fg(mi)+fl(mi))**2
+               if (fw(mi) .eq. 1.) then
+                  dxsw = 0.
                else
-                  xs = fg(mi)/(fg(mi)+fl(mi))
-                  dxsg = 1.d0/(fg(mi)+fl(mi))+fg(mi)/(fg(mi)+fl(mi))**2
-                  if (fw(mi) .eq. 1.) then
-                     dxsw = 0.
-                  else
-                     dxsw = fg(mi)/((1-fw(mi))*(1-fw(mi)))
-                  end if
+                  dxsw = fg(mi)/((1-fw(mi))*(1-fw(mi)))
                end if
-               if(icesd.eq.2) then
+            end if
+            if(icesd.eq.2) then
 c     two phase (gas/liquid) conditions
 c     calculate phase-change temperature and dt/dp
-                  call co2_properties(2,icesd,pl,dumb,dum1,duma,tl,
-     &                 value,duma)
-                  dtps=value(1)
-                  dtpsc(mi)=dtps
+               call co2_properties(2,icesd,pl,dumb,dum1,duma,tl,
+     &              value,duma)
+               dtps=value(1)
+               dtpsc(mi)=dtps
 c     RJP 01/22/09 added following for modifying derivatives for
 c     dissolved CO2 mass fraction for two phase
-                  dmol(mi) = dmol(mi)+dmol(mi+neq)*dtps
-                  dmol(mi+neq) = 0.d0
+               dmol(mi) = dmol(mi)+dmol(mi+neq)*dtps
+               dmol(mi+neq) = 0.d0
 c     tco2(mi) = tl
-               endif
+            endif
                
-               if(icesd.ne.2) then
-                  call co2_properties(4,icesd,pl,tl,dum1,duma,dumb,
-     &                 value,duma)
-                  if(icesd.eq.3) then
-                     co2_prop(9*neq+mi) = value(1)
-                     co2_prop(10*neq+mi) = value(2)
-                     co2_prop(11*neq+mi) = value(3)
-                     co2_prop(12*neq+mi) = value(4)
-                     co2_prop(13*neq+mi) = value(5)
-                     co2_prop(14*neq+mi) = value(6)
-                     co2_prop(15*neq+mi) = value(7)
-                     co2_prop(16*neq+mi) = value(8)
-                     co2_prop(17*neq+mi) = value(9)
-                  else
-                     co2_prop(mi) = value(1)
-                     co2_prop(neq+mi) = value(2)
-                     co2_prop(2*neq+mi) = value(3)
-                     co2_prop(3*neq+mi) = value(4)
-                     co2_prop(4*neq+mi) = value(5)
-                     co2_prop(5*neq+mi) = value(6)
-                     co2_prop(6*neq+mi) = value(7)
-                     co2_prop(7*neq+mi) = value(8)
-                     co2_prop(8*neq+mi) = value(9)
-                  endif
-                  dtpaco2(mi)=0.d0
-                  dtpaeco2(mi)=1.d0
+            if(icesd.ne.2) then
+               call co2_properties(4,icesd,pl,tl,dum1,duma,dumb,
+     &              value,duma)
+               if(icesd.eq.3) then
+                  co2_prop(9*neq+mi) = value(1)
+                  co2_prop(10*neq+mi) = value(2)
+                  co2_prop(11*neq+mi) = value(3)
+                  co2_prop(12*neq+mi) = value(4)
+                  co2_prop(13*neq+mi) = value(5)
+                  co2_prop(14*neq+mi) = value(6)
+                  co2_prop(15*neq+mi) = value(7)
+                  co2_prop(16*neq+mi) = value(8)
+                  co2_prop(17*neq+mi) = value(9)
+               else
+                  co2_prop(mi) = value(1)
+                  co2_prop(neq+mi) = value(2)
+                  co2_prop(2*neq+mi) = value(3)
+                  co2_prop(3*neq+mi) = value(4)
+                  co2_prop(4*neq+mi) = value(5)
+                  co2_prop(5*neq+mi) = value(6)
+                  co2_prop(6*neq+mi) = value(7)
+                  co2_prop(7*neq+mi) = value(8)
+                  co2_prop(8*neq+mi) = value(9)
+               endif
+               dtpaco2(mi)=0.d0
+               dtpaeco2(mi)=1.d0
 c     RJP 03/02/08 added mixture enthalpy for water. added the enthalpy derivative wrt yc and ya
 c     to wat_prop array. As the value of wat_prop(5*neq+mi) is getting modified, the derivative
 c     is calculated first.
-                  wat_prop(11*neq+mi) = value(4)-wat_prop(5*neq+mi)
-                  wat_prop(12*neq+mi) = -wat_prop(5*neq+mi)
-                  wat_prop(5*neq+mi) = ywat*wat_prop(5*neq+mi)+yco2*
-     &                 value(4)
-                  wat_prop(6*neq+mi) = ywat*wat_prop(6*neq+mi)+yco2*
-     &                 value(6)
-                  wat_prop(7*neq+mi) = ywat*wat_prop(7*neq+mi)+yco2*
-     &                 value(5)
+               wat_prop(11*neq+mi) = value(4)-wat_prop(5*neq+mi)
+               wat_prop(12*neq+mi) = -wat_prop(5*neq+mi)
+               wat_prop(5*neq+mi) = ywat*wat_prop(5*neq+mi)+yco2*
+     &              value(4)
+               wat_prop(6*neq+mi) = ywat*wat_prop(6*neq+mi)+yco2*
+     &              value(6)
+               wat_prop(7*neq+mi) = ywat*wat_prop(7*neq+mi)+yco2*
+     &              value(5)
 c     wat_prop(11*neq+mi) = 0.d0
 c     wat_prop(12*neq+mi) = 0.d0
-               else
+            else
 c     RJP 2/12/07. It is assumed in case of two phase CO2 (l+g) in equilibrium
 c     with water, the liquid phase rich is CO2 is pure CO2 and water vapor and air
 c     are part of the gas phase.
-                  call co2_properties(5,icesd,pl,tl,dum1,duma,dumb,
-     &                 value,duma)
-                  co2_prop(mi) = value(1)
-                  co2_prop(neq+mi) = 0.d0
-                  co2_prop(2*neq+mi) = value(3)
-                  co2_prop(3*neq+mi) = value(4)
-                  co2_prop(4*neq+mi) = 0.d0
-                  co2_prop(5*neq+mi) = value(6)
-                  co2_prop(6*neq+mi) = value(7)
-                  co2_prop(7*neq+mi) = 0.d0
-                  co2_prop(8*neq+mi) = value(9)
-                  call co2_properties(6,icesd,pl,tl,dum1,duma,dumb,
-     &                 value,duma)
+               call co2_properties(5,icesd,pl,tl,dum1,duma,dumb,
+     &              value,duma)
+               co2_prop(mi) = value(1)
+               co2_prop(neq+mi) = 0.d0
+               co2_prop(2*neq+mi) = value(3)
+               co2_prop(3*neq+mi) = value(4)
+               co2_prop(4*neq+mi) = 0.d0
+               co2_prop(5*neq+mi) = value(6)
+               co2_prop(6*neq+mi) = value(7)
+               co2_prop(7*neq+mi) = 0.d0
+               co2_prop(8*neq+mi) = value(9)
+               call co2_properties(6,icesd,pl,tl,dum1,duma,dumb,
+     &              value,duma)
 C     RJP 04/08/07 assumed density of co2-rich phase is independent of mixed water & air.
-                  co2_prop(9*neq+mi) = value(1)
-                  co2_prop(10*neq+mi) = 0.d0
-                  co2_prop(11*neq+mi) = value(3)
-                  co2_prop(12*neq+mi) = value(4)
-                  co2_prop(13*neq+mi) = 0.d0
-                  co2_prop(14*neq+mi) = value(6)
-                  co2_prop(15*neq+mi) = value(7)
-                  co2_prop(16*neq+mi)=0.d0
-                  co2_prop(17*neq+mi)=value(9)	
+               co2_prop(9*neq+mi) = value(1)
+               co2_prop(10*neq+mi) = 0.d0
+               co2_prop(11*neq+mi) = value(3)
+               co2_prop(12*neq+mi) = value(4)
+               co2_prop(13*neq+mi) = 0.d0
+               co2_prop(14*neq+mi) = value(6)
+               co2_prop(15*neq+mi) = value(7)
+               co2_prop(16*neq+mi)=0.d0
+               co2_prop(17*neq+mi)=value(9)	
 c     RJP 03/02/08 added mixture enthalpy for water
-                  wat_prop(11*neq+mi) = value(4)-wat_prop(5*neq+mi)
-                  wat_prop(12*neq+mi) = -wat_prop(5*neq+mi)
-                  wat_prop(13*neq+mi) = dxsg*yco2*
-     &                 (value(4)-co2_prop(3*neq+mi))
-                  wat_prop(14*neq+mi) = dxsw*yco2*
-     &                 (value(4)-co2_prop(3*neq+mi))
-                  wat_prop(5*neq+mi) = ywat*wat_prop(5*neq+mi)+yco2*
-     &                 (value(4)*xs+(1.d0-xs)*co2_prop(3*neq+mi))
-                  wat_prop(6*neq+mi) = ywat*wat_prop(6*neq+mi)+yco2*
-     &                 (value(6)*xs+(1.d0-xs)*co2_prop(5*neq+mi))
-                  wat_prop(7*neq+mi) = ywat*wat_prop(7*neq+mi)+yco2*0.d0
-                  wat_prop(neq+mi) = wat_prop(neq+mi)+
-     &                 wat_prop(2*neq+mi)*dtpsc(mi)
-                  wat_prop(2*neq+mi) = 0.d0
-                  wat_prop(6*neq+mi) = wat_prop(6*neq+mi)+
-     &                 wat_prop(7*neq+mi)*dtpsc(mi)
-                  wat_prop(7*neq+mi) = 0.d0
-                  wat_prop(9*neq+mi) = wat_prop(9*neq+mi)+
-     &                 wat_prop(10*neq+mi)*dtpsc(mi)
-                  wat_prop(10*neq+mi) = 0.d0
-                  dtpaco2(mi)=dtpsc(mi)
-                  dtpaeco2(mi)=0.d0
+               wat_prop(11*neq+mi) = value(4)-wat_prop(5*neq+mi)
+               wat_prop(12*neq+mi) = -wat_prop(5*neq+mi)
+               wat_prop(13*neq+mi) = dxsg*yco2*
+     &              (value(4)-co2_prop(3*neq+mi))
+               wat_prop(14*neq+mi) = dxsw*yco2*
+     &              (value(4)-co2_prop(3*neq+mi))
+               wat_prop(5*neq+mi) = ywat*wat_prop(5*neq+mi)+yco2*
+     &              (value(4)*xs+(1.d0-xs)*co2_prop(3*neq+mi))
+               wat_prop(6*neq+mi) = ywat*wat_prop(6*neq+mi)+yco2*
+     &              (value(6)*xs+(1.d0-xs)*co2_prop(5*neq+mi))
+               wat_prop(7*neq+mi) = ywat*wat_prop(7*neq+mi)+yco2*0.d0
+               wat_prop(neq+mi) = wat_prop(neq+mi)+
+     &              wat_prop(2*neq+mi)*dtpsc(mi)
+               wat_prop(2*neq+mi) = 0.d0
+               wat_prop(6*neq+mi) = wat_prop(6*neq+mi)+
+     &              wat_prop(7*neq+mi)*dtpsc(mi)
+               wat_prop(7*neq+mi) = 0.d0
+               wat_prop(9*neq+mi) = wat_prop(9*neq+mi)+
+     &              wat_prop(10*neq+mi)*dtpsc(mi)
+               wat_prop(10*neq+mi) = 0.d0
+               dtpaco2(mi)=dtpsc(mi)
+               dtpaeco2(mi)=0.d0
 
 c     wat_prop(11*neq+mi) = 0.d0
 c     wat_prop(12*neq+mi) = 0.d0
-               endif
             endif
-         enddo
+         endif
 
 c     ****************************************************************
 c     
@@ -942,6 +942,7 @@ c
                if(qdis.le.0.) then
                   eskd=eflow(mi)
                   qh(mi)=qdis*eflow(mi)
+				if((kaco2(mi).ne.2).and.(kaco2(mi).ne.3)) then
                   dqh(mi)=eskd*dq(mi)
                   deqh(mi)=eskd*dqt(mi)
                   dqhw(mi)=eskd*dqw(mi)
@@ -961,6 +962,7 @@ c
                      endif
                   endif
                endif
+            endif
             endif
 c     
 c     add intercomponent heat flux
@@ -1643,6 +1645,7 @@ c     transport in CO2-rich phase.
                if(qdis.le.0.) then
                   eskd=eflowco2(mi)
                   qhco2(mi)=eskd*qdis
+				if((kaco2(mi).ne.2).and.(kaco2(mi).ne.3)) then
                   dqh(mi)=eskd*dq(mi)
                   deqh(mi)=eskd*dqt(mi)
                   dqhw(mi)=eskd*dqw(mi)
@@ -1662,6 +1665,7 @@ c     transport in CO2-rich phase.
                      endif
                   endif							
                endif
+            endif
             endif
 
             if(ps(mi).eq.0.0) then

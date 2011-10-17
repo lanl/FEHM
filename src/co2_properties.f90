@@ -124,6 +124,7 @@ subroutine co2_properties(iflg,iphase,var1,var2,var3,istate,var4,var5,var6)
 
      !     added fugacity calculation from Duan 2006 paper formulation
      !     equation 2.
+     if (var1 .le. 1.d-3) var1 = 1.d-3
      t = var2 + 273.15
      p = var1*10.
      !	  t = var2

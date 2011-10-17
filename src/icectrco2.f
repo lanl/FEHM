@@ -543,6 +543,12 @@ c     constant dissolved co2 mass flow rate boundary condition
                      skco2(i) = sktmp(i)
                      eskco2(i) = esktmp(i)
                      flowco2s(i) = aiped(i)
+                  elseif(iflg_flowmac(i).eq.8) then
+c     constant dissolved co2 mass flow rate boundary condition
+                     kaco2(i) = 3
+                     flowco2s(i) = sktmp(i)
+                     eskco2(i) = esktmp(i)
+                     sk(i) = aiped(i)
                   endif
                enddo
                
@@ -765,6 +771,9 @@ c     if water dissolving in co2 is activated, calculate partial pressure
 c     of co2
 c RJP added below 03/14/2011. This should be activated only for 
 c carb option '4' where dissolution comes into play.
+               ices(ij)=icedc
+
+			call ther_co2_h2o(11,ij)
 			if(iprtype.ge.4) then			
                if(iwatdis.eq.1) then
 c     calculate phase-change pressure and dp/dt
@@ -830,7 +839,6 @@ c     fl(ij)= 0.d0
                   strd = strd1
                endif
                strd_arr(ij) = strd
-               ices(ij)=icedc
             enddo
 c     check initial phase state and saturation, this is only called in 
 c     startup
@@ -858,44 +866,6 @@ c
 c     check if dissolved co2 is reached max.
 c     if water dissolving in co2 is activated, calculate partial pressure
 c     of co2
-               if(iwatdis.eq.1) then
-c     calculate phase-change pressure and dp/dt
-                  call h2o_properties(5,2,tl,dum1,dum2,dum3,
-     &                 psatd,dum4,dpsatt,dum5,dum6)
-                  xwp = psatd/pl
-               else
-                  xwp = 0.d0
-               endif
-               xcp = 1.d0-xwp		  
-               xcpb=(xcp/mwc)+(xwp/mww)
-               xc_prime = xcp/(mwc*xcpb)
-               call co2_properties(10,1,phico2(ij),tco2(ij),csalt(ij),
-     &              1,xc_prime,tem,ij)
-               xc(ij) = xc_prime
-               xw(ij) = 1.d0 - xc(ij)
-               if(iprtype.ge.4) then
-                  if(iread.ne.0) then
-                     if(dabs(yc(ij)-tem(1)).le.1.d-12) then
-                        ico2dis(ij)=1
-                        yc(ij) = tem(1)
-                        dmol(ij) = tem(2)
-                        dmol(ij+neq) = tem(3)
-                     endif
-                  else
-                     if(fw(ij).lt.1.d0) then
-                        yc(ij) = tem(1)
-                        dmol(ij) = tem(2)
-                        dmol(ij+neq) = tem(3)
-                        ico2dis(ij)=1
-                     endif
-                  endif
-               endif				
-               yw(ij)=1-yc(ij)
-               yoc(ij)=yc(ij)
-               yow(ij)=yw(ij)
-               xoc(ij)=xc(ij)
-               xow(ij)=xw(ij)
-               ico2diso(ij)=ico2dis(ij)
             enddo
          elseif(iflg.eq.12) then
 c     RJP 11/09/06 Introduced new state check routine for initialization
@@ -1132,7 +1102,7 @@ c     call EOS routines water
          elseif(iflg.eq.-4) then
 c     first ckeck for temperature-specified source terms
 c     need to comment out call in main routine for water if meth is activated
-c            if(iad.eq.0) then
+            if(iad.eq.0) then
 c     only for first iteration
                do ii=1,neq
                   ij=ii+ndummy
@@ -1141,27 +1111,31 @@ c     only for first iteration
                         eflowco2(ij) = cpr(ij)*(-eskco2(ij))
                      else
                         if(abs(kaco2(ij)).gt.0) then
-                           if(kaco2(ij).eq.2) then
-                              call co2_properties(4,ices(ij),phico2(ij),
-     &                             -eskco2(ij),dum1,duma,dumb,dumc,duma)
+                           if((kaco2(ij).eq.2).or.(kaco2(ij).eq.3)) then
+                              call co2_properties(4,ices(ij),
+     &                             flowco2s(ij),-eskco2(ij),dum1,duma,
+     &							 dumb,dumc,duma)
+	                        eflowco2(ij)=dumc(4)
                               call h2o_properties(9,1,phi(ij),
      &                             -eskco2(ij),csalt(ij),
      &                             dum3,ensrc,dum4,dum5,dum6,dum7)
                               eflow(ij)=ensrc
                               if(iwatdis.eq.1) then
 c     calculate phase-change pressure and dp/dt
-                                 call h2o_properties(5,2,tl,dum1,dum2,
-     &                                dum3,psatd,dum4,dpsatt,dum5,dum6)
-                                 xwp = psatd/pl
+                                 call h2o_properties(5,2,-eskco2(ij),
+     &                           dum1,dum2,dum3,psatd,dum4,dpsatt,dum5,
+     &							dum6)
+                                 xwp = psatd/phico2(ij)
                               else
                                  xwp = 0.d0
                               endif
                               xcp = 1.d0-xwp		  
                               xcpb=(xcp/mwc)+(xwp/mww)
                               xc_prime = xcp/(mwc*xcpb)
+							if(kaco2(ij).eq.2) then
                               call co2_properties(10,1,phico2(ij),
      &                             -eskco2(ij),csalt(ij),1,xc_prime,tem,
-     &							 duma)
+     &							 ij)
                               if((flowco2s(ij).lt.tem(1)).and.
      &                             (flowco2s(ij).ne.0d0))then
                                  sk(ij) = skco2(ij)*(1-flowco2s(ij))
@@ -1170,6 +1144,13 @@ c     calculate phase-change pressure and dp/dt
                                  sk(ij) = skco2(ij)*(1-tem(1))
                                  skco2(ij) = skco2(ij)*tem(1)
                               endif
+							else
+                              call co2_properties(10,1,flowco2s(ij),
+     &                             -eskco2(ij),csalt(ij),1,xc_prime,tem,
+     &							 ij)
+                              skco2(ij) = sk(ij)*tem(1)
+                              sk(ij) = sk(ij)*(1-tem(1))
+							endif
                            else
                               call co2_properties(4,ices(ij),phico2(ij),
      &                             -eskco2(ij),dum1,duma,dumb,dumc,duma)
@@ -1187,7 +1168,7 @@ c     calculate phase-change pressure and dp/dt
                   else						
                      eflowco2(ij)=eskco2(ij)
                   endif
-                  if(kaco2(ij).ne.2) then
+                  if((kaco2(ij).ne.2).and.(kaco2(ij).ne.3)) then
                      if(esk(ij).lt.0.0) then
                         if(ps(ij).eq.0.d0) then
                            eflow(ij) = cpr(ij)*(-eskco2(ij))
@@ -1202,7 +1183,7 @@ c     calculate phase-change pressure and dp/dt
                      endif
                   endif
                enddo
-c            endif                
+            endif                
          elseif(iflg.eq.4) then
 c     call equation generation and load jacobian array
             
