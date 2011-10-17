@@ -464,8 +464,8 @@ c     output hydrate fraction, keyword: fhydrate
      &           write(iptty, *) ' iofh            ', iofh
         
          elseif((chdum(1:1) .eq. 'e').or.(chdum(1:1) .eq. 'E'))then
-c     end of avs input, keyword: endavs
-c     looking for end END endavs ENDAVS
+c     end of cont input, keyword: endavs or endcont
+c     looking for end END endavs ENDAVS endcont ENDCONT
             exit
 
          else
@@ -476,7 +476,7 @@ c     illegal character found
 
  100  format (1x,'-----------------------------------------------')
  110  format (1x,'WARNING: ', a, a)
- 120  format (1x,'There will be no AVS output for ', a, a)
+ 120  format (1x,'There will be no CONT output for ', a, a)
       
 
  9999 if (ioformat .eq. 1) then
@@ -784,10 +784,10 @@ c     illegal character found
      .     , /, ' (zo)ne          or (ZO)NE  '
      .     , /, ' (fo)rmatted     or (FO)RMATTED  '
      .     , /, ' (u)nformatted   or (U)NFORMATTED  '
-     .     , /, ' (e)ndavs        or (E)NDAVS  '
+     .     , /, ' (e)ndcont       or (E)NDCONT  '
      .  , /, 'Input file should look something like this:', /, '      ',
      .     /, 'cont', /, 'material', /, 'liquid', /, 'pressure', 
-     .     /, 'temperature', /, 'formatted', /, 'endavs', /, '      '
+     .     /, 'temperature', /, 'formatted', /, 'endcont', /, '      '
      .     , /, 'The invalid string was:',/,a72)
       
       end
