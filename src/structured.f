@@ -858,6 +858,6 @@ c 3D hex elements
       write(il,'(a4)') 'stop'
       close(il)
       endif        
-      deallocate(nelm_temp)
+      if (allocated(nelm_temp)) deallocate(nelm_temp)
 100   return      
       end
