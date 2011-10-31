@@ -141,8 +141,9 @@ CPS
 C***********************************************************************
 
       use avsio
-      use comai, only : altc, days, icnl, jdate, jtime, verno, wdd
-      use combi, only : corz, izonef
+      use comai, only : altc, days, icnl, jdate, jtime, verno, wdd,
+     &     nei_in, ns_in, neq_primary
+      use combi, only : corz, izonef, nelm
       use comdi, only : nsurf, izone_surf, izone_surf_nodes
       implicit none
       
@@ -152,16 +153,18 @@ C***********************************************************************
       character*5 cstring, dual_char
       character*6 share_string
       character*14 tailstring
-      character*40 :: tec_string = ''
+      character*150 :: tec_string = ''
       character*45 title(3*maxvector), title2(2)
       character*50 fstring
       character*500 tstring
       integer icall, neq, nvector, lu, ifdual, length
       integer i, istep, nout, iz, idz, iendz, j, k, iocord_temp
-      integer icord1, icord2, icord3
+      integer icord1, icord2, icord3, il, i1, i2, open_file
+      integer, allocatable :: nelm2(:)
       real*8  write_array(9)
       real*8  pnxv(neq), pnyv(neq), pnzv(neq)
       real*8  pnxl(neq), pnyl(neq), pnzl(neq)
+      character*5 char_type
       
       save tec_string
 
@@ -175,12 +178,23 @@ C***********************************************************************
          return
       endif
       
+      iocord_temp = iocord
       if(ifdual .eq. 0)then
          dual_char = ''
          tailstring = '_vec_node'
       elseif(ifdual .eq. 1)then
-         dual_char ='Dual '
-         tailstring = '_vec_dual_node'
+         if (iodual .eq. 1) then
+            dual_char ='Dual '
+            tailstring = '_vec_dual_node'
+         else
+            dual_char = 'GDKM '
+            tailstring = '_vec_gdkm_node'
+            if (icnl .eq. 0) then
+               iocord = 3
+            else
+               iocord = 2
+            end if
+         end if
       else
 c     error
       endif
@@ -192,10 +206,9 @@ c     error
          idz = iozone
       end if
       
-      iocord_temp = iocord
       if (altc(1:3) .eq. 'tec' .or. altc(1:3) .eq. 'sur') then
-         if (iocord .eq. 0) then
-! Coordinates need to be output
+         if (iocord .eq. 0 .and. iogrid .eq. 0) then
+! Coordinates need to be output unless grid is set
             if (icnl .eq. 0) then
                iocord = 3
             else
@@ -260,7 +273,9 @@ c     error
          end if
          j = 0
          if (altc(1:3) .eq. 'tec' .or. altc(1:3) .eq. 'sur') then
-            if (altc(1:3) .eq. 'tec') then
+            if (altc(1:3) .eq. 'tec' .and. iocord .eq. 0) then
+               title2(1) = trim(dual_char) // 'Node'         
+            else if (altc(1:3) .eq. 'tec') then
                title2(1) = dlstring // trim(dual_char) // 'Node'
             else
                title2(1) = trim(dual_char) // 'Node'
@@ -272,31 +287,29 @@ c     error
             end if
          end if
          if (iocord .ne. 0 ) then
-            j = 1
+            j = 0
             if (icnl .ne. 3 .and. icnl .ne. 6) then
-               if (altc(1:3) .eq. 'tec') then
-                  title(j) = trim(dual_char) //  'X Coordinate (m)'
-               else
-                  title(j) = dlstring // trim(dual_char) // 
-     &                 'X Coordinate (m)'
-               end if
                j = j + 1
+               if (altc(1:3) .eq. 'tec') then
+                  title(j) = 'X Coordinate (m)'
+               else
+                  title(j) = dlstring // 'X Coordinate (m)'
+               end if
             end if
             if (icnl .ne. 2 .and. icnl .ne. 5) then
-               if (j .eq. 1 .and. altc(1:3) .eq. 'tec') then
-                  title(j) = trim(dual_char) // 'Y Coordinate (m)'
-               else
-                  title(j) = dlstring // trim(dual_char) // 
-     &                 'Y Coordinate (m)'
-               end if
                j = j + 1
+               if (j .eq. 1 .and. altc(1:3) .eq. 'tec') then
+                  title(j) = 'Y Coordinate (m)'
+               else
+                  title(j) = dlstring // 'Y Coordinate (m)'
+               end if
             end if
             if (icnl .ne. 1 .and. icnl .ne. 4) then
-               title(j) = dlstring // trim(dual_char) // 
-     &              'Z Coordinate (m)'
+               j = j + 1
+               title(j) = dlstring // 'Z Coordinate (m)'
             end if
             if (iozid .ne. 0) then
-               write (share_string, '(i1, "-", i1, ", ", i1)') 1, j, j+2
+               write (share_string, '(i1, "-", i1, ", ", i1)') 1,j,j+2
             else
                write (share_string, '(i1, "-", i1)') 1, j
             end if
@@ -349,8 +362,9 @@ c     error
          write(lu,90) nout, (3, i = 1, nout)
          write(lu, 100) (trim(title(i)), i = 1, nout)
       else if(altc(1:3).eq.'tec') then
-         if (icall .eq. 1) then
+         if (icall .eq. 1 .or. (iogrid .eq. 1 .and. iocord .eq. 0)) then
             write(lu,301) verno, jdate, jtime, trim(wdd)
+            if (iogrid .eq. 1 .and. iocord .eq. 0) write(lu,304)
 c            write(lu,300) (trim(title(i)), i = 1, iocord), 
 c     &           (trim(title2(i)), i = 1, k), 
 c     &           (trim(title(i)), i = iocord + 1, nout), '"'
@@ -389,10 +403,23 @@ c     &        (trim(title(i)), j = 1, nout)
             if (iozone .ne. 0) then
                write (lu, 95) idz, trim(tec_string)
             else
-               write (lu, 96) trim(timec_string), trim(tec_string)
+               if (iogrid .eq. 1 .and. iocord .eq. 0) then
+                  write (lu, 96) trim(timec_string),
+     &              trim(gridstring), trim(times_string)
+               else if (iogeo .eq. 1 .or. (ifdual .eq. 1 .and. 
+     &              iogdkm .eq. 1)) then
+                   write (lu, 96) trim(timec_string), trim(gridstring), 
+     &                 trim(tec_string)
+               else
+                  write (lu, 96) trim(timec_string), trim(tec_string)
+               end if
             end if
             if (icall .eq. 1) then
-               write (tec_string, 303) trim(share_string), iz
+               if (iogeo .eq. 1) then
+                  write (tec_string, 305) trim(share_string), iz
+               else
+                  write (tec_string, 303) trim(share_string), iz
+               end if
             end if
          else if (altc(1:3) .eq. 'sur') then
             call namefile2(icall,lu,ioformat,tailstring,idz)
@@ -439,7 +466,13 @@ c     &        (trim(title(i)), j = 1, nout)
                   write (fstring, 130) iocord, j - iocord
                   write(lu, fstring) (write_array(k), k = 1, iocord),
      &                 i, izonef(i), (write_array(k), k = iocord + 1, j)
-               else if (icall .eq. 1 .and. iozid .eq. 0) then
+               else if (icall .eq. 1 .and. iozid .eq. 0 .and.
+     &                 iogrid .eq. 0) then
+                  write (fstring, 120) iocord, j - iocord
+                  write(lu, fstring) (write_array(k), k = 1, iocord),
+     &                 i, (write_array(k), k = iocord + 1, j)
+               else if (icall .eq. 1 .and. ifdual .eq. 1 .and. 
+     &                 iogdkm .eq. 1) then
                   write (fstring, 120) iocord, j - iocord
                   write(lu, fstring) (write_array(k), k = 1, iocord),
      &                 i, (write_array(k), k = iocord + 1, j)
@@ -467,12 +500,35 @@ c     &        (trim(title(i)), j = 1, nout)
  199     enddo 
       end do
 
-      if (iocord .ne. iocord_temp) iocord = iocord_temp
+      if (icall .eq. 1 .and. altc(1:3) .eq. 'tec' .and. iogeo .eq. 1)
+     &     then
+c     Read the element connectivity and write to tec file
+         if(ifdual .eq. 1 .and. iogdkm .eq. 1) then
+c     Do nothing, no connectivity defined
+         else 
+            il = open_file(geoname,'old')
+c     avsx geometry file has an initial line that starts with neq_primary
+            read(il,*) i
+            if (i .ne. neq_primary) backspace il
+            do i = 1, neq
+               read(il,*)
+            end do
+            allocate (nelm2(ns_in))
+            do i = 1, nei_in
+               read (il,*) i1,i2,char_type,(nelm2(j), j=1,ns_in)
+               write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
+            end do
+            deallocate(nelm2)
+            close (il)
+         endif
+      end if
+
+      iocord = iocord_temp
 
  90   format(i1,2x,5(i5,2x))
  95   format('ZONE T = "',i4.4, '"', a)
 c 96   format('ZONE T = "Simulation time ',1p,g16.9,' days"', a)
- 96   format('ZONE T = ', a, a)   
+ 96   format('ZONE T = ', a, a, a, a)   
  500  format(i10.10, 9(1x, g16.9))
  666  format(i10.10, 9(' : ', g16.9))
  667  format(i10.10, 9(', ', g16.9))
@@ -489,6 +545,9 @@ c 96   format('ZONE T = "Simulation time ',1p,g16.9,' days"', a)
 c 302  format('TEXT T = "Simulation time ',1p,g16.9,' days"')
  302  format('TEXT T = ', a)
  303  format(', VARSHARELIST = ([', a,'] = ', i4, ')')
+ 304  format('FILETYPE = "SOLUTION"')
+ 305  format(', VARSHARELIST = ([', a,'] = ', i4, '), ',
+     &     'CONNECTIVITYSHAREZONE = 1')
  400  format(11(a))
  
       return

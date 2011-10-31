@@ -63,13 +63,13 @@
       real*8 cosxi0,cosyi0,coszi0,cosx,cosy,cosz
       real*8 cosmin,cosikc
       real*8 cosneqx, cosposx
-      integer kb_neg,kb_pos,i_pos,kb_pos_neg,i_neg 
+      integer kb_neg,kb_pos,i_pos,kb_pos_neg,i_neg,jk
       integer ic,ngdkm,nlayerm,kblast,nsize,kbmax,kbmin
       integer i_gdkm,i1_gdkm,i2_gdkm, iww
       real*8 cord_kb_pos_neg, cord_i_pos, area_kb_pos
       real*8  cord_i_neg, area_kb_neg
       real*8 disx_max,disx_min
-      real*8 a11
+      real*8 a11,vfrac,vfrac2,sx1_primary,sx1_total,vf_gdpm
       integer, allocatable :: idum1(:)
       integer, allocatable :: idump(:)
       integer, allocatable :: idumn(:)
@@ -372,6 +372,30 @@ c test of coefficients
        stop
        endif   
        endif 
+      else if(iflg.eq.3) then   
+c combine intrinsic permeability with fracture volume
+       do i = 1,neq_primary
+        imodel= igdpm(i)
+c first gdpm node is given last connection of primary node
+c check this logic
+        kb = nelm(nelm(i+1))
+        if(imodel.ne.0) then
+          sx1_primary = sx1(i)
+	    vfrac = vfrac_primary(imodel)
+c multiply pemeabilities by volume fractions	    
+	     pnx(i) = pnx(i)*vfrac
+	     pny(i) = pny(i)*vfrac
+	     pnz(i) = pnz(i)*vfrac
+           sx1_total = sx1_primary/vfrac
+           do jk = 1, ngdpm_layers(imodel)
+            kc = kb+jk-1
+            vfrac2 = sx1(kc)/sx1_total
+	      pnx(kc) = pnx(kc)*vfrac2
+	      pny(kc) = pny(kc)*vfrac2
+	      pnz(kc) = pnz(kc)*vfrac2            
+           enddo
+        endif
+       enddo      
       else if(iflg.eq.-1) then    
        deallocate(iconn_gdkm)
       endif

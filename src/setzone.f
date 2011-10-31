@@ -1,4 +1,4 @@
-      subroutine setzone(izone, nin, ncord, nsl, xz, yz, zz)
+      subroutine setzone(izone, nin, ncord, nsl, xz, yz, zz, irad)
 !***********************************************************************
 !  Copyright, 1993, 2004,  The  Regents of the University of California.
 !  This program was prepared by the Regents of the University of 
@@ -327,7 +327,7 @@ C***********************************************************************
 
       logical eleb
       integer i, ij, in, izone, jz, maxitz, ncord(*), nin, nsl
-      integer i_warn   
+      integer i_warn, irad   
       real*8 a11, a12, a13, a21, a22, a23, a31, a32, a33
       real*8 delx, dely, delz, detja
       real*8 etad, excid, rx, ry, rz, sid, sxd, sy, sz
@@ -340,7 +340,7 @@ C***********************************************************************
       tols = 1.0e-05
       tolt = 1.0e-05
 
-      if (icnl .eq. 0)  then
+      if (icnl .eq. 0.and.irad.eq.0)  then
 c**** 3-d calculation ****
 c**** find coordinates contained in zone ****
 c**** determine element type           ****
@@ -510,7 +510,114 @@ c**** the node i is in zone izone, save information ****`
             end if
 
          end do
+      else if (icnl .eq. 0.and.irad.ne.0)  then
+c**** 3d geometry wit hradial symmetry ****
+c**** find coordinates contained in zone ****
+c**** determine element type find extreme coordinates in zone ****
+         xmn = 1.0e+20
+         xmx = -1.0e+20
+         ymn = 1.0e+20
+         ymx = -1.0e+20
+         do in = 1, nsl
+            xmn = min(xz(in), xmn)
+            xmx = max(xz(in), xmx)
+            ymn = min(yz(in), ymn)
+            ymx = max(yz(in), ymx)
+         end do
 
+c**** find nodal coordinates belonging in this zone ****
+         do i = 1, neq_primary
+c calculate radial distance (centered at x = 0)        
+            xl = sqrt(cord(i, 1)**2 + cord(i, 2)**2)
+            if (xl .ge. xmn .and. xl .le. xmx) then
+c y is now the z direction            
+               yl = cord(i, 3)
+               if (yl .ge. ymn .and. yl .le. ymx) then
+                  nin = nin + 1
+                  ncord(nin) = i
+               end if
+            end if
+         end do
+  
+c**** do calculations on nodal coordinates in this zone ****
+         do ij = 1, nin
+            i = ncord(ij)
+            xl = sqrt(cord(i, 1)**2 + cord(i, 2)**2)
+            yl = cord(i, 3)
+
+c**** use newton raphson iteration to find local coordinates ****
+c**** set local coordinates initially to zero ****
+            sid = 0.0
+            etad = 0.0
+            
+            do iad = 1, maxitz
+c**** evaluate shape functions ****
+               call  sfn2r   (sid, etad)
+
+c**** form jacobian ****
+c**** define geometric coefficients ****
+               sxd = 0.0
+               sy = 0.0
+               sa11 = 0.0
+               sa12 = 0.0
+               sa22 = 0.0
+               sa21 = 0.0
+
+               do jz = 1, nsl
+                  sxd = sxd +w (jz, 1)*xz(jz)
+                  sy = sy  +w (jz, 1)*yz(jz)
+                  sa11 = sa11+wx(jz, 1)*xz(jz)
+                  sa12 = sa12+wy(jz, 1)*xz(jz)
+                  sa21 = sa21+wx(jz, 1)*yz(jz)
+                  sa22 = sa22+wy(jz, 1)*yz(jz)
+               end do
+
+c**** save jacobian information ****
+               a11 = sa22
+               a22 = sa11
+               a12 = -sa12
+               a21 = -sa21
+               detja = sa11*sa22-sa12*sa21
+
+c**** form residuals ****
+               rx = sxd-xl
+               ry = sy -yl
+
+c**** get correction ****
+               delx = (a11*rx+a12*ry)/detja
+               dely = (a21*rx+a22*ry)/detja
+               sid = sid -delx
+               etad = etad-dely
+
+c**** if correction small end iteration ****
+               if (sqrt(delx*delx+dely*dely) .le. tols) go to 20
+
+            end do
+
+c**** iteration did not converge so stop ****
+            write(ierr, 6010)  izone
+            if (iout .ne. 0) write(iout, 6010)  izone
+            if (iptty .gt. 0)  write(iptty, 6010)  izone
+ 6010       format(/, 1x, 'zone calcs did not converge',
+     *           ' izone = ', i10, ' please check',
+     *           ' coordinates ')            
+            stop
+            
+ 20         continue
+
+c**** check if local coordinates within the element ****
+            eleb = .TRUE.
+            if (abs(sid) .gt. 1.0+tolt)  eleb = .FALSE.
+            if (abs(etad) .gt. 1.0+tolt)  eleb = .FALSE.
+
+c**** the node i is in zone izone, save information ****
+            if (eleb)  then
+               izonef(i) = izone
+            else
+               ncord(ij) = 0
+            end if
+            
+         end do
       else if (icnl .ne. 0)  then
 c**** 2-d calculation ****
 c**** find coordinates contained in zone ****
@@ -589,20 +696,20 @@ c**** get correction ****
                etad = etad-dely
 
 c**** if correction small end iteration ****
-               if (sqrt(delx*delx+dely*dely) .le. tols) go to 20
+               if (sqrt(delx*delx+dely*dely) .le. tols) go to 25
 
             end do
 
 c**** iteration did not converge so stop ****
-            write(ierr, 6010)  izone
+            write(ierr, 6015)  izone
             if (iout .ne. 0) write(iout, 6010)  izone
             if (iptty .gt. 0)  write(iptty, 6010)  izone
- 6010       format(/, 1x, 'zone calcs did not converge',
+ 6015       format(/, 1x, 'zone calcs did not converge',
      *           ' izone = ', i10, ' please check',
      *           ' coordinates ')            
             stop
             
- 20         continue
+ 25         continue
 
 c**** check if local coordinates within the element ****
             eleb = .TRUE.

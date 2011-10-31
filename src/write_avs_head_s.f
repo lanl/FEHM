@@ -64,7 +64,7 @@ C************************************************************************
       integer maxscalar
       parameter (maxscalar = 32)
       integer neq,nscalar,lu,ifdual
-      integer i,j,iolp,iovp,nout,icall,idz,iriver2
+      integer i,j,iolp,iovp,nout,icall,idz,iriver2,iocord_temp
       integer size_head, size_pcp, istart, iend, ic1, ic2, length
       character*5 dual_char
       character*14 tailstring
@@ -118,12 +118,24 @@ C     BEGIN
       size_head = size(head)
 C     nscalar=(iovapor+ioliquid)*iopressure+iosaturation+iotemperature
 C     calculation done in avs_io()
-      nout = nscalar + iocord
+      iocord_temp = iocord
+
       if(ifdual .ne. 0)then
-         dual_char = 'Dual '
-         if (iriver2 .eq. 0) then
-            tailstring = '_sca_dual_node'
+          if (iriver2 .eq. 0) then
+            if (iodual .eq. 1) then
+               dual_char = 'Dual '
+               tailstring = '_sca_dual_node'
+            else if (iogdkm .eq. 1) then
+               dual_char = 'GDKM '
+               tailstring = '_sca_gdkm_node'
+               if (icnl .eq. 0) then
+                  iocord = 3
+               else
+                  iocord = 2
+               end if
+            end if               
          else
+            dual_char = 'Dual '
             tailstring = '_wel_dual_node'
          end if
       else
@@ -134,15 +146,21 @@ C     calculation done in avs_io()
             tailstring = '_wel_node'
          end if
       endif
+      nout = nscalar + iocord
 
       call namefile2(icall,lu,ioformat,tailstring,idz)
 
 c     Header is only written to the first tecplot file
-      if (icall .gt. 1 .and. altc(1:3) .eq. 'tec') return
+      if (icall .gt. 1 .and. altc(1:3) .eq. 'tec' .and. (iogrid .eq. 0 
+     &   .or. (ifdual .eq. 1 .and. iogdkm .eq. 1))) return
       
       title( 1) = trim(dual_char) // 'Liquid Pressure (MPa)'
       title( 2) = trim(dual_char) // 'Vapor Pressure (MPa)'
-      title( 3) = trim(dual_char) // 'Temperature (deg C)'
+      if (altc(1:3) .eq. 'tec') then
+         title( 3) = trim(dual_char) // 'Temperature (<sup>o</sup>C)'
+      else
+         title( 3) = trim(dual_char) // 'Temperature (deg C)'
+      end if
       title( 4) = trim(dual_char) // 'Saturation'
       title( 5) = trim(dual_char) // 'Hydraulic Head (m)'
       title( 6) = trim(dual_char) // 'Water Vapor Pressure (MPa)'
@@ -507,15 +525,21 @@ c     Write Z coordinate
 	 endif         
          if (altc(1:3) .eq. 'tec') then
             write(lu, 400) verno, jdate, jtime, trim(wdd)
+            if (iogrid .eq. 1 .and. iocord .eq. 0) then
+               write (lu, 600)
+            end if
          end if
          write(lu, '(a)') tstring2(ic1:ic2)         
       end if
+      iocord = iocord_temp
 
  100  format("('", a, "', a)")
  200  format(a, ', ', a)
  300  format("('",' "', "', a, '",'"',"')")
  400  format('TITLE = "', a30, 1x, a11, 1x, a8, 1x, a, '"')
  500  format('VARIABLES = "node" ', a)
+ 600  format('FILETYPE = "SOLUTION"')
+
       return
       end
 

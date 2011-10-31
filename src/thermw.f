@@ -842,7 +842,7 @@ C***** AF 11/15/10
       integer indexp, indext, point(4),izerrFLAG     ! phs 4/23/99
 C*****
       real*8 xa,xa2,xa3,xa4
-      real*8 p_energy
+      real*8 p_energy,prop,dpropt,dpropp
       real*8, allocatable :: sto1(:)
       real(8) :: damh = 0., damp = 0., daep = 0., daeh = 0.
       real(8) :: dtps = 0., dtd = 0.
@@ -932,7 +932,9 @@ c     undo equivalence relations for relative perms
          else
             p_energy = 0.0d0
          endif
-
+c check for aux eos(iieosd.gt.10)
+         if(itsat.le.10) then
+   
 c     adjust coefficients for thermo fits
          if(iieosd.ne.iieosl) then
 
@@ -1410,6 +1412,27 @@ c     modify derivatives for 2-phase
             dvisvt=0.0
             dvislt=0.0
             dtd=0.0
+         endif
+c exclude 2phase in aux eos because of smeared phase lines         
+         else
+          ieosd = 1
+          tl = t(mi)
+          pl = phi(mi)
+c density and derivatives          
+          call eos_aux(itsat,tl,pl,0,0,prop,dpropt,dpropp)
+          rol = prop
+          drolt = dpropt
+          drolp = dpropp
+c enthalpy and derivatives (add potential energy term)          
+          call eos_aux(itsat,tl,pl,1,1,prop,dpropt,dpropp)
+          enl = prop + p_energy
+          dhlt = dpropt
+          dhlp = dpropp               
+c viscosity and derivatives           
+          call eos_aux(itsat,tl,pl,2,1,prop,dpropt,dpropp)
+          xvisl = prop
+          dvislt = dpropt
+          dvislp = dpropp         
          endif
 
          sl=s(mi)

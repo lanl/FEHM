@@ -91,10 +91,10 @@ c
         read(inpt,'(a80)') wdd1
         read(wdd1,*) vard
         if(vard(1:2).eq.'pw'.and.vard(3:3).eq.' ') then
-         read(wdd1,*) vard(2:2), p_stop
+         read(wdd1,*) vard(1:2), p_stop
         endif
         if(vard(1:2).eq.'pa'.and.vard(3:3).eq.' ') then
-         read(wdd1,*) vard(2:2),pa_stop
+         read(wdd1,*) vard(1:2),pa_stop
         endif        
         if(vard(1:1).eq.'t'.and.vard(2:2).eq.' ') then
          read(wdd1,*) vard(1:1),t_stop
@@ -105,12 +105,15 @@ c
         if(vard(1:1).eq.'h'.and.vard(2:2).eq.' ') then
          read(wdd1,*) vard(1:1),h_stop
         endif
+        if(vard(1:4).eq.'step') then
+         read(wdd1,*) vard(1:4), strd_iter 
+        endif        
         if(vard(1:1).eq.'s'.and.vard(2:2).eq.' ') then
-         read(wdd1,*) vard(1:1),s_stop 
+         read(wdd1,*) vard(1:1),s_stop, strd_iter 
         else if(vard(1:3).eq.'sat'.and.vard(4:4).eq.' ') then
-         read(wdd1,*) vard(1:3),s_stop
+         read(wdd1,*) vard(1:3),s_stop, strd_iter
         else if(vard(1:1).eq.'s'.and.vard(2:2).eq.'2') then
-         read(wdd1,*) vard(1:2),s2_stop         
+         read(wdd1,*) vard(1:2),s2_stop, strd_iter         
         endif
        endif
       enddo

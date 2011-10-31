@@ -719,6 +719,7 @@ c     itc=0
       ivcn=0
       ivcon=0
       npt=0
+      i_subsid = 0
       pcp=0
       pflow=0
       if (allocated (pgangi)) pgangi=0

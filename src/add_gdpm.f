@@ -542,7 +542,9 @@ c primariy  to primary connection
       endif
 c    deallocate memory      
       if(allocated(vol_gdpm)) deallocate(vol_gdpm)
-      if(allocated(gdpm_x)) deallocate(gdpm_x)
+      if(gdkm_flag.eq.0) then
+       if(allocated(gdpm_x)) deallocate(gdpm_x)
+      endif
       if(allocated(gdpm_vol)) deallocate(gdpm_vol)
       if(allocated(vfrac_primary).and.gdkm_flag.eq.0) 
      &  deallocate(vfrac_primary)
@@ -677,7 +679,7 @@ c      length-weighted fractions of total volume
          sx1(n_n_n) = gdpm_vol(imodel,j)*sx1save
         continue
   
-      else
+      else if(gdpm_flag.eq.1) then
 
 
 c     Parallel Fracture Model
@@ -892,7 +894,7 @@ c     Compute sx, stor in sx(iposition,isox)
 
 c     Parallel fracture model
 
-      else
+      else if(gdpm_flag.eq.1) then
 
 c     Determine if the connected node is a primary node, if
 c     it is, change the primary node to this one

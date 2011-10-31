@@ -109,7 +109,7 @@ dated:
 	sed s/OS\ DATE/${OSTAG}\ ${DATETAG}/ ${SRCDIR}dated.template >  ${SRCDIR}dated.f
 
 xfehm : ${OBJECTS} ${OBJECTS_F90}
-	${FC} ${FFLAGS} ${OBJECTS} ${OBJECTS_F90} ${LIBRARY} ${STATIC} -o xfehm_v3.00${OSTAG}${DATE}
+	${FC} ${FFLAGS} ${OBJECTS} ${OBJECTS_F90} ${LIBRARY} ${STATIC} -o xfehm_v3.1${OSTAG}${DATE}
 
 test:
 	echo ${OSTAG} ${FFLAGS} ${DATETAG} ${DATE}

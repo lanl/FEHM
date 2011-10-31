@@ -247,17 +247,26 @@ c      integer, allocatable ::   itstress(:)
         ! positive convention! 
         str_x = -str_x/cvol
         str_y = -str_y/cvol
-        str_z = -str_z/cvol
+c        str_z = -str_z/cvol
         str_xy = str_xy/cvol
-        str_yz = str_yz/cvol
-        str_xz = str_xz/cvol
+c        str_yz = str_yz/cvol
+c        str_xz = str_xz/cvol
 
         strain_xx = strain_xx/cvol
         strain_yy = strain_yy/cvol
-        strain_zz = strain_zz/cvol
+c        strain_zz = strain_zz/cvol
         strain_xy = strain_xy/cvol
-        strain_yz = strain_yz/cvol
-        strain_zx = strain_zx/cvol
+c        strain_yz = strain_yz/cvol
+c        strain_zx = strain_zx/cvol
+        
+         if(residual_stress) then
+          str_x = str_x + str_x0
+          str_y = str_y + str_y0
+c          str_z = str_z + str_z0
+          str_xy =str_xy + str_xy0
+c          str_yz =str_yz + str_yz0
+c          str_xz =str_xz + str_xz0
+         endif
 
         return
       else

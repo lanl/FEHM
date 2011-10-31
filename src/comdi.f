@@ -447,6 +447,13 @@
       integer ieosc, npn, nsp, nspeci, numd, numsorp, numvcon
       real*8 phydro, sigini, thexp, tmelt, young
 
+c KCL 5-2-11, for DeltaPoros subroutine
+      real*8, allocatable :: MaxDrainPart(:)
+      real*8, allocatable :: InitPoros(:)
+      real*8, allocatable :: InitPerm(:)
+      real*8, allocatable :: InitPres(:)
+      integer :: DrainInitFlag
+
 !     ***** pointers in COMMON Block fdd *****
       real*8, allocatable ::  cpr(:)
       real*8, allocatable ::  deneh(:)
@@ -750,6 +757,7 @@
       real*8, allocatable :: rlzf(:)
       real*8, allocatable :: drlzf(:)
       real*8, allocatable :: dzrg(:)
+      real*8, allocatable :: dzrg_new(:)      
       real*8, allocatable :: dxrg(:)
       real*8, allocatable :: dyrg(:)
  
@@ -853,5 +861,27 @@
 
 ! gaz 11-Jan-08 Pressure from mass conversion
       real*8, allocatable :: mass_var(:)
-        
+c  phase state variable for simplified thermodynamics     
+      integer, allocatable :: ieos_aux(:) 
+      integer, allocatable :: i_chk(:) 
+      integer, allocatable :: izone_bot(:)
+      integer, allocatable :: izone_top(:)
+      integer, allocatable :: izone_drain(:)
+      integer, allocatable :: izone_main(:)
+      real*8, allocatable :: z_plot(:)   
+      real*8, allocatable :: dzrg_sub(:)
+      real*8, allocatable :: z_plot_old(:)
+c some simple thermo       
+      real*8 LiqEndTemp, VapEndTemp, IceEndTemp   
+      
+      integer ivol_cnt, iarea_cnt,max_replace
+      parameter (max_replace = 1000000)
+      real*8,  allocatable :: vol_pri(:)
+      real*8,  allocatable :: vol_sec(:)
+      real*8,  allocatable :: area_pri(:)
+      real*8,  allocatable :: area_sec(:)
+      integer,  allocatable :: ii_vol(:)
+      integer,  allocatable :: icon_area1(:)
+      integer,  allocatable :: icon_area2(:)
+      
       end module comdi

@@ -1,5 +1,5 @@
-      subroutine rd1dof(neq,a,b,r,ncon,nop,north,mink,sorthm
-     *,epn,irb,iirb,nopt,npvt,xtemp,rw,xx,dum,piv,iter,irdof,niter
+      subroutine rd1dof(neq,a,b,r,na,nb,nrhs,ncon,nop,north,mink,
+     *sorthm,epn,irb,iirb,nopt,npvt,xtemp,rw,xx,dum,piv,iter,irdof,niter
      *,omega,an,bn,resid,delx,dum1,irbd,npvtr,nbnd,mcount,iout,iptty
      * ,maxor,h,c,ss,g,y,maxsolve,accm)
 !***********************************************************************
@@ -80,7 +80,8 @@ C***********************************************************************
       integer i, i1, i2, i3, i4, iback, ic, icount, id, ig, ik , im
       integer in, inn, io, ioo, iterg, iterh, itr
       integer j, jd, jdd, je, kb, kbn, kbns
-      integer na, nact, nactp1, nb, neqp1, nopc, nrest, nrhs
+      integer na(*),nb(*),nrhs(*) 
+      integer nact, nactp1, neqp1, nopc, nrest
       integer maxsolve
       integer ncon(*),nop(*)
       real*8  epn, omega

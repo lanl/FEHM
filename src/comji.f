@@ -254,6 +254,10 @@ c parameters for anisotropy
       integer, allocatable ::   it4a(:)
       integer, allocatable ::   it5a(:)
       integer, allocatable ::   it6a(:)
+      real*8,  allocatable ::   axy_ani(:)
+      real*8,  allocatable ::   axyx_ani(:)
+      real*8,  allocatable ::   axyy_ani(:)
+      real*8,  allocatable ::   axyz_ani(:)   
       
 
       end module comji

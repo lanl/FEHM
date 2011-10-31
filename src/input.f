@@ -803,6 +803,10 @@ c**** element node data, read in incoord subroutine  ****
 c**** forms simple water eos and/or changes the eos set number ****
          iieosd =  0
          call sther (iieosd)
+      else if (macro .eq. 'subs') then
+c**** forms simple water eos and/or changes the eos set number ****
+         i_subsid = 1
+         call subsidence (0)
 
       else if (macro .eq. 'evap') then
 c**** set flag and input name of file with evaporation nodes ****
@@ -1065,6 +1069,7 @@ c**** calculation of fractional variable changes ****
 
       else if (macro .eq. 'init') then
 c**** initial values ****
+         i_init = 1
          read (inpt, *) pein, tin0, tin, gradnt, depcng,
      *        tin1, grad2, quad
 
@@ -1126,61 +1131,61 @@ c**** particle tracking ****
 c     inmptr is called in part_track instead of here
          mptr_call = .true.
          read(inpt,*)nspeci,maxlayers,max_particles
-         read(inpt,*)pout,prnt_rst
-         read(inpt,'(a4)') macro1
-         if(macro1.eq.'tcur') then
-            read(inpt,'(a80)') dummy_line
-            read(inpt,'(a80)') dummy_line
-         else
-            backspace(inpt)
-         endif
-         read(inpt,'(a4)')macro1
-         if(macro1.eq.'zptr')then
-            read(inpt,'(a4)') macro1
-            read(inpt,'(a4)') macro1
-         else
-            backspace (inpt)
-         end if
-         read(inpt,*)rseed
+	   read(inpt,*)pout,prnt_rst
+           read(inpt,'(a4)') macro1
+           if(macro1.eq.'tcur') then
+              read(inpt,'(a80)') dummy_line
+              read(inpt,'(a80)') dummy_line
+           else
+              backspace(inpt)
+           endif
+           read(inpt,'(a4)')macro1
+           if(macro1.eq.'zptr')then
+              read(inpt,'(a4)') macro1
+              read(inpt,'(a4)') macro1
+           else
+              backspace (inpt)
+           end if
+	   read(inpt,*)rseed
 c*** water table rise modification
-         read(inpt,'(a4)')macro
-         if(macro.eq.'wtri')then
-            read(inpt,*) water_table
-         else
-            water_table=-1.d+10
-            backspace (inpt)
-         end if
+           read(inpt,'(a4)')macro
+           if(macro.eq.'wtri')then
+             read(inpt,*) water_table
+           else
+             water_table=-1.d+10
+             backspace (inpt)
+           end if
 c*** water table rise modification
-         read(inpt,*)daycs,daycf,dayhf,dayhs
+	   read(inpt,*)daycs,daycf,dayhf,dayhs
 
 c     The rest of these reads are simply to get to the bottom
 c     of mptr macro. They are read in for real in the call
 c     of inmptr in part_track
 
-         read(inpt,'(a4)')macro1
-         if(macro1.eq.'file')then
-            read(inpt,'(a4)') macro1
-         else
-            backspace (inpt)
-         end if
+           read(inpt,'(a4)')macro1
+           if(macro1.eq.'file')then
+              read(inpt,'(a4)') macro1
+           else
+              backspace (inpt)
+           end if
 c     Handle keyword afm if it is there
-         read(inpt,'(a4)')macro1
-         if(macro1(1:3).ne.'afm')then
-            backspace (inpt)
-         end if
+           read(inpt,'(a4)')macro1
+           if(macro1(1:3).ne.'afm')then
+              backspace (inpt)
+           end if
 c     Read through layer info
 c     maxlayers+1 to make sure we reach the blank line
-         do j = 1, maxlayers+1
-            read(inpt,'(a80)') wdd1
-            if(null1(wdd1)) goto 1320
-         end do
- 1320    continue
- 1321    continue
+           do j = 1, maxlayers+1
+              read(inpt,'(a80)') wdd1
+              if(null1(wdd1)) goto 1320
+           end do
+ 1320      continue
+ 1321      continue
 c     Read through itrc info
-         read(inpt,'(a80)') wdd1
-         if(null1(wdd1)) goto 1322
-         goto 1321
- 1322    continue
+           read(inpt,'(a80)') wdd1
+           if(null1(wdd1)) goto 1322
+           goto 1321
+ 1322      continue
 
 c     loop over each species
 
@@ -1318,7 +1323,12 @@ c     original model
 c**** read in relative permeability factors ****
 c**** these are minimum relative permeabilities *****
          call infrlp
-
+      else if (macro .eq. 'rare') then
+c**** over write area/d terms and volumes ****
+c**** can be used with gdkm and gdpm models *****
+         
+         icoef_replace = 1
+         call coef_replace_ctr(0)
       else if (macro .eq. 'rich') then
          jswitch = 1
          if (idpdp .eq. 1) joff = 4

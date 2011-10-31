@@ -213,10 +213,10 @@ c      write_avs_node_mat, write_avs_ucd_header
       character*14 wt_tail
       character*19 tmp_tail
 
-      integer itotal2
+      integer itotal2, neq_tmp, neq_gdkm2
       integer inj, lu, lu_log, icall, num_cdata, num_mdata, io_err
-      integer groot, len_scalar, len_vec, len_material
-      integer ifdual, n1, ktmp, ktmp_head, ltmp, mout
+      integer groot, len_scalar, len_vec, len_material, length
+      integer ifdual, n1, ktmp, ktmp_head, ltmp, mout, iocord_temp
       integer nscalar, nscalar_dual, nvector, nvector_dual
       integer nconcen, nconcen_dual, nmaterial, nmaterial_dual
 C
@@ -224,30 +224,50 @@ C
       logical null1, exists, opnd
       character*10 response
 C
+      save lu_log
+
+      iocord_temp = 0
       data head_mat /'mat_head'/
-      data head_mat_dual /'mat_dual_head'/
       data head_sca /'sca_head'/
-      data head_sca_dual /'sca_dual_head'/
       data head_vec /'vec_head'/
-      data head_vec_dual /'vec_dual_head'/
       data head_con /'con_head'/
-      data head_con_dual /'con_dual_head'/
       data geom_tail /'_geo'/
       data material_tail /'mat_node'/
-      data material_dual_tail /'mat_dual_node'/
       data scalar_tail /'_sca_node'/
-      data duals_tail /'_sca_dual_node'/
       data vector_tail /'_vec_node'/
-      data dualv_tail /'_vec_dual_node'/
       data concen_tail /'_con_node'/
-      data dualcon_tail /'_con_dual_node'/
       data log_tail /'avs_log'/
       data wt_tail /'_wt'/
       data icall /1/
       data num_cdata / 0 /, num_mdata / 0 /
       data io_err /0/
-
-      save lu_log
+      if (iogdkm .eq. 1) then
+         head_mat_dual = 'mat_gdkm_head'
+         head_sca_dual = 'sca_gdkm_head'
+         head_vec_dual = 'vec_gdkm_head'
+         head_con_dual = 'con_gdkm_head'
+         material_dual_tail = 'mat_gdkm_node'
+         duals_tail  = '_sca_gdkm_node'
+         dualv_tail  = '_vec_gdkm_node'
+         dualcon_tail  = '_con_gdkm_node'
+         neq_gdkm2 = neq - neq_primary
+         neq_tmp = neq
+         if (icnl .eq. 0) then
+            iocord_temp = 3
+         else
+            iocord_temp = 2
+         end if
+      else
+         head_mat_dual = 'mat_dual_head'
+         head_sca_dual = 'sca_dual_head'
+         head_vec_dual = 'vec_dual_head'
+         head_con_dual = 'con_dual_head'
+         material_dual_tail = 'mat_dual_node'
+         duals_tail = '_sca_dual_node'
+         dualv_tail = '_vec_dual_node'
+         dualcon_tail = '_con_dual_node'
+         neq_tmp = neq_primary
+      end if
 C
       if(ico2.lt.0) then
          allocate(dum(neq))
@@ -294,11 +314,6 @@ C     the length of each component.
       len_scalar = 1
       len_vec = 3
       len_material = 1
-      if((idualp .ne. 0 .or. idpdp .ne. 0) .and. (iodual .eq. 1)) then
-         iodual = 1
-      else
-         iodual = 0
-      endif
 
       if(rxn_flag.eq.0)then
          itotal2 = nspeci
@@ -314,9 +329,23 @@ C     the length of each component.
      >     +iosource+(ioliquid+iovapor)*iodensity
      >     +iopermeability*3+iozid+(ioliquid+iovapor)*ioflx
      >     +iocapillary+ioco2*5+iodisp*3+iostress+iostrain
-      nscalar_dual    = nscalar * iodual
-      nvector         = (ioliquid+iovapor)*iovelocity
-      nvector_dual    = nvector * iodual
+      if (nscalar .ne. 0) then
+         nscalar_dual   = nscalar * iodual + nscalar * iogdkm + 
+     &        iocord_temp
+      else
+         nscalar_dual   = 0
+      end if
+      nvector        = (ioliquid+iovapor)*iovelocity
+      if (nvector .ne. 0) then
+         nvector_dual   = nvector * iodual
+c     No velocities for gdpm or gdkm
+         if (iogdkm .eq. 1) then
+            write (ierr, *) 'Velocities are not computed for gdkm nodes'
+            write (ierr, *) ' and will not be output'
+         end if
+      else
+         nvector_dual = 0
+      end if
       if (iomaterial .ne. 0) then
          mout = 0
          if (idoff .ne. -1) then
@@ -338,20 +367,25 @@ C     the length of each component.
             mout = mout + 2
          end if
          nmaterial    = iomaterial * mout
-         nmaterial_dual  = nmaterial * iodual 
+         nmaterial_dual  = nmaterial * iodual + nmaterial * iogdkm
       else
          nmaterial    = iomaterial
          nmaterial_dual  = iodual * iomaterial
       end if
-      nconcen         = itotal2
-      nconcen_dual    = itotal2 * iodual
-c
+      nconcen        = itotal2
+      if (itotal2 .ne. 0) then
+         nconcen_dual   = itotal2 * iodual + itotal2 * iogdkm + 
+     &        iocord_temp
+      else
+         nconcen_dual   = 0
+      end if
 c special case for hydrate (gaz 10-29-03)
 c
       if(iohyd.ne.0) nscalar = 4
       
       if (inj .eq. 0) then
          icall = 1
+         if (iogdkm .eq. 1) neq_tmp = neq_gdkm2
 C     first time through open a file for logging of avs output
 C     Open with ascii format, not binary
          
@@ -363,9 +397,9 @@ C     Open with ascii format, not binary
  305     format('#   LOG AVS OUTPUT')
          write(lu_log,310)wdd
  310     format('# ',a80)
-         write(lu_log,315)
- 315     format('# Root filename', 15x, 'Output Time (days)')
-         if (iogeo .eq. 1) then
+ 
+         gridstring = ''
+         if (iogeo .eq. 1 .or. iogrid .eq. 1) then
 ! Find geometry file name and write if it does not exist
             geoname = ' '
             lu = 9999
@@ -374,10 +408,15 @@ C     Open with ascii format, not binary
                call file_prefix(nmfil(3), groot)
                if (groot .gt. 100) groot = 100
                geoname(1:groot) = nmfil(3)(1:groot)
-               geoname(groot+1:groot+4) = ".geo"
+               if (iogeo .eq. 1) then
+                  geoname(groot+1:groot+4) = ".geo"
+               else
+                  geoname(groot+1:groot+9) = "_grid.dat"
+               end if
                if (geoname .eq. nmfil(3)) then
-! In case coordinate file has ".geo" as its suffix
-                  geoname(groot+5:groot+8) = "_avs"
+! In case coordinate file has ".geo" or "_grid.dat" as its suffix
+                  length = len_trim(geoname)
+                  geoname(length+1:length+4) = "_" // "altc(1:3)"
                end if
                inquire(file = geoname, exist = exists)
 ! If the file exists, we do not need to do anything else 
@@ -408,10 +447,15 @@ C     Open with ascii format, not binary
 ! Use root name determined above
                geoname = ''
                geoname(1:iaroot) = avs_root(1:iaroot)
-               geoname(iaroot+1:iaroot+3) = "geo"
+               if (iogeo .eq. 1) then
+                  geoname(iaroot+1:iaroot+3) = "geo"
+               else if (iogrid .eq. 1) then
+                  geoname(iaroot:iaroot+9) = "_grid.dat"
+               end if
                if (geoname .eq. nmfil(3)) then
 ! In case coordinate file has ".geo" as its suffix
-                  geoname(iaroot+4:iaroot+7) = "_avs"
+                  length = len_trim(geoname)
+                  geoname(length + 1:length + 4) = "_" // altc(1:3)
                end if
                inquire(file = geoname, exist = exists)
 ! If the file exists, we do not need to do anything else 
@@ -427,8 +471,9 @@ C     Open with ascii format, not binary
      &              "Using existing geometry file: ", geoname
                if (iptty .ne. 0) write (iptty, *) 
      &              "Using existing geometry file: ", geoname
+               call tec_write_grid(0)
 ! We will reopen the file when it needs to be read
-               if (opnd) close (lu)
+               if (opnd)  close (lu)
                
             else if (opnd) then
 ! Write geometry file
@@ -440,17 +485,22 @@ C     Open with ascii format, not binary
                if (ioformat .eq. 1) then
 C No binary option
                else
-                  call avs_write_cord(corz(1,1),
-     1                 corz(1,2),
-     2                 corz(1,3),
-     3                 neq_primary,lu,ioformat,icnl,ierr)
+                  if (iogeo .eq. 1) then
+                     call avs_write_cord(corz(1,1),
+     1                    corz(1,2),
+     2                    corz(1,3),
+     3                    neq_primary,lu,ioformat,icnl,ierr)
 
-                  call avs_write_struc(nelm,ns,icnl,nei,
-     1                 corz(1,1),
-     2                 corz(1,2),
-     3                 corz(1,3),
-     4                 neq_primary,lu,ioformat,ierr)
-                  close(lu)
+                     call avs_write_struc(nelm,ns,icnl,nei,
+     1                    corz(1,1),
+     2                    corz(1,2),
+     3                    corz(1,3),
+     4                    neq_primary,lu,ioformat,ierr)
+                     close(lu)
+                     call tec_write_grid(0)
+                  else
+                     call tec_write_grid(lu)
+                  end if
                endif
             end if
          end if
@@ -467,7 +517,7 @@ c=====================================================================
             if (ioformat .eq. 1) then
 C No binary option
             else
-               if (altc(1:3) .eq. 'avs' ) 
+               if (altc(1:3) .eq. 'avs' )
      &              call write_avs_ucd_header(lu,verno,jdate,wdd,
      1              neq_primary,nei,nmaterial,num_cdata,num_mdata)
                
@@ -495,17 +545,19 @@ C No binary option
             if (ioformat .eq. 1) then
 C No binary option
             else
-               if (altc(1:3) .eq. 'avs' ) 
+               if (altc(1:3) .eq. 'avs' )
      &              call write_avs_ucd_header
-     1              (lu,verno,jdate,wdd,neq_primary,nei,nmaterial_dual,
+     1              (lu,verno,jdate,wdd,neq_tmp,nei,nmaterial_dual,
      2              num_cdata,num_mdata)
                n1 = neq_primary + 1
                if (altc(1:3) .eq. 'tec') then
                   tmp_tail = trim(material_dual_tail) // '.dat'
                else if (altc(1:3) .eq. 'sur') then
                   tmp_tail = trim(material_dual_tail) // '.csv'
+               else if (altc(1:4) .eq. 'avsx') then
+                  tmp_tail = trim(material_dual_tail) // '.avsx'
                else
-                  tmp_tail = trim(material_dual_tail)
+                  tmp_tail = trim(material_dual_tail) // '.avs'
                end if
                call namefile1(lu,ioformat,avs_root,tmp_tail,
      &              iaroot,ierr)
@@ -537,7 +589,7 @@ C No binary option
             else
                if (altc(1:3) .eq. 'avs' ) 
      &              call write_avs_ucd_header
-     1              (lu,verno,jdate,wdd,neq_primary,nei,nscalar_dual,
+     1              (lu,verno,jdate,wdd,neq_tmp,nei,nscalar_dual,
      2              num_cdata,num_mdata)
             endif
          endif
@@ -567,7 +619,7 @@ C No binary option
             else
                if (altc(1:3) .eq. 'avs' ) 
      &              call write_avs_ucd_header(lu,verno,jdate,wdd,
-     1              neq_primary,nei,(nvector_dual*len_vec),num_cdata,
+     1              neq_tmp,nei,(nvector_dual*len_vec),num_cdata,
      2              num_mdata)
             endif
          endif
@@ -594,10 +646,12 @@ C No binary option
             else
                if (altc(1:3) .eq. 'avs' ) 
      &              call write_avs_ucd_header
-     1              (lu,verno,jdate,wdd,neq_primary,
+     1              (lu,verno,jdate,wdd,neq_tmp,
      &              nei,nconcen_dual,num_cdata,num_mdata)
             endif
          endif
+
+         if (iogdkm .eq. 1) neq_tmp = neq
          
       else if (inj .lt. 0) then
          
@@ -612,20 +666,27 @@ c     use user defined root appended with _s for scalar fields
 c     use user defined root appended with _dp for dual perm. fields
 
          timec_string = ''
+         times_string = ''
          if (timec_flag .eq. 1) then
             contour_time = abs(days / 365.25d00)
-            write (timec_string, 500) contour_time, 'years'
+            time_units = 'years'
          else if (timec_flag .eq. 2) then
             contour_time = abs(days)
-            write (timec_string, 500) contour_time, 'days'
+            time_units = 'days'
          else if (timec_flag .eq. 3) then
             contour_time = abs(days * 86400.d00)
-            write (timec_string, 500) contour_time, 'seconds'
+            time_units = 'seconds'
          else if (timec_flag .eq. 4) then
             contour_time = abs(days * 24.d00)
-            write (timec_string, 500) contour_time, 'hours'
+            time_units = 'hours'
          end if
+         write (timec_string, 500) contour_time, trim(time_units)
+         
+         if (iogrid .ne. 0) write (times_string, 510) contour_time
+c If the STRANDID is not zero, the SOLUTIONTIMES must be different
+c for each zone in the STRAND
  500     format ('"Simulation time ', 1p, g16.9, a, '"')
+ 510     format (', STRANDID = 0, SOLUTIONTIME = ', 1p, g16.9)
 
          if (nscalar .ne. 0) then
             nscalar = nscalar
@@ -688,75 +749,76 @@ C No binary option
            endif
         endif
          
-        if (iodual .ne. 0) then
-           if (nscalar_dual .ne. 0) then
-              ktmp = neq_primary + 1
-              ifdual = 1
-              if (ioformat .eq. 1) then
-C No binary option
+        if (nscalar_dual .ne. 0) then
+           ktmp = neq_primary + 1
+           ifdual = 1
+           if (ioformat .eq. 1) then
+C     No binary option
+           else
+
+c     PHS 5/03/2000   added altc and days to the pass to write_avs_node_s
+C     zvd 10/23/2007 remove altc, days from call, they are in comai
+              if (.not. allocated(head)) then
+                 allocate (head(1))
+                 head = 0.
+                 ktmp_head = 1
               else
+                 ktmp_head = size (head)
+                 if (ktmp .lt. ktmp_head) ktmp_head = ktmp
+              end if
 
-c  PHS 5/03/2000   added altc and days to the pass to write_avs_node_s
-C zvd 10/23/2007 remove altc, days from call, they are in comai
-                 if (.not. allocated(head)) then
-                    allocate (head(1))
-                    head = 0.
-                    ktmp_head = 1
-                 else
-                    ktmp_head = size (head)
-                    if (ktmp .lt. ktmp_head) ktmp_head = ktmp
-                 end if
-
-                 if (iohyd.eq.0) then 
-                    call write_avs_node_s(icall, neq_primary, nscalar,
-     &                   lu, ifdual, 0)
+              if (iohyd.eq.0) then 
+                 call write_avs_node_s(icall, neq_tmp, nscalar,
+     &                lu, ifdual, 0)
 c     RJP 04/30/2007 added for wellbore nodes below
-                    if (iriver .ne. 0) 
-     &                   call write_avs_node_s(icall, neq_primary, 
-     &                   nscalar, lu, ifdual, iriver)
+                 if (iriver .ne. 0) 
+     &                call write_avs_node_s(icall, neq_tmp, 
+     &                nscalar, lu, ifdual, iriver)
 
-                 else
-                    call namefile2(icall,lu,ioformat,
+              else
+                 call namefile2(icall,lu,ioformat,
      &                duals_tail,iaroot)
-                    call write_avs_node_h(
-     1                   phi(ktmp),t(ktmp),fracw(ktmp),frachyd(ktmp),
-     2                   neq_primary,nscalar,lu,
-     3                   ioliquid,
-     4                   iovapor,
-     5                   iopressure,
-     6                   iotemperature,
-     6                   iofw, 
-     7                   iofh,
-     8                   ifdual)
-                    call write_rlp_hyd(
-     &                   neq_primary,lu,ifdual) 
+                 call write_avs_node_h(
+     1                phi(ktmp),t(ktmp),fracw(ktmp),frachyd(ktmp),
+     2                neq_tmp,nscalar,lu,
+     3                ioliquid,
+     4                iovapor,
+     5                iopressure,
+     6                iotemperature,
+     6                iofw, 
+     7                iofh,
+     8                ifdual)
+                 call write_rlp_hyd(
+     &                neq_tmp,lu,ifdual) 
                  close(lu)
-                 endif
               endif
            endif
-            
+        endif
+        
 C     ktmp is the index for vapor values
 C     ltmp is the index for liquid values
-            
-C zvd 10/23/2007 remove altc, days from call, they are in comai
-           if (nvector_dual .ne. 0) then
-              ltmp = neq_primary + n + 1
-              if (irdof .eq. 13) then
-                 ktmp = neq_primary + n + 1
-              else
-                 ktmp = neq_primary + n + n + 1
-              end if
-              ifdual = 1
-              if (ioformat .eq. 1) then
-C No binary option
-              else
-                 call write_avs_node_v(icall,
-     1                pnx(ktmp),pny(ktmp),pnz(ktmp),
-     2                pnx(ltmp),pny(ltmp),pnz(ltmp),
-     3                neq_primary,nvector,lu,
-     4                ifdual)
-                 close(lu)
-              endif
+        
+C     zvd 10/23/2007 remove altc, days from call, they are in comai
+        if (nvector_dual .ne. 0) then
+           ltmp = neq_primary + n + 1
+c           ltmp = neq_tmp + n + 1
+           if (irdof .eq. 13) then
+              ktmp = neq_primary + n + 1
+c              ktmp = neq_tmp + n + 1
+           else
+              ktmp = neq_primary + n + n + 1
+c              ktmp = neq_tmp + n + n + 1 
+           end if
+           ifdual = 1
+           if (ioformat .eq. 1) then
+C     No binary option
+           else
+              call write_avs_node_v(icall,
+     1             pnx(ktmp),pny(ktmp),pnz(ktmp),
+     2             pnx(ltmp),pny(ltmp),pnz(ltmp),
+     3             neq_tmp,nvector,lu,
+     4             ifdual)
+              close(lu)
            endif
         endif
         
@@ -793,7 +855,7 @@ c               call write_avs_node_con(an,anv,iovapor,npt(2),neq
 
             endif
             
-            if (iodual .ne. 0) then
+            if (iodual .ne. 0 .or. iogdkm .ne. 0) then
                ifdual = 1
                if (ioformat .eq. 1) then
 C No binary option
@@ -802,7 +864,7 @@ C No binary option
 c  PHS 4/27/2000   added altc and days to the pass to write_avs_node_con
 
                   call write_avs_node_con(icall,an,anv,npt,
-     .                 neq_primary,nspeci,lu,ifdual)
+     .                 neq_tmp,nspeci,lu,ifdual)
                endif
                
             endif
@@ -815,9 +877,15 @@ C     Write output to logfile
      .           avs_root(1:iaroot)
             write (iptty, *) 'Number of times called: ',icall
          end if
-         write(lu_log, 320) avs_root(1:iaroot), icall, days
+         if (icall .eq. 1) then
+            write(lu_log, 315) time_units
+         end if
+
+         write(lu_log, 320) avs_root(1:iaroot), icall, contour_time
          call flush(lu_log)
-         
+          
+ 315     format('# Root filename', 15x, 'Output Time (', a, ')')
+        
  320     format(1x, a, i5.5, 5x, g16.9)
          
 C     Increment ncall when node output is written

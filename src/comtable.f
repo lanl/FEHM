@@ -29,6 +29,8 @@ c---------------------------------------------------------------
 
            integer inct, incp, numt, nump, tableFLAG
 
+           integer :: iolookup
            real(8) ::  PP(65000,11)
+           character(200) :: lookup_file = 'lookup.in'
 
            end module comtable

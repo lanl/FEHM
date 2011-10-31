@@ -353,6 +353,9 @@ c     new initial value input here 12/3/98 GAZ
          if(isubmod.le.1) go to 30
       else if(key(1:1).eq.'t') then
          read(inpt,*) (temperature(i,imod),i=1,ntimes)
+         do i=1,ntimes
+            temperature(i,imod) = temperature(i,imod) + tol_boun
+         enddo
          temperature_type(imod)=1
          if(isubmod.le.1) go to 30
       else if(key(1:2).eq.'ft') then

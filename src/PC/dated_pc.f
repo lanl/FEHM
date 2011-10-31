@@ -240,9 +240,9 @@ c      write(jtimex,'(i2.2,1h:,i2.2,1h:,i2.2)')  jjtime
       idatex(7:8) = current_date(1:2)
       idatex(9:11) = current_date(3:4)
 ! Version number passed to GoldSim
-      vernum = 3.00
+      vernum = 3.1
 ! Code version identifier
 ! Date format yy-mm-dd
-      verno = "FEHM V3.00pc 11-10-07 QA:NA"
+      verno = "FEHM V3.1win32 11-10-27 QA:NA"
 
       end

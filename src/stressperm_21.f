@@ -28,20 +28,20 @@ c spm13f: maximum multiplier  permeability z-prime direction
       use comsi
       implicit none
       integer jpt, fail_flag
-      real*8 rm(3,3),excess_shear
+      real*8 rm(3,3)
       fail_flag=0
 
-      call stressperm_21_failure(jpt, fail_flag,excess_shear,rm)
+      call stressperm_21_failure(jpt, fail_flag,rm)
       if(fail_flag.eq.1) then
-         call stressperm_21_perm(jpt,excess_shear,rm)
-         call stressperm_21_emod(jpt,excess_shear,rm)
+         call stressperm_21_perm(jpt,rm)
+         call stressperm_21_emod(jpt,rm)
       endif
 
       return
       end
 c.......................................................................
 
-      subroutine stressperm_21_failure(jpt, fail_flag,excess_shear,rm21)
+      subroutine stressperm_21_failure(jpt, fail_flag,rm21)
 c mohr-coulomb failure criteria on a user-specified plane
       use comai , only: iptty,ierr
       use comdi
@@ -53,7 +53,7 @@ c mohr-coulomb failure criteria on a user-specified plane
       real*8 sig_norm,sig_xp,sig_yp,sig_xyp,taumax
       real*8 xnorm,s_yf,s_xf,tau_xyf
       real*8 pi, shear_max_inplane, angle_min,angle_max
-      real*8 excess_shear, perm1,perm2,perm3
+      real*8  perm1,perm2,perm3
       real*8 rm21(3,3), sig(3,3), sig21(3,3), sum21
       real*8 rm31s,rm33s,rm32s
       real*8 pp_fac
@@ -132,9 +132,9 @@ c calculate in-plane principal values and angle of maximum shear
       angle_min=datan(2*tau_xyf/(s_xf-s_yf))
       angle_max=angle_min+pi/4.
 c check for failure using mohr-coulomb, effective stress
-      excess_shear=abs(shear_max_inplane)-spm5f(iispmd)
-      excess_shear=excess_shear-spm4f(iispmd)*(sig_norm)
-      if(excess_shear.gt.0.)then
+      excess_shear(jpt)=abs(shear_max_inplane)-spm5f(iispmd)
+      excess_shear(jpt)=excess_shear(jpt)-spm4f(iispmd)*(sig_norm)
+      if(excess_shear(jpt).gt.0.)then
          fail_flag=1
       endif
 
@@ -142,7 +142,7 @@ c check for failure using mohr-coulomb, effective stress
       end
 c..........................................................................
 
-      subroutine stressperm_21_perm(jpt,excess_shear,rm)
+      subroutine stressperm_21_perm(jpt,rm)
 c rotate back the tensor of multiplication factors from the system 
 c of the fault plane to the original axis, multiply permeabilities
       use comdi
@@ -151,7 +151,7 @@ c of the fault plane to the original axis, multiply permeabilities
       implicit none
       integer jpt
       integer i,j,k,l,m,n, iispmd
-      real*8 excess_shear, perm1,perm2,perm3
+      real*8 perm1,perm2,perm3
       real*8 rm(3,3), rminv(3,3), sum21, sfac
       real*8 fac(3,3),fac_p(3,3)
 
@@ -172,7 +172,7 @@ c we are rotating back, using the inverse of rm
       enddo
       fac_p=0.
       fac=0.
-      sfac=excess_shear/spm7f(iispmd)
+      sfac=excess_shear(jpt)/spm7f(iispmd)
       sfac=min(1.d0,sfac)
       fac_p(1,1)=1.0 + (spm11f(iispmd)-1)*sfac
       fac_p(2,2)=1.0 + (spm12f(iispmd)-1)*sfac
@@ -197,13 +197,13 @@ c we are rotating back, using the inverse of rm
       end
 
 c.....................................................................
-      subroutine stressperm_21_emod(jpt,excess_shear,rm)
+      subroutine stressperm_21_emod(jpt,rm)
 
       use comsi
       implicit none
 
       integer jpt,iispmd
-      real*8 excess_shear, rm(3,3)
+      real*8 rm(3,3)
 
       iispmd = ispm(jpt)    
 

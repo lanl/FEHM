@@ -250,6 +250,15 @@ c      integer, allocatable ::   itstress(:)
         strain_xy = strain_xy/cvol
         strain_yz = strain_yz/cvol
         strain_zx = strain_zx/cvol
+        
+         if(residual_stress) then
+          str_x = str_x + str_x0
+          str_y = str_y + str_y0
+          str_z = str_z + str_z0
+          str_xy =str_xy + str_xy0
+          str_yz =str_yz + str_yz0
+          str_xz =str_xz + str_xz0
+         endif
 
         return
       else

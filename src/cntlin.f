@@ -242,6 +242,7 @@ CPS
 C***********************************************************************
 
       use comai
+      use comtable, only : lookup_file
       use comxi
       implicit none
 
@@ -331,6 +332,8 @@ c      root_name = blank
                nmfil(28) = filename
             case ('co2i')
                nmfil(29) = filename
+            case ('look')
+               lookup_file = filename
             case default
                write (ierr, 2000) nmfil(1), dummy
 ! Use unit 6 here as iptty not yet defined

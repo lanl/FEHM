@@ -601,6 +601,15 @@ c
          str_yz(i)=tauyz/vol
          str_xz(i)=tauzx/vol
          
+       if(residual_stress) then
+        str_x(i)=str_x(i)+str_x0(i)
+        str_y(i)=str_y(i)+str_y0(i)
+        str_z(i)=str_z(i)+str_z0(i)
+        str_xy(i)=str_xy(i)+str_xy0(i)
+        str_yz(i)=str_yz(i)+str_yz0(i)
+        str_xz(i)=str_xz(i)+str_xz0(i)
+      endif        
+         
          if(flag_principal.eq.1) then
             call principal_stress_3D(i,alambda,eigenvec)
 c     save the eigenvlaues in str_z,str)y,str_x in decreasing order

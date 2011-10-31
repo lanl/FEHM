@@ -134,8 +134,8 @@ c**** 2-dimension ****
 c**** heat conduction only ****
          press  =  pein
          iieosd =  iieos(ij)
-         tin    =  max( tin ,tmin(iieosd) )
-         tin1   =  max( tin1,tmin(iieosd) )
+c         tin    =  max( tin ,tmin(iieosd) )
+c         tin1   =  max( tin1,tmin(iieosd) )
 
          if ( cordd .le. depcng )  tl =  tin +gradnt*cordd
          if ( cordd .gt. depcng )  tl =  tin1+grad2 *cordd+quad*cordd**2
@@ -260,13 +260,19 @@ C*****
 c     end loop to calc press
          if ( abs( pho(ij) ) .lt. zero_t )  pho(ij) =  press
          if ( abs( to (ij) ) .lt. zero_t )  to (ij) =  tl
+         t(ij) = to(ij)
+         phi(ij) = pho(ij)
          if (idpdp.ne.0.or.idualp.ne.0) then
             pho(ij+neq)=pho(ij)
             to(ij+neq) =to(ij)
+            t(ij+neq) = to(ij)
+            phi(ij+neq) = pho(ij)           
          endif
          if(idualp.ne.0) then
             pho(ij+neq+neq)=pho(ij)
             to(ij+neq+neq) =to(ij)
+            t(ij+neq+neq) = to(ij)
+            phi(ij+neq+neq) = pho(ij)           
          endif
       enddo
       if ( iout .ne. 0 )  write(iout  ,6000)

@@ -29,7 +29,7 @@
 !D2 Initial implementation: Date 24-Oct-01, Programmer: George Zyvoloski
 !D2
 !D2 $Log:   /pvcs.config/fehm90/src/methane_properties.f_a  $
-!D2 
+!D2
 !**********************************************************************
 !D3 
 !D3 REQUIREMENTS TRACEABILITY
@@ -47,6 +47,7 @@
 !**********************************************************************
 
       use comco2
+      use comai, only : itsat 
       implicit none
       integer iflg,iphase
       real*8 var1,var2,var3,var4
@@ -196,6 +197,7 @@ c     solid enthalpy and derivative wrt pressure and temperature
          der2 = cpms
       else if(iflg.eq.1.and.iphase.eq.2) then
 c     liquid enthalpy and derivative wrt pressure and temperature
+       if(itsat.le.10) then 
          x=var1
          x2=x*x
          x3=x2*x
@@ -256,6 +258,12 @@ c     derivatives of enthalpy
          dhwt=dhwtn/dhwtd
          der2=dhwt
          der1=dhwp
+       else if(itsat.gt.10) then
+c   call  pseudo-vap eos  
+          tl = var2
+          x = var1      
+          call eos_aux(itsat,tl,x,1,1,prop,der2,der1)
+       endif         
 c     prop = 1037.7d0-4.75d0*(240.d0-var2)-0.1d0*(5.d0-var1)
 c     der1 = 0.1d0
 c     der2 = 4.75d0
@@ -392,6 +400,7 @@ c     solid density and derivative wrt pressure and temperature
 c     liquid density and derivative wrt pressure and temperature
 c     liquid density
 c     numerator coefficients
+       if(itsat.le.10) then
          x=var1
          x2=x*x
          x3=x2*x
@@ -448,6 +457,13 @@ c     derivatives of density
          drlen=drlen1-drlen2
          droled=rnwd**2
          der2=drlen/droled
+       else if(itsat.gt.10) then
+c   call  pseudo-vap eos   
+          tl = var2
+          x = var1     
+          call eos_aux(itsat,tl,x,0,0,prop,der2,der1)
+          continue
+       endif
 c     prop = 815.1d0+1.445d0*(240.d0-var2)-1.04d0*(5.d0-var1)
 c     der1 = 1.04d0
 c     der2 = -1.445d0
@@ -570,6 +586,7 @@ c     solid is immobile
          der2 = 0.0
       else if(iflg.eq.3.and.iphase.eq.2) then
 c     liquid viscosity and derivative wrt pressure and temperature
+       if(itsat.le.10) then
          vla0=  0.17409149d-02
          vlpa1=  0.18894882d-04
          vlpa2= -0.66439332d-07
@@ -625,6 +642,12 @@ c     derivatives of liquid viscosity
          dvlen=dvlen1-dvlen2
          dviled=vild**2
          der2=dvlen/dviled
+       else if(itsat.gt.10) then
+c   call  pseudo-vap eos  
+          tl = var2
+          x = var1         
+          call eos_aux(itsat,tl,x,2,1,prop,der2,der1)
+       endif               
          if (ibrine.ne.0) then
 c     expression from Phillips et al. pg. 5. change salt conc. from
 c     ppm to g moles/ kg H2O

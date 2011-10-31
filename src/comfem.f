@@ -35,4 +35,15 @@
        real*8,  allocatable                    :: fem_stress(:,:,:)
        real*8,  allocatable                    :: fem_strain(:,:,:)
 
+! Variables needed for modeling permeability-stress dependence
+        real*8,  allocatable                    :: avg_stress(:,:)
+
+        integer, allocatable                    :: edges(:, :)
+        integer, allocatable                    :: edgeNum1(:, :)
+        integer, allocatable                    :: edgeNum2(:, :)
+        integer, allocatable                    :: numElems(:)
+
+        real*8,  allocatable                    :: permFactor(:)
+        real*8,  allocatable                    :: permFactor_nodal(:)
+
        end module comfem

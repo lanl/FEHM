@@ -30,6 +30,7 @@ CD2                                     the current version differs
 CD2                                     from these in minor ways.  
 CD2
 CD2 $Log:   /pvcs.config/fehm90/src/outbnd.f_a  $
+CD2
 !D2 
 !D2    Rev 2.5   06 Jan 2004 10:43:06   pvcs
 !D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
@@ -239,8 +240,8 @@ C**********************************************************************
       real*8 tmin_ice,tmax_ice
       parameter(smind = -2.,smaxd = 5.,smind_t = -0.1,smaxd_t = 1.1)
 	parameter(sminc = -0.15   , smaxc = 1.15)
-      parameter(pmin_ice=-1.0,pmax_ice=200.0)
-      parameter(tmin_ice=-10.0,tmax_ice=400.0)
+      parameter(pmin_ice=-10.0,pmax_ice=200.0)
+      parameter(tmin_ice=-10.0,tmax_ice=500.0)
       integer i, ii
       real*8 pl
       integer ieo

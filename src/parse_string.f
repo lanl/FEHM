@@ -119,6 +119,9 @@ c check if just have +, -, e, E, d, or D
      &           (line(i2:i2).ne.'D').and.
      &           (line(i2:i2).ne.'d')) isreal=0
          enddo
+         imsg(i) = 0
+         xmsg(i) = 0.
+         cmsg(i) = ''
          if ((isreal.eq.1).and.(isinteger.eq.0)) then
             msg(i)=2
             read(line(ndex(i,1):ndex(i,2)),*) xmsg(i)

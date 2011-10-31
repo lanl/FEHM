@@ -245,5 +245,9 @@ c     real*8  aihyd
 
       integer idof_co2,ibrine, iprtype, ico2sol, icarb
       integer ico2diff_flg, ico2prop_flg, iwatdis
+c impes-like flow terms  
+      integer imped_ex    
+      real*8, allocatable :: permsd1_sv_w(:)
+      real*8, allocatable :: permsd1_sv_co2(:)
 
       end module comco2

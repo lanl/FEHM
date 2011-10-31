@@ -150,14 +150,15 @@
       integer iovelocity,iopressure,iotemperature,iosaturation
       integer ioconcentration,iodisplacement,iohead,ioformat
       integer iofw,iofh,ioporosity,iosource,iodensity,iocord
-      integer iopermeability,iogeo,iozone,iowt,iokd,iozid
-      integer iocapillary,ioco2
+      integer iopermeability,iogeo,iozone,iowt,iokd,iozid,iogrid
+      integer iocapillary,ioco2,iogdkm
       integer iodisp, iostrain, iostress      
 
       integer iaroot, timec_flag
       real*8  contour_time
-      character*50 timec_string
-      character*110 avs_root, geoname
+      character*8 time_units
+      character*50 timec_string, times_string
+      character*120 avs_root, geoname, gridstring
       logical net_flux, vol_flux, dit_flag
 
       end module avsio

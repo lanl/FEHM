@@ -93,7 +93,6 @@
       real*8 biot,erat,efac,epi,dpd,shpi,stress_min_prin,lith_min
       real*8 ctherm,eti,shti,lith_damage_fac,str_eff,pterm
       real*8 xdV, ydV, zdV
-      real*8 :: pp_fac = 1.
       integer el
       
       real*8 denf, por, por_new, sx1d
@@ -138,10 +137,11 @@ c     s kelkar 12/6/09 axisymmetric anisotropy
       character*100 perm_stress_file, young_temp_file
       integer i91,j91
 c s kelkar nov 5 2010
-      real*8 excess_shear,shear_angle, pi
+      real*8  pi
       real*8 eigenvec(3,3),alambda(3), eigenvec_deg(3)
-      real*8 friction, strength
+      real*8 friction, strength, pp_fac
       integer iispmd
+      integer ishear
 c..................................................................
       
       parameter (pi=3.1415926535)
@@ -333,6 +333,9 @@ c     istrs = 1 - plain strain and 3-D (hookean) solution
 c     istrs = 2 - plain stess (hookean) solution (must be 2-D)
 c     ihms - identifies the coupling and  stress solution 
 c     ihms gt 0 fully coupled
+c     ihms = 15 : s kelkar 11feb2011 ihms=15 is a special option
+c     include derivatives of porosity in heat and 
+c     mass equations, but not those of permeability
 c     ihms = -1 only at the end of the simulation
 c     ihms = -2 beginning and end of simulation
 c     ihms = -3 end of each time step
@@ -342,6 +345,12 @@ c     this parameter will not change the flow time step size
 c     with the exception of ihms = -3 tini and pini
 c     will not be updated after each iteration
 c
+         if(ihms.eq.15) then
+            if(.not.allocated(density)) allocate(density(n0))
+            if(.not.allocated(internal_energy))
+     &           allocate(internal_energy(n0))
+            pore_factor = 1
+         endif
 c
          if(icnl.ne.0.and.ihms.lt.0) then
 c     not fully coupled  2D solution    
@@ -514,6 +523,8 @@ c spm13f: maximum multiplier  permeability z-prime direction
      &                     spm5f(i),spm6f(i),spm7f(i),spm8f(i),spm9f(i),
      &                      spm10f(i),spm11f(i),spm12f(i),spm13f(i)
                     else if (ispmd .eq. 22) then
+                       itemp_perm22 =0
+                       open(unit=94,file='failed_nodes_perm22.dat')
 c mohr-coulomb failure criteria on the plane that miximizes
 c abs(shear)-friction*normal stress
 c spm1f:friction coefficient of shear in the fault plane
@@ -553,6 +564,10 @@ c  y-prime is along the median principal stress
      &                     spm5f(i),spm6f(i),spm7f(i),spm8f(i),spm9f(i) 
                     else if (ispmd .eq.11) then
                read(inpt,*)ispmt(i),spm1f(i),spm2f(i),spm3f(i)     
+            else if (ispmd. eq. 31) then        
+c model for changing properties when ice is present
+               read(inpt,*)ispmt(i),spm1f(i),spm2f(i)
+               if(.not.allocated(dzrg_new)) allocate (dzrg_new(n0))      
             else if (ispmd. eq. 91) then
                if(.not.allocated(str_x0)) allocate (str_x0(n0)) 
                if(.not.allocated(str_y0)) allocate (str_y0(n0))
@@ -579,6 +594,7 @@ c  y-prime is along the median principal stress
             if(ispmt(i).eq.11) ipermstr11 = ispmt(i)
             if(ispmt(i).eq.21) ipermstr21 = ispmt(i)
             if(ispmt(i).eq.22) ipermstr22 = ispmt(i)
+            if(ispmt(i).eq.31) ipermstr31 = ispmt(i)            
             if(ispmt(i).eq.222) ipermstr222 = ispmt(i)
             if(ispmt(i).eq.91) ipermstr91 = ispmt(i)
          end do
@@ -1106,8 +1122,16 @@ c
                  flag_principal=1
                  if (.not.allocated(xtan_min)) allocate (xtan_min(n0))
               elseif(macro1.eq.'excess_she') then
-                 read(inpt,*) friction_out,strength_out
+                 read(inpt,*) friction_out,strength_out, pp_fac_out
                  flag_excess_shear=1
+                 if (.not.allocated(excess_shear)) then
+                    allocate (excess_shear(n0))
+                    excess_shear = 0.
+                 endif
+                 if (.not.allocated(shear_angle)) then
+                    allocate (shear_angle(n0))
+                    shear_angle = 0.
+                 endif
               elseif(macro1.eq.'strainout') then
                  flag_strain_output = 1
                  ifile_strain = open_file('strain.out', 'unknown')
@@ -1496,7 +1520,7 @@ c iflg=4 calculate nonlinear material properties
      
 c iflg=5 calculate stress fluid interaction properties
       else if(iflg.eq.5) then
-         call stress_fluid_mech_props(0,0)           
+       call stress_fluid_mech_props(0,Nonlin_model_flag,0)           
  
 c update volumetric strain
       else if(iflg.eq.-6) then 
@@ -1504,189 +1528,196 @@ c	 vol_strain0 = vol_strain
 c calculate volumetric strain
       else if(iflg.eq.6) then
 c
-	if(icnl.eq.0) then
+         if(icnl.eq.0) then
 c 3-d volumetric change and volume strain
-       neqp1 = neq+1
-       if(.not.allocated(dvol_strainu)) then
-	  k = nelm(neqp1)-neqp1
-	  allocate(dvol_strainu(k))
-	  allocate(dvol_strainv(k))
-	  allocate(dvol_strainw(k))
-	 endif
-c       vol_tot_change = 0.0
-	 do i = 1,neq
-	  i1 = nelm(i)+1
-	  i2 = nelm(i+1)
-        cordxi = cord(i,1)
-        cordyi = cord(i,2)
-	  cordzi = cord(i,3)
-c       dispxi = du_tot(i)
-c	  dispyi = dv_tot(i)
-c	  dispzi = dw_tot(i)
-	  dispxi = du(i)-du_ini(i)
-	  dispyi = dv(i)-dv_ini(i)
-	  dispzi = dw(i)-dw_ini(i)
-	  area_ix = 0.0d0
-	  area_iy = 0.0d0
-	  area_iz = 0.0d0
-	  dvol_strainu_i = 0.0d0
-	  dvol_strainv_i = 0.0d0
-	  dvol_strainw_i = 0.0d0
-c	  vol_change = vol_strain0(i)*sx1(i)
-        vol_change = 0.0
-	  md = nelmdg(i)
-        do jj = i1,i2
-c   area calculation 
-         j=istrw(jj-neqp1)
-	   kb = nelm(jj)
-	   if(kb.ne.i) then
-	    delx = (cord(kb,1)-cordxi)
-	    dely = (cord(kb,2)-cordyi)
-	    delz = (cord(kb,3)-cordzi)
-          area_facex = -sx(j,1)*delx
-	    area_facey = -sx(j,2)*dely
-	    area_facez = -sx(j,3)*delz
-	    area_ix = area_ix + area_facex
-	    area_iy = area_iy + area_facey
-	    area_iz = area_iz + area_facez
-c
-c	    dispx = 0.5d0*(dispxi + du_tot(kb)) 
-c	    dispy = 0.5d0*(dispyi + dv_tot(kb)) 	 
-c	    dispz = 0.5d0*(dispzi + dw_tot(kb))  
-c
-		dispx = 0.5d0*(dispxi + (du(kb)-du_ini(kb))) 
-	    dispy = 0.5d0*(dispyi + (dv(kb)-dv_ini(kb))) 	 
-	    dispz = 0.5d0*(dispzi + (dw(kb)-dw_ini(kb)))    
-c
-	    vol_change = vol_change + area_facex*dispx + 
-     &                 area_facey*dispy + area_facez*dispz 
-	    if(kr(kb,1).ne.1) then
-	     dvol_strainu(jj-neqp1) = area_facex*0.5d0
-	     dvol_strainu_i = dvol_strainu_i + area_facex*0.5d0
-          endif
-		if(kr(kb,2).ne.2) then
-	     dvol_strainv(jj-neqp1) = area_facey*0.5d0
-	     dvol_strainv_i = dvol_strainv_i + area_facey*0.5d0
-	    endif 
-          if(kr(kb,3).ne.3) then
-	     dvol_strainw(jj-neqp1) = area_facez*0.5d0
-	     dvol_strainw_i = dvol_strainw_i + area_facez*0.5d0
-	    endif
-	   endif
-	  enddo
-	    if(abs(area_ix).ge.area_tol) then
-           vol_change = vol_change - area_ix*dispxi
-	     if(kr(i,1).ne.1) then
-	      dvol_strainu(md-neqp1) = dvol_strainu_i  - area_ix
-	     else
-            dvol_strainu(md-neqp1) = 0.0
-	     endif
-		endif
-		if(abs(area_iy).ge.area_tol) then
-           vol_change = vol_change - area_iy*dispyi
-	     if(kr(i,2).ne.2) then 
-	      dvol_strainv(md-neqp1) = dvol_strainv_i  - area_iy
-	     else
-            dvol_strainv(md-neqp1) = 0.0
-	     endif
-		endif 
-	    if(abs(area_iz).ge.area_tol) then
-           vol_change = vol_change - area_iz*dispzi
-	     if(kr(i,3).ne.3) then
-		  dvol_strainw(md-neqp1) = dvol_strainw_i  - area_iz
-	     else
-            dvol_strainw(md-neqp1) = 0.0
-	     endif
-		endif 	 
-          vol_strain(i) = vol_change/sx1(i)
-c          vol_tot_change = vol_tot_change + vol_change
-       enddo
-c	    vol_strain = 0.0
-c          dvol_strainw = 0.0
-c          dvol_strainv = 0.0
-c	    dvol_strainu = 0.0
-	else
-c  2-d implimentation
-
-c 2-d volumetric change (unit thickness) and volume strain
-        neqp1 = neq+1
-       if(.not.allocated(dvol_strainu)) then
-	  k = nelm(neqp1)-neqp1
-	  allocate(dvol_strainu(k))
-	  allocate(dvol_strainv(k))
-	 endif
-	 do i = 1,neq
-	  i1 = nelm(i)+1
-	  i2 = nelm(i+1)
-        cordxi = cord(i,1)
-        cordyi = cord(i,2)
-	  dispxi = du(i)-du_ini(i)
-	  dispyi = dv(i)-dv_ini(i)
-	  area_ix = 0.0d0
-	  area_iy = 0.0d0
-	  dvol_strainu_i = 0.0d0
-	  dvol_strainv_i = 0.0d0
-c	  vol_change = vol_strain0(i)*sx1(i)
-        vol_change = 0.0
-	  md = nelmdg(i)
-        do jj = i1,i2
-c   area calculation 
-         j=istrw(jj-neqp1)
-	   kb = nelm(jj)
-	   if(kb.ne.i) then
-	    delx = (cord(kb,1)-cordxi)
-	    dely = (cord(kb,2)-cordyi)
-          area_facex = -sx(j,1)*delx
-	    area_facey = -sx(j,2)*dely
-	    area_ix = area_ix + area_facex
-	    area_iy = area_iy + area_facey
-c
-c	    dispx = 0.5d0*(dispxi + du_tot(kb)) 
-c	    dispy = 0.5d0*(dispyi + dv_tot(kb)) 	   
-c
-		dispx = 0.5d0*(dispxi + (du(kb)-du_ini(kb))) 
-	    dispy = 0.5d0*(dispyi + (dv(kb)-dv_ini(kb))) 	  
-c
-	    vol_change = vol_change + area_facex*dispx + 
-     &                 area_facey*dispy 
-	    if(kr(kb,1).ne.1) then
-	     dvol_strainu(jj-neqp1) = area_facex*0.5d0
-	     dvol_strainu_i = dvol_strainu_i + area_facex*0.5d0
-          endif
-		if(kr(kb,2).ne.2) then
-	     dvol_strainv(jj-neqp1) = area_facey*0.5d0
-	     dvol_strainv_i = dvol_strainv_i + area_facey*0.5d0
-	    endif 
-
-	   endif
-	  enddo
-	    if(abs(area_ix).ge.area_tol) then
-           vol_change = vol_change - area_ix*dispxi
-	     if(kr(i,1).ne.1) then
-	      dvol_strainu(md-neqp1) = dvol_strainu_i  - area_ix
-	     else
-            dvol_strainu(md-neqp1) = 0.0
-	     endif
-		endif
-		if(abs(area_iy).ge.area_tol) then
-           vol_change = vol_change - area_iy*dispyi
-	     if(kr(i,2).ne.2) then 
-	      dvol_strainv(md-neqp1) = dvol_strainv_i  - area_iy
-	     else
-            dvol_strainv(md-neqp1) = 0.0
-	     endif
-		endif 
- 
-          vol_strain(i) = vol_change/sx1(i)
-c          vol_tot_change = vol_tot_change + vol_change
-       enddo
-	endif
+            neqp1 = neq+1
+            k = nelm(neqp1)-neqp1
+            
+            if(.not.allocated(dvol_strainu)) then
+               allocate(dvol_strainu(k))
+               allocate(dvol_strainv(k))
+               allocate(dvol_strainw(k))
+               dvol_strainu = 0.0
+               dvol_strainv = 0.0
+               dvol_strainw = 0.0
+            endif
+            
+c     vol_tot_change = 0.0
+            do i = 1,neq
+               i1 = nelm(i)+1
+               i2 = nelm(i+1)
+               cordxi = cord(i,1)
+               cordyi = cord(i,2)
+               cordzi = cord(i,3)
+               dispxi = du(i)-du_ini(i)
+               dispyi = dv(i)-dv_ini(i)
+               dispzi = dw(i)-dw_ini(i)
+               area_ix = 0.0d0
+               area_iy = 0.0d0
+               area_iz = 0.0d0
+               dvol_strainu_i = 0.0d0
+               dvol_strainv_i = 0.0d0
+               dvol_strainw_i = 0.0d0
+               vol_change = 0.0
+               md = nelmdg(i)
+               do jj = i1,i2
+c     area calculation 
+                  j=istrw(jj-neqp1)
+                  kb = nelm(jj)
+                  if(kb.ne.i) then
+                     delx = (cord(kb,1)-cordxi)
+                     dely = (cord(kb,2)-cordyi)
+                     delz = (cord(kb,3)-cordzi)
+                     area_facex = -sx(j,1)*delx
+                     area_facey = -sx(j,2)*dely
+                     area_facez = -sx(j,3)*delz
+                     area_ix = area_ix + area_facex
+                     area_iy = area_iy + area_facey
+                     area_iz = area_iz + area_facez
+c     
+c     dispx = 0.5d0*(dispxi + du_tot(kb)) 
+c     dispy = 0.5d0*(dispyi + dv_tot(kb)) 	 
+c     dispz = 0.5d0*(dispzi + dw_tot(kb))  
+c     
+                     dispx = 0.5d0*(dispxi + (du(kb)-du_ini(kb))) 
+                     dispy = 0.5d0*(dispyi + (dv(kb)-dv_ini(kb))) 	 
+                     dispz = 0.5d0*(dispzi + (dw(kb)-dw_ini(kb)))    
+c     
+                     vol_change = vol_change + area_facex*dispx + 
+     &                    area_facey*dispy + area_facez*dispz 
+                     if(kr(kb,1).ne.1) then
+                        dvol_strainu(jj-neqp1) = area_facex*0.5d0
+                     else
+                        dvol_strainu(jj-neqp1) = 0.
+                     endif
+                     if(kr(kb,2).ne.2) then
+                        dvol_strainv(jj-neqp1) = area_facey*0.5d0
+                     else
+                        dvol_strainv(jj-neqp1) = 0.
+                     endif 
+                     if(kr(kb,3).ne.3) then
+                        dvol_strainw(jj-neqp1) = area_facez*0.5d0
+                     else
+                        dvol_strainw(jj-neqp1) = 0.
+                     endif
+                  endif
+               enddo
+               if(abs(area_ix).ge.area_tol) then
+                  vol_change = vol_change - area_ix*dispxi
+                  if(kr(i,1).ne.1) then
+                     dvol_strainu(md-neqp1) = -area_ix*0.5d0
+                  else
+                     dvol_strainu(md-neqp1) = 0.0
+                  endif
+               endif
+               if(abs(area_iy).ge.area_tol) then
+                  vol_change = vol_change - area_iy*dispyi
+                  if(kr(i,2).ne.2) then 
+                     dvol_strainv(md-neqp1) = -area_iy*0.5d0
+                  else
+                     dvol_strainv(md-neqp1) = 0.0
+                  endif
+               endif 
+               if(abs(area_iz).ge.area_tol) then
+                  vol_change = vol_change - area_iz*dispzi
+                  if(kr(i,3).ne.3) then
+                     dvol_strainw(md-neqp1) = -area_iz*0.5d0
+                  else
+                     dvol_strainw(md-neqp1) = 0.0
+                  endif
+               endif 	 
+               vol_strain(i) = vol_change/sx1(i)               
+c.............................................................
+c     vol_tot_change = vol_tot_change + vol_change
+            enddo
+c     vol_strain = 0.0
+c     dvol_strainw = 0.0
+c     dvol_strainv = 0.0
+c     dvol_strainu = 0.0
+         else
+c     2-d implimentation
+            
+c     2-d volumetric change (unit thickness) and volume strain
+            neqp1 = neq+1
+            if(.not.allocated(dvol_strainu)) then
+               k = nelm(neqp1)-neqp1
+               allocate(dvol_strainu(k))
+               allocate(dvol_strainv(k))
+            endif
+            do i = 1,neq
+               i1 = nelm(i)+1
+               i2 = nelm(i+1)
+               cordxi = cord(i,1)
+               cordyi = cord(i,2)
+               dispxi = du(i)-du_ini(i)
+               dispyi = dv(i)-dv_ini(i)
+               area_ix = 0.0d0
+               area_iy = 0.0d0
+               dvol_strainu_i = 0.0d0
+               dvol_strainv_i = 0.0d0
+c     vol_change = vol_strain0(i)*sx1(i)
+               vol_change = 0.0
+               md = nelmdg(i)
+               do jj = i1,i2
+c     area calculation 
+                  j=istrw(jj-neqp1)
+                  kb = nelm(jj)
+                  if(kb.ne.i) then
+                     delx = (cord(kb,1)-cordxi)
+                     dely = (cord(kb,2)-cordyi)
+                     area_facex = -sx(j,1)*delx
+                     area_facey = -sx(j,2)*dely
+                     area_ix = area_ix + area_facex
+                     area_iy = area_iy + area_facey
+c     
+c     dispx = 0.5d0*(dispxi + du_tot(kb)) 
+c     dispy = 0.5d0*(dispyi + dv_tot(kb)) 	   
+c     
+                     dispx = 0.5d0*(dispxi + (du(kb)-du_ini(kb))) 
+                     dispy = 0.5d0*(dispyi + (dv(kb)-dv_ini(kb))) 	  
+c     
+                     vol_change = vol_change + area_facex*dispx + 
+     &                    area_facey*dispy 
+                     if(kr(kb,1).ne.1) then
+                        dvol_strainu(jj-neqp1) = area_facex*0.5d0
+                        dvol_strainu_i = dvol_strainu_i + 
+     $                       area_facex*0.5d0
+                     endif
+                     if(kr(kb,2).ne.2) then
+                        dvol_strainv(jj-neqp1) = area_facey*0.5d0
+                        dvol_strainv_i = dvol_strainv_i + 
+     $                       area_facey*0.5d0
+                     endif 
+                     
+                  endif
+               enddo
+               if(abs(area_ix).ge.area_tol) then
+                  vol_change = vol_change - area_ix*dispxi
+                  if(kr(i,1).ne.1) then
+                     dvol_strainu(md-neqp1) = dvol_strainu_i  - area_ix
+                  else
+                     dvol_strainu(md-neqp1) = 0.0
+                  endif
+               endif
+               if(abs(area_iy).ge.area_tol) then
+                  vol_change = vol_change - area_iy*dispyi
+                  if(kr(i,2).ne.2) then 
+                     dvol_strainv(md-neqp1) = dvol_strainv_i  - area_iy
+                  else
+                     dvol_strainv(md-neqp1) = 0.0
+                  endif
+               endif 
+               
+               vol_strain(i) = vol_change/sx1(i)
+c     vol_tot_change = vol_tot_change + vol_change
+            enddo
+         endif
       else if(iflg.eq.-7) then
-c
-c porosity changes (associate with volume changes)
-c
-       if(istresspor.ne.0) then
- 	  do i = 1,neq
+c     
+c     porosity changes (associate with volume changes)
+c     
+         if(istresspor.ne.0) then
+            do i = 1,neq
 	   por = psini(i)
 	   ps(i) = por*(1.0 + vol_strain(i))
 	  enddo
@@ -2061,209 +2092,244 @@ c call stress output subroutines
 c
 ****   printout displacement information   ****
 c
-             ibp_stress=max(ibp_stress,1)
-		    if(tol_stress.ne.0.0d0) then 
-			 if(mlz.eq.-1) then
-                if(ntty.eq.2) write(iout,*) 
-     &	'>>> stress solution did not reach tolerance <<<'
-	         endif	 
-               if(ntty.eq.2) write(iout,6118) ibp_stress,
-     &     	    bp(ibp_stress+nrhs(1)),bp(ibp_stress+nrhs(2)),
+               ibp_stress=max(ibp_stress,1)
+               if(tol_stress.ne.0.0d0) then 
+                  if(mlz.eq.-1) then
+                     if(ntty.eq.2) write(iout,*) 
+     &             '>>> stress solution did not reach tolerance <<<'
+                  endif	 
+                  if(ntty.eq.2) write(iout,6118) ibp_stress,
+     &                 bp(ibp_stress+nrhs(1)),bp(ibp_stress+nrhs(2)),
      &                 0.
-              endif
-              if(ntty.eq.2) write(iout,*) ' ' 
-              if(ntty.eq.2) write(iout,*) 'displacements and forces ' 
-              if(ntty.eq.2) write(iout,6119) 
- 
-             	if(tol_stress.ne.0.0d0) then 
-			 if(mlz.eq.-1) then
-                if(iptty.gt.0) write(iptty,*) 
-     &	'>>> stress solution did not reach tolerance <<<'
-	         endif
-              if(iptty.gt.0) write(iptty,6118) ibp_stress,
-     &     	    bp(ibp_stress+nrhs(1)),bp(ibp_stress+nrhs(2)),
+               endif
+               if(ntty.eq.2) write(iout,*) ' ' 
+               if(ntty.eq.2) write(iout,*) 'displacements and forces ' 
+               if(ntty.eq.2) write(iout,6119) 
+               
+               if(tol_stress.ne.0.0d0) then 
+                  if(mlz.eq.-1) then
+                     if(iptty.gt.0) write(iptty,*) 
+     &               '>>> stress solution did not reach tolerance <<<'
+                  endif
+                  if(iptty.gt.0) write(iptty,6118) ibp_stress,
+     &                 bp(ibp_stress+nrhs(1)),bp(ibp_stress+nrhs(2)),
      &                 0.
-              endif
-	        if(iptty.gt.0) write(iptty,*) ' ' 
-              if(iptty.gt.0) write(iptty,*)'displacements and forces '
-              if(iptty.gt.0) write(iptty,6119) 
-
-c      
-              do   i=1,m
-                md     =  nskw(i)               
-           if(ntty.eq.2) write(iout,6120)  
-     &		 md, du(md), dv(md), 0., (forc(md,j),j=1,2),0.,
-     &         vol_strain(md)
-           if(iptty.gt.0) write(iptty,6120) 
-     &		 md, du(md), dv(md), 0., (forc(md,j),j=1,2), 0.,
-     &         vol_strain(md)
-c
-              end  do
-
-c
-c ****   printout average stress information   ****
-c
-              if(ntty.eq.2) write(iout,*) ' ' 
-              if(ntty.eq.2) write(iout,*) 
-     &          'Stresses (Convention:Compression Positive)' 
-              if(ntty.eq.2) then
-                 if(flag_principal.eq.1) then
-                    write(iout,8119) 
-                 elseif(flag_excess_shear.eq.1) then
-                    write(iout,8118) 
-                 else                 
-                    write(iout,7119)
-                 endif
-              endif
-	        if(iptty.gt.0) write(iptty,*) ' ' 
-              if(iptty.gt.0) write(iptty,*) 
-     &          'Stresses (Convention:Compression Positive)' 
-              if(iptty.gt.0) then
-                 if(flag_principal.eq.1) then
-                    write(iptty,8119) 
-                 elseif(flag_excess_shear.eq.1) then
-                    write(iptty,8118) 
-                 else                 
-                    write(iptty,7119)
-                 endif
-              endif
-              do   i=1,m
-                md     =  nskw(i)               
-                if(flag_principal.eq.1) then
+               endif
+               if(iptty.gt.0) write(iptty,*) ' ' 
+               if(iptty.gt.0) write(iptty,*)'displacements and forces '
+               if(iptty.gt.0) write(iptty,6119) 
+               
+c     
+               do   i=1,m
+                  md     =  nskw(i)               
+                  if(ntty.eq.2) write(iout,6120)  
+     &                 md, du(md), dv(md), 0., (forc(md,j),j=1,2),0.,
+     &                 vol_strain(md)
+                  if(iptty.gt.0) write(iptty,6120) 
+     &                 md, du(md), dv(md), 0., (forc(md,j),j=1,2), 0.,
+     &                 vol_strain(md)
+c     
+               end  do
+               
+c     
+c     ****   printout average stress information   ****
+c     
+               if(ntty.eq.2) write(iout,*) ' ' 
+               if(ntty.eq.2) write(iout,*) 
+     &              'Stresses (Convention:Compression Positive)' 
+               if(ntty.eq.2) then
+                  if(flag_principal.eq.1) then
+                     write(iout,8119) 
+                  elseif(flag_excess_shear.eq.1) then
+                     write(iout,8118) 
+                  else                 
+                     write(iout,7119)
+                  endif
+               endif
+               if(iptty.gt.0) write(iptty,*) ' ' 
+               if(iptty.gt.0) write(iptty,*) 
+     &              'Stresses (Convention:Compression Positive)' 
+               if(flag_excess_shear.eq.1) then
+                  do ishear=1,n0
+                     if(flag_permmodel.eq.1) then
+                        iispmd = ispm(ishear)    
+                        ispmd = ispmt(iispmd) 
+                        if(ispmd.eq.22) then
+                           friction = spm1f(iispmd)
+                           strength = spm2f(iispmd)
+                           pp_fac=spm3f(iispmd)
+                        else
+                           friction = friction_out
+                           strength = strength_out
+                           pp_fac=pp_fac_out
+                        endif
+                     else
+                        friction = friction_out
+                        strength = strength_out
+                        pp_fac=pp_fac_out
+                     endif
+                     call principal_stress_3D(ishear,alambda,eigenvec)
+                     call max_excess_shear(ishear,friction,strength,
+     &                    alambda,pp_fac,eigenvec)
+                     shear_angle(md) = shear_angle(md)*180./pi
+                  enddo
+               endif
+               if(iptty.gt.0) then
+                  if(flag_principal.eq.1) then
+                     write(iptty,8119) 
+                  elseif(flag_excess_shear.eq.1) then
+                     write(iptty,8118)
+                  else                 
+                     write(iptty,7119)
+                  endif
+               endif
+               do   i=1,m
+                  md     =  nskw(i)               
+                  if(flag_principal.eq.1) then
 c     s kelkar nov 5,2010 output plane of max excess shear
-                   call principal_stress_3D(md,alambda,eigenvec)
-                   eigenvec_deg(1)=dacos(eigenvec(3,3))*180./pi   
-                   eigenvec_deg(2)=dacos(eigenvec(1,3))*180./pi   
-                   eigenvec_deg(3)=dacos(eigenvec(1,1))*180./pi   
-                   if(ntty.eq.2) write(iout,7120)  
-     &                  md, alambda(3),alambda(2),alambda(1)
-     &                  ,eigenvec_deg(1),eigenvec_deg(2),eigenvec_deg(3)
-                   if(iptty.gt.0) write(iptty,7120) 
-     &                  md, alambda(3),alambda(2),alambda(1)
-     &                  ,eigenvec_deg(1),eigenvec_deg(2),eigenvec_deg(3)
-                elseif(flag_excess_shear.eq.1) then
+                     call principal_stress_3D(md,alambda,eigenvec)
+                     eigenvec_deg(1)=dacos(eigenvec(3,3))*180./pi   
+                     eigenvec_deg(2)=dacos(eigenvec(1,3))*180./pi   
+                     eigenvec_deg(3)=dacos(eigenvec(1,1))*180./pi   
+                     if(ntty.eq.2) write(iout,7120)  
+     &                    md, alambda(3),alambda(2),alambda(1)
+     &                 ,eigenvec_deg(1),eigenvec_deg(2),eigenvec_deg(3)
+                     if(iptty.gt.0) write(iptty,7120) 
+     &                    md, alambda(3),alambda(2),alambda(1)
+     &                 ,eigenvec_deg(1),eigenvec_deg(2),eigenvec_deg(3)
+                  elseif(flag_excess_shear.eq.1) then
 c     s kelkar nov 5,2010 output plane of max excess shear
-                   if(flag_permmodel.eq.1) then
-                      iispmd = ispm(md)    
-                      ispmd = ispmt(iispmd) 
-                      if(ispmd.eq.22) then
-                         friction = spm1f(iispmd)
-                         strength = spm2f(iispmd)
-                      else
-                         friction = friction_out
-                         strength = strength_out
-                      endif
-                   else
-                      friction = friction_out
-                      strength = strength_out
-                   endif
-                   call principal_stress_3D(md,alambda,eigenvec)
-                   call max_excess_shear(md,friction,strength,alambda,
-     &                  pp_fac,eigenvec,excess_shear,shear_angle )
-                   shear_angle = shear_angle*180./pi
-                   if(ntty.eq.2) write(iout,8120)  
-     &                  md, str_x(md), str_y(md), str_z(md), 
-     &                  str_xy(md), str_xz(md), str_yz(md),ps(md)
-     &                  ,excess_shear,shear_angle
-                   if(iptty.gt.0) write(iptty,8120) 
-     &                  md, str_x(md), str_y(md), str_z(md), 
-     &                  str_xy(md), str_xz(md), str_yz(md),ps(md)
-     &                  ,excess_shear,shear_angle
-                   
-                else
-                   if(ntty.eq.2) write(iout,7120)  
-     &                  md, str_x(md), str_y(md), 0.0, 
-     &                  str_xy(md), 0.0, 0.0, ps(md)
-                   if(iptty.gt.0) write(iptty,7120) 
-     &                  md, str_x(md), str_y(md), 0.0, 
-     &                  str_xy(md), 0.0, 0.0, ps(md)
-                endif
-             enddo
-
-c add total volume change
-          vol_tot_change = 0.0
-          do i = 1, neq
-	      vol_tot_change = vol_tot_change + vol_strain(i)*sx1(i)
-	    enddo
-          if(ntty.eq.2) write(iout,*)  
-          if(iptty.gt.0) write(iptty,*)
-          if(ntty.eq.2) write(iout,7121)  vol_tot_change, vtot
-          if(iptty.gt.0) write(iptty,7121) vol_tot_change, vtot
+                     if(ntty.eq.2) write(iout,8120)  
+     &                    md, str_x(md), str_y(md), str_z(md), 
+     &                    str_xy(md), str_xz(md), str_yz(md),ps(md)
+     &                    ,excess_shear(md),shear_angle(md)
+                     if(iptty.gt.0) write(iptty,8120) 
+     &                    md, str_x(md), str_y(md), str_z(md), 
+     &                    str_xy(md), str_xz(md), str_yz(md),ps(md)
+     &                    ,excess_shear(md),shear_angle(md)
+                     
+                  else
+                     if(ntty.eq.2) write(iout,7120)  
+     &                    md, str_x(md), str_y(md), 0.0, 
+     &                    str_xy(md), 0.0, 0.0, ps(md)
+                     if(iptty.gt.0) write(iptty,7120) 
+     &                    md, str_x(md), str_y(md), 0.0, 
+     &                    str_xy(md), 0.0, 0.0, ps(md)
+                  endif
+               enddo
+               
+c     add total volume change
+               vol_tot_change = 0.0
+               do i = 1, neq
+                 vol_tot_change = vol_tot_change + vol_strain(i)*sx1(i)
+               enddo
+               if(ntty.eq.2) write(iout,*)  
+               if(iptty.gt.0) write(iptty,*)
+               if(ntty.eq.2) write(iout,7121)  vol_tot_change, vtot
+               if(iptty.gt.0) write(iptty,7121) vol_tot_change, vtot
             else
-c
+c     
 c ****   printout displacement/force information   ****
-c
-             ibp_stress=max(ibp_stress,1)
-              
-		    if(tol_stress.ne.0.0d0) then  
-	         if(mlz.eq.-1) then
-                if(ntty.eq.2) write(iout,*) 
-     &		   '>>> stress solution did not reach tolerance <<<'
-	         endif
-               if(ntty.eq.2) write(iout,6118) ibp_stress,
-     &     		bp(ibp_stress+nrhs(1)),bp(ibp_stress+nrhs(2)),
+c     
+               ibp_stress=max(ibp_stress,1)
+               
+               if(tol_stress.ne.0.0d0) then  
+                  if(mlz.eq.-1) then
+                     if(ntty.eq.2) write(iout,*) 
+     &                '>>> stress solution did not reach tolerance <<<'
+                  endif
+                  if(ntty.eq.2) write(iout,6118) ibp_stress,
+     &                 bp(ibp_stress+nrhs(1)),bp(ibp_stress+nrhs(2)),
      &                 bp(ibp_stress+nrhs(3))
-              endif 
-              if(ntty.eq.2) write(iout,*) ' ' 
-              if(ntty.eq.2) write(iout,*) 
+               endif 
+               if(ntty.eq.2) write(iout,*) ' ' 
+               if(ntty.eq.2) write(iout,*) 
      &              'Displacements, Forces, Volume Strain ' 
-              if(ntty.eq.2) write(iout,6119) 
- 
-            
-	        if(tol_stress.ne.0.0d0) then 
-		     if(mlz.eq.-1) then
-                if(iptty.gt.0) write(iptty,*) 
-     &		   '>>> stress solution did not reach tolerance <<<'
-	         endif
-               if(iptty.gt.0) write(iptty,6118) ibp_stress,
-     &     	     bp(ibp_stress+nrhs(1)),bp(ibp_stress+nrhs(2)),
+               if(ntty.eq.2) write(iout,6119) 
+               
+               
+               if(tol_stress.ne.0.0d0) then 
+                  if(mlz.eq.-1) then
+                     if(iptty.gt.0) write(iptty,*) 
+     &                '>>> stress solution did not reach tolerance <<<'
+                  endif
+                  if(iptty.gt.0) write(iptty,6118) ibp_stress,
+     &                 bp(ibp_stress+nrhs(1)),bp(ibp_stress+nrhs(2)),
      &                 bp(ibp_stress+nrhs(3))
-              endif
-	        if(iptty.gt.0) write(iptty,*) ' ' 
-              if(iptty.gt.0) write(iptty,*) 
+               endif
+               if(iptty.gt.0) write(iptty,*) ' ' 
+               if(iptty.gt.0) write(iptty,*) 
      &              'Displacements, Forces, Volume Strain ' 
-              if(iptty.gt.0) write(iptty,6119) 
-
-c      
-              do   i=1,m
-                md     =  nskw(i)               
-          if(ntty.eq.2) write(iout,6120)  
-     &	md, du(md), dv(md), dw(md), (forc(md,j),j=1,3), vol_strain(md)
-          if(iptty.gt.0) write(iptty,6120) 
-     &	md, du(md), dv(md), dw(md), (forc(md,j),j=1,3), vol_strain(md)
-c
-              end  do
-
-c
-c ****   printout average stress information   ****
-c
-              if(ntty.eq.2) write(iout,*) ' ' 
-              if(iptty.gt.0) write(iout,*)
-     &       'Stresses (Convention: Compression is Positive (sign)) ' 
-              if(ntty.eq.2) then
-                 if(flag_principal.eq.1) then
-                    write(iout,8119) 
-                 elseif(flag_excess_shear.eq.1) then
-                    write(iout,8118) 
-                 else                 
-                    write(iout,7119)
-                 endif
-              endif
-	        if(iptty.gt.0) write(iptty,*) ' ' 
-              if(iptty.gt.0) write(iptty,*)
-     &      'Stresses (Convention: Compression is Positive (sign)) '  
-              if(iptty.gt.0) then
-                 if(flag_principal.eq.1) then
-                    write(iptty,8119) 
-                 elseif(flag_excess_shear.eq.1) then
-                    write(iptty,8118) 
-                 else                 
-                    write(iptty,7119)
-                 endif
-              endif
-              do   i=1,m
+               if(iptty.gt.0) write(iptty,6119) 
+               
+c     
+               do   i=1,m
+                  md     =  nskw(i)               
+                  if(ntty.eq.2) write(iout,6120)  
+     &               md,du(md),dv(md),dw(md)
+     &               ,(forc(md,j),j=1,3),vol_strain(md)
+                  if(iptty.gt.0) write(iptty,6120) 
+     &               md, du(md), dv(md), dw(md)
+     &               , (forc(md,j),j=1,3), vol_strain(md)
+c     
+               end  do
+               
+c     
+c     ****   printout average stress information   ****
+c     
+               if(ntty.eq.2) write(iout,*) ' ' 
+               if(iptty.gt.0) write(iout,*)
+     &           'Stresses(Convention: Compression is Positive (sign))' 
+               if(flag_excess_shear.eq.1) then
+                  write(iout,8118)
+                  do ishear= 1,n0
+                     if(flag_permmodel.eq.1) then
+                        iispmd = ispm(ishear)    
+                        ispmd = ispmt(iispmd) 
+                        if(ispmd.eq.22) then
+                           friction = spm1f(iispmd)
+                           strength = spm2f(iispmd)
+                           pp_fac = spm3f(iispmd)
+                        else
+                           friction = friction_out
+                           strength = strength_out
+                           pp_fac = pp_fac_out
+                        endif
+                     else
+                        friction = friction_out
+                        strength = strength_out
+                        pp_fac = pp_fac_out
+                     endif
+                     call principal_stress_3D(ishear,alambda,eigenvec)
+                     call max_excess_shear(ishear,friction,strength,
+     &                    alambda,pp_fac,eigenvec)
+                     shear_angle(ishear) = shear_angle(ishear)*180./pi
+                  enddo
+               endif                 
+               if(ntty.eq.2) then
+                  if(flag_principal.eq.1) then
+                     write(iout,8119) 
+                  elseif(flag_excess_shear.eq.1) then
+                     write(iout,8118)
+                  else                 
+                     write(iout,7119)
+                  endif
+               endif
+               if(iptty.gt.0) write(iptty,*) ' ' 
+               if(iptty.gt.0) write(iptty,*)
+     &           'Stresses(Convention: Compression is Positive (sign))'  
+               if(iptty.gt.0) then
+                  if(flag_principal.eq.1) then
+                     write(iptty,8119) 
+                  elseif(flag_excess_shear.eq.1) then
+                     write(iptty,8118) 
+                  else                 
+                     write(iptty,7119)
+                  endif
+               endif
+               do   i=1,m
                 md     =  nskw(i) 
-              
+                
                 if(flag_principal.eq.1) then
 c     s kelkar nov 5,2010 output plane of max excess shear
                    call principal_stress_3D(md,alambda,eigenvec)
@@ -2271,39 +2337,21 @@ c     s kelkar nov 5,2010 output plane of max excess shear
                    eigenvec_deg(2)=dacos(eigenvec(1,3))*180./pi   
                    eigenvec_deg(3)=dacos(eigenvec(1,1))*180./pi   
                    if(ntty.eq.2) write(iout,7120)  
-     &                  md, alambda(3),alambda(2),alambda(1)
-     &                  ,eigenvec_deg(1),eigenvec_deg(2),eigenvec_deg(3)
+     &                md, alambda(3),alambda(2),alambda(1)
+     &                ,eigenvec_deg(1),eigenvec_deg(2),eigenvec_deg(3)
                    if(iptty.gt.0) write(iptty,7120) 
-     &                  md, alambda(3),alambda(2),alambda(1)
-     &                  ,eigenvec(3,3),eigenvec(1,3),eigenvec(1,1)
+     &                md, alambda(3),alambda(2),alambda(1)
+     &                ,eigenvec(3,3),eigenvec(1,3),eigenvec(1,1)
                 elseif(flag_excess_shear.eq.1) then
 c     s kelkar nov 5,2010 output plane of max excess shear
-                   if(flag_permmodel.eq.1) then
-                      iispmd = ispm(md)    
-                      ispmd = ispmt(iispmd) 
-                      if(ispmd.eq.22) then
-                         friction = spm1f(iispmd)
-                         strength = spm2f(iispmd)
-                      else
-                         friction = friction_out
-                         strength = strength_out
-                      endif
-                   else
-                      friction = friction_out
-                      strength = strength_out
-                   endif
-                   call principal_stress_3D(md,alambda,eigenvec)
-                   call max_excess_shear(md,friction,strength,alambda,
-     &                  pp_fac,eigenvec,excess_shear,shear_angle )
-                   shear_angle = shear_angle*180./pi
                    if(ntty.eq.2) write(iout,8120)  
-     &                  md, str_x(md), str_y(md), str_z(md), 
-     &                  str_xy(md), str_xz(md), str_yz(md),ps(md)
-     &                  ,excess_shear,shear_angle
+     &                md, str_x(md), str_y(md), str_z(md), 
+     &                str_xy(md), str_xz(md), str_yz(md),ps(md)
+     &                  ,excess_shear(md),shear_angle(md)
                    if(iptty.gt.0) write(iptty,8120) 
      &                  md, str_x(md), str_y(md), str_z(md), 
      &                  str_xy(md), str_xz(md), str_yz(md),ps(md)
-     &                  ,excess_shear,shear_angle
+     &                  ,excess_shear(md),shear_angle(md)
                    
                 else
                    if(ntty.eq.2) write(iout,7120)  
@@ -2591,7 +2639,10 @@ c repopulate residual information for flow
                   bp(md)= bp_flow1(k)
                   bp(md+neq)= bp_flow2(k)
                enddo
-            enddo                        
+            enddo   
+      else if(iflg.eq.19) then  
+c calculate subsidence
+          call subsidence(1)              
       else if(iflg.ge.100) then
 c user subroutines. not enabled
            

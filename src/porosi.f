@@ -820,7 +820,8 @@ c
      &                 'porosity', 7x, 'pressure change')
  6120             format(1x,i7,3(3x,g12.6))
                else if ( iporos .eq. 5 ) then
-
+               else if ( iporos .eq. 1 ) then
+               else if ( iporos .eq. -1 ) then
                else if ( iporos .ne. -4 )  then
 c
 ****   GZ gangi model   ****

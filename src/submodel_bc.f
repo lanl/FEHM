@@ -26,14 +26,7 @@
 !D2 Initial implementation: Date 9-Jan-02, Programmer: George Zyvoloski
 !D2
 !D2 $Log:   /pvcs.config/fehm90/src/submodel_bc.f_a  $
-!D2 $Log:   /pvcs.config/fehm90/src/submodel_bc.f_a  $
-!D2 
-!D2    Rev 2.5   06 Jan 2004 10:44:16   pvcs
-!D2 FEHM Version 2.21, STN 10086-2.21-00, Qualified October 2003
-!D2 
-!D2    Rev 2.4   29 Jan 2003 09:20:28   pvcs
-!D2 FEHM Version 2.20, STN 10086-2.20-00
-!D2 
+!D2
 !**********************************************************************
 !D3 
 !D3 REQUIREMENTS TRACEABILITY
@@ -527,14 +520,21 @@ c     set pressure boundary conditions
                      write(isubm,2000) i,i,phi(i),aiped,
      &                    cord(i,1),cord(i,2),cord(i,3),izone1
                     else
-                     write(isubm,2001) i,i,phi(i),-t(i),aiped,
+                     if(itsat.le.10) then
+                      write(isubm,2001) i,i,phi(i),-t(i),aiped,
      &                    cord(i,1),cord(i,2),cord(i,3),izone1  
+                     else if(itsat.gt.10) then
+                       write(isubm,2002) i,i,phi(i),t(i),aiped,
+     &                    cord(i,1),cord(i,2),cord(i,3),izone1      
+                     endif
                     endif
                   end if
  2000             format(2i10,' 1 ',1x,1pg18.9,' 1. ',g9.2,'  # ',
      &                 3(g12.6,x), 'z ',i5)
  2001             format(2i10,' 1 ',1x,1pg18.9,1x,g11.4,1x,g9.2,' # ',
      &                 3(g12.6,x), 'z ',i5)    
+ 2002             format(2i10,' 1 ',1x,1pg18.9,1x,g11.4,1x,g9.2,' # ',
+     &                 3(g12.6,x), 'z ',i5,' ice')         
                endif
  40            continue
             enddo

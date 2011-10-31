@@ -369,7 +369,14 @@ c
       
       str_xy(i)=+tauxy/vol
 
-
+       if(residual_stress) then
+        str_x(i)=str_x(i)+str_x0(i)
+        str_y(i)=str_y(i)+str_y0(i)
+c        str_z(i)=str_z(i)+str_z0(i)
+        str_xy(i)=str_xy(i)+str_xy0(i)
+c        str_yz(i)=str_yz(i)+str_yz0(i)
+c        str_xz(i)=str_xz(i)+str_xz0(i)
+      endif  
       
       return
       end

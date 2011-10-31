@@ -24,7 +24,7 @@ c
       use comci
       use comdi
       use comsi    
-
+      use comfem, only: permFactor, ifem
       implicit none 
 
       integer iflg, ndummy, i, iispmd,ipermx_max, ipermy_max
@@ -62,7 +62,19 @@ c
 c     
 c     allocate memory for stress derivatives for fully coupled solution
 c     just before call to generate equations
+c    
+      else if (iflg.eq.-3) then
+c      only for mode 31 (ice to check for initial ice)
+         if(.not.allocated(ispm)) return
 c     
+         do i = 1,n0
+            iispmd = ispm(i)    
+            ispmd = ispmt(iispmd) 
+            if(ispmd.eq.31) then
+c new routine for changing mechanical properties with ice formation            
+               call stressperm_31(i)                  
+            endif         
+         enddo
       else if (iflg.eq.1) then
 c     
 c     general loop to calculate permeability models and derivatives
@@ -99,6 +111,9 @@ c
                call stressperm_21(i)
             else if(ispmd.eq.22) then
                call stressperm_22(i)
+            else if(ispmd.eq.31) then
+c new routine for changing mechanical properties with ice formation            
+               call stressperm_31(i)               
             elseif(ispmd.eq.11) then
                call stressperm_11(i)
 c s kelkar June 9 2009, simple gangi (1978, Int.J.Rock Mech)
@@ -107,13 +122,16 @@ c     s kelkar June 201, table lookup ....................................
                call stressperm_91(i)
             endif
             
-         enddo         
-c     
+         enddo    
+           
+      if(spm1f(iispmd).lt.0.0.and.ifem.eq.1) call compute_average_stress
+
+c
 c     check for damage zone (permeability changes)
 c     and maximum allowable changes
 c     
          if(ipermstr2.ne.0.or.ipermstr5.ne.0.or.ipermstr7.ne.0
-     &    .or.ipermstr8.ne.0)then
+     &    .or.ipermstr6.ne.0.or.ipermstr8.ne.0)then
             permx_max = 0.0
             permy_max = 0.0
             permz_max = 0.0
@@ -171,7 +189,6 @@ c
             if(iptty.ne.0) write(iptty,100) ipr_str
             if(iout.ne.0) write(iout,101) 
             if(iptty.ne.0) write(iptty,101)   
-            ipermx_max = 308
             if(iout.ne.0)
      &          write(iout,102)ipermx_max,sxx_min,pnx(ipermx_max)*1.e-6,
      &           cord(ipermx_max,1),cord(ipermx_max,2),coorxz_max

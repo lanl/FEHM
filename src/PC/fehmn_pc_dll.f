@@ -508,6 +508,7 @@ c     run of fehm. It is initialized to 0 in comai
       real*4 caz(2)
 c*** water table rise modification
       real*8 water_table_old
+      real*8 prop,dpropt,dpropp,p_energy
 c*** water table rise modification
       logical it_is_open, intfile_ex
       integer im, ja, mi, i
@@ -519,7 +520,6 @@ c*** water table rise modification
       integer is_ch
       integer :: is_ch_t = 0
       integer :: out_flag = 0
-      integer :: size_old = 0
 
       save flowflag, ichk, tassem, tasii, tscounter,
      &     contr_riptot, tims_save, day_saverip, in3save,
@@ -528,6 +528,7 @@ c*** water table rise modification
 c zvd 09-Sep-2011 change size of in array to be consistent with iofile
 lc modification for GoldSim 
       allocate (in(4))
+      in = ing(1:4)
 
       if(method.eq.2) then
 c	When run from Goldsim, the normal fehm screen output gets
@@ -755,7 +756,7 @@ c  change to 4 in new version of rip
             write (iptty,*) 'in(*) = ', (ing(i), i=1,n_input_arguments)
 cSPC 9/23/09
             if (ptrak) then
-               index_N_large=int(in(8))*2+9
+               index_N_large=int(ing(8))*2+9
                size_of_in = 9 + 5 + (ing(9) * (2 + nspeci)) + 
      &              (ing(index_N_large) * ( 1 + 2 * nspeci))
             else
@@ -784,11 +785,10 @@ cSPC 9/23/09
          end if
 
 c  stop simulation after stress calc for certain stress input
-         if(istrs.ne.0.and.istrs_coupl.eq.0) go to 170
 c set up time-spaced coupling         
          if(istrs_coupl.eq.-4) then
-           timestress0 = days
-           timestress = timestress0 + daystress
+            timestress0 = days
+            timestress = timestress0 + daystress
          endif
         if(istrs.ne.0.and.istrs_coupl.eq.0) go to 170
 c Before the time step loop create the partitions for zones
@@ -818,7 +818,7 @@ c
             toutfl = 0.0
             teoutf = 0.0
             dtot_next = day*86400.
-            call porosi(4)
+            if(iporos.ne.0)call porosi(4)
          endif      
 
 c     Call evaporation routine if this is an evaporation problem
@@ -893,8 +893,30 @@ c**** calculate inflowing enthalpy ****
                   do mi = 1, n
                      eskd = esk(mi)
 c**** if source input is a temp convert to enthalpy ****
-                     if (eskd .lt. 0.0)  then
+                     if (itsat.le.10.and.eskd .lt. 0.0)  then
+c potential energy added to inflow energy in function enthp
                         eskd = enthp(mi, -eskd)
+c below lines commented out                        
+c                        if(ps(mi).eq.0.0.or.idof.le.1) then
+c                          eskd=cpr(mi)*(-eskd)
+c                        endif
+                     else if(itsat.gt.10.and.eskd.lt.0.0) then
+c enthalpy and derivatives  
+c itsats gt 10 always convert the temperature                     
+                       if(igrav.ne.0) then
+                        p_energy = -grav*cord(mi,igrav)
+                       else
+                        p_energy = 0.0d0
+                       endif    
+                        eskd = abs(eskd)
+                        if(eskd.ne.0.0) then
+                         call eos_aux(itsat,eskd,phi(mi),1,1,prop,
+     &                         dpropt,dpropp)
+                          eskd = prop + p_energy    
+                         if(ps(mi).eq.0.0.or.idof.le.1) then
+                          eskd=cpr(mi)*eskd
+                         endif 
+                        endif                
                      end if
                      eflow(mi) = eskd
                   end do
@@ -1055,7 +1077,6 @@ c check for steady state solution
                if(isteady.ne.0) then
                   call steady(1,0.,0.)
                endif
-
 c
 c correct mass correction
 c
@@ -1177,10 +1198,12 @@ c allocate memory for permeability update if necessay
 c update permeabilities (explicit)
                   call stress_perm(1,0)			            
 c deallocate memory for permeability update if necessay
-                  call stress_perm(-2,0)               	        
+                  call stress_perm(-2,0) 
+               endif   
+c calculate subsidence
+                  call subsidence(1)         
 c update peaceman term for wellbore pressure
                   if(isubwd.ne.0)call wellimped_ctr(1)
-               endif 
                do ja = 1,n
                   to (ja) = t(ja)
                   pho (ja) = phi(ja)
@@ -1411,6 +1434,8 @@ c................................................
                call pod_derivatives
             end if
          endif
+c call subsidence for last time, iflg = 2
+         call subsidence(2)
 
 c     
 c     gaz 1-6-2002

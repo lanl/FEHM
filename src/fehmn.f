@@ -509,6 +509,7 @@ c     run of fehm. It is initialized to 0 in comai
       real*4 caz(2)
 c*** water table rise modification
       real*8 water_table_old
+      real*8 prop,dpropt,dpropp,p_energy
 c*** water table rise modification
       logical it_is_open, intfile_ex
       integer im, ja, mi, i
@@ -780,7 +781,7 @@ c
             toutfl = 0.0
             teoutf = 0.0
             dtot_next = day*86400.
-            call porosi(4)
+            if(iporos.ne.0) call porosi(4)
          endif      
 
 c     Call evaporation routine if this is an evaporation problem
@@ -855,8 +856,30 @@ c**** calculate inflowing enthalpy ****
                   do mi = 1, n
                      eskd = esk(mi)
 c**** if source input is a temp convert to enthalpy ****
-                     if (eskd .lt. 0.0)  then
+                     if (itsat.le.10 .and. eskd .lt. 0.0)  then
+c potential energy added to inflow energy in function enthp
                         eskd = enthp(mi, -eskd)
+c below lines commented out                        
+c                        if(ps(mi).eq.0.0.or.idof.le.1) then
+c                          eskd=cpr(mi)*(-eskd)
+c                        endif
+                     else if(itsat.gt.10.and.eskd.lt.0.0) then
+c enthalpy and derivatives  
+c itsats gt 10 always convert the temperature                     
+                        if(igrav.ne.0) then
+                           p_energy = -grav*cord(mi,igrav)
+                        else
+                           p_energy = 0.0d0
+                        endif    
+                        eskd = abs(eskd)
+                        if(eskd.ne.0.0) then
+                           call eos_aux(itsat,eskd,phi(mi),1,1,prop,
+     &                          dpropt,dpropp)
+                           eskd = prop + p_energy    
+                           if(ps(mi).eq.0.0.or.idof.le.1) then
+                              eskd=cpr(mi)*eskd
+                           endif 
+                        endif                
                      end if
                      eflow(mi) = eskd
                   end do
@@ -1140,9 +1163,11 @@ c update permeabilities (explicit)
                   call stress_perm(1,0)			            
 c deallocate memory for permeability update if necessay
                   call stress_perm(-2,0)               	        
+               endif   
+c calculate subsidence
+               call subsidence(1)         
 c update peaceman term for wellbore pressure
-                  if(isubwd.ne.0)call wellimped_ctr(1)
-               endif 
+               if(isubwd.ne.0) call wellimped_ctr(1)
                do ja = 1,n
                   to (ja) = t(ja)
                   pho (ja) = phi(ja)
@@ -1373,6 +1398,8 @@ c................................................
                call pod_derivatives
             end if
          endif
+c call subsidence for last time, iflg = 2
+         call subsidence(2)
 
 c     
 c     gaz 1-6-2002

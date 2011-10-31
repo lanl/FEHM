@@ -61,7 +61,7 @@
       use comki
       implicit none
 
-      integer i, imodel
+      integer i, idum_gdpm, imodel
       logical null1
       character*80 dummy_string
       integer n_n_n, j
@@ -78,8 +78,8 @@ c     6: 1-d column geometry (bc,based on total area)
 c    11: parallel plate fractures x dir is orthogonal to fracture
 c    12: parallel plate fractures y dir is orthogonal to fracture
 c    13: parallel plate fractures y dir is orthogonal to fracture
-      read(inpt,*) gdpm_flag, ngdpmnodes
-
+      read(inpt,*) idum_gdpm, ngdpmnodes
+      
       imodel = 0
       neq_primary = n0-ngdpmnodes
 
@@ -210,7 +210,8 @@ c     Only assign the zone number this way if
 c     it hasn't already been assigned a non-zero value
 c     for example, in a zone with the nnum option
             if(izonef(n_n_n).eq.0.and.
-     &           j.eq.ngdpm_layers(imodel)) then
+     &           j.eq.ngdpm_layers(imodel).and.
+     &                ngdpm_layers(imodel).gt.1) then
                izonef(n_n_n) = izonef(i) + 200
             else if(izonef(n_n_n).eq.0) then
                izonef(n_n_n) = izonef(i) + 100

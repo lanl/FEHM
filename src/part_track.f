@@ -402,12 +402,12 @@ c     during a GoldSim simulation
 cbhl  5/2/08, 
 c zvd 6/9/08 changed prnt_rst flag to >= 40
 c zvd 7/01/08 Moved following from set_mptr
-      if (.not. allocated (bconf_sav)) then    
-         if (abs(prnt_rst) .ge. 40 .and. ripfehm .eq. 1) then
-            allocate (bconf_sav(max_particles,nspeci))
-         else
-            allocate (bconf_sav(1,nspeci))
-         end if
+	if (.not. allocated (bconf_sav)) then    
+          if (abs(prnt_rst) .ge. 40 .and. ripfehm .eq. 1) then            
+               allocate (bconf_sav(max_particles,nspeci))
+	    else
+	         allocate (bconf_sav(1,nspeci))
+	    end if
       endif
 cbhl  5/2/08
       

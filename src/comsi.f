@@ -37,7 +37,7 @@
       integer ispmd,ipermstr1,ipermstr2,ipermstr3
       integer ipermstr4,ipermstr5,ipermstr6,ipermstr7,ipermstr8
       integer ipermstr11,ipermstr21,ipermstr22,ipermstr222
-      integer ipermstr91
+      integer ipermstr91, ipermstr31
       integer istresscall,ilitho,iad_strs,istresspor,idisp_rel
       integer cnum_stress, ilithgrad, permfile
       
@@ -45,7 +45,7 @@
       integer flag_excess_shear
 
      
-      real*8 friction_out,strength_out
+      real*8 friction_out,strength_out, pp_fac_out
       real*8 daystr,fpor,fric,wo,fwght,fupwt,fdnwt,tol_stress
       real*8 tptch,pchmin,pchmax,tchmin,tchmax,coftol,bp_stress
       real*8 bpx,bpy,bpz,tol_stress1,abs_tol_stress,bp_update
@@ -357,5 +357,13 @@ c s kelkar
       real*8, allocatable ::  e_temp91(:,:)
 
       real*8 knx_stressperm, kny_stressperm,knz_stressperm
+
+      real*8, allocatable ::  excess_shear(:)
+      real*8, allocatable ::  shear_angle(:)
+      real*8 pore_factor
+
+      real*8, allocatable ::  density(:), internal_energy(:)
+
+      integer itemp_perm22(100000)
 
       end module comsi

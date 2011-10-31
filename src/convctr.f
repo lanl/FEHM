@@ -24,7 +24,7 @@
 !D2 Initial implementation: 21-APR-03, Programmer: George Zyvoloski
 !D2 
 !D2 $Log:   /pvcs.config/fehm90/src/convctr.f_a  $
-!D2 
+!D2
 !***********************************************************************
 !D3
 !D3  REQUIREMENTS TRACEABILITY
@@ -470,32 +470,38 @@ c
       end                
       subroutine water_density(t,p,rol)
 c     
-c     calculate water density
+c     calculate water density(assume (*,1) coefficients
 c     
       use comii
+      use comai, only : itsat
       implicit none
-      real*8 t,p,rol
+      real*8 t,p,rol,prop,dpropt,dpropp
       real*8 rnwn1,rnwn2,rnwn3,rnwn
       real*8 rnwd1,rnwd2,rnwd3,rnwd
-      rnwn1=crl(1,1)+crl(2,1)*p+
+      if(itsat.le.10) then
+       rnwn1=crl(1,1)+crl(2,1)*p+
      &     crl(3,1)*p*p+
      &     crl(4,1)*p*p*p
-      rnwn2=crl(5,1)*t+crl(6,1)*t*t+
+       rnwn2=crl(5,1)*t+crl(6,1)*t*t+
      &     crl(7,1)*t*t*t
-      rnwn3=crl(8,1)*t*p+
+       rnwn3=crl(8,1)*t*p+
      &     crl(10,1)*t*t*p+
      &     crl(9,1)*t*p*p
-      rnwn=rnwn1+rnwn2+rnwn3
-      rnwd1=crl(11,1)+crl(12,1)*p+
+       rnwn=rnwn1+rnwn2+rnwn3
+       rnwd1=crl(11,1)+crl(12,1)*p+
      &     crl(13,1)*p*p+
      &     crl(14,1)*p*p*p
-      rnwd2=crl(15,1)*t+crl(16,1)*t*t+
+       rnwd2=crl(15,1)*t+crl(16,1)*t*t+
      &     crl(17,1)*t*t*t
-      rnwd3=crl(18,1)*t*p+
+       rnwd3=crl(18,1)*t*p+
      &     crl(20,1)*t*t*p+
      &     crl(19,1)*t*p*p
-      rnwd=rnwd1+rnwd2+rnwd3
-      rol=rnwn/rnwd
-
+       rnwd=rnwd1+rnwd2+rnwd3
+       rol=rnwn/rnwd
+      else
+c density and derivatives          
+          call eos_aux(itsat,t,p,0,1,prop,dpropt,dpropp)
+          rol = prop
+      endif
       return
       end

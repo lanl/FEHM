@@ -386,6 +386,7 @@ c**** read startup parameters ****
       ipermstr6 = 0
       ipermstr8 = 0
       ipermstr11 = 0
+      ipermstr31 = 0
 
 c zvd 17-Aug-09 move boun flag initializations here
       iqa=0
@@ -404,6 +405,7 @@ c zvd 17-Aug-09 move boun flag initializations here
       ixperm = 0
       iyperm = 0
       izperm = 0
+      i_init = 0
 c new initial value stuff 12/3/98 GAZ
       itempb_ini=0
       ipresa_ini=0
@@ -950,6 +952,10 @@ c	and Generalized Dual Permeability Model (GDKM) parameters
          if(macro .eq. 'gdkm') gdkm_flag = 1
          call start_macro(inpt, locunitnum, macro)
          read (locunitnum, *) gdpm_flag, ngdpmnodes
+         if(gdkm_flag.eq.1) then
+          gdkm_flag = gdpm_flag
+          gdpm_flag = 1
+         endif
          maxgdpmlayers = 0
          ngdpm_models = 0
 
@@ -989,6 +995,14 @@ c     Allocate arrays needed for gdpm
 
          call done_macro(locunitnum)
          
+      else if (macro .eq. 'rare') then
+c**** over write area/d terms and volumes ****
+c**** can be used with gdkm and gdpm models *****
+c**** need to count entries
+         call start_macro(inpt, locunitnum, macro)         
+         icoef_replace = 1
+         call coef_replace_ctr(-1)   
+         call done_macro(locunitnum)         
 c     Section for determining Element enrichment
       else if(macro .eq. 'enri') then
   
@@ -1082,7 +1096,8 @@ c
             endif
          endif
          call done_macro(locunitnum) 	        
-         
+      else if (macro .eq. 'init') then
+        i_init = 1  
       else if (macro .eq. 'itfc') then
          call start_macro(inpt, locunitnum, macro)
          opened = .false.
@@ -2181,7 +2196,7 @@ c need porosity model
          i = 0
          do
             read(locunitnum,'(a80)') dumstring
-            if (null1(dumstring)) exit
+            if(dumstring(1:9).eq.'stressend') exit
             if(dumstring(1:9).eq.'permmodel') then
                do 
                   read(locunitnum,'(a80)') dumstring
@@ -2214,6 +2229,8 @@ c	          else if (idumm .eq. 2 .or. idumm .eq. 4) then
                      read(locunitnum,*) idumm,(adumm,ja=1,10)
                   else if(idumm.eq.222) then
                      read(locunitnum,*) idumm,(adumm,ja=1,9)
+                  else if(idumm.eq.31) then
+                     read(locunitnum,*) idumm,(adumm,ja=1,2)      
                   else if(idumm.eq.91) then
 c                     open(unit=97,file='debug_permmodel_91.dat')
                      read(locunitnum,*) 

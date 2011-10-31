@@ -323,12 +323,16 @@ c find lengths of all connecting primary gridblocks
               disz2=min(cord3j-cord3,disz2)                           
           enddo  
             if(ivf.eq.-1) then
-               if(disx1.eq.0.0) disx1 = abs(cord1-x_orig)*2.
-               if(disy1.eq.0.0) disy1 = abs(cord2-y_orig)*2.
-               if(disz1.eq.0.0) disz1 = abs(cord3-z_orig)*2.
+               if(disx1.eq.0.0.and.disx2.eq.0.0)
+     &             disx1 = abs(cord1-x_orig)*2.
+               if(disy1.eq.0.0.and.disy2.eq.0.0) 
+     &             disy1 = abs(cord2-y_orig)*2.
+               if(disz1.eq.0.0.and.disz1.eq.0.0)
+     &             disz1 = abs(cord3-z_orig)*2.
                dzrg(i) = max(disz1,abs(disz2))
                dyrg(i) = max(disy1,abs(disy2))
-               dxrg(i) = max(disx1,abs(disx2))               
+               dxrg(i) = max(disx1,abs(disx2))
+               continue               
             else
                dzrg(i) = abs(disz1-disz2)/2.	
                dyrg(i) = abs(disy1-disy2)/2.    

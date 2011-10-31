@@ -531,10 +531,7 @@ c do we need to make sure this is a wtsi node?
             endif
          endif
  101  continue
-c          do i = 7050,7066
-c           write(*,*) 'i = ', i , phi(i),bp(i)
-c          enddo 
-c          pause 
+
          
 c     
 c

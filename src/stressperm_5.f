@@ -141,16 +141,25 @@ c
       if(str_x(i)-phi(i).gt.0) then
          dispyx12 = (disy+e3(i)/ksy)*epsxy12
          dispzx12 = (disz+e3(i)/ksz)*epsxz12
+      else
+         dispyx12 = 0.
+         dispzx12 = 0.
       endif
       
       if(str_y(i)-phi(i).gt.0) then
          dispxy12 = (disx+e3(i)/ksx)*epsxy12
          dispzy12 = (disz+e3(i)/ksz)*epsyz12  
+      else
+         dispxy12 = 0.
+         dispzy12 = 0.
       endif
       
       if(str_z(i)-phi(i).gt.0) then
          dispxz12 = (disx+e3(i)/ksx)*epsxz12
          dispyz12 = (disy+e3(i)/ksy)*epsyz12
+      else
+         dispxz12 = 0.
+         dispyz12 = 0.
       endif
       
 c     dispxy12 = (disx+e3(i)/ksx)*epsxy12

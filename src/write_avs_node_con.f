@@ -196,7 +196,7 @@ C***********************************************************************
       character*150 :: string = '', tecstring = '', sharestring = ''
       real*8 write_array(maxcon)
       integer i, ic, im, in, iv, ix, istep, j, k, n
-      integer t1(maxcon),itotal2,write_total
+      integer t1(maxcon),itotal2,write_total, iocord_temp
       integer irxn_title
       real*8 complex_conc
       real*8 minc, maxc
@@ -208,6 +208,7 @@ C***********************************************************************
      &     cordname(2) / 'Y (m)' /,
      &     cordname(3) / 'Z (m)' /  
 
+      iocord_temp = iocord
       if(ifdual .eq. 0)then
          istep = 0
          add_dual=0
@@ -216,8 +217,18 @@ C***********************************************************************
       else
          istep = maxcon
          add_dual=neq
-         dual_char = 'Dual '
-         tailstring = '_con_dual_node'
+         if (iodual .eq. 1) then
+            dual_char = 'Dual '
+            tailstring = '_con_dual_node'
+         else if (iogdkm .eq. 1) then
+            dual_char = 'GDKM '
+            tailstring = '_con_gdkm_node'
+            if (icnl .eq. 0) then
+               iocord = 3
+            else
+               iocord = 2
+            end if
+         end if
       endif
 
       if (iocord .ne. 0) then
@@ -424,8 +435,9 @@ c---------------------------------------
             write(lu,'(i3, 100(1x, i1))') itotal2,(1,i=1,nspeci+iocord)
             write(lu, '(a)') (trim(title(i)),i=1,itotal2)
          else if (altc(1:3) .eq. 'tec') then
-            if (icall .eq. 1) then
+            if (icall .eq. 1 .or. iogrid .eq. 1) then
                write(lu, 98) verno, jdate, jtime, trim(wdd)
+               if (iogrid .eq. 1) write(lu, 100) 
                write (fstring, 99) itotal2
                write(lu, fstring) 'VARIABLES = ', (trim(title(i)), 
      &              i=1,itotal2)
@@ -439,8 +451,9 @@ c     Zone loop
                idz = izone_surf(iz)
             end if
             if (altc(1:3) .eq. 'tec') then
-               if (iozone .eq. 0) then
-                  write (lu, 94) trim(timec_string), trim(tecstring)
+               if (iozone .eq. 0 .or. iogrid .eq. 1) then
+                  write (lu, 94) trim(timec_string), trim(tecstring),
+     &                 trim(gridstring), trim(times_string)
                else
                   if (icall .gt. 1 .and. iozone .ne. 0) then
                      write (tecstring, 125) trim(sharestring), iz
@@ -474,7 +487,8 @@ c     Zone loop
                   end if
                end if
             else if (iozid .eq. 1 .and. iocord .eq. 0) then
-               if (altc(1:3) .ne. 'tec' .or. icall .eq. 1) then
+               if (altc(1:3) .ne. 'tec' .or. icall .eq. 1 .or. 
+     &              iogrid .eq. 1) then
                   write (fstring, 334) dls, nspeci, dls
                else
                   write (fstring, 333) itotal2, dls
@@ -511,7 +525,7 @@ c     Zone loop
                   end if
 
                else if (altc(1:3) .eq. 'tec' .and. iozid .ne. 0) then
-                  if (icall .eq. 1) then
+                  if (icall .eq. 1 .or. iogrid .eq. 1) then
                      write(lu, fstring) i, izonef(i), (min(maxc,
      +                    max(minc, antmp(i+add_dual,n))), n=1,nspeci)
                   else
@@ -652,9 +666,10 @@ c=======================================================
             write(lu, fstring) days,(trim(title(i)),i=1,itotal2)
 
          else if (altc(1:3) .eq. 'tec') then
-            if (icall .eq. 1) then
+            if (icall .eq. 1 .or. iogrid .eq. 1) then
                write (fstring, 99) itotal2+1
                write(lu, 98) verno, jdate, jtime, trim(wdd)
+               write(lu, 100)
                write(lu, fstring) 'VARIABLES = ', (trim(title(i)), 
      &              i=1,iocord), 'node', (trim(title(i)), 
      &              i=iocord+1,itotal2)
@@ -672,8 +687,9 @@ c=================================================
                idz = izone_surf(iz)
             end if
             if (altc(1:3) .eq. 'tec') then
-               if (iozone .eq. 0) then
-                  write (lu, 94) trim(timec_string), trim(tecstring)
+               if (iozone .eq. 0 .or. iogrid .eq. 1) then
+                  write (lu, 94) trim(timec_string), trim(tecstring),
+     &                 trim(gridstring), trim(times_string)
                else
                   if (icall .gt. 1 .and. iozone .ne. 0) then
                      write (tecstring, 125) trim(sharestring), iz
@@ -750,7 +766,8 @@ c=================================================
                      end if
                   end if
                else if (iozid .eq. 1 .and. iocord .eq. 0) then
-                  if (altc(1:3) .ne. 'tec' .or. icall .eq. 1) then
+                  if (altc(1:3) .ne. 'tec' .or. icall .eq. 1 .or.
+     &                 iogrid .eq. 1) then
                      write (fstring, 334) dls, write_total, dls
                   else
                      write (fstring, 333) write_total, dls
@@ -782,7 +799,7 @@ c=================================================
                   end if
 
                else if (altc(1:3) .eq. 'tec' .and. iozid .ne. 0) then
-                  if (icall .eq. 1) then
+                  if (icall .eq. 1 .or. iogrid .eq. 1) then
                      write(lu,fstring) in, izonef(in), 
      &                    (write_array(i),i=1,write_total)
                   else
@@ -817,20 +834,24 @@ c=================================================
       if (icall .eq. 1 .and. altc(1:3) .eq. 'tec' .and. iogeo .eq. 1)
      &     then
 ! Read the element connectivity and write to tec file
-         il = open_file(geoname,'old')
+         if (ifdual .eq. 1 .and. iogdkm .eq. 1) then
+c     Do nothing, no connectivity defined
+         else
+            il = open_file(geoname,'old')
 ! avsx geometry file has an initial line that starts with neq_primary
-         allocate(nelm2(ns_in))
-         read(il,*) i
-         if (i .ne. neq_primary) backspace il
-         do i = 1, neq
-            read(il,*)
-         end do
-         do i = 1, nei_in
-            read (il,*) i1,i2,char_type,(nelm2(j), j=1,ns_in)
-            write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
-         end do
-         deallocate(nelm2)
-         close (il)
+            allocate(nelm2(ns_in))
+            read(il,*) i
+            if (i .ne. neq_primary) backspace il
+            do i = 1, neq
+               read(il,*)
+            end do
+            do i = 1, nei_in
+               read (il,*) i1,i2,char_type,(nelm2(j), j=1,ns_in)
+               write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
+            end do
+            deallocate(nelm2)
+            close (il)
+         end if
       end if
 c gaz added element output  (hex only) for fdm generated grid   
       if (icall .eq. 1 .and. altc(1:3) .eq. 'tec' .and. ivf .eq. -1
@@ -850,15 +871,17 @@ c first generate elements
          close (il)
       end if      
       if (altc(1:3) .ne. 'sur') close (lu)
+      iocord = iocord_temp
 
 c 94   format('ZONE T = "Simulation time ',1p,g16.9,' days"', a)
- 94   format('ZONE T = ', a, a)
+ 94   format('ZONE T = ', a, a, a, a)
  95   format('ZONE T = "',i4.4,'"', a)
  96   format("('node', ", i3, "(', ', a))")
 c 97   format('TEXT T = "Simulation time ',1p,g16.9,' days"')
  97   format('TEXT T = ', a)
  98   format ('TITLE = "', a30, 1x, a11, 1x, a8, 1x, a, '"')
  99   format ('(a11, ', i3, "('",' "',"', a, '",'"',"'))")
+ 100  format ('FILETYPE = "SOLUTION"')
  104  format ('(1x, ', i3, '(g16.9, 1x), i10.10, ', i3, '(1x, g16.9))')
  105  format ('(1x, ', i3, '(g16.9, 1x), i10.10, 1x, i4, ', i3, 
      &     '(1x, g16.9))')

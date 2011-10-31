@@ -87,20 +87,26 @@
       real*8 denw,denwp,denwt,enw,enwp,enwt,visw,viswp,viswt
       real*8 ycmax, xwp, xcp, xcpb, mwc, mww, xc_prime, tmp1
       integer ico2d, ico2dc
+      integer imped_ex_0
       parameter(pcrit=7.377d0, tcrit=30.98)
       character*8 macro1
       parameter(eostol=0.0001d00)
       parameter(eosmg=1.0001d00)
       parameter(eosml=0.9999d0)
-      parameter(strd_co2=0.7d0)
       parameter(strd1=1.0d0)
       parameter(tolw=1.d-90, zero_e=1.e-10)
       parameter(mwc=44.d0,mww=18.d0)
+      parameter(imped_ex_0 = 3)
       integer myfile, open_file
       save myfile
       logical it_is_open
       save amco2f, amco2f0, amco2f1,  amco2w, amco2w0, amco2w1, amco21
       save skmd1, skmd2, skmd21, skmd3, skmd31
+      if(nr_stop.eq.0) then
+       strd_co2=0.7d0
+      else
+       strd_co2 = strd_iter
+      endif
 
       if(icarb.ne.0) then  
 
@@ -329,6 +335,7 @@ c           dpcp4 = 0.00
             ico2diff_flg = 0
             ico2prop_flg = 0
             ico2dis = 0
+            imped_ex = 10000000
             yoc = 0.0
             xoc = 0.0
             yow = 0.0
@@ -544,14 +551,19 @@ c     constant dissolved co2 mass flow rate boundary condition
                      eskco2(i) = esktmp(i)
                      flowco2s(i) = aiped(i)
                   elseif(iflg_flowmac(i).eq.8) then
-c     constant dissolved co2 mass flow rate boundary condition
-                     kaco2(i) = 3
-                     flowco2s(i) = sktmp(i)
+c     partial explicit update of nonliniar part of co2 constant pressure
+                     kaco2(i) = -1
+                     imped_ex = imped_ex_0
+                     kaco2(i) = -1
+                     pflowco2(i) = sktmp(i)
                      eskco2(i) = esktmp(i)
-                     sk(i) = aiped(i)
+                     wellco2(i) = abs(aiped(i)) * 1.e+6                  
                   endif
                enddo
-               
+               if(imped_ex.eq.imped_ex_0) then
+                allocate(permsd1_sv_w(n0))
+                allocate(permsd1_sv_co2(n0))
+               endif
                deallocate(sktmp,esktmp,aiped,iflg_flowmac)
                
             else
@@ -593,8 +605,8 @@ c     set phase of water to 1 (liquid)
 c     
 c     determine phase state for water solid-liquid-gas system
 c     should count phase changes
-c     
-            
+c     h20 phase changes not allowed for co2
+          if(itsat.le.10.and.icarb.eq.0) then           
             do ii=1,neq
                ij=ii+ndummy
                iced=ieos(ij)
@@ -677,6 +689,9 @@ c     liquid-solid can form
                if(icedc.ne.iced) strd = strd_co2
                ieos(ij)=icedc
             enddo
+          else if(itsat.gt.10) then
+            ieos = 1
+          endif
 c     
          else if(iflg.eq.1) then
 c     
@@ -1144,7 +1159,7 @@ c     calculate phase-change pressure and dp/dt
                                  sk(ij) = skco2(ij)*(1-tem(1))
                                  skco2(ij) = skco2(ij)*tem(1)
                               endif
-							else
+                           else
                               call co2_properties(10,1,flowco2s(ij),
      &                             -eskco2(ij),csalt(ij),1,xc_prime,tem,
      &							 ij)

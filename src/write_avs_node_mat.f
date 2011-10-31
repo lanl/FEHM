@@ -141,7 +141,7 @@ CPS END
 CPS 
 C***********************************************************************
 
-      use avsio, only : iocord, iogeo, iokd, geoname
+      use avsio, only : iocord, iogeo, iokd, geoname, iodual, iogdkm
       use comai
       use combi, only : corz
       use comdi
@@ -153,8 +153,8 @@ C***********************************************************************
       implicit none
 
       integer i, j, lu, ifdual, maxtitle, mout, length, ic1, ic2
-      integer il, open_file, nelm(ns_in)
-      integer icord1, icord2, icord3, neq_read
+      integer il, open_file, nelm(ns_in), iocord_temp
+      integer icord1, icord2, icord3, neq_read, istart, iend
       parameter(maxtitle = 22)
       character*3 dls
       character*5 char_type, dual_char
@@ -165,6 +165,7 @@ C***********************************************************************
       character*600 print_title, vstring
       real*8 perm_fac
       parameter (perm_fac=1.d-6)
+      logical :: xon = .false., yon = .false., zon = .false.
 
 c     If this structure changes, also change the binary version
 c     To ensure label is left justified, an <= string length
@@ -175,7 +176,24 @@ c------------------------------------------------------------------------------
       print_title = ''
       pstring = ''
       dual_char = ''
-      if (ifdual .ne. 0) dual_char = 'Dual '
+      iocord_temp = iocord
+      if (ifdual .eq. 1) then
+         istart = 1
+         iend = neq - neq_primary
+         if (iodual .eq. 1) then
+            dual_char = 'Dual '
+         else
+            dual_char = 'GDKM '
+            if (icnl .eq. 0) then
+               iocord = 3
+            else
+               iocord = 2
+            end if
+         endif
+      else
+         istart = 1
+         iend = neq_primary
+      end if
       title(1) = trim(dual_char) // 'Permeability (m**2) in X'
       title(2) = trim(dual_char) // 'Permeability (m**2) in Y'
       title(3) = trim(dual_char) // 'Permeability (m**2) in Z'
@@ -205,6 +223,22 @@ c------------------------------------------------------------------------------
       units(10)= '(flag)'
       units(11)= '(flag)'
       ic1 = 1
+      
+      select case (icnl)
+      case (1, 4)
+         xon = .true.
+         yon = .true.
+      case (2, 5)
+         xon = .true.
+         zon = .true.
+      case(3, 6)
+         yon = .true.
+         zon = .true.
+      case default
+         xon = .true.
+         yon = .true.
+         zon = .true.
+      end select
       if(altc(1:3).eq.'avs' .and. altc(4:4) .ne. 'x') then
          write (temp_string, '(i2)') mout
          ic2 = len_trim(temp_string)
@@ -219,15 +253,15 @@ c------------------------------------------------------------------------------
          write (lu, '(42a)') pstring(1:length)
          if (idoff .ne. -1) then
 ! Permeability will be written
-            write (lu, 100) trim(title(1)), trim(units(1))
-            write (lu, 100) trim(title(2)), trim(units(2))
-            write (lu, 100) trim(title(3)), trim(units(3))
+            if (xon) write (lu, 100) trim(title(1)), trim(units(1))
+            if (yon) write (lu, 100) trim(title(2)), trim(units(2))
+            if (zon) write (lu, 100) trim(title(3)), trim(units(3))
          end if     
          if (ico2 .gt. 0 .or. ice .ne. 0) then
 ! Conductivity will be written
-            write (lu, 100) trim(title(4)), trim(units(4))
-            write (lu, 100) trim(title(5)), trim(units(5))
-            write (lu, 100) trim(title(6)), trim(units(6))
+            if (xon) write (lu, 100) trim(title(4)), trim(units(4))
+            if (yon) write (lu, 100) trim(title(5)), trim(units(5))
+            if (zon) write (lu, 100) trim(title(6)), trim(units(6))
          end if
 ! Porosity, bulk density and specific heat will be written
          write (lu, 100) trim(title(7)), trim(units(7))
@@ -270,7 +304,7 @@ c------------------------------------------------------------------------------
                   icord2 = 3
                   icord3 = 2
                case(3, 6)
-                  icord1 = 1
+                  icord1 = 2
                   icord2 = 3
                   icord3 = 1
                case default
@@ -313,33 +347,45 @@ c------------------------------------------------------------------------------
          ic1 = ic2 + 1
          if (idoff .ne. -1) then
 ! Permeability will be written
-            write (temp_string, fmt=nform) trim(title(1))
-            ic2 = ic2 + len_trim(temp_string)
-            print_title(ic1:ic2) = temp_string
-            ic1 = ic2 + 1
-            write (temp_string, fmt=nform) trim(title(2))
-            ic2 = ic2 + len_trim(temp_string)
-            print_title(ic1:ic2) = temp_string
-            ic1 = ic2 + 1
-            write (temp_string, fmt=nform) trim(title(3))
-            ic2 = ic2 + len_trim(temp_string)
-            print_title(ic1:ic2) = temp_string
-            ic1 = ic2 + 1
+            if (xon) then
+               write (temp_string, fmt=nform) trim(title(1))
+               ic2 = ic2 + len_trim(temp_string)
+               print_title(ic1:ic2) = temp_string
+               ic1 = ic2 + 1
+            end if
+            if (yon) then
+               write (temp_string, fmt=nform) trim(title(2))
+               ic2 = ic2 + len_trim(temp_string)
+               print_title(ic1:ic2) = temp_string
+               ic1 = ic2 + 1
+            end if
+            if (zon) then
+               write (temp_string, fmt=nform) trim(title(3))
+               ic2 = ic2 + len_trim(temp_string)
+               print_title(ic1:ic2) = temp_string
+               ic1 = ic2 + 1
+            end if
          end if     
          if (ico2 .gt. 0 .or. ice .ne. 0) then
 ! Conductivity will be written
-            write (temp_string, fmt=nform) trim(title(4))
-            ic2 = ic2 + len_trim(temp_string)
-            print_title(ic1:ic2) = temp_string
-            ic1 = ic2 + 1
-            write (temp_string, fmt=nform) trim(title(5))
-            ic2 = ic2 + len_trim(temp_string)
-            print_title(ic1:ic2) = temp_string
-            ic1 = ic2 + 1
-            write (temp_string, fmt=nform) trim(title(6))
-            ic2 = ic2 + len_trim(temp_string)
-            print_title(ic1:ic2) = temp_string
-            ic1 = ic2 + 1
+            if (xon) then
+               write (temp_string, fmt=nform) trim(title(4))
+               ic2 = ic2 + len_trim(temp_string)
+               print_title(ic1:ic2) = temp_string
+               ic1 = ic2 + 1
+            end if
+            if (yon) then
+               write (temp_string, fmt=nform) trim(title(5))
+               ic2 = ic2 + len_trim(temp_string)
+               print_title(ic1:ic2) = temp_string
+               ic1 = ic2 + 1
+            end if
+            if (zon) then
+               write (temp_string, fmt=nform) trim(title(6))
+               ic2 = ic2 + len_trim(temp_string)
+               print_title(ic1:ic2) = temp_string
+               ic1 = ic2 + 1
+            end if
          end if
 ! Porosity, bulk density, and specific heat will be written
          write (temp_string, fmt=nform) trim(title(7))
@@ -421,7 +467,7 @@ c------------------------------------------------------------------------------
 
       if (altc(1:4) .ne. 'avsx' .and. altc(1:3) .ne. 'sur') then
          if (ifdual .ne. 0) ifdual = 1
-         do j = 1,neq
+         do j = istart, iend
             ic1 = 1
             ic2 = 0
 
@@ -435,26 +481,52 @@ c------------------------------------------------------------------------------
                end do
             end if
 
-            i = j + neq*ifdual
+            i = j + neq_primary*ifdual
             write (temp_string, '(i10.10)') j
             ic2 = ic2 + len_trim(temp_string)
             vstring(ic1:ic2) = temp_string
             ic1 = ic2 + 1
             if (idoff .ne. -1) then
 ! Permeability will be written
-               write (temp_string, '(3(x,1p,g14.6))') pnx(i)*perm_fac, 
-     &              pny(i)*perm_fac, pnz(i)*perm_fac
-               ic2 = ic2 + len_trim(temp_string)
-               vstring(ic1:ic2) = temp_string
-               ic1 = ic2 + 1
+               if (xon) then
+                  write(temp_string, '(1x,1p,g14.6)') pnx(i)*perm_fac
+                  ic2 = ic2 + len_trim(temp_string)
+                  vstring(ic1:ic2) = temp_string
+                  ic1 = ic2 + 1
+               end if
+               if (yon) then
+                  write(temp_string, '(1x,1p,g14.6)') pny(i)*perm_fac
+                  ic2 = ic2 + len_trim(temp_string)
+                  vstring(ic1:ic2) = temp_string
+                  ic1 = ic2 + 1
+               end if
+               if (zon) then
+                  write(temp_string, '(1x,1p,g14.6)') pnz(i)*perm_fac
+                  ic2 = ic2 + len_trim(temp_string)
+                  vstring(ic1:ic2) = temp_string
+                  ic1 = ic2 + 1
+               end if
             end if     
             if (ico2 .gt. 0 .or. ice .ne. 0) then
 ! Conductivity will be written
-               write (temp_string, '(3(x,1p,g14.6))') thx(i), thy(i), 
-     &              thz(i)
-               ic2 = ic2 + len_trim(temp_string)
-               vstring(ic1:ic2) = temp_string
-               ic1 = ic2 + 1
+               if (xon) then
+                  write (temp_string, '(1x,1p,g14.6)') thx(i)
+                  ic2 = ic2 + len_trim(temp_string)
+                  vstring(ic1:ic2) = temp_string
+                  ic1 = ic2 + 1
+               end if
+               if (yon) then
+                  write (temp_string, '(1x,1p,g14.6)') thy(i)
+                  ic2 = ic2 + len_trim(temp_string)
+                  vstring(ic1:ic2) = temp_string
+                  ic1 = ic2 + 1
+               end if
+               if (zon) then
+                  write (temp_string, '(1x,1p,g14.6)') thz(i)
+                  ic2 = ic2 + len_trim(temp_string)
+                  vstring(ic1:ic2) = temp_string
+                  ic1 = ic2 + 1
+               end if
             end if
 ! Porosity and specific heat will be written
             write (temp_string,'(3(x,1p,g14.6))') ps(i), denr(i), cpr(i)
@@ -510,8 +582,8 @@ c for river or wells, "geoname" will only have neq_primary nodes
 
       else
          if (ifdual .ne. 0) ifdual = 1
-         do j = 1,neq
-            i = j + neq*ifdual
+         do j = istart, iend
+            i = j + neq_primary*ifdual
             ic1 = 1
             write (temp_string, '(i10.10)') j
             ic2 = len_trim(temp_string)
@@ -519,20 +591,48 @@ c for river or wells, "geoname" will only have neq_primary nodes
             ic1 = ic2 + 1
             if (idoff .ne. -1) then
 ! Permeability will be written
-               write (temp_string, '(3(a,1p,g14.6))')
-     &              dls, pnx(i)*perm_fac, dls, pny(i)*perm_fac, dls,
-     &              pnz(i)*perm_fac
-               ic2 = ic2 + len_trim(temp_string)
-               vstring(ic1:ic2) = temp_string
-               ic1 = ic2 + 1
+               if (xon) then
+                  write (temp_string, '(a,1p,g14.6)')
+     &              dls, pnx(i)*perm_fac
+                  ic2 = ic2 + len_trim(temp_string)
+                  vstring(ic1:ic2) = temp_string
+                  ic1 = ic2 + 1
+               end if
+               if (yon) then
+                  write (temp_string, '(a,1p,g14.6)')
+     &              dls, pny(i)*perm_fac
+                  ic2 = ic2 + len_trim(temp_string)
+                  vstring(ic1:ic2) = temp_string
+                  ic1 = ic2 + 1
+               end if
+               if (zon) then
+                  write (temp_string, '(a,1p,g14.6)')
+     &              dls, pnz(i)*perm_fac
+                  ic2 = ic2 + len_trim(temp_string)
+                  vstring(ic1:ic2) = temp_string
+                  ic1 = ic2 + 1
+               end if
             end if     
             if (ico2 .gt. 0 .or. ice .ne. 0) then
 ! Conductivity will be written
-               write (temp_string, '(3(a,1p,g14.6))') dls, thx(i),
-     &              dls, thy(i), dls, thz(i)
-               ic2 = ic2 + len_trim(temp_string)
-               vstring(ic1:ic2) = temp_string
-               ic1 = ic2 + 1
+               if (xon) then
+                  write (temp_string, '(a,1p,g14.6)') dls, thx(i)
+                  ic2 = ic2 + len_trim(temp_string)
+                  vstring(ic1:ic2) = temp_string
+                  ic1 = ic2 + 1
+               end if
+               if (yon) then
+                  write (temp_string, '(a,1p,g14.6)') dls, thy(i)
+                  ic2 = ic2 + len_trim(temp_string)
+                  vstring(ic1:ic2) = temp_string
+                  ic1 = ic2 + 1
+               end if
+               if (zon) then
+                  write (temp_string, '(a,1p,g14.6)') dls, thz(i)
+                  ic2 = ic2 + len_trim(temp_string)
+                  vstring(ic1:ic2) = temp_string
+                  ic1 = ic2 + 1
+               end if
             end if
 ! Porosity, bulk density, and specific heat will be written
             write (temp_string, '(3(a,1p,g14.6))') dls, ps(i), 
@@ -570,7 +670,7 @@ c for river or wells, "geoname" will only have neq_primary nodes
          end do
 
       end if
-
+      iocord = iocord_temp
       
  100  format(a, ', ', a)
  200  format("( ' ", a, "', a)")

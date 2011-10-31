@@ -421,7 +421,7 @@ C**********************************************************************
       parameter(eosmg=1.0001)
       parameter(eosml=0.99)
       parameter(eostol=0.0001)
-      parameter(stepl=0.95)
+c      parameter(stepl=0.95)
       parameter(pcimin=0.0)
       parameter(phase_mult=1.00)
       parameter(phase_sat=1.0d-9)
@@ -464,8 +464,13 @@ c these are maybe best for geothermal systems
 c
 c determine variable set
 c
+      if(nr_stop.eq.0) then
+         stepl = 0.95
+      else
+         stepl = strd_iter
+      endif
       if(nr_stop.ne.0.and.iad.ge.1.and.ifl.eq.1)then
-       call nr_stop_ctr(1)
+         call nr_stop_ctr(1)
       endif
       if(ifl.eq.0) then
 c
@@ -475,329 +480,335 @@ c     by phase change instructions
          
          
 c set newton raphson step length to 1.0 at beginning of timestep
-        if(iad.eq.0) then
-	   strd    =1.0
-	   ieos_ch = 0
-	  endif
+         if(iad.eq.0) then
+            strd    =1.0
+            ieos_ch = 0
+         endif
 cc
 c
 c new loop to check on degree of freedom 
 c if idof=1, the problem is either heat conduction or saturated only
 c
-        if(idof.ne.1) then
-         if(ico2.eq.0) then
+         if(idof.ne.1) then
+            if(ico2.eq.0) then
 c
 c     determine phase state for pure water
 c
-            do i=1,neq
-               ij=i+ndummy
-               pl=phi(ij)
-               x=pl
-               tl=t(ij)
-               sl=s(ij)
-               ieosd=ieos(ij)
-               if(ieosd.eq.0) ieosd=1
-               ieosdc=ieosd
+               if(icarb.eq.0) then
+                  do i=1,neq
+                     ij=i+ndummy
+                     pl=phi(ij)
+                     x=pl
+                     tl=t(ij)
+                     sl=s(ij)
+                     ieosd=ieos(ij)
+                     if(ieosd.eq.0) ieosd=1
+                     ieosdc=ieosd
 c
 c     check if eos change is necessary
 c
-               if(ps(ij).eq.0.0.or.idof.le.1) then
+                     if(ps(ij).eq.0.0.or.idof.le.1) then
 c                 ieosdc=-1 gaz 10-17-2001 do nothing
-               elseif(ieosd.eq.1) then
+                     elseif(ieosd.eq.1) then
 c
 c     liquid only state
 c
-                  tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,1)
+                       tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,1)
 C*****
 C***** AF 11/15/10
 C*****
-                if(tableFLAG.EQ.1) tboil = 1201.   !  phs 4/27/99
+                        if(tableFLAG.EQ.1) tboil = 1201. !  phs 4/27/99
 C*****
 c     change to 2-phase
-                  if(tl.ge.tboil*phase_mult.
-     &				and.days.ge.time_ieos(ij)) then
-                     ieosdc=2
-c                     s(ij)=eosml
-                     s(ij)=1.                    
-                     t(ij)=tboil
-                     time_ieos(ij) = days + time_ch
-c                     call phase_balance_ctr(1,ij,phi(ij),t(ij),s(ij))
-                  endif
+                        if(tl.ge.tboil*phase_mult.
+     &                       and.days.ge.time_ieos(ij)) then
+                           ieosdc=2
+c     s(ij)=eosml
+                           s(ij)=1.                    
+                           t(ij)=tboil
+                           time_ieos(ij) = days + time_ch
+c     call phase_balance_ctr(1,ij,phi(ij),t(ij),s(ij))
+                        endif
 c
-               elseif(ieosd.eq.2) then
+                     elseif(ieosd.eq.2) then
 c
 c     2-phase conditions
 c
-                  if(sl.gt.1..and.days.ge.time_ieos(ij)) then
+                        if(sl.gt.1..and.days.ge.time_ieos(ij)) then
 c     change to liquid only conditions
-                     ieosdc=1
+                           ieosdc=1
 c                     t(ij)=psatl(pl,pcp(ij),dpcef(ij),
 c     2                    dtsatp,dpsats,1)*eosml
-                     t(ij)=psatl(pl,pcp(ij),dpcef(ij),
-     2                    dtsatp,dpsats,1)     
-                     s(ij)=1.0
-                     time_ieos(ij) = days + time_ch
-                  elseif(s(ij).le.0.0.and.days.ge.time_ieos(ij)) then
+                           t(ij)=psatl(pl,pcp(ij),dpcef(ij),
+     2                          dtsatp,dpsats,1)     
+                           s(ij)=1.0
+                           time_ieos(ij) = days + time_ch
+                        elseif(s(ij).le.0.0.and.days.ge.time_ieos(ij))
+     &                          then
 c     change to gas only
-                     ieosdc=3
-                     t(ij)=psatl(pl,pcp(ij),dpcef(ij),
-     2                    dtsatp,dpsats,1)*eosmg
-                     s(ij)=0.0
-                     time_ieos(ij) = days + time_ch
-                  endif
+                           ieosdc=3
+                           t(ij)=psatl(pl,pcp(ij),dpcef(ij),
+     2                          dtsatp,dpsats,1)*eosmg
+                           s(ij)=0.0
+                           time_ieos(ij) = days + time_ch
+                        endif
 c     
-               elseif(ieosd.eq.3) then
+                     elseif(ieosd.eq.3) then
 c
 c     gas conditions
 c     
-                  tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,1)
-                  if(tl.le.tboil/phase_mult.
-     &				and.days.ge.time_ieos(ij)) then
+                       tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,1)
+                        if(tl.le.tboil/phase_mult.
+     &                       and.days.ge.time_ieos(ij)) then
 c     change to 2-phase
-                     s(ij)=satml         
-                     t(ij)=tboil
-                     ieosdc=2
-                     time_ieos(ij) = days + time_ch
-                  endif
-               endif
+                           s(ij)=satml         
+                           t(ij)=tboil
+                           ieosdc=2
+                           time_ieos(ij) = days + time_ch
+                        endif
+                     endif
 c
 c
 c     remember if danl eos change occured
 c     tally eos numbers
 c     
-               if(ieosd.ne.ieosdc) then
-                  strd    =stepl
-	            ieos_ch(ij) = ieos_ch(ij) +1
-	            if (ieos_ch(ij).gt.3) 
-     &	  	    write (iout,233) 
-     &            ij, ieos_ch(ij), (cord(ij,k),k=1,3)
-               endif
-               ieos(ij)=ieosdc
-            enddo
-233    format('$$$$$$$  >>>>>> ', 2i8,1p,3g14.4)		       
+                     if(ieosd.ne.ieosdc) then
+                        strd    =stepl
+                        ieos_ch(ij) = ieos_ch(ij) +1
+                        if (ieos_ch(ij).gt.3) 
+     &                       write (iout,233) 
+     &                       ij, ieos_ch(ij), (cord(ij,k),k=1,3)
+                     endif
+                     ieos(ij)=ieosdc
+                  enddo
+ 233              format('$$$$$$$  >>>>>> ', 2i8,1p,3g14.4)
+          else if(icarb.ne.0) then
+            call icectrco2(-1,0)
+            ieos = 1
+          endif 
 c     
-         else if(ico2.gt.0) then
+               else if(ico2.gt.0) then
 c
 c     determine phase state for water and noncondensible
 c
-            do i=1,neq
-               ij=i+ndummy
-               pl=phi(ij)
-               pcl=pci(ij)
-               pcl=max(pcl,pcimin)
-               pci(ij)=pcl
-               x=pl-pcl
-               tl=t(ij)
-               sl=s(ij)
-               ieosd=ieos(ij)
-               if(ieosd.eq.0) ieosd=1
-               ieosdc=ieosd
+                  do i=1,neq
+                     ij=i+ndummy
+                     pl=phi(ij)
+                     pcl=pci(ij)
+                     pcl=max(pcl,pcimin)
+                     pci(ij)=pcl
+                     x=pl-pcl
+                     tl=t(ij)
+                     sl=s(ij)
+                     ieosd=ieos(ij)
+                     if(ieosd.eq.0) ieosd=1
+                     ieosdc=ieosd
 c     
 c     check if eos change is necessary
 c
-               if(ps(ij).eq.0.0.or.idof.le.1) then
+                     if(ps(ij).eq.0.0.or.idof.le.1) then
 c                 ieosdc=-1 gaz 10-17-2001 do nothing
-               endif
+                     endif
 c 
-               if(ieosd.eq.1) then
+                     if(ieosd.eq.1) then
 c
 c     liquid only state
 c
-                  tl=t(ij)
-                  pboil=psatl(tl,pcp(ij),dpcef(ij),dtsatp,dpsats,0)
+                        tl=t(ij)
+                       pboil=psatl(tl,pcp(ij),dpcef(ij),dtsatp,dpsats,0)
 c     change to 2-phase
-                  if(x.le.pboil/phase_mult) then
-                     ieosdc=2
-                     pci(ij)=max(pl-pboil,0.0d00)
-                     s(ij)=eosml
-c
-                  endif
-               endif
+                        if(x.le.pboil/phase_mult) then
+                           ieosdc=2
+                           pci(ij)=max(pl-pboil,0.0d00)
+                           s(ij)=eosml
+c     
+                        endif
+                     endif
 c 
-               if(ieosd.eq.2) then
+                     if(ieosd.eq.2) then
 c
 c     2-phase conditions
-                  if(sl.ge.1.) then
+                        if(sl.ge.1.) then
 c     change to liquid only conditions
-                     ieosdc=1
-c                    tl=t(ij)*eosml
-c                    t(ij)=tl
-                     pci(ij)=pl-psatl(tl,pcp(ij),dpcef(ij),
-     2                    dpsatt,dpsats,0)
-c                    pci(ij)=max(pl-pboil,0.0d00)
-                     s(ij)=1.0
-                  endif
+                           ieosdc=1
+c     tl=t(ij)*eosml
+c     t(ij)=tl
+                           pci(ij)=pl-psatl(tl,pcp(ij),dpcef(ij),
+     2                          dpsatt,dpsats,0)
+c     pci(ij)=max(pl-pboil,0.0d00)
+                           s(ij)=1.0
+                        endif
 c     change to gas only
-                  if(sl.le.0.0) then
-                   ieosdc=3
-                   s(ij)=0.0
-                   strd    =stepl
-                  endif
-               endif
+                        if(sl.le.0.0) then
+                           ieosdc=3
+                           s(ij)=0.0
+                           strd    =stepl
+                        endif
+                     endif
 c 
-               if(ieosd.eq.3.or.ieosdc.eq.3) then
+                     if(ieosd.eq.3.or.ieosdc.eq.3) then
 c
 c     gas conditions
 c
 c                 pvapor=psatl(to(ij),pcp(ij),dpcef(ij),dpsatt,dpsats,0)
-                  pvapor=psatl(tl,pcp(ij),dpcef(ij),dpsatt,dpsats,0)
+                      pvapor=psatl(tl,pcp(ij),dpcef(ij),dpsatt,dpsats,0)
 c     check vapor pressure against saturated vapor pressure
 c     change if lower
-                  if(x.ge.pvapor) then
-                     s(ij)=0.0   
-                     if(ieosd.eq.3) then
-                      s(ij)= satml
+                        if(x.ge.pvapor) then
+                           s(ij)=0.0   
+                           if(ieosd.eq.3) then
+                              s(ij)= satml
+                           endif
+                           ieosdc=2
+                           pci(ij)=max(pl-pvapor,pcimin)
+                           strd    =stepl
+                        endif
                      endif
-                     ieosdc=2
-                     pci(ij)=max(pl-pvapor,pcimin)
-                     strd    =stepl
-                  endif
-               endif
 c     
 c
 c     remember if danl eos change occured
 c     tally eos numbers
 c
-               if(ieosd.ne.ieosdc) then
+                     if(ieosd.ne.ieosdc) then
 
-                  strd    =stepl
-	            ieos_ch(ij) = ieos_ch(ij) +1
-
-	            if (ieos_ch(ij).gt.3) 
-     &	  	    write (iout,233) 
-     &            ij, ieos_ch(ij), (cord(ij,k),k=1,3)
-               endif
-               ieos(ij)=ieosdc
-            enddo    
-         else if(ico2.lt.0.and.ice.eq.0)then
+                        strd    =stepl
+                        ieos_ch(ij) = ieos_ch(ij) +1
+                        
+                        if (ieos_ch(ij).gt.3) 
+     &                       write (iout,233) 
+     &                       ij, ieos_ch(ij), (cord(ij,k),k=1,3)
+                     endif
+                     ieos(ij)=ieosdc
+                  enddo    
+               else if(ico2.lt.0.and.ice.eq.0)then
 c
 c     determine phase state for isothermal air-water flow
 c
-            call airctr(1,ndummy)
-         else if(ico2.lt.0.and.ice.ne.0)then
+                  call airctr(1,ndummy)
+               else if(ico2.lt.0.and.ice.ne.0)then
 c
 c     determine phase state for low-temperature solid-liquid-gas system
 c
-            call icectr(1,ndummy)
+                  call icectr(1,ndummy)
 c RJP 04/10/07 modified for CO2
-         else if(icarb.eq.1) then
-            call icectrco2(1,ndummy)
-            call icectrco2(-34,ndummy)
-         endif
+               else if(icarb.eq.1) then
+                  call icectrco2(1,ndummy)
+                  call icectrco2(-34,ndummy)
+               endif
 c end block for idof.ne.1
-      endif
+            endif
 c
 c     call eos routines
 c
 c
 c     one call to vcon to explicity update thermal conductivities
 c
-         if (iad.eq.0) call vcon(1,ndummy)
+            if (iad.eq.0) call vcon(1,ndummy)
 c
-         if(ico2.gt.0) then
-            call thrmwc(ndummy)
-         else if(ico2.eq.0) then
+            if(ico2.gt.0) then
+               call thrmwc(ndummy)
+            else if(ico2.eq.0) then
 c RJP 04/10/07
             if(icarb.eq.1) then
+               call icectrco2(-34,ndummy)
 c              call icectrco2(3,ndummy)
 c              call icectrco2(-3,ndummy)
-c              call icectrco2(33,ndummy)
-c              call icectrco2(1,ndummy)
-               call icectrco2(-34,ndummy)
+               call icectrco2(33,ndummy)
                call icectrco2(-35,ndummy)
-            else
-               call thermw(ndummy)
+               else
+                  call thermw(ndummy)
+               end if
+            else if(ico2.lt.0.and.ice.eq.0)then
+               call airctr(3,ndummy)
+            else if(ico2.lt.0.and.ice.ne.0)then
+               call icectr(-34,ndummy)
+               call icectr(3,ndummy)
+               call icectr(-3,ndummy)
+               call icectr(33,ndummy)
+               call icectr(-35,ndummy)
             end if
-         else if(ico2.lt.0.and.ice.eq.0)then
-            call airctr(3,ndummy)
-         else if(ico2.lt.0.and.ice.ne.0)then
-            call icectr(-34,ndummy)
-            call icectr(3,ndummy)
-            call icectr(-3,ndummy)
-            call icectr(33,ndummy)
-            call icectr(-35,ndummy)
-         end if
 c     
 c
 c      n-r corrections
 c
-      else
-         if(ico2.eq.0) then
+         else
+            if(ico2.eq.0) then
 c
 c     pure water
 c
 c           strd is passed through common
-            nr1=nrhs(1)
-            nr2=nrhs(2)
-            do i=1,neq
-               i1=i+nr1
-               i2=i+nr2
-               ieosd=ieos(i)
-               if(ps(i).eq.0.0.or.ieosd.eq.0) then
+               nr1=nrhs(1)
+               nr2=nrhs(2)
+               do i=1,neq
+                  i1=i+nr1
+                  i2=i+nr2
+                  ieosd=ieos(i)
+                  if(ps(i).eq.0.0.or.ieosd.eq.0) then
 c gaz 10-18-2001
-                  t(i)=t(i)-bp(i2)*strd
-               elseif(ieosd.eq.1) then
-                  phi(i)=phi(i)-bp(i1)*strd
-                  t(i)=t(i)-bp(i2)*strd
-               elseif(ieosd.eq.2) then
-                  phi(i)=phi(i)-bp(i1)*strd
-                  s(i)=s(i)-bp(i2)*strd
-               elseif(ieosd.eq.3) then
-                  phi(i)=phi(i)-bp(i1)*strd
-                  t(i)=t(i)-bp(i2)*strd
-               endif
-            enddo    
-         else if(ico2.gt.0) then
+                     t(i)=t(i)-bp(i2)*strd
+                  elseif(ieosd.eq.1) then
+                     phi(i)=phi(i)-bp(i1)*strd
+                     t(i)=t(i)-bp(i2)*strd
+                  elseif(ieosd.eq.2) then
+                     phi(i)=phi(i)-bp(i1)*strd
+                     s(i)=s(i)-bp(i2)*strd
+                  elseif(ieosd.eq.3) then
+                     phi(i)=phi(i)-bp(i1)*strd
+                     t(i)=t(i)-bp(i2)*strd
+                  endif
+               enddo    
+            else if(ico2.gt.0) then
 c
 c     water and noncondensible
 c
-c           strd is passed through common
-            nr1=nrhs(1)
-            nr2=nrhs(2)
-            nr3=nrhs(3)
-            do i=1,neq
-               i1=i+nr1
-               i2=i+nr2
-               i3=i+nr3
-               ieosd=ieos(i)
-               if(ps(i).eq.0.0) then
-c gaz 10-18-2001
-                  t(i)=t(i)-bp(i2)*strd
-               elseif(ieosd.eq.1) then
-                  phi(i)=phi(i)-bp(i1)*strd
-                  t(i)=t(i)-bp(i2)*strd
-                  pci(i)=pci(i)-bp(i3)*strd
-               elseif(ieosd.eq.2) then
-                  phi(i)=phi(i)-bp(i1)*strd
-                  s(i)=s(i)-bp(i2)*strd
+c     strd is passed through common
+               nr1=nrhs(1)
+               nr2=nrhs(2)
+               nr3=nrhs(3)
+               do i=1,neq
+                  i1=i+nr1
+                  i2=i+nr2
+                  i3=i+nr3
+                  ieosd=ieos(i)
+                  if(ps(i).eq.0.0) then
+c     gaz 10-18-2001
+                     t(i)=t(i)-bp(i2)*strd
+                  elseif(ieosd.eq.1) then
+                     phi(i)=phi(i)-bp(i1)*strd
+                     t(i)=t(i)-bp(i2)*strd
+                     pci(i)=pci(i)-bp(i3)*strd
+                  elseif(ieosd.eq.2) then
+                     phi(i)=phi(i)-bp(i1)*strd
+                     s(i)=s(i)-bp(i2)*strd
 c  GAZ 5/1/98          
-                  t(i)=t(i)-bp(i3)*strd
-               elseif(ieosd.eq.3) then
-                  phi(i)=phi(i)-bp(i1)*strd
-                  t(i)=t(i)-bp(i2)*strd
-                  pci(i)=pci(i)-bp(i3)*strd
-               endif
+                     t(i)=t(i)-bp(i3)*strd
+                  elseif(ieosd.eq.3) then
+                     phi(i)=phi(i)-bp(i1)*strd
+                     t(i)=t(i)-bp(i2)*strd
+                     pci(i)=pci(i)-bp(i3)*strd
+                  endif
 c big change gaz 11/26/96
-            pci(i)=max(0.0d00,pci(i))
-            s(i)=min(1.d00,max(0.0d00,s(i)))
-            enddo      
-         else if(ico2.lt.0.and.ice.eq.0) then
+                  pci(i)=max(0.0d00,pci(i))
+                  s(i)=min(1.d00,max(0.0d00,s(i)))
+               enddo      
+            else if(ico2.lt.0.and.ice.eq.0) then
 c     
 c     make corrections for isothermal air-water mixture
 c     
-            call airctr(2,ndummy)
-         else if(ico2.lt.0.and.ice.ne.0) then
+               call airctr(2,ndummy)
+            else if(ico2.lt.0.and.ice.ne.0) then
 c     
 c     make corrections for solid-liquid-gas mixture
 c     
-            call icectr(2,ndummy)
+               call icectr(2,ndummy)
 c RJP 04/10/07 added CO2 part
 c this is now in bnswer 111410 (gaz)
 c         else if(icarb.eq.1) then
 c            call icectrco2(2,ndummy)
-         endif
+            endif
 c
-      endif
+         endif
+
 
       return
       end

@@ -321,7 +321,9 @@ c Formatted output
          write(isave, '(i9, 1x, a4)') n, dum_type
          if (write_temp) then
             write(isave, '(a11)') 'temperature'
-            write(isave, 6002)  (max(to(mi),tolw),   mi=1,n )
+c   gaz 012111 removed tolw for printing neg temperatures (ice models)            
+c            write(isave, 6002)  (max(to(mi),tolw),   mi=1,n )
+           write(isave, 6002)  (to(mi),   mi=1,n )
          end if
          if (write_sat .and. irdof .ne. 13 .and. ihead .eq. 0) then
             write(isave, '(a11)') 'saturation '
@@ -474,7 +476,9 @@ c Unformatted output
          if (write_temp) then
             dummy_string = 'temperature'
             write(isave) dummy_string
-            write(isave)  (max(to(mi),tolw),   mi=1,n )
+c   gaz 012111 removed tolw for printing neg temperatures (ice models)              
+c            write(isave)  (max(to(mi),tolw),   mi=1,n )
+          write(isave)  (to(mi),   mi=1,n )
          end if
          if (write_sat .and. irdof .ne. 13 .and. ihead .eq. 0) then
             dummy_string = 'saturation '

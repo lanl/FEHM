@@ -231,6 +231,7 @@
       logical, dimension (2) :: read_strxy = .FALSE.
       logical, dimension (2) :: read_strxz = .FALSE.
       logical, dimension (2) :: read_stryz = .FALSE.
+      residual_stress = .FALSE.
 
       mass_read = .FALSE.
       co2_read = .FALSE.

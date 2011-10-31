@@ -207,7 +207,8 @@ C***********************************************************************
 c
 c
 ! Guessed at value for grav_air
-      grav_air = 0.
+c      grav_air = 0.
+       grav_air = grav
 c changed by avw 4/95 -- entered into new version by seh
       neqp1=neq+1
       if(i.gt.neq) then
@@ -333,7 +334,18 @@ c this connection broken, then added when well equations are generated
               sx2c = 0.0
             endif
             dis2=delx2+dely2+delz2
-            if(dis2.gt.dis_tol.and.iwd.gt.0) then
+            if(gdkm_flag.eq.2.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) then
+               pxy = sx2c*alxkb     
+            elseif(gdkm_flag.eq.2.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
+     &       then   
+               pxy = sx2c*alxi    
+            elseif(gdkm_flag.eq.3.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) 
+     &       then   
+               pxy = sx2c*alxi    
+            elseif(gdkm_flag.eq.3.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
+     &       then   
+               pxy = sx2c*alxkb                                        
+            elseif(dis2.gt.dis_tol.and.iwd.gt.0) then
                pxy=sx2c*dis2/(delx2/perml(1)+
      &              dely2/perml(2)+delz2/perml(3))
             else
@@ -342,13 +354,24 @@ c this connection broken, then added when well equations are generated
             pxy = pxy*reduction_factor
             pxyi=pxy*(phikb-phii)
             pxyh=pxy*(pvikb-pvii)
-            if(dis2.gt.dis_tol.and.iwd.gt.0) then
+            if(gdkm_flag.eq.2.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) then
+               sx3c = sx2t*thxkb     
+            elseif(gdkm_flag.eq.2.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
+     &       then   
+               sx3c = sx2t*thxi    
+            elseif(gdkm_flag.eq.3.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) 
+     &       then   
+               sx3c = sx2t*thxi    
+            elseif(gdkm_flag.eq.3.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
+     &       then   
+               sx3c = sx2t*thxkb                                        
+            else if(dis2.gt.dis_tol.and.iwd.gt.0) then
               sx3c=sx2c*dis2/
      &          (delx2/sx2t+dely2/sx3t+
      &           delz2/sxzt)
             else
               sx3c=sx2c*sx_mult*max(sx2t,sx3t,sxzt)
-            endif
+            endif          
             t1(neighc)=pxyi
             t2(neighc)=pxyh
             t3(neighc)=pxy
@@ -383,20 +406,41 @@ c
             sx3t=2.*thyi*thykb/(thyi+thykb)
             pvikb=phi(kb)
             phikb=pvikb-pcp(kb)
-c           pxy=sx2c*perml(1)+sx3c*perml(2)
             delx2=(cord(kz,1)-cord(iz,1))**2
             dely2=(cord(kz,2)-cord(iz,2))**2
             dis2=delx2+dely2
-            if(dis2.gt.dis_tol.and.iwd.gt.0) then
-              pxy=sx2c*dis2/(delx2/perml(1)+
-     &           dely2/perml(2))
+            if(gdkm_flag.eq.2.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) then
+               pxy = sx2c*alxkb     
+            elseif(gdkm_flag.eq.2.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
+     &       then   
+               pxy = sx2c*alxi    
+            elseif(gdkm_flag.eq.3.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) 
+     &       then   
+               pxy = sx2c*alxi    
+            elseif(gdkm_flag.eq.3.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
+     &       then   
+               pxy = sx2c*alxkb                                        
+            elseif(dis2.gt.dis_tol.and.iwd.gt.0) then
+               pxy=sx2c*dis2/(delx2/perml(1)+
+     &              dely2/perml(2))
             else
-              pxy=sx2c*sx_mult*max(perml(1),perml(2))
+               pxy=sx2c*sx_mult*max(perml(1),perml(2))
             endif
             pxy = pxy*reduction_factor
             pxyi=pxy*(phikb-phii)
-            pxyh=pxy*(pvikb-pvii)
-            if(dis2.gt.dis_tol.and.iwd.gt.0) then
+            pxyh=pxy*(pvikb-pvii)            
+            if(gdkm_flag.eq.2.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) then
+               sx3c = sx2t*thxkb     
+            elseif(gdkm_flag.eq.2.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
+     &       then   
+               sx3c = sx2t*thxi    
+            elseif(gdkm_flag.eq.3.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) 
+     &       then   
+               sx3c = sx2t*thxi    
+            elseif(gdkm_flag.eq.3.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
+     &       then   
+               sx3c = sx2t*thxkb                                        
+            elseif(dis2.gt.dis_tol.and.iwd.gt.0) then
               sx3c=sx2c*dis2/
      &          (delx2/sx2t+dely2/sx3t)
             else

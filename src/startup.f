@@ -628,12 +628,13 @@ c neq_primary still defined as gdpm primary grid
          call area_length_calc(3) 
 c         
          if (gdpm_flag .ne. 0) call add_gdpm
+c modify permeabilities if necessary 
+         if (gdkm_flag .ne. 0.and.gdkm_flag .le. 3) call gdkm_connect(3)
 c
 c calculate connectivity for generalized permeability mode
-c
 c         
-         if (gdkm_flag .eq. 1) call gdkm_calc(1)
-c neq_primary now defined as full grid          
+         if (gdkm_flag .ne. 0.and.gdkm_flag .le. 3) call gdkm_calc(1)
+c neq_primary now defined as full grid        
 c
 c gaz 11-09-2001 allocation of istrw_itfc and istrw_cold
 c done here after call to anonp,storsx, or structured
@@ -666,7 +667,14 @@ c printout to file connectivities
             call river_ctr(-4)
          endif
       end if
-
+c
+c  calculate gridblock height (if necessary) for subsidence calculations
+c  (ico2 chance so embedded call to airctr in subsidence) goes through
+      i = ico2
+      ico2 = -1
+      call subsidence(-1)
+      ico2 = i
+c      
       if(interface_flag.ne.0) call setconnarray
 c call sx_combine to break connections to fixed type BCs
       if(ianpe.eq.0) then
@@ -756,14 +764,16 @@ c
       a_vxy=0
       a_wvxy=0
 
-c
+c new placement of peint
+      if (i_init.ne.0) call peint
       if (iread .gt. 0) call diskread
       close (1010)
 
 c added new feature -- set initial time if requested in time macro
       if (irsttime.ne.0) days=rsttime
-      if (iread .le. 0 .and. (tin0 .gt. 0.0 .or. tin1.gt.0.0))
-     &     call peint
+c gaz 092111 have moved  above
+c      if (iread .le. 0 .and. (tin0 .gt. 0.0 .or. tin1.gt.0.0))
+c    &     call peint
 c      if (iread.le.0 .and. igrad. ne.0) call gradctr(1)
 c     gaz 9-26-04
       if (igrad. ne.0) call gradctr(1)
@@ -1191,7 +1201,8 @@ c**** set array ordering if necessary ****
       if(compute_flow .or. iccen .eq. 1) then
          call setord
       end if
-      
+c**** initialize porosities in subsidence calcs ****
+      call subsidence(-2)      
 c**** initialize coeffients adjust volumes in dual porosity calcs ****
       call dual (2)
 
@@ -1199,7 +1210,8 @@ c**** initialize coefficients adjust volumes in dpdp calcs ****
       call dpdp (1)
       do i = 1, n
          volume(i) = sx1(i)
-         if (to (i) .le. zero_t)   to (i) = tin0
+c gaz 01-18-2011 chane code to allow for negative temperatures         
+c         if (to (i) .le. zero_t)   to (i) = tin0
          if(irdof.ne.13) then
             if (pho(i) .le. zero_t)   pho (i) = pein
          end if
@@ -1225,7 +1237,7 @@ c phini and tini have be read in from disk, just set pressure
          psini = ps
       endif
 c initialize porosity model -5 if necessary
-      call porosi(5)
+      if(iporos.ne.0) call porosi(5)
 c apply distributed forces      
       call stressctr(2,0)
 c this call handled in call to porosi above
@@ -1285,7 +1297,7 @@ c get cell lengths for wtsi if necessary
       endif
 
 c change porosity and permeability if necessary if Gangi model is used
-      call porosi(3)
+      if(iporos.ne.0)call porosi(3)
 
 c**** determine initial coefficients for thermo fits ****
       call coeffc
@@ -1342,28 +1354,10 @@ c gaz 10-18-2001 following used ase dummy parameters
 c rnwn1, rnwn2, rnwn3, rnwn, rnwd1, rnwd2, rnwd3, rnwd
             call methane_properties(2,2,phi(i),t(i),rnwn1, rnwn2,
      &           rolf(i),rnwn3, rnwn, rnwd1, rnwd2)
-         else
+         else 
 c     nonisothermal problem
             do i = 1, n0
-               rnwn1=crl(1,1)+crl(2,1)*phi(i)+
-     2              crl(3,1)*phi(i)*phi(i)+
-     3              crl(4,1)*phi(i)*phi(i)*phi(i)
-               rnwn2=crl(5,1)*t(i)+crl(6,1)*t(i)*t(i)+
-     2              crl(7,1)*t(i)*t(i)*t(i)
-               rnwn3=crl(8,1)*t(i)*phi(i)+
-     2              crl(10,1)*t(i)*t(i)*phi(i)+
-     3              crl(9,1)*t(i)*phi(i)*phi(i)
-               rnwn=rnwn1+rnwn2+rnwn3
-               rnwd1=crl(11,1)+crl(12,1)*phi(i)+
-     2              crl(13,1)*phi(i)*phi(i)+
-     3              crl(14,1)*phi(i)*phi(i)*phi(i)
-               rnwd2=crl(15,1)*t(i)+crl(16,1)*t(i)*t(i)+
-     2              crl(17,1)*t(i)*t(i)*t(i)
-               rnwd3=crl(18,1)*t(i)*phi(i)+
-     2              crl(20,1)*t(i)*t(i)*phi(i)+
-     3              crl(19,1)*t(i)*phi(i)*phi(i)
-               rnwd=rnwd1+rnwd2+rnwd3
-               rolf(i)=rnwn/rnwd
+               call water_density(t(i),phi(i),rolf(i))
             end do
          end if
       end if
@@ -1436,12 +1430,19 @@ c**** initialize noncondensible and ice arrays if applicable ****
 c gaz 05-08-2009 moved here so stress initcalcs show up at time = 0
 c calculate initial stress field and displacements
 c 
+         call stress_perm(-3,0)
          call stress_uncoupled(1)
 c 
 c reset boundary conditions for principal stresses (fraction of lithostatic)
 c
          call stressctr(3,0) 
-c               
+c  
+c
+c set neq_primary back to true primary for gdkm
+c
+      if(gdkm_flag.ne.0) then
+       neq_primary = neq_gdkm
+      endif
 c
 !      if(contim.ge.0) then
          call contr (-1)
@@ -1495,6 +1496,10 @@ c apply areas, weights etc.
 c
       call area_vol_weightctr(2)
 c
+c modify area/d and volumes from read-in data
+c
+      call coef_replace_ctr(1)
+      call coef_replace_ctr(2)
 c correct air pressures that are less than pref
 c correct appropriate boundary pressures and change to seepage face
 c conditions if necessary
@@ -1575,7 +1580,7 @@ c
             end do
          end if
       end if
-
+c      
 ! zvd - 07-Oct-2010 Add optional printout of rlp table
       if (ishisrlp .ne. 0) then
          if (icarb .eq. 0) then

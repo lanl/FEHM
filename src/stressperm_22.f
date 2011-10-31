@@ -19,16 +19,19 @@ c mohr-coulomb failure criteria on the plane of maximum shear
       implicit none
 
       integer jpt,fail_flag
-      real*8 excess_shear, shear_max,shear_angle,stress_norm
+      real*8  shear_max,stress_norm
       real*8 eigenvec(3,3),alambda(3),rm(3,3)
       real*8 friction,strength, pp_fac
 
       fail_flag = 0
-      call stressperm_22_failure(jpt,excess_shear,shear_angle
-     &     ,fail_flag,rm)
+      call stressperm_22_failure(jpt,fail_flag,rm)
       if(fail_flag.eq.1) then
-         call stressperm_22_perm(jpt,excess_shear,rm)
-         call stressperm_22_emod(jpt,excess_shear,rm)
+         if(itemp_perm22(jpt).eq.0) then
+            write(91,*)jpt
+            itemp_perm22(jpt) = 1
+         endif
+         call stressperm_22_perm(jpt,rm)
+         call stressperm_22_emod(jpt,rm)
       endif
 
 
@@ -36,8 +39,7 @@ c mohr-coulomb failure criteria on the plane of maximum shear
       end
 
 c.....................................................................
-      subroutine stressperm_22_failure(jpt,excess_shear,shear_angle
-     &     ,fail_flag,rm)
+      subroutine stressperm_22_failure(jpt,fail_flag,rm)
 c mohr-coulomb failure criteria on the plane that miximizes
 c abs(shear)-friction*normal stress
 c spm1f:friction coefficient of shear in the fault plane
@@ -57,7 +59,7 @@ c  y-prime is along the median principal stress
       implicit none
 
       integer jpt,iispmd,fail_flag
-      real*8 excess_shear, shear_max,shear_angle,stress_norm
+      real*8  shear_max,stress_norm
       real*8 eigenvec(3,3),alambda(3),rm(3,3)
       real*8 friction,strength, pi, pp_fac,cossh,sinsh
 
@@ -73,9 +75,9 @@ c components of the eigenvector for the k-th eigenvalue.
       call principal_stress_3D(jpt,alambda,eigenvec)
 c max shear stress,and normal stress on this plane (45deg to principal)
       call max_excess_shear(jpt,friction,strength,alambda,
-     &     pp_fac,eigenvec,excess_shear,shear_angle )
-      cossh=dcos(shear_angle)
-      sinsh=dsin(shear_angle)
+     &     pp_fac,eigenvec)
+      cossh=dcos(shear_angle(jpt))
+      sinsh=dsin(shear_angle(jpt))
 c choose z-prime=normal to the failure plane, and 
 c y-prime=median principal stress. 
 c rm(column3)= direction cos of (z-prime) etc.
@@ -89,7 +91,7 @@ c rm(column3)= direction cos of (z-prime) etc.
       rm(2,1)=rm(1,3)*rm(3,1)-rm(3,3)*rm(1,2)
       rm(3,1)=rm(1,3)*rm(2,2)-rm(2,3)*rm(1,2)
 
-      if(excess_shear.gt.0.0d0) then
+      if(excess_shear(jpt).gt.0.0d0) then
          fail_flag = 1
       endif
 
@@ -98,7 +100,7 @@ c rm(column3)= direction cos of (z-prime) etc.
 
 c.....................................................................
 
-      subroutine stressperm_22_perm(jpt,excess_shear,rm)
+      subroutine stressperm_22_perm(jpt,rm)
 c rotate back the tensor of multiplication factors from the system 
 c of the fault plane to the original axis, multiply permeabilities
       use comdi
@@ -107,7 +109,7 @@ c of the fault plane to the original axis, multiply permeabilities
       implicit none
       integer jpt
       integer i,j,k,l,m,n, iispmd
-      real*8 excess_shear, perm1,perm2,perm3
+      real*8  perm1,perm2,perm3
       real*8 rm(3,3), rminv(3,3), sum21, sfac
       real*8 fac(3,3),fac_p(3,3)
 
@@ -128,11 +130,11 @@ c we are rotating back, using the inverse of rm
       enddo
       fac_p=0.
       fac=0.
-      sfac=abs(excess_shear/spm4f(iispmd))
+      sfac=abs(excess_shear(jpt)/spm4f(iispmd))
       sfac=min(1.d0,sfac)
-      fac_p(1,1)=1.0 + (spm8f(iispmd)-1)*sfac
-      fac_p(2,2)=1.0 + (spm9f(iispmd)-1)*sfac
-      fac_p(3,3)=1.0 + (spm10f(iispmd)-1)*sfac
+      fac_p(1,1)=1.0 + (spm8f(iispmd)-1.)*sfac
+      fac_p(2,2)=1.0 + (spm9f(iispmd)-1.)*sfac
+      fac_p(3,3)=1.0 + (spm10f(iispmd)-1.)*sfac
       do i=1,3
          do j=1,3
             sum21=0.
@@ -153,29 +155,54 @@ c we are rotating back, using the inverse of rm
       end
 
 c.....................................................................
-      subroutine stressperm_22_emod(jpt,excess_shear,rm)
+      subroutine stressperm_22_emod(jpt,rm)
 
+      use comai, only: iptty,ierr
       use comsi
       implicit none
 
       integer jpt,iispmd
-      real*8 excess_shear, rm(3,3)
+      real*8 fac_E(3), sfac, rm(3,3)
 
       iispmd = ispm(jpt)    
+
+c s kelkar Aug 11 2011. For now, simply multiplying youngs mod in every
+c direction, keeping poissons ratio fixed and
+c not taking care of the tensor nature of D
+      if(spm5f(iispmd).le.0..or.spm6f(iispmd).le.0.
+     &     .or.spm7f(iispmd).le.0.) then
+         write(iptty,*)'Error in stressperm_22_emod. STOP'
+         write(iptty,*)'spm(4,5, and 6)f must be',
+     &        'gt 0. in the strs-permmodel=22'
+         write(ierr,*)'Error in stressperm_22_emod. STOP'
+         write(ierr,*)'spm(4,5,and 6)f must be',
+     &        'gt 0. in the strs-permmodel=22'
+         stop
+      endif
+
+      fac_E=0.
+      sfac=abs(excess_shear(jpt)/spm4f(iispmd))
+      sfac=min(1.d0,sfac)
+      fac_E(1)=1.0 - sfac + sfac/spm5f(iispmd)
+      fac_E(2)=1.0 - sfac + sfac/spm6f(iispmd)
+      fac_E(3)=1.0 - sfac + sfac/spm7f(iispmd)
+      e1(jpt)=e10(jpt)*fac_E(1)
+      e2(jpt)=e20(jpt)*fac_E(1)
+      e3(jpt)=e30(jpt)*fac_E(1)
 
       return
       end
 
 c.....................................................................
       subroutine max_excess_shear(jpt,friction,strength,alambda,
-     &     pp_fac,eigenvec,excess_shear,shear_angle )
+     &     pp_fac,eigenvec)
 
       use comsi
       use comdi, only : phi
       implicit none
 
       integer jpt,iispmd
-      real*8 excess_shear,shear_angle,shear_max ,stress_norm  
+      real*8 shear_max ,stress_norm  
       real*8 eigenvec(3,3),alambda(3)
       real*8 friction,strength, pi, pp_fac
 
@@ -189,10 +216,10 @@ c Jaeger & Cook, pp 95-96
       shear_max = 0.5*(alambda(3)-alambda(1))
       stress_norm = 0.5*(alambda(3)+alambda(1))-pp_fac*phi(jpt)
 c minimum value of (shear - friction*normal stress)
-      excess_shear = shear_max*sqrt(1.0d0+friction*friction)
+      excess_shear(jpt) = shear_max*sqrt(1.0d0+friction*friction)
      &     - friction*stress_norm
-      excess_shear = excess_shear - strength
-      shear_angle = pi*0.5-0.5d0*datan(1.0d0/friction)
+      excess_shear(jpt) = excess_shear(jpt) - strength
+      shear_angle(jpt) = pi*0.5-0.5*atan(1./friction)
 
       return
       end

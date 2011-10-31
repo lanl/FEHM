@@ -412,13 +412,14 @@
       integer             isptr7, isptr8, isptr9, idoff, rlp_flag
       integer             nprttrc, irlp_fac, interface_flag
       integer             neq_primary, ngdpm_actual, gdpm_flag
-      integer             gdkm_flag, nr_stop
+      integer             gdkm_flag, nr_stop, neq_gdkm
       integer             ngdpmnodes, maxgdpmlayers, ianpe, ipara
       integer             maxsolve, iflux_ts, inobr, isubbc, isubm
       integer             bin_flag, app_flag, ldna, iflxn, pres_flag
       integer             ishisp, ishist, ishishd, ishiss, ishisf
       integer             ishise, ishishm, ishisg, ishisfz, ishiswt 
       integer             time_flag, nhist, glob_flag, icont, istea_pest
+      integer             icoef_replace
 c RJP 12/13/06 added nriver below
       integer             nstep_save, nriver, nrlp, nei_in, ns_in
 c ZVD 05/01/07 added form_flag, ishisc, ishiswc
@@ -444,7 +445,7 @@ c GAZ 11/02/08
       integer             ivboun, itert_s,itotal_s,itotals_s
       integer             ifdm_elem, ienrich, enri_flag
       integer             nenrinodes
-      integer             ibcfar
+      integer             ibcfar,i_subsid,i_init
       real*8              pchng, schng 
       
       integer :: irun = 0

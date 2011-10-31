@@ -150,7 +150,8 @@ CPS
 C***********************************************************************
 
       use avsio
-      use comai, only : altc, ichead, ihead, ierr, iptty, icnl, istrs
+      use comai, only : altc, ichead, ihead, ierr, iptty, icnl, istrs,
+     &     idpdp, idualp, gdkm_flag
       use combi, only : izonef
       use comco2, only : icarb
       use comdi, only : nsurf, izone_surf, izone_surf_nodes, ifree
@@ -172,6 +173,7 @@ c     assign defaults
       ioliquid = 0
       iovapor = 0
       iodual = 0
+      iogdkm = 0
       iovelocity = 0
       iopressure = 0
       iocapillary = 0
@@ -188,6 +190,7 @@ c     assign defaults
       iosource = 0
       iodensity = 0
       iogeo = 0
+      iogrid = 0
       iocord = 0
       iopermeability = 0
       iozone = 0
@@ -406,10 +409,22 @@ c     output concentration, keyword: concentration
      &           write(iptty, *) ' iokd            ', iokd
 
          elseif((chdum(1:1) .eq. 'g').or.(chdum(1:1) .eq. 'G'))then
+            if ((chdum(2:2) .eq. 'd').or.(chdum(2:2) .eq. 'D'))then
+c     output gdkm node data, keyword: gdkm
+               iogdkm = 1
+               if (iptty .ne. 0) 
+     &              write(iptty, *) ' iogdkm          ', iogdkm 
+            else if ((chdum(2:2) .eq. 'e').or.(chdum(2:2) .eq. 'E'))then
 c     output avs geometry file, keyword: geo
-            iogeo = 1
-            if (iptty .ne. 0) 
-     &           write(iptty, *) ' iogeo           ', iogeo
+               iogeo = 1
+               if (iptty .ne. 0) 
+     &              write(iptty, *) ' iogeo           ', iogeo
+            elseif((chdum(2:2) .eq. 'r').or.(chdum(2:2) .eq. 'R'))then
+c     output tecplot grid data file, keyword: grid
+               iogrid = 1
+               if (iptty .ne. 0) 
+     &              write(iptty, *) ' iogrid           ', iogrid
+            end if
 
          elseif((chdum(1:1) .eq. 'x').or.(chdum(1:1) .eq. 'X'))then
 c     output coordinates, keyword: xyz
@@ -420,7 +435,6 @@ c     output coordinates, keyword: xyz
             end if
             if (iptty .ne. 0) 
      &           write(iptty, *) ' iocord          ', iocord
-
          elseif((chdum(1:2) .eq. 've').or.(chdum(1:2) .eq. 'VE'))then
 c     output velocities , keyword: velocity 
             iovelocity = 1
@@ -482,26 +496,75 @@ c     illegal character found
  9999 if (ioformat .eq. 1) then
          ioformat = 2
          write(ierr, 100)
-         write(ierr, 110) 'UNformatted output no longer supported'
+         write(ierr, 110) 'Unformatted output no longer supported'
          write(ierr, 110) 'Output will be formatted'
          write(ierr, 100)
          if (iptty .ne. 0) then
             write(iptty, 100)
-            write(iptty, 110) 'UNformatted output no longer supported'
+            write(iptty, 110) 'Unformatted output no longer supported'
             write(iptty, 110) 'Output will be formatted'
             write(iptty, 100)
          end if           
       end if
 
-      if (iogeo .eq. 1 .and. iozone .ne. 0 ) then
+      if (altc(1:3) .ne. 'tec' .and. iogrid .eq. 1) then
+         iogrid = 0
+         iogeo = 1
          write(ierr, 100)
-         write(ierr, 110) 'Geometry option cannot be used with zones'
-         write(ierr, 110) 'Geometry output will not be written'
+         write(ierr, 110) 'Grid option cannot be used with AVS/SUR'
+         write(ierr, 110) 'Geometry option will be used'
+         write(ierr, 100)
+         if (iptty .ne. 0) then
+            write(iptty, 100)
+            write(iptty, 110) 'Grid option cannot be used with AVS/SUR'
+            write(iptty, 110) 'Geometry option will be used'
+            write(iptty, 100)
+         end if
+      end if
+
+      if (iogeo .eq. 1 .and. iogrid .eq. 1) then
+         if (altc(1:3) .eq. 'avs' .or. altc(1:3) .eq. 'sur') then
+            iogrid = 0
+            write(ierr, 100)
+            write(ierr, 110) 'Geometry and grid options cannot be ',
+     &           'used together'
+            write(ierr, 110) 'AVS/SUR may only use geometry option'
+            write(ierr, 100)
+            if (iptty .ne. 0) then
+               write(iptty, 100)
+               write(iptty, 110) 'Geometry and grid options cannot be ',
+     &           'used together'
+               write(iptty, 110) 'AVS/SUR may only use geometry option'
+               write(iptty, 100)
+            end if
+         else if (altc(1:3) .eq. 'tec') then
+            iogeo = 0
+            write(ierr, 100)
+            write(ierr, 110) 'Geometry and grid options cannot be ',
+     &           'used together'
+            write(ierr, 110) 'New tecplot grid option will be used'
+            write(ierr, 100)
+            if (iptty .ne. 0) then
+               write(iptty, 100)
+               write(iptty, 110) 'Geometry and grid options cannot be ',
+     &           'used together'
+               write(iptty, 110) 'New tecplot grid option will be used'
+               write(iptty, 100)
+            end if
+         end if
+      end if
+
+      if ((iogeo .eq. 1 .or. iogrid .eq. 1) .and. iozone .ne. 0 ) then
+         write(ierr, 100)
+         write(ierr, 110) 'Geometry/grid option cannot be used ',
+     &        'with zones'
+         write(ierr, 110) 'Geometry/grid output will not be written'
          write(ierr, 100) 
          iogeo = 0
          if (iptty .ne. 0) then
             write(iptty, 100)
-            write(iptty, 110)'Geometry option cannot be used with zones'
+            write(iptty, 110)'Geometry/grid  option cannot be used ',
+     &           'with zones'
             write(iptty, 110) 'Geometry output will not be written'
             write(iptty, 100)
          end if                    
@@ -524,16 +587,64 @@ c     illegal character found
                write(iptty, 110) 'coordinates will be written'
                write(iptty, *) ' iocord          ', iocord
                write(iptty, 100)
-         end if                    
+            end if                    
          end if
       end if 
           
+      if (altc(1:3) .eq. 'tec' .and. iogrid .eq. 1) then
+         if (iocord .ne. 0) then
+            iocord = 0
+            write(ierr, 100)
+            write(ierr, 110) 'Grid output specified'
+            write(ierr, 110) 'coordinates will only be written',
+     &              ' to grid file'
+            write(ierr, 100)
+            if (iptty .ne. 0) then
+               write(iptty, 100)
+               write(iptty, 110) 'Grid output specified'
+               write(iptty, 110) 'coordinates will only be written',
+     &              ' to grid file'
+               write(iptty, *) ' iocord          ', iocord
+               write(iptty, 100)
+            end if                    
+         end if
+      end if
+ 
       if (iptty .ne. 0) then
          write(iptty, *) ' format        ', 'formatted'
          write(iptty, *) ' header        ', altc
          write(iptty, 100) 
       end if
-        
+      
+      if (idualp .eq. 0 .and. idpdp .eq. 0 .and. iodual .eq. 1) then
+         iodual = 0
+         write(ierr, 100)
+         write(ierr, 110) 'dpdp specified for non dpdp/dual problem'
+         write(ierr, 120) 'dpdp'
+         write(ierr, 100) 
+         if (iptty .ne. 0) then
+            write(iptty, 100)
+            write(iptty, 110) 'dpdp specified for non dpdp/dual problem'
+            write(iptty, 120) 'dpdp'
+            write(iptty, 100)
+         end if                    
+      end if
+
+      if (gdkm_flag .eq. 0 .and. iogdkm .eq. 1) then
+         iogdkm = 0
+         write(ierr, 100)
+         write(ierr, 110) 'gdkm specified for non gdkm problem'
+         write(ierr, 120) 'gdkm'
+         write(ierr, 100) 
+         iogeo = 0
+         if (iptty .ne. 0) then
+            write(iptty, 100)
+            write(iptty, 110) 'gdkm specified for non gdkm problem'
+            write(iptty, 120) 'gdkm'
+            write(iptty, 100)
+         end if                    
+      end if
+
       if(iopressure .ne. 0 .or. iovelocity .ne. 0 .or. ioflx .ne. 0
      &   .or. iodensity .ne. 0) then
          if((ioliquid .eq. 0) .and. (iovapor .eq. 0)) then
@@ -754,40 +865,45 @@ c     illegal character found
       if (iptty .ne. 0) write (iptty, 999) chdum
       stop
       
- 999  format (/, 'ERROR:READ_AVS_IO'
-     .  , /, 'unexpected character string (terminate program execution)'
+ 999  format (/, 'ERROR:READ_AVS_IO', /,
+     .     'unexpected character string (terminate program execution)'
      .     , /, 'Valid options are shown:'
      .     , /, ' String in ( ) is required; the rest is optional'
-     .     , /, ' (m)aterial      or (M)ATERIAL  '
-     .     , /, ' (l)iquid        or (L)IQUID '
-     .     , /, ' (va)por         or (VA)POR  '
-     .     , /, ' (ve)locity      or (VE)LOCITY  '
-     .     , /, ' (dp)            or (DP) - note: do not use dual!'
-     .     , /, ' (di)splacement  or (DI)SPLACEMENT'
-     .     , /, ' (stre)ss        or (STRE)SS'     
-     .     , /, ' (stra)in        or (STRA)IN'
+     .     , /, ' (c)oncentration or (C)ONCENTRATION '
      .     , /, ' (ca)pillary     or (CA)PILLARY '
-     .     , /, ' (he)ad          or (HE)AD  '
-     .     , /, ' (t)emperature   or (T)EMPERATURE   '
-     .     , /, ' (s)aturation    or (S)ATURATION  '
-     .     , /, ' (po)rosity      or (PO)ROSITY  '
-     .     , /, ' (so)urce        or (SO)URCE  '
-     .     , /, ' (de)nsity       or (DE)NSITY  '
-     .     , /, ' (pe)rmeability  or (PE)RMEABILITY '
-     .     , /, ' (x)yz           or (X)YZ  '
-     .     , /, ' (c)oncentration or (C)ONCENTRATION  '
      .     , /, ' (co2)           or (CO2) '
-     .     , /, ' (hy)drate       or (HY)DRATE  '
-     .     , /, ' (fw)ater        or (FW)ATER  '
-     .     , /, ' (fh)ydrate      or (FH)YDRATE  '
-     .     , /, ' (zi)d           or (ZI)D  '
-     .     , /, ' (zo)ne          or (ZO)NE  '
-     .     , /, ' (fo)rmatted     or (FO)RMATTED  '
-     .     , /, ' (u)nformatted   or (U)NFORMATTED  '
-     .     , /, ' (e)ndcont       or (E)NDCONT  '
-     .  , /, 'Input file should look something like this:', /, '      ',
-     .     /, 'cont', /, 'material', /, 'liquid', /, 'pressure', 
-     .     /, 'temperature', /, 'formatted', /, 'endcont', /, '      '
+     .     , /, ' (de)nsity       or (DE)NSITY '
+     .     , /, ' (di)splacement  or (DI)SPLACEMENT '
+     .     , /, ' (dp)            or (DP) - note: do not use dual! '
+     .     , /, ' (fh)ydrate      or (FH)YDRATE '
+     .     , /, ' (fo)rmatted     or (FO)RMATTED '
+     .     , /, ' (fl)uxz         or (FL)UXZ '
+     .     , /, ' (fw)ater        or (FW)ATER '
+     .     , /, ' (ge)ometry      or (GE)OMETRY '
+     .     , /, ' (gr)id          or (GR)ID '
+     .     , /, ' (he)ad          or (HE)AD '
+     .     , /, ' (hy)drate       or (HY)DRATE '
+     .     , /, ' (l)iquid        or (L)IQUID '
+     .     , /, ' (m)aterial      or (M)ATERIAL '
+     .     , /, ' (n)odit         or (N)ODIT '
+     .     , /, ' (pe)rmeability  or (PE)RMEABILITY '
+     .     , /, ' (po)rosity      or (PO)ROSITY '
+     .     , /, ' (p)ressure      or (P)RESSURE '
+     .     , /, ' (s)aturation    or (S)ATURATION '
+     .     , /, ' (so)urce        or (SO)URCE '
+     .     , /, ' (stra)in        or (STRA)IN '
+     .     , /, ' (stre)ss        or (STRE)SS '     
+     .     , /, ' (t)emperature   or (T)EMPERATURE '
+     .     , /, ' (va)por         or (VA)POR '
+     .     , /, ' (ve)locity      or (VE)LOCITY '
+     .     , /, ' (x)yz           or (X)YZ '
+     .     , /, ' (zi)d           or (ZI)D '
+     .     , /, ' (zo)ne          or (ZO)NE '
+     .     , /, ' (e)ndcont       or (E)NDCONT '
+     .     , /, 'Input file should look something like this:' 
+     .     , /, '      ', /, 'cont', /, 'tec 1000 365.25'
+     .     , /, 'material', /, 'liquid', /, 'pressure' 
+     .     , /, 'temperature', /, 'formatted', /, 'endcont', /, '      '
      .     , /, 'The invalid string was:',/,a72)
       
       end

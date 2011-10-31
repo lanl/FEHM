@@ -221,7 +221,8 @@ c----------------------------------------------------------------------
       use avsio
       use comai, only : altc, days, grav, iadif, icnl, ico2, idof, 
      &     ichead, ihead, nei_in, ns_in, phi_inc, istrs, ivf,
-     &     neq_primary, rho1grav, ifdm_elem
+     &     neq_primary, rho1grav, ifdm_elem, igrav
+c     &     neq_primary, rho1grav, ifdm_elem, i_subsid, igrav
       use combi, only : corz, izonef, nelm, nelmdg, sx1
       use comci, only : rolf, rovf
       use comdi
@@ -241,7 +242,7 @@ c     RJP 1/12/07 added following
       integer neq,nscalar,lu,ifdual,icall,open_file,offset,iriver2
       integer i,j,iolp,iovp,nout,iz,iendz,il,idz, i1, i2, index, iaxy, k
       integer size_head, size_pcp, istart, iend, ic1, ic2, length, nadd
-      integer icord1, icord2, icord3, ns_in0, irivp 
+      integer icord1, icord2, icord3, ns_in0, irivp, iocord_tmp 
       integer, allocatable :: nelm2(:)
       real*8 hdum, sdum, px, py, pz, flxdum
       real*8 pdum, tdum, rolconv, dumconv, dumconv1
@@ -261,7 +262,6 @@ C     BEGIN
       size_pcp = size(pcp)
 C     nscalar=(iovapor+ioliquid)*iopressure+iosaturation+iotemperature
 C     calculation done in avs_io()
-      nout = nscalar + iocord
       ioLP = ioliquid*iopressure
       ioVP = iovapor*iopressure
 
@@ -276,7 +276,20 @@ C     ERROR checking:
          return
       endif
       irivp = 0
-      if(ifdual .ne. 0)then
+ 
+      iocord_tmp = iocord
+      if (iogdkm .ne. 0 .and. ifdual .ne. 0) then
+c     Output for gdkm nodes
+         istart = neq_primary + 1
+         iend = neq
+         offset = 0
+         nadd = 0
+         if (icnl .eq. 0) then
+            iocord = 3
+         else
+            iocord = 2
+         end if
+      else if (ifdual .ne. 0)then
          istart = neq + 1
          iend = neq * 2
          nadd = nelm(neq+1)-neq-1
@@ -301,7 +314,9 @@ c     Output for river/well nodes
             irivp = 0
          end if
       endif
-      
+
+      nout = nscalar + iocord
+ 
       if (icall .eq. 1.and.irivp.eq.0) tecstring = ''
       if (icall .eq. 1.and.irivp.ne.0) tecstring_riv = ''
 
@@ -355,498 +370,518 @@ c     Zone loop
                string = ''
                if (icall .eq. 1 .and. iogeo .eq. 1) then
                   select case (ns_in)
-               case (5,6,8)
-                  write (string, 135) neq, nei_in, 'FEBRICK'
-               case (4)
-                  if (icnl .eq. 0) then
-                     write (string, 135) neq, nei_in, 
-     &                    'FETETRAHEDRON'
-                  else
-                     write (string, 135) neq, nei_in, 
-     &                    'FEQUADRILATERAL'
-                  end if
-               case (3)
-                  write (string, 135) neq, nei_in, 'FETRIANGLE'
-               case (2)
-                  if(irivp.eq.0) then
-                     write (string, 135) neq, nei_in, 'FELINESEG'
-                     ns_in=ns_in0
-                  else if(irivp.eq.2)then                    
-                     write (string, 135) npoint_riv, npoint_riv-1,
-     &                    'FELINESEG'
-                     ns_in=ns_in0
-                  endif
-               case (0)
+                  case (5,6,8)
+                     write (string, 135) neq, nei_in, 'FEBRICK'
+                  case (4)
+                     if (icnl .eq. 0) then
+                        write (string, 135) neq, nei_in, 
+     &                       'FETETRAHEDRON'
+                     else
+                        write (string, 135) neq, nei_in, 
+     &                       'FEQUADRILATERAL'
+                     end if
+                  case (3)
+                     write (string, 135) neq, nei_in, 'FETRIANGLE'
+                  case (2)
+                     if(irivp.eq.0) then
+                        write (string, 135) neq, nei_in, 'FELINESEG'
+                        ns_in=ns_in0
+                     else if(irivp.eq.2)then                    
+                        write (string, 135) npoint_riv, npoint_riv-1,
+     &                       'FELINESEG'
+                        ns_in=ns_in0
+                     endif
+                  case (0)
 c     fdm grid
-                  write (string, '(a)') ''
-               end select
-               if(irivp.eq.0) then
-                  tecstring = trim(string)
-                  write (lu, 130) trim(timec_string), trim(tecstring)
+                     write (string, '(a)') ''
+                  end select
+                  if(irivp.eq.0) then
+                     if (iogeo .eq. 1) then
+                        tecstring = trim(string)
+                        write (lu, 130) trim(timec_string), 
+     &                       trim(tecstring)
+                     else if (iogrid .eq. 1) then
+                        tecstring = trim(string)
+                        write (lu, 130) trim(timec_string), 
+     &                       trim(gridstring), trim(times_string)
+                     end if
+                  else
+                     tecstring_riv = trim(string)
+                     write (lu, 130) trim(timec_string),
+     &                    trim(tecstring_riv), trim(gridstring), 
+     &                    trim(times_string)
+                  endif                  
+                  if (ns_in .eq. 0) then
+                     if (iozid .eq. 0) then
+                        write (string, 125) '1-3', iz
+                     else
+                        write (string, 125) '1-3, 5', iz
+                     end if
+                  else if (icnl .eq. 0) then
+                     if (iozid .eq. 0) then
+                        write (string, 140) '1-3', iz
+                     else
+                        write (string, 140) '1-3, 5', iz
+                     end if
+                  else
+                     if (iozid .eq. 0) then
+                        write (string, 140) '1-2', iz
+                     else
+                        write (string, 140) '1-2, 4', iz
+                     end if
+                  end if
+                  if(irivp.eq.0) then
+                     tecstring = trim(tecstring) // trim(string)
+                  else
+                     tecstring_riv = trim(tecstring_riv) // trim(string)
+                  endif
+               else if (icall .eq. 1 .and. iocord .ne. 0) then
+                  write (lu, 130) trim(timec_string)
+                  if (icnl .eq. 0) then
+                     if (iozid .eq. 0) then
+                        write (string, 125) '1-3', iz
+                     else
+                        write (string, 125) '1-3, 5', iz
+                     end if
+                  else
+                     if (iozid .eq. 0) then
+                        write (string, 125) '1-2', iz
+                     else
+                        write (string, 125) '1-2, 4', iz
+                     end if
+                  end if
+                  if(irivp.eq.0) then
+                     tecstring = trim(string)
+                  else
+                     tecstring_riv = trim(string)
+                  endif                             
                else
-                  tecstring_riv = trim(string)
-                  write (lu, 130) trim(timec_string),
-     &                 trim(tecstring_riv)
-               endif                  
-               if (ns_in .eq. 0) then
-                  if (iozid .eq. 0) then
-                     write (string, 125) '1-3', iz
+                  if(irivp.eq.0) then
+                     if (iogeo .eq. 1) then
+                        write (lu, 130) trim(timec_string), 
+     &                       trim(tecstring)
+                     else if (iogrid .eq. 1) then
+                        write (lu, 130) trim(timec_string), 
+     &                       trim(tecstring),
+     &                       trim(gridstring), trim(times_string)
+                     end if   
                   else
-                     write (string, 125) '1-3, 5', iz
-                  end if
-               else if (icnl .eq. 0) then
-                  if (iozid .eq. 0) then
-                     write (string, 140) '1-3', iz
-                  else
-                     write (string, 140) '1-3, 5', iz
-                  end if
-               else
-                  if (iozid .eq. 0) then
-                     write (string, 140) '1-2', iz
-                  else
-                     write (string, 140) '1-2, 4', iz
-                  end if
+                     write (lu, 130) trim(timec_string),
+     &                    trim(tecstring_riv), trim(gridstring), 
+     &                    trim(times_string)
+                  endif
                end if
-               if(irivp.eq.0) then
-                  tecstring = trim(tecstring) // trim(string)
-               else
-                  tecstring_riv = trim(tecstring_riv) // trim(string)
-               endif
-            else if (icall .eq. 1 .and. iocord .ne. 0) then
-               write (lu, 130) trim(timec_string)
-               if (icnl .eq. 0) then
-                  if (iozid .eq. 0) then
-                     write (string, 125) '1-3', iz
-                  else
-                     write (string, 125) '1-3, 5', iz
-                  end if
-               else
-                  if (iozid .eq. 0) then
-                     write (string, 125) '1-2', iz
-                  else
-                     write (string, 125) '1-2, 4', iz
-                  end if
-               end if
-               if(irivp.eq.0) then
-                  tecstring = trim(string)
-               else
-                  tecstring_riv = trim(string)
-               endif                             
-            else
-               if(irivp.eq.0) then
-                  write (lu, 130) trim(timec_string), trim(tecstring) 
-               else
-                  write (lu, 130) trim(timec_string),
-     &                 trim(tecstring_riv)
-               endif
             end if
          end if
-      end if
 
-      if (altc(1:3) .eq. 'sur') then
-         call write_avs_head_s(icall,nscalar,lu,ifdual,idz,iriver2)
-         dls = ', '
-         k = 2
-      else if (altc(1:4) .eq. 'avsx') then
-         dls = ' : '
-         k = 3
-      else
-         dls = ' '
-         k = 1
-      end if
-      
-      if (iohead .eq. 1 .and. ichead .eq. 1) then
-         ihead=1
-         dumconv = crl(1,1)
-         dumconv1 = crl(4,1)
-         pdum = pres0+rol0*head0*(-grav)
-         tdum = temp0        
-         call water_density(tdum,pdum,rolconv)
-         crl(1,1)=rolconv
-         crl(4,1)=pres0
-         rho1grav = rolconv*9.81d-6
-      end if
-
-      do i = istart, iend
-c     Node loop          
-         string = ''
-         if (iozone .ne. 0) then
-            if (izone_surf_nodes(i).ne.idz) goto 200
-         end if
-c     Node number will be written first for avs and sur files
-         if (altc(1:3) .eq. 'avs' .or. altc(1:3) .eq. 'sur') then
-            if (ifdual .eq. 0) then
-               write(string, 100) i
-            else 
-               write(string, 100) i - neq
-            end if
-            ic1 = 11
+         if (altc(1:3) .eq. 'sur') then
+            call write_avs_head_s(icall,nscalar,lu,ifdual,idz,iriver2)
+            dls = ', '
+            k = 2
+         else if (altc(1:4) .eq. 'avsx') then
+            dls = ' : '
+            k = 3
          else
-            ic1 = 1
+            dls = ' '
+            k = 1
          end if
-         if (iocord .ne. 0) then
+      
+         if (iohead .eq. 1 .and. ichead .eq. 1) then
+            ihead=1
+            dumconv = crl(1,1)
+            dumconv1 = crl(4,1)
+            pdum = pres0+rol0*head0*(-grav)
+            tdum = temp0        
+            call water_density(tdum,pdum,rolconv)
+            crl(1,1)=rolconv
+            crl(4,1)=pres0
+            rho1grav = rolconv*9.81d-6
+         end if
+
+         do i = istart, iend
+c     Node loop          
+            string = ''
+            if (iozone .ne. 0) then
+               if (izone_surf_nodes(i).ne.idz) goto 200
+            end if
+c     Node number will be written first for avs and sur files
+            if (altc(1:3) .eq. 'avs' .or. altc(1:3) .eq. 'sur') then
+               if (ifdual .eq. 0) then
+                  write(string, 100) i
+               else if (iogdkm .eq. 1) then
+                  write(string, 100) i - neq_primary
+               else
+                  write(string, 100) i - neq                 
+               end if
+               ic1 = 11
+            else
+               ic1 = 1
+            end if
+            if (iocord .ne. 0) then
 c Only output coordinates that are used
-            if (altc(1:3) .eq. 'tec' .and. icall .ne. 1) then
+               if (altc(1:3) .eq. 'tec' .and. icall .ne. 1) then
 c     Coordinates will only be output in the first file for tecplot
 c     (do nothing)
-            else 
-               select case (icnl)
-               case (1, 4)
-                  icord1 = 1
-                  icord2 = 2
-                  icord3 = 1
-               case (2, 5)
-                  icord1 = 1
-                  icord2 = 3
-                  icord3 = 2
-               case(3, 6)
-                  icord1 = 1
-                  icord2 = 3
-                  icord3 = 1
-               case default
-                  icord1 = 1
-                  icord2 = 3
-                  icord3 = 1
-               end select
-               do j = icord1, icord2, icord3
-                  write(vstring,110) dls(1:k), corz(i - offset,j)
+               else 
+                  select case (icnl)
+                  case (1, 4)
+                     icord1 = 1
+                     icord2 = 2
+                     icord3 = 1
+                  case (2, 5)
+                     icord1 = 1
+                     icord2 = 3
+                     icord3 = 2
+                  case(3, 6)
+                     icord1 = 1
+                     icord2 = 3
+                     icord3 = 1
+                  case default
+                     icord1 = 1
+                     icord2 = 3
+                     icord3 = 1
+                  end select
+                  do j = icord1, icord2, icord3
+                     write(vstring,110) dls(1:k), corz(i - offset,j)
+                     ic2 = ic1 + len_trim(vstring)
+                     string(ic1:ic2) = vstring
+                     ic1 = ic2 + 1
+                  end do
+               end if
+            end if
+c     Node numbers are written after coordinates for tec files
+            if (altc(1:3) .eq. 'tec') then
+               if (ifdual .eq. 0 .or. iogdkm .eq. 1) then
+                  write(vstring, 105) dls(1:k), i
+               else 
+                  write(vstring, 105) dls(1:k), i - neq
+               end if
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+            end if
+            if (iozid .eq. 1) then
+               if (altc(1:4) .eq. 'avs' .or. altc(1:3) .eq. 'sur'
+     &              .or. icall .eq. 1 .or. iogrid .eq. 1) then
+                  write(vstring, 115) dls(1:k), izonef(i)
                   ic2 = ic1 + len_trim(vstring)
                   string(ic1:ic2) = vstring
                   ic1 = ic2 + 1
-               end do
+               end if
             end if
-         end if
-c     Node numbers are written after coordinates for tec files
-         if (altc(1:3) .eq. 'tec') then
-            if (ifdual .eq. 0) then
-               write(vstring, 105) dls(1:k), i
-            else 
-               write(vstring, 105) dls(1:k), i - neq
-            end if
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
-         end if
-         if (iozid .eq. 1) then
-            if (altc(1:4) .eq. 'avs' .or. altc(1:3) .eq. 'sur'
-     &           .or. icall .eq. 1) then
-               write(vstring, 115) dls(1:k), izonef(i)
+            if (iopressure .eq. 1 .and. ioliquid .eq. 1) then
+               if (size_pcp .ne. 1) then
+                  write(vstring,110) dls(1:k), phi(i)-pcp(i)
+               else
+                  write(vstring,110) dls(1:k), phi(i)-phi_inc
+               end if
                ic2 = ic1 + len_trim(vstring)
                string(ic1:ic2) = vstring
                ic1 = ic2 + 1
             end if
-         end if
-         if (iopressure .eq. 1 .and. ioliquid .eq. 1) then
-            if (size_pcp .ne. 1) then
-               write(vstring,110) dls(1:k), phi(i)-pcp(i)
-            else
-               write(vstring,110) dls(1:k), phi(i)-phi_inc
+            if (iopressure .eq. 1 .and. iovapor .eq. 1) then
+               write(vstring,110) dls(1:k), phi(i)
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+               if (iadif .eq. 1) then
+                  write(vstring,110) dls(1:k), phi(i)-pci(i)
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+               end if
             end if
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
-         end if
-         if (iopressure .eq. 1 .and. iovapor .eq. 1) then
-            write(vstring,110) dls(1:k), phi(i)
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
-            if (iadif .eq. 1) then
-               write(vstring,110) dls(1:k), phi(i)-pci(i)
+            if (iocapillary .eq. 1) then
+               write(vstring,110) dls(1:k), pcp(i)
                ic2 = ic1 + len_trim(vstring)
                string(ic1:ic2) = vstring
                ic1 = ic2 + 1
             end if
-         end if
-         if (iocapillary .eq. 1) then
-            write(vstring,110) dls(1:k), pcp(i)
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
-         end if
-         if (iotemperature .eq. 1) then
-            write(vstring,110) dls(1:k), t(i)
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
-         end if
-         if (iosaturation .eq. 1) then
-            if (ps(i) .le. 0.) then
-               sdum = 0.d0
-            else if (irdof .ne. 13 .or. ifree .ne. 0) then
+            if (iotemperature .eq. 1) then
+               write(vstring,110) dls(1:k), t(i)
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+            end if
+            if (iosaturation .eq. 1) then
+               if (ps(i) .le. 0.) then
+                  sdum = 0.d0
+               else if (irdof .ne. 13 .or. ifree .ne. 0) then
 c     sdum = max(s(i), sattol)
 c     if (sdum .le. sattol) sdum = 0.d0
 c     saturations are never zeroed out, report what is in array
-               sdum = s(i)
-            else
-               sdum = 1.0d0
+                  sdum = s(i)
+               else
+                  sdum = 1.0d0
+               end if
+               write(vstring,110) dls(1:k), sdum
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
             end if
-            write(vstring,110) dls(1:k), sdum
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
-         end if
-         if (ioco2 .eq. 1) then
-            if (ps(i) .le. 0.) then
-               sdum = 0.d0
-               write(vstring,112) dls(1:k), sdum
-               ic2 = ic1 + len_trim(vstring)
-               string(ic1:ic2) = vstring
-               ic1 = ic2 + 1
-               write(vstring,112) dls(1:k), sdum
-               ic2 = ic1 + len_trim(vstring)
-               string(ic1:ic2) = vstring
-               ic1 = ic2 + 1
-               write(vstring,112) dls(1:k), sdum
-               ic2 = ic1 + len_trim(vstring)
-               string(ic1:ic2) = vstring
-               ic1 = ic2 + 1
-               write(vstring,112) dls(1:k), sdum
-               ic2 = ic1 + len_trim(vstring)
-               string(ic1:ic2) = vstring
-               ic1 = ic2 + 1
-               write(vstring,115) dls(1:k), int(sdum)
-               ic2 = ic1 + len_trim(vstring)
-               string(ic1:ic2) = vstring
-               ic1 = ic2 + 1
-            else
+            if (ioco2 .eq. 1) then
+               if (ps(i) .le. 0.) then
+                  sdum = 0.d0
+                  write(vstring,112) dls(1:k), sdum
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+                  write(vstring,112) dls(1:k), sdum
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+                  write(vstring,112) dls(1:k), sdum
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+                  write(vstring,112) dls(1:k), sdum
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+                  write(vstring,115) dls(1:k), int(sdum)
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+               else
                                 ! Water volume fraction
-               write(vstring,112) dls(1:k), fw(i)
-               ic2 = ic1 + len_trim(vstring)
-               string(ic1:ic2) = vstring
-               ic1 = ic2 + 1
+                  write(vstring,112) dls(1:k), fw(i)
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
                                 ! Liquid co2 fraction
-               write(vstring,112) dls(1:k), fl(i)
-               ic2 = ic1 + len_trim(vstring)
-               string(ic1:ic2) = vstring
-               ic1 = ic2 + 1
+                  write(vstring,112) dls(1:k), fl(i)
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
                                 ! Gaseous co2 fraction
-               write(vstring,112) dls(1:k), fg(i)
-               ic2 = ic1 + len_trim(vstring)
-               string(ic1:ic2) = vstring
-               ic1 = ic2 + 1
+                  write(vstring,112) dls(1:k), fg(i)
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
                                 ! Dissolved co2 mass fraction
-               write(vstring,112) dls(1:k), yc(i)
-               ic2 = ic1 + len_trim(vstring)
-               string(ic1:ic2) = vstring
-               ic1 = ic2 + 1                 
+                  write(vstring,112) dls(1:k), yc(i)
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1                 
                                 ! Phase state of co2
-               write(vstring,115) dls(1:k), ices(i)
-               ic2 = ic1 + len_trim(vstring)
-               string(ic1:ic2) = vstring
-               ic1 = ic2 + 1
+                  write(vstring,115) dls(1:k), ices(i)
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+               end if
             end if
-         end if
-         if (iohead .eq. 1) then
+            if (iohead .eq. 1) then
 c zvd - 12-Jul-2010 distinguish between regular head output and chead
-            if (ichead .eq. 1) then
-               if (ps(i) .le. 0.) then
-                  hdum = 0.d0
-               else
-                  call headctr(4, i   ,pho(i), hdum)
-c                  hdum = max(hdum,0.0d00)
-               end if
-               write(vstring,110) dls(1:k), hdum
-               ic2 = ic1 + len_trim(vstring)
-               string(ic1:ic2) = vstring
-               ic1 = ic2 + 1
-           
-            else if (ihead.eq.1 .and. size_head .ne. 1) then
-               if (ps(i) .le. 0.) then
-                  hdum = 0.d0
-               else
-                  hdum = head(i)
+               if (ichead .eq. 1) then
+                  if (ps(i) .le. 0.) then
+                     hdum = 0.d0
+                  else
+                     call headctr(4, i   ,pho(i), hdum)
+c     hdum = max(hdum,0.0d00)
+                  end if
+                  write(vstring,110) dls(1:k), hdum
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+                  
+               else if (ihead.eq.1 .and. size_head .ne. 1) then
+                  if (ps(i) .le. 0.) then
+                     hdum = 0.d0
+                  else
+                     hdum = head(i)
 c     might need help in the 
-                  if (irdof .ne. 13 .or. ifree .ne. 0) then
-                     if (s(i).lt.sattol+rlptol) hdum = head_id
-                  endif 
+                     if (irdof .ne. 13 .or. ifree .ne. 0) then
+                        if (s(i).lt.sattol+rlptol) hdum = head_id
+                     endif 
+                  end if
+                  write(vstring,110) dls(1:k), hdum
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
                end if
-               write(vstring,110) dls(1:k), hdum
+            end if
+            if (ioporosity .eq. 1) then
+               write(vstring,110) dls(1:k), ps(i)
                ic2 = ic1 + len_trim(vstring)
                string(ic1:ic2) = vstring
                ic1 = ic2 + 1
             end if
-         end if
-         if (ioporosity .eq. 1) then
-            write(vstring,110) dls(1:k), ps(i)
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
-         end if
-         if (iodensity .eq. 1 .and. ioliquid .eq. 1) then
-            write(vstring,110) dls(1:k), rolf(i)
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
-         end if
-         if (iodensity .eq. 1 .and. iovapor .eq. 1) then
-            write(vstring,110) dls(1:k), rovf(i)
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
-         end if
-         if (iopermeability .eq. 1) then
-            if (idof .ne. 0) then
-               px=log10(pnx(i)*1.d-06)
-               py=log10(pny(i)*1.d-06)
-               pz=log10(pnz(i)*1.d-06)
-            else
-               px = 0.
-               py = 0.
-               pz = 0.
+            if (iodensity .eq. 1 .and. ioliquid .eq. 1) then
+               write(vstring,110) dls(1:k), rolf(i)
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
             end if
-            write(vstring,110) dls(1:k), px
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
-            write(vstring,110) dls(1:k), py
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
-            write(vstring,110) dls(1:k), pz
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
-         endif
-         if (iosource .eq. 1) then
-            write(vstring,110) dls(1:k), sk(i)
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
-         end if
-         if (ioflx .eq. 1 .and. ioliquid .eq. 1) then
-            if (.not. net_flux) then
-               iaxy = nelmdg (i) - (neq + 1) + nadd
-               if (vol_flux) then
-                  if (sx1(i) .gt. 0.) then
-                     flxdum = a_axy(iaxy) / sx1(i)
-                  else
-                     flxdum = 0.d0
-                  end if
+            if (iodensity .eq. 1 .and. iovapor .eq. 1) then
+               write(vstring,110) dls(1:k), rovf(i)
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+            end if
+            if (iopermeability .eq. 1) then
+               if (idof .ne. 0) then
+                  px=log10(pnx(i)*1.d-06)
+                  py=log10(pny(i)*1.d-06)
+                  pz=log10(pnz(i)*1.d-06)
                else
-                  flxdum = a_axy(iaxy)
+                  px = 0.
+                  py = 0.
+                  pz = 0.
                end if
-               write(vstring,110) dls(1:k), flxdum
-            else
-               i1 = nelm(i) + 1
-               i2 = nelm(i+1)
-               flxdum = 0.
-               do index = i1, i2
-                  iaxy = index - neq - 1 + nadd
-                  if(a_axy(iaxy).gt.0.) then
-                     flxdum = flxdum + a_axy(iaxy)
-                  end if
-               end do
-               if (vol_flux) then
-                  if (sx1(i) .gt. 0.) then
-                     flxdum = flxdum / sx1(i)
+               write(vstring,110) dls(1:k), px
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+               write(vstring,110) dls(1:k), py
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+               write(vstring,110) dls(1:k), pz
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+            endif
+            if (iosource .eq. 1) then
+               write(vstring,110) dls(1:k), sk(i)
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+            end if
+            if (ioflx .eq. 1 .and. ioliquid .eq. 1) then
+               if (.not. net_flux) then
+                  iaxy = nelmdg (i) - (neq + 1) + nadd
+                  if (vol_flux) then
+                     if (sx1(i) .gt. 0.) then
+                        flxdum = a_axy(iaxy) / sx1(i)
+                     else
+                        flxdum = 0.d0
+                     end if
                   else
-                     flxdum = 0.d0
+                     flxdum = a_axy(iaxy)
                   end if
+                  write(vstring,110) dls(1:k), flxdum
+               else
+                  i1 = nelm(i) + 1
+                  i2 = nelm(i+1)
+                  flxdum = 0.
+                  do index = i1, i2
+                     iaxy = index - neq - 1 + nadd
+                     if(a_axy(iaxy).gt.0.) then
+                        flxdum = flxdum + a_axy(iaxy)
+                     end if
+                  end do
+                  if (vol_flux) then
+                     if (sx1(i) .gt. 0.) then
+                        flxdum = flxdum / sx1(i)
+                     else
+                        flxdum = 0.d0
+                     end if
+                  end if
+                  write(vstring,110) dls(1:k), flxdum
                end if
-               write(vstring,110) dls(1:k), flxdum
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1                  
             end if
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1                  
-         end if
-         if (ioflx .eq. 1 .and. iovapor .eq. 1) then
-            iaxy = nelmdg (i) - (neq + 1) + nadd
-            write(vstring,110) dls(1:k), a_vxy(iaxy)
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1                  
-         end if
-         if (iodisp .eq. 1.and.idisp_rel.ne.0) then
-            write(vstring,110) dls(1:k), du(i)-du_ini(i)
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
-            write(vstring,110) dls(1:k), dv(i)-dv_ini(i)
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
-            if (icnl .eq. 0) then
-               write(vstring,110) dls(1:k), dw(i)-dw_ini(i)
+            if (ioflx .eq. 1 .and. iovapor .eq. 1) then
+               iaxy = nelmdg (i) - (neq + 1) + nadd
+               write(vstring,110) dls(1:k), a_vxy(iaxy)
                ic2 = ic1 + len_trim(vstring)
                string(ic1:ic2) = vstring
-               ic1 = ic2 + 1
+               ic1 = ic2 + 1                  
             end if
-         else if (iodisp .eq. 1) then
-            write(vstring,110) dls(1:k), du(i)
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
-            write(vstring,110) dls(1:k), dv(i)
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
-            if (icnl .eq. 0) then
-               write(vstring,110) dls(1:k), dw(i)
+            if (iodisp .eq. 1.and.idisp_rel.ne.0) then
+               write(vstring,110) dls(1:k), du(i)-du_ini(i)
                ic2 = ic1 + len_trim(vstring)
                string(ic1:ic2) = vstring
                ic1 = ic2 + 1
-            end if
-         endif 
-         if (iostress .ne. 0) then
-            write(vstring,110) dls(1:k), str_x(i)
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
-            write(vstring,110) dls(1:k), str_y(i)
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
-            if(icnl.eq.0) then
-               write(vstring,110) dls(1:k), str_z(i)
+               write(vstring,110) dls(1:k), dv(i)-dv_ini(i)
                ic2 = ic1 + len_trim(vstring)
                string(ic1:ic2) = vstring
                ic1 = ic2 + 1
-            end if
-            write(vstring,110) dls(1:k), str_xy(i)
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1   
-            if(icnl.eq.0) then
-               write(vstring,110) dls(1:k), str_xz(i)
+               if (icnl .eq. 0) then
+                  write(vstring,110) dls(1:k), dw(i)-dw_ini(i)
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+               end if
+            else if (iodisp .eq. 1) then
+               write(vstring,110) dls(1:k), du(i)
                ic2 = ic1 + len_trim(vstring)
                string(ic1:ic2) = vstring
                ic1 = ic2 + 1
-               write(vstring,110) dls(1:k), str_yz(i)
+               write(vstring,110) dls(1:k), dv(i)
                ic2 = ic1 + len_trim(vstring)
                string(ic1:ic2) = vstring
                ic1 = ic2 + 1
-            endif            
-         endif 
-         if (iostrain .eq. 1) then
-            write(vstring,110) dls(1:k), vol_strain(i)
-            ic2 = ic1 + len_trim(vstring)
-            string(ic1:ic2) = vstring
-            ic1 = ic2 + 1
-         endif  
-         length = len_trim(string)
-         write(lu,'(a)') string(1:length)           
- 200  enddo
+               if (icnl .eq. 0) then
+                  write(vstring,110) dls(1:k), dw(i)
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+               end if
+            endif 
+            if (iostress .ne. 0) then
+               write(vstring,110) dls(1:k), str_x(i)
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+               write(vstring,110) dls(1:k), str_y(i)
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+               if(icnl.eq.0) then
+                  write(vstring,110) dls(1:k), str_z(i)
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+               end if
+               write(vstring,110) dls(1:k), str_xy(i)
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1   
+               if(icnl.eq.0) then
+                  write(vstring,110) dls(1:k), str_xz(i)
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+                  write(vstring,110) dls(1:k), str_yz(i)
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+               endif            
+            endif 
+            if (iostrain .eq. 1) then
+               write(vstring,110) dls(1:k), vol_strain(i)
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+            endif  
+            length = len_trim(string)
+            write(lu,'(a)') string(1:length)           
+ 200     enddo
 
-      if (iohead .eq. 1 .and. ichead .eq. 1) then
-         crl(1,1)= dumconv
-         crl(4,1)= dumconv1
-         ihead=0
-         if(ico2.lt.0) then
-            rho1grav = crl(1,1)*(9.81d-6)
-         else
-            rho1grav = rol0*9.81d-6
-         endif
-      end if
+         if (iohead .eq. 1 .and. ichead .eq. 1) then
+            crl(1,1)= dumconv
+            crl(4,1)= dumconv1
+            ihead=0
+            if(ico2.lt.0) then
+               rho1grav = crl(1,1)*(9.81d-6)
+            else
+               rho1grav = rol0*9.81d-6
+            endif
+         end if
 
-      call flush(lu)
-      if (altc(1:3) .eq. 'sur') close (lu)
+         call flush(lu)
+         if (altc(1:3) .eq. 'sur') close (lu)
       enddo
-
+      
       if (icall .eq. 1 .and. altc(1:3) .eq. 'tec' .and. iogeo .eq. 1)
      &     then
 c     Read the element connectivity and write to tec file
-         if(irivp.eq.0) then
+         if (ifdual .eq. 1 .and. iogdkm .eq. 1) then
+c     Do nothing, no connectivity defined
+         else if(irivp.eq.0) then
             il = open_file(geoname,'old')
 c     avsx geometry file has an initial line that starts with neq_primary
             read(il,*) i
@@ -886,6 +921,7 @@ c first generate elements
          close (il)
       end if        
       if (altc(1:3) .ne. 'sur') close (lu)
+      iocord = iocord_tmp
 
  100  format(i10.10)
  105  format(a, i10.10)
@@ -898,7 +934,7 @@ c     118  format('TEXT T = "Simulation time ',1p,g16.9,' days"')
  120  format('ZONE T = "',i4.4, '"', a)
  125  format(', VARSHARELIST = ([', a,'] = ', i4, ')')
 c     130  format('ZONE T = "Simulation time ',1p,g16.9,' days"', a)
- 130  format('ZONE T =', a, a) 
+ 130  format('ZONE T =', a, a, a, a) 
  135  format(', N = ', i8, ', E = ', i8, ', DATAPACKING = POINT',
      &     ', ZONETYPE = ', a)
  140  format(', VARSHARELIST = ([', a,'] = ', i4, '), ',

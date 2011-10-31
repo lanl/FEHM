@@ -173,7 +173,8 @@ c     real*8 sxzc
       integer kb_adv_x,kb_adv_y,kb_adv_z
       integer ij_x,ij_y,ij_z,ji_x,ji_y,ji_z 
       integer iqx,iqy,iqz,kc,kd,jj,i3,i4 
-      integer iqxm,iqym,iqzm                      
+      integer iqxm,iqym,iqzm     
+      integer iposx,iposy,iposz
 
       real*8 flux_x,flux_y,flux_z,flux_dir(3)                
       real*8 dfxpi,dfxpkb,dfxpkb1,dfxpkb2
@@ -208,9 +209,11 @@ c
        allocate(dumx_ani(neq))
        allocate(dumy_ani(neq))
        allocate(dumz_ani(neq))
+       allocate(axy_ani(neq))
+
        allocate(it4a(200))
        allocate(it5a(200))
-       allocate(it6a(200))
+       allocate(it6a(200))     
       endif
 c
 c storage for upwind
@@ -270,6 +273,13 @@ c      a_vxy(jmia+nmatavw)=qh(i)
 c
 c   anisotropy coding
 c
+c
+c create correspondence with array connectivity
+c
+         kb_adv_x = ncon_adv(iz,1)
+         kb_adv_y = ncon_adv(iz,2)
+         kb_adv_z = ncon_adv(iz,3)
+c         
 c   x face terms
       ii1=icxani(i-icd)+1
       ii2=icxani(i-icd+1)
@@ -312,12 +322,6 @@ c
        it6a(iqz) = kb2
        t3(iqz)=termz
       enddo
-c
-c create correspondence with array connectivity
-c
-         kb_adv_x = ncon_adv(iz,1)
-         kb_adv_y = ncon_adv(iz,2)
-         kb_adv_z = ncon_adv(iz,3)
 
 c note must search below diagonal because + face node can be < iz 
 c figure this out once above
@@ -340,6 +344,7 @@ c  find -x positions
              kc = nelm(kd)
               it11(iqxm) = kc
               it11a(iqxm) = kd - neqp1
+              if(kc.eq.iz) iposx = kd - neqp1
            enddo
           endif
 c  find -y positions
@@ -352,6 +357,7 @@ c  find -y positions
              kc = nelm(kd)
               it12(iqym) = kc
               it12a(iqym) = kd - neqp1
+              if(kc.eq.iz) iposy = kd - neqp1
            enddo
           endif
 c  find -z positions
@@ -364,14 +370,16 @@ c  find -z positions
              kc = nelm(kd)
               it13(iqzm) = kc
               it13a(iqzm) = kd - neqp1
+              if(kc.eq.iz) iposz = kd - neqp1
            enddo
           endif
 
        do jm = 1,iq
         kb = it8(jm)
         dum_ani(kb)= 0.0
+        axy_ani(kb)= 0.0
        enddo
-        do jm = 1,iqxm
+       do jm = 1,iqxm
          kb = it11(jm)
          dumx_ani(kb) = 0.0
        enddo
@@ -525,6 +533,8 @@ c            presd2 = phi(kb2)-pcp(kb2)
            dumx_ani(kb_adv_x) = dumx_ani(kb_adv_x) - dfxpkb 
            bp(iz+nrhs(1))=bp(iz+nrhs(1))+flux_x
            bp(kb_adv_x+nrhs(1))=bp(kb_adv_x+nrhs(1))-flux_x
+           axy_ani(kb_adv_x) = axy_ani(kb_adv_x) + flux_x
+           a_axy(iposx) = a_axy(iposx) - flux_x
           endif
 c     + y face
           if(kb_adv_y.ne.0) then
@@ -564,6 +574,8 @@ c            presd2 = phi(kb2)-pcp(kb2)
            dumy_ani(kb_adv_y) = dumy_ani(kb_adv_y) - dfypkb                 
            bp(iz+nrhs(1))=bp(iz+nrhs(1))+flux_y
            bp(kb_adv_y+nrhs(1))=bp(kb_adv_y+nrhs(1))-flux_y
+           axy_ani(kb_adv_y) = axy_ani(kb_adv_y) + flux_y
+           a_axy(iposy) = a_axy(iposy) - flux_y
           endif
 c     + z face
           if(kb_adv_z.ne.0) then
@@ -600,9 +612,11 @@ c            presd2 = phi(kb2)-pcp(kb2)
            dum_ani(iz) = dum_ani(iz) + dfzpi
            dum_ani(kb_adv_z) = dum_ani(kb_adv_z) + dfzpkb 
            dumz_ani(iz) = dumz_ani(iz) - dfzpi
-           dumz_ani(kb_adv_z) = dumz_ani(kb_adv_z) - dfzpkb                  
+           dumz_ani(kb_adv_z) = dumz_ani(kb_adv_z) - dfzpkb   
            bp(iz+nrhs(1))=bp(iz+nrhs(1))+flux_z
            bp(kb_adv_z+nrhs(1))=bp(kb_adv_z+nrhs(1))-flux_z
+           axy_ani(kb_adv_z) = axy_ani(kb_adv_z) + flux_z
+           a_axy(iposz) = a_axy(iposz) - flux_z
           endif
          endif
 c
@@ -612,6 +626,7 @@ c
         kb = it8(jm)
         jj = it9(jm)
         a(jj) = a(jj) + dum_ani(kb)
+        if(kb.ne.iz) a_axy(jj) = a_axy(jj) + axy_ani(kb)
        enddo
 c
 c  now load jacobian matrix (node kb_adv_x) (negative contribution)

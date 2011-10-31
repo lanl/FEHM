@@ -678,13 +678,24 @@ c
             dely2=(cord(kz,2)-cord(iz,2))**2
             delz2=(cord(kz,3)-cord(iz,3))**2
             dis2=delx2+dely2+delz2
-            if(dis2.gt.dis_tol.and.iwd.gt.0) then
+            if(gdkm_flag.eq.2.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) then
+               pxy = sx2c*alxkb     
+            elseif(gdkm_flag.eq.2.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
+     &       then   
+               pxy = sx2c*alxi    
+            elseif(gdkm_flag.eq.3.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) 
+     &       then   
+               pxy = sx2c*alxi    
+            elseif(gdkm_flag.eq.3.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
+     &       then   
+               pxy = sx2c*alxkb                                        
+            elseif(dis2.gt.dis_tol.and.iwd.gt.0) then
                pxy=sx2c*dis2/(delx2/perml(1)+
      &              dely2/perml(2)+delz2/perml(3))
             else
                pxy=sx2c*sx_mult*max(perml(1),perml(2),perml(3))
             endif
-            pxy = pxy*reduction_factor 
+            pxy = pxy*reduction_factor
             pxyi=pxy*(phikb-phii)
             pxyh=pxy*(pvikb-pvii)
             t1(neighc)=pxyi
@@ -922,6 +933,9 @@ c
 c 2-d geometry
 c
       elseif(icnl.ne.0) then
+         if(i.ge.223) then
+          continue
+         endif
          radi=cord(iz,3)
          do 69 jm=1,iq
             kb=it8(jm)
@@ -947,7 +961,18 @@ c
             delx2=(cord(kz,1)-cord(iz,1))**2
             dely2=(cord(kz,2)-cord(iz,2))**2
             dis2=delx2+dely2
-            if(dis2.gt.dis_tol.and.iwd.gt.0) then
+            if(gdkm_flag.eq.2.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) then
+               pxy = sx2c*alxkb     
+            elseif(gdkm_flag.eq.2.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
+     &       then   
+               pxy = sx2c*alxi    
+            elseif(gdkm_flag.eq.3.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) 
+     &       then   
+               pxy = sx2c*alxi    
+            elseif(gdkm_flag.eq.3.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
+     &       then   
+               pxy = sx2c*alxkb                                        
+            elseif(dis2.gt.dis_tol.and.iwd.gt.0) then
                pxy=sx2c*dis2/(delx2/perml(1)+
      &              dely2/perml(2))
             else
