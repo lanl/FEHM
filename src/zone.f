@@ -647,7 +647,9 @@ c     Loop changed to accomodate the new zone_dpadd variable
                   izonef(i + neq) = izonef(i) + zone_dpadd
                  endif
                else
+                if(izonef(i+neq).eq.0) then
                  izonef(i + neq) = izonef(i) + zone_dpadd
+                endif
                end if
             end do
          else
