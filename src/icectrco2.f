@@ -551,6 +551,12 @@ c     constant dissolved co2 mass flow rate boundary condition
                      eskco2(i) = esktmp(i)
                      flowco2s(i) = aiped(i)
                   elseif(iflg_flowmac(i).eq.8) then
+c     constant dissolved co2 mass flow rate boundary condition
+                     kaco2(i) = 3
+                     flowco2s(i) = sktmp(i)
+                     eskco2(i) = esktmp(i)
+                     sk(i) = aiped(i)
+                  elseif(iflg_flowmac(i).eq.9) then
 c     partial explicit update of nonliniar part of co2 constant pressure
                      kaco2(i) = -1
                      imped_ex = imped_ex_0
