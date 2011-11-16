@@ -2229,6 +2229,7 @@ c	          else if (idumm .eq. 2 .or. idumm .eq. 4) then
                      read(locunitnum,*) idumm,(adumm,ja=1,10)
                   else if(idumm.eq.222) then
                      read(locunitnum,*) idumm,(adumm,ja=1,9)
+                     read(locunitnum,*) (adumm,ja=1,10)
                   else if(idumm.eq.31) then
                      read(locunitnum,*) idumm,(adumm,ja=1,2)      
                   else if(idumm.eq.91) then
@@ -2246,6 +2247,9 @@ c                     open(unit=97,file='debug_permmodel_91.dat')
           allocate(spm1f(i),spm2f(i),spm3f(i),spm4f(i),spm5f(i))
           allocate(spm6f(i),spm7f(i),spm8f(i),spm9f(i),spm10f(i))
           allocate(spm11f(i),spm12f(i),spm13f(i),spm14f(i))
+          allocate(spm1f222(i),spm2f222(i),spm3f222(i),spm4f222(i))
+          allocate(spm5f222(i),spm6f222(i),spm7f222(i),spm8f222(i))
+          allocate(spm9f222(i),spm10f222(i))
          endif
          call done_macro(locunitnum)
          
