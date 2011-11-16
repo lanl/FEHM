@@ -15,6 +15,7 @@
 
 c mohr-coulomb failure criteria on the plane of maximum shear
 
+      use comdi
       use comsi
       implicit none
 
@@ -22,6 +23,7 @@ c mohr-coulomb failure criteria on the plane of maximum shear
       real*8  shear_max,stress_norm
       real*8 eigenvec(3,3),alambda(3),rm(3,3)
       real*8 friction,strength, pp_fac
+      real*8 fac(3,3),fac_E(3)
 
       fail_flag = 0
       call stressperm_22_failure(jpt,fail_flag,rm)
@@ -30,10 +32,18 @@ c mohr-coulomb failure criteria on the plane of maximum shear
             write(91,*)jpt
             itemp_perm22(jpt) = 1
          endif
-         call stressperm_22_perm(jpt,rm)
-         call stressperm_22_emod(jpt,rm)
+         call stressperm_22_perm(jpt,rm, fac)
+         call stressperm_22_emod(jpt,rm,fac_E)
       endif
 
+      pnx(jpt)=pnx0(jpt)*fac(1,1)
+      pny(jpt)=pny0(jpt)*fac(2,2)
+      pnz(jpt)=pnz0(jpt)*fac(3,3)
+
+      e1(jpt)=e10(jpt)*fac_E(1)
+      e2(jpt)=e20(jpt)*fac_E(1)
+      e3(jpt)=e30(jpt)*fac_E(1)
+      
 
       return
       end
@@ -100,7 +110,7 @@ c rm(column3)= direction cos of (z-prime) etc.
 
 c.....................................................................
 
-      subroutine stressperm_22_perm(jpt,rm)
+      subroutine stressperm_22_perm(jpt,rm, fac)
 c rotate back the tensor of multiplication factors from the system 
 c of the fault plane to the original axis, multiply permeabilities
       use comdi
@@ -147,15 +157,11 @@ c we are rotating back, using the inverse of rm
          enddo
       enddo
       
-      pnx(jpt)=pnx0(jpt)*fac(1,1)
-      pny(jpt)=pny0(jpt)*fac(2,2)
-      pnz(jpt)=pnz0(jpt)*fac(3,3)
-      
       return
       end
 
 c.....................................................................
-      subroutine stressperm_22_emod(jpt,rm)
+      subroutine stressperm_22_emod(jpt,rm,fac_E)
 
       use comai, only: iptty,ierr
       use comsi
@@ -186,9 +192,6 @@ c not taking care of the tensor nature of D
       fac_E(1)=1.0 - sfac + sfac/spm5f(iispmd)
       fac_E(2)=1.0 - sfac + sfac/spm6f(iispmd)
       fac_E(3)=1.0 - sfac + sfac/spm7f(iispmd)
-      e1(jpt)=e10(jpt)*fac_E(1)
-      e2(jpt)=e20(jpt)*fac_E(1)
-      e3(jpt)=e30(jpt)*fac_E(1)
 
       return
       end
