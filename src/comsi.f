@@ -85,9 +85,15 @@ c sai - variables needed for plasticity
        integer, allocatable::  plasticModel(:)
        integer, allocatable::  modelNumber(:)
 
+       integer, allocatable::  isPlastic(:,:)
+       real*8, allocatable ::  plastic_strain(:,:)
        real*8, allocatable ::  plasticParam1(:)
        real*8, allocatable ::  plasticParam2(:)
        
+       real*8, allocatable ::  delta_u(:)
+       real*8, allocatable ::  delta_v(:)
+       real*8, allocatable ::  delta_w(:)
+
        real*8, allocatable ::  yield_stress(:)
        real*8, allocatable ::  hardening(:)
  
@@ -332,6 +338,17 @@ c     dimension a12mpf(n0),a12mef(n0),a12eef(n0)
       real*8, allocatable ::  spm14f(:)
       real*8, allocatable ::  spm15f(:)
       real*8, allocatable ::  spm16f(:)
+      real*8, allocatable ::  spm1f222(:) 
+      real*8, allocatable ::  spm2f222(:)  
+      real*8, allocatable ::  spm3f222(:)  
+      real*8, allocatable ::  spm4f222(:)  
+      real*8, allocatable ::  spm5f222(:)
+      real*8, allocatable ::  spm6f222(:)  
+      real*8, allocatable ::  spm7f222(:)  
+      real*8, allocatable ::  spm8f222(:) 
+      real*8, allocatable ::  spm9f222(:) 
+      real*8, allocatable ::  spm10f222(:)
+
       real*8, allocatable ::  flitho(:,:) 
       
       integer, allocatable ::  iarea_str(:,:)  
@@ -364,6 +381,6 @@ c s kelkar
 
       real*8, allocatable ::  density(:), internal_energy(:)
 
-      integer itemp_perm22(100000)
+      integer, allocatable ::  itemp_perm22(:)
 
       end module comsi
