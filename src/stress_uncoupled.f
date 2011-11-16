@@ -53,6 +53,7 @@ c
       use comdti
       use comei
       use comfi
+      use comfem
       use comgi
       use comii
       use comki
@@ -91,6 +92,10 @@ c
             iad_save = iad
             itert_save = itert
             call bnswer
+            if(ifem.eq.1) conv_strain = fem_strain
+            if(iPlastic.eq.1) then
+              conv_pstrain = plastic_strain
+            endif
             itert = itert_save 
             itotal = itotal_save
             iad_strs = iad
@@ -160,6 +165,10 @@ c
             iad_save = iad
             itert_save = itert
             call bnswer
+            if(ifem.eq.1) conv_strain = fem_strain
+            if(iPlastic.eq.1) then
+              conv_pstrain = plastic_strain
+            endif
             itert = itert_save 
             itotal = itotal_save
             iad_strs = iad
@@ -199,6 +208,10 @@ c
             iad_save = iad
             itert_save = itert
             call bnswer
+            if(ifem.eq.1) conv_strain = fem_strain
+            if(iPlastic.eq.1) then
+              conv_pstrain = plastic_strain
+            endif
             itert = itert_save 
             itotal = itotal_save
             iad_strs = iad
