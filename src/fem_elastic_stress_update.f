@@ -18,19 +18,46 @@
 ! 
 ! Author : Sai Rapaka
 !
-
-      use comsi, only: iPlastic, plasticModel, modelNumber
-      use comai, only: iout, iptty, ns
+      use comai, only: iout
+      use comsi, only: alp, bulk, iPlastic, plasticModel, modelNumber
+      use comai, only: iout, iptty, iad, ns
+      use comdi, only: t, phi, tini, phini
       use comfem
 
       implicit none
-      integer                      :: i, j
+      integer                      :: i, j, k, node
       real*8,  dimension(6)        :: gp_stress, gp_strain
 
       real*8,  dimension(6,6)      :: D
+      real*8                       :: alpha, deltaT, beta, deltaP
+      real*8                       :: alphadeltaT, betadeltaP
+
+      fem_strain(i,j,:) = conv_strain(i,j,:) + gp_strain
+
+      alphadeltaT = 0.0d0
+      betadeltaP = 0.0d0
+
+      do k=1,ns
+        node = elnode(i,k)
+        alpha = alp(node)
+        deltaT = t(node) - tini(node)
+        beta = bulk(node)
+        deltaP = phi(node) - phini(node)
+        alphadeltaT = alphadeltaT + 
+     &                 Psi(i,j,k)*alpha*deltaT
+        betadeltaP = betadeltaP + 
+     &                 Psi(i,j,k)*beta*deltaP
+      enddo
+
+      gp_strain = fem_strain(i,j,:)
+      gp_strain(1) = gp_strain(1) - alphadeltaT - betadeltaP
+      gp_strain(2) = gp_strain(2) - alphadeltaT - betadeltaP
+      gp_strain(3) = gp_strain(3) - alphadeltaT - betadeltaP
 
       call fem_elastic_stiffness(i, j, D)
       gp_stress = matmul(D, gp_strain)
+
+      fem_stress(i,j,:) = gp_stress
 
       end subroutine fem_elastic_stress_update
 
