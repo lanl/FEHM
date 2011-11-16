@@ -34,16 +34,20 @@
 
        real*8,  allocatable                    :: fem_stress(:,:,:)
        real*8,  allocatable                    :: fem_strain(:,:,:)
+       real*8,  allocatable                    :: conv_strain(:,:,:)
+       real*8,  allocatable                    :: conv_pstrain(:,:)
+       real*8,  allocatable                    :: pstrain(:)
 
-! Variables needed for modeling permeability-stress dependence
-        real*8,  allocatable                    :: avg_stress(:,:)
-
-        integer, allocatable                    :: edges(:, :)
-        integer, allocatable                    :: edgeNum1(:, :)
-        integer, allocatable                    :: edgeNum2(:, :)
-        integer, allocatable                    :: numElems(:)
-
-        real*8,  allocatable                    :: permFactor(:)
-        real*8,  allocatable                    :: permFactor_nodal(:)
+! Variables needed for permeability-stress modeling
+       integer, allocatable                    :: edges(:, :)
+       integer, allocatable                    :: edgeNum1(:, :)
+       integer, allocatable                    :: edgeNum2(:, :)
+       integer, allocatable                    :: numElems(:)
+       integer, allocatable                    :: NodeElems(:)
+       real*8,  allocatable                    :: permfactor(:,:)
+       real*8,  allocatable                    :: permfactor_nodal(:)
+       real*8,  allocatable                    :: permtmp(:,:)
+c sep 29 2011 s kelkar. Calculate average nodal permfactor for output
+       real*8, allocatable                     :: permfac_out(:,:)
 
        end module comfem
