@@ -1,30 +1,11 @@
       subroutine geneq_stress_fem_3D()
-!***********************************************************************
-! Copyright 2011 Los Alamos National Security, LLC  All rights reserved
-! Unless otherwise indicated,  this information has been authored by an
-! employee or employees of the Los Alamos National Security, LLC (LANS),
-! operator of the  Los  Alamos National  Laboratory  under Contract  No.
-! DE-AC52-06NA25396  with  the U. S. Department  of  Energy.  The  U. S.
-! Government   has   rights  to  use,  reproduce,  and  distribute  this
-! information.  The  public may copy  and  use this  information without
-! charge, provided that this  Notice and any statement of authorship are
-! reproduced on all copies.  Neither  the  Government nor LANS makes any
-! warranty,   express   or   implied,   or   assumes  any  liability  or
-! responsibility for the use of this information.      
-!***********************************************************************
-! 
-! Assembles the mechanical equations for 'fem' computations in three
-! dimensions
-! 
-! Author : Sai Rapaka
-!
 
-      use comai, only: nei, neq, ns, igrav, grav
+      use comai, only: nei, neq, ns, igrav, iout, grav
       use combi, only: nelm, nelmdg
       use comdi, only: denr
       use comei, only: a
       use comgi, only: bp
-      use comsi, only: e1, e2, e3, iPlastic, ibodyforce
+      use comsi, only: e1, e2, e3, iPlastic,ibodyforce
       use comfem
       use davidi,only: nmat, nrhs
 
@@ -44,6 +25,7 @@
 
       real*8                       :: e1bar, e2bar, e3bar
       real*8                       :: fac
+      logical                      :: iUnload
 
       real*8,  dimension(neq)      :: sx_sai
 
@@ -56,7 +38,7 @@
 
         do j=1,numgausspoints
 
-          call fem_update_stress(i, j)
+          call fem_update_stress(i, j, iUnload)
 
           B = 0.0d0
           do k=1,ns
@@ -73,7 +55,7 @@
           
           !!! Get D matrix from material module
           if(iPlastic.eq.1) then
-            call fem_material_stiffness(i, j, D)
+            call fem_material_stiffness(i, j, D, iUnload)
           else
             e1bar = 0.0d0
             e2bar = 0.0d0
@@ -84,10 +66,6 @@
               e2bar = e2bar + Psi(i, j, k)*e2(node(k))
               e3bar = e3bar + Psi(i, j, k)*e3(node(k))
             enddo
-
-!            e1bar = e1(node(j))
-!            e2bar = e2(node(j))
-!            e3bar = e3(node(j))
 
             D = 0.0d0
             D(1,1) = e1bar
