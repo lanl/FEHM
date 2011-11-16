@@ -388,8 +388,9 @@ c
       use combi
       use comdti
       use comai
-	use comsi
-	use comwt
+      use comsi
+      use comwt
+      use comfem
       implicit none
 
       real*8, allocatable :: sto5(:,:)
@@ -407,6 +408,7 @@ c
       real*8 facr
       real*8 tolls
       real*8 tollr
+      real*8 res(2)
       real*8, allocatable :: dumn(:)
       real*8, allocatable :: dum(:)
       real*8, allocatable :: a_save(:)
@@ -414,6 +416,7 @@ c
 	real*8 sum1,sum2,sum3,fdums
       parameter(adiag_tol=1.d-10, machine = 1.d-20)
       integer jj
+      integer idbg
 
       integer neq3, indx(100)
 	parameter (inorm = 1)
@@ -422,26 +425,25 @@ c
 c     zero out arrays
       do 10 i=1,neq
 	  
-         bp(i+nrhs(1))=0.0
-         bp(i+nrhs(2))=0.0
-	   bp(i+nrhs(3))=0.0 
-	   bp(i+nrhs(4))=0.0 
-	   bp(i+nrhs(5))=0.0 
+        bp(i+nrhs(1))=0.0
+        bp(i+nrhs(2))=0.0
+        bp(i+nrhs(3))=0.0 
+        bp(i+nrhs(4))=0.0 
+        bp(i+nrhs(5))=0.0 
 	 
  10   continue
+
       nsizea1=nelm(neqp1)-neqp1
+      nsizea=nsizea1
 
-        nsizea=nsizea1
-
-c
       a=0.0
 
-       call stressctr(4,0)
+      call stressctr(4,0)
 c
 c      calculate volume strain
 c
-       call stressctr(6,0)
-	 call stressctr(-7,0)
+      call stressctr(6,0)
+      call stressctr(-7,0)
 c
 c     get phase state and properties
 c
@@ -453,21 +455,25 @@ c
 c
 c generate stress equations
 c  
-      do  id=1,neq
-c     
-c     decide on equation type
-c              
-         if(icnl.eq.0) then
-	       call geneq_stress_uncoupled_3D(id)   
-	   else
-	     write(*,*) 'Stopping in gensl_stress_3D (icnl ne 0)'
-		 stop
-	   endif	    
-      enddo
+      if(ifem.eq.1) then
+        call geneq_stress_fem_3D()
+      else
+        do  id=1,neq
+          if(icnl.eq.0) then
+            call geneq_stress_uncoupled_3D(id)   
+          else
+            write(*,*) 'Stopping in gensl_stress_3D (icnl ne 0)'
+            stop
+          endif 
+        enddo
+      endif
+
 c
 c      add derivatives wrt to p and t
 c
+
        call stressctr(15,0)
+
 c
 c apply boundary conditions
 c
@@ -483,49 +489,49 @@ c
 
        fdum2=0.0d0
 
-	if(tol_stress.ne.0.0d0) then
-       bp_stress  = -1.0d0
-	 ibp_stress = 0
+       if(tol_stress.ne.0.0d0) then
+         bp_stress  = -1.0d0
+         ibp_stress = 0
 c	 fdum1 = 1.0
-       do id=1,neq
-	       bp_tot = abs(bp(id+nrhs(1)))+
+         do id=1,neq
+           bp_tot = abs(bp(id+nrhs(1)))+
      &        abs(bp(id+nrhs(2)))+abs(bp(id+nrhs(3)))
-             if(bp_tot.gt.bp_stress) then
-	        ibp_stress = id
-              bp_stress = bp_tot
-		   endif                  
-       enddo
+           if(bp_tot.gt.bp_stress) then
+             ibp_stress = id
+             bp_stress = bp_tot
+           endif                  
+         enddo
 
-	 fdum2 = bp_stress*bp_stress
+         fdum2 = bp_stress*bp_stress
  
-	 if(iad.eq.0) then
-	  bp_update = 1.0
-        if(tol_stress.gt.0.0d0) then
-	   tol_stress1 = bp_stress*tol_stress  
-	  else
-	   tol_stress1 = abs(tol_stress)  
-	  endif
-	 endif
-	 if (bp_stress.le.tol_stress1.and.iad.ge.1) then
-	     fdumstress = -998.0
+         if(iad.eq.0) then
+           bp_update = 1.0
+             if(tol_stress.gt.0.0d0) then
+               tol_stress1 = bp_stress*tol_stress  
+             else
+               tol_stress1 = abs(tol_stress)  
+             endif
+         endif
+         if (bp_stress.le.tol_stress1.and.iad.ge.1) then
+           fdumstress = -998.0
            fdums = bp_stress
-	     bpx = bp(ibp_stress+nrhs(1))
-	     bpy = bp(ibp_stress+nrhs(2))
-	     bpz = bp(ibp_stress+nrhs(3))
+           bpx = bp(ibp_stress+nrhs(1))
+           bpy = bp(ibp_stress+nrhs(2))
+           bpz = bp(ibp_stress+nrhs(3))
 c	     bp = 0.0d0	     
            go to 1001
            return
-       else if(bp_update.lt.machine) then
-	     fdumstress = -997.0
+         else if(bp_update.lt.machine) then
+           fdumstress = -997.0
            fdums = bp_stress
-	     bpx = bp(ibp_stress+nrhs(1))
-	     bpy = bp(ibp_stress+nrhs(2))
-	     bpz = bp(ibp_stress+nrhs(3))	    
+           bpx = bp(ibp_stress+nrhs(1))
+           bpy = bp(ibp_stress+nrhs(2))
+           bpz = bp(ibp_stress+nrhs(3))	    
 c	     bp = 0.0d0	     
            go to 1001
            return          
-	 endif
-	endif
+         endif
+       endif
 
 c
 c fill NR array and RHS  in 5 by 5 format
@@ -553,21 +559,48 @@ c      write (iout,*)'>>>> ', l,iad, phi(2), fdum,' <<<<< '
 c
 c set up permeability variations with displacements (allocate memory)
 c
+      ! Setup connectivity list of which elements each node belongs to
+      if(.not. allocated(NodeElems)) then
+          call Setup_NodeElems()
+      endif
+
+      ! Setup pointers to edge numbers
+      if(.not. allocated(edgeNum1)) then
+        call setup_edgePointers_3D()
+      endif
+
       call stress_perm(-1,0)
+
+      if(ifem.eq.1) then
+        call update_permfactors()
+      else
+        call stress_perm(1,0)
+      endif
+
+      !! Assemble mass and energy equations without coupling terms
+      do id=1, neq
+        call geneq1(id)
+      enddo
+
 c 
 c get derivatives with respect to displacements (porosity and cell volume)
 c 
-      call stress_perm(1,0)
 c
-      do id=1,neq
-            call geneq1_stress_coupl(id)
-      enddo
+      if(ifem.eq.1) then
+        call geneq_flow_coupled()
+      else
+        do id=1,neq
+          call geneq1_stress_coupl(id)
+        enddo
+      endif
+
       do id=1,neq
          if(ps(id).le.0.0) then
             a(nelmdg(id)-neqp1+nmat(1))=sx1(id)
             bp(id+nrhs(1))=0.0
          endif
       enddo
+
 c
 c     release memory          
 c 
@@ -581,6 +614,13 @@ c  now reset order of equations in 5 by 5 format
 c
       call stress_combine(12,idof_stress)
 c
+c for debugging..................................................
+c      do idbg=1,12400
+c         write(89,8989)a(idbg)
+c      enddo
+c 8989 format(g15.8)
+c................................................................
+
       if(inorm.ne.0) then
 c block normalization
          allocate(dumn(100))
