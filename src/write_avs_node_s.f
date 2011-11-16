@@ -228,6 +228,7 @@ c     &     neq_primary, rho1grav, ifdm_elem, i_subsid, igrav
       use comdi
       use comfi, only : pci
       use comflow, only : a_axy, a_vxy
+      use comfem
       use comii, only : crl
       use comwt, only : sattol, head_id, rlptol
       use comsi
@@ -720,9 +721,21 @@ c     might need help in the
             end if
             if (iopermeability .eq. 1) then
                if (idof .ne. 0) then
-                  px=log10(pnx(i)*1.d-06)
-                  py=log10(pny(i)*1.d-06)
-                  pz=log10(pnz(i)*1.d-06)
+                  if(ihms.gt.0) then
+                     if(allocated(permfac_out)) then
+                        px=pnx(i)*1.d-06*permfac_out(i,1)
+                        py=pny(i)*1.d-06*permfac_out(i,2)
+                        pz=pnz(i)*1.d-06*permfac_out(i,3)
+                     else
+                        px=pnx(i)*1.d-06
+                        py=pny(i)*1.d-06
+                        pz=pnz(i)*1.d-06
+                     endif
+                  else
+                     px=log10(pnx(i)*1.d-06)
+                     py=log10(pny(i)*1.d-06)
+                     pz=log10(pnz(i)*1.d-06)
+                  endif
                else
                   px = 0.
                   py = 0.
@@ -850,6 +863,12 @@ c     might need help in the
                   string(ic1:ic2) = vstring
                   ic1 = ic2 + 1
                endif            
+               if(iPlastic.eq.1) then
+                  write(vstring,110) dls(1:k), pstrain(i)
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+               endif        
             endif 
             if (iostrain .eq. 1) then
                write(vstring,110) dls(1:k), vol_strain(i)
