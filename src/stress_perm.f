@@ -81,6 +81,11 @@ c     general loop to calculate permeability models and derivatives
 c     
 c     skip loop if perm macro is read
          if(.not.allocated(ispm)) return
+
+c s kelkar. 11/10/11 the following is temporary for fully coupled,
+c  permmodel=2 is hardwired in fem_* routines
+         if(ifem.eq.1.and.ihms.gt.0) return
+     
 c     
          do i = 1,n0
 c     
