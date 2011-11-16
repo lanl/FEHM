@@ -1,4 +1,4 @@
-      subroutine fem_update_stress(i, j)
+      subroutine fem_update_stress(i, j, iUnload)
 !***********************************************************************
 ! Copyright 2011 Los Alamos National Security, LLC  All rights reserved
 ! Unless otherwise indicated,  this information has been authored by an
@@ -18,9 +18,10 @@
 ! Author : Sai Rapaka
 !
 
-      use comai, only: ns,iout
+      use comai, only: ns,iad,iout
       use comdi, only: t, phi, tini, phini
       use comsi, only: e1, e2, e3, du, dv, dw, alp, bulk, iPlastic
+      use comsi, only: delta_u, delta_v, delta_w
       use comfem
 
       implicit none
@@ -32,19 +33,21 @@
       real*8,  dimension(6, 24)    :: B
       real*8,  dimension(6, 6)     :: D
       real*8,  dimension(6)        :: gp_stress, gp_strain
-      real*8,  dimension(6)        :: gp_strain_mech
       real*8,  dimension(24)       :: disp
+      logical                      :: iUnload
 
       real*8                       :: e1bar, e2bar, e3bar
       real*8                       :: alphadeltaT, betadeltaP
+      real*8                       :: sijeij
 
-
+      ! Initialize unloading flag to false
+      iUnload = .false.
       ! first compute the strain
       do k=1,ns
         node(k) = elnode(i,k)
-        disp(3*k-2) = du(node(k))
-        disp(3*k-1) = dv(node(k))
-        disp(3*k  ) = dw(node(k))
+        disp(3*k-2) = delta_u(node(k))
+        disp(3*k-1) = delta_v(node(k))
+        disp(3*k  ) = delta_w(node(k))
         alpha(k) = alp(node(k))
         deltaT(k) = t(node(k)) - tini(node(k))
         beta(k) = bulk(node(k))
@@ -63,9 +66,13 @@
         B(6,3*(k-1) + 1) = dPsidZ(i, j, k)
         B(6,3*(k-1) + 3) = dPsidX(i, j, k)
       enddo
-          
+
       gp_strain = matmul(B, disp)
-      fem_strain(i,j,:) = gp_strain
+
+      CALL DoubleDot(fem_stress(i, j, :), gp_strain, sijeij)
+      if(sijeij.lt.0.0d0) then
+!        iUnload = .true.
+      endif
 
       e1bar = 0.0d0
       e2bar = 0.0d0
@@ -86,14 +93,22 @@
 
       enddo
 
-      gp_strain(1) = gp_strain(1) - alphadeltaT - betadeltaP
-      gp_strain(2) = gp_strain(2) - alphadeltaT - betadeltaP
-      gp_strain(3) = gp_strain(3) - alphadeltaT - betadeltaP
-
       if(iPlastic.eq.1) then
         call fem_material_stress_update(i, j, gp_stress, gp_strain,
-     &        gp_strain_mech, D)
+     & iUnload)
       else
+
+!        if(iad.eq.0) then
+!          fem_strain(i,j,:) = gp_strain
+!        else
+          fem_strain(i,j,:) = conv_strain(i,j,:) + gp_strain
+!        endif
+
+        gp_strain = fem_strain(i,j,:)
+        gp_strain(1) = gp_strain(1) - alphadeltaT - betadeltaP
+        gp_strain(2) = gp_strain(2) - alphadeltaT - betadeltaP
+        gp_strain(3) = gp_strain(3) - alphadeltaT - betadeltaP
+
         D = 0.0d0
         D(1,1) = e1bar
         D(1,2) = e2bar
@@ -108,9 +123,11 @@
         D(5,5) = e3bar
         D(6,6) = e3bar
  
-        gp_stress = matmul(D, gp_strain)
+        fem_stress(i,j,:) = matmul(D, gp_strain)
       endif
 
-      fem_stress(i,j,:) = gp_stress
+      ! fem_stress(i,j,:) = fem_stress(i,j,:) + gp_stress
+      ! fem_strain(i,j,:) = fem_strain(i,j,:) + gp_strain
+      ! fem_strain(i,j,:) = gp_strain + alphadeltaT + betadeltaP
 
       end subroutine fem_update_stress
