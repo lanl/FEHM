@@ -26,6 +26,8 @@ c mohr-coulomb failure criteria on the plane of maximum shear
       real*8 fac(3,3),fac_E(3)
 
       fail_flag = 0
+      fac = 1.
+      fac_E = 1.
       call stressperm_22_failure(jpt,fail_flag,rm)
       if(fail_flag.eq.1) then
          if(itemp_perm22(jpt).eq.0) then
@@ -34,15 +36,15 @@ c mohr-coulomb failure criteria on the plane of maximum shear
          endif
          call stressperm_22_perm(jpt,rm, fac)
          call stressperm_22_emod(jpt,rm,fac_E)
+
+         pnx(jpt)=pnx0(jpt)*fac(1,1)
+         pny(jpt)=pny0(jpt)*fac(2,2)
+         pnz(jpt)=pnz0(jpt)*fac(3,3)
+         
+         e1(jpt)=e10(jpt)*fac_E(1)
+         e2(jpt)=e20(jpt)*fac_E(1)
+         e3(jpt)=e30(jpt)*fac_E(1)
       endif
-
-      pnx(jpt)=pnx0(jpt)*fac(1,1)
-      pny(jpt)=pny0(jpt)*fac(2,2)
-      pnz(jpt)=pnz0(jpt)*fac(3,3)
-
-      e1(jpt)=e10(jpt)*fac_E(1)
-      e2(jpt)=e20(jpt)*fac_E(1)
-      e3(jpt)=e30(jpt)*fac_E(1)
       
 
       return
@@ -131,6 +133,7 @@ c values of a tensor and projected on x,y,z,axis to obtain multipliers
 c for Kxx, Kyy, and Kzz. Crossterms in permeability are egnored for now
 c we are rotating back, using the inverse of rm
 
+      fac_p=0.
       iispmd = ispm(jpt)    
 
       do i=1,3
@@ -138,8 +141,6 @@ c we are rotating back, using the inverse of rm
             rminv(i,j)=rm(j,i)
          enddo
       enddo
-      fac_p=0.
-      fac=0.
       sfac=abs(excess_shear(jpt)/spm4f(iispmd))
       sfac=min(1.d0,sfac)
       fac_p(1,1)=1.0 + (spm8f(iispmd)-1.)*sfac
@@ -186,7 +187,6 @@ c not taking care of the tensor nature of D
          stop
       endif
 
-      fac_E=0.
       sfac=abs(excess_shear(jpt)/spm4f(iispmd))
       sfac=min(1.d0,sfac)
       fac_E(1)=1.0 - sfac + sfac/spm5f(iispmd)

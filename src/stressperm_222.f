@@ -35,6 +35,9 @@ c combined tensil and shear stress(2 and 22) model
 c     
 c     calculate components of volume strain
 c     
+      fac = 1.
+      fac_E=1.
+
       iispmd = ispm(i)  
       pp_fac=spm3f(iispmd)
 
