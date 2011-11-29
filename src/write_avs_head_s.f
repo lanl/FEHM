@@ -58,6 +58,7 @@ C************************************************************************
       use comai, only : altc, contim, days, iadif, icnl, jdate, jtime, 
      &     verno, wdd
       use comdi, only : head
+      use comsi, only : iPlastic
       use davidi
       implicit none
 
@@ -70,8 +71,8 @@ C************************************************************************
       character*14 tailstring
       character*20 tailstring2
       character*20 formstring
-      character*40 title(maxscalar+3)
-      character*20 units(maxscalar+3)
+      character*40 title(maxscalar+4)
+      character*20 units(maxscalar+4)
       character*1200 tstring2
       character*400 string
       character*50 tstring
@@ -111,7 +112,7 @@ C************************************************************************
      &     units(33) /'(MPa)'/           
      &     units(34) /'(MPa)'/
      &     units(35) /'(MPa)'/
-     
+     &     units(36) /'(no dim)'/     
 
 
 C     BEGIN
@@ -203,6 +204,7 @@ c     Header is only written to the first tecplot file
       title(33) = 'XY stress (MPa)'
       title(34) = 'XZ stress (MPa)'
       title(35) = 'YZ stress (MPa)'  
+      title(36) = 'Plastic strain (no dim)'  
 
       
       if(altc(1:3).eq.'avs' .and. altc(4:4) .ne. 'x') then
@@ -516,6 +518,12 @@ c     Write Z coordinate
                length = len_trim(tstring)
                ic2 = ic2 + length
            end if
+            if(iPlastic.eq.1) then
+              write(tstring,formstring) trim(title(36))
+              tstring2 = tstring2(ic1:ic2) // tstring
+              length = len_trim(tstring)
+              ic2 = ic2 + length
+            endif
          end if 
          if (iostrain .eq. 1) then
             write(tstring,formstring) trim(title(32))

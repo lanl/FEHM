@@ -270,9 +270,10 @@ C**********************************************************************
       use comco2
       use comsi
       use comsplitts
+      use davidi
       implicit none
 
-      integer iad_min, iad_mult
+      integer iad_min, iad_mult, i
       real*8 fdum_mult
       parameter (fdum_mult=1.d02,iad_mult= 100)
 
@@ -292,6 +293,12 @@ C**********************************************************************
       endif
       fdum = 0.0
       fdum_last = 1.
+
+      if(istrs.gt.0) then
+        delta_u = 0.0d0
+        delta_v = 0.0d0
+        delta_w = 0.0d0
+      endif
 c     
 c     check iterations against maximum
 c     
@@ -325,9 +332,9 @@ c the following is for fully coupled model
          endif
 c     RJP 04/10/07 added 
          if(icarb.eq.1) then
-		call icectrco2(-1,0)
-                call icectrco2(1,0)
-		call icectrco2(-34,0)
+            call icectrco2(-1,0)
+            call icectrco2(1,0)
+            call icectrco2(-34,0)
 c     call icectrco2(22,0)
          endif
       else
@@ -346,10 +353,22 @@ c     call appropriate sub to generate equations
       if(idof_stress.ge.5) then
 c 3d coupled THM
          call gensl_stress_coupled_3D
+         do i = 1,neq
+           delta_u(i) = delta_u(i) - bp(i + nrhs(1))
+           delta_v(i) = delta_v(i) - bp(i + nrhs(2))
+           delta_w(i) = delta_w(i) - bp(i + nrhs(3))
+         enddo
+
       else if(istrs_coupl.le.-99) then	
 c add stress equations and derivatives
 c uncoupled stress equations
          call  stressctr(8,0)
+         do i = 1,neq
+           delta_u(i) = delta_u(i) - bp(i + nrhs(1))
+           delta_v(i) = delta_v(i) - bp(i + nrhs(2))
+           delta_w(i) = delta_w(i) - bp(i + nrhs(3))
+         enddo
+
       else if(idoff.eq.-1) then
          call gensl3
       else

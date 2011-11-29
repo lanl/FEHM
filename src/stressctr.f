@@ -177,6 +177,15 @@ c......................................
          allocate (du(n0)) 
          allocate (dv(n0)) 
          allocate (dw(n0))
+
+! Sai : allocate delta_(u/v/w) - incremental displacements needed for plasticity
+         allocate(delta_u(n0))
+         allocate(delta_v(n0))
+         allocate(delta_w(n0))
+         delta_u = 0.0d0
+         delta_v = 0.0d0
+         delta_w = 0.0d0
+
          allocate (duo(n0)) 
          allocate (dvo(n0)) 
          allocate (dwo(n0))
@@ -490,7 +499,7 @@ c     model 4 (cubic perm variation with stress)
 c     model 91 table lookup, read table from a file
 c     model 6(linear perm variation  with effective stress failure)
 c             
-                    else if (ispmd .eq. 2. or.ispmd.eq.222) then
+                    else if (ispmd .eq. 2) then
 c     simple explicit tensile stress model
 c     spm3f,spm6f,spm9f are ignored for a 2D problem
 c spm1f:strx_min, min tensile stress (x direction) for damage to occur
@@ -523,6 +532,8 @@ c spm13f: maximum multiplier  permeability z-prime direction
      &                     spm5f(i),spm6f(i),spm7f(i),spm8f(i),spm9f(i),
      &                      spm10f(i),spm11f(i),spm12f(i),spm13f(i)
                     else if (ispmd .eq. 22) then
+                       if(.not.allocated(itemp_perm22)) 
+     &                      allocate (itemp_perm22(100000))
                        itemp_perm22 =0
                        open(unit=94,file='failed_nodes_perm22.dat')
 c mohr-coulomb failure criteria on the plane that miximizes
@@ -542,6 +553,44 @@ c  y-prime is along the median principal stress
                read(inpt,*)ispmt(i),spm1f(i),spm2f(i),spm3f(i),spm4f(i),
      &                     spm5f(i),spm6f(i),spm7f(i),spm8f(i),spm9f(i),
      &                     spm10f(i)
+
+                    else if (ispmd .eq. 222) then
+c     combpned model  explicit tensile and shear (2 and 22)
+c     spm3f,spm6f,spm9f are ignored for a 2D problem
+c spm1f222:strx_min, min tensile stress (x direction) for damage to occur
+c spm2f222:stry_min, min tensile stress (y direction) for damage to occur
+c spm3f222:stry_min, min tensile stress (z direction) for damage to occur
+c spm4f222:e10_facx, damage factor (maximum x) for elastic modulus
+c spm5f222:e10_facy, damage factor (maximum y) for elastic modulus
+c spm6f222:e10_facz, damage factor (maximum z) for elastic modulus
+c spm7f222:str_multx, maximum change in permeability (x direction) allowed 
+c spm8f222:str_multy, maximum change in permeability (y direction) allowed 
+c spm9f222:str_multz, maximum change in permeability (z direction) allowed 
+c mohr-coulomb failure criteria on the plane that miximizes
+c abs(shear)-friction*normal stress
+c spm1f:friction coefficient of shear in the fault plane
+c spm2f:shear strength of the fault plane
+c spm3f:factor in effective stress=sigma-(pp_fac*pore pressure)
+c spm4f:range of excess shear stress over which damage is ramped
+c spm5f:maximum multiplier for young's modulus  in x-prime direction
+c spm6f:maximum multiplier for young's modulus  in y-prime direction
+c spm7f:maximum multiplier for young's modulus  in z-prime direction
+c spm8f: maximum multiplier  permeability x-prime direction
+c spm9f: maximum multiplier  permeability y-prime direction
+c spm10f: maximum multiplier  permeability z-prime direction
+c  here z-prime is along tehnormal to the plane of failure, and
+c  y-prime is along the median principal stress
+                       if(.not.allocated(itemp_perm22)) 
+     &                      allocate (itemp_perm22(100000))
+                       itemp_perm22 =0
+                       open(unit=94,file='failed_nodes_perm22.dat')
+               read(inpt,*)ispmt(i),spm1f222(i),spm2f222(i),spm3f222(i)
+     &                      ,spm4f222(i),spm5f222(i),spm6f222(i)
+     &                      ,spm7f222(i),spm8f222(i),spm9f222(i)
+               read(inpt,*) spm1f(i),spm2f(i),spm3f(i),spm4f(i),
+     &                     spm5f(i),spm6f(i),spm7f(i),spm8f(i),spm9f(i),
+     &                     spm10f(i)
+
                     else if (ispmd .eq. 3) then
                read(inpt,*)ispmt(i),spm1f(i),spm2f(i),spm3f(i),spm4f(i),
      &                      spm5f(i),spm6f(i),spm7f(i),spm8f(i),spm9f(i)
@@ -660,12 +709,14 @@ c.............................................................
             allocate(dPsidZ(nei, numgausspoints, ns))
             allocate(fem_stress(nei, numgausspoints, 6))
             allocate(fem_strain(nei, numgausspoints, 6))
+            allocate(conv_strain(nei, numgausspoints, 6))
             allocate(iPsi(ns, ns))
 
             call compute_ipsi()
 
             fem_stress = 0.0d0
             fem_strain = 0.0d0
+            conv_strain = 0.0d0
 
             sq3 = 1.0d0/sqrt(3.0d0)
             gpcord(1,1) = -sq3
@@ -1002,6 +1053,18 @@ c optional parameter for increamental application of displacement BC
            endif
 c
          iPlastic = 1
+
+         if(ifem.eq.1) then
+           allocate(isPlastic(nei, numgausspoints))
+           allocate(plastic_strain(nei, numgausspoints))
+           allocate(conv_pstrain(nei, numgausspoints))
+           allocate(pstrain(1:n0))
+
+           isPlastic = 0
+           plastic_strain = 0.0d0
+           pstrain = 0.0d0
+         endif
+
          ! Define the different flags for the plasticctr subroutine
          initPlastic = 1
          assemblePlastic = 2

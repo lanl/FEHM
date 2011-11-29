@@ -1,5 +1,6 @@
       subroutine fem_material_stress_update(i, j, gp_stress, gp_strain,
-     &     gp_strain_mech,DSai)
+     & iUnload)
+
 !***********************************************************************
 ! Copyright 2011 Los Alamos National Security, LLC  All rights reserved
 ! Unless otherwise indicated,  this information has been authored by an
@@ -27,10 +28,8 @@
       implicit none
       integer                      :: i, j
       real*8,  dimension(6)        :: gp_stress, gp_strain
-      real*8,  dimension(6)        :: gp_strain_mech
       real*8 xgp,ygp,zgp
-      real*8,  dimension(6, 6)     :: DSai
-
+      logical                      :: iUnload
       integer                      :: itmp, iModel, k,i1
 
       if(iPlastic.eq.0) then
@@ -56,12 +55,14 @@
 
       if(iModel.eq.1) then
         ! Linear, isotropic, elastic rock
+        iUnload = .false.
         call fem_elastic_stress_update(i, j, gp_stress, gp_strain)
       else if(iModel.eq.2) then
         ! von Mises material
         ! material properties such as yield_stress etc are available
         ! as global variables
-        call fem_vonMises_stress_update(i, j, gp_stress, gp_strain)
+        call fem_vonMises_stress_update(i, j, gp_stress, gp_strain,
+     & iUnload )
       endif
       
       end subroutine fem_material_stress_update

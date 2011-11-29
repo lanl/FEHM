@@ -174,6 +174,8 @@ C***********************************************************************
       use comdti
       use comai
       use comriv
+      use comfem, only: permfactor
+      use comsi, only: ihms
       implicit none
 
       logical bit
@@ -182,6 +184,7 @@ C***********************************************************************
       integer jm, jmi, jmia, jml, kb, kz
       integer neighc, neqp1, nmatavw
       integer imd,iwd
+      integer edge
       real*8 dis2,dis_tol,sx_min
       real*8 delx2
       real*8 dely2
@@ -301,6 +304,7 @@ c 3-d geometry
 c
          do 59 jm=1,iq
             kb=it8(jm)
+            edge = it11(jm) + neqp1
             kz=kb-icd
             neighc=it9(jm)
             iw=it10(jm)
@@ -316,6 +320,13 @@ c
             perml(1)=2.*alxkb*alxi/(alxkb+alxi)
             perml(2)=2.*alykb*alyi/(alykb+alyi)
             perml(3)=2.*alzkb*alzi/(alzkb+alzi)
+
+            if(ihms.gt.0) then
+              perml(1) = perml(1)*permfactor(edge,1)
+              perml(2) = perml(2)*permfactor(edge,2)
+              perml(3) = perml(3)*permfactor(edge,3)
+            endif
+
             sx2c=sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz)
             thxkb=thx(kb)
             thykb=thy(kb)

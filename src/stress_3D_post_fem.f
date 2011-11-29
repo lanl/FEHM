@@ -1,23 +1,4 @@
       subroutine stress_3D_post_fem()
-!***********************************************************************
-! Copyright 2011 Los Alamos National Security, LLC  All rights reserved
-! Unless otherwise indicated,  this information has been authored by an
-! employee or employees of the Los Alamos National Security, LLC (LANS),
-! operator of the  Los  Alamos National  Laboratory  under Contract  No.
-! DE-AC52-06NA25396  with  the U. S. Department  of  Energy.  The  U. S.
-! Government   has   rights  to  use,  reproduce,  and  distribute  this
-! information.  The  public may copy  and  use this  information without
-! charge, provided that this  Notice and any statement of authorship are
-! reproduced on all copies.  Neither  the  Government nor LANS makes any
-! warranty,   express   or   implied,   or   assumes  any  liability  or
-! responsibility for the use of this information.      
-!***********************************************************************
-! 
-! Integrates the stresses and strains from the gausspoints onto the nodes
-! when using 'fem' computations
-! 
-! Author : Sai Rapaka
-!
 
       use comflow
       use davidi
@@ -175,7 +156,7 @@ c      integer, allocatable ::   itstress(:)
       integer    :: node(8)
       real*8 val
       real*8 :: Dmat(6,6), sol(8)
-      real*8 :: intsig(6), intstrain(6), cvol(neq)
+      real*8 :: intsig(6), intstrain(6), cvol(neq), intplas
       real*8, allocatable :: kmat(:)
       real*8 deltaT, deltaP, alphadT, betadP
       real*8 kmat_gp
@@ -189,14 +170,13 @@ c      integer, allocatable ::   itstress(:)
         str_xy = 0.0d0
         str_yz = 0.0d0
         str_xz = 0.0d0
-
-        strain_xx = 0.0d0
-        strain_yy = 0.0d0
-        strain_zz = 0.0d0
-        strain_xy = 0.0d0
-        strain_yz = 0.0d0
-        strain_zx = 0.0d0
-
+        strain_xx = 0.0d0        
+        strain_yy = 0.0d0        
+        strain_zz = 0.0d0        
+        strain_xy = 0.0d0        
+        strain_yz = 0.0d0        
+        strain_zx = 0.0d0        
+        if(iPlastic.eq. 1) pstrain = 0.0d0
         cvol = 0.0d0
 
         do el=1,nei
@@ -206,13 +186,16 @@ c      integer, allocatable ::   itstress(:)
           enddo
 
           intsig = 0.0d0
-          intstrain = 0.0d0
           onedV = 0.0d0
+          intstrain = 0.0d0
+          intplas = 0.0d0
 
           do j=1,numgausspoints
             fac = detJ(el, j)*gpweight(j)
             intsig = intsig + fem_stress(el, j, :)*fac
             intstrain = intstrain + fem_strain(el, j, :)*fac
+            if(iPlastic.eq. 1) 
+     &           intplas = intplas + plastic_strain(el, j)*fac
             onedV = onedV + fac
           enddo
 
@@ -232,6 +215,8 @@ c      integer, allocatable ::   itstress(:)
             strain_yz(node(k)) = strain_yz(node(k)) + intstrain(5)
             strain_zx(node(k)) = strain_zx(node(k)) + intstrain(6)
 
+           if(iPlastic.eq. 1) 
+     &           pstrain(node(k)) = pstrain(node(k)) + intplas
           enddo
         enddo
 
@@ -244,13 +229,6 @@ c      integer, allocatable ::   itstress(:)
         str_yz = str_yz/cvol
         str_xz = str_xz/cvol
 
-        strain_xx = strain_xx/cvol
-        strain_yy = strain_yy/cvol
-        strain_zz = strain_zz/cvol
-        strain_xy = strain_xy/cvol
-        strain_yz = strain_yz/cvol
-        strain_zx = strain_zx/cvol
-        
          if(residual_stress) then
           str_x = str_x + str_x0
           str_y = str_y + str_y0
@@ -259,6 +237,15 @@ c      integer, allocatable ::   itstress(:)
           str_yz =str_yz + str_yz0
           str_xz =str_xz + str_xz0
          endif
+
+        strain_xx = strain_xx/cvol
+        strain_yy = strain_yy/cvol
+        strain_zz = strain_zz/cvol
+        strain_xy = strain_xy/cvol
+        strain_yz = strain_yz/cvol
+        strain_zx = strain_zx/cvol
+
+        if(iPlastic.eq. 1) pstrain = pstrain/cvol
 
         return
       else

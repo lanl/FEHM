@@ -1,4 +1,4 @@
-      subroutine fem_vonMises_stiffness(i, j, d_i)
+      subroutine fem_vonMises_stiffness(i, j, D)
 !***********************************************************************
 ! Copyright 2011 Los Alamos National Security, LLC  All rights reserved
 ! Unless otherwise indicated,  this information has been authored by an
@@ -17,24 +17,24 @@
 ! 
 ! Author : Sai Rapaka
 !
-      
-      use comflow
-      use davidi
-      use comji
-      use comfi
-      use comgi
-      use comei
-      use comdi
-      use comci
-      use combi
-      use comdti
-      use comai
-      use comsi
+      use comsi, only: iPlastic, plasticModel, modelNumber, e1, e2, e3
+      use comsi, only: isPlastic, plasticParam2, plastic_strain, du
+      use comai, only: iout, iptty, ns
       use comfem
       
-      real*8, dimension(1:6, 1:6)  :: d_i
-      integer i, itmp, iModel
-      real*8 E0, nu0, lambda0, G0
+      implicit none
+      real*8, dimension(1:6, 1:6)  :: D
+      real*8, dimension(6)         :: dev_stress, N, DeN
+      real*8, dimension(8)         :: lambda, G
+      integer, dimension(8)        :: node
+      real*8 lambda_bar, G_bar,  H, NDeN
+      real*8 pressure
+      integer i, j, k, l, m, itmp, iModel
+
+      lambda_bar = 0.0
+      G_bar = 0.0
+      NDeN = 0.0
+      pressure = 0.0
       
       if(iPlastic.eq.0) then
         write(iout,*) '***ERROR : elastic stiffness routine called 
@@ -43,6 +43,8 @@
       
       itmp = modelNumber(elnode(i, 1))
       iModel = plasticModel(itmp)
+
+      H = plasticParam2(itmp)
 
       do k=2,ns
         itmp = modelNumber(elnode(i, k))
@@ -55,23 +57,51 @@
         endif
       enddo
 
-      d_i = 0.0d0
-      if(iModel.eq.1) then
-        E0 = elastic_mod(i)
-        nu0 = poisson(i)
-        lambda0 = E0*nu0/((1 + nu0)*(1 - 2.0d0*nu0))
-        G0 = E0/(2.0d0*(1 + nu0))
-        
-        d_i(1:3, 1:3) = lambda0
-        d_i(1,1) = d_i(1,1) + 2.0d0*G0
-        d_i(2,2) = d_i(2,2) + 2.0d0*G0
-        d_i(3,3) = d_i(3,3) + 2.0d0*G0
-        d_i(4,4) = G0
-        d_i(5,5) = G0
-        d_i(6,6) = G0
+      do k=1,ns
+        node(k) = elnode(i, k)
+        lambda(k) = e2(node(k))
+        G(k) = 0.5d0*(e1(k) - e2(k))
+        lambda_bar = lambda_bar + lambda(k)*Psi(i,j,k)
+        G_bar = G_bar + G(k)*Psi(i,j,k)
+      enddo
+
+      D = 0.0d0
+      if(iModel.eq.2) then
+        ! First initialize D to the elastic matrix
+        D(1:3, 1:3) = lambda_bar
+        D(1,1) = D(1,1) + 2.0d0*G_bar
+        D(2,2) = D(2,2) + 2.0d0*G_bar
+        D(3,3) = D(3,3) + 2.0d0*G_bar
+        D(4,4) = G_bar
+        D(5,5) = G_bar
+        D(6,6) = G_bar
+
+        if(isPlastic(i,j).eq.1) then
+          ! Compute deviatoric stress
+          dev_stress = fem_stress(i, j, :)
+          pressure = sum(dev_stress(1:3))/3.0d0
+          dev_stress(1) = dev_stress(1) - pressure
+          dev_stress(2) = dev_stress(2) - pressure
+          dev_stress(3) = dev_stress(3) - pressure
+
+          N = dev_stress
+          N(4) = N(4)*2.0d0
+          N(5) = N(5)*2.0d0
+          N(6) = N(6)*2.0d0
+
+          DeN = matmul(D, N)
+          NDeN = sum(N*DeN)
+
+          do l=1,6
+            do m=1,6
+                D(l,m) = D(l,m) - DeN(l)*DeN(m)/(NDeN + H)
+            enddo
+          enddo
+
+        endif
       else
-        write(iout,*) '***ERROR: elastic stiffness routine called for
-     &   a node not set to be elastic'
+        write(iout,*) '***ERROR: von Mises stiffness routine called for
+     &   a node not set to be von Mises'
       endif
       
       end subroutine fem_vonMises_stiffness

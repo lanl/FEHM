@@ -29,12 +29,17 @@
       integer                      :: iModel, k
       real *8                      :: e1bar, e2bar, e3bar
 
+!      if(iPlastic.eq.0) then
+!        write(iout,*) '***ERROR : material stiffness routine called 
+!     &   without plastic flag being set! '
+!        write(iptty,*) '***ERROR : material stiffness routine called 
+!     &   without plastic flag being set! '
+!        stop
+!      endif
+
       if(iPlastic.eq.0) then
-        write(iout,*) '***ERROR : material stiffness routine called 
-     &   without plastic flag being set! '
-        write(iptty,*) '***ERROR : material stiffness routine called 
-     &   without plastic flag being set! '
-        stop
+        call fem_elastic_stiffness(i, j, D)
+        return
       endif
       
       if(ifem.eq.0) then
