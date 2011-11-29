@@ -186,7 +186,8 @@
 ! Output using surfer (csv) format
                form_flag = 2
                hissfx = '_his.csv'
-         case ('yea','day','sec','hrs','YEA','DAY','SEC','HRS')
+         case ('yea','day','sec','hrs','hou','YEA','DAY','SEC','HRS',
+     &              'HOU')
             if (chdum(1:3) .eq. 'yea' .or. chdum(1:3) .eq. 'YEA') then
 ! Output time in years
                time_flag = 1
@@ -198,8 +199,9 @@
      &              then
 ! Output time in seconds
                time_flag = 3
-            else if (chdum(1:3) .eq. 'hrs' .or. chdum(1:3) .eq. 'HRS')  
-     &              then
+            else if (chdum(1:3) .eq. 'hrs' .or. chdum(1:3) .eq. 'HRS' 
+     &              .or. chdum(1:3) .eq. 'hou' .or. chdum(1:3) .eq. 
+     &              'HOU') then 
 ! Output time in hours
                time_flag = 4
             end if
@@ -556,8 +558,8 @@ c            end if
      &                    cmsg(2)(1:3) .eq. 'CO2l') then
 ! Output CO2 liquid density
                         den_flag = 5
-                     else if (cmsg(2)(1:4) .eq. 'co2l' .or. 
-     &                       cmsg(2)(1:3) .eq. 'CO2l') then
+                     else if (cmsg(2)(1:4) .eq. 'co2g' .or. 
+     &                       cmsg(2)(1:3) .eq. 'CO2g') then
 ! Output CO2 gas density
                         den_flag = 6
                      else
@@ -724,8 +726,8 @@ c            end if
                      if (cmsg(2)(1:4) .eq. 'co2l' .or. 
      &                    cmsg(2)(1:3) .eq. 'CO2l') then
                         vis_flag = 5
-                     else if (cmsg(2)(1:4) .eq. 'co2l' .or. 
-     &                       cmsg(2)(1:3) .eq. 'CO2l') then
+                     else if (cmsg(2)(1:4) .eq. 'co2g' .or. 
+     &                       cmsg(2)(1:3) .eq. 'CO2g') then
                         vis_flag = 6
                      else
                         vis_flag = 4
