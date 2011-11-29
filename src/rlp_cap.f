@@ -541,7 +541,8 @@ c     Linear or exponential
                      drvef(mi) = -drls
                   case (3)
                      rl_l(mi) = rl
-                     drl_lw(mi) = drls
+c                     drl_lw(mi) = drls
+                     drl_lw(mi) = -drls
                   case (4)
                      rl_v(mi) = rl
                      drl_vw(mi) = drls
