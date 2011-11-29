@@ -363,7 +363,7 @@ c     Dual perm or dual porosity value to add to get zones
             izonef = 0
             izonn = 0
          else
-           allocate(izonef_old(neq))
+           allocate(izonef_old(n0))
            izonef_old = izonef
            izonn = 1
          endif
@@ -662,6 +662,6 @@ c      end if
 
       macroread(18) = .TRUE.
       deallocate(ncord)
-      if(macro .eq. 'zonn') deallocate(izonef_old)
+      if(allocated(izonef_old)) deallocate(izonef_old)
       return
       end
