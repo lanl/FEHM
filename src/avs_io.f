@@ -878,7 +878,7 @@ C     Write output to logfile
             write (iptty, *) 'Number of times called: ',icall
          end if
          if (icall .eq. 1) then
-            write(lu_log, 315) time_units
+            write(lu_log, 315) trim(time_units)
          end if
 
          write(lu_log, 320) avs_root(1:iaroot), icall, contour_time
