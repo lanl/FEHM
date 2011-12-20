@@ -22,7 +22,7 @@ c mohr-coulomb failure criteria on the plane of maximum shear
       integer jpt,fail_flag
       real*8  shear_max,stress_norm
       real*8 eigenvec(3,3),alambda(3),rm(3,3)
-      real*8 friction,strength, pp_fac
+      real*8 friction,strength
       real*8 fac(3,3),fac_E(3)
 
       fail_flag = 0
@@ -73,7 +73,7 @@ c  y-prime is along the median principal stress
       integer jpt,iispmd,fail_flag
       real*8  shear_max,stress_norm
       real*8 eigenvec(3,3),alambda(3),rm(3,3)
-      real*8 friction,strength, pi, pp_fac,cossh,sinsh
+      real*8 friction,strength, pi, pp_fac, cossh, sinsh
 
       pi=3.1415926535
 

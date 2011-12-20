@@ -403,7 +403,7 @@ c     output concentration, keyword: concentration
             endif
 
          elseif((chdum(1:2) .eq. 'kd').or.(chdum(1:1) .eq. 'KD'))then
-c     output concentration, keyword: concentration 
+c     output concentration, keyword: kd 
             iokd = 1
             if (iptty .ne. 0) 
      &           write(iptty, *) ' iokd            ', iokd

@@ -1583,7 +1583,7 @@ c iflg=4 calculate nonlinear material properties
      
 c iflg=5 calculate stress fluid interaction properties
       else if(iflg.eq.5) then
-       call stress_fluid_mech_props(0,Nonlin_model_flag,0)           
+         call stress_fluid_mech_props(0,0)           
  
 c update volumetric strain
       else if(iflg.eq.-6) then 

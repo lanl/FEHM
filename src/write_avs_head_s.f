@@ -104,14 +104,14 @@ C************************************************************************
      &     units(25) /'(no dim)'/,
      &     units(26) /'(m)'/,
      &     units(27) /'(m)'/,    
-     &     units(28) /'(m)'/  
-     &     units(29) /'(MPa)'/           
-     &     units(30) /'(MPa)'/
-     &     units(31) /'(MPa)'/
-     &     units(32) /'(no dim)'/     
-     &     units(33) /'(MPa)'/           
-     &     units(34) /'(MPa)'/
-     &     units(35) /'(MPa)'/
+     &     units(28) /'(m)'/, 
+     &     units(29) /'(MPa)'/,          
+     &     units(30) /'(MPa)'/,
+     &     units(31) /'(MPa)'/,
+     &     units(32) /'(no dim)'/,     
+     &     units(33) /'(MPa)'/,           
+     &     units(34) /'(MPa)'/,
+     &     units(35) /'(MPa)'/,
      &     units(36) /'(no dim)'/     
 
 
@@ -189,9 +189,10 @@ c     Header is only written to the first tecplot file
       end if
       title(19) = trim(dual_char) // 'Vapor Flux (kg/s)'
       title(20) = trim(dual_char) // 'Capillary Pressure (MPa)'
-      title(21) = trim(dual_char) // 'Water Fraction'
-      title(22) = trim(dual_char) //'Super-Critical/Liquid CO2 Fraction'
-      title(23) = trim(dual_char) // 'Gaseous CO2 Fraction'
+      title(21) = trim(dual_char) // 'Water Saturation'
+      title(22) = trim(dual_char) //
+     &     'Super-Critical/Liquid CO2 Saturation'
+      title(23) = trim(dual_char) // 'Gaseous CO2 Saturation'
       title(24) = trim(dual_char) // 'Dissolved CO2 Mass Fraction'
       title(25) = trim(dual_char) // 'CO2 Phase State'
       title(26) = 'X displacement (m)'
@@ -304,6 +305,9 @@ c     Write Z coordinate
                write(lu,200) trim(title(34)), trim(units(34))
                write(lu,200) trim(title(35)), trim(units(35))
             end if
+            if(iPlastic.eq.1) then
+               write(lu,200) trim(title(36)), trim(units(36)) 
+            endif
          end if  	    
          if (iostrain .eq. 1) then
             write(lu,200) trim(title(32)), trim(units(32))
@@ -517,12 +521,12 @@ c     Write Z coordinate
                tstring2 = tstring2(ic1:ic2) // tstring
                length = len_trim(tstring)
                ic2 = ic2 + length
-           end if
+            end if
             if(iPlastic.eq.1) then
-              write(tstring,formstring) trim(title(36))
-              tstring2 = tstring2(ic1:ic2) // tstring
-              length = len_trim(tstring)
-              ic2 = ic2 + length
+               write(tstring,formstring) trim(title(36))
+               tstring2 = tstring2(ic1:ic2) // tstring
+               length = len_trim(tstring)
+               ic2 = ic2 + length
             endif
          end if 
          if (iostrain .eq. 1) then

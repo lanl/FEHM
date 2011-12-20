@@ -250,7 +250,6 @@ c     RJP 1/12/07 added following
       character*80 title(2*maxscalar+3)
       character*150 :: tecstring = ''
       character*150 :: tecstring_riv = ''
-      character*500 tstring2
       character*500 string
       character*20 vstring
       character*43 tstring
