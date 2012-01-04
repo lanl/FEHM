@@ -217,8 +217,9 @@ c	If file got closed, open it again
       end if
       do
          read(inpt,'(a4)')macro
-         locate_zone_mptr: select case (macro)		
-         case ('zone')
+         locate_zone_mptr: select case (macro)
+c 02-Jan-12 zvd - add zonn (any type of zone definition needs to be re-read)
+         case ('zone', 'zonn')
 	    call start_macro(inpt,inpt1,macro)
 	    cnum=cnum+1
 	    call zone(cnum,inpt1)
