@@ -88,6 +88,10 @@ C***********************************************************************
             ndex(entrynum,2)=i-1
             begin=1
             entrynum=entrynum+1
+            if (entrynum .gt. max_entries) then
+                entrynum = max_entries
+                exit
+            end if
          else if ((line(i:i).eq.' ').or.(line(i:i).eq.achar(9))) then
             continue
          else if (begin.eq.1) then
