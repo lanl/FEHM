@@ -189,14 +189,17 @@ c     if ((tmch*0.01).gt.tollr) tollr=tmch*0.01
       else
          allocate(anz(nbd/2),bn(nbd/2))
          allocate(dum(neq*1*4))
+c zvd 12-Jan-12 modified call to rd1dof to use correct number of calling parameters -- used nmat, nb, and nrhs based on other routines and their calls to solve_new
          if (igauss .gt. 1) then
-            call rd1dof(neq,a,b,bp,nelm,nop,north,mink,gmres,tollr,irb,
+            call rd1dof(neq,a,b,bp,nmat,nb,nrhs,nelm,nop,north,mink,
+     *           gmres,tollr,irb,
      *           iirb,nopt,npvt,dum,dum(neq+1),dum(neq*2+1),
      *           dum(neq*3+1),piv,iter,irdof,icoupl,overf,anz,bn,sto5,
      *           sto6,sto7,sto8,sto9,nbnd,iback,iout,iptty,
      *           maxor,h,c,ss,g,y,maxsolve,accm)
-          else
-            call rd1dof(neq,a,b,bp,nelm,nelm,north,mink,gmres,tollr,irb,
+         else
+            call rd1dof(neq,a,b,bp,nmat,nb,nrhs,nelm,nelm,north,mink,
+     *           gmres,tollr,irb,
      *           iirb,nopt,npvt,dum,dum(neq+1),dum(neq*2+1),
      *           dum(neq*3+1),piv,iter,irdof,icoupl,overf,anz,bn,sto5,
      *           sto6,sto7,sto8,sto9,nbnd,iback,iout,iptty,

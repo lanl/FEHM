@@ -55,7 +55,7 @@
           
           !!! Get D matrix from material module
           if(iPlastic.eq.1) then
-            call fem_material_stiffness(i, j, D, iUnload)
+            call fem_material_stiffness(i, j, D)
           else
             e1bar = 0.0d0
             e2bar = 0.0d0

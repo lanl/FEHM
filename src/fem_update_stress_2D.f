@@ -37,6 +37,7 @@
 
       real*8                       :: e1bar, e2bar, e3bar
       real*8                       :: alphadeltaT, betadeltaP
+      logical                      :: iUnload
 
 
       ! first compute the strain
@@ -85,7 +86,7 @@
 
       if(iPlastic.eq.1) then
         call fem_material_stress_update(i, j, gp_stress, gp_strain, 
-     &        gp_strain_mech, D)
+     &        iUnload)
       else
         D = 0.0d0
         D(1,1) = e1bar
