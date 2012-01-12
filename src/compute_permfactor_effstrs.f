@@ -23,7 +23,7 @@
       use comdi, only: t, tini, phi, phini
       use comsi, only: ipermstr2, perx_m, pery_m, perz_m
       use comsi, only: strx_min, stry_min, strz_min, e1, e2, e3
-      use comsi, only: spm1f, spm2f, spm3f, ipermstr2
+      use comsi, only: spm1f, spm2f, spm3f
       use comsi, only: spm7f, spm8f, spm9f, du, dv, dw, alp, bulk
       use comfem
 
