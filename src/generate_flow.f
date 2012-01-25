@@ -120,7 +120,7 @@ c     flow that enters that cell from the side entrance
      3                 (current_age-time_subdiv(j-1))/
      4                 (time_subdiv(j)-time_subdiv(j-1))
 
-                  current_capf = min(1.,current_capf)
+                  current_capf = min(1.d0,current_capf)
                   flowin = maxmix_flag*flow_rate*
      2                 (current_capf-previous_capf)
                end if

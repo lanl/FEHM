@@ -2588,8 +2588,8 @@ c....................................................................
 	integer fm, lbox_neq,tempoldbox
 	real*8 par1v,par2v,par3v,concv,prob_con,ret_factor,tau_zero
 	real*8 dummy_a, plugtime_f,plugtime_m,half_spacing,half_aperture
-	real*8 snorm, prob_fm, timeleft_dbl, flowfrac, composite_time
-        real r, ran_sp
+	real*8 prob_fm, timeleft_dbl, flowfrac, composite_time
+        real r, ran_sp, snorm
         integer box_subst
 
         ret_factor=0.
@@ -2605,7 +2605,7 @@ c....................................................................
               snorm = (1.-sresidual(jj_frac))/
      &             (1.-sresidual(jj_frac))
            end if
-           snorm = max(1.d-10,snorm,sresidual(jj_frac))
+           snorm = max(1.e-10,snorm,sresidual(jj_frac))
            half_spacing = apuv1(lbox)*snorm**(-gamma_afm(jj_frac))
            half_aperture = half_aperture/snorm
         else
