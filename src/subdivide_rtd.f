@@ -56,6 +56,7 @@ c     5. Subdivide f(t) curve
       real*8 delta_rtd
       real*8 ftotal, itotal
       real*8 previous_integrand
+      integer maxdo
       integer subdiv
       parameter(subdiv = -1)
 
@@ -69,19 +70,19 @@ c     Allocate space for final subdivided rtd arrays
 
       nsubdiv = max(1,subdiv)*rtdcount
       if (.not. allocated(time_subdiv)) then
-      allocate(time_subdiv(nsubdiv))
-      allocate(rtd_subdiv(nsubdiv))
-      allocate(capf(nsubdiv))
-      allocate(cumi(nsubdiv))
+         allocate(time_subdiv(nsubdiv))
+         allocate(rtd_subdiv(nsubdiv))
+         allocate(capf(nsubdiv))
+         allocate(cumi(nsubdiv))
       else
-        isize2=size(time_subdiv,1)
-        if(isize2.ne.nsubdiv) then
+         isize2=size(time_subdiv,1)
+         if(isize2.ne.nsubdiv) then
             deallocate(time_subdiv,rtd_subdiv,capf,cumi)
             allocate(time_subdiv(nsubdiv))
             allocate(rtd_subdiv(nsubdiv))
             allocate(capf(nsubdiv))
             allocate(cumi(nsubdiv))
-        end if
+         end if
       end if
 
       time_subdiv = 0.
@@ -95,7 +96,12 @@ c     Loop through each original rtd point, subdivide
       previous_time = 0.
       previous_rtd = 0.
       jcount = 0
-      do i = 1, rtdcount-25
+      if(fractional_area.lt.1.) then
+         maxdo = rtdcount-25
+      else
+         maxdo = rtdcount
+      end if
+      do i = 1, maxdo
          delta_time = time_rtd(i)-previous_time
          delta_rtd = rtd(i)-previous_rtd
          do j = 1, max(1,subdiv)
@@ -114,7 +120,12 @@ c     Loop through each subdivided point, integrate
       ftotal = 0.
       previous_integrand = 0.
       previous_time = 0.
-      do i = 1, nsubdiv-25
+      if(fractional_area.lt.1.) then
+         maxdo = rtdcount-25
+      else
+         maxdo = rtdcount
+      end if
+      do i = 1, maxdo
          ftotal = ftotal + 0.5*(time_subdiv(i)-previous_time)
      2        *(previous_integrand + rtd_subdiv(i))
          capf(i) = ftotal
@@ -124,10 +135,16 @@ c     Loop through each subdivided point, integrate
 
 c     Loop through each subdivided point, normalize
 
-      do i = 1, nsubdiv-25
+      if(fractional_area.lt.1.) then
+         maxdo = rtdcount-25
+      else
+         maxdo = rtdcount
+      end if
+
+      do i = 1, maxdo
          rtd_subdiv(i) = fractional_area*
-     2        rtd_subdiv(i)/capf(nsubdiv-25)
-         capf(i) = fractional_area*capf(i)/capf(nsubdiv-25)
+     2        rtd_subdiv(i)/capf(maxdo)
+         capf(i) = fractional_area*capf(i)/capf(maxdo)
       end do
 
       tfinal = time_subdiv(nsubdiv-25)
@@ -154,7 +171,12 @@ c     compute mean residence time
       ftotal = 0.
       previous_integrand = 0.
       previous_time = 0.
-      do i = 1, nsubdiv
+      if(fractional_area.lt.1.) then
+         maxdo = rtdcount-25
+      else
+         maxdo = rtdcount
+      end if
+      do i = 1, maxdo
          ftotal = ftotal + 0.5*(time_subdiv(i)-previous_time)
      2        *(previous_integrand + time_subdiv(i)*rtd_subdiv(i))
          previous_integrand = time_subdiv(i)*rtd_subdiv(i)
@@ -167,8 +189,13 @@ c     compute cumulative age distribution
       itotal = 0.
       previous_integrand = 1./mean_residence_time
       previous_time = 0.
+      if(fractional_area.lt.1.) then
+         maxdo = rtdcount-25
+      else
+         maxdo = rtdcount
+      end if
 
-      do i = 1, nsubdiv
+      do i = 1, maxdo
          itotal = itotal + 0.5*(time_subdiv(i)-previous_time)
      2        *(previous_integrand +
      3        (1.-capf(i))/mean_residence_time)

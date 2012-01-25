@@ -94,11 +94,15 @@ c     flow that enters that cell from the side entrance
       previous_capf = 0.
       cum_volume = 0.
       current_index = 1
+
       do i = 1, neq_primary
          fractional_volume = sx1(i)/total_volume
          cum_volume = cum_volume + fractional_volume
          find_age: do j = current_index, nsubdiv
-            if(cumi(j)-cum_volume.gt.tol_vol) then
+
+            if(cumi(j)-cum_volume.gt.tol_vol.or.
+     2           j.eq.nsubdiv) then
+
                if(j.eq.1) then
                   current_age = time_subdiv(j)*
      2                 (cumi(j)/cum_volume)
@@ -115,10 +119,12 @@ c     flow that enters that cell from the side entrance
      2                 (capf(j)-capf(j-1))*
      3                 (current_age-time_subdiv(j-1))/
      4                 (time_subdiv(j)-time_subdiv(j-1))
-                  
+
+                  current_capf = min(1.,current_capf)
                   flowin = maxmix_flag*flow_rate*
      2                 (current_capf-previous_capf)
                end if
+
                if(abs(flowin).gt.flowinmin) then
                   esk(i) = -20.
                   sk(i) = flowin
@@ -159,6 +165,6 @@ c     Allow for gdpm node connected to this primary node
                exit find_age
             end if
          end do find_age
-         
       end do
+
       end subroutine generate_flow

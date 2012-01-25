@@ -137,6 +137,7 @@
 ! fluxes and flow source/sink flow for mixing model
          case ('rtdm', 'RTDM')
             call gen_mixmodel
+            flux_flag = 'liquid flux'
 ! new - restart file will be written using new header format
          case ('new ', 'NEW ')
             header_flag = 'new'
