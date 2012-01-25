@@ -2171,7 +2171,7 @@ c     for setting the properties
                else
                   snorm = (1.-sresidual(jj))/(1.-sresidual(jj))
                end if
-               snorm = max(1.e-10,snorm)
+               snorm = max(1.e-10,snorm,sresidual(jj))
                spacing = 2.*apuv1(lbox)*snorm**(-gamma_afm(jj))
                if (irdof .ne. 13 .or. ifree .ne. 0) then
                   apwid = apwid*s(lbox)/snorm**(1.+gamma_afm(jj))
@@ -2605,7 +2605,7 @@ c....................................................................
               snorm = (1.-sresidual(jj_frac))/
      &             (1.-sresidual(jj_frac))
            end if
-           snorm = max(1.d-10,snorm)
+           snorm = max(1.d-10,snorm,sresidual(jj_frac))
            half_spacing = apuv1(lbox)*snorm**(-gamma_afm(jj_frac))
            half_aperture = half_aperture/snorm
         else
