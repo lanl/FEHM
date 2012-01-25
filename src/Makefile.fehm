@@ -66,11 +66,11 @@ endif
 ifeq (${OPSYS}, Darwin)
 OSTAG = mac
 ifeq (${OPSYS_PROCESSOR}, i386)
-FC = /Applications/Absoft10.2/bin/f95
-LIBRARY = -L/Applications/Absoft10.2/lib -lm -lU77 -lV77
+FC = /Applications/Absoft11.1/bin/f95
+LIBRARY = -L/Applications/Absoft11.1/lib -lm -lU77 -lV77
 else
-FC = /Applications/Absoft/bin/f95
-LIBRARY = -L/Applications/Absoft/lib -lm -lU77 -lV77
+FC = /Applications/Absoft11.1/bin/f95
+LIBRARY = -L/Applications/Absoft11.1/lib -lm -lU77 -lV77
 endif
 DFLAG =
 LD = /usr/bin/ld
