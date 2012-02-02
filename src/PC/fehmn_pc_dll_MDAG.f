@@ -521,7 +521,7 @@ cSPC
       integer :: n_input_arguments = 0
       integer index_N_large, index_in_species
       integer index_in_flag, index_out_buffer
-      integer is_ch
+      integer is_ch, skipflag
       integer :: is_ch_t = 0
       integer :: out_flag = 0
       integer :: size_old = 0
@@ -536,11 +536,28 @@ cSPC  add Aug 27, 2009 Goldsim species number for initialization
       
       save flowflag, ichk, tassem, tasii, tscounter,
      &     contr_riptot, tims_save, day_saverip, in3save,
-     &     n_input_arguments, cluster, clus
-   
+     &     n_input_arguments, cluster, clus, skipflag
+ 
+c-------------------------------------------------------------------------------- 
+c - - - - - - - - - - - - - - - - - - - - PHS 1/26/2012    SKIP      Method = 1
+c           Skip for no GW pathway                         SKIP
+ 
+      if((method.eq.1).AND.(ing(4).EQ.667)) then
+	
+	  irun = 1
+	  skipflag = 1
+	  jjj = int(ing(int(7+2*ing(7)+1)))
+	  do i = 1,jjj
+	    out(i) = 0.0
+	  end do 
+
+	  goto 9999
+
+      end if
+	  
 c------------------------------------------------------ Write Method State   
     
-      if(method.NE.1.AND.irun.NE.0) then
+      if((method.NE.1).AND.(irun.NE.0).AND.(skipflag.NE.1)) then
 	  write(iaunit,*) '--------------------------'
 	  write(iaunit,*) 'method, state' , method, state
 	  write(iaunit,*) '--------------------------'
@@ -603,7 +620,7 @@ c - - - - - - - - - - - - - - - - - - - - PHS 4/20/2011                Method = 
         continue
                                         
       end if       ! END IF  Method = 2,3,99,0 
-             
+          
 c-------------------------------------------------------------------------------- 
 c - - - - - - - - - - - - - - - - - - - - PHS 4/20/2011     time=0   Method = 1  
 c                                                   Beginning of new Realization      
@@ -1561,7 +1578,7 @@ c................................................
                call pod_derivatives
             end if
          endif
- c call subsidence for last time, iflg = 2
+c call subsidence for last time, iflg = 2
          call subsidence(2)
         
 c     
@@ -1749,10 +1766,11 @@ cSPC note: for not using index 66 for Kd, here should be in(8+in(7))
   776    format(I6,2E12.4)
       end do
 	write(iaunit,*) '-------------------------------'
-	write(iaunit,*) ' node1 conc    node393 conc   sp13'
+	write(iaunit,*) '----   YEARS   ', days/365.25
+	write(iaunit,*) ' node1 conc    node393 conc  '
 	do sflag = 1, int(in(7))
 	  node1 = (sflag - 1 )* neq + 1
-	  node393 = sflag*(neq-1) + 393
+	  node393 = (sflag-1)*neq + 393
 	  write(iaunit,776) sflag, anl(node1) , anl(node393)
 	end do
       write(iaunit,*) '-------------------------------'
@@ -1767,195 +1785,42 @@ c- - - - - - SPC for multi cluster run
       implicit none
       
       integer ncase, open_file
+	character*1  cluster(8), infil(10)
+	character*2 species(19)
+      character*74 zzout
+	
 
-      select case(int(in(6)))  
-      case (1)
-         select case(int(in(2)))
-         case (1)
-          nmfil(1) = 'cluster1\A\fehmn_1.files '
-         case (2)
-          nmfil(1) = 'cluster1\B\fehmn_1.files '
-         case (3)
-          nmfil(1) = 'cluster1\C\fehmn_1.files '
-         case (4)
-          nmfil(1) = 'cluster1\D\fehmn_1.files '
-         case (5)
-          nmfil(1) = 'cluster1\E\fehmn_1.files '
-         case (6)
-          nmfil(1) = 'cluster1\F\fehmn_1.files '
-         case (7)
-          nmfil(1) = 'cluster1\G\fehmn_1.files '
-         case (8)
-          nmfil(1) = 'cluster1\H\fehmn_1.files '
-         case (9)
-          nmfil(1) = 'cluster1\I\fehmn_1.files '
-         case (10)
-          nmfil(1) = 'cluster1\J\fehmn_1.files '
-         end select
-      case (2)
-         select case(int(in(2)))
-         case (1)
-          nmfil(1) = 'cluster2\A\fehmn_2.files '
-         case (2)
-          nmfil(1) = 'cluster2\B\fehmn_2.files '
-         case (3)
-          nmfil(1) = 'cluster2\C\fehmn_2.files '
-         case (4)
-          nmfil(1) = 'cluster2\D\fehmn_2.files '
-         case (5)
-          nmfil(1) = 'cluster2\E\fehmn_2.files '
-         case (6)
-          nmfil(1) = 'cluster2\F\fehmn_2.files '
-         case (7)
-          nmfil(1) = 'cluster2\G\fehmn_2.files '
-         case (8)
-          nmfil(1) = 'cluster2\H\fehmn_2.files '
-         case (9)
-          nmfil(1) = 'cluster2\I\fehmn_2.files '
-         case (10)
-          nmfil(1) = 'cluster2\J\fehmn_2.files '
-         end select
-      case (3)
-         select case(int(in(2)))
-         case (1)
-          nmfil(1) = 'cluster3\A\fehmn_3.files '
-         case (2)
-          nmfil(1) = 'cluster3\B\fehmn_3.files '
-         case (3)
-          nmfil(1) = 'cluster3\C\fehmn_3.files '
-         case (4)
-          nmfil(1) = 'cluster3\D\fehmn_3.files '
-         case (5)
-          nmfil(1) = 'cluster3\E\fehmn_3.files '
-         case (6)
-          nmfil(1) = 'cluster3\F\fehmn_3.files '
-         case (7)
-          nmfil(1) = 'cluster3\G\fehmn_3.files '
-         case (8)
-          nmfil(1) = 'cluster3\H\fehmn_3.files '
-         case (9)
-          nmfil(1) = 'cluster3\I\fehmn_3.files '
-         case (10)
-          nmfil(1) = 'cluster3\J\fehmn_3.files '
-         end select
-      case (4)
-c     write(iaunit,*)'in(2)', in(2)
-         select case(int(in(2)))
-         case (1)
-          nmfil(1) = 'cluster4\A\fehmn_4.files '
-         case (2)
-          nmfil(1) = 'cluster4\B\fehmn_4.files '
-         case (3)
-          nmfil(1) = 'cluster4\C\fehmn_4.files '
-         case (4)
-          nmfil(1) = 'cluster4\D\fehmn_4.files '
-         case (5)
-          nmfil(1) = 'cluster4\E\fehmn_4.files '
-         case (6)
-          nmfil(1) = 'cluster4\F\fehmn_4.files '
-         case (7)
-          nmfil(1) = 'cluster4\G\fehmn_4.files '
-         case (8)
-          nmfil(1) = 'cluster4\H\fehmn_4.files '
-         case (9)
-          nmfil(1) = 'cluster4\I\fehmn_4.files '
-         case (10)
-          nmfil(1) = 'cluster4\J\fehmn_4.files '
-         end select
-      case (5)
-         select case(int(in(2)))
-         case (1)
-          nmfil(1) = 'cluster5\A\fehmn_5.files '
-         case (2)
-          nmfil(1) = 'cluster5\B\fehmn_5.files '
-         case (3)
-          nmfil(1) = 'cluster5\C\fehmn_5.files '
-         case (4)
-          nmfil(1) = 'cluster5\D\fehmn_5.files '
-         case (5)
-          nmfil(1) = 'cluster5\E\fehmn_5.files '
-         case (6)
-          nmfil(1) = 'cluster5\F\fehmn_5.files '
-         case (7)
-          nmfil(1) = 'cluster5\G\fehmn_5.files '
-         case (8)
-          nmfil(1) = 'cluster5\H\fehmn_5.files '
-         case (9)
-          nmfil(1) = 'cluster5\I\fehmn_5.files '
-         case (10)
-          nmfil(1) = 'cluster5\J\fehmn_5.files '
-         end select
-      case (6)
-         select case(int(in(2)))
-         case (1)
-          nmfil(1) = 'cluster6\A\fehmn_6.files '
-         case (2)
-          nmfil(1) = 'cluster6\B\fehmn_6.files '
-         case (3)
-          nmfil(1) = 'cluster6\C\fehmn_6.files '
-         case (4)
-          nmfil(1) = 'cluster6\D\fehmn_6.files '
-         case (5)
-          nmfil(1) = 'cluster6\E\fehmn_6.files '
-         case (6)
-          nmfil(1) = 'cluster6\F\fehmn_6.files '
-         case (7)
-          nmfil(1) = 'cluster6\G\fehmn_6.files '
-         case (8)
-          nmfil(1) = 'cluster6\H\fehmn_6.files '
-         case (9)
-          nmfil(1) = 'cluster6\I\fehmn_6.files '
-         case (10)
-          nmfil(1) = 'cluster6\J\fehmn_6.files '
-         end select
-      case (7)
-         select case(int(in(2)))
-         case (1)
-          nmfil(1) = 'cluster7\A\fehmn_7.files '
-         case (2)
-          nmfil(1) = 'cluster7\B\fehmn_7.files '
-         case (3)
-          nmfil(1) = 'cluster7\C\fehmn_7.files '
-         case (4)
-          nmfil(1) = 'cluster7\D\fehmn_7.files '
-         case (5)
-          nmfil(1) = 'cluster7\E\fehmn_7.files '
-         case (6)
-          nmfil(1) = 'cluster7\F\fehmn_7.files '
-         case (7)
-          nmfil(1) = 'cluster7\G\fehmn_7.files '
-         case (8)
-          nmfil(1) = 'cluster7\H\fehmn_7.files '
-         case (9)
-          nmfil(1) = 'cluster7\I\fehmn_7.files '
-         case (10)
-          nmfil(1) = 'cluster7\J\fehmn_7.files '
-         end select
-      case (8)
-         select case(int(in(2)))
-         case (1)
-          nmfil(1) = 'cluster8\A\fehmn_8.files '
-         case (2)
-          nmfil(1) = 'cluster8\B\fehmn_8.files '
-         case (3)
-          nmfil(1) = 'cluster8\C\fehmn_8.files '
-         case (4)
-          nmfil(1) = 'cluster8\D\fehmn_8.files '
-         case (5)
-          nmfil(1) = 'cluster8\E\fehmn_8.files '
-         case (6)
-          nmfil(1) = 'cluster8\F\fehmn_8.files '
-         case (7)
-          nmfil(1) = 'cluster8\G\fehmn_8.files '
-         case (8)
-          nmfil(1) = 'cluster8\H\fehmn_8.files '
-         case (9)
-          nmfil(1) = 'cluster8\I\fehmn_8.files '
-         case (10)
-          nmfil(1) = 'cluster8\J\fehmn_8.files '
-         end select
-      end select  		
-      
+        infil(1) = 'A'
+        infil(2) = 'B'
+        infil(3) = 'C'
+        infil(4) = 'D'
+        infil(5) = 'E'
+        infil(6) = 'F'
+        infil(7) = 'G'
+        infil(8) = 'H'
+        infil(9) = 'I'
+        infil(10) = 'J'
+
+        cluster(1) = '1'
+        cluster(2) = '2'
+        cluster(3) = '3'
+        cluster(4) = '4'
+        cluster(5) = '5'
+        cluster(6) = '6'
+        cluster(7) = '7'
+        cluster(8) = '8'
+
+	  species(1)  = '01'
+	  species(19) = '19'
+
+        zzout(1:28) = 'cluster1/A/fehmn_1_01.files '
+        zzout(8:8) = cluster(int(in(6)))
+	  zzout(10:10) = infil(int(in(2)))
+	  zzout(18:18) = cluster(int(in(6)))
+	  zzout(20:21) = species(int(in(7)))
+
+        nmfil(1) = zzout
+
       return
       end subroutine namefiles
 
