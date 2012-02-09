@@ -350,8 +350,10 @@ c
             
  100        continue
             read (inpt, '(a80)') wdd1
-            if (wdd1(1:7) .eq. 'co2end') go to 200 
-            if (wdd1(1:1) .eq. '#') go to 40 
+c Changed end check for compatibility with macro "off" option
+            if (wdd1(1:6) .eq. 'co2end' .or. wdd1(1:7) .eq. 'endcarb'
+     &           .or. wdd1(1:8) .eq. 'end carb') go to 200 
+            if (wdd1(1:1) .eq. '#') go to 100 
             read (wdd1, '(a8)') macro1
             if (iout .ne. 0) write(iout, 50) macro1
             if (iptty .gt. 0) write(iptty, 50) macro1 
