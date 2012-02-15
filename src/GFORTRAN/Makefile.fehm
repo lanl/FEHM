@@ -17,6 +17,7 @@
 # Edit SRCDIR to point to the directory where the source code is located
 # Edit FC,LIBRARY,FFLAGS for your environment and compiler 
 #***********************************************************************
+# Before starting source GnuDevelEnv.cshrc
 
 SRCDIR = /scratch/ymp/zvd/FEHM_V3.00open/src/
 WORKDIR = ./
@@ -25,7 +26,7 @@ OBJDIR = ./
 DEPEND = ${SRCDIR}Makefile.depends
 
 OPSYS = UNKNOWN
-BIT = 32
+BIT = 64
 STATIC =
 OPSYS_FULL = $(shell uname -a )
 OPSYS = $(shell uname -s )
@@ -41,8 +42,8 @@ endif
 ifeq (${OPSYS}, Linux)
 OSTAG = gf
 ifeq (${BIT},64)
-FC = /usr/lanl/bin/gfortran
-LIBRARY = -L/usr/lanl/packages/gcc42/lib
+FC = /scratch/ymp/packages/gcc/gcc-4.5.1/bin/gfortran
+LIBRARY = -L/scratch/ymp/packages/gcc/gcc-4.5.1/lib64
 else
 FC = /usr/lanl/bin/gfortran
 LIBRARY =  -L/usr/lanl/packages/gcc42/lib
@@ -50,11 +51,15 @@ endif
 DFLAG =
 LD = /usr/bin/ld
 ifeq (${DEBUG}, ON)
+#FFLAGS = -g -frecord-marker=4 -fno-automatic -ffpe-trap=underflow,overflow
+#FFLAGS = -g -frecord-marker=4 -fno-automatic
 FFLAGS = -g -frecord-marker=4
 else
+#FFLAGS = -O2 -frecord-marker=4 -fno-automatic -ffpe-trap=underflow,overflow
 FFLAGS = -O2 -frecord-marker=4
 endif
-STATIC = -Bstatic
+#STATIC = -Bstatic
+STATIC = -static
 endif
 # Linux OS ------------------------------
 
@@ -72,7 +77,8 @@ FFLAGS = -g -C
 else
 FFLAGS = -O1 -xtarget=ultra2
 endif
-STATIC = -Bstatic
+#STATIC = -Bstatic
+STATIC = -static
 endif
 # SUN OS ------------------------------
 
@@ -86,7 +92,7 @@ dated:
 	sed s/OS\ DATE/${OSTAG}\ ${DATETAG}/ ${SRCDIR}dated.template >  ${SRCDIR}dated.f
 
 xfehm : ${OBJECTS} ${OBJECTS_F90}
-	${FC} ${FFLAGS} ${OBJECTS} ${OBJECTS_F90} ${LIBRARY} ${STATIC} -o xfehm_v3.00${OSTAG}${DATE}
+	${FC} ${FFLAGS} ${OBJECTS} ${OBJECTS_F90} ${LIBRARY} ${STATIC} -o xfehm_v3.1${OSTAG}${DATE}
 
 test:
 	echo ${OSTAG} ${FFLAGS} ${DATETAG} ${DATE}
