@@ -141,7 +141,8 @@ CPS END
 CPS 
 C***********************************************************************
 
-      use avsio, only : iocord, iogeo, iokd, geoname, iodual, iogdkm
+      use avsio, only : iocord, iogeo, iokd, geoname, iodual, iogdkm,
+     &     iogrid
       use comai
       use combi, only : corz
       use comdi
@@ -433,6 +434,10 @@ c------------------------------------------------------------------------------
          if (altc(1:3) .ne. 'tec') then
             write (lu, '(a)') print_title(1:length)
          else
+            write (lu, 125) verno, jdate, jtime, trim(wdd)
+            if (iogrid .eq. 1 .and. iocord .eq. 0) then
+               write (lu, 140)
+            end if
             write (lu, '("VARIABLES = ", a)') print_title(1:length)
             if (iogeo .eq. 1) then
                select case (ns_in)
@@ -458,9 +463,11 @@ c------------------------------------------------------------------------------
             end if
          endif
       end if
+ 125  format('TITLE = "', a30, 1x, a11, 1x, a8, 1x, a, '"')
  130  format('ZONE T = "Material properties"', a)
  135  format(', N = ', i8, ', E = ', i8, ', DATAPACKING = POINT',
      &     ', ZONETYPE = ', a)
+ 140  format('FILETYPE = "SOLUTION"')
 
       temp_string = ''
       vstring = ''
