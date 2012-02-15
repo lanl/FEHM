@@ -94,12 +94,19 @@ C***********************************************************************
       integer i_neigh, max_neigh, neqp1, nx,  nx1,  nx2, ny, ny1, ny2
       integer idummy, iconn, indexa_axy, ifl2, imat, mod_type
       integer open_file, ifile1, ifile2, ifile3, num_nodes, nawt
-      integer counter, dumcyc, readflag, incf, ntimes, nfix
+      integer counter, dumcyc, incf, ntimes, nfix
+      integer :: readflag = 0
       integer, allocatable :: node_a(:)
+      integer, allocatable :: node_b(:)
       integer, allocatable :: idum(:)
+      integer, allocatable :: idum_a(:,:)
       integer, allocatable :: idum_b(:)
+      integer, allocatable :: idum_c(:)
+      integer, allocatable :: nel_node(:)
       integer, allocatable :: izone_awt(:)
+      integer, allocatable :: elem_temp(:,:)
       real*8, allocatable :: cons(:,:)
+      real*8, allocatable :: cord_add(:,:)
       real*8, allocatable :: times(:)
       real*8 tdum
       real*8 delx, delx1, delx2, dely, dely1, dely2
@@ -116,7 +123,12 @@ C***********************************************************************
       real*8 total_recharge2, tol, fluxd, vol, frac, shut_time
       real*8 rzw, sww, scc
       integer iuser1,iuser2,icount
-      real*8 permxd
+      integer i_outer_elem,ie_1,ie_2,ie_3,ie_4,ie_5,ie_6,ie_7,ie_8
+      integer i_edge, nei_old, neq_add, i_new, i_elem_new, kk, ns_old
+      integer i_level, i_level_max
+      real*8 permxd,x_old,y_old,rad_fac, rad_max, rad_max2
+      real*8 rad_old, rad_old2, rad_new, rad_new2, rad_use
+      real*8 rad_fac2,rad_use2, x_max_new, y_max_new
       real*8, allocatable :: sk_save(:)
       real*8, allocatable :: sk_save1(:)
       real*8, allocatable :: sk_save2(:)
@@ -128,9 +140,203 @@ C***********************************************************************
       logical matrix_node, null1, xy, ex
 
       save ntimes, times, cons, counter, dumcyc, nfix, readflag,
-     &     shut_time
+     &     shut_time, num_nodes, idum
 
       select case (k)
+c gaz added for identifing edge nodels for extending the grid in radial direction
+      case (2001)
+          write(*,*) '**********************************'
+          write(*,*) '  '
+          write(*,*)'enter number of levels,rad_fac, rad_max, NOW'
+          read(*,*) i_level_max, rad_fac, rad_max
+          rad_fac2 = rad_fac*rad_fac
+          rad_max2 = rad_max*rad_max
+          rad_new2 = 0.0
+c perform at least one level
+          if(i_level_max.lt.1) then
+           write(*,*)'setting number of levels to 1'
+            i_level_max = 1
+          endif          
+          i_level_max = max(i_level_max,1)
+          i_level = 0
+2002      continue
+          i_level = i_level + 1
+          if(i_level.gt.i_level_max.or.rad_new2.ge.rad_max2) go to 2003
+          if(i_level.eq.1) then
+            incf = open_file('zone_299.txt','unknown')
+          else
+            incf = open_file('zone_edge.txt','unknown')
+          endif
+           read(incf,*) i1
+           allocate(node_a(i1))   
+           read(incf,*)(node_a(i),i = 1,i1)
+           i_edge = i1
+          close(incf)
+          if(i_level.eq.1) then
+           incf = open_file('Coarse_Grid_temp.grid','unknown')
+          else
+           incf = open_file('Coarse_Grid_new.grid','unknown')
+          endif
+           read(incf,*) dum_user (1:10)
+           read(incf,*) ii
+            allocate(cord_add(ii+i_edge,3))
+            idum = 0
+            neq_add = ii
+           do i = 1,ii
+            read(incf,*) jj,(cord_add(jj,k),k =1,3)
+           enddo
+           read(incf,*) dum_user (1:10)
+           read(incf,*) jj, ii
+           ns_old = jj
+           allocate(idum_a(neq_add,ns_old))
+c storage for elements need to be thought out  (&&&&&&&&&&&&&&&&&&&)         
+           allocate(elem_temp(ii+ii,jj))
+           allocate(idum_b(ii))
+           allocate(nel_node(neq_add))
+            nel_node = 0
+            idum_b = 0
+            nei_old = ii
+           do i = 1,ii
+            read(incf,*) kk,(elem_temp(kk,j),j = 1,jj)
+c id nodes in this element set            
+            do j = 1,jj
+              i2 = elem_temp(kk,j)  
+              nel_node(i2) = nel_node(i2)+1
+              idum_a(i2,nel_node(i2)) = i
+            enddo
+           enddo
+           close(incf)
+c now find outside edge elements
+          do i = 1, i_edge
+            j = node_a(i)
+           do i3 = 1,nel_node(j)
+           i4 = idum_a(j,i3)
+            if(i4.ne.0) then
+             idum_b(i4) = 1
+            endif
+           enddo
+          enddo
+c count elements
+         jk = 0
+         do i = 1, ii
+           if(idum_b(i).ne.0) then
+            jk = jk + 1
+           endif       
+         enddo
+         allocate (idum_c(jk))
+         write(*,*) 'i_level = ',i_level,' outer edge nodes = ', i_edge
+         write(*,*) 'i_level = ',i_level,' outer edge elements = ', jk
+         jk = 0
+         do i = 1, ii
+           if(idum_b(i).ne.0) then
+            jk = jk + 1
+            idum_c(jk) = i
+           endif       
+         enddo  
+         i_outer_elem = jk
+          allocate(node_b(neq_add))
+          i_new = neq_add
+          x_max_new = 0.0
+          y_max_new = 0.0
+         do i = 1,i_edge
+           i_new = i_new +1
+           node_b(node_a(i)) = i_new
+c assign coordinates
+           x_old = cord_add(node_a(i),1)
+           y_old = cord_add(node_a(i),2)  
+           rad_old2 = x_old**2 + y_old**2
+           rad_new2 = rad_fac2*rad_old2
+           if(rad_new2.gt.rad_max2)then
+            rad_use2 = rad_max2/rad_old2
+            rad_use = sqrt(rad_use2)
+            rad_new2 = rad_max2
+           else
+            rad_use = rad_fac
+           endif
+           cord_add(i_new,1)=rad_use*x_old
+           cord_add(i_new,2)=rad_use*y_old
+           cord_add(i_new,3)=cord_add(node_a(i),3)
+           x_max_new = max(rad_use*x_old,x_max_new)
+           y_max_new = max(rad_use*y_old,y_max_new)
+         enddo
+         write(*,*) 'i_level = ',i_level,' radius = ', sqrt(rad_new2)
+         write(*,*) 'i_level = ',i_level,' xmax = ', x_max_new
+         write(*,*) 'i_level = ',i_level,' ymax = ', y_max_new
+         i_elem_new = nei_old
+         do i = 1, i_outer_elem
+          i1 = idum_c(i)
+          ie_1 = elem_temp(i1,1)
+          ie_2 = elem_temp(i1,2)
+          ie_3 = elem_temp(i1,3)
+          ie_4 = elem_temp(i1,4)
+          ie_5 = elem_temp(i1,5)
+          ie_6 = elem_temp(i1,6)
+          ie_7 = elem_temp(i1,7)
+          ie_8 = elem_temp(i1,8)
+          i_elem_new = i_elem_new + 1
+           elem_temp(i_elem_new,1) = ie_2
+           elem_temp(i_elem_new,4) = ie_3
+           elem_temp(i_elem_new,5) = ie_6
+           elem_temp(i_elem_new,8) = ie_7
+           elem_temp(i_elem_new,2) = node_b(ie_2)
+           elem_temp(i_elem_new,3) = node_b(ie_3)
+           elem_temp(i_elem_new,6) = node_b(ie_6)
+           elem_temp(i_elem_new,7) = node_b(ie_7)
+         enddo
+         write(*,*)'New grid: nodes ',i_new,' elements ', i_elem_new
+         incf = open_file('zone_edge.txt','unknown')
+           write(incf,*) i_edge
+           write(incf,*)(node_b(node_a(i)),i = 1,i_edge)
+         close(incf)
+         incf = open_file('Coarse_Grid_new.grid','unknown')
+          write(incf,'(a4)') 'coor'
+          write(incf,*) i_new
+          do i = 1, i_new
+           write(incf,'(i8,1x,3(f20.7))') i,(cord_add(i,jj),jj=1,3)
+          enddo
+          write(incf,'(a4)') '    '
+          write(incf,'(a4)') 'elem'
+          write(incf,*) ns_old,  i_elem_new, 0
+          do i = 1, i_elem_new
+           write(incf,'(i8,8(1x,i8))') i,(elem_temp(i,jj),jj=1,ns_old)  
+          enddo
+          write(incf,'(a4)') '    '
+          write(incf,'(a4)') 'stop'
+         close(incf)
+         deallocate(idum_a,idum_b,idum_c,
+     &          node_a,node_b,elem_temp,cord_add,nel_node)
+         go to 2002
+2003     continue  
+         write(*,*) 'Generated new grid: Coarse_Grid_new.grid '
+         write(*,*) 'nodes = ',i_new,' elements = ',i_elem_new
+         write(*,*) '  '
+         write(*,*) '**********************************'    
+          stop
+
+c gaz added for turning off CO2 identified CO2 injection wells injection wells
+      case (1001)
+         if(readflag.eq.0) then
+            incf = open_file('co2_inj.txt','unknown')
+            read(incf,*) shut_time
+            read(incf,*)  num_nodes
+            allocate(idum(num_nodes))
+            read(incf,*)  (idum(i),i= 1,num_nodes)
+            close (incf)
+            readflag = 1
+         end if	
+         if(days.ge.shut_time*365.25.and.readflag.eq.1) then
+          readflag = 2
+          write(*,*) '*************WEllS SHUT IN***********************'
+          write(iout,*) '*************WEllS SHUT IN********************'
+            do j = 1, num_nodes
+              i = idum(j)
+               if(kaco2(i).le.-1) then
+                  wellco2(i) = 0.d0
+               elseif(skco2(i).lt.0.d0) then
+                  skco2(i) = 0
+               endif
+           enddo
+         endif          
 c RJP added for turning off CO2 injection wells
       case (999)
          if(readflag.NE.1) then
