@@ -1289,7 +1289,7 @@ c      read(inpt,*) itm, ist
             write(isptr3 , 1000)  verno, jdate, jtime
             write(isptr3 , 1001)  ptitle
             if (alt_btc) then
-               if (xyz_flag) then
+               if (xyz_flag2) then
                   if (write_prop(3) .ne. 0) then
                      write(isptr3 , 1006)
                   else
