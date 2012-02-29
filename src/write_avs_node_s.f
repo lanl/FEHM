@@ -404,6 +404,9 @@ c     fdm grid
                         tecstring = trim(string)
                         write (lu, 130) trim(timec_string), 
      &                       trim(gridstring), trim(times_string)
+                     else
+                        write (lu, 130) trim(timec_string), 
+     &                       trim(tecstring)
                      end if
                   else
                      tecstring_riv = trim(string)
@@ -454,7 +457,15 @@ c     fdm grid
                      tecstring = trim(string)
                   else
                      tecstring_riv = trim(string)
-                  endif                             
+                  endif
+               else if (icall .eq. 1 .and. iozid .ne. 0) then
+                  write (lu, 130) trim(timec_string)
+                  write (string, 125) '2', iz
+                  if(irivp.eq.0) then
+                     tecstring = trim(string)
+                  else
+                     tecstring_riv = trim(string)
+                  endif
                else
                   if(irivp.eq.0) then
                      if (iogeo .eq. 1) then
@@ -464,6 +475,9 @@ c     fdm grid
                         write (lu, 130) trim(timec_string), 
      &                       trim(tecstring),
      &                       trim(gridstring), trim(times_string)
+                     else
+                        write (lu, 130) trim(timec_string), 
+     &                       trim(tecstring)                        
                      end if   
                   else
                      write (lu, 130) trim(timec_string),
