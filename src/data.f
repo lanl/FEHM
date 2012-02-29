@@ -320,6 +320,8 @@ c ico2 set in scanin.f
       itsat  = 0
       iupk   = 0
       ivapl  = 0
+c 23-Feb-12 Default value for thermal conductivity models
+      ivcond = 0
       ivf    = 1
       ivfcal = 0
       ithic  = 0
