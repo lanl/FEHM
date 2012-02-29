@@ -1272,6 +1272,8 @@ c---  find values as function of P+T                 LOOKUP
      &              PP(point(2),3) + zwt*zwp*PP(point(3),3) +
      &              (1-zwp)*zwt*PP(point(4),3)
 
+               if(cden) rol = rol+factcden*anl((ispcden-1)*n0+mi)
+
                drolp = (1-zwp)*(1-zwt)*PP(point(1),4) + (1-zwt)*zwp*
      &              PP(point(2),4) + zwt*zwp*PP(point(3),4) +
      &              (1-zwp)*zwt*PP(point(4),4)
@@ -1282,7 +1284,7 @@ c---  find values as function of P+T                 LOOKUP
 
                enl   = (1-zwp)*(1-zwt)*PP(point(1),6) + (1-zwt)*zwp*
      &              PP(point(2),6) + zwt*zwp*PP(point(3),6) +
-     &              (1-zwp)*zwt*PP(point(4),6)
+     &              (1-zwp)*zwt*PP(point(4),6) + p_energy
 
                dhlp  = (1-zwp)*(1-zwt)*PP(point(1),7) + (1-zwt)*zwp*
      &              PP(point(2),7) + zwt*zwp*PP(point(3),7) +
