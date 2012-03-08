@@ -224,24 +224,24 @@ c zvd 6/9/08 prnt_rst values of 41, 42 for GoldSim mass output option
                if (header_flag .eq. 'new') write(isave) ptrkword
                write(dummy_string, *)  num_particles(1), rseed, 
      &              rseed_release, nspeci
+               write(isave) dummy_string
                if (nspeci .gt. 1) write(isave) (num_particles(i),
      &              i = 1, nspeci)
-               write(isave) dummy_string
                do j = 1, nspeci
-                  write(isave) (box(i,1),i=1,num_particles(1))
-                  write(isave) (frac_done(i,1),i=1,num_particles(1))
-                  write(isave) (theta(i,1),i=1,num_particles(1))
-                  write(isave) (timeleft(i,1),i=1,num_particles(1))
+                  write(isave) (box(i,1),i=1,num_particles(j))
+                  write(isave) (frac_done(i,1),i=1,num_particles(j))
+                  write(isave) (theta(i,1),i=1,num_particles(j))
+                  write(isave) (timeleft(i,1),i=1,num_particles(j))
                end do
             case (-1, -2, -11, -12, -21, -22, -31, -32, -41, -42)
                if (header_flag .eq. 'new') write(isave,*) ptrkword
                write(dummy_string, *) num_particles(1), -rseed, nspeci
+               write(isave) dummy_string
                if (nspeci .gt. 1) write(isave) (num_particles(i),
      &              i = 1, nspeci)
-               write(isave) dummy_string
                do j = 1, nspeci
-                  write(isave) (box(i,j),i=1,num_particles(1))
-                  write(isave) (timeleft(i,j),i=1,num_particles(1))
+                  write(isave) (box(i,j),i=1,num_particles(j))
+                  write(isave) (timeleft(i,j),i=1,num_particles(j))
                end do
             case default
 ! Do nothing, particle data is not written to restart file
@@ -255,10 +255,10 @@ c zvd 6/9/08 prnt_rst values of 41, 42 for GoldSim mass output option
                if (nspeci .gt. 1) write(isave, *) (num_particles(i),
      &              i = 1, nspeci)
                do j = 1, nspeci
-                  write(isave, 20) (box(i,j),i=1,num_particles(1))
-                  write(isave, 30) (frac_done(i,j),i=1,num_particles(1))
-                  write(isave, 30) (theta(i,j),i=1,num_particles(1))
-                  write(isave, 30) (timeleft(i,j),i=1,num_particles(1))
+                  write(isave, 20) (box(i,j),i=1,num_particles(j))
+                  write(isave, 30) (frac_done(i,j),i=1,num_particles(j))
+                  write(isave, 30) (theta(i,j),i=1,num_particles(j))
+                  write(isave, 30) (timeleft(i,j),i=1,num_particles(j))
                end do
             case (-1, -2, -11, -12, -21, -22, -31, -32 -41, -42)
                if (header_flag .eq. 'new') write(isave,'(a4)') 'ptrk'
@@ -266,8 +266,8 @@ c zvd 6/9/08 prnt_rst values of 41, 42 for GoldSim mass output option
                if (nspeci .gt. 1) write(isave, *) (num_particles(i),
      &              i = 1, nspeci)
                do j = 1, nspeci
-                  write(isave, 20) (box(i,j),i=1,num_particles(1))
-                  write(isave, 30) (timeleft(i,j),i=1,num_particles(1))
+                  write(isave, 20) (box(i,j),i=1,num_particles(j))
+                  write(isave, 30) (timeleft(i,j),i=1,num_particles(j))
                end do
             case default
 ! Do nothing, particle data is not written to restart file
