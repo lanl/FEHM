@@ -45,18 +45,19 @@
 
       use comai
       use combi
-      use comci, only : rolf
+      use comci, only : rolf, rovf
       use comdi
       use comdti
       use comflow
       use comchem
       use compart, only : pcnsk
       use comxi
-!      use davidi
+      use davidi, only : irdof
 
       implicit none
       integer addnode, iconn, idummy, i1, i2, ipr_vapor
       integer i, indexa_axy, inneq, inode, inodec, izone, md
+      integer num_aq, num_v
       integer open_file, iroot, is, ie, iname
       integer, allocatable :: icfile(:)
       real*8 ptime, sumfout, sumsink, sumsource, sumboun, sumfin,sum_vap
@@ -66,9 +67,6 @@
       character*150 cflx_name, cflx_root, string2
       logical matrix_node, null1
       save icfile
-
-!      if(irdof.ne.13 .or. ifree.ne.0) ipr_vapor = 1
-! Currently only liquid fluxes 1/26/2007
 
 ! Fluxes are written to concentration flux history file
       if (.not. allocated (flux_string)) 
@@ -108,8 +106,6 @@
             if (iroot .gt. 100) iroot = 100
             cflx_root(1:iroot) = root_name(1:iroot)
          end if
-         cflx_name = ''
-         cflx_name(1:iroot) = cflx_root(1:iroot)
          string = '# Zone Flux (moles/day): '
          is = 26
          ie = 35
@@ -139,9 +135,26 @@
             is = ie + 1
             ie = ie + 6
          end do
+
+! Start counter for number of aqueous or vapor species ABJ 3/2012
+         num_aq=1
+         num_v=1
+         
          do nsp = 1, nspeci
-            iname = len_trim (cpntnam(nsp))
-            cflx_name(iroot+1:iroot+iname) = cpntnam(nsp)
+
+         cflx_name = ''
+         cflx_name(1:iroot) = cflx_root(1:iroot)
+
+! Check if an aqueous or vapor species filename is needed ABJ 3/2012
+            if (icns(nsp).ge.0.or.abs(icns(nsp)).eq.2) then
+                iname = len_trim (cpntnam(num_aq))
+                cflx_name(iroot+1:iroot+iname) = cpntnam(num_aq)
+                num_aq = num_aq + 1
+            else
+                iname = len_trim (vapnam(num_v))
+                cflx_name(iroot+1:iroot+iname) = vapnam(num_v)
+                num_v = num_v + 1
+            end if
             cflx_name(iroot+iname+1:iroot+iname+5) = '.cflx'
             icfile(nsp) = open_file(cflx_name, 'unknown')
             write(icfile(nsp), '(a)') trim(string)
@@ -198,11 +211,22 @@ c     Add boundary condition sources
                   else
                      sumboun=sumboun + sk(inode)*an(inodec)
                   end if
-c     Compute mass in cell (moles/kg H2O *  kg / m^3 H2O * m^3 cell)
-                  cellh2o = rolf(inodec) * sx1(inodec) * ps(inodec) 
-     &                 * s(inodec)
-                  ancell = an(inodec) * cellh2o
-                  anlocell = anlo(inodec) * cellh2o
+c     Compute mass in cell if liquid (moles/kg H2O *  kg / m^3 H2O * m^3 cell)
+                  if (icns(nsp).ge.0.or.abs(icns(nsp)).eq.2) then
+                     cellh2o = rolf(inode) * sx1(inode) * ps(inode) 
+     &                    * s(inode)
+                     ancell = an(inodec) * cellh2o
+                     anlocell = anlo(inodec) * cellh2o
+
+!     Compute mass in cell if vapor (moles/kg air * kg/m^3 air * m^3 cell)
+!     Still called cellh2o, however  ABJ 3/2012
+                  else
+                     cellh2o = rovf(inode) * sx1(inode) * ps(inode)
+     &                    * (1-s(inode))
+                     ancell = an(inodec) * cellh2o
+                     anlocell = anlo(inodec) * cellh2o
+                  end if
+
                   sumcell = sumcell + ancell
                   sumcello = sumcello + anlocell
                   if (rcss(inodec) .gt. 0.) then
