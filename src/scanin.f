@@ -2196,7 +2196,8 @@ c need porosity model
          i = 0
          do
             read(locunitnum,'(a80)') dumstring
-            if(dumstring(1:9).eq.'stressend') exit
+            if(dumstring(1:9).eq.'stressend' .or. dumstring(1:8) .eq.
+     &         'end strs' .or. dumstring(1:7) .eq. 'endstrs') exit
             if(dumstring(1:9).eq.'permmodel') then
                do 
                   read(locunitnum,'(a80)') dumstring
