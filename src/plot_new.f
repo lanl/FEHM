@@ -1341,11 +1341,11 @@ C RJP 04/30/07
 ! Output CO2 mass in Kg
          if (out_zones) then
             write(ishiscm, form2_string) ptime,
-     &           (denco2h(nskw(i))*sx1(nskw(i)),i=1,m),
+     &           (denco2h(nskw(i))*volume(nskw(i)),i=1,m),
      &           (avg_values(j,carbflag), j=1,node_azones)
          else
             write(ishiscm, form2_string) ptime,
-     &           (denco2h(nskw(i))*sx1(nskw(i)),i=1,m)
+     &           (denco2h(nskw(i))*volume(nskw(i)),i=1,m)
          end if
          call flush(ishiscm)
       end if

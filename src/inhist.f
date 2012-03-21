@@ -1025,7 +1025,7 @@ c            end if
                      ishiscmd = ishis + 212
                   end select
                   if (ishiscm .ne. 0) then
-                     fname =  root(1:iroot) // '_co2m' // hissfx
+                     fname =  root(1:iroot) // '_co2mt' // hissfx
                      open (unit=ishiscm, file=fname, form='formatted')
                      select case (form_flag)
                      case (0)
