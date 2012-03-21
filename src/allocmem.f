@@ -379,8 +379,11 @@ c zvd 05/21/07  Added parameter for optional input of secondary spacing
             allocate(zbtc(nzbtc))
             allocate(izonebtc(nzbtc,num_part))
             allocate(totalpart(nzbtc))
-            if(div_flag) 
-     &           allocate(totalpart_ret(nzbtc),totlast_ret(nzbtc))
+            if(div_flag) then
+               allocate(totalpart_ret(nzbtc),totlast_ret(nzbtc))
+               totalpart_ret = 0
+               totlast_ret = 0
+            end if
             allocate(totlast(nzbtc,2))
             allocate(ttbtc(nzbtc,num_part))
             izonebtc = 0
