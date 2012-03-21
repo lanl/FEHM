@@ -19,7 +19,7 @@
 !D1
 !***********************************************************************
 
-      use comai, only : ierr
+      use comai, only : ierr, iout, iptty
       implicit none
       
       integer inunit, nwds, imsg(20), msg(20)
@@ -47,10 +47,12 @@ c     Find the end of input for this macro
 
       end do
 
- 100  write (ierr, 200) macro
+ 100  write (ierr, 200) trim(macro)
+      if (iout .ne. 0) write (iout, 200) trim(macro)      
+      if (iptty .ne. 0) write (iptty, 200) trim(macro)
 
       stop
 
- 200  format ('**** Missing "', a4, ' end" statement. STOP ****')
+ 200  format ('**** Missing "end ', a, '" statement. STOP ****')
 
       end subroutine skip_macro
