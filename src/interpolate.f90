@@ -535,6 +535,12 @@ contains
 
     call which_index(tt,nsat,tsat,isat,sat_index_last_tt)
 
+    if (isat .eq. 0) then
+       ! Failed to find valid table index
+       write(amessage,20)
+       go to 9890
+    end if
+
     p_ref=psat(isat)+msat(isat)*(tt-tsat(isat))
     if(pp.gt.p_ref)then
        state=1
@@ -652,6 +658,8 @@ contains
           end if
        end do
     end if
+
+    ind = 0
 
   end subroutine which_index
 

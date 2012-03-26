@@ -346,6 +346,7 @@ c
       real*8 dsatp, rlpmin, qwmax_fac, qwmax
       real*8 pld,dis_ex,wat_ex,dwat_exs, time_max
       real*8 seep_facv,seep_facl,permsdv,permsdl,plwt
+      real*8 cden_correction, cden_cor
       integer i_mem_rlp
       integer iadka        
       save i_mem_rlp
@@ -905,7 +906,11 @@ c     water density
             pld=phi(mi)
          endif
          rol=rolref*(1.0+comw*(pld-pref))
-         if(cden) rol = rol+factcden*anl((ispcden-1)*n0+mi)
+         if(cden) then
+c     Add correction for liquid species
+            cden_cor = cden_correction(mi)
+            rol = rol + cden_cor
+         end if
          drolp=rcomd
          drols=0.0
 c     accumulation terms

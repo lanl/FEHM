@@ -451,6 +451,19 @@ c Check for "OFF" keyword for skipping macro
 ! Read filename to ensure we skip this line and don't interpret start
 ! of filename as a macro
          read (inpt, '(a100)') filename
+      else if (macro .eq. 'cden') then
+         if (nwds .gt. 1) then
+            if (cmsg(2) .eq. 'multi' .or.  cmsg(2) .eq. 'table') then
+               cden_flag = 1
+            else if (cmsg(2) .eq. 'co2') then
+               cden_flag = 2
+               if (nwds .gt. 2 .and. msg(3) .eq. 3) then
+                  cden_spnam = cmsg(3)
+               else
+                  cden_spnam = 'Na'
+               end if
+            end if
+         end if
       else if (macro .eq. 'cont') then
          call start_macro(inpt, locunitnum, macro)
 ! Read over keywords if avs, tecplot or surfer
@@ -466,9 +479,10 @@ c Check for "OFF" keyword for skipping macro
                   exit
 ! Check for other macros that may use 'end' keyword
                else if (dumstring(1:4) .eq. 'boun' .or. dumstring(1:4)
-     &                 .eq. 'hist' .or. dumstring(1:4) .eq. 'rest' .or.
-     &                 dumstring(1:4) .eq. 'stea' .or. dumstring(1:4) 
-     &                 .eq. 'rlpm') then
+     &                 .eq. 'hist' .or. dumstring(1:4) .eq. 'rest' 
+     &                 .or. dumstring(1:4) .eq. 'stea' .or. 
+     &                 dumstring(1:4) .eq. 'rlpm' .or. dumstring(1:4) 
+     &                 .eq. 'trxn') then
                   exit
                end if
             end do
@@ -497,7 +511,7 @@ c Check for "OFF" keyword for skipping macro
             else if (dumstring(1:4) .eq. 'boun' .or. dumstring(1:4)
      &              .eq. 'cont' .or. dumstring(1:4) .eq. 'rest' .or.
      &              dumstring(1:4) .eq. 'stea' .or. dumstring(1:4) 
-     &              .eq. 'rlpm') then
+     &              .eq. 'rlpm' .or. dumstring(1:4) .eq. 'trxn') then
                exit
             end if
          end do
@@ -1360,6 +1374,54 @@ c     add grouping stuff 8/1/94
             nderivs(ic)=itemp
          enddo
          call done_macro(locunitnum)
+         
+      else if (macro .eq. 'trxn') then
+         iccen = 1
+         call start_macro(inpt, locunitnum, 'trxn')
+         call tracrxn_init
+	 call done_macro(locunitnum)
+         if(rxn_flag .eq. 0) then
+            if (iout .ne. 0) write (iout, 8000)
+            if (iptty .ne. 0) write(iptty, 8000)
+         endif
+ 8000    format ('Reactions disabled for this simulation.')
+         if(rxn_flag .eq. 1) then
+            allocate(group_mat(ncpnt, ncpnt))
+            do igrp = 1, ngroups
+               pos_index = 0
+               do ic = 1, ncpnt
+                  if(group(igrp,ic).ne.0)then
+                     do ic2 = 1, ncpnt
+                        if(group(igrp,ic2).ne.0)then
+                           group_mat(ic,ic2)=1
+                        else
+                           group_mat(ic,ic2)=0
+                        endif
+                     enddo
+                     pos_index = pos_index + 1
+                     pos(igrp,pos_index)= ic
+                     n_couple_species(igrp)=n_couple_species(igrp)+1
+                     mdof_sol = max(n_couple_species(igrp),
+     2                    mdof_sol)
+                  endif
+               enddo
+            enddo
+            dimdrc = 0
+            matnum = 0
+            do ic = 1, ncpnt
+               itemp = 0
+               do ic2 = 1,ncpnt
+                  matnum = matnum + 1
+                  if(group_mat(ic,ic2).ne.0)then
+                     dimdrc=dimdrc+1
+                     matpos(matnum)=dimdrc
+                     itemp = itemp + 1
+                     drcpos(ic,itemp)=ic2
+                  endif
+               enddo
+               nderivs(ic)=itemp
+            enddo
+         endif
          
       else if (macro .eq. 'mptr') then
          ptrak=.true.

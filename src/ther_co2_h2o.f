@@ -93,7 +93,7 @@ c     will over-ride above co2 production
       real*8 frac_cl,frac_cg,frac_c,frac_w, yco2,ywat,yair,xco2,xwat
       real*8 rol_h2o,rol_d,emw,drol_dp,drol_dt,drol_dyc,drol_dya,xair
       real*8 drolyc, drolya, roa, droadp, droadt, ena, denadt,denadp
-      real*8 dvisadp, denvt, denvp, visca
+      real*8 dvisadp, denvt, denvp, visca, ycp, dycp
       real*8 dvisadt, pw, rlw, drlww, drlwg, drlwp, drlwt
       real*8 rll, drllw, drllg, drllp, drllt
       real*8 drolw, denlt, denlp, denlw, denlya, denlyc
@@ -109,7 +109,7 @@ c     will over-ride above co2 production
       real*8 xs, dxsw, dxsg, denwfw, denwfg, s1, s2, ds1dw, ds1dg
 c new variables
       real*8 enx,denxp,denxe,denxyc,denxya, vis_tol
-
+      real*8 :: cden_correction, mol
       real*8 :: permsd11 = 0., dprmp1 = 0., dprmt1 = 0., dprmw1 = 0.
       real*8 :: permsd12 = 0., dprmp2 = 0., dprmt2 = 0., dprmw2 = 0.
       real*8 :: permsd13 = 0., dprmp3 = 0., dprmt3 = 0., dprmw3 = 0.
@@ -286,20 +286,31 @@ c     vapor viscosity and derivatives
             call h2o_properties(3,3,pl,tl,dum2,dum3,
      &           xvisv,dvisvp,dvisvt,dum5,dum6)
 
+               
+            if (cden_flag .eq. 2) then
+               mol = cden_correction(mi)
 c     liquid enthalpy and derivatives
-
-            call h2o_properties(1,2,pl,tl,dum2,dum3,
-     &           enl,dhlp,dhlt,dum5,dum6)
-               
+               call h2o_properties(1,2,pl,tl,mol,dum3,
+     &              enl,dhlp,dhlt,dum5,dum6)
 c     liquid density and derivatives
-               
-            call h2o_properties(2,2,pl,tl,csalt(mi),dum3,
-     &           rol,drolp,drolt,dum5,dum6)
-               
+               call h2o_properties(2,2,pl,tl,mol,dum3,
+     &              rol,drolp,drolt,dum5,dum6)
+c     liquid viscosity and derivatives               
+               call h2o_properties(3,2,pl,tl,mol,dum3,
+     &              xvisl,dvislp,dvislt,dum5,dum6)
+            else
+c     liquid enthalpy and derivatives
+               call h2o_properties(1,2,pl,tl,csalt(mi),dum3,
+     &              enl,dhlp,dhlt,dum5,dum6)
+c     liquid density and derivatives
+               call h2o_properties(2,2,pl,tl,csalt(mi),dum3,
+     &              rol,drolp,drolt,dum5,dum6)
 c     liquid viscosity and derivatives
+               call h2o_properties(3,2,pl,tl,csalt(mi),dum3,
+     &              xvisl,dvislp,dvislt,dum5,dum6)
+            end if
+
                
-            call h2o_properties(3,2,pl,tl,dum2,dum3,
-     &           xvisl,dvislp,dvislt,dum5,dum6)
 
 c     Calculate density of CO2 dissolved brine. It is assumed the enthalpy
 c     & viscosity of brine do not change due to CO2 dissolution. It is 
@@ -319,10 +330,12 @@ c     zvd 07-Aug-08
 c     calculate effective molecular weight
                emw = yco2*44.d-3+ywat*18.d-3
                demwyc=26.d-3
-               rol_d = 1.d0-((44.d-3-rol_h2o*vpartial)*yco2/emw)
-               drol_dp = drolp*vpartial*yco2/emw
-               drol_dt = yco2*(drolt*vpartial+rol_h2o*dVpardt)/emw
-               drol_dyc = -(44.d-3-rol_h2o*vpartial)*(emw-yco2*
+               ycp = yco2/44.d-3/(yco2/44.d-3+ywat/18.d-3)
+               dycp = ywat/(44.d-3*18.d-3)/(yco2/44.d-3+ywat/18.d-3)**2
+               rol_d = 1.d0-((44.d-3-rol_h2o*vpartial)*ycp/emw)
+               drol_dp = drolp*vpartial*ycp/emw
+               drol_dt = ycp*(drolt*vpartial+rol_h2o*dVpardt)/emw
+               drol_dyc = -(44.d-3-rol_h2o*vpartial)*(emw*dycp-ycp*
      &              demwyc)/(emw*emw)
 c     if(ico2dis(mi).eq.1) then
 c     drol_dp=drol_dp+drol_dyc*dmol(mi)

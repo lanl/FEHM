@@ -1419,7 +1419,8 @@ c mixture of water and air,co2
       real*8 xtol
       real*8 flow_tol
       real*8 fimped 
-      real*8 p_energy  
+      real*8 p_energy
+      real*8 cden_correction, cden_cor
 c
 c     rol  -  density liquid
 c     ros  -  density steam
@@ -1818,7 +1819,11 @@ c
       rnwd=rnwd1+rnwd2+rnwd3
       rnw=rnwn/rnwd
       rol=rnw
-      if(cden) rol = rol+factcden*anl((ispcden-1)*n0+mi)
+      if(cden) then
+c     Add correction for liquid species
+         cden_cor = cden_correction(mi)
+         rol = rol + cden_cor
+      end if
 
 c
 c       derivatives of density

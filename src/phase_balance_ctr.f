@@ -158,6 +158,7 @@ c
       real*8 xa,xa2,xa3,xa4
       real*8 p_energy
       real*8 dtps,dtd,damp,daep,damh,daeh,energy,d_energy
+      real*8 cden_correction, cden_cor
       p_energy = 0.0
 
 c     liquid phase coefficients
@@ -377,7 +378,11 @@ c     liquid density
             rnwd=rnwd1+rnwd2+rnwd3
             rnw=rnwn/rnwd
             rol=rnw
-            if(cden) rol = rol+factcden*anl((ispcden-1)*n0+mi)
+            if(cden) then
+c     Add correction for liquid species
+               cden_cor = cden_correction(mi)
+               rol = rol + cden_cor
+            end if
 
 
 c     derivatives of density

@@ -836,6 +836,7 @@ C*****
       real*8 dhflxp,sbound,cprd,edif,denrd,vfd,rl,dvfp,tfun
       real*8 tfunn,tfund,dtpsn,dtpsd,dpldt,psat,vfcal,rop2,daep2
       real*8 dqv,dhflxe,drovp,drovt
+      real*8 cden_correction, cden_cor
 C*****
 C***** AF 11/15/10
       real*8 zwp, zwt                                ! phs 4/23/99
@@ -1164,8 +1165,11 @@ c     liquid density
                rnwd=rnwd1+rnwd2+rnwd3
                rnw=rnwn/rnwd
                rol=rnw
-               if(cden) rol = rol+factcden*anl((ispcden-1)*n0+mi)
-
+               if(cden) then
+c     Add correction for liquid species
+                  cden_cor = cden_correction(mi)
+                  rol = rol + cden_cor
+               end if
 
 c     derivatives of density
                drlpn1=dlpa1+2*dlpa2*x+3*dlpa3*x2+dlpta*tl

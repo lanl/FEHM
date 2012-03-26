@@ -48,7 +48,10 @@
 
       use comco2
       use comai, only : itsat 
+      use comrxni, only : cden_flag
+
       implicit none
+
       integer iflg,iphase
       real*8 var1,var2,var3,var4
       real*8 prop,der1,der2,der3,der4
@@ -104,7 +107,7 @@ c     remove following declarations later
       real*8 vvptb,vvp2tb,vvpt2b
       real*8 tsa0,tspa1,tspa2,tspa3,tspa4,tsb0,tspb1,tspb2,tspb3
       real*8 tspb4,tfunn,tfund,tfun,dtpsn,dtpsd      
-      real*8 del_h, m, derdel_h,x1,der,prop1,h_salt,dh_salt,prop2
+      real*8 del_h, mol, derdel_h,x1,der,prop1,h_salt,dh_salt,prop2
       real*8 a(0:3,0:2)
       real*8 y,x4,y1,y2,y3,y4,a1,a2,a3,b1,b2,b3,b4,b5,guess,bsl,asl,f,sl
       real*8 df,dx,t1
@@ -284,24 +287,30 @@ c     expression from Michaelides
             a(3,0) = 0.17965d-2
             a(3,1) = 0.71924d-3
             a(3,2) = -0.49d-4
-            m = var3/58.44d3
-c     'm' in below equation is the molality
+            if (cden_flag .eq. 2) then
+c     Sum concentrations to get total moles/kg-water
+               mol = var3
+            else
+c     Convert ppm of salt to moles/kg-water    
+               mol = var3/58.44d3
+            end if
+c     'mol' in below equation is the molality
             del_h=0.d0
             derdel_h=0.d0
             do i = 0, 3
                do j = 0, 2
-                  del_h=del_h+(a(i,j)*(var2**i)*(m**j))
+                  del_h=del_h+(a(i,j)*(var2**i)*(mol**j))
                enddo	
             enddo	
             do i = 1, 3
                do j = 0, 2
-                  derdel_h=derdel_h+(a(i,j)*i*(var2**(i-1))*(m**j))
+                  derdel_h=derdel_h+(a(i,j)*i*(var2**(i-1))*(mol**j))
                enddo
             enddo
-            del_h=-1d-3*(4.184d0/(1000.d0+(58.44d0*m)))*del_h
-            derdel_h=1d-3*(4.184d0/(1000.d0+(58.44d0*m)))*derdel_h
-            x1=1000.d0/(1000.d0+58.44*m)
-            x2=58.44*m/(1000.d0+58.44*m)
+            del_h=-1d-3*(4.184d0/(1000.d0+(58.44d0*mol)))*del_h
+            derdel_h=1d-3*(4.184d0/(1000.d0+(58.44d0*mol)))*derdel_h
+            x1=1000.d0/(1000.d0+58.44*mol)
+            x2=58.44*mol/(1000.d0+58.44*mol)
             h_salt=41.293d0*(var2+273.15d0)+
      &           (3.3607d-2*((var2+273.15d0)**2.d0)/2.d0)
      &           -(1.3927d-5*((var2+273.15d0)**3.d0)/3.d0)
@@ -311,9 +320,9 @@ c     'm' in below equation is the molality
 c     convert units from J/Mole to MJ/Kg
             h_salt=h_salt*1d-3/58.44d0
             dh_salt=dh_salt*1d-3/58.44d0
-            prop=x1*prop+x2*h_salt+m*del_h
+            prop=x1*prop+x2*h_salt+mol*del_h
             der1=x1*der1
-            der2=x1*der2+x2*dh_salt+m*derdel_h
+            der2=x1*der2+x2*dh_salt+mol*derdel_h
          endif
       else if(iflg.eq.1.and.iphase.eq.3) then
 c     vapor enthalpy and derivative wrt pressure and temperature
@@ -472,30 +481,37 @@ c     Below expression is from Haas JL (1976)
          if (ibrine.ne.0) then
 c     change water density (kg/m3) to specific volume in cm3/gm
 c     change the salt conc. mol/kg from ppm, assume salt is mainly NaCl 
-            var3 = var3/58.44d3
+            if (cden_flag .eq. 2) then
+c     Concentrations were summed to get total moles/kg-water
+               mol = var3
+            else
+c     Convert ppm of salt to moles/kg-water    
+               mol = var3/58.44d3
+            end if
+c            var3 = var3/58.44d3
             vo = 1.d3/prop
             vc = 3.1975d0
             phistar = -167.29d0+(448.55d0*vo)+(-261.07*vo*vo)
             kappa = (-13.644d0+(13.97*vo))*((vo/(vc-vo))**2.d0)
-            phi = phistar + (kappa*dsqrt(var3))
-            num1 = 1000.d0+(var3*58.455d0)
-            den1 = (1000.d0*vo)+(var3*phi)
+            phi = phistar + (kappa*dsqrt(mol))
+            num1 = 1000.d0+(mol*58.445d0)
+            den1 = (1000.d0*vo)+(mol*phi)
             prop = num1/den1
 
             dvodp = -der1*vo*vo*1.d-3
             dphistardp = (448.55d0-(2.d0*261.07d0*vo))*dvodp
             dkappadp = dvodp*(vo/((vc-vo)**2.d0))*(-(2.d0*13.644d0*vc)+
      &           (3.d0*13.97d0*vo*vc)-(13.97d0*vo*vo))
-            dphidp = dphistardp + dsqrt(var3)*dkappadp
+            dphidp = dphistardp + dsqrt(mol)*dkappadp
             dnumdp = 0.d0
-            ddendp = 1000.d0*dvodp + var3*dphidp
+            ddendp = 1000.d0*dvodp + mol*dphidp
             der1 = ((den1*dnumdp)-(num1*ddendp))/(den1*den1)
 
             dvodt = -der2*vo*vo*1.d-3
             dphistardt = (448.55d0-(2.d0*261.07d0*vo))*dvodt
             dkappadt = dvodt*(vo/((vc-vo)**2.d0))*(-(2.d0*13.644d0*vc)+
      &           (3.d0*13.97d0*vo*vc)-(13.97d0*vo*vo))
-            dphidt = dphistardt + dsqrt(var3)*dkappadt
+            dphidt = dphistardt + dsqrt(mol)*dkappadt
             dnumdt = 0.d0
             ddendt = 1000.d0*dvodt + var3*dphidt
             der2 = ((den1*dnumdt)-(num1*ddendt))/(den1*den1)
@@ -505,7 +521,7 @@ c     change the salt conc. mol/kg from ppm, assume salt is mainly NaCl
             der2 = der2*1000.d0
 
 c     convert the unit of salt conc. back to ppm.
-            var3 = var3*58.44d3
+c            var3 = var3*58.44d3
          endif
       else if(iflg.eq.2.and.iphase.eq.22) then
 
@@ -651,16 +667,23 @@ c   call  pseudo-vap eos
          if (ibrine.ne.0) then
 c     expression from Phillips et al. pg. 5. change salt conc. from
 c     ppm to g moles/ kg H2O
-            var3=var3/58.44d3
+            if (cden_flag .eq. 2) then
+c     Sum concentrations to get total moles/kg-water
+               mol = var3
+            else
+c     Convert ppm of salt to moles/kg-water    
+               mol = var3/58.44d3
+            end if
+c            var3=var3/58.44d3
             prop1=prop
-            prop2=1.d0+(0.0816d0*var3)+(0.012d0*var3*var3)+(0.000128d0*
-     &           var3*var3*var3)+(0.000629d0*var2*(1.d0-
-     &           dexp(-0.7d0*var3)))
+            prop2=1.d0+(0.0816d0*mol)+(0.012d0*mol*mol)+(0.000128d0*
+     &           mol*mol*mol)+(0.000629d0*var2*(1.d0-
+     &           dexp(-0.7d0*mol)))
             prop=prop1*prop2
             der1=0.d0
             der2=(der2*prop2)+(prop1*(0.000629d0*(1.d0-
-     &           dexp(-0.7d0*var3))))
-            var3 = var3*58.44d3
+     &           dexp(-0.7d0*mol))))
+c            var3 = var3*58.44d3
          endif
       else if(iflg.eq.3.and.iphase.eq.3) then
 c     vapor viscosity and derivative wrt pressure and temperature
@@ -949,24 +972,30 @@ c     expression from Michaelides
             a(3,0) = 0.17965d-2
             a(3,1) = 0.71924d-3
             a(3,2) = -0.49d-4
-            m = var3/58.44d3
-c     'm' in below equation is the molality
+            if (cden_flag .eq. 2) then
+c     Sum concentrations to get total moles/kg-water
+               mol = var3
+            else
+c     Convert ppm of salt to moles/kg-water    
+               mol = var3/58.44d3
+            end if
+c     'mol' in below equation is the molality
             del_h=0.d0
             derdel_h=0.d0
             do i = 0, 3
                do j = 0, 2
-                  del_h=del_h+(a(i,j)*(var2**i)*(m**j))
+                  del_h=del_h+(a(i,j)*(var2**i)*(mol**j))
                enddo	
             enddo	
             do i = 1, 3
                do j = 0, 2
-                  derdel_h=derdel_h+(a(i,j)*i*(var2**(i-1))*(m**j))
+                  derdel_h=derdel_h+(a(i,j)*i*(var2**(i-1))*(mol**j))
                enddo
             enddo
-            del_h=-1d-3*(4.184d0/(1000.d0+(58.44d0*m)))*del_h
-            derdel_h=1d-3*(4.184d0/(1000.d0+(58.44d0*m)))*derdel_h
-            x1=1000.d0/(1000.d0+58.44*m)
-            x2=58.44*m/(1000.d0+58.44*m)
+            del_h=-1d-3*(4.184d0/(1000.d0+(58.44d0*mol)))*del_h
+            derdel_h=1d-3*(4.184d0/(1000.d0+(58.44d0*mol)))*derdel_h
+            x1=1000.d0/(1000.d0+58.44*mol)
+            x2=58.44*mol/(1000.d0+58.44*mol)
             h_salt=41.293d0*(var2+273.15d0)+
      &           (3.3607d-2*((var2+273.15d0)**2.d0)/2.d0)
      &           -(1.3927d-5*((var2+273.15d0)**3.d0)/3.d0)
@@ -976,9 +1005,9 @@ c     'm' in below equation is the molality
 c     convert units from J/Mole to MJ/Kg
             h_salt=h_salt*1d-3/58.44d0
             dh_salt=dh_salt*1d-3/58.44d0
-            prop=x1*prop+x2*h_salt+m*del_h
+            prop=x1*prop+x2*h_salt+mol*del_h
             der1=der1
-            der2=x1*der2+x2*dh_salt+m*derdel_h
+            der2=x1*der2+x2*dh_salt+mol*derdel_h
          endif
       else if(iflg.eq.10.and.iphase.eq.1) then
 c     liquid-vapor capillary pressure and derivative wrt water fraction

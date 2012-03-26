@@ -76,6 +76,7 @@ C      real*8 rcomd,drols,dena,ddenp,ddens,ddenap,ddenas,dql,dqv
       real*8 rcomd,dena
 C      real*8 pcl0,roc0,wimped,airmobile,conwa,conaw
       real*8 pcl0,roc0
+      real*8 cden_correction, cden_cor
       parameter(pcl0 = 0.101325)
       parameter(roc0 = 1.292864)
 C      parameter(airmobile = 10.0)
@@ -119,10 +120,13 @@ c     density of air
          roc=drocp0*phi(mi)
 c     water density
          rol=rolref*(1.0+comw*(pl-pref))
-         if(cden) rol = rol+factcden*anl((ispcden-1)*n0+mi)
+         if(cden) then
+            cden_cor = cden_correction(mi)
+            rol = rol + cden_cor
+         end if
 c     accumulation terms
-          den=por*rol*sl
-          dena=por*roc*svd
+         den=por*rol*sl
+         dena=por*roc*svd
 c     
          denh(mi)=den                  
          deneh(mi)=dena                  

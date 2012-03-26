@@ -13,11 +13,11 @@ subroutine co2_properties(iflg,iphase,var1,var2,var3,istate,var4,var5,var6)
 ! responsibility for the use of this information.      
 !***********************************************************************
 
-
   use property_interpolate
   use comco2, only: co2_prop
   use comdi, only: ices
   use comai, only: neq
+  use comrxni, only : cden_flag
 
   implicit none
   real*8 mol, mco2, mco22
@@ -30,6 +30,7 @@ subroutine co2_properties(iflg,iphase,var1,var2,var3,istate,var4,var5,var6)
   real*8 tauco2_na_cl, dtauco2_na_cldp, dtauco2_na_cldt
   real*8 temperature, pressure,rhs,drhsdp,drhsdt,dmco2dp,dmco2dt
   real*8 mco21, dmco21dp,dmco21dt,dmco21dxc,dmco2dx,dvar4dt,dvar4dp
+  real*8 :: cden_correction
   integer iflg, iphase, iphase1, ifail, istate, icode(9), var6
   character*200 interpfile, amessage
   !     units are P : MPa
@@ -129,7 +130,13 @@ subroutine co2_properties(iflg,iphase,var1,var2,var3,istate,var4,var5,var6)
      p = var1*10.
      !	  t = var2
      !	  p = var1
-     mol = var3/58.443d3
+     if (cden_flag .eq. 2) then
+        ! Sum concentrations to get total moles/kg-water
+        mol = cden_correction(var6)
+     else
+        ! Convert ppm of salt to moles/kg-water
+        mol = var3/58.443d3
+     end if
      tc = 304.1282d0
      pc = 7.3773d0
      if ((t.gt.273.d0).and.(t.lt.573.d0)) then

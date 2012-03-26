@@ -531,7 +531,7 @@ C**********************************************************************
       character*5 user_macro
       character*4 zmacro
       character*3 nstring
-cSPC
+c     SPC
       character*3 string3
       character*80 input_msg
       character*100 zone_file
@@ -559,212 +559,214 @@ cSPC
       ctol = 1.d-06
       iret = 0
       if(iz.eq.0) then
-c
-c input tracer data
-c
-c  Hari  6/10/04  -------------
-         read(inpt,'(a3)') string3
-         if(string3(1:3) .eq. 'rip') then
-            read(inpt,*) ripfehm
-         else
-            backspace inpt
-         endif
-cHari ----------------------------------
-         read(inpt,'(a5)') user_macro
-         if(user_macro(1:5) .eq. 'userc' ) then
-            backspace inpt
+         if(trxn_flag .eq. 0) then
+c     
+c     input tracer data
+c     
+c     Hari  6/10/04  -------------
+            read(inpt,'(a3)') string3
+            if(string3(1:3) .eq. 'rip') then
+               read(inpt,*) ripfehm
+            else
+               backspace inpt
+            endif
+c     Hari ----------------------------------
+            read(inpt,'(a5)') user_macro
+            if(user_macro(1:5) .eq. 'userc' ) then
+               backspace inpt
+               read(inpt,'(a80)') input_msg
+               call parse_string(input_msg,imsg,msg,xmsg,cmsg,nwds)
+               if (msg(2).eq.1) then
+                  an0=imsg(2)
+               else
+                  an0=xmsg(2)
+               endif
+               if (msg(3).eq.1) then
+                  awc=imsg(3)
+               else
+                  awc=xmsg(3)
+               endif
+               if (msg(4).eq.1) then
+                  epc=imsg(4)
+               else
+                  epc=xmsg(4)
+               endif
+               if (msg(5).eq.1) then
+                  upwgta=imsg(5)
+               else
+                  upwgta=xmsg(5)
+               endif
+c     zvd 04/26/07 Moves call to userc, after first line parameters are read
+c     This way an optional file name for the userc data file can be read
+c     and we only have to backspace once
+               call userc(0, idum, rdum1, rdum2)
+            else
+               backspace inpt
+               read(inpt,*) an0,awc,epc,upwgta
+            end if
+
+            if(awc.le.1.0) then
+               awc=1.0
+            end if
+
+            if(awc.gt.1.0) then
+               awc=0.5
+            end if
+
+            if(upwgta.gt.1.0) then
+               upwgta=1.0
+            end if
+
+            if(upwgta.lt.0.5) then
+               upwgta=0.5
+            end if
+
+            an = an0
+
+            read(inpt,*) daycs,daycf,dayhf,dayhs
+            if(dayhs.lt.dayhf) then
+               dayhs=dayhf
+            end if
+c     Revised input to handle optional print out variable BAR 11-18-98
+c     read(inpt,*) iaccmx,daycm,daycmm,daycmx
             read(inpt,'(a80)') input_msg
             call parse_string(input_msg,imsg,msg,xmsg,cmsg,nwds)
-            if (msg(2).eq.1) then
-               an0=imsg(2)
+
+            iaccmx = imsg(1)
+
+            if(msg(2).eq.1) then
+               daycm = imsg(2)
             else
-               an0=xmsg(2)
-            endif
-            if (msg(3).eq.1) then
-               awc=imsg(3)
+               daycm = xmsg(2)
+            end if
+            
+            if(msg(3).eq.1) then
+               daycmm = imsg(3)
             else
-               awc=xmsg(3)
-            endif
-            if (msg(4).eq.1) then
-               epc=imsg(4)
+               daycmm = xmsg(3)
+            end if
+            
+            if(msg(4).eq.1) then
+               daycmx = imsg(4)
             else
-               epc=xmsg(4)
-            endif
-            if (msg(5).eq.1) then
-               upwgta=imsg(5)
+               daycmx = xmsg(4)
+            end if
+
+            if(nwds.gt.4) then
+               nprttrc = imsg(5)
             else
-               upwgta=xmsg(5)
+               nprttrc = 1
+            end if
+            
+            daycmx=min(daycmx,daymax)
+            dtotc=daycmm * 86400.
+            ayc=1.0-awc
+
+c     read in optional tracer porosity
+            read(inpt,'(a4)') input_msg
+            if (input_msg(1:4).eq.'tpor') then
+c     zvd 06/02/03 Set default porosity to bogus value, assign all unassigned
+c     nodes the value set for rock macro after all data has been read 
+c     ps_trac(1:n0)=ps(1:n0)
+               narrays=1
+               itype(1) = 8
+               macro = "trac"
+               igroup = 5
+               default(1) = 10.
+               call initdata2( inpt, ischk, n0, narrays, itype,
+     2              default, macroread(5), macro, igroup, ireturn,
+     3              r8_1=ps_trac(1:n0) )
+            else
+               backspace inpt
+c     zvd 06/02/03 Moved to end of input check, assign tracer porosities
+c     after all data has been read
+c     ps_trac(1:n0) = ps(1:n0)
             endif
-c zvd 04/26/07 Moves call to userc, after first line parameters are read
-c This way an optional file name for the userc data file can be read
-c and we only have to backspace once
-            call userc(0, idum, rdum1, rdum2)
-         else
-            backspace inpt
-            read(inpt,*) an0,awc,epc,upwgta
-         end if
+c     read in number of species and set pointers
+            read(inpt,*) nspeci
+            if(rxn_flag.eq.0)then
+               ncpntprt=ncpnt
+               do ii=1,ncpntprt
+                  cpntprt(ii)=ii
+                  cpntnam(ii)(1:16) = "Aqueous_Species_"
+                  write (nstring, '(i3.3)') ii
+                  cpntnam(ii)(17:19) = nstring
+               enddo
+               ncplxprt=ncplx
+               do ii=101,ncplxprt+100
+                  cplxprt(ii)=ii
+                  cplxnam(ii)(1:16) = "Aqueous_Complex_"
+                  write (nstring, '(i3.3)') ii
+                  cplxnam(ii)(17:19) = nstring
+               enddo
+               nimmprt=nimm
+               do ii=1,nimmprt
+                  immprt(ii)=ii
+                  immnam(ii)(1:17) = "Immobile_Species_"
+                  write (nstring, '(i3.3)') ii
+                  immnam(ii)(18:20) = nstring
+               enddo
+               nvapprt=nvap
+               do ii=1,nvapprt
+                  vapprt(ii)=ii
+                  vapnam(ii)(1:14) = "Vapor_Species_"
+                  write (nstring, '(i3.3)') ii
+                  vapnam(ii)(15:17) = nstring
+               enddo
+            endif
+            icpnt = 0
+            iimm = 0
+            ivap = 0
 
-         if(awc.le.1.0) then
-            awc=1.0
-         end if
-
-         if(awc.gt.1.0) then
-            awc=0.5
-         end if
-
-         if(upwgta.gt.1.0) then
-            upwgta=1.0
-         end if
-
-         if(upwgta.lt.0.5) then
-            upwgta=0.5
-         end if
-
-         an = an0
-
-         read(inpt,*) daycs,daycf,dayhf,dayhs
-         if(dayhs.lt.dayhf) then
-            dayhs=dayhf
-         end if
-c     Revised input to handle optional print out variable BAR 11-18-98
-c         read(inpt,*) iaccmx,daycm,daycmm,daycmx
-         read(inpt,'(a80)') input_msg
-         call parse_string(input_msg,imsg,msg,xmsg,cmsg,nwds)
-
-         iaccmx = imsg(1)
-
-         if(msg(2).eq.1) then
-            daycm = imsg(2)
-         else
-            daycm = xmsg(2)
-         end if
-         
-         if(msg(3).eq.1) then
-            daycmm = imsg(3)
-         else
-            daycmm = xmsg(3)
-         end if
-         
-         if(msg(4).eq.1) then
-            daycmx = imsg(4)
-         else
-            daycmx = xmsg(4)
-         end if
-
-         if(nwds.gt.4) then
-            nprttrc = imsg(5)
-         else
-            nprttrc = 1
-         end if
-         
-         daycmx=min(daycmx,daymax)
-         dtotc=daycmm * 86400.
-         ayc=1.0-awc
-
-c read in optional tracer porosity
-         read(inpt,'(a4)') input_msg
-         if (input_msg(1:4).eq.'tpor') then
-! zvd 06/02/03 Set default porosity to bogus value, assign all unassigned
-! nodes the value set for rock macro after all data has been read 
-!            ps_trac(1:n0)=ps(1:n0)
-            narrays=1
-            itype(1) = 8
-            macro = "trac"
-            igroup = 5
-            default(1) = 10.
-            call initdata2( inpt, ischk, n0, narrays,
-     2           itype, default, macroread(5), macro, igroup, ireturn,
-     3           r8_1=ps_trac(1:n0) )
-         else
-            backspace inpt
-! zvd 06/02/03 Moved to end of input check, assign tracer porosities 
-! after all data has been read
-!            ps_trac(1:n0) = ps(1:n0)
-         endif
-c read in number of species and set pointers
-         read(inpt,*) nspeci
-         if(rxn_flag.eq.0)then
-            ncpntprt=ncpnt
-            do ii=1,ncpntprt
-               cpntprt(ii)=ii
-               cpntnam(ii)(1:16) = "Aqueous_Species_"
-               write (nstring, '(i3.3)') ii
-               cpntnam(ii)(17:19) = nstring
+c     
+c     partition memory for multiple tracers
+c     
+            ntpp=n7/nspeci
+            do nsp=1,nspeci
+               npt(nsp)=(nsp-1)*ntpp
+c     zero out species mass balance parameters
+               qcout(nsp)=0.0
+               qcin(nsp)=0.0
+               qcrxn(nsp)=0.0
             enddo
-            ncplxprt=ncplx
-            do ii=101,ncplxprt+100
-               cplxprt(ii)=ii
-               cplxnam(ii)(1:16) = "Aqueous_Complex_"
-               write (nstring, '(i3.3)') ii
-               cplxnam(ii)(17:19) = nstring
-            enddo
-            nimmprt=nimm
-            do ii=1,nimmprt
-               immprt(ii)=ii
-               immnam(ii)(1:17) = "Immobile_Species_"
-               write (nstring, '(i3.3)') ii
-               immnam(ii)(18:20) = nstring
-            enddo
-            nvapprt=nvap
-            do ii=1,nvapprt
-               vapprt(ii)=ii
-               vapnam(ii)(1:14) = "Vapor_Species_"
-               write (nstring, '(i3.3)') ii
-               vapnam(ii)(15:17) = nstring
-            enddo
-         endif
-         icpnt = 0
-         iimm = 0
-         ivap = 0
 
-c
-c partition memory for multiple tracers
-c
-         ntpp=n7/nspeci
-         do nsp=1,nspeci
-            npt(nsp)=(nsp-1)*ntpp
-c zero out species mass balance parameters
-            qcout(nsp)=0.0
-            qcin(nsp)=0.0
-            qcrxn(nsp)=0.0
-         enddo
+c     Check for keyword specifying to use longitudinal and transverse 
+c     dispersion coefficients, seh
+            read(inpt,'(a4)') input_msg
+            if (input_msg(1:4).eq.'ldsp') then
+               ldsp=1
+            else
+               ldsp=0
+               backspace inpt
+            endif
 
-c Check for keyword specifying to use longitudinal and transverse 
-c dispersion coefficients, seh
-         read(inpt,'(a4)') input_msg
-         if (input_msg(1:4).eq.'ldsp') then
-            ldsp=1
-         else
-            ldsp=0
-            backspace inpt
-         endif
+c     seh
+C     Check for keyword specifying to use same dispersivity and diffusivity
+C     for all liquid / vapor calculations
+            read(inpt,'(a4)') input_msg
+            dispsame=0
+            hvliquid=0
+            hvvapor=0
+            if (input_msg(1:3).eq.'dsp') then
+               dispsame = 1
+               jj = 0
+               if (ldsp .eq. 0) then
+                  do
+                     read(inpt,'(a80)') wdd1
+                     if (null1(wdd1)) exit
+                     backspace inpt
+                     jj = jj + 1
+                     call parse_string (wdd1, imsg, msg, xmsg, cmsg, 
+     &                    nwds)
 
-c seh
-CC Check for keyword specifying to use same dispersivity and diffusivity
-CC for all liquid / vapor calculations
-         read(inpt,'(a4)') input_msg
-         dispsame=0
-         hvliquid=0
-         hvvapor=0
-         if (input_msg(1:3).eq.'dsp') then
-            dispsame = 1
-            jj = 0
-            if (ldsp .eq. 0) then
-               do
-                  read(inpt,'(a80)') wdd1
-                  if (null1(wdd1)) exit
-                  backspace inpt
-                  jj = jj + 1
-                  call parse_string (wdd1, imsg, msg, xmsg, cmsg, nwds)
-
-                  select case (input_msg(1:4))
+                     select case (input_msg(1:4))
                   case ('dspl')
                      if (msg(1) .eq. 1) then
                         read (inpt,*,err=2000,iostat=io_stat) 
      &                       mflagl(1,jj), sehdiff(jj),
      &                       tclx(1,jj), tcly(1,jj), tclz(1,jj)
                      else
-! Try reading using old format
+c     Try reading using old format
                         read (inpt,*,err=2000,iostat=io_stat) 
      &                       sehdiff(jj),
      &                       tclx(1,jj), tcly(1,jj), tclz(1,jj)
@@ -776,7 +778,7 @@ CC for all liquid / vapor calculations
      &                       mflagv(1,jj), sehdiffv(jj),
      &                       tcvx(1,jj), tcvy(1,jj), tcvz(1,jj)  
                      else
-! Try reading using old format
+c     Try reading using old format
                         read (inpt,*,err=2000,iostat=io_stat) 
      &                       sehdiffv(jj),
      &                       tcvx(1,jj), tcvy(1,jj), tcvz(1,jj)  
@@ -790,7 +792,7 @@ CC for all liquid / vapor calculations
      &                       mflagv(dispsame,jj), sehdiffv(jj),
      &                       tcvx(1,jj), tcvy(1,jj), tcvz(1,jj)
                      else
-! Try reading using old format
+c     Try reading using old format
                         read (inpt,*,err=2000,iostat=io_stat) 
      &                       sehdiff(jj),
      &                       tclx(1,jj), tcly(1,jj), tclz(1,jj),
@@ -807,556 +809,584 @@ CC for all liquid / vapor calculations
                   if (null1(wdd1)) exit
                   backspace inpt
                   jj = jj + 1
-                  call parse_string (wdd1, imsg, msg, xmsg, cmsg, nwds)
+                  call parse_string (wdd1, imsg, msg, xmsg, cmsg, 
+     &                 nwds)
                   
                   select case (input_msg(1:4))
-                  case ('dspl')
-                     if (msg(1) .eq. 1) then
-                        read (inpt,*,err=2000,iostat=io_stat) 
-     &                       mflagl(1,jj), sehdiff(jj),
-     &                       tclx(1,jj), tcly(1,jj)
-                     else
-! Try reading using old format
-                        read (inpt,*,err=2000,iostat=io_stat) 
-     &                       sehdiff(jj),
-     &                       tclx(1,jj), tcly(1,jj)
-                        mflagl(1,jj) = 0
-                     end if                     
-                  case('dspv')
-                     if (msg(1) .eq. 1) then
-                        read (inpt,*,err=2000,iostat=io_stat) 
-     &                       mflagv(1,jj), sehdiffv(jj),
-     &                       tcvx(1,jj), tcvy(1,jj)
-                     else
-! Try reading using old format
-                        read (inpt,*,err=2000,iostat=io_stat) 
-     &                       sehdiffv(jj),
-     &                       tcvx(1,jj), tcvy(1,jj)
-                        mflagv(1,jj) = 0
-                     end if                     
-                  case('dspb')
-                     if (msg(1) .eq. 1) then
-                        read (inpt,*,err=2000,iostat=io_stat) 
-     &                       mflagl(1,jj), sehdiff(jj),
-     &                       tclx(1,jj), tcly(1,jj),
-     &                       mflagv(dispsame,jj), sehdiffv(jj),
-     &                       tcvx(1,jj), tcvy(1,jj)
-                     else
-! Try reading using old format
-                        read (inpt,*,err=2000,iostat=io_stat) 
-     &                       sehdiff(jj),
-     &                       tclx(1,jj), tcly(1,jj),
-     &                       sehdiffv(jj),
-     &                       tcvx(1,jj), tcvy(1,jj)
-                        mflagl(1,jj) = 0
-                        mflagv(1,jj) = 0
-                     end if                 
-                  end select
-               end do
-            end if
-            if ((sehdiff(jj) .lt. 0.) .or. (sehdiffv(jj) .lt. 0.)) then
-               write (ierr, *) 'Old Conca model not supported'
-               write (ierr, *) 'See UM for new diffusion model options'
-               goto 2000
-            end if
-            narrays=1
-            itype(1)=4
-            default(1)=1
-            macro="trac"
-            igroup=10
-            call initdata2(inpt,ischk,n0,narrays,itype,default,
-     +           macroread(5),macro,igroup,ireturn,i4_1=itrcdsp(1:n0)) 
-         else
-            backspace inpt
+               case ('dspl')
+                  if (msg(1) .eq. 1) then
+                     read (inpt,*,err=2000,iostat=io_stat) 
+     &                    mflagl(1,jj), sehdiff(jj),
+     &                    tclx(1,jj), tcly(1,jj)
+                  else
+c     Try reading using old format
+                     read (inpt,*,err=2000,iostat=io_stat) 
+     &                    sehdiff(jj),
+     &                    tclx(1,jj), tcly(1,jj)
+                     mflagl(1,jj) = 0
+                  end if                     
+               case('dspv')
+                  if (msg(1) .eq. 1) then
+                     read (inpt,*,err=2000,iostat=io_stat) 
+     &                    mflagv(1,jj), sehdiffv(jj),
+     &                    tcvx(1,jj), tcvy(1,jj)
+                  else
+c     Try reading using old format
+                     read (inpt,*,err=2000,iostat=io_stat) 
+     &                    sehdiffv(jj),
+     &                    tcvx(1,jj), tcvy(1,jj)
+                     mflagv(1,jj) = 0
+                  end if                     
+               case('dspb')
+                  if (msg(1) .eq. 1) then
+                     read (inpt,*,err=2000,iostat=io_stat) 
+     &                    mflagl(1,jj), sehdiff(jj),
+     &                    tclx(1,jj), tcly(1,jj),
+     &                    mflagv(dispsame,jj), sehdiffv(jj),
+     &                    tcvx(1,jj), tcvy(1,jj)
+                  else
+c     Try reading using old format
+                     read (inpt,*,err=2000,iostat=io_stat) 
+     &                    sehdiff(jj),
+     &                    tclx(1,jj), tcly(1,jj),
+     &                    sehdiffv(jj),
+     &                    tcvx(1,jj), tcvy(1,jj)
+                     mflagl(1,jj) = 0
+                     mflagv(1,jj) = 0
+                  end if                 
+               end select
+            end do
          end if
+         if ((sehdiff(jj).lt.0.) .or. (sehdiffv(jj).lt.0.)) then
+            write (ierr, *) 'Old Conca model not supported'
+            write (ierr,*)'See UM for new diffusion model options'
+            goto 2000
+         end if
+         narrays=1
+         itype(1)=4
+         default(1)=1
+         macro="trac"
+         igroup=10
+         call initdata2(inpt,ischk,n0,narrays,itype,default,
+     &        macroread(5),macro,igroup,ireturn,
+     &        i4_1=itrcdsp(1:n0)) 
+      else
+         backspace inpt
+      end if
 
-c
-c read in data for each species
-c
-c Define maximum saturation for vapor or Henry's species,
-c currently only a single value can be defined for all vapor/Henry's 
-c species so it only needs to be entered once
-         strac_max = 0.99
-         mole_input = .false.
-         do nsp=1,nspeci
-            npn=npt(nsp)
-!            read(inpt,*) icns(nsp)
-            read(inpt,'(a80)') input_msg
-            call parse_string(input_msg,imsg,msg,xmsg,cmsg,nwds)
-            icns(nsp) = imsg(1)
+c     
+c     read in data for each species
+c     
+c     Define maximum saturation for vapor or Henry's species,
+c     currently only a single value can be defined for all  
+c     vapor/Henry's species so it only needs to be entered once
+      strac_max = 0.99
+      mole_input = .false.
+      do nsp=1,nspeci
+         npn=npt(nsp)
+c     read(inpt,*) icns(nsp)
+         read(inpt,'(a80)') input_msg
+         call parse_string(input_msg,imsg,msg,xmsg,cmsg,nwds)
+         icns(nsp) = imsg(1)
 
-c construct input necessary for chemod and read_rxn
-            if(icns(nsp).eq.1.or.abs(icns(nsp)).eq.2)then
-               icpnt = icpnt + 1
-               pcpnt(icpnt)=nsp
-               if (nwds .ge. 2) then
-c check to see if this is a component name
-                  if (rxn_flag .eq. 0 .and. msg(2) .eq. 3)  
-     &                 cpntnam(icpnt) = cmsg(2)
-c check to see if the maximum saturation is specified for Henry's
-                  if(abs(icns(nsp)).eq.2) then 
-                     if (nwds .eq. 2 .and. msg(2) .eq. 2) then
-                        strac_max = xmsg(2)
-                     else if (nwds .eq. 3 .and. msg(3) .eq. 2) then
-                        strac_max = xmsg(3)
-                     end if
-                  end if
-               end if
-            elseif(icns(nsp).eq.0)then
-               iimm = iimm + 1
-               pimm(iimm)=nsp
-               if (nwds .ge. 2 .and. rxn_flag .eq. 0 .and. 
-     &              msg(2) .eq. 3) immnam(iimm) = cmsg(2)
-            else
-               ivap = ivap + 1
-               pvap(ivap)=nsp
-               if (nwds .ge. 2) then
-c check to see if this is a component name
-                  if (rxn_flag .eq. 0 .and. msg(2) .eq. 3) 
-     &                 vapnam(ivap) = cmsg(2)
-c check to see if the maximum saturation is specified for vapor
+c     construct input necessary for chemod and read_rxn
+         if(icns(nsp).eq.1.or.abs(icns(nsp)).eq.2)then
+            icpnt = icpnt + 1
+            pcpnt(icpnt)=nsp
+            if (nwds .ge. 2) then
+c     check to see if this is a component name
+               if (rxn_flag .eq. 0 .and. msg(2) .eq. 3)  
+     &              cpntnam(icpnt) = cmsg(2)
+c     check to see if the maximum saturation is specified for Henry's
+               if(abs(icns(nsp)).eq.2) then 
                   if (nwds .eq. 2 .and. msg(2) .eq. 2) then
                      strac_max = xmsg(2)
                   else if (nwds .eq. 3 .and. msg(3) .eq. 2) then
                      strac_max = xmsg(3)
                   end if
                end if
-            endif
+            end if
+            if (cden_flag .eq. 2) then
+               if (cpntnam(icpnt) .eq. cden_spnam) cden_sp = nsp
+            end if
+         elseif(icns(nsp).eq.0)then
+            iimm = iimm + 1
+            pimm(iimm)=nsp
+            if (nwds .ge. 2 .and. rxn_flag .eq. 0 .and. 
+     &           msg(2) .eq. 3) immnam(iimm) = cmsg(2)
+         else
+            ivap = ivap + 1
+            pvap(ivap)=nsp
+            if (nwds .ge. 2) then
+c     check to see if this is a component name
+               if (rxn_flag .eq. 0 .and. msg(2) .eq. 3) 
+     &              vapnam(ivap) = cmsg(2)
+c     check to see if the maximum saturation is specified for vapor
+               if (nwds .eq. 2 .and. msg(2) .eq. 2) then
+                  strac_max = xmsg(2)
+               else if (nwds .eq. 3 .and. msg(3) .eq. 2) then
+                  strac_max = xmsg(3)
+               end if
+            end if
+         endif
 
-CPS     IF the current tracer is solid
-            if(icns(nsp).eq.0)then                
-CPS       Initialize some parameters
-               tclx(nsp,1)=0
-               tcly(nsp,1)=0
-               tclz(nsp,1)=0
-               a1adfl(nsp,1)=0
-               a2adfl(nsp,1)=0
-               betadfl(nsp,1)=1
-               tcvx(nsp,1)=0
-               tcvy(nsp,1)=0
-               tcvz(nsp,1)=0
-               a1adfv(nsp,1)=0
-               a2adfv(nsp,1)=0
-               betadfv(nsp,1)=1
-CPS     ELSE the tracer is a liquid
-            else
-               jj = 0
-               do 
-                  read(inpt,'(a80)') wdd1
-                  if(null1(wdd1)) exit
-                  backspace inpt
-                  jj = jj + 1
-                  call parse_string (wdd1, imsg, msg, xmsg, cmsg, nwds)
+C     PS     IF the current tracer is solid
+         if(icns(nsp).eq.0)then                
+C     PS       Initialize some parameters
+            tclx(nsp,1)=0
+            tcly(nsp,1)=0
+            tclz(nsp,1)=0
+            a1adfl(nsp,1)=0
+            a2adfl(nsp,1)=0
+            betadfl(nsp,1)=1
+            tcvx(nsp,1)=0
+            tcvy(nsp,1)=0
+            tcvz(nsp,1)=0
+            a1adfv(nsp,1)=0
+            a2adfv(nsp,1)=0
+            betadfv(nsp,1)=1
+C     PS     ELSE the tracer is a liquid
+         else
+            jj = 0
+            do 
+               read(inpt,'(a80)') wdd1
+               if(null1(wdd1)) exit
+               backspace inpt
+               jj = jj + 1
+               call parse_string (wdd1, imsg, msg, xmsg, cmsg, 
+     &              nwds)
 
-                  select case (icns(nsp))
-                  case (1)
-                     hvliquid=1
-                     if (dispsame.eq.1) then
-                        read(inpt,*) iadsfl(nsp,jj),a1adfl(nsp,jj),
-     &                       a2adfl(nsp,jj),betadfl(nsp,jj)
+               select case (icns(nsp))
+            case (1)
+               hvliquid=1
+               if (dispsame.eq.1) then
+                  read(inpt,*) iadsfl(nsp,jj),a1adfl(nsp,jj),
+     &                 a2adfl(nsp,jj),betadfl(nsp,jj)
+               else
+                  if (ldsp.eq.0) then
+                     if (msg(5) .eq. 1) then
+                        read(inpt,*,err=2000,iostat=io_stat)
+     &                       iadsfl(nsp,jj),a1adfl(nsp,jj),
+     &                       a2adfl(nsp,jj),betadfl(nsp,jj),
+     &                       mflagl(nsp,jj),diffmfl(nsp,jj),
+     &                       tclx(nsp,jj),tcly(nsp,jj),
+     &                       tclz(nsp,jj)
                      else
-                        if (ldsp.eq.0) then
-                           if (msg(5) .eq. 1) then
-                              read(inpt,*,err=2000,iostat=io_stat)
-     &                             iadsfl(nsp,jj),a1adfl(nsp,jj),
-     &                             a2adfl(nsp,jj),betadfl(nsp,jj),
-     &                             mflagl(nsp,jj),diffmfl(nsp,jj),
-     &                             tclx(nsp,jj),tcly(nsp,jj),
-     &                             tclz(nsp,jj)
-                           else
-! Try reading using old format
-                              read(inpt,*,err=2000,iostat=io_stat)
-     &                             iadsfl(nsp,jj),a1adfl(nsp,jj),
-     &                             a2adfl(nsp,jj),betadfl(nsp,jj),
-     &                             diffmfl(nsp,jj),tclx(nsp,jj),
-     &                             tcly(nsp,jj),tclz(nsp,jj)
-                              mflagl(nsp,jj) = 0
-                           end if
-                        else
-                           if (msg(5) .eq. 1) then
-                              read(inpt,*,err=2000,iostat=io_stat)
-     &                             iadsfl(nsp,jj),a1adfl(nsp,jj),
-     &                             a2adfl(nsp,jj),betadfl(nsp,jj),
-     &                             mflagl(nsp,jj),diffmfl(nsp,jj),
-     &                             tclx(nsp,jj),tcly(nsp,jj)
-                           else
-! Try reading using old format
-                              read(inpt,*,err=2000,iostat=io_stat)
-     &                             iadsfl(nsp,jj),a1adfl(nsp,jj),
-     &                             a2adfl(nsp,jj),betadfl(nsp,jj),
-     &                             diffmfl(nsp,jj),
-     &                             tclx(nsp,jj),tcly(nsp,jj)
-                              mflagl(nsp,jj) = 0
-                           end if
-                        endif
-                     endif
-                  case (-1)
-CPS         ELSEIF this is a vapor species
-                     hvvapor=1
-                     if (dispsame.eq.1) then
-                        read(inpt,*) iadsfv(nsp,jj),a1adfv(nsp,jj),
-     2                       a2adfv(nsp,jj),betadfv(nsp,jj)
+c     Try reading using old format
+                        read(inpt,*,err=2000,iostat=io_stat)
+     &                       iadsfl(nsp,jj),a1adfl(nsp,jj),
+     &                       a2adfl(nsp,jj),betadfl(nsp,jj),
+     &                       diffmfl(nsp,jj),tclx(nsp,jj),
+     &                       tcly(nsp,jj),tclz(nsp,jj)
+                        mflagl(nsp,jj) = 0
+                     end if
+                  else
+                     if (msg(5) .eq. 1) then
+                        read(inpt,*,err=2000,iostat=io_stat)
+     &                       iadsfl(nsp,jj),a1adfl(nsp,jj),
+     &                       a2adfl(nsp,jj),betadfl(nsp,jj),
+     &                       mflagl(nsp,jj),diffmfl(nsp,jj),
+     &                       tclx(nsp,jj),tcly(nsp,jj)
                      else
-                        if (ldsp.eq.0) then
-                           if (msg(5) .eq. 1) then
-                              read(inpt,*,err=2000,iostat=io_stat)
-     &                             iadsfv(nsp,jj),a1adfv(nsp,jj),
-     &                             a2adfv(nsp,jj),betadfv(nsp,jj),
-     &                             mflagv(nsp,jj),diffmfv(nsp,jj),
-     &                             tcvx(nsp,jj),tcvy(nsp,jj),
-     &                             tcvz(nsp,jj)
-                           else
-! Try reading using old format
-                              read(inpt,*,err=2000,iostat=io_stat)
-     &                             iadsfv(nsp,jj),a1adfv(nsp,jj),
-     &                             a2adfv(nsp,jj),betadfv(nsp,jj),
-     &                             diffmfv(nsp,jj),tcvx(nsp,jj),
-     &                             tcvy(nsp,jj),tcvz(nsp,jj)
-                              mflagv(nsp,jj) = 0
-                           end if
-                        else
-                           if (msg(5) .eq. 1) then
-                              read(inpt,*,err=2000,iostat=io_stat)
-     &                             iadsfv(nsp,jj),a1adfv(nsp,jj),
-     &                             a2adfv(nsp,jj),betadfv(nsp,jj),
-     &                             mflagv(nsp,jj),diffmfv(nsp,jj),
-     &                             tcvx(nsp,jj),tcvy(nsp,jj)
-                           else
-! Try reading using old format
-                              read(inpt,*,err=2000,iostat=io_stat)
-     &                             iadsfv(nsp,jj),a1adfv(nsp,jj),
-     &                             a2adfv(nsp,jj),betadfv(nsp,jj),
-     &                             diffmfv(nsp,jj),
-     &                             tcvx(nsp,jj),tcvy(nsp,jj)
-                              mflagv(nsp,jj) = 0
-                           end if
-                        endif
-                     endif
-CPS   IF vapor species handle special case of a vapor only species
-                     a1adfl(nsp,jj) = a1adfv(nsp,jj)
-                     a2adfl(nsp,jj) = a2adfv(nsp,jj)
-                     betadfl(nsp,jj) = betadfv(nsp,jj)
-                     iadsfl(nsp,jj)= iadsfv(nsp,jj)
-CPS   ENDIF
-                  case (2, -2)
-CPS         ELSEIF this is a Henry's Law  species
-                     hvliquid=1
-                     hvvapor=1
-                     if (dispsame.eq.1) then
-                        read(inpt,*) iadsfl(nsp,jj),a1adfl(nsp,jj),
-     2                       a2adfl(nsp,jj),betadfl(nsp,jj),
-     3                       iadsfv(nsp,jj),a1adfv(nsp,jj),
-     5                       a2adfv(nsp,jj),betadfv(nsp,jj)
+c     Try reading using old format
+                        read(inpt,*,err=2000,iostat=io_stat)
+     &                       iadsfl(nsp,jj),a1adfl(nsp,jj),
+     &                       a2adfl(nsp,jj),betadfl(nsp,jj),
+     &                       diffmfl(nsp,jj),
+     &                       tclx(nsp,jj),tcly(nsp,jj)
+                        mflagl(nsp,jj) = 0
+                     end if
+                  endif
+               endif
+            case (-1)
+C     PS         ELSEIF this is a vapor species
+               hvvapor=1
+               if (dispsame.eq.1) then
+                  read(inpt,*) iadsfv(nsp,jj),a1adfv(nsp,jj),
+     2                 a2adfv(nsp,jj),betadfv(nsp,jj)
+               else
+                  if (ldsp.eq.0) then
+                     if (msg(5) .eq. 1) then
+                        read(inpt,*,err=2000,iostat=io_stat)
+     &                       iadsfv(nsp,jj),a1adfv(nsp,jj),
+     &                       a2adfv(nsp,jj),betadfv(nsp,jj),
+     &                       mflagv(nsp,jj),diffmfv(nsp,jj),
+     &                       tcvx(nsp,jj),tcvy(nsp,jj),
+     &                       tcvz(nsp,jj)
                      else
-                        if (ldsp.eq.0) then
-                           if (msg(5) .eq. 1) then
-                              read(inpt,*,err=2000,iostat=io_stat)
-     &                             iadsfl(nsp,jj),a1adfl(nsp,jj),
-     &                             a2adfl(nsp,jj),betadfl(nsp,jj),
-     &                             mflagl(nsp,jj),diffmfl(nsp,jj),
-     &                             tclx(nsp,jj),tcly(nsp,jj),
-     &                             tclz(nsp,jj),
-     &                             iadsfv(nsp,jj),a1adfv(nsp,jj),
-     &                             a2adfv(nsp,jj),betadfv(nsp,jj),
-     &                          mflagv(nsp,jj),diffmfv(nsp,jj),
-     &                          tcvx(nsp,jj),tcvy(nsp,jj),tcvz(nsp,jj)
-                           else
-! Try reading using old format
-                              read(inpt,*,err=2000,iostat=io_stat)
-     &                             iadsfl(nsp,jj),a1adfl(nsp,jj),
-     &                             a2adfl(nsp,jj),betadfl(nsp,jj),
-     &                             diffmfl(nsp,jj),tclx(nsp,jj),
-     &                             tcly(nsp,jj),tclz(nsp,jj),
-     &                             iadsfv(nsp,jj),a1adfv(nsp,jj),
-     &                             a2adfv(nsp,jj),betadfv(nsp,jj),
-     &                             diffmfv(nsp,jj),tcvx(nsp,jj),
-     &                             tcvy(nsp,jj),tcvz(nsp,jj)
-                              mflagl(nsp,jj) = 0
-                              mflagv(nsp,jj) = 0
-                           end if
-                        else
-                           if (msg(5) .eq. 1) then
-                              read(inpt,*,err=2000,iostat=io_stat)
-     &                             iadsfl(nsp,jj),a1adfl(nsp,jj),
-     &                             a2adfl(nsp,jj),betadfl(nsp,jj),
-     &                             mflagl(nsp,jj),diffmfl(nsp,jj),
-     &                             tclx(nsp,jj),tcly(nsp,jj),
-     5                             iadsfv(nsp,jj),a1adfv(nsp,jj),
-     6                             a2adfv(nsp,jj),betadfv(nsp,jj),
-     7                             mflagv(nsp,jj),diffmfv(nsp,jj),
-     &                             tcvx(nsp,jj),tcvy(nsp,jj)
-                           else
-! Try reading using old format
-                              read(inpt,*,err=2000,iostat=io_stat)
-     &                             iadsfl(nsp,jj),a1adfl(nsp,jj),
-     &                             a2adfl(nsp,jj),betadfl(nsp,jj),
-     &                             diffmfl(nsp,jj),
-     &                             tclx(nsp,jj),tcly(nsp,jj),
-     5                             iadsfv(nsp,jj),a1adfv(nsp,jj),
-     6                             a2adfv(nsp,jj),betadfv(nsp,jj),
-     7                             diffmfv(nsp,jj),
-     &                             tcvx(nsp,jj),tcvy(nsp,jj)
-                              mflagl(nsp,jj) = 0
-                              mflagv(nsp,jj) = 0
-                           end if
-                        endif                                 
-                     endif
+c     Try reading using old format
+                        read(inpt,*,err=2000,iostat=io_stat)
+     &                       iadsfv(nsp,jj),a1adfv(nsp,jj),
+     &                       a2adfv(nsp,jj),betadfv(nsp,jj),
+     &                       diffmfv(nsp,jj),tcvx(nsp,jj),
+     &                       tcvy(nsp,jj),tcvz(nsp,jj)
+                        mflagv(nsp,jj) = 0
+                     end if
+                  else
+                     if (msg(5) .eq. 1) then
+                        read(inpt,*,err=2000,iostat=io_stat)
+     &                       iadsfv(nsp,jj),a1adfv(nsp,jj),
+     &                       a2adfv(nsp,jj),betadfv(nsp,jj),
+     &                       mflagv(nsp,jj),diffmfv(nsp,jj),
+     &                       tcvx(nsp,jj),tcvy(nsp,jj)
+                     else
+c     Try reading using old format
+                        read(inpt,*,err=2000,iostat=io_stat)
+     &                       iadsfv(nsp,jj),a1adfv(nsp,jj),
+     &                       a2adfv(nsp,jj),betadfv(nsp,jj),
+     &                       diffmfv(nsp,jj),
+     &                       tcvx(nsp,jj),tcvy(nsp,jj)
+                        mflagv(nsp,jj) = 0
+                     end if
+                  endif
+               endif
+C     PS   IF vapor species handle special case of a vapor only species
+               a1adfl(nsp,jj) = a1adfv(nsp,jj)
+               a2adfl(nsp,jj) = a2adfv(nsp,jj)
+               betadfl(nsp,jj) = betadfv(nsp,jj)
+               iadsfl(nsp,jj)= iadsfv(nsp,jj)
+C     PS   ENDIF
+            case (2, -2)
+C     PS         ELSEIF this is a Henry's Law  species
+               hvliquid=1
+               hvvapor=1
+               if (dispsame.eq.1) then
+                  read(inpt,*) iadsfl(nsp,jj),a1adfl(nsp,jj),
+     2                 a2adfl(nsp,jj),betadfl(nsp,jj),
+     3                 iadsfv(nsp,jj),a1adfv(nsp,jj),
+     5                 a2adfv(nsp,jj),betadfv(nsp,jj)
+               else
+                  if (ldsp.eq.0) then
+                     if (msg(5) .eq. 1) then
+                        read(inpt,*,err=2000,iostat=io_stat)
+     &                       iadsfl(nsp,jj),a1adfl(nsp,jj),
+     &                       a2adfl(nsp,jj),betadfl(nsp,jj),
+     &                       mflagl(nsp,jj),diffmfl(nsp,jj),
+     &                       tclx(nsp,jj),tcly(nsp,jj),
+     &                       tclz(nsp,jj),iadsfv(nsp,jj),
+     &                       a1adfv(nsp,jj),a2adfv(nsp,jj),
+     &                       betadfv(nsp,jj),mflagv(nsp,jj),
+     &                       diffmfv(nsp,jj),tcvx(nsp,jj),
+     &                       tcvy(nsp,jj),tcvz(nsp,jj)
+                     else
+c     Try reading using old format
+                        read(inpt,*,err=2000,iostat=io_stat)
+     &                       iadsfl(nsp,jj),a1adfl(nsp,jj),
+     &                       a2adfl(nsp,jj),betadfl(nsp,jj),
+     &                       diffmfl(nsp,jj),tclx(nsp,jj),
+     &                       tcly(nsp,jj),tclz(nsp,jj),
+     &                       iadsfv(nsp,jj),a1adfv(nsp,jj),
+     &                       a2adfv(nsp,jj),betadfv(nsp,jj),
+     &                       diffmfv(nsp,jj),tcvx(nsp,jj),
+     &                       tcvy(nsp,jj),tcvz(nsp,jj)
+                        mflagl(nsp,jj) = 0
+                        mflagv(nsp,jj) = 0
+                     end if
+                  else
+                     if (msg(5) .eq. 1) then
+                        read(inpt,*,err=2000,iostat=io_stat)
+     &                       iadsfl(nsp,jj),a1adfl(nsp,jj),
+     &                       a2adfl(nsp,jj),betadfl(nsp,jj),
+     &                       mflagl(nsp,jj),diffmfl(nsp,jj),
+     &                       tclx(nsp,jj),tcly(nsp,jj),
+     5                       iadsfv(nsp,jj),a1adfv(nsp,jj),
+     6                       a2adfv(nsp,jj),betadfv(nsp,jj),
+     7                       mflagv(nsp,jj),diffmfv(nsp,jj),
+     &                       tcvx(nsp,jj),tcvy(nsp,jj)
+                     else
+c     Try reading using old format
+                        read(inpt,*,err=2000,iostat=io_stat)
+     &                       iadsfl(nsp,jj),a1adfl(nsp,jj),
+     &                       a2adfl(nsp,jj),betadfl(nsp,jj),
+     &                       diffmfl(nsp,jj),
+     &                       tclx(nsp,jj),tcly(nsp,jj),
+     5                       iadsfv(nsp,jj),a1adfv(nsp,jj),
+     6                       a2adfv(nsp,jj),betadfv(nsp,jj),
+     7                       diffmfv(nsp,jj),
+     &                       tcvx(nsp,jj),tcvy(nsp,jj)
+                        mflagl(nsp,jj) = 0
+                        mflagv(nsp,jj) = 0
+                     end if
+                  endif                                 
+               endif
 
-CPS        ENDIF
-                  end select
-                  if ( (diffmfl(nsp,jj) .lt. 0.) .or. 
-     &                 (diffmfv(nsp,jj) .lt. 0.) ) then
-                     write (ierr, *) 'Old Conca model not supported'
-                     write (ierr, *) 'See UM for new diffusion model ',
-     &                    'options'
-                     goto 2000
-                  end if
-c
+C     PS        ENDIF
+            end select
+            if ( (diffmfl(nsp,jj) .lt. 0.) .or. 
+     &           (diffmfv(nsp,jj) .lt. 0.) ) then
+               write (ierr, *) 'Old Conca model not supported'
+               write (ierr, *) 'See UM for new diffusion ',
+     &              'model options'
+               goto 2000
+            end if
+c     
 c**** check for minimum value of diffmf
-c
-                  if (dispsame.eq.0) then
-                     if (diffmfl(nsp,jj).ge.0.) diffmfl(nsp,jj)=
-     &                    max(diffmfl(nsp,jj),zero_t)
-                     tclx(nsp,jj)=  max( tclx(nsp,jj),zero_t )
-                     tcly(nsp,jj)=  max( tcly(nsp,jj),zero_t )
-                     tclz(nsp,jj)=  max( tclz(nsp,jj),zero_t )
-                        
+c     
+            if (dispsame.eq.0) then
+               if (diffmfl(nsp,jj).ge.0.) diffmfl(nsp,jj)=
+     &              max(diffmfl(nsp,jj),zero_t)
+               tclx(nsp,jj)=  max( tclx(nsp,jj),zero_t )
+               tcly(nsp,jj)=  max( tcly(nsp,jj),zero_t )
+               tclz(nsp,jj)=  max( tclz(nsp,jj),zero_t )
+               
 c     Square of dispersivity is used in coneq1
                
-                     tclx(nsp,jj) = tclx(nsp,jj)*tclx(nsp,jj)
-                     tcly(nsp,jj) = tcly(nsp,jj)*tcly(nsp,jj)
-                     tclz(nsp,jj) = tclz(nsp,jj)*tclz(nsp,jj)
-                        
-                     if (diffmfv(nsp,jj).ge.0.) diffmfv(nsp,jj)=
-     &                    max(diffmfv(nsp,jj),zero_t)
-                     tcvx(nsp,jj)=  max( tcvx(nsp,jj),zero_t )
-                     tcvy(nsp,jj)=  max( tcvy(nsp,jj),zero_t )
-                     tcvz(nsp,jj)=  max( tcvz(nsp,jj),zero_t )
-                        
+               tclx(nsp,jj) = tclx(nsp,jj)*tclx(nsp,jj)
+               tcly(nsp,jj) = tcly(nsp,jj)*tcly(nsp,jj)
+               tclz(nsp,jj) = tclz(nsp,jj)*tclz(nsp,jj)
+               
+               if (diffmfv(nsp,jj).ge.0.) diffmfv(nsp,jj)=
+     &              max(diffmfv(nsp,jj),zero_t)
+               tcvx(nsp,jj)=  max( tcvx(nsp,jj),zero_t )
+               tcvy(nsp,jj)=  max( tcvy(nsp,jj),zero_t )
+               tcvz(nsp,jj)=  max( tcvz(nsp,jj),zero_t )
+               
 c     Square of dispersivity is used in coneq1
-                        
-                     tcvx(nsp,jj) = tcvx(nsp,jj)*tcvx(nsp,jj)
-                     tcvy(nsp,jj) = tcvy(nsp,jj)*tcvy(nsp,jj)
-                     tcvz(nsp,jj) = tcvz(nsp,jj)*tcvz(nsp,jj)
-                  endif                        
+               
+               tcvx(nsp,jj) = tcvx(nsp,jj)*tcvx(nsp,jj)
+               tcvy(nsp,jj) = tcvy(nsp,jj)*tcvy(nsp,jj)
+               tcvz(nsp,jj) = tcvz(nsp,jj)*tcvz(nsp,jj)
+            endif                        
 
-CPS
-CPS     IF this is a liquid conservative tracer
-c
-                  if( iadsfl(nsp,jj) .eq. 0 ) then
-c
-CPS       Set sorption parameters to reflect a conservative tracer
-c
-                     a1adfl(nsp,jj) = 0.
-                     a2adfl(nsp,jj) = 0.
-                     betadfl(nsp,jj) = 1.
-c
-CPS     ELSEIF this is a liquid linear isotherm
-c
-                  else if( iadsfl(nsp,jj) .eq. 1 ) then
-c
-CPS       Set sorption parameters to reflect a linear isotherm
-c
-                     a2adfl(nsp,jj) = 0.
-                     betadfl(nsp,jj) = 1.
-c
-CPS     ELSEIF this is a liquid Freundlich isotherm
-c
-                  else if( iadsfl(nsp,jj) .eq. 2 ) then
-c
-CPS       Set sorption parameters to reflect a Freundlich isotherm
-c
-                     a2adfl(nsp,jj) = 0.
-c
-CPS     ELSEIF this is a liquid Langmuir isotherm
+C     PS
+C     PS     IF this is a liquid conservative tracer
 c     
-                  else if( iadsfl(nsp,jj) .eq. 4 ) then
-c
-CPS       Set sorption parameters to reflect a Langmuir isotherm
-c
-                     betadfl(nsp,jj) = 1.
-c
-CPS     ENDIF
-c
-                  end if
-CPS     IF this is a vapor conservative tracer 
-c
-                  if( iadsfv(nsp,jj) .eq. 0 ) then
-c
-CPS       Set sorption parameters to reflect a conservative tracer
-c
-                     a1adfv(nsp,jj) = 0.
-                     a2adfv(nsp,jj) = 0.
-                     betadfv(nsp,jj) = 1.
-c
-CPS     ELSEIF this is a vapor linear isotherm
-c
-                  else if( iadsfv(nsp,jj) .eq. 1 ) then
-c
-CPS       Set sorption parameters to reflect a linear isotherm
-c
-                     a2adfv(nsp,jj) = 0.
-                     betadfv(nsp,jj) = 1.
-c
-CPS     ELSEIF this is a vapor Freundlich isotherm
-c
-                  else if( iadsfv(nsp,jj) .eq. 2 ) then
-c
-CPS       Set sorption parameters to reflect a Freundlich isotherm
-c
-                     a2adfv(nsp,jj) = 0.
-c
-CPS     ELSEIF this is a vapor Langmuir isotherm
+            if( iadsfl(nsp,jj) .eq. 0 ) then
 c     
-                  else if( iadsfv(nsp,jj) .eq. 4 ) then
-c
-CPS       Set sorption parameters to reflect a Langmuir isotherm
-c
-                     betadfv(nsp,jj) = 1.
-c
-c
-                  end if
-CPS     ENDIF
+C     PS       Set sorption parameters to reflect a conservative tracer
 c     
-c
-               end do
-
-               narrays = 1
-               itype(1) = 4
-               default(1) = 1
-               macro = "trac"
-               igroup = 13
-
-               call initdata2( inpt, ischk, n0, narrays,
-     2              itype, default, macroread(5), macro, igroup, 
-     3              ireturn, i4_1=itrc(1+(nsp-1)*n0:nsp*n0) )
-
-CPS     
-CPS       IF the solute is a Henry's Law species
-CPS         Set the Henry's Law parameters
-CPS       ENDIF
-               if( abs(icns(nsp)) .eq. 2 ) then
-                  read(inpt, *)henry_model(nsp)
-                  if(henry_model(nsp).eq.1)then
-                     backspace inpt
-                     read(inpt,*)henry_model(nsp),a_henry(nsp),
-     2                    dh_henry(nsp)
-                  elseif(henry_model(nsp).eq.2)then
-                     backspace inpt
-                     read(inpt,*)henry_model(nsp),hawwa(nsp,1),
-     2                    hawwa(nsp,2),hawwa(nsp,3),hawwa(nsp,4),
-     3                    hawwa(nsp,5)
-                  elseif(henry_model(nsp).eq.3)then
-                     backspace inpt
-                     read(inpt,*)henry_model(nsp),a_henry(nsp),
-     2                    dh_henry(nsp)
-                  else 
-                     write(ierr,*)' ** Using Old Input '
-                     write(ierr,*)' Enter Temperature Dependency '
-                     write(ierr,*)' Model Number: 1 - Van Hoff '
-                     write(ierr,*)' 2 - awwa model, see manual'
-                     write(ierr,*)' for details **'
-                     write(iptty,*)' Using Old Input '
-                     write(iptty,*)' Enter Temperature Dependency '
-                     write(iptty,*)' Model Number: 1 - Van Hoff '
-                     write(iptty,*)' 2 - awwa model, see manual'
-                     write(iptty,*)' for details **'
-                     stop
-                  endif
-               end if
-            endif
-
-            read (inpt, '(a80)') input_msg
-            if (input_msg(1:5) .eq. 'moles') then
-c zvd 22-Jul-09, 12-Apr-10
-c Modify for option to read total moles as input and compute moles/kg
-c if keyword moles is found (only entered for first species)
-c for nodal volume or zone volume (need rolf and sx1 defined)
-c (read group 15 data and write to a temporary file)
-c Also, need to be able to read zone definitions on the fly to allow 
-c multiple sources to be accumulated at the same node for overlapping zones
-               mole_input = .true.
-            else
-               backspace inpt
+               a1adfl(nsp,jj) = 0.
+               a2adfl(nsp,jj) = 0.
+               betadfl(nsp,jj) = 1.
+c     
+C     PS     ELSEIF this is a liquid linear isotherm
+c     
+            else if( iadsfl(nsp,jj) .eq. 1 ) then
+c     
+C     PS       Set sorption parameters to reflect a linear isotherm
+c     
+               a2adfl(nsp,jj) = 0.
+               betadfl(nsp,jj) = 1.
+c     
+C     PS     ELSEIF this is a liquid Freundlich isotherm
+c     
+            else if( iadsfl(nsp,jj) .eq. 2 ) then
+c     
+C     PS       Set sorption parameters to reflect a Freundlich isotherm
+c     
+               a2adfl(nsp,jj) = 0.
+c     
+C     PS     ELSEIF this is a liquid Langmuir isotherm
+c     
+            else if( iadsfl(nsp,jj) .eq. 4 ) then
+c     
+C     PS       Set sorption parameters to reflect a Langmuir isotherm
+c     
+               betadfl(nsp,jj) = 1.
+c     
+C     PS     ENDIF
+c     
             end if
-            if (mole_input) then
-               if (nsp .eq. 1) then
-                  mfile = open_file ('moles_in.tmp', 'unknown')
-               end if
-               write (mfile, *) nsp
-               do
-                  read (inpt, '(a80)') input_msg
-                  if (null1(input_msg)) then
-                     write (mfile, *)
-                     if (nsp .eq. nspeci) close (mfile)
-                     exit 
-                  end if
-                  write (mfile, '(a)') trim(input_msg)
-               end do
-            else
+C     PS     IF this is a vapor conservative tracer 
+c     
+            if( iadsfv(nsp,jj) .eq. 0 ) then
+c     
+C     PS       Set sorption parameters to reflect a conservative tracer
+c     
+               a1adfv(nsp,jj) = 0.
+               a2adfv(nsp,jj) = 0.
+               betadfv(nsp,jj) = 1.
+c     
+C     PS     ELSEIF this is a vapor linear isotherm
+c     
+            else if( iadsfv(nsp,jj) .eq. 1 ) then
+c     
+C     PS       Set sorption parameters to reflect a linear isotherm
+c     
+               a2adfv(nsp,jj) = 0.
+               betadfv(nsp,jj) = 1.
+c     
+C     PS     ELSEIF this is a vapor Freundlich isotherm
+c     
+            else if( iadsfv(nsp,jj) .eq. 2 ) then
+c     
+C     PS       Set sorption parameters to reflect a Freundlich isotherm
+c     
+               a2adfv(nsp,jj) = 0.
+c     
+C     PS     ELSEIF this is a vapor Langmuir isotherm
+c     
+            else if( iadsfv(nsp,jj) .eq. 4 ) then
+c     
+C     PS       Set sorption parameters to reflect a Langmuir isotherm
+c     
+               betadfv(nsp,jj) = 1.
+c     
+c     
+            end if
+C     PS     ENDIF
+c     
+c     
+         end do
+
+         narrays = 1
+         itype(1) = 4
+         default(1) = 1
+         macro = "trac"
+         igroup = 13
+
+         call initdata2( inpt, ischk, n0, narrays,
+     2        itype, default, macroread(5), macro, igroup, 
+     3        ireturn, i4_1=itrc(1+(nsp-1)*n0:nsp*n0) )
+
+C     PS     
+C     PS       IF the solute is a Henry's Law species
+C     PS         Set the Henry's Law parameters
+C     PS       ENDIF
+         if( abs(icns(nsp)) .eq. 2 ) then
+            read(inpt, *)henry_model(nsp)
+            if(henry_model(nsp).eq.1)then
+               backspace inpt
+               read(inpt,*)henry_model(nsp),a_henry(nsp),
+     2              dh_henry(nsp)
+            elseif(henry_model(nsp).eq.2)then
+               backspace inpt
+               read(inpt,*)henry_model(nsp),hawwa(nsp,1),
+     2              hawwa(nsp,2),hawwa(nsp,3),hawwa(nsp,4),
+     3              hawwa(nsp,5)
+            elseif(henry_model(nsp).eq.3)then
+               backspace inpt
+               read(inpt,*)henry_model(nsp),a_henry(nsp),
+     2              dh_henry(nsp)
+            else 
+               write(ierr,*)' ** Using Old Input '
+               write(ierr,*)' Enter Temperature Dependency '
+               write(ierr,*)' Model Number: 1 - Van Hoff '
+               write(ierr,*)' 2 - awwa model, see manual'
+               write(ierr,*)' for details **'
+               write(iptty,*)' Using Old Input '
+               write(iptty,*)' Enter Temperature Dependency '
+               write(iptty,*)' Model Number: 1 - Van Hoff '
+               write(iptty,*)' 2 - awwa model, see manual'
+               write(iptty,*)' for details **'
+               stop
+            endif
+         end if
+      endif
+
+      read (inpt, '(a80)') input_msg
+      if (input_msg(1:5) .eq. 'moles') then
+c     zvd 22-Jul-09, 12-Apr-10
+c     Modify for option to read total moles as input and compute moles/kg
+c     if keyword moles is found (only entered for first species)
+c     for nodal volume or zone volume (need rolf and sx1 defined)
+c     (read group 15 data and write to a temporary file)
+c     Also, need to be able to read zone definitions on the fly to allow 
+c     multiple sources to be accumulated at the same node for overlapping zones
+         mole_input = .true.
+      else
+         backspace inpt
+      end if
+      if (mole_input) then
+         if (nsp .eq. 1) then
+            mfile = open_file ('moles_in.tmp', 'unknown')
+         end if
+         write (mfile, *) nsp
+         do
+            read (inpt, '(a80)') input_msg
+            if (null1(input_msg)) then
+               write (mfile, *)
+               if (nsp .eq. nspeci) close (mfile)
+               exit 
+            end if
+            write (mfile, '(a)') trim(input_msg)
+         end do
+      else
 c     Input is in moles/kg fluid
 c     read the original way
-               narrays = 1
-               itype(1) = 8
-               default(1) = an0
-               macro = "trac"
-               igroup = 15
-               call initdata2( inpt, ischk, n0, narrays,
-     2              itype, default, macroread(5), macro, igroup, 
-     3              ireturn, r8_1=an(1+(nsp-1)*n0:nsp*n0) )
+         narrays = 1
+         itype(1) = 8
+         default(1) = an0
+         macro = "trac"
+         igroup = 15
+         call initdata2( inpt, ischk, n0, narrays,
+     2        itype, default, macroread(5), macro, igroup, 
+     3        ireturn, r8_1=an(1+(nsp-1)*n0:nsp*n0) )
 
-               do ij = 1, n0
-                  anlo(ij+npn)=an(ij+npn)
-               end do
+         do ij = 1, n0
+            anlo(ij+npn)=an(ij+npn)
+         end do
 
-            end if
+      end if
 
-            narrays = 3
-            itype(1) = 8
-            itype(2) = 8
-            itype(3) = 8
-            default(1) = 0.
-            default(2) = 0.
-            default(3) = 0.
-            macro = "trac"
-            igroup = 16
-            call initdata2( inpt, ischk, n0, narrays,
-     2           itype, default, macroread(5), macro, igroup, 
-     3           ireturn, r8_1=cnsk(1+(nsp-1)*n0:nsp*n0),
-     4           r8_2=t1sk(1+(nsp-1)*n0:nsp*n0), 
-     5           r8_3=t2sk(1+(nsp-1)*n0:nsp*n0) )
-            
-            do mim = 1,n0
-               mi=mim+(nsp-1)*n0
+      narrays = 3
+      itype(1) = 8
+      itype(2) = 8
+      itype(3) = 8
+      default(1) = 0.
+      default(2) = 0.
+      default(3) = 0.
+      macro = "trac"
+      igroup = 16
+      call initdata2( inpt, ischk, n0, narrays,
+     2     itype, default, macroread(5), macro, igroup, 
+     3     ireturn, r8_1=cnsk(1+(nsp-1)*n0:nsp*n0),
+     4     r8_2=t1sk(1+(nsp-1)*n0:nsp*n0), 
+     5     r8_3=t2sk(1+(nsp-1)*n0:nsp*n0) )
+      
+      do mim = 1,n0
+         mi=mim+(nsp-1)*n0
 
 c     Add new option for solute remaining in system despite the
 c     fluid leaving BAR 4-28-99
 
-               if(cnsk(mi).lt.0..and.t2sk(mi).lt.0.) then
-                  write(ierr,*)'ERROR - solute accumulation option'
-                  write(ierr,*)'cannot be used with cnsk<0'
-                  stop
-               end if
-               
-               if(cnsk(mi).lt.0) then
-                  pcnsk(mi)=-1.0
-               elseif(t2sk(mi).lt.0.) then
-                  t2sk(mi) = abs(t2sk(mi))
-                  pcnsk(mi) = 1.
-               end if
-               
-               
-            enddo
+         if(cnsk(mi).lt.0..and.t2sk(mi).lt.0.) then
+            write(ierr,*)'ERROR - solute accumulation option'
+            write(ierr,*)'cannot be used with cnsk<0'
+            stop
+         end if
+         
+         if(cnsk(mi).lt.0) then
+            pcnsk(mi)=-1.0
+         elseif(t2sk(mi).lt.0.) then
+            t2sk(mi) = abs(t2sk(mi))
+            pcnsk(mi) = 1.
+         end if
+         
+      enddo
 
-CPS ENDLOOP through each species
-         end do
-      
-         macroread(5) = .TRUE.
+C     PS ENDLOOP through each species
+      end do
 
-CPS ENDIF the data are to be read in on this pass
+      if (cden_flag .ne. 0) then
+         read (inpt, '(a4)', end = 9) macro
+ 9       if (macro .eq. 'cden') then
+            call incden(inpt)
+         else
+            write (ierr, 10)
+            if (iout .ne. 0) write (iout, 10)
+            if (iptty .ne. 0) write (iptty, 10)
+            cden = .false.
+            backspace (inpt)
+         end if
+      end if
+ 10   format ('Molecular weight input not found for cden macro ,',
+     &     ' cden will not be used')
+
+      macroread(5) = .TRUE.
+
+C     PS ENDIF the data are to be read in on this pass
+      elseif(trxn_flag .eq. 1) then
+         call readtracrxn
+         read(inpt, *)
+      else
+         write(ierr, *) 'Internal error differentiating trac/trxn.'
+         write(ierr, *) 'Please contact <mschauer@lanl.gov>.'
+         stop
       endif
-CPS IF this call to the routine is for initialization 
-CPS
+      endif
+C     PS IF this call to the routine is for initialization 
+C     PS
       if( iz .lt. 0 ) then
          allocate (hflag(n7))
          hflag = 0
@@ -1657,10 +1687,10 @@ c     Account for sorption (moles input is total)
             end do
             close (mfile, status = 'delete')
          end if
-c
-c seh
-CC Check for keyword specifying to use same dispersivity and diffusivity
-CC for all liquid / vapor calculations
+c     
+c     seh
+C     C Check for keyword specifying to use same dispersivity and diffusivity
+C     C for all liquid / vapor calculations
          if (dispsame.eq.1) then
             if (hvliquid.eq.1) then
                do jj=1,numd
@@ -1845,61 +1875,61 @@ c     square of dispersivity used in alpha calculation
             write (ierr, 6000)
             if (iout .ne. 0) write(iout  ,6000)
  1          if ( iptty .gt. 0 )  write(iptty ,6000)
- 6000     format(/,1x,'**** memory too small for multiple tracers ****',
-     *           /,1x,'****---------------------------------------****',
-     *           /)
             iret = -1
             goto 9000
          endif
+ 6000    format(/,1x,'**** memory too small for multiple tracers ****'
+     *        ,/,1x,'****---------------------------------------****',
+     *        /)
 
          do nsp=1,nspeci
             npn=npt(nsp)
             cm0(nsp)=0.
             dtotc=1.0
-CPS     
-CPS     IF this solute is a Henry's Law species with vapor...
-CPS     ... concentration specified
-c
+C     PS     
+C     PS     IF this solute is a Henry's Law species with vapor...
+C     PS     ... concentration specified
+c     
             if( icns(nsp) .eq. -2  ) then
-c
-CPS     
-CPS       IF this is a dpdp simulation
-c
+c     
+C     PS     
+C     PS       IF this is a dpdp simulation
+c     
                if(idpdp.ne.0) then
-c
-CPS         Set number of node sets to 2
-c
+c     
+C     PS         Set number of node sets to 2
+c     
                   n_node_sets = 2
                else if( idualp .ne. 0 ) then
                   n_node_sets = 3
 c     
-CPS       ELSEIF it is dual porosity
-c
+C     PS       ELSEIF it is dual porosity
+c     
                else
-c
-CPS         Set number of node sets to 1
-c
+c     
+C     PS         Set number of node sets to 1
+c     
                   n_node_sets = 1
-c
-CPS   ENDIF
-c
+c     
+C     PS   ENDIF
+c     
                end if
-CPS   
-CPS       FOR each node set
-c
+C     PS   
+C     PS       FOR each node set
+c     
                do i_node_set = 1, n_node_sets
                   ndummy = ( i_node_set - 1 ) * neq
 c     
-CPS         FOR each node
-c
+C     PS         FOR each node
+c     
                   do i = 1, neq
 c     
                      mi = i + ndummy + npt(nsp)
                      mim = i + ndummy
 c     
-CPS           Compute liquid concentration corresponding to the input...
-CPS           ... vapor concentration
-c
+C     PS           Compute liquid concentration corresponding to the input...
+C     PS           ... vapor concentration
+c     
                      if(henry_model(nsp).eq.1)then
                         h_const= a_henry(nsp)*
      2                       exp(dh_henry(nsp)/
@@ -1930,11 +1960,11 @@ c
                      endif
                      dvap_conc = ( mw_water * h_const ) /
      2                    ( phi(mim) * avgmolwt(mim) )
-CPS           IF there is no transport to the liquid phase
-CPS             Write error message to the screen
-CPS             Set flag to stop program
-CPS             ERROREXIT
-CPS           ENDIF
+C     PS           IF there is no transport to the liquid phase
+C     PS             Write error message to the screen
+C     PS             Set flag to stop program
+C     PS             ERROREXIT
+C     PS           ENDIF
                      if( h_const .lt. 1.e-20 ) then
                         write(ierr, 999) nsp, mim
                         if (iptty .ne. 0) write(iptty, 999) nsp, mim
@@ -1957,18 +1987,18 @@ CPS           ENDIF
                         an(mi) = an(mi) / dvap_conc
                         anlo(mi) = an(mi)
                      end if
-c
-CPS         ENDFOR each node
-c
+c     
+C     PS         ENDFOR each node
+c     
                   end do
-CPS       ENDFOR each node set
-c
+C     PS       ENDFOR each node set
+c     
                end do
-CPS   
-CPS     ENDIF
-CPS     
+C     PS   
+C     PS     ENDIF
+C     PS     
             end if
-c
+c     
             call thermc(0)
             if(idpdp.ne.0) then
                call thermc(neq)
@@ -1987,10 +2017,10 @@ c
                end if
             end do
          end do
-c zvd 05/16/2007
-c Move call to startup to ensure all data read prior to setup 
-c to accomodate new output options
-c         call plotc1(0,0)
+c     zvd 05/16/2007
+c     Move call to startup to ensure all data read prior to setup 
+c     to accomodate new output options
+c     call plotc1(0,0)
       end if
 
       if (allocated(lvol)) deallocate(lvol,rvol,vvol,hflag,seen)

@@ -104,6 +104,7 @@
       real*8 dskhydp,dskhydt,dskhydw,dskhydm           
       real*8 dqhhydp,dqhhydt,dqhhydw,dqhhydm 
       real*8 fracmb,methterm
+      real*8 cden_correction, cden_cor
 c     
 c     gaz took it out of loop (can be specified source as well)
 c     will over-ride above methane production
@@ -283,7 +284,11 @@ c     liquid density and derivatives
      &              rol,drolp,drolt,dum5,dum6)
 
 c     modify density(explicit update) if it changes with concentration
-               if(cden) rol = rol+factcden*anl((ispcden-1)*n0+mi)
+               if(cden) then
+c     Add correction for liquid species
+                  cden_cor = cden_correction(mi)
+                  rol = rol + cden_cor
+               end if
 
 c     liquid viscosity and derivatives
 
@@ -890,7 +895,11 @@ c     liquid density and derivatives
      &              rol,drolp,drolt,dum5,dum6)
 
 c     modify density(explicit update) if it changes with concentration
-               if(cden) rol = rol+factcden*anl((ispcden-1)*n0+mi)
+               if(cden) then
+c     Add correction for liquid species
+                  cden_cor = cden_correction(mi)
+                  rol = rol + cden_cor
+               end if
 
 c     liquid viscosity and derivatives
 

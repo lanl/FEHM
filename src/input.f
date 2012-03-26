@@ -500,6 +500,7 @@ C***********************************************************************
       character*4 macro, macro1, chard, last_macro
       integer cnum,iieosd,inptorig,kk,msg(20),nwds,imsg(20)
       real*8 xmsg(20), simnum
+      character*5 cden_type
       character*32 cmsg(20)
 
       sssol = 'no  '
@@ -660,14 +661,12 @@ c     &           sat_ich, head_id
                sat_ich = xmsg(5)
                head_id = xmsg(6)
             else
-c            go to 1005
  995           head0 = 0.0
                temp0 = 20.0
                pres0 = 0.1   
                sat_ich = 0.0
                head_id= 0.0
             end if
-c 1005       continue
             call water_density(temp0, pres0, rol0)
             ichead=1
             if(.not.allocated(head)) allocate(head(n0))
@@ -687,31 +686,44 @@ c don't break connection between nodes with boundary conditions
          inobr = 1
 
       else if (macro .eq. 'cden') then
-         if(nspeci.gt.0) then
+         backspace (inpt)
+         read (inpt, '(a80)') input_msg
+         call parse_string(input_msg,imsg,msg,xmsg,cmsg,nwds)
+         if (nwds .gt. 1) then
+            cden_type = cmsg(2)
+         else
+            cden_type = 'default'
+         end if
+         select case (cden_type(1:5))
+         case ('multi', 'table')
+            cden_flag = 1
+         case ('co2')
+            cden_flag = 2
+            if (nwds .gt. 2 .and. msg(3) .eq. 3) then
+               cden_spnam = cmsg(3)
+            else
+               cden_spnam = 'Na'
+            end if
+         case default
+            cden_flag = 0
             read(inpt,*) ispcden
             read(inpt,*) factcden
-            if(ispcden.le.nspeci) then
-               cden = .true.
-            else
-               if (iout .ne. 0) then
-                  write(iout,*)'ispcden > nspeci, cden'
-                  write(iout,*)'macro ignored'
-               end if
-               if(iptty.gt.0) then
-                  write(iout,*)'ispcden > nspeci, cden'
-                  write(iout,*)'macro ignored'
-               end if
-            end if
-         else
-            if (iout .ne. 0) then
-               write(iout,*)'No solute transport, cden'
-               write(iout,*)'macro ignored'
-            end if
-            if(iptty.gt.0) then
-               write(iptty,*)'No solute transport, cden'
-               write(iptty,*)'macro ignored'
-            end if
+            if (nspeci .gt. 0) then
+               if(ispcden.le.nspeci) then
+                  cden = .true.
+               else
+                  if (iout .ne. 0) write (iout, 1005)
+                  if( iptty .gt. 0) write (iptty, 1005)
+               end if 
+            end if        
+         end select
+         if(nspeci .eq. 0) then
+            write (ierr, 1006)
+            if (iout .ne. 0) write (iout, 1006)
+            if (iptty .gt. 0) write (iptty, 1006)
          end if
+ 1005    format ('No solute transport, cden macro ignored')
+ 1006    format ('ispcden > nspeci, cden macro ignored')
 
       else if (macro .eq. 'cgdp') then
 c**** rate-limited gdpm node identifcation (cgdpm)****
@@ -1454,8 +1466,14 @@ c**** thickness information ****
 
       else if (macro .eq. 'trac') then
 c**** tracer data ****
+	trxn_flag = 0
+        iccen = 1
+        call concen (0,0)
+
+      elseif(macro .eq. 'trxn') then
          iccen = 1
-         call concen (0,0)
+         trxn_flag = 1
+         call concen(0, 0)
 
       else if (macro .eq. 'user') then
 c**** call user subroutine during input with argument kk ****
