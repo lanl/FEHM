@@ -22,17 +22,17 @@ real*8 function cden_correction(i)
   implicit none
 
   integer :: i, i2, iaq, ispeci
-  real(8) :: cden_cor, cofdc
+  real(8) :: cofdc
 
   parameter (cofdc = 700.d0)
   
-  cden_cor = 0.d0
+  cden_correction = 0.d0
   iaq = 0
   select case (cden_flag)
   case (0)
      ! Single species density correction (original implementation)
      i2 = i + (ispcden - 1)*n0
-     if (anl(i2) .gt. 0.d0) cden_cor = anl(i) * factcden
+     if (anl(i2) .gt. 0.d0) cden_correction = anl(i) * factcden
 
   case (1)
      ! All acqueous species, C - moles/kg-water, MW - g/mole)
@@ -41,15 +41,15 @@ real*8 function cden_correction(i)
         case (1, 2, -2)
            iaq = iaq + 1
            i2 = i + (ispeci - 1)*n0
-           if (anl(i2) .gt. 0.d0) cden_cor = cden_cor + anl(i2) * mw_speci(iaq)
+           if (anl(i2) .gt. 0.d0) cden_correction = cden_correction + anl(i2) * mw_speci(iaq)
         end select
      end do
      ! cofdc - Coefficient of fluid density change drho/dC = 700 kg m^3
-     cden_cor = cofdc * cden_cor * 1.d-3
+     cden_correction = cofdc * cden_correction * 1.d-3
 
   case (2)
      i2 = i + (cden_sp - 1)*n0
-     if (anl(i2) .gt. 0.d0) cden_cor = anl(i2)
+     if (anl(i2) .gt. 0.d0) cden_correction = anl(i2)
  
   end select
 
