@@ -21,7 +21,7 @@
 !D1
 !***********************************************************************
 
-      use comai, only : neq
+      use comai, only : neq, ierr, iout, iptty
       use combi, only : nelm
 
       implicit none
@@ -34,9 +34,16 @@
          i1 = nelm(i) + 1
          i2 = nelm(i + 1)
          num = i2 - i1
-         write (list_unit, *) num
+         write (list_unit, '(i8.8, i5)') i, num
       end do
 
+      write (ierr, 10)
+      if (iout .ne. 0) write (iout, 10)
+      if (iptty .ne. 0) write (iptty, 10)
+
       stop
+
+ 10    format ('Number of nodal connections written to file: ',
+     &     'connections_list.txt', /, ' **** STOPPING ****')
 
       end subroutine connections_list
