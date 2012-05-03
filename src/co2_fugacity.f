@@ -31,7 +31,7 @@ c     dddp : kg/m3/MPa
 c     visc(viscosity) : Pa.s
 c     dvdt: Pa.s/C
 c     dvdp : Pa.s/Mpa
-      include 'params_eosco2'
+      include 'params_eosco2.h'
 c calculate the dissolved CO2 concentration based on Duan (2003) eqn.
 c need to calculate fugacity first based on the density.
 	del = var3/denc
