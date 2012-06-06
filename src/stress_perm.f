@@ -71,7 +71,7 @@ c
             iispmd = ispm(i)    
             ispmd = ispmt(iispmd) 
             if(ispmd.eq.31) then
-c new routine for changing mechanical properties with ice formation            
+c new routine for changing mechanical properties with ice formation          
                call stressperm_31(i)                  
             endif         
          enddo
@@ -82,18 +82,18 @@ c
 c     skip loop if perm macro is read
          if(.not.allocated(ispm)) return
 
-c s kelkar. 11/10/11 the following is temporary for fully coupled,
-c  permmodel=2 is hardwired in fem_* routines
-         if(ifem.eq.1.and.ihms.gt.0) return
-     
-c     
+c s kelkar 4/9/12 for now, if using fem, and ihms>0,  
+c must use edge-based permfactors. This needs to be generalized
+         if(ifem.eq.1.and.ihms.gt.0) then
+            write(ierr,*)'From stress_perm. Currently when using ifem=1'
+            write(ierr,*)'and ihms>0, nodal permmodels are not allowed' 
+            return
+         endif
+         
+c     CV approach, node based perm models 
          do i = 1,n0
-c     
-c     identify model associated with node i
-c     
             iispmd = ispm(i)    
             ispmd = ispmt(iispmd) 
-c     
             if(ispmd.eq.1.and.ihms.eq.1) then
                call stressperm_1(i)
             else if(ispmd.eq.2) then
@@ -117,18 +117,17 @@ c
             else if(ispmd.eq.22) then
                call stressperm_22(i)
             else if(ispmd.eq.31) then
-c new routine for changing mechanical properties with ice formation            
+c     new routine for changing mechanical properties with ice formation          
                call stressperm_31(i)               
             elseif(ispmd.eq.11) then
                call stressperm_11(i)
-c s kelkar June 9 2009, simple gangi (1978, Int.J.Rock Mech)
+c     s kelkar June 9 2009, simple gangi (1978, Int.J.Rock Mech)
             elseif(ispmd.eq.91) then
 c     s kelkar June 201, table lookup ....................................
                call stressperm_91(i)
             endif
+         enddo
             
-         enddo    
-           
       if(spm1f(iispmd).lt.0.0.and.ifem.eq.1) call compute_average_stress
 
 c
