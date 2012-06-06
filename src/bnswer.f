@@ -271,6 +271,7 @@ C**********************************************************************
       use comsi
       use comsplitts
       use davidi
+      use comfem, only  : edgeNum1, ifem, NodeElems
       implicit none
 
       integer iad_min, iad_mult, i
@@ -325,6 +326,17 @@ c  istrs_coupl.le.-99 means only a stress solution (like calculating initial lit
 c (4,0) is nonlinear (if any) material properties)   
          call stressctr(4,0)        
       elseif(ice.eq.0) then
+
+c     s kelkar 11feb2011 ihms=-15 is a special option
+c     allow uncoupled porosity changes, ihms is reset to -3
+         if(pore_factor.gt.0.0.and.ihms.eq.-3) then
+c     ps calculated below is a factor so that 
+c     pore volume = ps()*initial bulk volume (=sx1d)
+c     this factor ps() is used in therm w to calculate deni()=ps()*roho
+c     and the sx1d is multiplied in geneq1_.._..
+            call porosity_wrt_displacements
+         endif
+
          call varchk(0,0)
 c the following is for fully coupled model         
          if(idof_stress.ge.4) then
@@ -350,6 +362,27 @@ c  very new call outbound here gaz 120709
 c      call outbnd
 c
 c     call appropriate sub to generate equations
+
+c     set up permeability variations with displacements (allocate memory)     
+      if(flag_permmodel.eq.1) then
+         if(ifem.eq.1) then
+        ! Setup connectivity list of which elements each node belongs to
+            if(.not. allocated(NodeElems)) then
+               call Setup_NodeElems()
+            endif
+            
+        ! Setup pointers to edge numbers
+            if(.not. allocated(edgeNum1)) then
+               call setup_edgePointers_3D()
+            endif
+        ! update edge permeability factors for current state
+            call update_permfactors()
+         else
+            call stress_perm(-1,0)
+            call stress_perm(1,0)
+         endif
+      endif
+
       if(idof_stress.ge.5) then
 c 3d coupled THM
          call gensl_stress_coupled_3D
