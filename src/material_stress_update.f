@@ -37,6 +37,7 @@
       if(iPlastic.eq.0) then
         write(iout,*) '***ERROR : material stress update routine called 
      &   without plastic flag being set! '
+        stop
       endif
       
       call compute_strains()
