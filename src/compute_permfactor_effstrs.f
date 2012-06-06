@@ -1,5 +1,5 @@
       subroutine compute_permfactor_effstrs(el, node_k, duu, dvv, dww
-     &, dpp, flag_u_pp)
+     &, dpp, flag_u_pp, recompute_stress)
 !***********************************************************************
 ! Copyright 2011 Los Alamos National Security, LLC  All rights reserved
 ! Unless otherwise indicated,  this information has been authored by an
@@ -48,7 +48,7 @@
       integer, parameter                 :: numEdges = 28
       integer el, node_k, i, j, k
       integer node_I, node_J, edge_1, edge_2
-      logical recompute
+      logical recompute_stress
       integer flag_u_pp
 
 
@@ -67,17 +67,17 @@
         perz_m  = spm9f(1)
 
       endif
-
-      recompute = .false.
-      do j=1,ns
-         if(flag_u_pp.eq.1) then
-            if(elnode(el,j).eq.node_k) then
-               recompute=.true.
-            endif
-         endif
-      enddo
-      
-      if(recompute) then
+c
+c      recompute = .false.
+c      do j=1,ns
+c         if(flag_u_pp.eq.1) then
+c            if(elnode(el,j).eq.node_k) then
+c               recompute=.true.
+c            endif
+c         endif
+c      enddo
+c      
+      if(recompute_stress) then
         ! Recompute the stress in the element
         do j=1,numgausspoints
           ! first compute the strain
@@ -181,6 +181,7 @@
         !! Explicitly considering model 2 here, but with effective stress
         !! Need to add a loop to look at model numbers and 
         !! break it into different routines
+c NOTE: sign convention here is -ve in compression, opposite to rock mech
         mean_str_eff = mean_str(1) + p_eff
         if(mean_str_eff.gt.strx_min) then
           fac = ((mean_str_eff-strx_min)/str_max)
