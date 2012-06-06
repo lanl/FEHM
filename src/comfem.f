@@ -50,4 +50,6 @@
 c sep 29 2011 s kelkar. Calculate average nodal permfactor for output
        real*8, allocatable                     :: permfac_out(:,:)
 
+       integer                                 :: flag_element_perm
+
        end module comfem
