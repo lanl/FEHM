@@ -6,6 +6,7 @@
       use comei, only: a
       use comgi, only: bp
       use comsi, only: e1, e2, e3, iPlastic,ibodyforce
+      use comsi, only: e4, ezz, shearmod_t, stress_anisotropy_in
       use comfem
       use davidi,only: nmat, nrhs
 
@@ -28,6 +29,8 @@
       logical                      :: iUnload
 
       real*8,  dimension(neq)      :: sx_sai
+
+      real*8                       :: e4bar, ezzbar, shearmod_t_bar
 
       sx_sai = 0.0d0
 
@@ -55,31 +58,68 @@
           
           !!! Get D matrix from material module
           if(iPlastic.eq.1) then
-            call fem_material_stiffness(i, j, D)
+            call fem_material_stiffness(i, j, D, iUnload)
           else
-            e1bar = 0.0d0
-            e2bar = 0.0d0
-            e3bar = 0.0d0
+            if (stress_anisotropy_in) then
+            
+              e1bar = 0.0d0
+              e2bar = 0.0d0
+              e3bar = 0.0d0
+              e4bar = 0.0d0
+              ezzbar = 0.0d0
+              shearmod_t_bar = 0.0d0
  
-            do k=1,ns
-              e1bar = e1bar + Psi(i, j, k)*e1(node(k))
-              e2bar = e2bar + Psi(i, j, k)*e2(node(k))
-              e3bar = e3bar + Psi(i, j, k)*e3(node(k))
-            enddo
+              do k=1,ns
+                e1bar = e1bar + Psi(i, j, k)*e1(node(k))
+                e2bar = e2bar + Psi(i, j, k)*e2(node(k))
+                e3bar = e3bar + Psi(i, j, k)*e3(node(k))
+                e4bar = e4bar + Psi(i, j, k)*e4(node(k))
+                ezzbar = ezzbar + Psi(i, j, k)*ezz(node(k))
+                shearmod_t_bar = shearmod_t_bar + 
+     &                           Psi(i, j, k)*shearmod_t(node(k))
+              enddo
 
-            D = 0.0d0
-            D(1,1) = e1bar
-            D(1,2) = e2bar
-            D(1,3) = e2bar
-            D(2,1) = e2bar
-            D(2,2) = e1bar
-            D(2,3) = e2bar
-            D(3,1) = e2bar
-            D(3,2) = e2bar
-            D(3,3) = e1bar
-            D(4,4) = e3bar
-            D(5,5) = e3bar
-            D(6,6) = e3bar
+              D = 0.0d0
+              D(1,1) = e1bar
+              D(2,2) = e1bar
+              D(3,3) = ezzbar
+              D(1,2) = e2bar
+              D(2,1) = e2bar
+              D(1,3) = e4bar
+              D(3,1) = e4bar
+              D(2,3) = e4bar
+              D(3,2) = e4bar
+              D(4,4) = e3bar
+              D(5,5) = shearmod_t_bar
+              D(6,6) = shearmod_t_bar
+            
+            else
+
+              e1bar = 0.0d0
+              e2bar = 0.0d0
+              e3bar = 0.0d0
+ 
+              do k=1,ns
+                e1bar = e1bar + Psi(i, j, k)*e1(node(k))
+                e2bar = e2bar + Psi(i, j, k)*e2(node(k))
+                e3bar = e3bar + Psi(i, j, k)*e3(node(k))
+              enddo
+
+              D = 0.0d0
+              D(1,1) = e1bar
+              D(1,2) = e2bar
+              D(1,3) = e2bar
+              D(2,1) = e2bar
+              D(2,2) = e1bar
+              D(2,3) = e2bar
+              D(3,1) = e2bar
+              D(3,2) = e2bar
+              D(3,3) = e1bar
+              D(4,4) = e3bar
+              D(5,5) = e3bar
+              D(6,6) = e3bar 
+            
+            endif
           endif
 
           DB = matmul(D, B)
