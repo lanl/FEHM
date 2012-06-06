@@ -451,7 +451,6 @@ C***********************************************************************
       use combi
       use comci
       use comco2
-      use comcomp
       use comdi
       use comdti
       use comei
@@ -466,7 +465,6 @@ C***********************************************************************
       use comsk, only : save_omr
       use comsplitts
       use comsptr
-      use comtable2, only : ibiot
       use comuserc, only : in
       use comwt
       use comxi
@@ -987,12 +985,6 @@ c
                   go  to  100
                end if
          
-               if (ivcond .eq. 1 .or. ivcond .eq. 3) 
-     &              call explicit_update(1)
-               if (ivcond .eq. 2 .or. ivcond .eq. 3) 
-     &              call explicit_update(2)
-               if (ibiot .eq. 1) call explicit_update(3)
-
 c**** stress routine calls ****
 
                dtotdm = dtot
