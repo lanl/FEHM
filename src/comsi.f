@@ -383,4 +383,8 @@ c s kelkar
 
       integer, allocatable ::  itemp_perm22(:)
 
+c s karra 17May 2012
+      real*8, allocatable ::  plasticParam3(:)
+      integer :: flag_pstrain_perm_coupling
+c
       end module comsi
