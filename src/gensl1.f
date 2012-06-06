@@ -226,6 +226,10 @@ c possible correction for rate-limited gdpm model
 c
       call gdpm_corr(1)
 c
+c s kelkar for debugging 3/20/12
+c      call extract_adiag
+c      call extract_nodal_equations(2627)
+c
       if(islord.ne.0) call switch(nmat,nmatb,islord,2,1,nsizea1)
       if(islord.ne.0) call switchb(bp,nrhs,nrhsb,islord,2,1,neq)
 c    
@@ -234,12 +238,15 @@ c
       call normal_dof(neq,a,bp,nelm,nmat,nrhs,nelmdg
      &     ,ndex,2,dumn(1),dumn(37),dumn(73),0,fdum2)
       if(ndex(1).lt.0) then
-         write(ierr,*) '>>> cannot normalize, stopping <<<'
+         write(ierr,*) 
+     & '>>> cannot normalize, stopping, i=',abs(ndex(1)),'<<<'
          if(iout.ne.0) then
-          write(iout,*) '>>> cannot normalize, stopping <<<'
+          write(iout,*) 
+     & '>>> cannot normalize, stopping, i=',abs(ndex(1)),'<<<'
          endif
          if(iptty.ne.0) then
-          write(iptty,*) '>>> cannot normalize, stopping <<<'
+          write(iptty,*) 
+     & '>>> cannot normalize, stopping, i=',abs(ndex(1)),'<<<'
          endif         
          stop
       endif
@@ -347,3 +354,72 @@ c
       
       return
       end
+c.............................................................
+
+      subroutine extract_adiag
+c s kelkar 3/20/12. extract diagonal elements of 'a'
+      use comai, only : neq
+      use combi, only : nelmdg
+      use comei, only : a
+      use davidi, only : nmat
+      implicit none
+
+      integer idisk
+
+      real*8 adiagsk(2*neq)
+
+      do idisk=1,neq
+         adiagsk(idisk) = a(nelmdg(idisk)-neq-1+nmat(1))
+         adiagsk(idisk+neq) = a(nelmdg(idisk)-neq-1+nmat(4))
+      enddo
+
+      return
+      end 
+c...........................................................
+
+      subroutine extract_nodal_equations(idisk)
+c s kelkar 3/20/12. extract rows of a corrosponding 
+c to the node is]disk from the 'a' matrix
+      use comai, only : neq, ierr, l
+      use combi, only : nelmdg, nelm
+      use comei, only : a
+      use comgi, only : bp
+      use davidi, only : nmat, nrhs
+      implicit none
+
+      integer idisk,iblock, jdisk, indsk,ii1,ii2, j,k,iq
+      integer neqp1
+      integer kbsk(20), inda, kbp
+
+      real*8 aeqsk(20,4)
+
+      neqp1=neq+1
+
+      ii1=nelm(idisk)+1
+      ii2=nelm(idisk+1)
+
+      iq=0
+      do j=ii1,ii2
+         iq=iq+1
+         kbsk(iq)=nelm(j)
+         do k=1,4
+            inda = j-neqp1+nmat(k)
+            aeqsk(iq,k)=a(inda)
+         enddo
+      enddo
+
+      write(ierr,*)' Time step is:', l
+      write(ierr,*)' Node I: ', idisk
+      write(ierr,*)(kbsk(j),j=1,iq)
+ 9991 format(30(2x,i10))
+      do k=1,4
+         kbp=1
+         if(k.gt.2)kbp=2
+         write(ierr,9992)(aeqsk(j,k),j=1,iq),bp(nrhs(kbp)+idisk)
+      enddo
+ 9992 format(30(2x,g12.5))
+         
+
+      return
+      end 
+c...........................................................
