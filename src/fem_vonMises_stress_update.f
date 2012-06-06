@@ -130,7 +130,7 @@
         deltaGamma = phi_trial/(3.0d0*G_bar)
         plastic_strain(i,j) = conv_pstrain(i,j) + deltaGamma
 
-        phi_trial = Q - 3.0d0*G_bar*deltaGamma - sigma_y/sqrt(3.0d0)
+        !  phi_trial = Q - 3.0d0*G_bar*deltaGamma - sigma_y/sqrt(3.0d0)
 
         fac = 2.0d0*G_bar*(1.0d0 - 3.0d0*G_bar*deltaGamma/Q)
         gp_stress(1) = fac*dev_strain(1) + pressure
