@@ -391,7 +391,7 @@ C***********************************************************************
       use commeth
       use compart, only : ptrak
       use comrlp, only : ishisrlp
-      use comsi, only : idof_stress
+      use comsi, only : idof_stress, istrws
       use comsptr, only : sptrak
       use comwt
       use comzone
@@ -421,6 +421,7 @@ C***********************************************************************
 c symmetry check on = 1, off = 0      
       parameter (ic_sym = 0)
       parameter (very_small= 1.d-30)
+      integer misx
 
 c     Calculate rho1grav
 c      rho1grav = crl(1,1)*(9.81d-6)
@@ -535,6 +536,7 @@ c****          the entire range only done if iieos(i) = 0 ****
          end do
       end if
 
+
 c**** compatability scaling (viscosity is in pa-sec, not in mpa-sec) ***
       do i = 1, n
          if (idoff .gt. 0) then
@@ -547,7 +549,7 @@ c**** compatability scaling (viscosity is in pa-sec, not in mpa-sec) ***
            thy(i) = thy(i) * 1.0d-06
            thz(i) = thz(i) * 1.0d-06
          endif
-         if (cpr(i) .gt. 1.0)  cpr(i) = cpr(i) * 1.0d-06
+         if (cpr(i) .gt. 1.0) cpr(i) = cpr(i) * 1.0d-06
       end do
 
 c**** set permeabilities = 0 for porosity = 0.0 ****
@@ -589,7 +591,24 @@ c**** complete pest information(if interpolation is used) ****
 c mlz is now the size of sx(mlz, j)
 c      if (mlz .ne. 0 .and. irun .eq. 1 .and. lda .le. 0) call split(0)
       if (mlz .ne. 0 .and. irun .eq. 1 .and. lda .le. 0) call split(1)
-      if (lda .ne. 0.and.irun.eq.1) call storsx
+      if (lda .ne. 0.and.irun.eq.1) then
+         call storsx
+         if (istrs .ne. 0) then
+            misx = maxval(istrws)
+            do i=1,misx
+               dnidnj(i,1)=sxs(i,10) ! xx term
+               dnidnj(i,2)=sxs(i,2) ! yx term
+               dnidnj(i,3)=-sxs(i,4) ! zx term
+               dnidnj(i,4)=sxs(i,1) ! xy term
+               dnidnj(i,5)=sxs(i,11) ! yy term
+               dnidnj(i,6)=-sxs(i,6) ! zy term
+               dnidnj(i,7)=-sxs(i,3) ! xz term
+               dnidnj(i,8)=-sxs(i,5) ! zy term
+               dnidnj(i,9)=sxs(i,12) ! zz term
+            enddo
+         end if
+      endif
+
 c gaz 11-09-2001 
       if(lda.le.0.and.imdnode.ne.0.and.irun.eq.1) then
          ncon_size=nelm(neq_primary+1)
@@ -724,7 +743,7 @@ c
       ldna=ncont-neqp1
       if(irun.eq.1) then
 
-         if(idof_co2.gt.0) then
+         if(idof_co2.gt.0 ) then
             allocate(c_axy(ldna))
             allocate(c_vxy(ldna))
             c_axy = 0.d0
@@ -1210,7 +1229,7 @@ c**** initialize coefficients adjust volumes in dpdp calcs ****
       call dpdp (1)
       do i = 1, n
          volume(i) = sx1(i)
-c gaz 01-18-2011 chane code to allow for negative temperatures         
+c gaz 01-18-2011 change code to allow for negative temperatures         
 c         if (to (i) .le. zero_t)   to (i) = tin0
          if(irdof.ne.13) then
             if (pho(i) .le. zero_t)   pho (i) = pein
@@ -1227,6 +1246,7 @@ c         if (to (i) .le. zero_t)   to (i) = tin0
          deallocate (mass_var)
          iconv = iconv_tmp
       end if
+
 c initialize pressures and temperatures
       if(ipini.eq.0.or.iread.eq.0) then      
          phini = pho
