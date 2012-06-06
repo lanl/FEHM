@@ -20,7 +20,8 @@
 !
       
       use comai, only: iout, iptty, ns
-      use comsi, only: iPlastic, modelNumber, plasticModel, e1, e2, e3
+      use comsi, only: iPlastic, modelNumber, plasticModel, e1, e2, e3,
+     &     stress_anisotropy_in
       use comfem
 
       implicit none
@@ -65,13 +66,22 @@
       enddo
 
       if(iModel.eq.1) then
+        if (stress_anisotropy_in) then
+c s karra 17May2012, transverse isotropy
+          call fem_transverse_isotropy_elastic_stiffness(i, j, D)
+        else
         ! Linear, isotropic, elastic rock
-        call fem_elastic_stiffness(i, j, D)
+           call fem_elastic_stiffness(i, j, D)
+        endif
       else if(iModel.eq.2) then
         ! von Mises material
         ! material properties such as yield_stress etc are available
         ! as global variables
         call fem_vonMises_stiffness(i, j, D)
+      else if(iModel.eq.3) then
+c s karra 17May2012
+        ! Drucker Prager model (without cap)
+        call fem_DruckerPrager_stiffness(i, j, D)
       endif
       
       end subroutine fem_material_stiffness
