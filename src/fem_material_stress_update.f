@@ -37,6 +37,7 @@
      &   without plastic flag being set! '
         write(iptty,*) '***ERROR : material stress update routine called
      &   without plastic flag being set! '
+        stop
       endif
       
       itmp = modelNumber(elnode(i, 1))
@@ -63,6 +64,10 @@
         ! as global variables
         call fem_vonMises_stress_update(i, j, gp_stress, gp_strain,
      & iUnload )
+      else if(iModel.eq.3) then
+         ! s karra, 17 May 2012, Drucker Prager model (without cap)
+        call fem_DruckerPrager_stress_update(i, j, gp_stress,
+     &        gp_strain, iUnload)
       endif
       
       end subroutine fem_material_stress_update
