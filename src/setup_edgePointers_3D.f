@@ -77,13 +77,15 @@
         allocate(edgeNum2(nei, numEdges))
       endif
       
-      if(.not. allocated(numElems)) then
-        allocate(numElems(nelm(neq+1)))
+      if(.not. allocated(numelems)) then
+        allocate(numelems(nelm(neq+1)))
       endif
 
-      if(.not. allocated(permFactor)) then
-        allocate(permFactor(nelm(neq+1), 3))
+      if(.not. allocated(permfactor)) then
+        allocate(permfactor(nelm(neq+1), 3))
+        permfactor = 1.00d0
         allocate(permtmp(nelm(neq+1), 3))
+        permtmp = 1.00d0
       endif
 
       do el=1,nei        ! Loop over elements
@@ -109,20 +111,20 @@
         enddo
       enddo
       
-      numElems = 0
+      numelems = 0
 
       do el = 1, nei
         do n=1, numEdges
           n1 = edgeNum1(el, n)
           n2 = edgeNum2(el, n) 
-          numElems(n1) = numElems(n1) + 1
-          numElems(n2) = numElems(n2) + 1
+          numelems(n1) = numelems(n1) + 1
+          numelems(n2) = numelems(n2) + 1
         enddo
       enddo
 
       do n=1, nelm(neq+1)
-        if(numElems(n).eq.0) then
-          numElems(n) = -1
+        if(numelems(n).eq.0) then
+          numelems(n) = -1
         endif
       enddo
 
