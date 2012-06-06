@@ -38,6 +38,7 @@
       if(iPlastic.eq.0) then
         write(iout,*) '***ERROR : material stiffness routine called 
      &   without plastic flag being set! '
+        stop
       endif
       
       itmp = modelNumber(i)
