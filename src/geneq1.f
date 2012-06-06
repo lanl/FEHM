@@ -321,7 +321,7 @@ c
             perml(2)=2.*alykb*alyi/(alykb+alyi)
             perml(3)=2.*alzkb*alzi/(alzkb+alzi)
 
-            if(ihms.gt.0) then
+            if(allocated(permfactor)) then
               perml(1) = perml(1)*permfactor(edge,1)
               perml(2) = perml(2)*permfactor(edge,2)
               perml(3) = perml(3)*permfactor(edge,3)
