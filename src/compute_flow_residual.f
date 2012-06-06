@@ -24,7 +24,7 @@
       use combi, only: red_factor, isox, isoy, isoz
       use comci, only: deni, div, dil, rovf, rolf, enlf, envf, denei
       use comdi, only: sk, phi, pcp, pnx, pny, pnz, thx, thy, thz, t, qh
-      use comsi, only: perx_m, pery_m, perz_m
+      use comsi, only: perx_m, pery_m, perz_m, flag_permmodel
       use comfem
 
       implicit none
@@ -49,15 +49,17 @@
       real*8                             :: delP_liq, delP_vap
       real*8                             :: flow_liq, flow_vap
       real*8                             :: dis_tol
+      real*8                             :: pmf(3)
       integer i, j, iw
       integer node_I, node_J, node_K
       integer i_begin, i_end, el
       integer flag_u_pp      integer flag_u_pp      integer flag_u_pp
+      logical recompute_stress
       parameter(dis_tol = 1.0d-12)
       integer flag_u_pp
       Ri = 0.0d0
 
-      if(node_k.gt.0) then
+      if(node_k.gt.0. and. flag_permmodel.eq.1) then
         ! save permfactor
         permtmp = permfactor
         ! overwrite with updated values
@@ -65,10 +67,22 @@
         i_begin = NodeElems(node_I)+1
         i_end   = NodeElems(node_I+1)
         do i=i_begin, i_end
-          el = NodeElems(i)
+           recompute_stress = .True.
+           el = NodeElems(i)
 c          call compute_permfactor(el, node_k, duu, dvv, dww)
-          call compute_permfactor_effstrs(el, node_k, duu, dvv, dww
-     &         ,dpp, flag_u_pp)
+c           call compute_permfactor_effstrs(el, node_k, duu, dvv, dww
+c     &          ,dpp, flag_u_pp, recompute_stress)
+           call compute_permfactor_effstrs_pp(el,node_k,duu, dvv, dww
+     &          ,dpp, flag_u_pp, recompute_stress)
+c     if(ipermstr2.ne.0) then 
+c     &         call fem_permfactor_2(el, node_k, duu, dvv, dww
+c     &         ,dpp, flag_u_pp, recompute_stress)
+c     if(ipermstr22.ne.0) then
+c     &            call fem_permfactor_2(el, node_k, duu, dvv, dww
+c     &         ,dpp, flag_u_pp, recompute_stress)
+c     if(ipermstr41.ne.0) then
+c     &            call fem_permfactor_2(el, node_k, duu, dvv, dww
+c     &         ,dpp, flag_u_pp, recompute_stress)
         enddo 
 
         do i=nelm(node_I)+1,nelm(node_I+1)
@@ -104,9 +118,15 @@ c          call compute_permfactor(el, node_k, duu, dvv, dww)
         tz_bar = harmonic_mean(thz(node_I), thz(node_J))
 
         ! multiply by permeability factors
-        kx_bar = kx_bar*permfactor(j, 1)
-        ky_bar = ky_bar*permfactor(j, 2)
-        kz_bar = kz_bar*permfactor(j, 3)
+        pmf = 1.0
+        if(allocated(permfactor)) then
+           pmf(1) = permfactor(j, 1)
+           pmf(2) = permfactor(j, 2)
+           pmf(3) = permfactor(j, 3)
+        endif
+        kx_bar = kx_bar*pmf( 1)
+        ky_bar = ky_bar*pmf( 2)
+        kz_bar = kz_bar*pmf( 3)
 
         reduction_factor = red_factor(istrw_itfc(j - neq - 1))
 
@@ -184,7 +204,7 @@ c          call compute_permfactor(el, node_k, duu, dvv, dww)
       Ri(1) = Ri(1) + sx1(node_I)*deni(node_I) + sk(node_I)
       Ri(2) = Ri(2) + sx1(node_I)*denei(node_I) + qh(node_I)
 
-      if(node_k.gt.0) then
+      if(node_k.gt.0. and. flag_permmodel.eq.1) then
         ! recover permfactors
         permfactor = permtmp
       endif
