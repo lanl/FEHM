@@ -143,6 +143,13 @@ c     s kelkar nov 5 2010
       real*8 friction, strength, pp_fac
       integer iispmd
       integer ishear
+
+      character*150 input_msg
+      integer imsg(16)
+      character*32 cmsg(16)
+      integer msg(16)
+      integer nwds
+      real*8 xmsg(16)
 c..................................................................
       
       parameter (pi=3.1415926535)
@@ -239,9 +246,13 @@ c     arrays for stress derivatives in mass and energy equations
          allocate (ts51(100))
          allocate (ts52(100))
          allocate (ts53(100))
-c     
+c
+   
 c     zero variables
 c     
+         flag_element_perm = 0
+         ifem = 0
+
          flag_strainout_first = 0
          flag_permmodel = 0
 c     flag_plastic_message = 0
@@ -343,9 +354,14 @@ c     istrs = 1 - plain strain and 3-D (hookean) solution
 c     istrs = 2 - plain stess (hookean) solution (must be 2-D)
 c     ihms - identifies the coupling and  stress solution 
 c     ihms gt 0 fully coupled
-c     ihms = 15 : s kelkar 11feb2011 ihms=15 is a special option
-c     include derivatives of porosity in heat and 
-c     mass equations, but not those of permeability
+c     ihms = 15 : derivatives of pore volume only wrt displacements 
+c                 in heat-mass equations, but not those of permeability
+c     (ihms = -15  : allow sequentially coupled porosity changes, 
+c                    ihms is reset to -3)
+c     ihms = 16 : derivatives of permeability only in heat and 
+c                 mass equations, but not those of pore volume
+c     ihms = 17 : derivatives of both permeability and pore volume  
+c                 in heat-mass equations
 c     ihms = -1 only at the end of the simulation
 c     ihms = -2 beginning and end of simulation
 c     ihms = -3 end of each time step
@@ -355,12 +371,23 @@ c     this parameter will not change the flow time step size
 c     with the exception of ihms = -3 tini and pini
 c     will not be updated after each iteration
 c     
-         if(ihms.eq.15) then
+         if(ihms.eq.15.or.ihms.eq.-15.or.ihms.eq.16.or.ihms.eq.17) then
+            pore_factor = 1
+            backspace inpt
+            read (inpt, '(a)') input_msg
+            call parse_string(input_msg, imsg, msg, xmsg, cmsg, nwds)
+            if(nwds.gt.2) then
+               pore_factor = xmsg(3)
+            endif
+            if(ihms.eq.-15) then
+               ihms=-3
+            elseif(ihms.eq.16.or.ihms.eq.17) then
+               flag_element_perm =  1
+            endif  
             if(.not.allocated(density)) allocate(density(n0))
             if(.not.allocated(internal_energy))
      &           allocate(internal_energy(n0))
-            pore_factor = 1
-         endif
+        endif
 c     
          if(icnl.ne.0.and.ihms.lt.0) then
 c     not fully coupled  2D solution    
@@ -690,9 +717,14 @@ c     if they exist (from restart file)
 c     
             ipini = 1
 c.............................................................
-         else if(macro1.eq.'fem       ') then
-
+         else if(macro1(1:3).eq.'fem') then
             ifem = 1
+            backspace inpt
+            read (inpt, '(a)') input_msg
+            call parse_string(input_msg, imsg, msg, xmsg, cmsg, nwds)
+            if(nwds.gt.1) then
+               flag_element_perm = imsg(1)
+            endif
 
 c     Copy information about elements from nelm to elnode
             allocate(elnode(nei, ns))
@@ -1057,6 +1089,11 @@ c     optional parameter for increamental application of displacement BC
             endif
 c     
             iPlastic = 1
+            flag_element_perm = 1
+            write(iout,*)'................'
+            write(iout,*)'plastic model, forcing the use of elemental'
+            write(iout,*)'stress-dependant permeability updates'
+            write(iout,*)'..................'
 
             if(ifem.eq.1) then
                allocate(isPlastic(nei, numgausspoints))
@@ -1073,16 +1110,17 @@ c     Define the different flags for the plasticctr subroutine
             initPlastic = 1
             assemblePlastic = 2
             call plasticctr(initPlastic)
-
-            read(inpt,*) NumPlasticModels
-            if (iout .ne. 0) write(iout, 102) NumPlasticModels
- 102        format ('Number of plastic models being used : ')
+            NumPlasticModels = 1
+c            read(inpt,*) NumPlasticModels
+c            if (iout .ne. 0) write(iout, 102) NumPlasticModels
+c 102        format ('Number of plastic models being used : ', i4)
             if(.not.allocated(plasticModel)) then
                allocate(plasticModel(1:NumPlasticModels))
                allocate(modulus(1:NumPlasticModels))
                allocate(nu(1:NumPlasticModels))
                allocate(plasticParam1(1:NumPlasticModels))
                allocate(plasticParam2(1:NumPlasticModels))
+               allocate(plasticParam3(1:NumPlasticModels))
             endif
             
             if(.not.allocated(modelNumber)) then
@@ -1105,6 +1143,14 @@ c     plasticParam1 = yield stress
 c     plasticParam2 = hardening parameter
                   read(inpt,*) plasticModel(i), modulus(i), nu(i),
      &                 plasticParam1(i), plasticParam2(i)
+               else if (itmp.eq.3) then
+                  ! Drucker-Prager plasticity model (without cap)
+                  ! plasticParam1 = eta
+                  ! plasticParam2 = xi
+                  ! plasticParam3 = c
+                  read(inpt,*) plasticModel(i), modulus(i), nu(i),
+     &                 plasticParam1(i), plasticParam2(i),
+     &                 plasticParam3(i)             
                endif
                
                if (iout .ne. 0) write(iout, 103) i, NumPlasticModels,
@@ -1114,20 +1160,23 @@ c     plasticParam2 = hardening parameter
             end do
 c     set default
             modelNumber = 1
-            narrays = 1
-            itype(1) = 4
-            default(1) = 1
-            igroup = 1
-            call initdata2( inpt, ischk, n0, narrays,
-     &           itype, default, macroread(8), macro, igroup, ireturn,
-     &           i4_1=modelNumber(1:n0))
+c forcing the entire domain to have the same plastic model
 
+c assign model# to each node as specified in the input
+c            narrays = 1
+c            itype(1) = 4
+c            default(1) = 1
+c            igroup = 1
+c            call initdata2( inpt, ischk, n0, narrays,
+c     &           itype, default, macroread(8), macro, igroup, ireturn,
+c     &           i4_1=modelNumber(1:n0))ccc
+c
             do i=1,n0
                elastic_mod(i) = modulus(modelNumber(i))
                poisson(i) = nu(modelNumber(i))
             enddo
 c....................................................................
-         else if(macro1.eq.'biot     ') then
+         else if(macro1(1:4).eq.'biot') then
             igroup = 1
             narrays = 2
             itype(1) = 8
@@ -1446,23 +1495,23 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
          if(ipermstr2.ne.0.or.ipermstr6.ne.0.or.ipermstr7.ne.0) then
             if(icnl.ne.0) then
                if(.not.allocated(estr_x0)) then
-                  allocate(estr_x0(n0))
-                  allocate(estr_y0(n0))
+               allocate(estr_x0(n0))
+               allocate(estr_y0(n0))
                endif
                if(.not.allocated(str_xy0)) then
-                  allocate(str_xy0(n0))
+               allocate(str_xy0(n0))
                endif
             elseif(icnl.eq.0) then
                if(.not.allocated(estr_x0)) then
-                  allocate(estr_x0(n0))
-                  allocate(estr_y0(n0))
-                  allocate(estr_z0(n0))           
+               allocate(estr_x0(n0))
+               allocate(estr_y0(n0))
+               allocate(estr_z0(n0))           
                endif
                if(.not.allocated(str_xy0)) then
-                  allocate(str_xy0(n0))  
-                  allocate(str_xz0(n0))
-                  allocate(str_yz0(n0))
-               endif
+               allocate(str_xy0(n0))  
+               allocate(str_xz0(n0))
+               allocate(str_yz0(n0))
+            endif
             endif
             if(icnl.ne.0) then  
                do i = 1,n0
@@ -1500,7 +1549,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
          endif  
 c     
 c     if pore pressure damage model,  save the initial lithostsic stress
-c     this next part is to remove stresses caused by initial temperature
+c     this next part is to remove stresses caused by initial temperature 
 c     and pressure fields       
          
          if(ipermstr6.ne.0) then
@@ -1664,7 +1713,7 @@ c     dispy = 0.5d0*(dispyi + dv_tot(kb))
 c     dispz = 0.5d0*(dispzi + dw_tot(kb))  
 c     
                      dispx = 0.5d0*(dispxi + (du(kb)-du_ini(kb))) 
-                     dispy = 0.5d0*(dispyi + (dv(kb)-dv_ini(kb)))
+                     dispy = 0.5d0*(dispyi + (dv(kb)-dv_ini(kb))) 	 
                      dispz = 0.5d0*(dispzi + (dw(kb)-dw_ini(kb)))    
 c     
                      vol_change = vol_change + area_facex*dispx + 
@@ -1758,7 +1807,7 @@ c     dispx = 0.5d0*(dispxi + du_tot(kb))
 c     dispy = 0.5d0*(dispyi + dv_tot(kb)) 	   
 c     
                      dispx = 0.5d0*(dispxi + (du(kb)-du_ini(kb))) 
-                     dispy = 0.5d0*(dispyi + (dv(kb)-dv_ini(kb)))
+                     dispy = 0.5d0*(dispyi + (dv(kb)-dv_ini(kb))) 	  
 c     
                      vol_change = vol_change + area_facex*dispx + 
      &                    area_facey*dispy 
@@ -1778,7 +1827,7 @@ c
                if(abs(area_ix).ge.area_tol) then
                   vol_change = vol_change - area_ix*dispxi
                   if(kr(i,1).ne.1) then
-                     dvol_strainu(md-neqp1) = dvol_strainu_i-area_ix
+                     dvol_strainu(md-neqp1) = dvol_strainu_i  - area_ix
                   else
                      dvol_strainu(md-neqp1) = 0.0
                   endif
@@ -1786,7 +1835,7 @@ c
                if(abs(area_iy).ge.area_tol) then
                   vol_change = vol_change - area_iy*dispyi
                   if(kr(i,2).ne.2) then 
-                     dvol_strainv(md-neqp1) = dvol_strainv_i-area_iy
+                     dvol_strainv(md-neqp1) = dvol_strainv_i  - area_iy
                   else
                      dvol_strainv(md-neqp1) = 0.0
                   endif
@@ -1805,7 +1854,7 @@ c
                por = psini(i)
                ps(i) = por*(1.0 + vol_strain(i))
             enddo
-         endif
+	 endif
          
 c     
 c     derivative of porosity wrt displacements
@@ -1972,7 +2021,7 @@ c     generate derivatives wrt p and T for stresss eqs
       else if(iflg.eq.15) then   
 c     return
          neqp1 = neq+1
-         do i = 1,neq
+	 do i = 1,neq
             e1i = e1(i)
             e2i = e2(i)
             e3i = e3(i)
@@ -2056,7 +2105,7 @@ c.....................................................................
                endif     
 
             enddo
-         enddo
+	 enddo
 c     
 c     apply boundary conditions (fixed displacements)
 c     
@@ -2129,28 +2178,28 @@ c     strd is passed through common
          endif    
 c     total displacements
       else if(iflg.eq.10) then
-         if(icnl.eq.0) then
+	 if(icnl.eq.0) then
             du_tot = du_tot+du
             dv_tot = dv_tot+dv
             dw_tot = dw_tot+dw  
-         else
+	 else
             du_tot = du_tot+du
             dv_tot = dv_tot+dv	 
-         endif  
+	 endif  
 c     reset displacements
       else if(iflg.eq.-10) then
-         if(icnl.eq.0) then
+	 if(icnl.eq.0) then
 c     du = 0.0
 c     dv = 0.0
 c     dw = 0.0
             du = duo
             dv = dvo
             dw = dwo
-         else
+	 else
             du = duo
             dv = dvo
-         endif  
-         vol_strain = vol_strain0      
+	 endif  
+	 vol_strain = vol_strain0      
 
 c     call stress output subroutines
       else if(iflg.eq.11)then
@@ -2189,13 +2238,13 @@ c
      &              0.
             endif
             if (iout .ne. 0) then
-               if(ntty.eq.2) write(iout,*) ' ' 
-               if(ntty.eq.2) write(iout,*) 'displacements and forces ' 
-               if(ntty.eq.2) write(iout,6119) 
+            if(ntty.eq.2) write(iout,*) ' ' 
+            if(ntty.eq.2) write(iout,*) 'displacements and forces ' 
+            if(ntty.eq.2) write(iout,6119) 
             end if
             if(tol_stress.ne.0.0d0) then 
                if(mlz.eq.-1) then
-                  if(iptty.gt.0 .and. iout .ne. 0) write(iptty,*) 
+                  if(iptty.gt.0) write(iptty,*) 
      &                 '>>> stress solution did not reach tolerance <<<'
                endif
                if(iptty.gt.0) write(iptty,6118) ibp_stress,
@@ -2286,6 +2335,9 @@ c     s kelkar nov 5,2010 output plane of max excess shear
      &                 ,eigenvec_deg(1),eigenvec_deg(2),eigenvec_deg(3)
                elseif(flag_excess_shear.eq.1) then
 c     s kelkar nov 5,2010 output plane of max excess shear
+                  call max_excess_shear(md,friction,strength,alambda,
+     &                 eigenvec,excess_shear,shear_angle)
+                  shear_angle = shear_angle*180./pi
                   if(ntty.eq.2 .and. iout .ne. 0) write(iout,8120)  
      &                 md, str_x(md), str_y(md), str_z(md), 
      &                 str_xy(md), str_xz(md), str_yz(md),ps(md)
@@ -2432,6 +2484,24 @@ c     s kelkar nov 5,2010 output plane of max excess shear
      &                 ,eigenvec(3,3),eigenvec(1,3),eigenvec(1,1)
                elseif(flag_excess_shear.eq.1) then
 c     s kelkar nov 5,2010 output plane of max excess shear
+                  if(flag_permmodel.eq.1) then
+                     iispmd = ispm(md)    
+                     ispmd = ispmt(iispmd) 
+                     if(ispmd.eq.22) then
+                        friction = spm1f(iispmd)
+                        strength = spm2f(iispmd)
+                     else
+                        friction = friction_out
+                        strength = strength_out
+                     endif
+                  else
+                     friction = friction_out
+                     strength = strength_out
+                  endif
+                  call principal_stress_3D(md,alambda,eigenvec)
+                  call max_excess_shear(md,friction,strength,alambda,
+     &                 eigenvec,excess_shear,shear_angle )
+                  shear_angle = shear_angle*180./pi
                   if(ntty.eq.2) write(iout,8120)  
      &                 md, str_x(md), str_y(md), str_z(md), 
      &                 str_xy(md), str_xz(md), str_yz(md),ps(md)
@@ -2529,7 +2599,7 @@ c     add total volume change
             vol_tot_change = 0.0
             do i = 1, neq
                vol_tot_change = vol_tot_change + vol_strain(i)*sx1(i)
-            enddo
+	    enddo
             if(ntty.eq.2 .and. iout .ne. 0) write(iout,*)  
             if(iptty.gt.0) write(iptty,*)
             if(ntty.eq.2 .and. iout .ne. 0) write(iout,7121)  
@@ -2578,7 +2648,7 @@ c     2D
                   call stress_2D_post(i)
                enddo
             endif
-         endif
+         end if
 
       else if(iflg.eq.14) then
 c     
@@ -2740,7 +2810,6 @@ c     user subroutines. not enabled
 
       return
       end
-
       subroutine geom_stress(iflg) 
 c     
 c     routine to calculate area, forces, etc. for stress bcs
