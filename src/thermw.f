@@ -793,6 +793,7 @@ c-----------------------------------------------------------
       use comii
       use comrlp, only : rlpnew
       use comrxni
+      use comsi, only : ihms, density, internal_energy
       use comtable
 
       implicit none
@@ -1543,6 +1544,14 @@ c     accumulation terms
             den1=rol
             den=den1*por
             dene=(1.d0-por)*cp*tl+den*enl-por*pl
+
+c......................................................
+c s kelkar, 28 feb 2011, for derivatives pore volume wrt displacements
+            if(ihms.eq.15.or.ihms.eq.17) then
+               density(mi) = rol*dtin
+               internal_energy(mi) = (rol*enl-pl)*dtin
+            endif
+c.....................................................
 
 c     derivatives of accumulation terms
             rop=por*drolp
