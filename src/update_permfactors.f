@@ -21,6 +21,7 @@
       use combi, only: nelm
       use comsi, only: perx_m, pery_m, perz_m, ipermstr2
       use comsi, only: spm7f, spm8f, spm9f
+      use comsi, only: iPlastic, modelNumber, plasticModel
       use comfem
 
       implicit none
@@ -30,8 +31,15 @@
       integer id, i, j, node_j
       integer i_begin, i_end, el
       integer flag_u_pp
+      integer itmp, iModel
+      logical recompute_stress
 
       permfactor = 0.0d0
+c forcing the entire domain to have the same plastic model
+      if(iPlastic.eq.1) then
+         iModel = modelNumber (1)
+         itmp = plasticModel(iModel)
+      endif
 
       ! Read the maximum permeability multipliers from the permmodel input
       if(ipermstr2.ne.0) then
@@ -43,12 +51,25 @@
       !! Accumulate permfactor for all the connections, element
       !! by element
       do el=1,nei
+         recompute_stress = .False.
         node_j = 0
         duu = 0.0d0; dvv = 0.0d0; dww = 0.0d0; dpp = 0.0d0
         flag_u_pp = 0
+        if(iPlastic.eq.0) then
 c        call compute_permfactor(el, node_j, duu, dvv, dww)
-        call compute_permfactor_effstrs(el, node_j, duu, dvv, dww
-     &       ,dpp,flag_u_pp)
+c        call compute_permfactor_effstrs(el, node_j, duu, dvv, dww
+c     &       ,dpp,flag_u_pp, recompute_stress)
+           call compute_permfactor_effstrs_pp(el,node_j,duu, dvv, dww
+     &          ,dpp,flag_u_pp, recompute_stress)
+        elseif(iPlastic.eq.1) then
+           if(itmp.eq.2) then
+              call compute_permfactor_vonMises(el, node_j, duu, dvv, dww
+     &           ,dpp, flag_u_pp)
+c           elseif(itmp.eq.3) then
+c              call compute_permfactor_DruckerPrager(el, node_j, duu, dvv, 
+c     &             dww, dpp, flag_u_pp)
+           endif
+        endif
       enddo 
 
       !! Normalize by number of elements sharing a connection
@@ -65,6 +86,9 @@ c        call compute_permfactor(el, node_j, duu, dvv, dww)
           !! Edge from node i to itself
           permfactor(i,:) = 1.0d0
         endif
+        if(permfactor(i,1).le.0.0) permfactor(i,1) = 1.0d0
+        if(permfactor(i,2).le.0.0) permfactor(i,1) = 1.0d0
+        if(permfactor(i,3).le.0.0) permfactor(i,1) = 1.0d0
       enddo
 
       end subroutine update_permfactors
