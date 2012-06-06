@@ -11,7 +11,7 @@
 !  nor the University makes any warranty, express or implied, or 
 !  assumes any liability or responsibility for the use of this software.
 C***********************************************************************
-CD1
+CD1 
 CD1 PURPOSE
 CD1
 CD1 Finite Element Heat and Mass Transfer in porous media.
@@ -451,6 +451,7 @@ C***********************************************************************
       use combi
       use comci
       use comco2
+      use comcomp
       use comdi
       use comdti
       use comei
@@ -465,10 +466,12 @@ C***********************************************************************
       use comsk, only : save_omr
       use comsplitts
       use comsptr
+      use comtable2, only : ibiot
       use comuserc, only : in
       use comwt
       use comxi
       use davidi
+      use comfem, only : edgeNum1, NodeElems, ifem, flag_element_perm
       use property_interpolate
 c     added combi and comflow to get izonef and a_axy arrays
 c     in subroutine computefluxvalues
@@ -686,11 +689,14 @@ c**** call to set up area coefficients for md nodes
 c**** call data checking routine ****
          call datchk
 c gaz 050809 moved to startup
-c
 c calculate initial stress field and displacements
 c 
 c         call stress_uncoupled(1)
-c         
+c 
+c reset boundary conditions for principal stresses (fraction of lithostatic)
+c
+c         call stressctr(3,0) 
+c               
 	 if(ico2.lt.0) then
             if (iout .ne. 0) write(iout,834) ifree1
             if (iptty .ne. 0) write(iptty,834) ifree1
@@ -734,7 +740,7 @@ c                  if(allocated(sx)) deallocate(sx)
 c                  if(allocated(istrw)) deallocate(istrw)
                end if
             end if
-c     call ptrac1
+c            call ptrac1
          endif
 
 c     If block only entered if the code is being called to 
@@ -750,8 +756,8 @@ c  change to 4 in new version of rip
 c  stop simulation after stress calc for certain stress input
 c set up time-spaced coupling         
          if(istrs_coupl.eq.-4) then
-            timestress0 = days
-            timestress = timestress0 + daystress
+           timestress0 = days
+           timestress = timestress0 + daystress
          endif
         if(istrs.ne.0.and.istrs_coupl.eq.0) go to 170
 c Before the time step loop create the partitions for zones
@@ -816,7 +822,7 @@ c*** adjust timestep size
 c
 c  manage the stress calls when ihms = istrs_coupl = -4
 c
-            istresscall = 0
+           istresscall = 0
 c           
             if(ihms.eq.-4) then
                if(days.ge.timestress) then
@@ -853,6 +859,7 @@ c**** calculate inflowing enthalpy ****
                if(icarb.eq.1) then
                   call icectrco2(-4,0)
                else
+
                   do mi = 1, n
                      eskd = esk(mi)
 c**** if source input is a temp convert to enthalpy ****
@@ -980,6 +987,12 @@ c
                   go  to  100
                end if
          
+               if (ivcond .eq. 1 .or. ivcond .eq. 3) 
+     &              call explicit_update(1)
+               if (ivcond .eq. 2 .or. ivcond .eq. 3) 
+     &              call explicit_update(2)
+               if (ibiot .eq. 1) call explicit_update(3)
+
 c**** stress routine calls ****
 
                dtotdm = dtot
@@ -1157,12 +1170,31 @@ c update volume strains
                   call stressctr(-6,0)
 c calculate stresses
                   call stressctr(13,0)	
-c allocate memory for permeability update if necessay
-                  call stress_perm(-1,0)
-c update permeabilities (explicit)
-                  call stress_perm(1,0)			            
-c deallocate memory for permeability update if necessay
-                  call stress_perm(-2,0)               	        
+                  if(flag_permmodel.eq.1) then
+                     if(flag_element_perm.eq.1) then
+       ! finite element option
+       ! Setup connectivity list of which elements each node belongs to
+                        if(.not. allocated(NodeElems)) then
+                           call Setup_NodeElems()
+                        endif                        
+       ! Setup pointers to edge numbers
+                        if(.not. allocated(edgeNum1)) then
+                           call setup_edgePointers_3D()
+                        endif
+       ! allocate memory for permeability update if necessay
+                        call stress_perm(-1,0)
+       ! update edge permeability factors for current state
+                        call update_permfactors()
+                     else
+c    control volume approach 
+c     allocate memory for permeability update if necessay
+                        call stress_perm(-1,0)
+c     update nodal permeabilities (explicit)                  	
+                        call stress_perm(1,0)
+c     deallocate memory for permeability update if necessay
+                        call stress_perm(-2,0)
+                     endif
+                  endif
                endif   
 c calculate subsidence
                call subsidence(1)         
@@ -1284,7 +1316,6 @@ c     &           dabs(inflow_thstime), dabs(inen_thstime))
             else
                call plot (1, tmavg, pravg)
             end if
-
 c**** call wellbore pressures
            if(isubwd. ne.0) call wellimped_ctr(4)
 c check for steady state solution
