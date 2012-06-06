@@ -443,7 +443,18 @@ c
 c      calculate volume strain
 c
       call stressctr(6,0)
-      call stressctr(-7,0)
+
+c s kelkar 11feb2011 ihms=15, 16, 17 are a special option
+      if(ihms.eq.15.or.ihms.eq.17) then
+c ps calculated below is a factor so that 
+c pore volume = ps()*initial bulk volume (=sx1d)
+c this factor ps() is used in therm w to calculate deni()=ps()*roho
+c and the sx1d is multiplied in geneq1_.._..
+         call porosity_wrt_displacements
+      else
+         call stressctr(-7,0)
+      endif
+
 c
 c     get phase state and properties
 c
@@ -456,142 +467,120 @@ c
 c generate stress equations
 c  
       if(ifem.eq.1) then
-        call geneq_stress_fem_3D()
+         call geneq_stress_fem_3D()
+        if(iPlastic.eq.1) then
+          conv_pstrain = plastic_strain
+        endif
       else
-        do  id=1,neq
-          if(icnl.eq.0) then
-            call geneq_stress_uncoupled_3D(id)   
-          else
-            write(*,*) 'Stopping in gensl_stress_3D (icnl ne 0)'
-            stop
-          endif 
-        enddo
+         do  id=1,neq
+            if(icnl.eq.0) then
+               call geneq_stress_uncoupled_3D(id)   
+            else
+               write(*,*) 'Stopping in gensl_stress_3D (icnl ne 0)'
+               stop
+            endif 
+         enddo
       endif
-
-c
-c      add derivatives wrt to p and t
-c
-
-       call stressctr(15,0)
-
-c
-c apply boundary conditions
-c
+      
+c     
+c     add derivatives wrt to p and t
+c     
+      
+      call stressctr(15,0)
+      
+c     
+c     apply boundary conditions
+c     
       call stress_boun3(1,0)
-c
-c
-c get derivatives with respect to fluid and temperature variables
-c
-       call stressctr(5,0)
-c       
-c test for convergence of stress equations
-c
-
-       fdum2=0.0d0
-
-       if(tol_stress.ne.0.0d0) then
+c     
+c     
+c     get derivatives with respect to fluid and temperature variables
+c     
+      call stressctr(5,0)
+c     
+c     test for convergence of stress equations
+c     
+      
+      fdum2=0.0d0
+      
+      if(tol_stress.ne.0.0d0) then
          bp_stress  = -1.0d0
          ibp_stress = 0
-c	 fdum1 = 1.0
+c     fdum1 = 1.0
          do id=1,neq
-           bp_tot = abs(bp(id+nrhs(1)))+
-     &        abs(bp(id+nrhs(2)))+abs(bp(id+nrhs(3)))
-           if(bp_tot.gt.bp_stress) then
-             ibp_stress = id
-             bp_stress = bp_tot
-           endif                  
+            bp_tot = abs(bp(id+nrhs(1)))+
+     &           abs(bp(id+nrhs(2)))+abs(bp(id+nrhs(3)))
+            if(bp_tot.gt.bp_stress) then
+               ibp_stress = id
+               bp_stress = bp_tot
+            endif                  
          enddo
-
+         
          fdum2 = bp_stress*bp_stress
- 
+         
          if(iad.eq.0) then
-           bp_update = 1.0
-             if(tol_stress.gt.0.0d0) then
+            bp_update = 1.0
+            if(tol_stress.gt.0.0d0) then
                tol_stress1 = bp_stress*tol_stress  
-             else
+            else
                tol_stress1 = abs(tol_stress)  
-             endif
+            endif
          endif
          if (bp_stress.le.tol_stress1.and.iad.ge.1) then
-           fdumstress = -998.0
-           fdums = bp_stress
-           bpx = bp(ibp_stress+nrhs(1))
-           bpy = bp(ibp_stress+nrhs(2))
-           bpz = bp(ibp_stress+nrhs(3))
-c	     bp = 0.0d0	     
-           go to 1001
-           return
+            fdumstress = -998.0
+            fdums = bp_stress
+            bpx = bp(ibp_stress+nrhs(1))
+            bpy = bp(ibp_stress+nrhs(2))
+            bpz = bp(ibp_stress+nrhs(3))
+c     bp = 0.0d0	     
+            go to 1001
+            return
          else if(bp_update.lt.machine) then
-           fdumstress = -997.0
-           fdums = bp_stress
-           bpx = bp(ibp_stress+nrhs(1))
-           bpy = bp(ibp_stress+nrhs(2))
-           bpz = bp(ibp_stress+nrhs(3))	    
-c	     bp = 0.0d0	     
-           go to 1001
-           return          
+            fdumstress = -997.0
+            fdums = bp_stress
+            bpx = bp(ibp_stress+nrhs(1))
+            bpy = bp(ibp_stress+nrhs(2))
+            bpz = bp(ibp_stress+nrhs(3))	    
+c     bp = 0.0d0	     
+            go to 1001
+            return          
          endif
-       endif
-
-c
-c fill NR array and RHS  in 5 by 5 format
-c
-1001      call stress_combine(10,idof_stress)
-c
-c
-c these calcs done above
-c
-c      calculate volume strain
-c
-c       call stressctr(6,0)
-c	 call stressctr(-7,0)
-c
-c     get phase state and properties
-c
-c      call varchk(0,0)
-c
-c generate fluid and energy balance equations equations
-
-c
-c     zero out arrays
-c
-c      write (iout,*)'>>>> ', l,iad, phi(2), fdum,' <<<<< '
-c
-c set up permeability variations with displacements (allocate memory)
-c
-      ! Setup connectivity list of which elements each node belongs to
-      if(.not. allocated(NodeElems)) then
-          call Setup_NodeElems()
       endif
-
-      ! Setup pointers to edge numbers
-      if(.not. allocated(edgeNum1)) then
-        call setup_edgePointers_3D()
-      endif
-
-      call stress_perm(-1,0)
-
-      if(ifem.eq.1) then
-        call update_permfactors()
-      else
-        call stress_perm(1,0)
-      endif
-
-      !! Assemble mass and energy equations without coupling terms
+      
+c     fill NR array and RHS  in 5 by 5 format
+c     
+ 1001 call stress_combine(10,idof_stress)
+      
+c     generate fluid and energy balance equations equations
       do id=1, neq
-        call geneq1(id)
+         if(ihms.eq.15.or.ihms.eq.17) then  
+      !! include derivatives of only pore volume wrt deformation
+      !! in the accumulation term, but not those of permeability 
+      !! in the flux terms
+            call geneq1_stress_coupl_porosi(id)
+c         elseif(ihms.eq.16) then
+c      !! include derivatives of only  permeability 
+c      !! in the flux terms but not of pore volume wrt deformation
+c      !! in the accumulation term
+c            call geneq1_stress_coupl_femperm(id)
+         else
+       !!  derives wrt p and T only
+            call geneq1(id)
+         endif
       enddo
 
 c 
-c get derivatives with respect to displacements (porosity and cell volume)
+c get derivatives with respect to displacements (flux terms)
 c 
 c
-      if(ifem.eq.1) then
-        call geneq_flow_coupled()
-      else
-        do id=1,neq
-          call geneq1_stress_coupl(id)
-        enddo
+      if(ihms.eq.16.or.ihms.eq.17) then
+         if(ifem.eq.1) then
+            call geneq_flow_coupled()
+         else
+            do id=1,neq
+               call geneq1_stress_coupl(id)
+            enddo
+         endif
       endif
 
       do id=1,neq
@@ -622,45 +611,45 @@ c 8989 format(g15.8)
 c................................................................
 
       if(inorm.ne.0) then
-c block normalization
+c     block normalization
          allocate(dumn(100))
-	   ndex(1) = 1
+         ndex(1) = 1
          
-        call normal_dof(neq,a,bp,nelm,nmat,nrhs,nelmdg
+         call normal_dof(neq,a,bp,nelm,nmat,nrhs,nelmdg
      &        ,ndex,idof_stress,dumn(1),dumn(37),dumn(73),0,fdum2)
-
+         
          deallocate(dumn)
-
-       if(ndex(1).lt.0 ) then
-          if (iout .ne. 0) then
-             write(iout,*) '   '
-             write(iout,*) '* singular matrix found during ',
-     &            'normalization *'
-             write(iout,*) '   '
-             write(iout,'(i8,3g12.3)')
-     &            abs(ndex(1)),(cord(abs(ndex(1)),i),i=1,3)
-          end if
-          if(iptty.gt.0)then
-             write(iptty,*) '   '
-             write(iptty,*) '* singular matrix found during ',
-     &            'normalization *'
-             write(iptty,*) '   '
-             write(iptty,'(i8,3g12.3)') 
-     &            abs(ndex(1)),(cord(abs(ndex(1)),i),i=1,3)
-          endif
-         iad=maxit
-         return
-       endif
-	else
-c no normalization
-       fdum2 = 0.0
-       do i =1,neq
-	  do j = 1,5
-	   fdum2 = fdum2 + bp(i + nrhs(j))*bp(i + nrhs(j))
-	  enddo
+         
+         if(ndex(1).lt.0 ) then
+            if (iout .ne. 0) then
+               write(iout,*) '   '
+               write(iout,*) '* singular matrix found during ',
+     &              'normalization *'
+               write(iout,*) '   '
+               write(iout,'(i8,3g12.3)')
+     &              abs(ndex(1)),(cord(abs(ndex(1)),i),i=1,3)
+            end if
+            if(iptty.gt.0)then
+               write(iptty,*) '   '
+               write(iptty,*) '* singular matrix found during ',
+     &              'normalization *'
+               write(iptty,*) '   '
+               write(iptty,'(i8,3g12.3)') 
+     &              abs(ndex(1)),(cord(abs(ndex(1)),i),i=1,3)
+            endif
+            iad=maxit
+            return
+         endif
+      else
+c     no normalization
+         fdum2 = 0.0
+         do i =1,neq
+            do j = 1,5
+               fdum2 = fdum2 + bp(i + nrhs(j))*bp(i + nrhs(j))
+            enddo
 	 enddo
-	endif
-c
+      endif
+c     
          fdum=sqrt(fdum2)
 
 c 
