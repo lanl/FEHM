@@ -19,7 +19,8 @@
 ! Author : Sai Rapaka
 !
       use comai, only: iout
-      use comsi, only: alp, bulk, iPlastic, plasticModel, modelNumber
+      use comsi, only: alp, bulk, iPlastic, plasticModel, modelNumber,
+     &     stress_anisotropy_in
       use comai, only: iout, iptty, iad, ns
       use comdi, only: t, phi, tini, phini
       use comfem
@@ -54,7 +55,13 @@
       gp_strain(2) = gp_strain(2) - alphadeltaT - betadeltaP
       gp_strain(3) = gp_strain(3) - alphadeltaT - betadeltaP
 
-      call fem_elastic_stiffness(i, j, D)
+      if (stress_anisotropy_in) then
+c s karra 17May2012
+         call fem_transverse_isotropy_elastic_stiffness(i, j, D)
+      else
+         call fem_elastic_stiffness(i, j, D)
+      endif
+
       gp_stress = matmul(D, gp_strain)
 
       fem_stress(i,j,:) = gp_stress
