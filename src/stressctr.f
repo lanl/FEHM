@@ -723,7 +723,7 @@ c.............................................................
             read (inpt, '(a)') input_msg
             call parse_string(input_msg, imsg, msg, xmsg, cmsg, nwds)
             if(nwds.gt.1) then
-               flag_element_perm = imsg(1)
+               flag_element_perm = imsg(2)
             endif
 
 c     Copy information about elements from nelm to elnode
