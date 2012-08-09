@@ -234,6 +234,7 @@ C***********************************************************************
       use comsptr
       use comsk
       use comnire
+	use trxnvars
 c RJP 12/4/06 added following
       use comriv
 c RJP 04/17/06 added following
@@ -599,7 +600,7 @@ c     ***** COMMON Block idntrxn *****
          allocate(irxnic(numrxn,(ncpnt+ncplx)))
          allocate (irxnim(numrxn,nimm),irxniv(numrxn,nvap))
 c     ***** COMMON Block rdsp *****
-         allocate (ckeq(101:ncplx+100),heq(101:ncplx+100,4))
+         allocate (ckeq(101:ncplx+100),heq(101:ncplx+100,5))
          allocate (spstoic(101:ncplx+100,ncpnt))
          allocate (cpntgs(ncpnt),idrxn(numrxn),ifxconc(ncpnt))
          allocate(neg_conc_possible(ncpnt))
@@ -962,5 +963,9 @@ c---------- PHS 4/13/05 added sink_integ to integrate the source
 c                 sink at a single node over a run in comdi
       allocate(sinkint(n7))
       if (n7 .ne. 0) sinkint = 0
+
+	allocate(zonenames(100), zonenums(100))
+	numzones = 0
+	zonemax = 0
 
       end
