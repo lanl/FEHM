@@ -311,6 +311,7 @@ C***********************************************************************
       use combi
       use comdti
       use comai
+	use trxnvars
       implicit none
 
       logical null1, null_new, cdum
@@ -326,6 +327,8 @@ C***********************************************************************
       integer, allocatable :: ncord(:)
       integer, allocatable :: izonef_old(:)
       integer, allocatable :: zone_list(:), tmp_list(:)
+	character*20 zonetmp
+	integer k, curzone
 
       allocate(ncord(n0))
 
@@ -366,6 +369,10 @@ c     Dual perm or dual porosity value to add to get zones
          if(macro .ne. 'zonn') then
             izonef = 0
             izonn = 0
+		numzones = 0
+		zonenames = '*'
+		zonenums = 0
+		zonemax = 0
          else
             allocate(izonef_old(n0))
             izonef_old = izonef
@@ -376,7 +383,22 @@ c     Dual perm or dual porosity value to add to get zones
       read (infile, '(a80)') wdd1
       if (null1(wdd1)) go to 90
       backspace infile
-      read(infile, *) izone
+      !read(infile, *) izone
+	read(infile, *) zonetmp
+	do k = 1, numzones
+		if (zonenames(k) .eq. zonetmp) then
+			curzone = k
+			goto 63
+		endif
+	enddo
+	curzone = numzones + 1
+	if (zonetmp(1:1) .ne. '-') numzones = numzones + 1
+63	zonenames(curzone) = zonetmp
+	read(zonenames(curzone), *, err=61) zonenums(curzone)
+	goto 62
+61	zonenums(curzone) = zonemax + 1
+62	zonemax = max(zonemax + 1, zonenums(curzone))
+	izone = zonenums(curzone)
 
 c zvd 01/04/2012 Keep track of zones that are defined so auto generated double permeability or porosity nodes can be reported
       num_zones = num_zones + 1
