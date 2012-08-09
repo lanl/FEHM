@@ -293,10 +293,6 @@ c      real*8, allocatable ::  h_mult(:,:)
       real*8, allocatable ::  dispvy(:)
       real*8, allocatable ::  dispvz(:)
 
-c zvd 09-Aug-11 Add tracrxnvars to this module
-      logical debug             ! Whether we are in debug mode
-      integer trxn_flag         ! Whether we are calling tracrxn or trac
-
 c zvd 07-Mar-12 Variables for concentration-dependent density
       integer :: cden_flag = 0, cden_sp = 0
       real, allocatable :: mw_speci(:)
