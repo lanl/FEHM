@@ -313,6 +313,7 @@ C***********************************************************************
       use comxi, only : nmfil, cform
       use comzeoli
       use davidi
+	use trxnvars
 
       implicit none
 
@@ -1333,7 +1334,6 @@ c check for file keyword, and read past filename if present
          group = 0
          pos = 0
          n_couple_species = 0
-         group_mat = 0
          do igrp = 1, ngroups
             read(locunitnum, *)(group(igrp,ic),ic = 1,ncpnt)
          enddo
@@ -1378,7 +1378,10 @@ c     add grouping stuff 8/1/94
       else if (macro .eq. 'trxn') then
          iccen = 1
          call start_macro(inpt, locunitnum, 'trxn')
-         call tracrxn_init
+	inpttmp = inpt
+	inpt = locunitnum
+         call trxninit
+	inpt = inpttmp
 	 call done_macro(locunitnum)
          if(rxn_flag .eq. 0) then
             if (iout .ne. 0) write (iout, 8000)
@@ -1387,6 +1390,7 @@ c     add grouping stuff 8/1/94
  8000    format ('Reactions disabled for this simulation.')
          if(rxn_flag .eq. 1) then
             allocate(group_mat(ncpnt, ncpnt))
+		group_mat = 0
             do igrp = 1, ngroups
                pos_index = 0
                do ic = 1, ncpnt
