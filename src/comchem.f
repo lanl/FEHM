@@ -267,7 +267,7 @@
 !C     ***** Global constants *****
 
       integer maxspc
-      parameter (maxspc = 30)
+      parameter (maxspc = 40)
 
 !C ***** Variables in COMMON Block chemnum *****
       integer ncpnt
@@ -341,7 +341,7 @@
 
       integer nderivs(maxspc)
 
-      integer matpos(1000)
+      integer matpos(2000)
 
       integer dimdrc
 !C ***** Variables in COMMON Block print_flag *****
