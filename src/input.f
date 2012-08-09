@@ -489,6 +489,7 @@ C***********************************************************************
       use comsptr
       use comwt
       use davidi
+	use trxnvars
       implicit none
 
       integer i, izone, inode
