@@ -522,6 +522,7 @@ C**********************************************************************
       use comki
       use compart
       use davidi, only : irdof
+	use trxnvars
       implicit none
 
       real*8 h_const, dvap_conc
@@ -553,6 +554,7 @@ c     SPC
       real*8, allocatable :: rvol(:), lvol(:), vvol(:)
       integer, allocatable :: hflag(:)
       logical, allocatable :: seen(:)
+	logical opend
 
       save mfile, mole_input
 
@@ -803,7 +805,7 @@ c     Try reading using old format
                      end if                 
                   end select
                end do
-            else
+            else ! If ldsp != 0
                do
                   read(inpt,'(a80)') wdd1
                   if (null1(wdd1)) exit
@@ -856,7 +858,7 @@ c     Try reading using old format
                   end if                 
                end select
             end do
-         end if
+         end if ! if ldsp == 0
          if ((sehdiff(jj).lt.0.) .or. (sehdiffv(jj).lt.0.)) then
             write (ierr, *) 'Old Conca model not supported'
             write (ierr,*)'See UM for new diffusion model options'
@@ -870,7 +872,7 @@ c     Try reading using old format
          call initdata2(inpt,ischk,n0,narrays,itype,default,
      &        macroread(5),macro,igroup,ireturn,
      &        i4_1=itrcdsp(1:n0)) 
-      else
+      else ! If we are not using dispsame
          backspace inpt
       end if
 
@@ -1377,13 +1379,13 @@ C     PS ENDLOOP through each species
 
 C     PS ENDIF the data are to be read in on this pass
       elseif(trxn_flag .eq. 1) then
-         call readtracrxn
-         read(inpt, *)
+         call rdtr
+	if (molein) mole_input = .true.
       else
          write(ierr, *) 'Internal error differentiating trac/trxn.'
-         write(ierr, *) 'Please contact <mschauer@lanl.gov>.'
          stop
       endif
+	!call trxn_varcheck
       endif
 C     PS IF this call to the routine is for initialization 
 C     PS
@@ -1420,7 +1422,7 @@ c     Compute rock, liquid, and vapor volume for each node
                   if (idum .ne. nsp) then
 c     We didn't save input for this species, this is an error
                      write (ierr, *) 
-     &                    'Missing mole input ddata for species ', nsp
+     &                    'Error:  Missing mole input data for species ', nsp, '.'
                      stop
                   end if
                   npn=npt(nsp)
@@ -1430,6 +1432,10 @@ c     We didn't save input for this species, this is an error
                      if (input_msg(1:) .eq. 'file') then
 c     Read name of alternate zone file
                         read (mfile, '(a100)') zone_file
+			if (izf .ne. 0) then
+				close(izf)
+				izf = 0
+			endif
                         izf = open_file(zone_file, 'unknown')
                         read (mfile, '(a80)') input_msg
                         alt_zone = .true.
@@ -1456,14 +1462,15 @@ c     Assumes nnum style zone input
                            read (izf, '(a4)', end = 77) zmacro
                            if (zmacro(1:3) .ne. 'zon') then
                               write (ierr, *) 
-     &                             'Not a zone file, stopping'
+     &   'Error:  Zone file for mole input is not a zone file.'
+				stop
                            end if
                            do
                               read (izf, *, end = 77) znum
                               read (izf, '(a4)') zmacro
                               if (zmacro .ne. 'nnum') then
                                  write (ierr, *) 
-     &                                'Wrong zone file format, stopping'
+     &   'Error:  Zone file for mole input can only use method "nnum".'
                                  stop
                               end if
                               read (izf, *) num_nodes
@@ -1686,6 +1693,8 @@ c     Account for sorption (moles input is total)
                end if
             end do
             close (mfile, status = 'delete')
+		inquire(izf, opened=opend)
+		if (opend) close(izf)
          end if
 c     
 c     seh
@@ -2024,7 +2033,6 @@ c     call plotc1(0,0)
       end if
 
       if (allocated(lvol)) deallocate(lvol,rvol,vvol,hflag,seen)
-
       return
 
  9000 continue
