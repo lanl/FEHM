@@ -437,12 +437,16 @@ c         guess of 1.0e-10 M for Co and EDTA and an initial guess of
 c         1.0e-15 M for Fe. 
 c====================================================================
       do i = 101,ncplx+100
-         if(temp_model(i).ne.'l')then 
-            tkeq(i)=ckeq(i)*exp((heq(i,1)/gas_const*
-     2           (1/(25+temp_conv)-1/(t(in)+temp_conv))))
-         else
+         if(temp_model(i).eq.'l')then 
             tkeq(i)=heq(i,1)+heq(i,2)*t(in)+heq(i,3)*t(in)**2
             tkeq(i)=10**tkeq(i)
+	elseif (temp_model(i) .eq. 't') then
+		tkeq(i) = heq(i, 1) + heq(i, 2) * t(in) + heq(i, 3) / t(in)
+	2		+ heq(i, 4) * log10(t(in)) + heq(i, 5) / t(in) ** 2
+		tkeq(i) = 10 ** tkeq(i)
+         else
+            tkeq(i)=ckeq(i)*exp((heq(i,1)/gas_const*
+     2           (1/(25+temp_conv)-1/(t(in)+temp_conv))))
          endif
       enddo
       NSOLVE = 0
