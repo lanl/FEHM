@@ -80,12 +80,16 @@
          if(spstoic(ix,ic).ne.0) 
      2        prod = prod*cpntsv(ic,node)**spstoic(ix,ic)
       enddo
-      if(temp_model(ix).ne.'l')then
-         tkeq(ix)=ckeq(ix)*exp((heq(ix,1)/gas_const*
-     2        (1/(25+temp_conv)-1/(t(node)+temp_conv))))
-      else
+      if(temp_model(ix).eq.'l')then
          tkeq(ix)=heq(ix,1)+heq(ix,2)*t(node)+heq(ix,3)*t(node)**2
          tkeq(ix)=10**tkeq(ix)
+	elseif (temp_model(ix) .eq. 't') then
+		tkeq(ix) = heq(ix, 1) + heq(ix, 2) * t(in) + heq(ix, 3) / t(in)
+	2		+ heq(ix, 4) * log10(t(in)) + heq(ix, 5) / t(in) ** 2
+		tkeq(ix) = 10 ** tkeq(ix)
+      else
+         tkeq(ix)=ckeq(ix)*exp((heq(ix,1)/gas_const*
+     2        (1/(25+temp_conv)-1/(t(node)+temp_conv))))
       endif
       complex_conc = tkeq(ix)*prod
       complex_conc = max(complex_conc, 1.d-90)
