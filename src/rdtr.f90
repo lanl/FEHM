@@ -108,7 +108,7 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 	do
 1200		call readline
 		if (len_trim(line) .eq. 0) goto 1200
-		read(line, *, end=1666) keyword
+		read(line, *, end=1666, err=1600) keyword
 		if (keyword(1:3) .eq. 'end') then
 			if (libread .gt. 0) goto 1801
 			goto 1800
@@ -133,7 +133,7 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 				if (len_trim(line) .ne. 0) exit
 				call readline
 			enddo
-			read(line, *, end=340) e, f, null
+			read(line, *, end=340, err=1600) e, f, null
 340			if ((e .ne. 'trxn') .or. (f(1:3) .ne. 'lib')) then
 				write(ierr, '(a)') 'Error:  "'//trim(libfname)//'" is not a valid trxn library.'
 				goto 1666
@@ -159,7 +159,7 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 			endif
 			fctrl = .true.
 			array = '*'
-			read(line, *, end=1104) keyword, (array(i), i = 1, 100)
+			read(line, *, end=1104, err=1600) keyword, (array(i), i = 1, 100)
 1104			do i = 1, 100
 				if (array(i) .eq. '*') then
 					exit
@@ -319,9 +319,9 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 									exit
 								endif
 							enddo
-							read(dat, *) ! log_k
-							read(dat, *) ! delta_h
-							read(dat, *) ! temp
+							read(dat, *, end=292, err=292) ! log_k
+							read(dat, *, end=292, err=292) ! delta_h
+							read(dat, *, end=292, err=292) ! temp
 						enddo
 					elseif (line .eq. '% IMM') then
 						do
@@ -356,9 +356,9 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 									exit
 								endif
 							enddo
-							read(dat, *) ! log_k
-							read(dat, *) ! delta_h
-							read(dat, *) ! temp
+							read(dat, *, end=292, err=292) ! log_k
+							read(dat, *, end=292, err=292) ! delta_h
+							read(dat, *, end=292, err=292) ! temp
 						enddo
 					elseif (line .eq. '% END') then
 						exit
@@ -436,7 +436,8 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 							read(line, *, end=306, err=292) datcplxmain(j) !(datcplxstoic(j, 1, i), datcplx(j, 1, i), i = 1, maxdatcplx) ! Reactants
 306							read(dat, '(a200)', end=294, err=292) line
 							if (index(line, '#') .ne. 0) line = line(1:index(line, '#') - 1)
-							read(line, *, end=307, err=292) (datcplxstoic(j, i), datcplx(j, i), i = 1, maxdatcplx) ! Products
+							read(line, *, end=307, err=292) &
+								(datcplxstoic(j, i), datcplx(j, i), i = 1, maxdatcplx) ! Products
 307							read(dat, '(a200)', end=294, err=292) line
 							if (index(line, '#') .ne. 0) line = line(1:index(line, '#') - 1)
 							read(line, *, end=310, err=292) datcplxlkeq(j) ! log_k
@@ -472,7 +473,8 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 							read(line, *, end=299, err=292) datminnam(k), datminmain(k)
 308							read(dat, '(a200)', end=294, err=292) line
 							if (index(line, '#') .ne. 0) line = line(1:index(line, '#') - 1)
-							read(line, *, end=309, err=292) (datminstoic(k, i), datmin(k, i), i = 1, maxdatmin) ! Products
+							read(line, *, end=309, err=292) &
+								(datminstoic(k, i), datmin(k, i), i = 1, maxdatmin) ! Products
 309							read(dat, '(a200)', end=294, err=292) line
 							if (index(line, '#') .ne. 0) line = line(1:index(line, '#') - 1)
 							read(line, *, end=316, err=292) datminlkeq(k) ! log_k
@@ -527,7 +529,7 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 1105				call readline
 				if (len_trim(line) .eq. 0) exit
 				nspeci = nspeci + 1
-				read(line, *, end=1102) states(nspeci), species(nspeci), masters(nspeci)
+				read(line, *, end=1102, err=1600) states(nspeci), species(nspeci), masters(nspeci)
 1102				do i = 1, nlocomp
 					if (locomp(i, 2) .eq. species(nspeci)) then
 						species(nspeci) = '*'
@@ -575,7 +577,7 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 			call readline
 			e = '*'
 			f = '*'
-			read(line, *, end=289) e, f
+			read(line, *, end=289, err=1600) e, f
 289			if (f .eq. '*') then
 				if (.not. flookup) then
 						write(ierr, '(a)') 'Error:  A lookup block must be provided before '// &
@@ -624,7 +626,8 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 						goto 1200
 						endif
 					enddo
-					write(ierr, '(a)') 'Error:  Complex "'//trim(e)//'" in cplx not found in lookup database.'
+					write(ierr, '(a)') 'Error:  Complex "'//trim(e)// &
+						'" in cplx not found in lookup database.'
 					goto 1666
 				endif
 			do
@@ -641,7 +644,7 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 				call readline
 				if (len_trim(line) .eq. 0) exit
 				ngroups = ngroups + 1
-				read(line, *, end=1103) (array2(ngroups, i), i = 1, 100)
+				read(line, *, end=1103, err=1600) (array2(ngroups, i), i = 1, 100)
 1103				do i = 1, 100
 					if (array2(ngroups, i) .eq. '*') exit
 					j = j + 1
@@ -652,7 +655,8 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 				if (groupspecs(i) .eq. '*') exit
 				do j = 1, i - 1
 					if (groupspecs(j) .eq. groupspecs(i)) then
-						write(ierr, '(a)') 'Error:  Multiple definition of component "'//trim(groupspecs(i))//'" in group.'
+						write(ierr, '(a)') 'Error:  Multiple definition of component "'// &
+							trim(groupspecs(i))//'" in group.'
 						goto 1666
 					endif
 				enddo
@@ -667,7 +671,7 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 				ncplx = ncplx + 1
 				e = '*'
 				f = '*'
-				read(line, *, end=288) e, f
+				read(line, *, end=288, err=1600) e, f
 288				if (f .ne. '=') then
 					if (.not. flookup) then
 						write(ierr, '(a)') 'Error:  A lookup block must be provided before '// &
@@ -707,12 +711,13 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 						goto 291
 						endif
 					enddo
-					write(ierr, '(a)') 'Error:  Complex "'//trim(e)//'" in cplx not found in lookup database.'
+					write(ierr, '(a)') 'Error:  Complex "'//trim(e)// &
+						'" in cplx not found in lookup database.'
 					goto 1666
 				endif
 			enddo
 		elseif (keyword .eq. 'null') then
-			read(line, *, end=1110) keyword, e
+			read(line, *, end=1110, err=1600) keyword, e
 1110			if (debug) write(iptty, '(a)') 'Skipping null statement "'//trim(e)//'".'
 			do
 				call readline
@@ -820,158 +825,16 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 	if (debug) write(iptty, '(a)') 'trxn preprocessing complete.'
 	return
 
+1600	write(ierr, '(a)') 'Error:  Generic read error in trxn preprocessing.'
+	goto 1666
 1666	write(ierr, '(a)') 'Error in trxn in preprocessing.'
 	write(iptty, '(a)') 'Error in trxn in preprocessing.'
 	stop
 1667	write(iptty, '(a)') 'An internal error has occurred in trxn.  This should never happen, '// &
-		'and indicates a bug in the program.  Please contact mschauer@lanl.gov with information about the error.'
+		'and indicates a bug in the program.  Please contact fehm-dev@lanl.gov with information about the error.'
 	stop
 
 	end subroutine
-
-subroutine trxn_varcheck ! Dumps the variables set by trxn to stdout.  A debugging tool; should probably be removed from official repositories.
-
-	use combi
-	use comchem
-	use comrxni
-	use comdi
-	use comcouple
-	use comdti
-	use comai
-	use comci
-	use comflow
-	use compart
-	use trxnvars
-
-	implicit none
-
-	integer i
-
-	! Manual varsetting for baro_trans
-	!dispsame = 0
-	!numsorp = 1
-	!numd = 1
-	!diffmfl = sehdiff(1)
-	!diffmfv = sehdiffv(1)
-
-	if (rxn_flag .eq. 1) then
-		write(*, *)
-		write(*, *) 'RXN DUMP:'
-		write(*, *) ncpnt, ' aqueous components:'
-		write(*, *) (i, ':	', cpntnam(i), '	', i = 1, ncpnt)
-		write(*, *) pcpnt
-		write(*, *)
-		write(*, *) nimm, ' immobile components:'
-		write(*, *) (i, ':	', immnam(i), '	', i = 1, nimm)
-		write(*, *) pimm
-		write(*, *)
-		write(*, *) nvap, ' vapor components:'
-		write(*, *) (i, ':	', vapnam(i), '	', i = 1, nvap)
-		write(*, *) pvap
-		write(*, *)
-		write(*, *) ncplx, ' aqueous complexes:'
-		write(*, *) (i, ':	', cplxnam(i), '	', i = 101, ncplx + 100)
-	endif
-
-	write(*, *) 'EXTRA INFORMATION:'
-	write(*, *) numsorp, numd, ldsp, dispsame, strac_max, nspeci, ntpp, ncplx, numrxn, ngroups, iskip, rsdmax
-	write(*, *) ps_trac
-	write(*, *) hvliquid, hvvapor, neg_conc_possible
-	write(*, *) tclx
-	write(*, *) tcly
-	write(*, *) tclz
-	write(*, *) tcvx
-	write(*, *) tcvy
-	write(*, *) tcvz
-	write(*, *) iadsfl, iadsfv
-	write(*, *) a1adfl, a1adfv
-	write(*, *) a2adfl, a2adfv
-	write(*, *) betadfl, betadfv
-	write(*, *) itrc
-	write(*, *) '*****'
-	write(*, *) mflagl, mflagv
-	write(*, *) sehdiff, sehdiffv
-	write(*, *) diffmfl, diffmfv
-	write(*, *) qcout
-	write(*, *) qcin
-	write(*, *) qcrxn
-	write(*, *) npt
-	write(*, *) henry_model, hawwa
-	write(*, *) a_henry, dh_henry
-	write(*, *) icns
-	write(*, *) cnsk
-	write(*, *) t1sk
-	write(*, *) t2sk
-	write(*, *) '*****'
-	write(*, *) ifxconc
-	write(*, *) cpntgs
-	write(*, *) group
-	write(*, *) temp_model, temp_model_kin
-	write(*, *) simmmx
-	write(*, *) ckeq
-	write(*, *) heq
-	write(*, *) idrxn
-	write(*, *) irxnic
-	write(*, *) irxnim
-	write(*, *) kd
-	write(*, *) pdstic
-	write(*, *) pdstim
-	write(*, *) ckeqlb
-	write(*, *) ckmtrn
-	write(*, *) naqsp
-	write(*, *) nimsp
-	write(*, *) spstoic
-	write(*, *) tcoeff
-	write(*, *) sticirrv
-	write(*, *) stimirrv
-	write(*, *) stivirrv
-	write(*, *) cplx
-	write(*, *) cpnt
-	write(*, *) cden_flag, cden
-	write(*, *) mw_speci
-	write(*, *) '*****'
-	write(*, *) n0, an0, an
-
-	stop
-	!write(*, *) 'Press enter to continue.'
-	!read(*, *)
-
-end subroutine trxn_varcheck
-
-!subroutine trxn_dumtest
-!
-!	use comai
-!	use combi
-!	use trxnvars
-!
-!	character*20 keyword
-!
-!	implicit none
-!
-!	do
-!		call readline
-!		if (len_trim(line) .eq. 0) exit
-!		read(line, *) keyword
-!		if (keyword .eq. 'time') then
-!			read (line, *, end=3666, err=3666) keyword, tims
-!		else if (keyword .eq. 'zone') then
-!			call zone
-!		else if (keyword .eq. 'trxn') then
-!			call rdtr
-!		else
-!			goto 3666
-!		endif
-!	enddo
-!
-!	write(iptty, *) 'Press enter to continue.'
-!	read(*, *)
-!	call trxn_varcheck
-!	return
-!
-!3666	write(ierr, *) 'Error in trxn_dumtest:  ', trim(line)
-!	stop
-!
-!end subroutine trxn_dumtest
 
 subroutine rdtr ! The main input reader
 
@@ -1329,11 +1192,11 @@ subroutine rdtr ! The main input reader
 					goto 666
 				endif
 				if (array(i)(1:index(array(i), '=') - 1) .eq. 'iskip') then
-					read(array(i)(index(array(i), '=') + 1:len_trim(array(i))), *) iskip
+					read(array(i)(index(array(i), '=') + 1:len_trim(array(i))), *, err=118) iskip
 				elseif (array(i)(1:index(array(i), '=') - 1) .eq. 'rsdmax') then
-					read(array(i)(index(array(i), '=') + 1:len_trim(array(i))), *) rsdmax
+					read(array(i)(index(array(i), '=') + 1:len_trim(array(i))), *,err=118) rsdmax
 				elseif (array(i)(1:index(array(i), '=') - 1) .eq. 'strac_max') then
-					read(array(i)(index(array(i), '=') + 1:len_trim(array(i))), *) strac_max
+					read(array(i)(index(array(i), '=') + 1:len_trim(array(i))), *, err=118) strac_max
 				else
 					write(ierr, '(a)') 'Error:  Variable "'//array(i)(1:index(array(i), '=') - 1)// &
 						'" in header not recognized.'
@@ -1393,7 +1256,7 @@ subroutine rdtr ! The main input reader
 			linen = linen - 1
 			call readline
 			array = '*'
-			read(line, *, end=198) keyword, (array(i), i = 1, SPEC_MAX)
+			read(line, *, end=198, err=600) keyword, (array(i), i = 1, SPEC_MAX)
 198			do
 				call readline
 				if (len_trim(line) .eq. 0) exit
@@ -2285,7 +2148,7 @@ subroutine rdtr ! The main input reader
 							array(j) = '0'
 						endif
 						if (dispparams(j) .eq. 'lx') then
-							read(array(j), *) lx(i)
+							read(array(j), *, err=140) lx(i)
 							if (lx(i) .lt. 0) then
 								write(ierr, '(a)') 'Error:  X liquid dispersivity '// &
 									'for dispersivity model "'//dispnames(i)// &
@@ -2293,7 +2156,7 @@ subroutine rdtr ! The main input reader
 								goto 666
 							endif
 						elseif (dispparams(j) .eq. 'ly') then
-							read(array(j), *) ly(i)
+							read(array(j), *, err=140) ly(i)
 							if (ly(i) .lt. 0) then
 								write(ierr, '(a)') 'Error:  Y liquid dispersivity '// &
 									'for dispersivity model "'//dispnames(i)// &
@@ -2301,7 +2164,7 @@ subroutine rdtr ! The main input reader
 								goto 666
 							endif
 						elseif (dispparams(j) .eq. 'lz') then
-							read(array(j), *) lz(i)
+							read(array(j), *, err=140) lz(i)
 							if (lz(i) .lt. 0) then
 								write(ierr, '(a)') 'Error:  Z liquid dispersivity '// &
 									'for dispersivity model "'//dispnames(i)// &
@@ -2309,7 +2172,7 @@ subroutine rdtr ! The main input reader
 								goto 666
 							endif
 						elseif (dispparams(j) .eq. 'vx') then
-							read(array(j), *) vx(i)
+							read(array(j), *, err=140) vx(i)
 							if (vx(i) .lt. 0) then
 								write(ierr, '(a)') 'Error:  X gaseous dispersivity '// &
 									'for dispersivity model "'//dispnames(i)// &
@@ -2317,7 +2180,7 @@ subroutine rdtr ! The main input reader
 								goto 666
 							endif
 						elseif (dispparams(j) .eq. 'vy') then
-							read(array(j), *) vy(i)
+							read(array(j), *, err=140) vy(i)
 							if (vy(i) .lt. 0) then
 								write(ierr, '(a)') 'Error:  Y gaseous dispersivity '// &
 									'for dispersivity model "'//dispnames(i)// &
@@ -2325,7 +2188,7 @@ subroutine rdtr ! The main input reader
 								goto 666
 							endif
 						elseif (dispparams(j) .eq. 'vz') then
-							read(array(j), *) vz(i)
+							read(array(j), *, err=140) vz(i)
 							if (vz(i) .lt. 0) then
 								write(ierr, '(a)') 'Error:  Z gaseous dispersivity '// &
 									'for dispersivity model "'//dispnames(i)// &
@@ -2344,7 +2207,7 @@ subroutine rdtr ! The main input reader
 						if ((dispparams(j) .eq. '*') .or. (array(j) .eq. '*')) then
 							exit
 						elseif (dispparams(j) .eq. 'll') then
-							read(array(j), *) ll(i)
+							read(array(j), *, err=140) ll(i)
 							if (ll(i) .lt. 0) then
 								write(ierr, '(a)') 'Error:  Longitudinal liquid'// &
 									'dispersivity for dispersivity model "'// &
@@ -2352,7 +2215,7 @@ subroutine rdtr ! The main input reader
 								goto 666
 							endif
 						elseif (dispparams(j) .eq. 'lt') then
-							read(array(j), *) lt(i)
+							read(array(j), *, err=140) lt(i)
 							if (lt(i) .lt. 0) then
 								write(ierr, '(a)') 'Error:  Transverse liquid '// &
 									'dispersivity for dispersivity model "'// &
@@ -2360,7 +2223,7 @@ subroutine rdtr ! The main input reader
 								goto 666
 							endif
 						elseif (dispparams(j) .eq. 'vl') then
-							read(array(j), *) vl(i)
+							read(array(j), *, err=140) vl(i)
 							if (vl(i) .lt. 0) then
 								write(ierr, '(a)') 'Error:  Longitudinal gaseous'// &
 									'dispersivity for dispersivity model "'// &
@@ -2368,7 +2231,7 @@ subroutine rdtr ! The main input reader
 								goto 666
 							endif
 						elseif (dispparams(j) .eq. 'vt') then
-							read(array(j), *) vt(i)
+							read(array(j), *, err=140) vt(i)
 							if (vt(i) .lt. 0) then
 								write(ierr, '(a)') 'Error:  Transverse gaseous '// &
 									'dispersivity for dispersivity model "'// &
@@ -2399,7 +2262,7 @@ subroutine rdtr ! The main input reader
 			endif
 			fprint = .true.
 			array = '*'
-			read(line, *, end=201) keyword, (array(i), i = 1, SPEC_MAX)
+			read(line, *, end=201, err=600) keyword, (array(i), i = 1, SPEC_MAX)
 201			do i = 1, SPEC_MAX
 				if (array(i) .eq. '*') then
 					nprint = i - 1
@@ -2462,7 +2325,7 @@ subroutine rdtr ! The main input reader
 			call readline
 			e = '*'
 			f = '*'
-			read(line, *, end=248) keyword, e, f
+			read(line, *, end=248, err=600) keyword, e, f
 248			if ((e(1:3) .eq. 'log') .or. (f(1:3) .eq. 'log')) then
 				logten = .true.
 			endif
@@ -2498,7 +2361,7 @@ subroutine rdtr ! The main input reader
 				array = '*'
 				a = 1
 				e = '*'
-				read(line, *, end=261) complexes(i), e, (array(j), j = 1, SPEC_MAX)
+				read(line, *, end=261, err=600) complexes(i), e, (array(j), j = 1, SPEC_MAX)
 261				if (e .ne. '=') then ! Lookup mode
 					if (.not. flookup) then
 						write(ierr, '(a)') 'Error:  A lookup block must be provided before '// &
@@ -2524,7 +2387,8 @@ subroutine rdtr ! The main input reader
 							goto 330
 						endif
 					enddo
-					write(ierr, '(a)') 'Error:  Complex "'//trim(complexes(i))//'" not found in lookup database.'
+					write(ierr, '(a)') 'Error:  Complex "'//trim(complexes(i))// &
+						'" not found in lookup database.'
 					goto 666
 330					if (e .ne. '*') then
 						if (e(1:5) .eq. 'ckeq=') then
@@ -2571,8 +2435,9 @@ subroutine rdtr ! The main input reader
 					if (array(j) .eq. '*') exit
 					if (array(j) .eq. '+') a = a + 1
 				enddo
-				read(line, *, end=239) complexes(i), null, (complexstoich(i, j), complexcontents(i, j), &
-					null, j = 1, a - 1), complexstoich(i, a), complexcontents(i, a), e, f
+				read(line, *, err=262, end=239) complexes(i), null, (complexstoich(i, j), &
+					complexcontents(i, j), null, j = 1, a - 1), complexstoich(i, a), &
+					complexcontents(i, a), e, f
 239				if (len_trim(e) .eq. 0) then
 					equconstants(i) = 0
 					enthalpies(i) = 0
@@ -2625,8 +2490,8 @@ subroutine rdtr ! The main input reader
 			enddo
 			if (debug) write(iptty, '(a, i3, a)') 'Read ', ncomplexes, ' complexes.'
 			goto 2000
-!262			write(ierr, '(a)') "Error:  Missing ckeq or heq in cplx."
-!			goto 666
+262			write(ierr, '(a)') "Error:  Bad reaction format in cplx."
+			goto 666
 263			write(ierr, '(a)') "Error:  Bad parameter after equation in cplx."
 			goto 666
 		! Equilibrium constant model mode
@@ -2642,7 +2507,7 @@ subroutine rdtr ! The main input reader
 			fequi = .true.
 			logten = .false.
 			e = '*'
-			read(line, *, end=279) keyword, e
+			read(line, *, end=279, err=600) keyword, e
 279			if (e(1:3) .eq. 'log') logten = .true.
 			necomplexes = 0
 			neqtemps = 0
@@ -2655,7 +2520,8 @@ subroutine rdtr ! The main input reader
 					exit
 				elseif (line(1:1) .eq. '.') then
 					if ((j .ne. 0) .and. (i .eq. 0)) then
-						write(ierr, '(a)') 'Error:  Each complex must have at least one temperature entry.'
+						write(ierr, '(a)') 'Error:  Each complex must have at least '// &
+							'one temperature entry.'
 						goto 666
 					endif
 					neqtemps = max(i, neqtemps)
@@ -2781,7 +2647,8 @@ subroutine rdtr ! The main input reader
 							if (distmodels(j, 1, 1) .eq. distmodels(j, 2, 1)) then
 								distmodels(j, 3, 1) = distmodels(j, 1, 1) + 1
 							else
-								distmodels(j, 3, 1) = (distmodels(j, 1, 1) + distmodels(j, 2, 1)) / 2
+								distmodels(j, 3, 1) = (distmodels(j, 1, 1) + &
+									distmodels(j, 2, 1)) / 2
 							endif
 							distmodels(j, 3, 2) = (distmodels(j, 1, 2) + distmodels(j, 2, 2)) / 2
 						endif
@@ -2870,7 +2737,8 @@ subroutine rdtr ! The main input reader
 							if (solmodels(j, 1, 1) .eq. solmodels(j, 2, 1)) then
 								solmodels(j, 3, 1) = solmodels(j, 1, 1) + 1
 							else
-								solmodels(j, 3, 1) = (solmodels(j, 1, 1) + solmodels(j, 2, 1)) / 2
+								solmodels(j, 3, 1) = (solmodels(j, 1, 1) + &
+									solmodels(j, 2, 1)) / 2
 							endif
 							solmodels(j, 3, 2) = (solmodels(j, 1, 2) + solmodels(j, 2, 2)) / 2
 						endif
@@ -2919,7 +2787,7 @@ subroutine rdtr ! The main input reader
 				dscoefs(nrxns) = '*'
 				call readline
 				array = '*'
-				read(line, *, end=233) (array(i), i = 1, SPEC_MAX)
+				read(line, *, end=233, err=600) (array(i), i = 1, SPEC_MAX)
 233				do i = 1, SPEC_MAX
 					if (array(i) .eq. '*') then
 						exit
@@ -2928,9 +2796,9 @@ subroutine rdtr ! The main input reader
 						e = array(i)(1:index(array(i), '=') - 1)
 						f = array(i)(index(array(i), '=') + 1:len_trim(array(i)))
 						if (e(1:4) .eq. 'rate') then
-							read(f, *) rates(nrxns)
+							read(f, *, err=184) rates(nrxns)
 						elseif (e(1:4) .eq. 'dist') then
-							read(f, *) dscoefs(nrxns)
+							read(f, *, err=184) dscoefs(nrxns)
 						else
 							goto 185
 						endif
@@ -2964,7 +2832,7 @@ subroutine rdtr ! The main input reader
 				xcoef(nrxns) = -1
 				call readline
 				array = '*'
-				read(line, *, end=234) (array(i), i = 1, SPEC_MAX)
+				read(line, *, end=234, err=600) (array(i), i = 1, SPEC_MAX)
 234				do i = 1, SPEC_MAX
 					if (array(i) .eq. '*') then
 						exit
@@ -2973,11 +2841,11 @@ subroutine rdtr ! The main input reader
 						e = array(i)(1:index(array(i), '=') - 1)
 						f = array(i)(index(array(i), '=') + 1:len_trim(array(i)))
 						if (e(1:4) .eq. 'rate') then
-							read(f, *) rates(nrxns)
+							read(f, *, err=184) rates(nrxns)
 						elseif (e(1:4) .eq. 'dist') then
-							read(f, *) dscoefs(nrxns)
+							read(f, *, err=184) dscoefs(nrxns)
 						elseif (e(1:3) .eq. 'max') then
-							read(f, *) xcoef(nrxns)
+							read(f, *, err=184) xcoef(nrxns)
 						else
 							goto 185
 						endif
@@ -3045,7 +2913,7 @@ subroutine rdtr ! The main input reader
 				rates2(nrxns) = -1
 				call readline
 				array = '*'
-				read(line, *, end=235) (array(i), i = 1, SPEC_MAX)
+				read(line, *, end=235, err=600) (array(i), i = 1, SPEC_MAX)
 235				do i = 1, SPEC_MAX
 					if (array(i) .eq. '*') then
 						exit
@@ -3054,9 +2922,9 @@ subroutine rdtr ! The main input reader
 						e = array(i)(1:index(array(i), '=') - 1)
 						f = array(i)(index(array(i), '=') + 1:len_trim(array(i)))
 						if (e(1:3) .eq. 'for') then
-							read(f, *) rates(nrxns)
+							read(f, *, err=184) rates(nrxns)
 						elseif (e(1:3) .eq. 'rev') then
-							read(f, *) rates2(nrxns)
+							read(f, *, err=184) rates2(nrxns)
 						else
 							goto 185
 						endif
@@ -3094,7 +2962,7 @@ subroutine rdtr ! The main input reader
 						bioparams(nrxns, 3) = e
 					elseif (e(1:4) .eq. 'reac') then
 						array = '*'
-						read(e, *, end=214) (array(j), j = 1, SPEC_MAX)
+						read(e, *, end=214, err=600) (array(j), j = 1, SPEC_MAX)
 						k = 1
 214						do j = 1, SPEC_MAX
 							if (array(k) .eq. '*') then
@@ -3112,7 +2980,7 @@ subroutine rdtr ! The main input reader
 						enddo
 					elseif (e(1:4) .eq. 'prod') then
 						array = '*'
-						read(e, *, end=216) (array(j), j = 1, SPEC_MAX)
+						read(e, *, end=216, err=600) (array(j), j = 1, SPEC_MAX)
 						k = 1
 216						do j = 1, SPEC_MAX
 							if (array(k) .eq. '*') then
@@ -3129,7 +2997,7 @@ subroutine rdtr ! The main input reader
 							k = k + 1
 						enddo
 					elseif (e(1:6) .eq. 'biodeg') then
-						read(f, *, end=192) (icbioholder(nrxns, i), i = 1, SPEC_MAX)
+						read(f, *, end=192, err=184) (icbioholder(nrxns, i), i = 1, SPEC_MAX)
 					else
 						goto 185
 					endif
@@ -3159,7 +3027,7 @@ subroutine rdtr ! The main input reader
 				rates2(nrxns) = 0
 				call readline
 				array = '*'
-				read(line, *, end=236) (array(i), i = 1, SPEC_MAX)
+				read(line, *, end=236, err=600) (array(i), i = 1, SPEC_MAX)
 236				do i = 1, SPEC_MAX
 					if (array(i) .eq. '*') then
 						exit
@@ -3168,19 +3036,19 @@ subroutine rdtr ! The main input reader
 						e = array(i)(1:index(array(i), '=') - 1)
 						f = array(i)(index(array(i), '=') + 1:len_trim(array(i)))
 						if (e(1:2) .eq. 'ks') then
-							read(f, *) bioparams(nrxns, 4)
+							read(f, *, err=184) bioparams(nrxns, 4)
 						elseif (e(1:2) .eq. 'ka') then
-							read(f, *) bioparams(nrxns, 5)
+							read(f, *, err=184) bioparams(nrxns, 5)
 						elseif (e(1:3) .eq. 'dec') then
-							read(f, *) rates2(nrxns)
+							read(f, *, err=184) rates2(nrxns)
 						elseif (e(1:2) .eq. 'ph') then
-							read(f, *) bioparams(nrxns, 6)
+							read(f, *, err=184) bioparams(nrxns, 6)
 						elseif (e(1:2) .eq. 'qm') then
-							read(f, *) rates(nrxns)
+							read(f, *, err=184) rates(nrxns)
 						elseif (e(1:5) .eq. 'yield') then
-							read(f, *) bioparams(nrxns, 7)
+							read(f, *, err=184) bioparams(nrxns, 7)
 						elseif (e(1:2) .eq. 'xm') then
-							read(f, *) bioparams(nrxns, 8)
+							read(f, *, err=184) bioparams(nrxns, 8)
 						else
 							goto 185
 						endif
@@ -3189,11 +3057,13 @@ subroutine rdtr ! The main input reader
 					endif
 				enddo
 				if (bioparams(nrxns, 4) .eq. '*') then
-					write(ierr, '(a)') 'Error:  Substrate half maximum rate concentration invalid or missing.'
+					write(ierr, '(a)') 'Error:  Substrate half maximum rate concentration '// &
+						'invalid or missing.'
 					goto 666
 				endif
 				if (bioparams(nrxns, 5) .eq. '*') then
-					write(ierr, '(a)') 'Error:  Electron acceptor half maximum rate concentration invalid or missing.'
+					write(ierr, '(a)') 'Error:  Electron acceptor half maximum rate '// &
+						'concentration invalid or missing.'
 					goto 666
 				endif
 				if (bioparams(nrxns, 6) .eq. '*') then
@@ -3221,7 +3091,7 @@ subroutine rdtr ! The main input reader
 			elseif (rxntypes(nrxns) .eq. 5) then
 				call readline
 				array = '*'
-				read(line, *, end=193) (array(i), i = 1, SPEC_MAX)
+				read(line, *, end=193, err=600) (array(i), i = 1, SPEC_MAX)
 193				reactants(nrxns, 1) = array(1)
 				if (index(array(2), '=') .eq. 0) then
 					goto 183
@@ -3232,7 +3102,7 @@ subroutine rdtr ! The main input reader
 				rates(nrxns) = -1
 				call readline
 				array = '*'
-				read(line, *, end=237) (array(i), i = 1, SPEC_MAX)
+				read(line, *, end=237, err=600) (array(i), i = 1, SPEC_MAX)
 237				do i = 1, SPEC_MAX
 					if (array(i) .eq. '*') then
 						exit
@@ -3241,7 +3111,7 @@ subroutine rdtr ! The main input reader
 						e = array(1)(1:index(array(i), '=') - 1)
 						f = array(1)(index(array(i), '=') + 1:len_trim(array(i)))
 						if (e(1:4) .eq. 'half') then
-							read(f, *) rates(nrxns)
+							read(f, *, err=184) rates(nrxns)
 						else
 							goto 185
 						endif
@@ -3282,7 +3152,8 @@ subroutine rdtr ! The main input reader
 							goto 285
 						endif
 					enddo
-					write(ierr, '(a)') 'Error:  Mineral "'//trim(reactants(nrxns, 1))//'" not found in lookup database.'
+					write(ierr, '(a)') 'Error:  Mineral "'//trim(reactants(nrxns, 1))// &
+						'" not found in lookup database.'
 					goto 666
 				endif
 				flag = .false.
@@ -3329,7 +3200,7 @@ subroutine rdtr ! The main input reader
 				xcoef(nrxns) = -1
 				porchange(nrxns, 1) = -1
 				porchange(nrxns, 2) = -1
-				read(line, *, end=238) (array(i), i = 1, SPEC_MAX)
+				read(line, *, end=238, err=600) (array(i), i = 1, SPEC_MAX)
 238				do i = 1, SPEC_MAX
 					if (array(i) .eq. '*') then
 						exit
@@ -3338,25 +3209,25 @@ subroutine rdtr ! The main input reader
 						e = array(i)(1:index(array(i), '=') - 1)
 						f = array(i)(index(array(i), '=') + 1:len_trim(array(i)))
 						if (e(1:3) .eq. 'sol') then
-							read(f, *) dscoefs(nrxns)
+							read(f, *, err=184) dscoefs(nrxns)
 						elseif (e(1:4) .eq. 'rate') then
-							read(f, *) rates(nrxns)
+							read(f, *, err=184) rates(nrxns)
 						elseif (e(1:5) .eq. 'sarea') then
-							read(f, *) xcoef(nrxns)
+							read(f, *, err=184) xcoef(nrxns)
 						elseif (e(1:3) .eq. 'mol') then
 							if (rxntypes(i) .eq. 7) then
 								write(ierr, '(a)') 'Error:  Molecular weight only '// &
 									'available for reaction type 8.'
 								goto 666
 							endif
-							read(f, *) porchange(nrxns, 1)
+							read(f, *, err=184) porchange(nrxns, 1)
 						elseif (e(1:4) .eq. 'dens') then
 							if (rxntypes(i) .eq. 7) then
 								write(ierr, '(a)') 'Error:  Porosity change only '// &
 									'available for reaction type 8.'
 								goto 666
 							endif
-							read(f, *) porchange(nrxns, 2)
+							read(f, *, err=184) porchange(nrxns, 2)
 						else
 							goto 185
 						endif
@@ -3393,9 +3264,9 @@ subroutine rdtr ! The main input reader
 			endif
 182			write(ierr, '(a)') 'Error reading reaction.'
 			goto 666
-183			write(ierr, '(a)') 'Error:  Check reaction format.'
+183			write(ierr, '(a)') 'Error:  Invalid reaction format.'
 			goto 666
-184			write(ierr, '(a)') 'Error:  Check key/value list syntax.'
+184			write(ierr, '(a)') 'Error:  Invalid syntax in key/value list.'
 			goto 666
 185			write(ierr, '(a)') 'Error:  Unknown key "'//trim(e)//'" in key/value list.'
 			goto 666
@@ -3459,8 +3330,9 @@ subroutine rdtr ! The main input reader
 		! "null," which we ignore.
 		elseif (keyword .eq. 'null') then
 			if (debug) then
-				read(line, *, end=256) keyword, e
-256				write(iptty, '(a)') 'Skipping null statement "'//trim(e)//'".'
+				e = '*'
+				read(line, *, end=256, err=600) keyword, e
+256				if (e .ne. '*') write(iptty, '(a)') 'Skipping null statement "'//trim(e)//'".'
 			endif
 			do
 				call readline
@@ -3498,15 +3370,18 @@ subroutine rdtr ! The main input reader
 	endif
 	! Check that selected set in trxninit match the correct values (more checks are done when setting the values)
 	if (nspeci .ne. nspecies) then
-		write(ierr, '(a, i3, a, i3, a)') 'Internal error:  Components do not pass presetting check.  (', nspeci, '/', nspecies, ')'
+		write(ierr, '(a, i3, a, i3, a)') 'Internal error:  Components do not pass presetting check.  (', &
+			nspeci, '/', nspecies, ')'
 		goto 667
 	endif
 	if (numrxn .ne. nrxns) then
-		write(ierr, '(a, i3, a, i3, a)') 'Internal error:  Reactions do not pass presetting check.  (', numrxn, '/', nrxns, ')'
+		write(ierr, '(a, i3, a, i3, a)') 'Internal error:  Reactions do not pass presetting check.  (', &
+			numrxn, '/', nrxns, ')'
 		goto 667
 	endif
 	if (ncplx .ne. ncomplexes) then
-		write(ierr, '(a, i3, a, i3, a)') 'Internal error:  Complexes do not pass presetting check.  (', ncplx, '/', ncomplexes, ')'
+		write(ierr, '(a, i3, a, i3, a)') 'Internal error:  Complexes do not pass presetting check.  (', &
+			ncplx, '/', ncomplexes, ')'
 		goto 667
 	endif
 	! Check that all the columns in assign are good and fill in values for missing columns.
@@ -3656,7 +3531,7 @@ subroutine rdtr ! The main input reader
 			endif
 		enddo
 		nzones = nzones + 1
-		read(zonenames(i), *) zones(nzones)
+		read(zonenames(i), *, err=602) zones(nzones)
 		zonegrid(nzones, zinit) = '*'
 		zonegrid(nzones, zboun) = '*'
 		zonegrid(nzones, zrock) = '*'
@@ -4138,7 +4013,8 @@ subroutine rdtr ! The main input reader
 		write(iout, '(a)') 'Components:'
 		write(iout, '(a)') '(State) (Component Name)    (Master Species)    (Guess)   (Weight)'
 		do i = 1, nspecies
-			write(iout, '(a2, a6, a20, a20, es8.2, a2)', advance='no') states(i), '      ', species(i), masters(i), guesses(i), '  '
+			write(iout, '(a2, a6, a20, a20, es8.2, a2)', advance='no') states(i), '      ', &
+				species(i), masters(i), guesses(i), '  '
 				do j = 1, ncdenspecs
 					if (species(i) .eq. cdenspecs(j)) then
 						write(iout, '(f7.2)', advance='no') molweights(j)
@@ -4197,10 +4073,12 @@ subroutine rdtr ! The main input reader
 		write(iout, '(a)') 'Aqueous complexes:'
 		if (ncomplexes .eq. 0) write(iout, '(a)') '(none)'
 		do i = 1, ncomplexes
-			write(iout, '(a, f6.2, a)', advance='no') trim(complexes(i))//' = ', complexstoich(i, 1), ' '//trim(complexcontents(i, 1))
+			write(iout, '(a, f6.2, a)', advance='no') trim(complexes(i))//' = ', complexstoich(i, 1), &
+				' '//trim(complexcontents(i, 1))
 			do j = 2, SPEC_MAX
 				if (complexcontents(i, j) .eq. '*') exit
-				write(iout, '(a, f6.2, a)', advance='no') ' + ', complexstoich(i, j), ' '//trim(complexcontents(i, j))
+				write(iout, '(a, f6.2, a)', advance='no') ' + ', complexstoich(i, j), &
+					' '//trim(complexcontents(i, j))
 			enddo
 			if ((flookup) .and. (equconstants(i) .ne. 0)) then
 				write(iout, '(a, es10.2, a)') '    (constant K = ', equconstants(i), ')'
@@ -4233,13 +4111,15 @@ subroutine rdtr ! The main input reader
 			write(iout, '(f6.2, a)', advance='no') stoichiometries(i, 1, 1), ' '//trim(reactants(i, 1))
 			do j = 2, SPEC_MAX
 				if (reactants(i, j) .eq. '*') exit
-				write(iout, '(a, f6.2, a)', advance='no') ' + ', stoichiometries(i, 1, j), ' '//trim(reactants(i, j))
+				write(iout, '(a, f6.2, a)', advance='no') ' + ', stoichiometries(i, 1, j), &
+					' '//trim(reactants(i, j))
 			enddo
 			write(iout, '(a)', advance='no') ' = '
 			write(iout, '(f6.2, a)', advance='no') stoichiometries(i, 2, 1), ' '//trim(products(i, 1))
 			do j = 2, SPEC_MAX
 				if (products(i, j) .eq. '*') exit
-				write(iout, '(a, f6.2, a)', advance='no') ' + ', stoichiometries(i, 2, j), ' '//trim(products(i, j))
+				write(iout, '(a, f6.2, a)', advance='no') ' + ', stoichiometries(i, 2, j), &
+					' '//trim(products(i, j))
 			enddo
 			write(iout, *)
 		enddo
@@ -4281,7 +4161,7 @@ subroutine rdtr ! The main input reader
 			if (zonegrid(zoneresolv(izonef(i)), ztpor) .eq. '*') then
 				ps_trac(i) = ps(i)
 			else
-				read(zonegrid(zoneresolv(izonef(i)), ztpor), *) ps_trac(i)
+				read(zonegrid(zoneresolv(izonef(i)), ztpor), *, err=341) ps_trac(i)
 				if (ps_trac(i) .le. 0) then
 					write(ierr, '(a)') 'Error:  Tracer porosity must be positive.'
 					goto 666
@@ -4289,7 +4169,10 @@ subroutine rdtr ! The main input reader
 			endif
 		enddo
 	endif
-	if ((dispmode .ne. 0) .and. (dispmode .ne. 1)) then
+	goto 342
+341	write(ierr, '(a)') 'Error:  Tracer porosity is not a valid number.'
+	goto 666
+342	if ((dispmode .ne. 0) .and. (dispmode .ne. 1)) then
 		write(ierr, '(a)') 'Internal error determining dispersivity mode.'
 		goto 667
 	endif
@@ -4821,7 +4704,8 @@ subroutine rdtr ! The main input reader
 		mw_speci = 0
 		do i = 1, ncdenspecs
 			do j = 1, nspecies
-				if ((cdenspecs(i) .eq. masters(j)) .or. (cdenspecs(i) .eq. species(j)) .and. (cdenspecs(i) .ne. '*')) then
+				if ((cdenspecs(i) .eq. masters(j)) .or. (cdenspecs(i) .eq. species(j)) .and. &
+					(cdenspecs(i) .ne. '*')) then
 					if ((states(j) .ne. 'a') .and. (states(j) .ne. 'h')) then
 						write(ierr, '(a)') 'Error:  Master species "'//trim(cdenspecs(i))// &
 							'" in cden is not aqueous or aqueous Henry''s Law.'
@@ -5212,7 +5096,8 @@ subroutine rdtr ! The main input reader
 				endif
 				do k = 1, nspecies
 					if ((species(k) .eq. reactants(i, j)) .or. (masters(k) .eq. reactants(i, j))) then
-						if ((states(k) .eq. 'a') .or. (states(k) .eq. 'h') .or. (states(k) .eq. 'i')) then
+						if ((states(k) .eq. 'a') .or. (states(k) .eq. 'h') .or. &
+							(states(k) .eq. 'i')) then
 							naqsp(i) = naqsp(i) + 1
 							do o = 1, ncpnt
 								if (cpntnam(o) .eq. species(k)) irxnic(i, naqsp(i)) = o
@@ -5253,7 +5138,8 @@ subroutine rdtr ! The main input reader
 				endif
 				do k = 1, nspecies
 					if ((species(k) .eq. products(i, j)) .or. (masters(k) .eq. products(i, j))) then
-						if ((states(k) .eq. 'a') .or. (states(k) .eq. 'h') .or. (states(k) .eq. 'i')) then
+						if ((states(k) .eq. 'a') .or. (states(k) .eq. 'h') .or. &
+							(states(k) .eq. 'i')) then
 							naqsp(i) = naqsp(i) + 1
 							do o = 1, ncpnt
 								if (cpntnam(o) .eq. species(k)) irxnic(i, naqsp(i)) = o
@@ -5297,7 +5183,7 @@ subroutine rdtr ! The main input reader
 			goto 219
 218			e = f
 			f = '1'
-			read(f, *) o
+			read(f, *, err=602) o
 219			do j = 1, nspecies
 				if (e .eq. species(j)) then
 					if ((states(j) .ne. 'a') .and. (states(j) .ne. 'h')) then
@@ -5326,7 +5212,7 @@ subroutine rdtr ! The main input reader
 			goto 224
 223			e = f
 			f = '1'
-			read(f, *) o
+			read(f, *, err=602) o
 224			do j = 1, nspecies
 				if (e .eq. species(j)) then
 					if ((states(j) .ne. 'a') .and. (states(j) .ne. 'h')) then
@@ -5351,7 +5237,7 @@ subroutine rdtr ! The main input reader
 			goto 226
 225			e = f
 			f = '1'
-			read(f, *) o
+			read(f, *, err=602) o
 226			do j = 1, nspecies
 				if (e .eq. species(j)) then
 					if (states(j) .ne. 's') then
@@ -5443,13 +5329,13 @@ subroutine rdtr ! The main input reader
 					endif
 				enddo
 			enddo
-			read(bioparams(i, 4), *) ckc(i)
-			read(bioparams(i, 5), *) cka(i)
+			read(bioparams(i, 4), *, err=602) ckc(i)
+			read(bioparams(i, 5), *, err=602) cka(i)
 			decay(i) = rates2(i)
-			read(bioparams(i, 6), *) phthresh(i)
+			read(bioparams(i, 6), *, err=602) phthresh(i)
 			qm(i) = rates(i)
-			read(bioparams(i, 7), *) yield(i)
-			read(bioparams(i, 8), *) xminit(i)
+			read(bioparams(i, 7), *, err=602) yield(i)
+			read(bioparams(i, 8), *, err=602) xminit(i)
 			nbiofrm(i) = 0
 			do j = 1, SPEC_MAX
 				if (icbioholder(i, j) .eq. '*') then
@@ -5701,6 +5587,11 @@ subroutine rdtr ! The main input reader
 	! End of FEHM compatibility block.
 	goto 6000
 
+600	write(ierr, '(a)') 'Error:  Generic read error while reading input in trxn.'
+	goto 666
+602	write(ierr, '(a)') 'Error:  Generic read error in trxn postprocessing.'
+	goto 666
+
 	! Go to 666 for user errors
 666	if (reading) then
 		write(ierr, '(a)') 'Error in trxn during main read.'
@@ -5712,10 +5603,9 @@ subroutine rdtr ! The main input reader
 		write(iptty, '(a)') 'Error in trxn in postprocessing.'
 	endif
 	stop
-
 	! Go to 667 for internal errors
 667	write(iptty, '(a)') 'An internal error has occurred in trxn.  This should never happen, '// &
-		'and indicates a bug in the program.  Please contact mschauer@lanl.gov with information about the error.'
+		'and indicates a bug in the program.  Please contact fehm-dev@lanl.gov with information about the error.'
 	stop
 
 	! Perform cleanup if no errors have occurred
@@ -5737,6 +5627,22 @@ subroutine rdtr ! The main input reader
 	if (allocated(complexcontents)) deallocate(complexcontents)
 	if (allocated(complexes)) deallocate(complexes)
 	if (allocated(complexstoich)) deallocate(complexstoich)
+	if (allocated(datcden)) deallocate(datcden)
+	if (allocated(datcomp)) deallocate(datcomp)
+	if (allocated(datcplx)) deallocate(datcplx)
+	if (allocated(datcplxheq)) deallocate(datcplxheq)
+	if (allocated(datcplxlkeq)) deallocate(datcplxlkeq)
+	if (allocated(datcplxmain)) deallocate(datcplxmain)
+	if (allocated(datcplxstoic)) deallocate(datcplxstoic)
+	if (allocated(datcplxtemp)) deallocate(datcplxtemp)
+	if (allocated(datmaster)) deallocate(datmaster)
+	if (allocated(datmin)) deallocate(datmin)
+	if (allocated(datminheq)) deallocate(datminheq)
+	if (allocated(datminlkeq)) deallocate(datminlkeq)
+	if (allocated(datminmain)) deallocate(datminmain)
+	if (allocated(datminnam)) deallocate(datminnam)
+	if (allocated(datminstoic)) deallocate(datminstoic)
+	if (allocated(datmintemp)) deallocate(datmintemp)
 	if (allocated(dhh)) deallocate(dhh)
 	if (allocated(dispnames)) deallocate(dispnames)
 	if (allocated(distmodelnames)) deallocate(distmodelnames)
@@ -5791,6 +5697,9 @@ subroutine rdtr ! The main input reader
 	if (allocated(vtgrid)) deallocate(vtgrid)
 	if (allocated(vtnames)) deallocate(vtnames)
 	if (allocated(vtspecies)) deallocate(vtspecies)
+	if (allocated(vx)) deallocate(vx)
+	if (allocated(vy)) deallocate(vy)
+	if (allocated(vz)) deallocate(vz)
 	if (allocated(wtgrid)) deallocate(wtgrid)
 	if (allocated(wtnames)) deallocate(wtnames)
 	if (allocated(wtspecies)) deallocate(wtspecies)
