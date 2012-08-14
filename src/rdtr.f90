@@ -1,6 +1,6 @@
 !***********************************************************************
-! Copyright 2011 Los Alamos National Security, LLC  All rights reserved
-! Unless otherwise indicated,  this information has been authored by an
+! Copyright 2011 Los Alamos National Security, LLC   All rights reserved
+! Unless otherwise indicated,  this information  has been authored by an
 ! employee or employees of the Los Alamos National Security, LLC (LANS),
 ! operator of the  Los  Alamos National  Laboratory  under Contract  No.
 ! DE-AC52-06NA25396  with  the U. S. Department  of  Energy.  The  U. S.
@@ -23,7 +23,7 @@
 !D2 Initial implementation: August 2011,  Programmer: Matthew Schauer
 !D2 
 !D2 August 2012  M. Schauer
-!D2 Many major bug fixes and additions to functionality
+!D2 Major bug fixes and added functionality
 !D2
 !***********************************************************************
 
@@ -523,10 +523,6 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 			masters = '*'
 			states = '*'
 			array3 = '*'
-			nspeci = 0
-			nimm = 0
-			nvap = 0
-			ncpnt = 0
 			do
 1105				call readline
 				if (len_trim(line) .eq. 0) exit
@@ -543,11 +539,7 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 					nimm = nimm + 1
 				elseif (states(nspeci)(1:1) .eq. 'g') then
 					nvap = nvap + 1
-				elseif (states(nspeci)(1:1) .eq. 'a') then
-					ncpnt = ncpnt + 1
-					array3(ncpnt) = species(nspeci)
-				elseif (states(nspeci)(1:1) .eq. 'h') then
-					nvap = nvap + 1
+				elseif ((states(nspeci)(1:1) .eq. 'a') .or. (states(nspeci)(1:1) .eq. 'h')) then
 					ncpnt = ncpnt + 1
 					array3(ncpnt) = species(nspeci)
 				else
@@ -788,7 +780,7 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 							exit
 						endif
 					enddo
-					if (flag .eqv. .false.) then
+					if (.not. flag) then
 						write(ierr, '(a)') 'Error:  Aqueous or Henry''s Law component "'// &
 							trim(array2(i, j))//'" in group not found in comp.'
 						goto 1666
@@ -2108,14 +2100,14 @@ subroutine rdtr ! The main input reader
 					enddo
 				enddo
 			enddo
-			if (fltype .eqv. .false.) lsorptypes = 0
-			if (fvtype .eqv. .false.) vsorptypes = 0
-			if (fa1l .eqv. .false.) a1l = 0
-			if (fa2l .eqv. .false.) a2l = 0
-			if (fbl .eqv. .false.) bl = 0
-			if (fa1v .eqv. .false.) a1v = 0
-			if (fa2v .eqv. .false.) a2v = 0
-			if (fbv .eqv. .false.) bv = 0
+			if (.not. fltype) lsorptypes = 0
+			if (.not. fvtype) vsorptypes = 0
+			if (.not. fa1l) a1l = 0
+			if (.not. fa2l) a2l = 0
+			if (.not. fbl) bl = 0
+			if (.not. fa1v) a1v = 0
+			if (.not. fa2v) a2v = 0
+			if (.not. fbv) bv = 0
 			do i = 1, anspecies
 				sorpspecs(i) = array3(1, i)
 				do j = 1, nsorp
@@ -2161,8 +2153,6 @@ subroutine rdtr ! The main input reader
 						ldiffm = 1
 					elseif ((g .eq. '2') .or. (g .eq. 'cw')) then
 						ldiffm = 2
-					elseif ((g .eq. '2') .or. (g .eq. 'adif')) then
-						ldiffm = 3
 					else
 						write(ierr, '(a)') 'Error:  Liquid diffusion model "'//trim(g)// &
 							'" not recognized.'
@@ -2175,8 +2165,6 @@ subroutine rdtr ! The main input reader
 						vdiffm = 1
 					elseif ((g .eq. '2') .or. (g .eq. 'cw')) then
 						vdiffm = 2
-					elseif ((g .eq. '3') .or. (g .eq. 'adif')) then
-						vdiffm = 3
 					else
 						write(ierr, '(a)') 'Error:  Vapor diffusion model "'//trim(g)// &
 							'" not recognized.'
@@ -2724,7 +2712,7 @@ subroutine rdtr ! The main input reader
 				else
 					i = i + 1
 					read(line, *, err=274, end=274) eqtemps(j, i), eqconsts(j, i)
-					if (logten .eqv. .true.) eqconsts(j, i) = 10 ** eqconsts(j, i)
+					if (logten) eqconsts(j, i) = 10 ** eqconsts(j, i)
 					if (eqconsts(j, i) .lt. 0) then
 						write(ierr, '(a)') 'Error:  Equilibrium constant cannot be less than zero.'
 						goto 666
@@ -3025,7 +3013,7 @@ subroutine rdtr ! The main input reader
 					elseif (array(i) .eq. '+') then
 						continue
 					elseif (index(array(i), '=') .ne. 0) then
-						if (flag .eqv. .true.) then
+						if (flag) then
 							goto 183
 						endif
 						flag = .true.
@@ -3033,7 +3021,7 @@ subroutine rdtr ! The main input reader
 					elseif (array(i) .eq. '+') then
 						continue
 					else
-						if (flag .eqv. .false.) then
+						if (.not. flag) then
 							stoichiometries(nrxns, 1, j) = 1
 							read(array(i), *, err=189) stoichiometries(nrxns, 1, j)
 							i = i + 1
@@ -3147,17 +3135,17 @@ subroutine rdtr ! The main input reader
 					endif
 192					continue
 				enddo
-				if (fsubs .eqv. .false.) then
+				if (.not. fsubs) then
 					write(ierr, '(a, i3, a)') 'Error:  No substrate provided for type 4 '// &
 						'reaction ', nrxns, '.'
 					goto 666
 				endif
-				if (felec .eqv. .false.) then
+				if (.not. felec) then
 					write(ierr, '(a, i3, a)') 'Error:  No electron acceptor provided for type 4 '// &
 						'reaction ', nrxns, '.'
 					goto 666
 				endif
-				if (fbiomass .eqv. .false.) then
+				if (.not. fbiomass) then
 					write(ierr, '(a, i3, a)') 'Error:  No biomass provided for type 4 '// &
 						'reaction ', nrxns, '.'
 					goto 666
@@ -3307,7 +3295,7 @@ subroutine rdtr ! The main input reader
 					elseif (array(i) .eq. '+') then
 						continue
 					elseif (index(array(i), '=') .ne. 0) then
-						if (flag .eqv. .true.) then
+						if (flag) then
 							goto 183
 						endif
 						flag = .true.
@@ -3315,7 +3303,7 @@ subroutine rdtr ! The main input reader
 					elseif (array(i) .eq. '*') then
 						exit
 					else
-						if (flag .eqv. .false.) then
+						if (.not. flag) then
 							stoichiometries(nrxns, 1, j) = 1
 							read(array(i), *, err=195) stoichiometries(nrxns, 1, j)
 							i = i + 1
@@ -3496,7 +3484,7 @@ subroutine rdtr ! The main input reader
 	if (debug) write(iptty, '(a)') 'Checking data...'
 	! Sanity checks!
 	! Ensure that the bare minimums (minima?) are present
-	if (fcomp .eqv. .false.) then
+	if (.not. fcomp) then
 		write(ierr, '(a)') 'Error:  comp was not specified.'
 		goto 666
 	endif
@@ -3504,7 +3492,7 @@ subroutine rdtr ! The main input reader
 		write(ierr, '(a)') 'Error:  At least one component must be specified in comp.'
 		goto 666
 	endif
-	if (fheader .eqv. .false.) then
+	if (.not. fheader) then
 		write(ierr, '(a)') 'Error:  header was not specified.'
 		goto 666
 	endif
@@ -3557,25 +3545,25 @@ subroutine rdtr ! The main input reader
 		endif
 	enddo
 	! Ensure that the appropriate section has been included for each column specified in assign.
-	if ((zboun .ne. 0) .and. (fwater .eqv. .false.) .and. (fvap .eqv. .false.)) then
+	if ((zboun .ne. 0) .and. (.not. fwater) .and. (.not. fvap)) then
 		write(ierr, '(a)') 'Error:   boun column specified in assign, but no water or gas section specified.'
 		goto 666
-	elseif ((zinit .ne. 0) .and. (fwater .eqv. .false.)) then
+	elseif ((zinit .ne. 0) .and. (.not. fwater)) then
 		write(ierr, '(a)') 'Error:  water column specified in assign, but no water section specified.'
 		goto 666
-	elseif ((zrock .ne. 0) .and. (frock .eqv. .false.)) then
+	elseif ((zrock .ne. 0) .and. (.not. frock)) then
 		write(ierr, '(a)') 'Error:  rock column specified in assign, but no rock section specified.'
 		goto 666
-	elseif ((zvap .ne. 0) .and. (fvap .eqv. .false.)) then
+	elseif ((zvap .ne. 0) .and. (.not. fvap)) then
 		write(ierr, '(a)') 'Error:  gas column specified in assign, but no gas section specified.'
 		goto 666
-	elseif ((zsorp .ne. 0) .and. (fsorp .eqv. .false.)) then
+	elseif ((zsorp .ne. 0) .and. (.not. fsorp)) then
 		write(ierr, '(a)') 'Error:  sorp column specified in assign, but no sorp section specified.'
 		goto 666
-	elseif ((zdisp .ne. 0) .and. (fdisp .eqv. .false.)) then
+	elseif ((zdisp .ne. 0) .and. (.not. fdisp)) then
 		write(ierr, '(a)') 'Error:  disp column specified in assign, but no xyzdisp or londisp section specified.'
 		goto 666
-	elseif ((zinit + zrock + zvap .ne. 0) .and. (fmoles .eqv. .true.)) then
+	elseif ((zinit + zrock + zvap .ne. 0) .and. (fmoles)) then
 		write(ierr, '(a)') 'Error:  The water, rock, and gas columns must be omitted if the moles block is used.'
 		goto 666
 	endif
@@ -3857,7 +3845,7 @@ subroutine rdtr ! The main input reader
 	vt(ndisp + 1) = 0
 	dispnames(ndisp+1) = '*'
 	! Check that all components in water/rock/gas/moles appear in comp and are of the appropriate state.
-	if (fwater .eqv. .true.) then
+	if (fwater) then
 		do i = 1, nwtspecies
 			do j = 1, nspecies
 				if (species(j) .eq. wtspecies(i)) then
@@ -3879,7 +3867,7 @@ subroutine rdtr ! The main input reader
 169			continue
 		enddo
 	endif
-	if (frock .eqv. .true.) then
+	if (frock) then
 		do i = 1, nrtspecies
 			do j = 1, nspecies
 				if (species(j) .eq. rtspecies(i)) then
@@ -3897,7 +3885,7 @@ subroutine rdtr ! The main input reader
 170			continue
 		enddo
 	endif
-	if (fvap .eqv. .true.) then
+	if (fvap) then
 		do i = 1, nvtspecies
 			do j = 1, nspecies
 				if (species(j) .eq. vtspecies(i)) then
@@ -3915,7 +3903,7 @@ subroutine rdtr ! The main input reader
 171			continue
 		enddo
 	endif
-	if (fmoles .eqv. .true.) then
+	if (fmoles) then
 		do i = 1, nmspecs
 			do j = 1, nspecies
 				if (species(j) .eq. mspecs(i)) then
@@ -3928,7 +3916,7 @@ subroutine rdtr ! The main input reader
 		enddo
 	endif
 	! Ensure that hparam exists if there are Henry's Law components, and that hparam contains all Henry's Law components.
-	if (fhparam .eqv. .false.) then
+	if (.not. fhparam) then
 		do i = 1, nspecies
 			if (states(i) .eq. 'h') then
 				write(ierr, '(a)') 'Error:  Henry''s Law components have been specified in comp, '// &
@@ -3952,22 +3940,25 @@ subroutine rdtr ! The main input reader
 		enddo
 	endif
 	! Ensure that everything in print is a component or master species.
-	if (fprint .eqv. .true.) then
+	if (fprint) then
 		do i = 1, nprint
 			if (printspecies(i) .eq. 'all') then
-				nprint = nspecies + nmasters
+				nprint = nspecies + nmasters + ncomplexes
 				deallocate(printspecies)
 				allocate(printspecies(nprint))
 				do j = 1, nspecies
-					printspecies(i) = species(i)
+					printspecies(j) = species(j)
+				enddo
+				do j = 1, ncomplexes
+					printspecies(nspecies + j) = complexes(j)
 				enddo
 				k = 1
 				do j = 1, nspecies
-					if (masters(i) .ne. '*') then
-						printspecies(nspecies + k) = masters(i)
+					if (masters(j) .ne. '*') then
+						printspecies(nspecies + ncomplexes + k) = masters(j)
 						k = k + 1
 					endif
-				enddo	
+				enddo
 				goto 202
 			elseif (printspecies(i) .eq. 'none') then
 				nprint = 0
@@ -3985,7 +3976,21 @@ subroutine rdtr ! The main input reader
 		enddo
 202		continue
 	else
-		nprint = 0
+		nprint = nspecies + nmasters + ncomplexes
+		allocate(printspecies(nprint))
+		do j = 1, nspecies
+			printspecies(j) = species(j)
+		enddo
+		do j = 1, ncomplexes
+			printspecies(nspecies + j) = complexes(j)
+		enddo
+		k = 1
+		do j = 1, nspecies
+			if (masters(j) .ne. '*') then
+				printspecies(nspecies + ncomplexes + k) = masters(j)
+				k = k + 1
+			endif
+		enddo	
 	endif
 	! Ensure that all dscoefs are names of models in dist and sol.
 	do i = 1, nrxns
@@ -4017,12 +4022,12 @@ subroutine rdtr ! The main input reader
 203		continue
 	enddo
 	! Check that if equi keyword is provided in cplx, an equi block appears.
-	if ((cequi .eqv. .true.) .and. (fequi .eqv. .false.)) then
+	if ((cequi) .and. (.not. fequi)) then
 		write(ierr, '(a)') 'Error:  "equi" keyword supplied in cplx, but no equi block provided.'
 		goto 666
 	endif
 	! Check that all complexes in equi are in cplx and vice versa.
-	if (cequi .eqv. .true.) then
+	if (cequi) then
 		do i = 1, ncomplexes
 			do j = 1, necomplexes
 				if (complexes(i) .eq. ecomplexes(j)) goto 276
@@ -4349,28 +4354,6 @@ subroutine rdtr ! The main input reader
 	do i = 1, nspecies
 		spnam(i) = species(i)
 	enddo
-	! Set groups 12, 13 (dispersivity)
-	icpnt = 1
-	iimm = 1
-	ivap = 1
-	do nsp = 1, nspeci
-		if ((states(nsp) .eq. 'a') .or. (states(nsp) .eq. 'h') .or. (states(nsp) .eq. 'i')) then
-			pcpnt(icpnt) = nsp
-			cpntnam(icpnt) = species(nsp)
-			icpnt = icpnt + 1
-		elseif (states(nsp) .eq. 's') then
-			pimm(iimm) = nsp
-			immnam(iimm) = species(nsp)
-			iimm = iimm + 1
-		elseif (states(nsp) .eq. 'g') then
-			pvap(ivap) = nsp
-			vapnam(ivap) = species(nsp)
-			ivap = ivap + 1
-		else
-			write(ierr, '(a)') 'Internal error processing phase data.'
-			goto 667
-		endif
-	enddo
 	! Set groups 12, 13 (mflag)
 !	do i = 1, nspecies
 !		do j = 1, numsorp
@@ -4574,7 +4557,7 @@ subroutine rdtr ! The main input reader
 					inflag = .false.
 					an((i - 1) * n0 + j) = an0
 				endif
-				if (inflag .eqv. .true.) then
+				if (inflag) then
 					a = 0
 					do o = 1, nwtspecies
 						if (wtspecies(o) .eq. species(i)) then
@@ -4669,7 +4652,7 @@ subroutine rdtr ! The main input reader
 					inflag = .false.
 					an((i - 1) * n0 + j) = an0
 				endif
-				if (inflag .eqv. .true.) then
+				if (inflag) then
 					a = 0
 					do o = 1, nrtspecies
 						if (rtspecies(o) .eq. species(i)) then
@@ -4701,7 +4684,7 @@ subroutine rdtr ! The main input reader
 					inflag = .false.
 					an((i - 1) * n0 + j) = an0
 				endif
-				if (inflag .eqv. .true.) then
+				if (inflag) then
 					a = 0
 					do o = 1, nvt
 						if (vtnames(o) .eq. zonegrid(zoneresolv(izonef(j)), zvap)) then
@@ -4804,7 +4787,7 @@ subroutine rdtr ! The main input reader
 					f = e(1:index(e, '.') - 1)
 					e = e(index(e, '.') + 1:len_trim(e))
 					if (f(1:5) .eq. 'accum') then
-						if (zfconst .eqv. .true.) then
+						if (zfconst) then
 							write(ierr, '(a)') 'Error:  Solute accumulation and '// &
 								'constant concentration at inflow nodes cannot '// &
 								'both be enabled.'
@@ -4813,7 +4796,7 @@ subroutine rdtr ! The main input reader
 						zfaccum = .true.
 						pcnsk(k) = 1
 					elseif (f(1:5) .eq. 'const') then
-						if (zfaccum .eqv. .true.) then
+						if (zfaccum) then
 							write(ierr, '(a)') 'Error:  Solute accumulation and '// &
 								'constant concentration at inflow nodes cannot '// &
 								'both be enabled.'
@@ -4877,33 +4860,65 @@ subroutine rdtr ! The main input reader
 		goto 666
 	endif
 338	continue
-	! End of trac value-setting.
-	! Set values for rxn.
-	if (rxn_flag .eq. 0) then
-		if (nimm + nvap .ne. 0) then
-			write (iout, '(a)') 'WARNING:  Reactions are disabled -- solid and gaseous species '// &
-				'will be ignored in this simulation.'
-			if (debug) write(iptty, '(a)') 'WARNING:  Reactions are disabled -- solid and gaseous species '// &
-				'will be ignored in this simulation.'
+	! Printing, guesses, names...
+	ncpnt = 0
+	nimm = 0
+	nvap = 0
+	cpntprt = 0
+	immprt = 0
+	vapprt = 0
+	ncpntprt = 0
+	nimmprt = 0
+	nvapprt = 0
+	ncplxprt = 0
+	cplxprt = 0
+	do i = 1, nspecies
+		if ((states(i) .eq. 'a') .or. (states(i) .eq. 'h') .or. (states(i) .eq. 'i')) then
+			ncpnt = ncpnt + 1
+			cpntnam(ncpnt) = species(i)
+			pcpnt(ncpnt) = i
+			if (rxn_flag .eq. 1) then
+				cpntgs(ncpnt) = guesses(i)
+				ifxconc(ncpnt) = 0 ! Taken care of internally
+			endif
+			do j = 1, nprint
+				if (printspecies(j) .eq. species(i)) then
+					ncpntprt = ncpntprt + 1
+					cpntprt(ncpntprt) = ncpnt
+				endif
+			enddo
+			!idcpnt(ncpnt) = ncpnt
+		elseif (states(i) .eq. 'g') then
+			nvap = nvap + 1
+			vapnam(nvap) = species(i)
+			pvap(nvap) = i
+			do j = 1, nprint
+				if (printspecies(j) .eq. species(i)) then
+					nvapprt = nvapprt + 1
+					vapprt(nvapprt) = nvap
+				endif
+			enddo
+			!idvap(nvap) = nimm
+		elseif (states(i) .eq. 's') then
+			nimm = nimm + 1
+			immnam(nimm) = species(i)
+			pimm(nimm) = i
+			do j = 1, nprint
+				if (printspecies(j) .eq. species(i)) then
+					nimmprt = nimmprt + 1
+					immprt(nimmprt) = nimm
+				endif
+			enddo
+			!idimm(nimm) = nimm
+		else
+			write(ierr, '(a)') 'Internal error setting species names.'
+			goto 667
 		endif
-		ncpntprt = ncpnt
-		do i = 1, ncpnt
-			cpntprt(i) = i
-		enddo
-		nimm = 0
-		nimmprt = 0
-		nvap = 0
-		nvapprt = 0
-		!nimmprt = nimm
-		!do i = 1, nimm
-		!	immprt(i) = i
-		!enddo
-		!nvapprt = nvap
-		!do i = 1, nvap
-		!	vapprt(i) = i
-		!enddo
-		goto 6000
-	endif
+241		continue
+	enddo
+	! End of trac value-setting.
+	if (rxn_flag .eq. 0) goto 6000
+	! Set values for rxn.
 	if (debug) write(iptty, '(a)') 'Applying data for rxn...'
 	rxnon = 1
 	rxnnaqueous = 0
@@ -4927,55 +4942,20 @@ subroutine rdtr ! The main input reader
 			rxnsolid(rxnnsolid) = species(i)
 		endif
 	enddo
-	! Group 1 and 2 values have already been set in tracrxn_init.
-	! Set group 3 - 6 values
-	ncpnt = 0
-	nimm = 0
-	nvap = 0
-	cpntprt = 0
-	immprt = 0
-	vapprt = 0
-	ncpntprt = nprint
-	do i = 1, nspecies
-		if ((states(i) .eq. 'a') .or. (states(i) .eq. 'h') .or. (states(i) .eq. 'i')) then
-			ncpnt = ncpnt + 1
-			cpntnam(ncpnt) = species(i)
-			cpntgs(ncpnt) = guesses(i)
-			ifxconc(ncpnt) = 0 ! Taken care of internally
-			do j = 1, nprint
-				if (printspecies(j) .eq. species(i)) then
-					cpntprt(ncpnt) = 1
-				endif
-			enddo
-			!idcpnt(ncpnt) = ncpnt
-		elseif (states(i) .eq. 'g') then
-			nvap = nvap + 1
-			vapnam(nvap) = species(i)
-			do j = 1, nprint
-				if (printspecies(j) .eq. species(i)) then
-					vapprt(nvap) = 1
-				endif
-			enddo
-			!idvap(nvap) = nimm
-		elseif (states(i) .eq. 's') then
-			nimm = nimm + 1
-			immnam(nimm) = species(i)
-			do j = 1, nprint
-				if (printspecies(j) .eq. species(i)) then
-					immprt(nimm) = 1
-				endif
-			enddo
-			!idimm(nimm) = nimm
-		else
-			write(ierr, '(a)') 'Internal error setting species names.'
-			goto 667
-		endif
-241		continue
+	! Printing of complexes
+	do i = 1, ncomplexes
+		do j = 1, nprint
+			if (complexes(i) .eq. printspecies(j)) then
+				ncplxprt = ncplxprt + 1
+				cplxprt(ncplxprt + 100) = i + 100
+			endif
+		enddo
 	enddo
+	! Group 1 and 2 values have already been set in trxninit.
+	! Groups 3 - 6 were set in trac, as they apply to all species.
 	! Groups 7 and 8 were taken care of in header.
 	! Set group 9, 10, and 11 values
 	temp_model = ' '
-	cplxprt = 0
 	do i = 1, ncomplexes
 		cplxnam(i + 100) = complexes(i)
 		if (flookup) then ! PHREEQC-style multi-parameter fit
@@ -4987,7 +4967,7 @@ subroutine rdtr ! The main input reader
 				ckeq(i + 100) = 0
 				heq(i + 100, 1:5) = heqfit(i, 1:5)
 			endif
-		elseif (cequi .eqv. .true.) then ! If we used equi to set ckeq as a function of temperature
+		elseif (cequi) then ! If we used equi to set ckeq as a function of temperature
 			temp_model(i + 100) = 'l'
 			do j = 1, necomplexes
 				if (complexes(i) .eq. ecomplexes(j)) then
@@ -5037,12 +5017,6 @@ subroutine rdtr ! The main input reader
 			goto 666
 240			continue
 		enddo
-		do j = 1, nprint
-			if (complexes(i) .eq. printspecies(j)) then
-				cplxprt(i) = 1
-				exit
-			endif
-		enddo
 	enddo
 	spstoic = 0
 	neg_conc_possible = 0
@@ -5064,39 +5038,6 @@ subroutine rdtr ! The main input reader
 			enddo
 		enddo
 	enddo
-	! Copied from read_rxn
-	ii = 0
-	do ic = 1, ncpnt
-		if (cpntprt(ic) .eq. 0) then
-			ii = ii + 1
-			cpntprt(ii) = ic
-		endif
-	enddo
-	ncpntprt = ii
-	ii = 100
-	do ix = 101, ncplx + 100
-		if (cplxprt(ix) .eq. 0) then
-			ii = ii + 1
-			cplxprt(ii) = ix
-		endif
-	enddo
-	ncplxprt = ii - 100
-	ii = 0
-	do im = 1, nimm
-		if (immprt(im) .eq. 0) then
-			ii = ii + 1
-			immprt(ii) = im
-		endif
-	enddo
-	nimmprt = ii
-	ii = 0
-	do iv = 1, nvap
-		if (vapprt(iv) .eq. 0) then
-			ii = ii + 1
-		vapprt(ii) = iv
-		endif
-	enddo
-	nvapprt = ii
 	! Set group 12 for each reaction
 	do i = 1, numrxn
 		idrxn(i) = rxntypes(i)
@@ -5324,7 +5265,7 @@ subroutine rdtr ! The main input reader
 								if (immnam(o) .eq. species(k)) irxnim(i, nimsp(i)) = o
 							enddo
 							stimirrv(i, nimsp(i)) = - stoichiometries(i, 2, j)
-						elseif (states(k) .eq. 'g') then
+						elseif ((states(k) .eq. 'g')) then
 							nivsp(i) = nivsp(i) + 1
 							do o = 1, nvap
 								if (vapnam(o) .eq. species(k)) irxniv(i, nivsp(i)) = o
@@ -5761,7 +5702,7 @@ subroutine rdtr ! The main input reader
 	goto 6000
 
 	! Go to 666 for user errors
-666	if (reading .eqv. .true.) then
+666	if (reading) then
 		write(ierr, '(a)') 'Error in trxn during main read.'
 		write(ierr, '(a)') ' >> '//trim(line)//' <<'
 		write(iptty, '(a)') 'Error in trxn during main read.'
@@ -5863,7 +5804,6 @@ subroutine rdtr ! The main input reader
 	macroread(5) = .true.
 	if (debug) write(iptty, '(a)') 'trxn read successfully.'
 	if (debug_stop) then
-		if (debug) call trxn_varcheck
 		write(iptty, '(a)') 'Stop requested:  stopping.'
 		stop
 	endif
