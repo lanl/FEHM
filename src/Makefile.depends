@@ -68,7 +68,7 @@ cntlin.o: comai.o comtable.o comxi.o
 cntlio.o: comai.o comxi.o
 co2_array.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 co2_array.o: comhi.o commeth.o davidi.o
-co2_fugacity.o: params_eosco2
+co2_fugacity.o:
 co2_properties.o: comai.o comco2.o comdi.o comrxni.o interpolate.o
 co2ctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 co2ctr.o: comhi.o comii.o comki.o comxi.o davidi.o
