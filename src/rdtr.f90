@@ -858,6 +858,7 @@ subroutine rdtr ! The main input reader
 	integer i, j, k, o, a, c, d					! Generic variables
 	real*8 r, u							! Generic variables
 	logical flag, flag2, reading					! Generic flags, whether we are reading input
+	logical fph							! Whether [H+] is specified as pH
 	logical fcomp, fwater, frock, fsorp, fdisp, fvap, fheader, &	! 
 		fassign, fhparam, fdiff, fspec, fgroup, fprint, fsol, &	! 
 		fdist, fequi, fcplx, fmoles, fuserc			! Flags denoting whether each section has been specified.
@@ -3223,7 +3224,7 @@ subroutine rdtr ! The main input reader
 							read(f, *, err=184) porchange(nrxns, 1)
 						elseif (e(1:4) .eq. 'dens') then
 							if (rxntypes(i) .eq. 7) then
-								write(ierr, '(a)') 'Error:  Porosity change only '// &
+								write(ierr, '(a)') 'Error:  Mineral density only '// &
 									'available for reaction type 8.'
 								goto 666
 							endif
@@ -3252,7 +3253,7 @@ subroutine rdtr ! The main input reader
 					goto 666
 				endif
 				if ((porchange(nrxns, 2) .lt. 0) .and. (rxntypes(nrxns) .eq. 8)) then
-					write(ierr, '(a)') 'Error:  Porosity change negative or missing.'
+					write(ierr, '(a)') 'Error:  Mineral density negative or missing.'
 					goto 666
 				endif
 				if (debug) write(iptty, '(a)') 'Read precipitation/dissolution reaction.' !', rxnnames(nrxns)(1:len_trim(rxnnames(nrxns))), '".'
@@ -3687,12 +3688,14 @@ subroutine rdtr ! The main input reader
 		endif
 	enddo
 	! If H+ concentration is given in terms of pH, convert to [H+]
+	fph = .false.
 	do i = 1, nwtspecies
 		if (wtspecies(i) .eq. 'pH') then
+			fph = .true.
 			wtspecies(i) = 'H' ! H is component, H+ is master species
-			do j = 1, nwt
-				wtgrid(j, i) = 10 ** (-1.0 * wtgrid(j, i))
-			enddo
+			!do j = 1, nwt
+			!	wtgrid(j, i) = 10 ** (-1.0 * wtgrid(j, i))
+			!enddo
 		endif
 	enddo
 	! Add an extra adsorption model with all parameters 0 for unspecified zones.
@@ -4763,7 +4766,11 @@ subroutine rdtr ! The main input reader
 			pcpnt(ncpnt) = i
 			if (rxn_flag .eq. 1) then
 				cpntgs(ncpnt) = guesses(i)
-				ifxconc(ncpnt) = 0 ! Taken care of internally
+				if ((cpntnam(ncpnt) .eq. 'H') .and. fph) then
+					ifxconc(ncpnt) = 2
+				else
+					ifxconc(ncpnt) = 0 ! Removed support for free-ion concentration using ifxconc = 1
+				endif
 			endif
 			do j = 1, nprint
 				if (printspecies(j) .eq. species(i)) then
