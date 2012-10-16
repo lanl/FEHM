@@ -27,7 +27,7 @@
       use comdi, only : ieos, irlp, pcp, icap
 
       implicit none
-      integer i, j, mi, ndummy, neqtemp
+      integer i, j, mi, ndummy, neqtemp,ido
       integer, allocatable :: ieostemp(:)
       integer, allocatable :: irlptemp(:)
       integer, allocatable :: icaptemp(:)
@@ -41,6 +41,8 @@
       real*8, allocatable  :: rlvtemp(:)
       real*8 :: dum1, dum2, dum3
       character*100 form_string, title_string
+	character*15 labels(2)
+	data labels/'co2_liquid','co2_gas'/
       
       neqtemp = neq
       if (idpdp .ne. 0) then
@@ -75,43 +77,28 @@
          neq = num_sat
       end if
 
-      do i = 1, neq
-         if (num_sat .eq. 0) then
-            fw(i) = (i - 1) * delta_sat
-            fl(i) = 1 - fw(i)
-         else
-            fw(i) = sat_out(i)
-            fl(i) = 1 - fw(i)
-         end if
-         ieos(i) = 2
-         if (idpdp .ne. 0) then
-            fw(i + neq) = fw(i)
-            fl(i + neq) = fl(i)
-            ieos(i + neq) = 2
-         end if
-      end do
       
       title_string = "Relative permeability and " //
      &     "Capillary pressure"
       if (form_flag .eq. 1) then
-         form_string = 'variables = "Saturation" ' //
-     &        '"Liquid" "Vapor" "Capillary pressure" '
-c     &       , '"drl_ww" "drl_lw" "drl_lg"'
+      form_string = 'variables = "sw" "sl" "sg" "rl_w" '//
+     &     ' "rl_l" "rl_g" "cp"' 
          write(ishisrlp, '(a)') trim(form_string)
          write(ishisrlp, 230) 50., 95., trim(title_string)
          write(ishisrlp, 230) 50., 90., trim(wdd)
       else if (form_flag .eq. 2) then
-         form_string = 'Saturation, Liquid, Vapor, ' //
+         form_string = 'Saturation, Liquid, CO2, ' //
      &        'Capillary pressure'
          write(ishisrlp, '(a)') trim(form_string)
       else
-         form_string = '"Saturation" "Liquid" "Vapor" ' //
+         form_string = '"Saturation" "Liquid" "CO2(l)" "CO2(g)" ' //
      &        '"Capillary pressure"'
          write(ishisrlp, '(a)') trim(title_string)
          write(ishisrlp, '(a)') trim(form_string)
       end if
          
       do j = 1, nrlp
+c loop over model numbers
          do i = 1, neq
             irlp(i) = j
             icap(i) = j
@@ -120,8 +107,31 @@ c     &       , '"drl_ww" "drl_lw" "drl_lg"'
                icap(i+neq) = j
             end if
          end do
+c loop over twice, once assuming co2 is in liquid phase, then gas
+ 	ido=1
+ 103	fl=0;fg=0
+      do i = 1, neq
+         if (num_sat .eq. 0) then
+            fw(i) = (i - 1) * delta_sat
+         else
+            fw(i) = sat_out(i)
+         end if
+	   if(ido.eq.1) then
+            fl(i) = 1 - fw(i)
+	   else
+	    fg(i) = 1 - fw(i)
+	   endif
+         ieos(i) = 2
+         if (idpdp .ne. 0) then
+c double porosity
+            fw(i + neq) = fw(i)
+            fl(i + neq) = fl(i)
+            ieos(i + neq) = 2
+         end if
+      end do
          if (form_flag .eq. 1) then
-            write (ishisrlp, 240) j
+c write out the model number
+            write (ishisrlp, 240) j,labels(ido)
          else if (form_flag .eq. 2) then
          else
          end if              
@@ -129,6 +139,7 @@ c     &       , '"drl_ww" "drl_lw" "drl_lg"'
             call rlp_cap(0)
             if (idpdp .ne. 0) call rlp_cap(neq)
          else
+	write(*,*) 'neq: ',neq
             do mi = 1, neq
 c     calculate multi-phase relative perms.
                call rlperm_co2(0,0,mi,rl_w(mi),
@@ -145,10 +156,10 @@ c                  call cappr(1,neq)
             end if 
          end if
          do i = 1, neq
-            write (ishisrlp, '(7(g16.9, 1x))') fw(i), rl_w(i), 
-     &           rl_l(i), pcp(i)
-c     &              rl_l(i), pcp(i), drl_ww(i), drl_lw(i), drl_lg(i)
+            write (ishisrlp, '(7(g16.9, 1x))') fw(i), fl(i),fg(i),
+     &           rl_w(i),rl_l(i), rl_v(i),pcp(i)
          end do
+c double porosity
          if (idpdp .ne. 0) then
             if (form_flag .eq. 1) then
                write (ishisrlp, 245) j
@@ -157,10 +168,12 @@ c     &              rl_l(i), pcp(i), drl_ww(i), drl_lw(i), drl_lg(i)
             end if              
             do i = neq + 1, 2*neq
                write (ishisrlp, '(7(g16.9, 1x))') fw(i), rl_w(i),
-     &              rl_l(i), pcp(i) 
+     &              rl_l(i), rl_v(i),pcp(i) ,44.
 c     &              rl_l(i), pcp(i), drl_ww(i), drl_lw(i), drl_lg(i)
             end do
          end if
+	ido=ido+1
+	if(ido.le.2) goto 103
       end do
 
       fw = fwtemp
@@ -182,7 +195,7 @@ c     &              rl_l(i), pcp(i), drl_ww(i), drl_lw(i), drl_lg(i)
 
  230  format ("text X=", f4.1, " Y=", f4.1, " AN=center T=", '"',
      &     a, '"')
- 240  format ('zone t = "model ', i4, '"')
+ 240  format ('zone t = "model ', i4,1x,a15, '"')
  245  format ('zone t = "model ', i4, ' matrix"')
 
       end subroutine check_rlp_carb
