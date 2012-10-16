@@ -176,6 +176,8 @@ c     single phase (liquid/sc CO2)
 c     single phase (gaseous CO2)
                phase(1) = rlp_pos(it, 4)
                rl_v(mi) = 1.
+c keating 2012
+               rl_l(mi) = 1.
             else if (fw(mi) .gt. 0.0) then
 c     co2 with water 
                phase(1) = rlp_pos(it, 1)
@@ -504,6 +506,11 @@ c     Saturation is undefined
                select case (rlp_type(it, iphase))
                case (1)
 c     Constant
+c keating 9/2012 
+c..phase definitions:
+c..1=water(non-carb/oil),-1=water (carb/oil),2=air,3=co2_sc,6=methane hydrate
+c..4=co2_gas,5=vapor,7=oil,8=gas,9=oil_water,10=oil_gas
+
                   select case (rlp_phase(it, iphase))
                   case (1)
                      rlf(mi) = rlp_param(it, ir + 1)
@@ -514,7 +521,12 @@ c     Constant
                   case (3)
                      rl_l(mi) = rlp_param(it, ir + 1)
                   case (4)
+c keating 9/2012 
+		     if(ices(mi).eq.2) then
                      rl_v(mi) = rlp_param(it, ir + 1)
+		     else
+                     rl_l(mi) = rlp_param(it, ir + 1)
+		     endif
                   case (5)
                      rvf(mi) = rlp_param(it, ir + 1)
                   case (6)                    
@@ -541,11 +553,16 @@ c     Linear or exponential
                      drvef(mi) = -drls
                   case (3)
                      rl_l(mi) = rl
-c                     drl_lw(mi) = drls
                      drl_lw(mi) = -drls
                   case (4)
+c keating 9/2012 
+		     if(ices(mi).eq.2) then
                      rl_v(mi) = rl
                      drl_vw(mi) = drls
+		     else
+                     rl_l(mi) = rl
+                     drl_lw(mi) = -drls
+		     endif
                   case (5)
                      rvf(mi) = rl
                      drvef(mi) = -drls
@@ -569,10 +586,11 @@ c     Corey
                            rl_l(mi) = rv
                            drl_lw(mi) = drvs
                         else if (k .eq. 3) then
+c keating 9/2012; if co2 is only gas phase, set rl_l not rl_v
                            rl_w(mi) = rl
                            drl_ww(mi) = drls
-                           rl_v(mi) = rv
-                           drl_vw(mi) = drvs
+                           rl_l(mi) = rv
+                           drl_lw(mi) = drvs
                         else if (k .eq. 4) then
                            rl_l(mi) = rl
                            drl_lw(mi) = drls
@@ -582,6 +600,9 @@ c     Corey
                         exit
                      else 
                         select case (rlp_phase(it, iphase))
+c..phase definitions:
+c..1=water(non-carb/oil),-1=water (carb/oil),2=air,3=co2_sc,6=methane hydrate
+c..4=co2_gas,5=vapor,7=oil,8=gas,9=oil_water,10=oil_gas
                         case (1)
 c     water
                            rlf(mi) = rl
@@ -604,9 +625,15 @@ c     if this is the wetting phase
                               drl_lw(mi) = drvs
                            end if
                         case (4)
-c     gaseous co2
+c    gaseous co2
+c keating 9/2012
+			  	if(ices(mi).eq.2) then 
                            rl_v(mi) = rv
                            drl_vw(mi) = drvs 
+				else
+                              rl_l(mi) = rv
+                              drl_lw(mi) = drvs
+				endif
                         end select 
                      end if
                   end if
@@ -657,8 +684,14 @@ c     Special case, all three phases active
                         else if (k .eq. 3) then
                            rl_w(mi) = rl
                            drl_ww(mi) = drls
+c keating 9/2012
+		           if(ices(mi).eq.2) then
                            rl_v(mi) = rv
                            drl_vw(mi) = drvs
+			   else
+                           rl_l(mi) = rv
+                           drl_lw(mi) = drvs
+			   endif
                         else if (k .eq. 4) then
                            rl_l(mi) = rl
                            drl_lw(mi) = drls
@@ -689,8 +722,15 @@ c     liquid co2
                            end if
                         case (4)
 c     gaseous co2
+c keating 2012
+			   if(ices(mi).eq.2) then
                            rl_v(mi) = rv
                            drl_vw(mi) = drvs 
+			   else
+                              rl_l(mi) = rv
+                              drl_lw(mi) = drvs
+			   endif
+			   
                         end select 
                      end if                                             
                   endif
@@ -848,8 +888,14 @@ c     set saturated permeabilities(assume isotropic)
                         else if (k .eq. 3) then
                            rl_w(mi) = rl
                            drl_ww(mi) = drls
+c keating 9/2012
+			   if(ices(mi).eq.2) then
                            rl_v(mi) = rv
                            drl_vw(mi) = drvs
+			   else
+                           rl_w(mi) = rl
+                           drl_ww(mi) = drls
+			   endif
                         else if (k .eq. 4) then
                            rl_l(mi) = rl
                            drl_lw(mi) = drls
