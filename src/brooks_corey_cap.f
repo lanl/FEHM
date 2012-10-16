@@ -22,6 +22,10 @@
 !         p1 is residual wetting phase saturation!        
 !         p2 is max wetting phase saturation (only used for cap calc.)
 !         cut1,cut2 are cutoff parameters (only used for cap calc.)
+!  cut2 is saturation value; if s > cut2; brooks-corey, otherwise, linear
+!  cut1 is only used for s < cut2 calculations
+!  cp at s=0 will be cut1*cp(at s=cut2)
+!
 !         cmax = entry pressure (only used for cap calc.)
 !         lambda (Li and Horne, 2006) 
 ! output: prop1 is rel perm (wetting phase saturation)
