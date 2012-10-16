@@ -319,7 +319,9 @@ c Read parameters associated with capillary model
                cap_param(i, k + 3) = xmsg(6) + imsg(6)
             case ('brooks-corey')
                if (nwds .lt. 6) write(ierr, 60) 6, cmsg(3), rlp_group(i)
-               cap_type(i, j) = 4
+c ekeating 2012
+c               cap_type(i, j) = 4
+               cap_type(i, k2) = 4
                cap_param(i, k + 1) = xmsg(4) + imsg(4)
                cap_param(i, k + 2) = xmsg(5) + imsg(5)
                cap_param(i, k + 3) = xmsg(6) + imsg(6)
