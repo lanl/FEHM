@@ -964,8 +964,4 @@ c                 sink at a single node over a run in comdi
       allocate(sinkint(n7))
       if (n7 .ne. 0) sinkint = 0
 
-	allocate(zonenames(100), zonenums(100))
-	numzones = 0
-	zonemax = 0
-
       end
