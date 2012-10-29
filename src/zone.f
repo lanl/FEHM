@@ -311,25 +311,28 @@ C***********************************************************************
       use combi
       use comdti
       use comai
-	use trxnvars
+      use trxnvars
       implicit none
 
       logical null1, null_new, cdum
       integer cnum, i, infile, izone, izonel, nin, nodez, nsl
       integer nxy, icnl_old, nin_old, i_old, ja, jb, jc, izonn
       character* 4 macro, cmacro
+      character(20), allocatable :: znametmp(:)
       character*80 ltest
       real*8 xg, xz(8), yg, yz(8), zg, zz(8)
       real*8 tol_zone, zxy_min, zxy_max 
-      integer imodel, j, n_n_n
+      integer imodel, j, n_n_n, zmaxtmp
       integer zone_dpadd, i3d_2d, i3d_rad, num_zones, lsize
+      integer, allocatable :: znumtmp(:)
 
       integer, allocatable :: ncord(:)
       integer, allocatable :: izonef_old(:)
       integer, allocatable :: zone_list(:), tmp_list(:)
-	character*20 zonetmp
-	integer k, curzone
+      character*20 zonetmp
+      integer k, curzone
 
+      save zmaxtmp
       allocate(ncord(n0))
 
 c     Dual perm or dual porosity value to add to get zones
@@ -364,15 +367,19 @@ c     Dual perm or dual porosity value to add to get zones
          if(iptty.ne.0) 
      &        write(iptty,*) 'i3d_2d parameter ignored for 3d problem'
       endif
+      if (.not. allocated(zonenames)) then
+         zmaxtmp = 100
+         allocate (zonenames(zmaxtmp), zonenums(zmaxtmp))
+      end if
       if (macro .eq. 'zone'.or.macro .eq. 'zonn')  then
          cmacro = macro
          if(macro .ne. 'zonn') then
             izonef = 0
             izonn = 0
-		numzones = 0
-		zonenames = '*'
-		zonenums = 0
-		zonemax = 0
+	    numzones = 0
+	    zonenames = '*'
+	    zonenums = 0
+	    zonemax = 0            
          else
             allocate(izonef_old(n0))
             izonef_old = izonef
@@ -384,21 +391,32 @@ c     Dual perm or dual porosity value to add to get zones
       if (null1(wdd1)) go to 90
       backspace infile
       !read(infile, *) izone
-	read(infile, *) zonetmp
-	do k = 1, numzones
-		if (zonenames(k) .eq. zonetmp) then
-			curzone = k
-			goto 63
-		endif
-	enddo
-	curzone = numzones + 1
-	if (zonetmp(1:1) .ne. '-') numzones = numzones + 1
-63	zonenames(curzone) = zonetmp
-	read(zonenames(curzone), *, err=61) zonenums(curzone)
-	goto 62
-61	zonenums(curzone) = zonemax + 1
-62	zonemax = max(zonemax + 1, zonenums(curzone))
-	izone = zonenums(curzone)
+      read(infile, *) zonetmp
+      do k = 1, numzones
+         if (zonenames(k) .eq. zonetmp) then
+            curzone = k
+            goto 63
+         endif
+      enddo
+      curzone = numzones + 1
+      if (zonetmp(1:1) .ne. '-') numzones = numzones + 1
+ 63   if (curzone .gt. zmaxtmp) then
+         allocate (znametmp(zmaxtmp),znumtmp(zmaxtmp))
+         znametmp = zonenames
+         znumtmp = zonenums 
+         deallocate (zonenames, zonenums)
+         allocate (zonenames(zmaxtmp*10), zonenums(zmaxtmp*10))
+         zonenames(1:zmaxtmp) = znametmp
+         zonenums(1:zmaxtmp) = znumtmp
+         deallocate (znametmp, znumtmp)
+         zmaxtmp = zmaxtmp*10
+      end if
+      zonenames(curzone) = zonetmp
+      read(zonenames(curzone), *, err=61) zonenums(curzone)
+      goto 62
+ 61   zonenums(curzone) = zonemax + 1
+ 62   zonemax = max(zonemax + 1, zonenums(curzone))
+      izone = zonenums(curzone)
 
 c zvd 01/04/2012 Keep track of zones that are defined so auto generated double permeability or porosity nodes can be reported
       num_zones = num_zones + 1
