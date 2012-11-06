@@ -23,8 +23,9 @@
       use comai, only : form_flag, idpdp, ierr, neq, nrlp, wdd
       use comrlp, only : ishisrlp, rlpnew, delta_sat, num_sat, sat_out
       use comci, only : rlf, rvf
+	use comdti, only : n0
       use comco2
-      use comdi, only : ieos, irlp, pcp, icap
+      use comdi, only : ieos, irlp, pcp, icap,ices
 
       implicit none
       integer i, j, mi, ndummy, neqtemp,ido
@@ -39,6 +40,7 @@
       real*8, allocatable  :: rlwtemp(:)
       real*8, allocatable  :: rlltemp(:)
       real*8, allocatable  :: rlvtemp(:)
+      real*8, allocatable  :: icestemp(:)
       real*8 :: dum1, dum2, dum3
       character*100 form_string, title_string
 	character*15 labels(2)
@@ -48,6 +50,7 @@
       if (idpdp .ne. 0) then
          allocate (fwtemp(2*neq), fltemp(2*neq), fgtemp(2*neq))
          allocate (ieostemp(2*neq), irlptemp(2*neq), icaptemp(2*neq))
+	 allocate (icestemp(2*neq))
          allocate (pcptemp(2*neq), pcgtemp(2*neq))
          allocate (rlwtemp(2*neq), rlltemp(2*neq), rlvtemp(2*neq))
       else
@@ -55,6 +58,7 @@
          allocate (ieostemp(neq), irlptemp(neq), icaptemp(neq))
          allocate (pcptemp(neq), pcgtemp(neq))
          allocate (rlwtemp(neq), rlltemp(neq), rlvtemp(neq))
+	 allocate (icestemp(neq))
       end if
 
       ndummy = 0
@@ -65,6 +69,7 @@
       ieostemp = ieos
       irlptemp = irlp
       icaptemp = icap
+	icestemp=ices
       pcptemp = pcp
       pcgtemp = pcg
       rlwtemp = rl_w
@@ -91,8 +96,8 @@
      &        'Capillary pressure'
          write(ishisrlp, '(a)') trim(form_string)
       else
-         form_string = '"Saturation" "Liquid" "CO2(l)" "CO2(g)" ' //
-     &        '"Capillary pressure"'
+      form_string = ' "sw" "sl" "sg" "rl_w" '//
+     &     ' "rl_l" "rl_g" "cp"' 
          write(ishisrlp, '(a)') trim(title_string)
          write(ishisrlp, '(a)') trim(form_string)
       end if
@@ -118,8 +123,10 @@ c loop over twice, once assuming co2 is in liquid phase, then gas
          end if
 	   if(ido.eq.1) then
             fl(i) = 1 - fw(i)
+	    ices(i)=1
 	   else
 	    fg(i) = 1 - fw(i)
+	    ices(i)=3
 	   endif
          ieos(i) = 2
          if (idpdp .ne. 0) then
@@ -139,7 +146,6 @@ c write out the model number
             call rlp_cap(0)
             if (idpdp .ne. 0) call rlp_cap(neq)
          else
-	write(*,*) 'neq: ',neq
             do mi = 1, neq
 c     calculate multi-phase relative perms.
                call rlperm_co2(0,0,mi,rl_w(mi),
@@ -179,9 +185,13 @@ c     &              rl_l(i), pcp(i), drl_ww(i), drl_lw(i), drl_lg(i)
       fw = fwtemp
       fl = fltemp
       fg = fgtemp
-      ieostemp = ieos
-      irlptemp = irlp
-      icaptemp = icap
+	ices=icestemp
+	ieos=ieostemp
+	irlp=irlptemp
+	icap=icaptemp
+c      ieostemp = ieos
+c      irlptemp = irlp
+c      icaptemp = icap
       pcp = pcptemp
       pcg = pcgtemp
       rl_w = rlwtemp
