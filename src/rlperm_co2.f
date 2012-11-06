@@ -163,6 +163,9 @@ c     note: must be called for each node i
 c     
 c     
          if(irpd.eq.19) then
+c test for co2 phase
+c this formulation is not general for 3phase (water/co2-gas/co2-liquid)
+	 if(sg>sl) sl=sg
 c     assumes liquid water and single phase-CO2
 c     van Genuchten for water and Corey for CO2 (regardless of phase)
 c     equivalent to Pruess 2002; requires 6 parameters 
