@@ -80,6 +80,7 @@
       title_string = "Relative permeability and " //
      &     "Capillary pressure"
       if (form_flag .eq. 1) then
+c tecplot style
          form_string = 'variables = "Saturation" ' //
      &        '"Liquid" "Vapor" "Capillary pressure"'
          write(ishisrlp, '(a)') trim(form_string)
@@ -97,6 +98,7 @@
       end if
          
       do j = 1, nrlp
+	write(ishisrlp,'(a8,1x,i6)') ) 'Model ',j
          do i = 1, neq
             irlp(i) = j
             icap(i) = j
