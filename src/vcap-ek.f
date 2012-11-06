@@ -86,10 +86,12 @@
       endif
 c      if(sl.lt.0.0.or.sl.gt.1.0) then
       if(sl.lt.1.d-6 .or. sl.gt.1.0) then
+c keating 2012 -  these last few lines were forcing cp=0 at sl=0  - I commented them out
+c 
 c      if( sl.gt.1.0) then
 c     lower residual cutoff
-         hp = 0.
-         dhp= 0.0
+c         hp = 0.
+c         dhp= 0.0
       endif
       return
       end
