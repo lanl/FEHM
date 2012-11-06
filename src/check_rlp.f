@@ -98,7 +98,7 @@ c tecplot style
       end if
          
       do j = 1, nrlp
-	write(ishisrlp,'(a8,1x,i6)') ) 'Model ',j
+	write(ishisrlp,'(a8,1x,i6)')  'Model ',j
          do i = 1, neq
             irlp(i) = j
             icap(i) = j
