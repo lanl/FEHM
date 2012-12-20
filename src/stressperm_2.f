@@ -26,12 +26,15 @@ c     only good for 2D or 3D models
 
       real*8 dt,alpv,pary1,pary2,pary3,parsy3,parx1,parx2,parx3,parsx3
       real*8 parxy3,parxz3,paryz3,parz1,parz2,parsz3
+      real*8 p_eff, perm_fac, str_max, fac
       
 c     
 c     calculate components of volume strain
 c     
+      str_max = 1.
       iispmd = ispm(i)       
       dt = t(i) - tini(i)
+      p_eff = phi(i)-phini(i)
       alpv = alp(i)
       vol_temp(i) = alpv*dt*sx1(i) - vol_strain(i)*sx1(i) 
 c     spm1f is strx_min, min x-tensile stress for damage to occur
@@ -109,89 +112,103 @@ c
          perz_m = spm9f(iispmd) 
 c     
          ipchk = 0
-c     
+c s kelkar 5 june 2012. If strx_min <or= 0 model is interpreted to be that
+c for local failure driven by pore pressure only. 
+c  If strx_min>0 , it is taken to be the usual model 2
+         if(strx_min.gt.0.) then     
 c     x direction tensile stress affects y and z perms 
 c     
 c     determine maximum changes affecting x direction
-         parx1 = 0.
-         if(str_x(i).lt.-strx_min) then
+            parx1 = 0.
+            if(str_x(i).lt.-strx_min) then
 c     parx1 is stress difference in tension	- x direction 
-            parx1 = abs((str_x(i))+strx_min) 
-         endif     
-         if(parx1.gt.0.0) then	
+               parx1 = abs((str_x(i))+strx_min) 
+            endif     
+            if(parx1.gt.0.0) then	
 c     parx1 is stress diffrence in tension calculated above
 c     assume max perm changes occur at tensile stress of 
 c     tesile_stess_fac(=10)
 c     change x and z dirextions
-            parx2 = strx_min*(tensile_str_fac-1.)
-            parxy3 = (pery_m-1.)/parx2
-            pny(i) = pny0(i)*(parxy3*parx1+1.0)
-            parxz3 = (perz_m-1.)/parx2
-            pnz(i) = pnz0(i)*(parxz3*parx1+1.0)	  
+               parx2 = strx_min*(tensile_str_fac-1.)
+               parxy3 = (pery_m-1.)/parx2
+               pny(i) = pny0(i)*(parxy3*parx1+1.0)
+               parxz3 = (perz_m-1.)/parx2
+               pnz(i) = pnz0(i)*(parxz3*parx1+1.0)	  
 c     rock strength never increases	 
-            parsx3 =  (e10_facx-1.)/parx2
-            e1(i) = min(e1(i),e10(i)*(parsx3*parx1+1.0))
-            e2(i) = min(e2(i),e20(i)*(parsx3*parx1+1.0))
-            e3(i) = min(e3(i),e30(i)*(parsx3*parx1+1.0))
-            e1(i) = max(e1(i), e10_facx*e10(i))
-            e2(i) = max(e2(i), e10_facx*e20(i))
-            e3(i) = max(e3(i), e10_facx*e30(i))
-         endif	 
+               parsx3 =  (e10_facx-1.)/parx2
+               e1(i) = min(e1(i),e10(i)*(parsx3*parx1+1.0))
+               e2(i) = min(e2(i),e20(i)*(parsx3*parx1+1.0))
+               e3(i) = min(e3(i),e30(i)*(parsx3*parx1+1.0))
+               e1(i) = max(e1(i), e10_facx*e10(i))
+               e2(i) = max(e2(i), e10_facx*e20(i))
+               e3(i) = max(e3(i), e10_facx*e30(i))
+            endif	 
 c     
 c     y direction tensile stress affects x and z perms 
 c     
 c     determine maximum changes affecting y direction
-         pary1 = 0.
-         if(str_y(i).lt.-stry_min) then
+            pary1 = 0.
+            if(str_y(i).lt.-stry_min) then
 c     pary1 is stress difference in tension	- y direction 
-            pary1 = abs((str_y(i))+stry_min) 
-         endif     
-         if(pary1.gt.0.0) then	
+               pary1 = abs((str_y(i))+stry_min) 
+            endif     
+            if(pary1.gt.0.0) then	
 c     pary1 is stress diffrence in tension	calculated above
 c     assume max perm changes occur at tensile stress of 
 c     tesile_stess_fac(=10)
 c     change x and z dirextions
-            pary2 = stry_min*(tensile_str_fac-1.)
-            parxy3 = (perx_m-1.)/pary2
-            pnx(i) = pnx0(i)*(parxy3*pary1+1.0)
-            paryz3 = (perz_m-1.)/pary2
-            pnz(i) = pnz0(i)*(paryz3*pary1+1.0)	  
+               pary2 = stry_min*(tensile_str_fac-1.)
+               parxy3 = (perx_m-1.)/pary2
+               pnx(i) = pnx0(i)*(parxy3*pary1+1.0)
+               paryz3 = (perz_m-1.)/pary2
+               pnz(i) = pnz0(i)*(paryz3*pary1+1.0)	  
 c     rock strength never increases	 
-            parsy3 =  (e10_facy-1.)/pary2
-            e1(i) = min(e1(i),e10(i)*(parsy3*pary1+1.0))
-            e2(i) = min(e2(i),e20(i)*(parsy3*pary1+1.0))
-            e3(i) = min(e3(i),e30(i)*(parsy3*pary1+1.0))
-            e1(i) = max(e1(i), e10_facy*e10(i))
-            e2(i) = max(e2(i), e10_facy*e20(i))
-            e3(i) = max(e3(i), e10_facy*e30(i))
-         endif
+               parsy3 =  (e10_facy-1.)/pary2
+               e1(i) = min(e1(i),e10(i)*(parsy3*pary1+1.0))
+               e2(i) = min(e2(i),e20(i)*(parsy3*pary1+1.0))
+               e3(i) = min(e3(i),e30(i)*(parsy3*pary1+1.0))
+               e1(i) = max(e1(i), e10_facy*e10(i))
+               e2(i) = max(e2(i), e10_facy*e20(i))
+               e3(i) = max(e3(i), e10_facy*e30(i))
+            endif
 c     
 c     z direction tensile stress affects x and y perms 
 c     
 c     determine maximum changes affecting z direction
-         parz1 = 0.0
-         if(str_z(i).lt.-strz_min) then
+            parz1 = 0.0
+            if(str_z(i).lt.-strz_min) then
 c     parz1 is stress difference in tension - z direction 
-            parz1 = abs((str_z(i))+strz_min) 
-         endif     
-         if(parz1.gt.0.0) then	
+               parz1 = abs((str_z(i))+strz_min) 
+            endif     
+            if(parz1.gt.0.0) then	
 c     parz1 is stress diffrence in tension	calculated above
 c     assume max perm changes occur at tensile stress of 
 c     tesile_stess_fac(=10)
 c     change x and y dirextions
-            parz2 = strz_min*(tensile_str_fac-1.)
-            parxz3 = (perx_m-1.)/parz2
-            pnx(i) = pnx0(i)*(parxz3*parz1+1.0)	
-            paryz3 = (pery_m-1.)/parz2
-            pny(i) = pny0(i)*(paryz3*parz1+1.0)	    
+               parz2 = strz_min*(tensile_str_fac-1.)
+               parxz3 = (perx_m-1.)/parz2
+               pnx(i) = pnx0(i)*(parxz3*parz1+1.0)	
+               paryz3 = (pery_m-1.)/parz2
+               pny(i) = pny0(i)*(paryz3*parz1+1.0)	    
 c     rock strength never increases	 
-            parsz3 =  (e10_facz-1.)/parz2
-            e1(i) = min(e1(i),e10(i)*(parsz3*parz1+1.0))
-            e2(i) = min(e2(i),e20(i)*(parsz3*parz1+1.0))
-            e3(i) = min(e3(i),e30(i)*(parsz3*parz1+1.0))
-            e1(i) = max(e1(i), e10_facz*e10(i))
-            e2(i) = max(e2(i), e10_facz*e20(i))
-            e3(i) = max(e3(i), e10_facz*e30(i))
+               parsz3 =  (e10_facz-1.)/parz2
+               e1(i) = min(e1(i),e10(i)*(parsz3*parz1+1.0))
+               e2(i) = min(e2(i),e20(i)*(parsz3*parz1+1.0))
+               e3(i) = min(e3(i),e30(i)*(parsz3*parz1+1.0))
+               e1(i) = max(e1(i), e10_facz*e10(i))
+               e2(i) = max(e2(i), e10_facz*e20(i))
+               e3(i) = max(e3(i), e10_facz*e30(i))
+            endif
+         else
+            fac = p_eff + strx_min
+            if(fac.gt.0.0) then
+               fac=fac/str_max
+               perm_fac = fac*(perx_m - 1.0d0) + 1.0d0
+               pnx(i) = pnx0(i)*perm_fac
+               pny(i) = pny0(i)*perm_fac
+               pnz(i) = pnz0(i)*perm_fac
+            endif
+            
          endif
          
          pnx(i) = min(perx_m*pnx0(i),pnx(i))
