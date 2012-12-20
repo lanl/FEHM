@@ -18,6 +18,7 @@ subroutine stressperm_8(i)
       use combi
       use comdi
       use comsi
+      use comdti, only : n0
 
       implicit none
       integer i, iispmd
@@ -49,6 +50,16 @@ subroutine stressperm_8(i)
       !     ******** 3D 
       !     
       if(icnl.eq.0) then 
+         if (.not. allocated(es_f_x0)) then
+            allocate(es_f_x0(n0,3))
+            allocate(es_f_y0(n0,3))
+            allocate(es_f_z0(n0,3))           
+            allocate(s_f_xy0(n0,3))  
+            allocate(s_f_xz0(n0,3))
+            allocate(s_f_yz0(n0,3))
+            allocate(frc_zen(n0,3))
+            allocate(frc_azm(n0,3))
+         endif
          frac_bx = spm1f(iispmd)
          frac_by = spm2f(iispmd)
          frac_bz = spm3f(iispmd)
