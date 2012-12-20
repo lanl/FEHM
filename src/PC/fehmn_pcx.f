@@ -451,6 +451,7 @@ C***********************************************************************
       use combi
       use comci
       use comco2
+      use comcomp
       use comdi
       use comdti
       use comei
@@ -470,6 +471,7 @@ C***********************************************************************
       use comxi
       use davidi
       use comfem, only : edgeNum1, NodeElems, ifem, flag_element_perm
+      use comfem, only : fem_strain, conv_strain, conv_pstrain  
       use property_interpolate
 c     added combi and comflow to get izonef and a_axy arrays
 c     in subroutine computefluxvalues
@@ -1146,13 +1148,22 @@ c save flow residuals
                   call stressctr(17,0) 
 c**** update stress arrays ****
 c solve for displacements
+c....... s kelkar 22 Aug 2012
+                  if(istrs_coupl.ge.5) then
+                     if(ifem.eq.1) conv_strain = fem_strain
+                     if(iPlastic.eq.1) conv_pstrain = plastic_strain
+                  endif
+c........
                   if(istrs_coupl.eq.-3) then
                      istresscall = 1
                      call stress_uncoupled(3)
 c update volume strains
                      call stressctr(6,0)
 c update porosity
-                     call stressctr(-7,0)
+c s kelkar 22 Aug 2012. if pore_factor>0 this is done in 
+c porosity_wrt_displacements which is called from from 
+c bnswer and gensl_stress_coupled_3D  
+                     if(pore_factor.eq.0) call stressctr(-7,0)
                   endif
 c add displacements to total displacements	        
                   call stressctr(10,0)
@@ -1162,31 +1173,6 @@ c update volume strains
                   call stressctr(-6,0)
 c calculate stresses
                   call stressctr(13,0)	
-                  if(flag_permmodel.eq.1) then
-                     if(flag_element_perm.eq.1) then
-       ! finite element option
-       ! Setup connectivity list of which elements each node belongs to
-                        if(.not. allocated(NodeElems)) then
-                           call Setup_NodeElems()
-                        endif                        
-       ! Setup pointers to edge numbers
-                        if(.not. allocated(edgeNum1)) then
-                           call setup_edgePointers_3D()
-                        endif
-       ! allocate memory for permeability update if necessay
-                        call stress_perm(-1,0)
-       ! update edge permeability factors for current state
-                        call update_permfactors()
-                     else
-c    control volume approach 
-c     allocate memory for permeability update if necessay
-                        call stress_perm(-1,0)
-c     update nodal permeabilities (explicit)                  	
-                        call stress_perm(1,0)
-c     deallocate memory for permeability update if necessay
-                        call stress_perm(-2,0)
-                     endif
-                  endif
                endif   
 c calculate subsidence
                call subsidence(1)         
