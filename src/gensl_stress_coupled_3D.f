@@ -485,7 +485,6 @@ c
 c     
 c     add derivatives wrt to p and t
 c     
-      
       call stressctr(15,0)
       
 c     
@@ -575,7 +574,7 @@ c
 c
       if(ihms.eq.16.or.ihms.eq.17) then
          if(ifem.eq.1) then
-            call geneq_flow_coupled()
+            call geneq_flowflux_perm()
          else
             do id=1,neq
                call geneq1_stress_coupl(id)
