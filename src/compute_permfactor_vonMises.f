@@ -25,11 +25,11 @@
       use comsi, only: ipermstr2, perx_m, pery_m, perz_m
       use comsi, only: e1, e2, e3
       use comsi, only: ipermstr22
-      use comsi, only: spm8f, spm9f, spm10f, du, dv, dw, alp, bulk
+      use comsi, only: spm1f, spm2f, spm3f, spm4f, du, dv, dw, alp, bulk
       use comfem
       use comsi, only: modelNumber, plasticParam1, plasticModel
       use comai, only: iptty
-      use comsi, only: plastic_strain, isPlastic, ispmd
+      use comsi, only: plastic_strain, ispmd
 
       implicit none
 
@@ -70,10 +70,17 @@
       p_eff = 0.0
       mean_accum_pstrain = 0.0
       
-      if(ispmd.eq.22) then
-        perx_m  = spm8f(1)
-        pery_m  = spm9f(1)
-        perz_m  = spm10f(1)
+      if(ispmd.eq.100) then
+        perx_m  = spm1f(1)
+c        pery_m  = spm2f(1)
+c        perz_m  = spm3f(1)
+        accum_pstrain_max = spm4f(1)
+      else
+          write(iout, *) 'Only permmodel 100 is supported ! 
+     &        with von Mises! '
+          write(iptty, *) 'Only permmodel 100 is supported ! 
+     &        with von Mises! '
+          stop
       endif
 
       recompute = .false.
@@ -146,11 +153,11 @@
 
           gp_stress = matmul(D, gp_strain)
 
-          if (isPlastic(el, j).eq.1) then
-            ! Assuming that when in plastic region, whatever is the change in 
-            ! strain there is, it is due to plastic strain 
-            change_pstrain = sqrt(sum(gp_strain(1:6)**2))
-            accum_pstrain = plastic_strain(el, j) + change_pstrain
+          
+          ! Assuming that when in plastic region, whatever is the change in 
+          ! strain there is, it is due to plastic strain 
+          change_pstrain = sqrt(sum(gp_strain(1:6)**2))
+          accum_pstrain = plastic_strain(el, j) + change_pstrain
 !             trace = (gp_stress(1) + gp_stress(2) + gp_stress(3))/3
 !             dev_stress(1) = gp_stress(1) - trace
 !             dev_stress(2) = gp_stress(2) - trace
@@ -178,9 +185,7 @@
 !               write(iptty, *) 'In the elastic region ! 
 !      &          Should not be checking for von Mises criterion! '
 !            endif
-          else
-            accum_pstrain = 0.0d0
-          endif
+          
           mean_str = mean_str + gp_stress
           mean_accum_pstrain = mean_accum_pstrain + accum_pstrain
         enddo
@@ -191,11 +196,8 @@
         mean_accum_pstrain = 0.0d0
         do j=1,numgausspoints
           mean_str = mean_str + fem_stress(el, j, :)
-          if (isPlastic(el, j).eq.1) then
-            mean_accum_pstrain = mean_accum_pstrain + 
+          mean_accum_pstrain = mean_accum_pstrain + 
      &                            plastic_strain(el,j)
-          else
-          endif
         enddo
         mean_str = mean_str/numgausspoints
         mean_accum_pstrain = mean_accum_pstrain/numgausspoints
@@ -210,7 +212,6 @@
         !! Perm dependence on accumulated plastic strain
         !! ramp function upto a maximum value in acc. plastic strain
         !! maximum acc. plastic strain -- Karra
-        accum_pstrain_max = 1.d-1
         if(mean_accum_pstrain.gt.0.0) then
           if(mean_accum_pstrain.lt.accum_pstrain_max) then
             fac = mean_accum_pstrain/accum_pstrain_max
@@ -221,10 +222,17 @@
           fac = 0.d0 
         endif
 
-        norm_per = sqrt(perx_m*perx_m + pery_m*pery_m +
-     &                  perz_m*perz_m)
+c        norm_per = sqrt(perx_m*perx_m + pery_m*pery_m +
+c     &                  perz_m*perz_m)
+        norm_per = perx_m
+
         perm_fac = fac*(norm_per - 1.0d0) + 1.0d0
-c        print *, mean_accum_pstrain, perm_fac
+
+        write(iout,*) '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+        write(iout,*) 'mean_accum_pstrain, fac,norm_per,perm_fac'
+        write(iout,*) mean_accum_pstrain, fac,norm_per,perm_fac
+        write(iout,*) '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+ 
         permfactor(edge_1, :) = permfactor(edge_1, :) + perm_fac
         permfactor(edge_2, :) = permfactor(edge_2, :) + perm_fac
     
