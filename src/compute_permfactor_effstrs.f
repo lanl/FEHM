@@ -21,7 +21,7 @@
       use comai, only: nei, neq, ns, iout
       use combi, only: nelm
       use comdi, only: t, tini, phi, phini
-      use comsi, only: ipermstr2, perx_m, pery_m, perz_m
+      use comsi, only: ispm, ipermstr2, perx_m, pery_m, perz_m
       use comsi, only: strx_min, stry_min, strz_min, e1, e2, e3
       use comsi, only: spm1f, spm2f, spm3f
       use comsi, only: spm7f, spm8f, spm9f, du, dv, dw, alp, bulk
@@ -48,25 +48,14 @@
       integer, parameter                 :: numEdges = 28
       integer el, node_k, i, j, k
       integer node_I, node_J, edge_1, edge_2
+      integer iispmd
       logical recompute_stress
       integer flag_u_pp
-
 
       str_max = 1.0d0
       mean_str = 0.0
       mean_str_eff = 0.0
       p_eff=0.0
-
-
-      if(ipermstr2.ne.0) then
-        strx_min = spm1f(1)
-        stry_min = spm2f(1)
-        strz_min = spm3f(1)
-        perx_m  = spm7f(1)
-        pery_m  = spm8f(1)
-        perz_m  = spm9f(1)
-
-      endif
 c
 c      recompute = .false.
 c      do j=1,ns
@@ -182,6 +171,17 @@ c
         !! Need to add a loop to look at model numbers and 
         !! break it into different routines
 c NOTE: sign convention here is -ve in compression, opposite to rock mech
+
+        iispmd = ispm(node_I)
+        if(ipermstr2.ne.0) then
+           strx_min = spm1f(iispmd)
+           stry_min = spm2f(iispmd)
+           strz_min = spm3f(iispmd)
+           perx_m  = spm7f(iispmd)
+           pery_m  = spm8f(iispmd)
+           perz_m  = spm9f(iispmd)
+        endif
+
         mean_str_eff = mean_str(1) + p_eff
         if(mean_str_eff.gt.strx_min) then
           fac = ((mean_str_eff-strx_min)/str_max)
