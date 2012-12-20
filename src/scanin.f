@@ -2317,6 +2317,31 @@ c                     open(unit=97,file='debug_permmodel_91.dat')
           allocate(spm1f222(i),spm2f222(i),spm3f222(i),spm4f222(i))
           allocate(spm5f222(i),spm6f222(i),spm7f222(i),spm8f222(i))
           allocate(spm9f222(i),spm10f222(i))
+          ispmt = 0
+          spm1f = 0.
+          spm2f = 0.
+          spm3f = 0.
+          spm4f = 0.
+          spm5f = 0.
+          spm6f = 0.
+          spm7f = 0.
+          spm8f = 0.
+          spm9f = 0.
+          spm10f = 0.
+          spm11f = 0.
+          spm12f = 0.
+          spm13f = 0.
+          spm14f = 0.
+          spm1f222 = 0.
+          spm2f222 = 0.
+          spm3f222 = 0.
+          spm4f222 = 0.
+          spm5f222 = 0.
+          spm6f222 = 0.
+          spm7f222 = 0.
+          spm8f222 = 0.
+          spm9f222 = 0.
+          spm10f222 = 0.
          endif
          call done_macro(locunitnum)
          
