@@ -52,24 +52,26 @@
       real*8                             :: pmf(3)
       integer i, j, iw
       integer node_I, node_J, node_K
-      integer i_begin, i_end, el
-      integer flag_u_pp      integer flag_u_pp      integer flag_u_pp
+      integer j_begin, j_end, el
+      integer flag_u_pp      
       logical recompute_stress
       parameter(dis_tol = 1.0d-12)
-      integer flag_u_pp
+
       Ri = 0.0d0
+      j_begin = nelm(node_I)+1
+      j_end   = nelm(node_I+1)
 
       if(node_k.gt.0. and. flag_permmodel.eq.1) then
         ! save permfactor
         permtmp = permfactor
         ! overwrite with updated values
         permfactor = 0.0d0
-        i_begin = NodeElems(node_I)+1
-        i_end   = NodeElems(node_I+1)
-        do i=i_begin, i_end
+c loop over elements connected to the node
+        do j= NodeElems(node_I)+1,NodeElems(node_I+1)
            recompute_stress = .True.
-           el = NodeElems(i)
-c          call compute_permfactor(el, node_k, duu, dvv, dww)
+           el = NodeElems(j)
+c           call compute_permfactor(el, node_k, duu, dvv, dww
+c     &          , recompute_stress)
 c           call compute_permfactor_effstrs(el, node_k, duu, dvv, dww
 c     &          ,dpp, flag_u_pp, recompute_stress)
            call compute_permfactor_effstrs_pp(el,node_k,duu, dvv, dww
@@ -85,23 +87,21 @@ c     &            call fem_permfactor_2(el, node_k, duu, dvv, dww
 c     &         ,dpp, flag_u_pp, recompute_stress)
         enddo 
 
-        do i=nelm(node_I)+1,nelm(node_I+1)
-          if(numelems(i).gt.0) then
-            permfactor(i,:) = permfactor(i,:)/numelems(i)
+        do j=j_begin, j_end
+          if(numelems(j).gt.0) then
+            permfactor(j,:) = permfactor(j,:)/numelems(j)
           endif
-          permfactor(i,1) = min(permfactor(i,1), perx_m)
-          permfactor(i,2) = min(permfactor(i,2), pery_m)
-          permfactor(i,3) = min(permfactor(i,3), perz_m)
-          permfactor(i,1) = max(permfactor(i,1), 1.0d0)
-          permfactor(i,2) = max(permfactor(i,2), 1.0d0)
-          permfactor(i,3) = max(permfactor(i,3), 1.0d0)
+          permfactor(j,1) = min(permfactor(j,1), perx_m)
+          permfactor(j,2) = min(permfactor(j,2), pery_m)
+          permfactor(j,3) = min(permfactor(j,3), perz_m)
+          permfactor(j,1) = max(permfactor(j,1), 1.0d0)
+          permfactor(j,2) = max(permfactor(j,2), 1.0d0)
+          permfactor(j,3) = max(permfactor(j,3), 1.0d0)
         enddo
       endif
 
       ! start the loop over the list of neighbors
-      i_begin = nelm(node_I)+1
-      i_end   = nelm(node_I+1)
-      do j=i_begin, i_end
+      do j=j_begin, j_end
 
         node_J = nelm(j)
 
