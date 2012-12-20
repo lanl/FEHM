@@ -30,6 +30,7 @@
 !***********************************************************************
 
       integer flag_permmodel
+      integer incremental_shear_permmodel
 
       integer icycs,ipsps,iinp,minks,inst,ipchng,nnx,ihms,nvfc 
       integer nomass,noheat,noydis,localx,localy,ifrac,idof_stress
@@ -37,7 +38,8 @@
       integer ispmd,ipermstr1,ipermstr2,ipermstr3
       integer ipermstr4,ipermstr5,ipermstr6,ipermstr7,ipermstr8
       integer ipermstr11,ipermstr21,ipermstr22,ipermstr222
-      integer ipermstr91, ipermstr31
+      integer ipermstr23
+      integer ipermstr91, ipermstr31, ipermstr100
       integer istresscall,ilitho,iad_strs,istresspor,idisp_rel
       integer cnum_stress, ilithgrad, permfile
       
@@ -382,9 +384,20 @@ c s kelkar
       real*8, allocatable ::  density(:), internal_energy(:)
 
       integer, allocatable ::  itemp_perm22(:)
+      integer, allocatable ::  itemp_perm23(:)
 
 c s karra 17May 2012
       real*8, allocatable ::  plasticParam3(:)
       integer :: flag_pstrain_perm_coupling
 c
+c s kelkar for permmodel_22 zero out initial excess hsear stress
+      real*8, allocatable ::  str_x0_perm(:)
+      real*8, allocatable ::  str_y0_perm(:)
+      real*8, allocatable ::  str_z0_perm(:)
+      real*8, allocatable ::  str_xy0_perm(:)
+      real*8, allocatable ::  str_xz0_perm(:)
+      real*8, allocatable ::  str_yz0_perm(:)
+
+
+
       end module comsi
