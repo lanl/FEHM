@@ -271,7 +271,7 @@ C**********************************************************************
       use comsi
       use comsplitts
       use davidi
-      use comfem, only  : edgeNum1, ifem, NodeElems
+      use comfem
       implicit none
 
       integer iad_min, iad_mult, i
@@ -329,11 +329,11 @@ c (4,0) is nonlinear (if any) material properties)
 
 c     s kelkar 11feb2011 ihms=-15 is a special option
 c     allow uncoupled porosity changes, ihms is reset to -3
-         if(pore_factor.gt.0.0.and.ihms.eq.-3) then
 c     ps calculated below is a factor so that 
 c     pore volume = ps()*initial bulk volume (=sx1d)
 c     this factor ps() is used in therm w to calculate deni()=ps()*roho
 c     and the sx1d is multiplied in geneq1_.._..
+         if(pore_factor.gt.0.0.and.ihms.eq.-3) then
             call porosity_wrt_displacements
          endif
 
@@ -364,23 +364,63 @@ c
 c     call appropriate sub to generate equations
 
 c     set up permeability variations with displacements (allocate memory)     
-      if(flag_permmodel.eq.1) then
-         if(ifem.eq.1) then
-        ! Setup connectivity list of which elements each node belongs to
-            if(.not. allocated(NodeElems)) then
-               call Setup_NodeElems()
+      if(istrs_coupl.gt.-99) then
+         flag_pstrain_perm_coupling = 0
+         if(flag_permmodel.eq.1) then
+            if(flag_element_perm.eq.1) then
+           ! finite element option
+           ! Setup connectivity list of which elements each node belongs to
+               
+               if(iPlastic.eq.1) flag_pstrain_perm_coupling=1
+               
+               if(.not. allocated(NodeElems)) then
+                  call Setup_NodeElems()
+               endif                        
+           ! Setup pointers to edge numbers
+               if(.not. allocated(edgeNum1)) then
+                  call setup_edgePointers_3D()
+               endif
+             ! allocate memory for permeability update if necessay
+               call stress_perm(-1,0)
+             ! update edge permeability factors for current state
+               call update_permfactors()
+            else if (iPlastic.eq.1) then
+c     update permeabilities based on plastic strain, von Mises (if flag is called)
+c     Hard-wired the flag, need to input
+c     this is for sequential coupling
+               flag_pstrain_perm_coupling = 1 
+               if (flag_pstrain_perm_coupling.eq.1 .and. 
+     &              ifem.eq.1) then
+c     Setup connectivity list of which elements each node belongs to
+                  if(.not. allocated(NodeElems)) then
+                     call Setup_NodeElems()
+                  endif
+c     Setup pointers to edge numbers
+                  if(.not. allocated(edgeNum1)) then
+                     call setup_edgePointers_3D()
+                  endif
+                  
+                  call stress_perm(-1,0)
+                  
+                  call update_permfactors()
+c.............................................................
+               else
+c     cant do plasticity without ifem
+                  write(iptty,*)'error. must have fem'
+                  write(iptty,*)'for plasticity'
+                  stop
+               endif
+            else
+               
+c     control volume approach 
+c     allocate memory for permeability update if necessay
+               call stress_perm(-1,0)
+c     update nodal permeabilities (explicit)                  	
+               call stress_perm(1,0)
+c     deallocate memory for permeability update if necessay
+               call stress_perm(-2,0)
             endif
-            
-        ! Setup pointers to edge numbers
-            if(.not. allocated(edgeNum1)) then
-               call setup_edgePointers_3D()
-            endif
-        ! update edge permeability factors for current state
-            call update_permfactors()
-         else
-            call stress_perm(-1,0)
-            call stress_perm(1,0)
-         endif
+         endif 
       endif
 
       if(idof_stress.ge.5) then
