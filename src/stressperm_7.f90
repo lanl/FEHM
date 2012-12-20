@@ -18,6 +18,7 @@
       use comai
       use combi
       use comdi
+      use comdti, only : n0
       use comsi
 
       implicit none
@@ -46,8 +47,18 @@
 !     
 !     **************************** 3D
 !     
-      if(icnl.eq.0) then 
-         
+      if(icnl.eq.0) then
+         if (.not. allocated(check)) allocate(check(n0))
+         if (.not. allocated(estr_x0)) then
+            allocate(estr_x0(n0))
+            allocate(estr_y0(n0))
+            allocate(estr_z0(n0))           
+         endif
+         if(.not.allocated(str_xy0)) then
+            allocate(str_xy0(n0))  
+            allocate(str_xz0(n0))
+            allocate(str_yz0(n0))
+         endif
          frac_bx = spm1f(iispmd)
          frac_by = spm2f(iispmd)
          frac_bz = spm3f(iispmd)
