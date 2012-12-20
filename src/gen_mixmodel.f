@@ -122,8 +122,13 @@ c     Normal distribution of RTDs
 c    Compute rtd curve
          time_rtd(1) = 0.
          rtd(1) = 0.
-         delta_time = 8.*std_dev/(rtdcount-2)
-         time_rtd(2) = mean-4.*std_dev
+         if(mean-4.*std_dev .gt. 0.) then
+            delta_time = 8.*std_dev/(rtdcount-2)
+            time_rtd(2) = mean-4.*std_dev
+         else
+            delta_time = mean/((rtdcount-1)/2)
+            time_rtd(2) = delta_time
+         end if
             rtd(2) = exp(-(time_rtd(2)-mean)**2/
      2           (2.*std_dev**2))/(denom_const*std_dev)
          do i = 3, rtdcount
