@@ -113,6 +113,22 @@ c     calculate volume changes
 c     update porosity
             call stressctr(-7,0)
             call stressctr(13,0)
+c................................................................
+c s kelkar 3 Dec 2012
+c save initial stresses if they need to be zerod out in stressperm_22
+c at present saving all components of stress because uncertain which
+c way the code is going develop, although only need to save excess shear
+         if(incremental_shear_permmodel.eq.1) then
+            str_x0_perm = str_x               
+            str_y0_perm = str_y               
+            str_xy0_perm = str_xy  
+            if(icnl.eq.0) then
+               str_z0_perm = str_z               
+               str_xz0_perm = str_xz               
+               str_yz0_perm = str_yz               
+            endif
+         endif
+c................................................................
          endif  
 	 if(initcalc.ne.0) then
             initcalc = 0
