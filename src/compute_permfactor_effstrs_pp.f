@@ -1,4 +1,4 @@
-      subroutine compute_permfactor_effstrs_pp(el,node_k, duu, dvv, dww
+      subroutine compute_permfactor_effstrs_pp(el,node_J, duu, dvv, dww
      &, dpp, flag_u_pp, recompute_stress)
 !***********************************************************************
 ! Copyright 2011 Los Alamos National Security, LLC  All rights reserved
@@ -43,11 +43,11 @@
       double precision                   :: alphadeltaT, betadeltaP
       double precision                   :: e1bar, e2bar, e3bar
       double precision                   :: p_eff,mean_str_eff
-      double precision                   :: efac_I,efac_J
+      double precision                   :: efac_1,efac_2
 
       integer, parameter                 :: numEdges = 28
-      integer el, node_k, i, j, k
-      integer node_I, node_J, edge_1, edge_2
+      integer el, node_J, i, j, k, j_edge
+      integer node_1, node_2, edge_1, edge_2
       logical recompute_stress
       integer flag_u_pp
 
@@ -71,7 +71,7 @@ c
 c      recompute = .false.
 c      do j=1,ns
 c         if(flag_u_pp.eq.1) then
-c            if(elnode(el,j).eq.node_k) then
+c            if(elnode(el,j).eq.node_J) then
 c               recompute=.true.
 c            endif
 c         endif
@@ -79,6 +79,16 @@ c      enddo
 c      
       if(recompute_stress) then
         ! Recompute the stress in the element
+         disp = 0.0d0
+         do k=1,ns
+            node(k) = elnode(el, k)
+            if(node(k).eq.node_J) then
+               disp(3*k-2) = duu
+               disp(3*k-1) = dvv
+               disp(3*k  ) = dww
+            endif
+         enddo
+
         do j=1,numgausspoints
           ! first compute the strain
           alphadeltaT = 0.0d0
@@ -87,20 +97,7 @@ c
           e2bar = 0.0d0
           e3bar = 0.0d0
 
-          !TODO: Should be setting up disp outside gausspoint loop
-          disp = 0.0d0
           do k=1,ns
-            node(k) = elnode(el, k)
-            if(node(k).eq.node_k) then
-              disp(3*k-2) = duu
-              disp(3*k-1) = dvv
-              disp(3*k  ) = dww
-            endif
-!            if(node(k).eq.node_k) then
-!              disp(3*k-2) = disp(3*k-2) + duu
-!              disp(3*k-1) = disp(3*k-1) + dvv
-!              disp(3*k  ) = disp(3*k  ) + dww
-!            endif
             alphadeltaT = alphadeltaT + alp(node(k))*
      &            Psi(el, j, k)*(t(node(k)) - tini(node(k)))
             betadeltaP = betadeltaP + bulk(node(k))*
@@ -168,16 +165,23 @@ c
 !      write(iout, *) 3.0*e2bar + 2.0*e3bar
 !      write(iout, *) (3.0*e2bar + 2.0*e3bar)*betadeltaP
 
-      do j=1, numEdges
-        node_I = elnode(el, edges(j,1))
-        node_J = elnode(el, edges(j,2))
-        edge_1 = edgeNum1(el, j)
-        edge_2 = edgeNum2(el, j)
-        efac_I = 3.d0*e2(node_I)+2.d0*e3(node_J)
-        efac_J = 3.d0*e2(node_J)+2.d0*e3(node_J)
-        p_eff=0.5*(efac_I*bulk(node_I)*(phi(node_I) - phini(node_I))
-     &      + efac_J*bulk(node_J)*((phi(node_J) - phini(node_J))+dpp))     
-        
+      do j_edge=1, numEdges
+        node_1 = elnode(el, edges(j_edge,1))
+        node_2 = elnode(el, edges(j_edge,2))
+        edge_1 = edgeNum1(el, j_edge)
+        edge_2 = edgeNum2(el, j_edge)
+        efac_1 = 3.d0*e2(node_1)+2.d0*e3(node_1)
+        efac_2 = 3.d0*e2(node_2)+2.d0*e3(node_2)
+        if(node_1.eq.node_J) then
+       p_eff=0.5*(efac_1*bulk(node_1)*(phi(node_1)-phini(node_1)+dpp)
+     &          + efac_2*bulk(node_2)*(phi(node_2)-phini(node_2)))     
+        elseif(node_2.eq.node_J) then
+       p_eff=0.5*(efac_1*bulk(node_1)*(phi(node_1)-phini(node_1))
+     &          + efac_2*bulk(node_2)*(phi(node_2)-phini(node_2)+dpp))    
+        else
+       p_eff=0.5*(efac_1*bulk(node_1)*(phi(node_1)-phini(node_1))
+     &          + efac_2*bulk(node_2)*(phi(node_2)-phini(node_2)))     
+        endif
         !! Explicitly considering model 2 here, but with effective stress
         !! Need to add a loop to look at model numbers and 
         !! break it into different routines
