@@ -116,6 +116,8 @@ c     CV approach, node based perm models
                call stressperm_21(i)
             else if(ispmd.eq.22) then
                call stressperm_22(i)
+            else if(ispmd.eq.23) then
+               call stressperm_23(i)
             else if(ispmd.eq.31) then
 c     new routine for changing mechanical properties with ice formation          
                call stressperm_31(i)               
