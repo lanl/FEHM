@@ -754,6 +754,9 @@ c     might need help in the
                   py = 0.
                   pz = 0.
                end if
+
+            if(allocated(permfactor_nodal))px=permfactor_nodal(i)
+
                write(vstring,110) dls(1:k), px
                ic2 = ic1 + len_trim(vstring)
                string(ic1:ic2) = vstring
@@ -882,6 +885,20 @@ c     might need help in the
                   string(ic1:ic2) = vstring
                   ic1 = ic2 + 1
                endif        
+               if(flag_excess_shear.eq.1) then
+                  write(vstring,110) dls(1:k), elastic_mod(i)
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+                  write(vstring,110) dls(1:k), excess_shear(i)
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+                  write(vstring,110) dls(1:k), shear_angle(i)
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+               endif
             endif 
             if (iostrain .eq. 1) then
                write(vstring,110) dls(1:k), vol_strain(i)
