@@ -58,12 +58,12 @@ C************************************************************************
       use comai, only : altc, contim, days, iadif, icnl, jdate, jtime, 
      &     verno, wdd
       use comdi, only : head
-      use comsi, only : iPlastic
+      use comsi, only : iPlastic,flag_excess_shear
       use davidi
       implicit none
 
       integer maxscalar
-      parameter (maxscalar = 32)
+      parameter (maxscalar = 35)
       integer neq,nscalar,lu,ifdual
       integer i,j,iolp,iovp,nout,icall,idz,iriver2,iocord_temp
       integer size_head, size_pcp, istart, iend, ic1, ic2, length
@@ -113,6 +113,9 @@ C************************************************************************
      &     units(34) /'(MPa)'/,
      &     units(35) /'(MPa)'/,
      &     units(36) /'(no dim)'/     
+     &     units(37) /'(MPa)'/
+     &     units(38) /'(MPa)'/
+     &     units(39) /'(deg)'/
 
 
 C     BEGIN
@@ -206,6 +209,9 @@ c     Header is only written to the first tecplot file
       title(34) = 'XZ stress (MPa)'
       title(35) = 'YZ stress (MPa)'  
       title(36) = 'Plastic strain (no dim)'  
+      title(37) = 'Youngs Mod (MPa)'  
+      title(38) = 'Excess Shear (MPa)'  
+      title(39) = 'Shear Angle (deg)'  
 
       
       if(altc(1:3).eq.'avs' .and. altc(4:4) .ne. 'x') then
@@ -308,6 +314,11 @@ c     Write Z coordinate
             if(iPlastic.eq.1) then
                write(lu,200) trim(title(36)), trim(units(36)) 
             endif
+            if (flag_excess_shear.eq.1) then
+               write(lu,200) trim(title(36)), trim(units(37))
+               write(lu,200) trim(title(37)), trim(units(38))
+               write(lu,200) trim(title(38)), trim(units(39))
+            end if
          end if  	    
          if (iostrain .eq. 1) then
             write(lu,200) trim(title(32)), trim(units(32))
@@ -528,6 +539,20 @@ c     Write Z coordinate
                length = len_trim(tstring)
                ic2 = ic2 + length
             endif
+            if (flag_excess_shear.eq.1) then
+               write(tstring,formstring) trim(title(37))
+               tstring2 = tstring2(ic1:ic2) // tstring
+               length = len_trim(tstring)
+               ic2 = ic2 + length
+               write(tstring,formstring) trim(title(38))
+               tstring2 = tstring2(ic1:ic2) // tstring
+               length = len_trim(tstring)
+               ic2 = ic2 + length
+               write(tstring,formstring) trim(title(39))
+               tstring2 = tstring2(ic1:ic2) // tstring
+               length = len_trim(tstring)
+               ic2 = ic2 + length
+            end if
          end if 
          if (iostrain .eq. 1) then
             write(tstring,formstring) trim(title(32))
