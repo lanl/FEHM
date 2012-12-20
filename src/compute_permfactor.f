@@ -1,4 +1,5 @@
-      subroutine compute_permfactor(el, node_k, duu, dvv, dww)
+      subroutine compute_permfactor(el, node_k, duu, dvv, dww
+     &     , recompute_stress)
 !***********************************************************************
 ! Copyright 2011 Los Alamos National Security, LLC  All rights reserved
 ! Unless otherwise indicated,  this information has been authored by an
@@ -20,7 +21,7 @@
       use comai, only: nei, neq, ns, iout
       use combi, only: nelm
       use comdi, only: t, tini, phi, phini
-      use comsi, only: ipermstr2, perx_m, pery_m, perz_m
+      use comsi, only: ispm, ipermstr2, perx_m, pery_m, perz_m
       use comsi, only: strx_min, stry_min, strz_min, e1, e2, e3
       use comsi, only: spm1f, spm2f, spm3f
       use comsi, only: spm7f, spm8f, spm9f, du, dv, dw, alp, bulk
@@ -43,7 +44,8 @@
       integer, parameter                 :: numEdges = 28
       integer el, node_k, i, j, k
       integer node_I, node_J, edge_1, edge_2
-      logical recompute
+      logical recompute_stress
+      integer iispmd
 
       real*8 epsilon_perm
 
@@ -61,17 +63,16 @@ c      permfactor = 1.0
         perx_m  = spm7f(1)
         pery_m  = spm8f(1)
         perz_m  = spm9f(1)
-
       endif
 
-      recompute = .false.
-      do j=1,ns
-        if(elnode(el,j).eq.node_k) then
-          recompute=.true.
-        endif
-      enddo
+c      recompute = .false.
+c      do j=1,ns
+c        if(elnode(el,j).eq.node_k) then
+c          recompute=.true.
+c        endif
+c      enddo
       
-      if(recompute) then
+      if(recompute_stress) then
         ! Recompute the stress in the element
         do j=1,numgausspoints
           ! first compute the strain
