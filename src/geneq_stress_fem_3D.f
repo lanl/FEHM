@@ -1,18 +1,17 @@
       subroutine geneq_stress_fem_3D()
 
-      use comai, only: nei, neq, ns, igrav, iout, grav
+      use comai
       use combi, only: nelm, nelmdg
       use comdi, only: denr
       use comei, only: a
       use comgi, only: bp
-      use comsi, only: e1, e2, e3, iPlastic,ibodyforce
-      use comsi, only: e4, ezz, shearmod_t, stress_anisotropy_in
+      use comsi
       use comfem
       use davidi,only: nmat, nrhs
 
       implicit none
 
-      integer                      :: i,j,k,li,m,ii1,ii2
+      integer                      :: i,j,k,li,im,ii1,ii2
       integer                      :: nodei, nodej, jmia, iau
       integer, dimension(8)        :: node
       real*8,  dimension(6, 24)    :: B
@@ -138,9 +137,9 @@
                 ii1 = nelm(nodei) + 1
                 ii2 = nelm(nodei + 1)
                 iau = 0
-                do m=ii1,ii2
-                  if(nelm(m) .eq. nodej) then
-                    iau  = m - (neq + 1)
+                do im=ii1,ii2
+                  if(nelm(im) .eq. nodej) then
+                    iau  = im - (neq + 1)
                   endif
                 enddo
   
