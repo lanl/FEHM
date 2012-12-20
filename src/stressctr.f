@@ -150,6 +150,9 @@ c     s kelkar nov 5 2010
       integer msg(16)
       integer nwds
       real*8 xmsg(16)
+
+      real*8 temp_junk
+      real*8 stress_factor_initial
 c..................................................................
       
       parameter (pi=3.1415926535)
@@ -250,6 +253,7 @@ c
    
 c     zero variables
 c     
+         incremental_shear_permmodel = 0
          flag_element_perm = 0
          ifem = 0
 
@@ -379,15 +383,17 @@ c
             if(nwds.gt.2) then
                pore_factor = xmsg(3)
             endif
-            if(ihms.eq.-15) then
-               ihms=-3
-            elseif(ihms.eq.16.or.ihms.eq.17) then
-               flag_element_perm =  1
-            endif  
+            endif
+         if(ihms.eq.15.or.ihms.eq.17) then
             if(.not.allocated(density)) allocate(density(n0))
             if(.not.allocated(internal_energy))
      &           allocate(internal_energy(n0))
-        endif
+         endif
+
+            if(ihms.eq.-15) ihms=-3
+
+            if(ihms.eq.16.or.ihms.eq.17) flag_element_perm =  1
+
 c     
          if(icnl.ne.0.and.ihms.lt.0) then
 c     not fully coupled  2D solution    
@@ -563,8 +569,11 @@ c     spm13f: maximum multiplier  permeability z-prime direction
      &                 spm9f(i),spm10f(i),spm11f(i),spm12f(i),spm13f(i)
                else if (ispmd .eq. 22) then
                   if(.not.allocated(itemp_perm22)) 
-     &                 allocate (itemp_perm22(100000))
+     &                 allocate (itemp_perm22(neq))
                   itemp_perm22 =0
+                  spm11f(i)=1.0
+                  spm12f(i)=0.
+                  spm13f(i)=0.
                   open(unit=94,file='failed_nodes_perm22.dat')
 c     mohr-coulomb failure criteria on the plane that miximizes
 c     abs(shear)-friction*normal stress
@@ -578,14 +587,93 @@ c     spm7f:maximum multiplier for young's modulus  in z-prime direction
 c     spm8f: maximum multiplier  permeability x-prime direction
 c     spm9f: maximum multiplier  permeability y-prime direction
 c     spm10f: maximum multiplier  permeability z-prime direction
+c     spm11f: optional, maximum multiplier  porosity
+c     spm12f: optional, permfactor is made a funciton of inceramental
+c     spm13f: optional, excess shewar has to exceed this value before
+c            permfactor becomes different from 1.
 c     here z-prime is along tehnormal to the plane of failure, and
 c     y-prime is along the median principal stress
                   read(inpt,*)ispmt(i),spm1f(i),spm2f(i),spm3f(i),
      &                 spm4f(i),spm5f(i),spm6f(i),spm7f(i),spm8f(i),
      &                 spm9f(i),spm10f(i)
+c..... s kelkar 18 sep 2012, allow optional porosity damage 
+                  backspace inpt
+                  read (inpt, '(a)') input_msg
+                  call parse_string(input_msg, imsg, msg, xmsg, cmsg
+     &                 , nwds)
+                  if(nwds.gt.11) then
+                     spm11f(i) = xmsg(12)
+                  endif
+c..... s kelkar 27 Nov 2012, allow permfactor upon failure to depend
+c        on increamental shear stress with a user defined factor
+c        must have invoked 'initcal' prior to input for this macro
+                  backspace inpt
+                  read (inpt, '(a)') input_msg
+                  call parse_string(input_msg, imsg, msg, xmsg, cmsg
+     &                 , nwds)
+                  if(nwds.gt.12) then
+                     if(.not. residual_stress.and.initcalc.eq.1) then
+                        spm12f(i) = xmsg(13)
+                        if(spm12f(i).gt.1.0e-18) then
+                  if(.not.allocated(str_x0_perm)) then
+                     allocate (str_x0_perm(n0))
+                     allocate (str_y0_perm(n0))
+                     allocate (str_z0_perm(n0))
+                     allocate (str_xy0_perm(n0))
+                     allocate (str_xz0_perm(n0))
+                     allocate (str_yz0_perm(n0))
+                  endif
+                  incremental_shear_permmodel = 1
+                        endif
+                     else
+                  write(iptty,*)'must invoke initcalc prior to'
+                  write(iptty,*)'this option with stressperm=22.'
+                  write(iptty,*)'At present, can not use this with' 
+                  write(iptty,*)' residual_stress option'
+                  write(iptty,*)'STOP in stressctr'
+                  write(ierr,*)'must invoke initcalc prior to'
+                  write(ierr,*)'this option with stressperm=22.'
+                  write(ierr,*)'At present, can not use this with'
+                  write(ierr,*)'residual_stress option'
+                  write(ierr,*)'STOP in stressctr'
+                  stop
+                     endif
+                  endif
+c..... s kelkar 03 Dec 2012, 
+c        on increamental shear stress with a user defined factor
+c        must have invoked 'initcal' prior to input for this macro
+                  backspace inpt
+                  read (inpt, '(a)') input_msg
+                  call parse_string(input_msg, imsg, msg, xmsg, cmsg
+     &                 , nwds)
+                  if(nwds.gt.13) then
+                        spm13f(i) = xmsg(14)
+                     endif
+c...............................
+               else if (ispmd .eq. 23) then
+                  if(.not.allocated(itemp_perm23)) 
+     &                 allocate (itemp_perm23(neq))
+                  itemp_perm23 =0
+                  open(unit=94,file='failed_nodes_perm23.dat')
+c using the hydraulic aperture along the direction of shear movement
+c a provided by Stuart Walsh from LANL, 6 Nov 2012.
+c direction of shear slip assumed to be vertical. mohr-coulomb failure 
+c criteria on the vertical plane 
+c     abs(shear)-friction*normal stress
+c     spm1f:friction coefficient of shear in the fault plane
+c     spm2f:shear strength of the fault plane
+c     spm3f:factor in effective stress=sigma-(pp_fac*pore pressure)
+c     spm4f:(MPa) empirical modulus to conver post failure excess shear 
+c           stress to shear dispalcement for permeability model
+c     spm5f:(meters) maximum shear displacement allowed fo rpermeability
+c     spm6f:aperture (meters) corrosponding to max shear displacement
+c     spm7f:(metrers) lenght scale cubic aperture law
+                  read(inpt,*)ispmt(i),spm1f(i),spm2f(i),spm3f(i),
+     &                 spm4f(i),spm5f(i),spm6f(i), spm7f(i)
 
+c...................................
                else if (ispmd .eq. 222) then
-c     combpned model  explicit tensile and shear (2 and 22)
+c     combined model  explicit tensile and shear (2 and 22)
 c     spm3f,spm6f,spm9f are ignored for a 2D problem
 c     spm1f222:strx_min, min tensile stress (x direction) for damage to occur
 c     spm2f222:stry_min, min tensile stress (y direction) for damage to occur
@@ -611,7 +699,7 @@ c     spm10f: maximum multiplier  permeability z-prime direction
 c     here z-prime is along tehnormal to the plane of failure, and
 c     y-prime is along the median principal stress
                   if(.not.allocated(itemp_perm22)) 
-     &                 allocate (itemp_perm22(100000))
+     &                 allocate (itemp_perm22(neq))
                   itemp_perm22 =0
                   open(unit=94,file='failed_nodes_perm22.dat')
                   read(inpt,*)ispmt(i),spm1f222(i),spm2f222(i),
@@ -645,6 +733,13 @@ c     y-prime is along the median principal stress
      &                 spm9f(i) 
                else if (ispmd .eq.11) then
                   read(inpt,*)ispmt(i),spm1f(i),spm2f(i),spm3f(i)     
+               else if (ispmd .eq. 100) then
+c permmodel for VonMises and Drucker-Prager palsticity. Opens in tension
+c  permeability is a ramp as a function of accumulated plastic strain
+c  ramp range is spm4f.
+c  at present it is isotropic, spm2f and spm3f are not used. 
+                  read(inpt,*) ispmt(i),spm1f(i),spm2f(i),spm3f(i)
+     &                 ,spm4f(i)
                else if (ispmd. eq. 31) then        
 c     model for changing properties when ice is present
                   read(inpt,*)ispmt(i),spm1f(i),spm2f(i)
@@ -675,9 +770,11 @@ c     model for changing properties when ice is present
                if(ispmt(i).eq.11) ipermstr11 = ispmt(i)
                if(ispmt(i).eq.21) ipermstr21 = ispmt(i)
                if(ispmt(i).eq.22) ipermstr22 = ispmt(i)
+               if(ispmt(i).eq.23) ipermstr23 = ispmt(i)
                if(ispmt(i).eq.31) ipermstr31 = ispmt(i)            
                if(ispmt(i).eq.222) ipermstr222 = ispmt(i)
                if(ispmt(i).eq.91) ipermstr91 = ispmt(i)
+               if(ispmt(i).eq.100) ipermstr100 = ispmt(i)
             end do
 c     set default         
             ispm = 1
@@ -1040,8 +1137,27 @@ c     this model is nonlinear but isotropic
             elseif(Nonlin_model_flag.eq.91) then 
                read(inpt,'(a100)') young_temp_file
                ifile = open_file( young_temp_file, 'old')
-               read(ifile,*)nentries_young 
+               read(ifile,'(a)') input_msg
+               backspace (ifile)
+               call parse_string(input_msg, imsg, msg, xmsg, cmsg, nwds)
+               if(nwds.eq.1) then
+                  read(ifile,*)nentries_young 
+               endif
+               do i91=1,1000000
+                  read(ifile,*,end=91913) temp_junk
+               enddo
+               write(iptty,*)'error in stress input. Too many entries'
+               write(iptty,*)' in the E vs Temperature file. STOP'
+               write(ierr,*)'error in stress input. Too many entries'
+               write(ierr,*)' in the E vs Temperature file. STOP'
+               stop
+91913          nentries_young = i91-1
+               rewind (ifile)
+               read(ifile,'(a)') input_msg
+               call parse_string(input_msg, imsg, msg, xmsg, cmsg, nwds)
+               if(nwds.gt.1)  backspace (ifile)
                allocate (e_temp91(nentries_young,3))
+               e_temp91 = 0.0
                do i91=1,nentries_young
                   read(ifile,*)(e_temp91(i91,j91),j91=1,3)
                enddo
@@ -1111,9 +1227,13 @@ c     Define the different flags for the plasticctr subroutine
             assemblePlastic = 2
             call plasticctr(initPlastic)
             NumPlasticModels = 1
-c            read(inpt,*) NumPlasticModels
+            read(inpt,*) NumPlasticModels
+c forcing to have only 1 plastic model for the whole domain
+            NumPlasticModels = 1
+
 c            if (iout .ne. 0) write(iout, 102) NumPlasticModels
 c 102        format ('Number of plastic models being used : ', i4)
+
             if(.not.allocated(plasticModel)) then
                allocate(plasticModel(1:NumPlasticModels))
                allocate(modulus(1:NumPlasticModels))
@@ -1489,7 +1609,7 @@ c     If  model 6 is chosen, store the initial effective stresses
 c     
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
          if(ipermstr7.ne.0.or.ipermstr5.ne.0.or.ipermstr8.ne.0) then
-            allocate(check(n0))
+            if (.not. allocated(check)) allocate(check(n0))
          endif
 
          if(ipermstr2.ne.0.or.ipermstr6.ne.0.or.ipermstr7.ne.0) then
@@ -1531,7 +1651,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
             endif
          endif
          
-         if(ipermstr8.ne.0) then
+         if(ipermstr8.ne.0 .and. .not. (allocated(es_f_x0))) then
             if(icnl.ne.0) then
                allocate(es_f_x0(n0,2))
                allocate(es_f_y0(n0,2))
@@ -2287,13 +2407,17 @@ c
      &           'Stresses (Convention:Compression Positive)' 
             if(flag_excess_shear.eq.1) then
                do ishear=1,n0
+                  stress_factor_initial = 0.
                   if(flag_permmodel.eq.1) then
                      iispmd = ispm(ishear)    
                      ispmd = ispmt(iispmd) 
-                     if(ispmd.eq.22) then
+                     if(ispmd.eq.22.or.ispmd.eq.23) then
                         friction = spm1f(iispmd)
                         strength = spm2f(iispmd)
                         pp_fac=spm3f(iispmd)
+                        if(incremental_shear_permmodel.eq.1) then
+                           stress_factor_initial = spm12f(iispmd)
+                        endif
                      else
                         friction = friction_out
                         strength = strength_out
@@ -2304,9 +2428,11 @@ c
                      strength = strength_out
                      pp_fac=pp_fac_out
                   endif
-                  call principal_stress_3D(ishear,alambda,eigenvec)
+                  call principal_incremental_stress_3D(ishear,alambda,
+     &                 eigenvec,stress_factor_initial)
+c                  call principal_stress_3D(ishear,alambda,eigenvec)
                   call max_excess_shear(ishear,friction,strength,
-     &                 alambda,pp_fac,eigenvec)
+     &                 alambda,pp_fac,stress_factor_initial,eigenvec)
                   shear_angle(md) = shear_angle(md)*180./pi
                enddo
             endif
@@ -2333,11 +2459,11 @@ c     s kelkar nov 5,2010 output plane of max excess shear
                   if(iptty.gt.0) write(iptty,7120) 
      &                 md, alambda(3),alambda(2),alambda(1)
      &                 ,eigenvec_deg(1),eigenvec_deg(2),eigenvec_deg(3)
-               elseif(flag_excess_shear.eq.1) then
+c               elseif(flag_excess_shear.eq.1) then
 c     s kelkar nov 5,2010 output plane of max excess shear
-                  call max_excess_shear(md,friction,strength,alambda,
-     &                 eigenvec,excess_shear,shear_angle)
-                  shear_angle = shear_angle*180./pi
+c                  call max_excess_shear(md,friction,strength,alambda,
+c     &                 pp_fac,stress_factor_initial,eigenvec)
+c                  shear_angle = shear_angle*180./pi
                   if(ntty.eq.2 .and. iout .ne. 0) write(iout,8120)  
      &                 md, str_x(md), str_y(md), str_z(md), 
      &                 str_xy(md), str_xz(md), str_yz(md),ps(md)
@@ -2423,13 +2549,17 @@ c
             if(flag_excess_shear.eq.1) then
                if(ntty.eq.2 .and. iout .ne. 0) write(iout,8118)
                do ishear= 1,n0
+                  stress_factor_initial = 0.
                   if(flag_permmodel.eq.1) then
                      iispmd = ispm(ishear)    
                      ispmd = ispmt(iispmd) 
-                     if(ispmd.eq.22) then
+                     if(ispmd.eq.22.or.ispmd.eq.23) then
                         friction = spm1f(iispmd)
                         strength = spm2f(iispmd)
                         pp_fac = spm3f(iispmd)
+                        if(incremental_shear_permmodel.eq.1) then
+                           stress_factor_initial = spm12f(iispmd)
+                        endif
                      else
                         friction = friction_out
                         strength = strength_out
@@ -2440,9 +2570,11 @@ c
                      strength = strength_out
                      pp_fac = pp_fac_out
                   endif
-                  call principal_stress_3D(ishear,alambda,eigenvec)
+                  call principal_incremental_stress_3D(ishear,alambda,
+     &                 eigenvec,stress_factor_initial)
+c                  call principal_stress_3D(ishear,alambda,eigenvec)
                   call max_excess_shear(ishear,friction,strength,
-     &                 alambda,pp_fac,eigenvec)
+     &                 alambda,pp_fac,stress_factor_initial,eigenvec)
                   shear_angle(ishear) = shear_angle(ishear)*180./pi
                enddo
             endif                 
@@ -2485,22 +2617,31 @@ c     s kelkar nov 5,2010 output plane of max excess shear
                elseif(flag_excess_shear.eq.1) then
 c     s kelkar nov 5,2010 output plane of max excess shear
                   if(flag_permmodel.eq.1) then
+                     stress_factor_initial = 0.
                      iispmd = ispm(md)    
                      ispmd = ispmt(iispmd) 
-                     if(ispmd.eq.22) then
+                     if(ispmd.eq.22.or.ispmd.eq.23) then
                         friction = spm1f(iispmd)
                         strength = spm2f(iispmd)
+                        pp_fac=spm3f(iispmd)
+                        if(incremental_shear_permmodel.eq.1) then
+                           stress_factor_initial = spm12f(iispmd)
+                        endif
                      else
                         friction = friction_out
                         strength = strength_out
+                        pp_fac=pp_fac_out
                      endif
                   else
                      friction = friction_out
                      strength = strength_out
+                     pp_fac=pp_fac_out
                   endif
-                  call principal_stress_3D(md,alambda,eigenvec)
+                  call principal_incremental_stress_3D(md,alambda,
+     &                 eigenvec,stress_factor_initial)
+c                  call principal_stress_3D(md,alambda,eigenvec)
                   call max_excess_shear(md,friction,strength,alambda,
-     &                 eigenvec,excess_shear,shear_angle )
+     &                 pp_fac,stress_factor_initial,eigenvec)
                   shear_angle = shear_angle*180./pi
                   if(ntty.eq.2) write(iout,8120)  
      &                 md, str_x(md), str_y(md), str_z(md), 
@@ -2649,7 +2790,6 @@ c     2D
                enddo
             endif
          end if
-
       else if(iflg.eq.14) then
 c     
 c     write special history plot for stress 
