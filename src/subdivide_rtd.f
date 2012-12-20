@@ -147,25 +147,21 @@ c     Loop through each subdivided point, normalize
          capf(i) = fractional_area*capf(i)/capf(maxdo)
       end do
 
-      tfinal = time_subdiv(nsubdiv-25)
       if(fractional_area.lt.1.) then
+         tfinal = time_subdiv(nsubdiv-25)
          slope_exp = rtd_subdiv(nsubdiv-25)/(1.-fractional_area)
          delta_time = 1./(5.*slope_exp)
          fcurve_final = rtd_subdiv(nsubdiv-25)
-      else
-         slope_exp = 0.
-         delta_time = time_subdiv(nsubdiv-25)-time_subdiv(nsubdiv-26)
-         fcurve_final = 0.
-      end if
 c     Provide extrapolated curve
-      do i = nsubdiv-24, nsubdiv
-         time_subdiv(i) = time_subdiv(i-1) + delta_time
-         rtd_subdiv(i) = fcurve_final*
-     2        exp(-slope_exp*(time_subdiv(i)-tfinal))
-         capf(i) = capf(i-1)+0.5*delta_time*
-     2        (rtd_subdiv(i)+rtd_subdiv(i-1))
-      end do
+         do i = nsubdiv-24, nsubdiv
+            time_subdiv(i) = time_subdiv(i-1) + delta_time
+            rtd_subdiv(i) = fcurve_final*
+     2           exp(-slope_exp*(time_subdiv(i)-tfinal))
+            capf(i) = capf(i-1)+0.5*delta_time*
+     2           (rtd_subdiv(i)+rtd_subdiv(i-1))
+         end do
 
+      end if
 c     compute mean residence time
 
       ftotal = 0.
