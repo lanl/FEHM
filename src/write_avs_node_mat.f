@@ -643,7 +643,8 @@ c for river or wells, "geoname" will only have neq_primary nodes
             end if
 ! Porosity, bulk density, and specific heat will be written
             write (temp_string, '(3(a,1p,g14.6))') dls, ps(i), 
-     &           dls, denr(i)
+!    &           dls, denr(i)
+     &           dls, denr(i), dls, cpr(i)
             ic2 = ic2 + len_trim(temp_string)
             vstring(ic1:ic2) = temp_string
             ic1 = ic2 + 1
