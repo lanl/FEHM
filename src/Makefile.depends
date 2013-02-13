@@ -574,6 +574,7 @@ stressperm_21.o: comai.o comdi.o comsi.o
 stressperm_22.o: comai.o comdi.o comsi.o
 stressperm_222.o: comai.o combi.o comdi.o comsi.o
 stressperm_23.o: comai.o comdi.o comsi.o
+stressperm_24.o: comai.o comdi.o comsi.o
 stressperm_3.o: comai.o combi.o comdi.o comsi.o
 stressperm_31.o: comai.o combi.o comdi.o comsi.o
 stressperm_4.o: comai.o combi.o comdi.o comsi.o
