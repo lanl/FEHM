@@ -122,6 +122,7 @@ c way the code is going develop, although only need to save excess shear
             str_x0_perm = str_x               
             str_y0_perm = str_y               
             str_xy0_perm = str_xy  
+            str_pf0_perm = phi
             if(icnl.eq.0) then
                str_z0_perm = str_z               
                str_xz0_perm = str_xz               
