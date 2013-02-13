@@ -38,7 +38,7 @@
       integer ispmd,ipermstr1,ipermstr2,ipermstr3
       integer ipermstr4,ipermstr5,ipermstr6,ipermstr7,ipermstr8
       integer ipermstr11,ipermstr21,ipermstr22,ipermstr222
-      integer ipermstr23
+      integer ipermstr23, ipermstr24
       integer ipermstr91, ipermstr31, ipermstr100
       integer istresscall,ilitho,iad_strs,istresspor,idisp_rel
       integer cnum_stress, ilithgrad, permfile
@@ -397,6 +397,7 @@ c s kelkar for permmodel_22 zero out initial excess hsear stress
       real*8, allocatable ::  str_xy0_perm(:)
       real*8, allocatable ::  str_xz0_perm(:)
       real*8, allocatable ::  str_yz0_perm(:)
+      real*8, allocatable ::  str_pf0_perm(:)
 
 
 
