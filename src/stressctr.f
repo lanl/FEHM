@@ -622,6 +622,7 @@ c        must have invoked 'initcal' prior to input for this macro
                      allocate (str_xy0_perm(n0))
                      allocate (str_xz0_perm(n0))
                      allocate (str_yz0_perm(n0))
+                     allocate (str_pf0_perm(n0))
                   endif
                   incremental_shear_permmodel = 1
                         endif
@@ -650,6 +651,41 @@ c        must have invoked 'initcal' prior to input for this macro
                         spm13f(i) = xmsg(14)
                      endif
 c...............................
+               else if (ispmd .eq. 24) then
+c                  if(.not.allocated(itemp_perm22)) 
+c     &                 allocate (itemp_perm22(neq))
+c                  itemp_perm22 =0
+                  incremental_shear_permmodel = 1
+c                  spm11f(i)=1.0
+c                  spm12f(i)=0.
+c                  spm13f(i)=0.
+c                  spm14f(i)=0.
+                  if(.not.allocated(str_x0_perm)) then
+                     allocate (str_x0_perm(n0))
+                     allocate (str_y0_perm(n0))
+                     allocate (str_z0_perm(n0))
+                     allocate (str_xy0_perm(n0))
+                     allocate (str_xz0_perm(n0))
+                     allocate (str_yz0_perm(n0))
+                     allocate (str_pf0_perm(n0))
+                  endif
+c                  open(unit=94,file='failed_nodes_perm22.dat')
+c     David Dempsey, Jan 2013, mohr-coulomb with fracture distribution
+c     spm1f:shear fracture toughness 
+c     spm2f:static friction coefficient
+c     spm3f:dynamic friction coefficient
+c     spm4f: number of fractures per control volume
+c     spm5f: shear displacement at which perm enhancement begins 
+c     spm6f: shear displacement interval to complete perm enhancement
+c     spm7f: total perm enhancement (in log(perm))
+c     spm8f: fracture cohesion
+c     spm9f: fracture density in control volume 
+c     here z-prime is along the normal to the plane of failure, and
+c     y-prime is along the median principal stress
+                  read(inpt,*)ispmt(i),spm1f(i),spm2f(i),spm3f(i),
+     &                 spm4f(i),spm5f(i),spm6f(i),spm7f(i),spm8f(i),
+     &                 spm9f(i)
+c................................................
                else if (ispmd .eq. 23) then
                   if(.not.allocated(itemp_perm23)) 
      &                 allocate (itemp_perm23(neq))
@@ -771,6 +807,7 @@ c     model for changing properties when ice is present
                if(ispmt(i).eq.21) ipermstr21 = ispmt(i)
                if(ispmt(i).eq.22) ipermstr22 = ispmt(i)
                if(ispmt(i).eq.23) ipermstr23 = ispmt(i)
+               if(ispmt(i).eq.24) ipermstr24 = ispmt(i)
                if(ispmt(i).eq.31) ipermstr31 = ispmt(i)            
                if(ispmt(i).eq.222) ipermstr222 = ispmt(i)
                if(ispmt(i).eq.91) ipermstr91 = ispmt(i)
