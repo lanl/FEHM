@@ -41,7 +41,7 @@ c frac_den = fracture density in control volume (spm9f)
       real*8 dc_l3,dc_m3,dc_n3
       real*8 theta(1000), sprl_phi(1000)
       real*8 str_g(3,3), str_l(3,3)
-      real*8 perm_frac,frac_den,tau_ex
+      real*8 perm_frac,frac_den,tau_ex,perm0
       real*8 perm_mult(3,3), perm_denom(3,3)
 
 c get current and initial global stress components
@@ -100,10 +100,16 @@ c calculate 'per fracture' permeability and multiply by fracture density
 c      perm_mult(1,2) = (perm_mult(1,2)/perm_denom(1,2)-1)*frac_den+1
 c      perm_mult(1,3) = (perm_mult(1,3)/perm_denom(1,3)-1)*frac_den+1
 c      perm_mult(2,3) = (perm_mult(2,3)/perm_denom(2,3)-1)*frac_den+1
-	  
-      pnx(jpt)=pnx0(jpt)*perm_mult(1,1)
-      pny(jpt)=pny0(jpt)*perm_mult(2,2)
-      pnz(jpt)=pnz0(jpt)*perm_mult(3,3)
+c      pnx(jpt)=pnx0(jpt)*perm_mult(1,1)
+c      pny(jpt)=pny0(jpt)*perm_mult(2,2)
+c      pnz(jpt)=pnz0(jpt)*perm_mult(3,3)
+      perm0 = (pnx0(jpt)+pny0(jpt)+pnz(jpt))/2
+      pnx(jpt)=perm_denom(1,1)*perm_mult(1,1)*perm0/frac_num
+      pny(jpt)=perm_denom(2,2)*perm_mult(2,2)*perm0/frac_num
+      pnz(jpt)=perm_denom(3,3)*perm_mult(3,3)*perm0/frac_num
+c      write(*,'(a,F8.4,f8.4)') 'dkx,kx = ', perm_mult(1,1),pnx(jpt)
+c      write(*,'(a,F8.4,f8.4)') 'dky,ky = ', perm_mult(2,2),pny(jpt)
+c      write(*,'(a,F8.4,f8.4)') 'dkz,kz = ', perm_mult(3,3),pnz(jpt)
       return
       end
 c........................................................................
