@@ -481,7 +481,7 @@ C***********************************************************************
 ! No longer create default save or fin files
 
 ! Write code version, date and time to open output files  
-      if (iout   .gt. 0) write(iout  , 1000)  verno, jdate, jtime
+      if (iout   .gt. 0) call write_copyright (iout)
       if (ishis  .gt. 0) write(ishis , 1000)  verno, jdate, jtime
       if (istrc  .gt. 0) write(istrc , 1000)  verno, jdate, jtime
       if (iscon  .gt. 0) write(iscon , 1000)  verno, jdate, jtime

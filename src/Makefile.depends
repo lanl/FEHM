@@ -663,6 +663,7 @@ write_avs_node_mat.o: comrxni.o davidi.o
 write_avs_node_s.o: avsio.o comai.o combi.o comci.o comco2.o comdi.o comfem.o
 write_avs_node_s.o: comfi.o comflow.o comii.o comriv.o comsi.o comwt.o davidi.o
 write_avs_node_v.o: avsio.o comai.o combi.o comdi.o
+write_copyright.o: comai.o
 write_rlp_hyd.o: comai.o commeth.o
 writeio.o: comai.o comxi.o
 wrtcon.o: comai.o combi.o comdi.o comdti.o comgi.o comrxni.o comxi.o

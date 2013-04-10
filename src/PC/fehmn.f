@@ -618,6 +618,8 @@ c**** set version number ****
 ccc      verno = 'FEHMN XX-XX-XX      '
          tajj = tyming(caz)
          call dated (jdate, jtime)
+c--Add copyright write out
+         call write_copyright (6)
          call iofile (ichk)
 
 c**** initialize/set parameter values
