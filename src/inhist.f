@@ -697,7 +697,7 @@ c            end if
                   if (ishisd3 .ne. 0) write(ishisd3, 6000) verno, 
      &                 jdate, jtime, trim(wdd)
                case (1)
-                  write(ishisp, 6005) verno, jdate, jtime
+                  write(ishisd, 6005) verno, jdate, jtime
                   if (ishisd2 .ne. 0) write(ishisd2, 6005) verno, 
      &                 jdate, jtime
                   if (ishisd3 .ne. 0) write(ishisd3, 6005) verno, 
@@ -863,7 +863,7 @@ c            end if
                   if (ishisv3 .ne. 0) write(ishisd3, 6000) verno, 
      &                 jdate, jtime, trim(wdd)
                case (1)
-                  write(ishisp, 6005) verno, jdate, jtime
+                  write(ishisv, 6005) verno, jdate, jtime
                   if (ishisv2 .ne. 0) write(ishisd2, 6005) verno, 
      &                 jdate, jtime
                   if (ishisv3 .ne. 0) write(ishisd3, 6005) verno, 
