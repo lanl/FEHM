@@ -163,6 +163,7 @@
       logical :: write_flux = .FALSE.
       logical :: write_co2  = .FALSE.
       logical :: write_pini = .FALSE.
+      logical :: write_por = .FALSE.
       logical :: write_disp(3) = .FALSE.
       logical :: write_strs(6) = .FALSE.
 
@@ -208,6 +209,7 @@ c Use value of numflux that was read in
                write_pres = .TRUE.
                if (irdof .ne. 13 .and. ihead .eq. 0) write_sat  = .TRUE.
                if (ico2 .gt. 0) write_gasp = .TRUE.
+               if (iporos .ne. 0) write_por = .TRUE.
             end if
             if (iccen .ne. 0) write_trac = .TRUE.
             if (ptrak) write_ptrk = .TRUE.
@@ -248,6 +250,8 @@ c Use value of numflux that was read in
             write_mass = .TRUE.
          case ('pini')
             write_pini = .TRUE.
+         case ('poro')
+            write_por = .TRUE.
          case ('disp')
             write_disp = .TRUE.
             if (icnl .ne. 0) write_disp(3) = .FALSE.
@@ -372,6 +376,10 @@ c            write(isave, 6002)  (max(to(mi),tolw),   mi=1,n )
             write(isave, 6002)  ( tini (mi) , mi=1,n )
             write(isave, '(a11)') 'inipressure'            
             write(isave, 6002)  ( phini (mi) , mi=1,n )
+         end if
+         if (write_por) then
+            write(isave, '(a11)') 'porosity   '
+            write(isave, 6002)  ( ps (mi) , mi=1,n )
          end if
          if (write_disp(1)) then
             write(isave, '(a11)') 'xdisplacmnt'
@@ -540,7 +548,12 @@ c            write(isave)  (max(to(mi),tolw),   mi=1,n )
             write (isave) dummy_string
             write(isave)  ( phini (mi) , mi=1,n )
          end if
-         if (write_disp(1)) then
+         if (write_por) then
+            dummy_string = 'porosity   '
+            write (isave) dummy_string
+            write(isave)  ( ps (mi) , mi=1,n )
+         end if
+          if (write_disp(1)) then
             dummy_string = 'xdisplacmnt'
             write (isave) dummy_string
             write(isave)  ( du (mi) , mi=1,n )

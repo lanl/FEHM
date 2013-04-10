@@ -222,6 +222,7 @@
       logical, dimension (2) :: read_mass = .FALSE.
       logical, dimension (2) :: read_co2 = .FALSE.
       logical, dimension (2) :: read_pini = .FALSE.
+      logical, dimension (2) :: read_por = .FALSE.
       logical, dimension (2) :: read_disx = .FALSE.
       logical, dimension (2) :: read_disy = .FALSE.
       logical, dimension (2) :: read_disz = .FALSE.
@@ -261,6 +262,7 @@
                pres_read = .TRUE.
                if (irdof .ne. 13) read_sat(1)  = .TRUE.
                if (ico2 .gt. 0) read_gasp(1) = .TRUE.
+               if (iporos .ne. 0) read_por(1) = .TRUE.
             end if
             if (iccen .ne. 0) read_trac(1) = .TRUE.
             if (ptrak) read_ptrk(1) = .TRUE.
@@ -298,6 +300,8 @@
          case ('pini')
             read_pini(1) = .TRUE.
             ipini = 1
+         case ('poro')
+            read_por(1) = .TRUE.
          case ('disp')
             read_disx(1) = .TRUE. 
             read_disy(1) = .TRUE.
@@ -313,16 +317,10 @@
                read_strx(1) = .TRUE. 
                read_stry(1) = .TRUE. 
                read_strxy(1) = .TRUE.
-               allocate (str_x0(n0))
-               allocate (str_y0(n0))
-               allocate (str_xy0(n0))
                if (icnl .eq. 0) then
                   read_strz(1) = .TRUE.
                   read_strxz(1) = .TRUE.
                   read_stryz(1) = .TRUE.
-                  allocate (str_z0(n0))
-                  allocate (str_xz0(n0))
-                  allocate (str_yz0(n0))
                end if
          case ('strx')
             read_strx(1) = .TRUE.
@@ -340,6 +338,17 @@
 c Values from the restart file will not be used
          end select
       end do
+
+      if (read_strx(1)) then
+         allocate (str_x0(n0))
+         allocate (str_y0(n0))
+         allocate (str_xy0(n0))
+         if (icnl .eq. 0) then
+            allocate (str_z0(n0))
+            allocate (str_xz0(n0))
+            allocate (str_yz0(n0))
+         end if
+      end if
 
       if (.not. compute_flow) read_flux(1) = .TRUE.
 
@@ -620,6 +629,16 @@ c Use values from input
                      read (iread, *) ( dummyreal, mi = 1,ncount )
                      if (iout .ne. 0) write (iout, 400) 'gas pressures'
                      if (iptty .ne. 0)write (iptty, 400) 'gas pressures'
+                  end if
+               case ('poro')
+                  if (read_por(1)) then
+                     read (iread, *) ( ps(mi), mi = 1,ncount )
+                     psini = ps
+                     read_por(2) = .TRUE.
+                  else
+                     read (iread, *) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 'porosities'
+                     if (iptty .ne. 0) write (iptty, 400) 'porosities'
                   end if
 c CO2 variables
                case ('co2t')
@@ -1142,6 +1161,16 @@ c Use values from input
                      read (iread) ( dummyreal, mi = 1,ncount )
                      if (iout .ne. 0) write (iout, 400) 'gas pressures'
                      if (iptty .ne. 0)write (iptty, 400) 'gas pressures'
+                  end if
+               case ('poro')
+                  if (read_por(1)) then
+                     read (iread) ( ps(mi), mi = 1,ncount )
+                     psini = ps
+                     read_por(2) = .TRUE.
+                  else
+                     read (iread) ( dummyreal, mi = 1,ncount )
+                     if (iout .ne. 0) write (iout, 400) 'porosities'
+                     if (iptty .ne. 0) write (iptty, 400) 'porosities'
                   end if
 c CO2 variables
                case ('co2t')
