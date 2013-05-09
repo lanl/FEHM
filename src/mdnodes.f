@@ -566,12 +566,17 @@ c to be based on neq,not neq_primary
                   i1=nelm(i)+1
                   i2=nelm(i+1)
                   do jm=i1,i2
+                   kb=nelm(jm)
+                   if(kb.ne.i) then
                      iw=istrw(jm-neqp1)
-                     if(iw.gt.0.and.sx_md.gt.sx(iw,isox)+
+                     if(iw.gt.0) then
+                       if(sx_md.gt.sx(iw,isox)+
      &                    sx(iw,isoy)+sx(iw,isoz)) then
                         sx_md = sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz)
                         iw_min = iw
+                       endif
                      endif
+                   endif
                   enddo
                   do jm=i1,i2
                      kb=nelm(jm)
@@ -592,11 +597,15 @@ c to be based on neq,not neq_primary
                      do jm=i1,i2
                         iw=istrw(jm-neqp1)
                         kb=nelm(jm)
-                        if(iw.gt.0.and.sx_md.gt.sx(iw,isox)+
+                       if(kb.ne.ij) then
+                        if(iw.gt.0) then
+                         if(sx_md.gt.sx(iw,isox)+
      &                       sx(iw,isoy)+sx(iw,isoz)) then
                            sx_md = sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz)
                            iw_min = iw
+                         endif
                         endif
+                       endif
                      enddo
                      i1=nelm(i)+1
                      i2=nelm(i+1)
