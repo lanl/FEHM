@@ -147,10 +147,13 @@
             header_flag = 'old'
          case default
             write (ierr, 100) chdum
+            if (iout .ne. 0) write (iout, 100) chdum
+            if (iptty .ne. 0) write (iptty, 100) chdum
+            stop
          end select flags
       enddo
 
  100  format ('WARNING: Unrecognized restart option: ', a, /, 
-     &     'Check input deck')
+     &     'Check input deck', /, 'STOPPING')
       end
       
