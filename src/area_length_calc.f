@@ -58,12 +58,13 @@
       use comji
       use comdti
       use comki
+      use comriv
       use davidi
       implicit none
 
-      integer i,icode,iflg,neqp1,i1,i2,jj,kb,kc
-      integer i3,i4,kk,idir,imodel,j
-      real*8 area_mult,areat,sx2c,dis,cosz,rlp_min
+      integer i,id,icode,iflg,neqp1,i1,i2,jj,kb,kc
+      integer i3,i4,kk,idir,imodel,j,n_loop
+      real*8 area_mult,areat,sx2c,dis,cosz,rlp_min,rad
       real*8 cord1,cord2,cord3,cord1j,cord2j,cord3j
       real*8 dil_dum,perm, disx1, disy1, disz1, disx2, disy2, disz2
       parameter (rlp_min=1.d-2)
@@ -284,14 +285,17 @@ c note special numbering for gdpm nodes
         write(iptty,*)'stopping'
        endif    
        stop   
-      else if(iflg.eq.3.and.gdpm_flag.ne.0) then
+      else if(iflg.eq.3.and.ianpe.eq.0) then
 c calculate cell lengths for GDPM and GDKM calculations   
-       if(.not.allocated(dzrg)) allocate(dzrg(neq_primary))
-       if(.not.allocated(dyrg)) allocate(dyrg(neq_primary))
-       if(.not.allocated(dxrg)) allocate(dxrg(neq_primary))        
-       do i = 1,neq_primary
-        imodel= igdpm(i)
-        if(imodel.ne.0) then
+       if(.not.allocated(dzrg)) allocate(dzrg(n))
+       if(.not.allocated(dyrg)) allocate(dyrg(n))
+       if(.not.allocated(dxrg)) allocate(dxrg(n))   
+       if(gdkm_flag.ne.0) then   
+        n_loop = neq_primary
+       else
+        n_loop = n
+       endif
+       do i = 1, n_loop
           cord1 = cord(i,1)
 	    cord2 = cord(i,2)
 	    cord3 = 0.0
@@ -338,18 +342,42 @@ c find lengths of all connecting primary gridblocks
                dyrg(i) = abs(disy1-disy2)/2.    
                dxrg(i) = abs(disx1-disx2)/2.                        
             endif      
-        endif
        enddo 
-      else if(iflg.eq.3.and.gdkm_flag.ne.0.and.ianpe.ne.0) then 
+       if(iriver.eq.2) then
+        do i = 1,nodes_well2_added
+c identify segment and radius        
+         id = new_node_well2_segid(i)
+         rad = well_rad(id)
+         dzrg(i+neq_primary) = 2*rad
+        enddo
+       endif
+       continue
+c       
+c  lengths for gdkm set (for now) equal to that of primary node
+c
+       if(gdkm_flag.ne.0) then
+          do i = 1,neq_gdkm
+           imodel= igdpm(i)
+c     first gdkm node is given last connection of primary node
+            if(imodel.ne.0) then
+             kb = nelm(nelm(i+1))
+             corz(kb,1) = cord(i,1)
+             corz(kb,2) = cord(i,2)
+             corz(kb,3) = cord(i,3)
+            endif
+          enddo
+       endif  
+      
+      else if(iflg.eq.3.and.ianpe.ne.0) then 
        if(iout.ne.0) then
-        write(iout,*)'error:area_length_calc.f(no capability for anpe)'
-        write(iout,*)'stopping'
+        write(iout,*)'warning:area_length_calc.f(no capability w anpe)'
+        write(iout,*)'gdkm and anpe not compatible'
        endif
        if(iptty.ne.0) then
-        write(iptty,*)'error:area_length_calc.f(no capability for anpe)'
-        write(iptty,*)'stopping'
-       endif    
-       stop          
+        write(iptty,*)'warning:area_length_calc.f(no capability w anpe)'
+        write(iptty,*)'gdkm and anpe not compatible'
+       endif 
+c       stop          
       else if(iflg.eq.-3.and.gdkm_flag.ne.0) then
 c calculate cell lengths for GDPM and GDKM calculations  
 c deallocations 
