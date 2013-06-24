@@ -440,12 +440,15 @@ c GAZ 11/02/08
       integer             ishisdisx, ishisdisy, ishisdisz
       integer             ich_max, ich_m1, ich_m2, sat_ich
       integer             jswitch, joff
-      integer             iwellp_flag
+      integer             iwellp_flag, icoef_neg, numcoef_neg
       integer             istrs_coupl, iax_b, ipini
       integer             ivboun, itert_s,itotal_s,itotals_s
       integer             ifdm_elem, ienrich, enri_flag
       integer             nenrinodes
       integer             ibcfar,i_subsid,i_init
+c GAZ 061513
+      integer ich_pebi
+
       real*8              pchng, schng 
       
       integer :: irun = 0
