@@ -936,6 +936,7 @@ c  gaz 2-25-03 needed idof+1, idof*idof +1 for ice
       allocate(nb(37),nmat(37),nmatb(36),nrhs(7),nrhsb(7))
       allocate(nb_sol(mdof_sol**2),nmat_sol(mdof_sol**2))
       allocate(nrhs_sol(mdof_sol))
+      allocate(nvar_select(max_variables))
 c     open t1-t13 space
       allocate(t1(nn),t2(nn),t3(nn),t4(nn))
       allocate(t5(nn),t5v(nn),t6(nn),t7(nn))
