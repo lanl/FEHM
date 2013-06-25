@@ -391,7 +391,7 @@ C***********************************************************************
       use commeth
       use compart, only : ptrak
       use comrlp, only : ishisrlp
-      use comsi, only : idof_stress, istrws
+      use comsi, only : idof_stress
       use comsptr, only : sptrak
       use comwt
       use comzone
@@ -416,12 +416,11 @@ C***********************************************************************
       integer, allocatable :: nop_temp(:)
       integer i1,i2,ipiv,icnt
       integer count, num_zone, ic_sym
-      integer nsbb,idofdum,neidum
+      integer nsbb,idofdum,neidum,idof_save
       real*8 very_small, fac_nop, fac_mult
 c symmetry check on = 1, off = 0      
       parameter (ic_sym = 0)
       parameter (very_small= 1.d-30)
-      integer misx
 
 c     Calculate rho1grav
 c      rho1grav = crl(1,1)*(9.81d-6)
@@ -470,8 +469,8 @@ c**** set idof = 3 if air-water-heat
       if (icnl.ne.0) i1 = 2
       if (idof_stress.gt.3) idof = max(idof + i1,5)
       if (istrs.ne.0) idof = max(idof,i1)
-c**** 
-
+c****
+      
       if(idpdp.ne.0.and.idof_stress.ne.0) then
         if(iptty.ne.0) then
          write(iptty,*) '>>>>> dpdp not implemented with stress <<<<'
@@ -508,7 +507,7 @@ c calculate new idof based on irdof
          if(irdof.eq.1) mdof=2
          if(irdof.eq.2) mdof=4
       endif
-
+c      
 c Find the maximum degrees of freedom necessary by taking the 
 c max of the degrees of freedom needed for the heat and mass solution
 c and the max degrees of freedom necessary for the tracer solution
@@ -536,7 +535,6 @@ c****          the entire range only done if iieos(i) = 0 ****
          end do
       end if
 
-
 c**** compatability scaling (viscosity is in pa-sec, not in mpa-sec) ***
       do i = 1, n
          if (idoff .gt. 0) then
@@ -549,7 +547,7 @@ c**** compatability scaling (viscosity is in pa-sec, not in mpa-sec) ***
            thy(i) = thy(i) * 1.0d-06
            thz(i) = thz(i) * 1.0d-06
          endif
-         if (cpr(i) .gt. 1.0) cpr(i) = cpr(i) * 1.0d-06
+         if (cpr(i) .gt. 1.0)  cpr(i) = cpr(i) * 1.0d-06
       end do
 
 c**** set permeabilities = 0 for porosity = 0.0 ****
@@ -591,24 +589,7 @@ c**** complete pest information(if interpolation is used) ****
 c mlz is now the size of sx(mlz, j)
 c      if (mlz .ne. 0 .and. irun .eq. 1 .and. lda .le. 0) call split(0)
       if (mlz .ne. 0 .and. irun .eq. 1 .and. lda .le. 0) call split(1)
-      if (lda .ne. 0.and.irun.eq.1) then
-         call storsx
-         if (istrs .ne. 0) then
-            misx = maxval(istrws)
-            do i=1,misx
-               dnidnj(i,1)=sxs(i,10) ! xx term
-               dnidnj(i,2)=sxs(i,2) ! yx term
-               dnidnj(i,3)=-sxs(i,4) ! zx term
-               dnidnj(i,4)=sxs(i,1) ! xy term
-               dnidnj(i,5)=sxs(i,11) ! yy term
-               dnidnj(i,6)=-sxs(i,6) ! zy term
-               dnidnj(i,7)=-sxs(i,3) ! xz term
-               dnidnj(i,8)=-sxs(i,5) ! zy term
-               dnidnj(i,9)=sxs(i,12) ! zz term
-            enddo
-         end if
-      endif
-
+      if (lda .ne. 0.and.irun.eq.1) call storsx
 c gaz 11-09-2001 
       if(lda.le.0.and.imdnode.ne.0.and.irun.eq.1) then
          ncon_size=nelm(neq_primary+1)
@@ -635,6 +616,16 @@ c gaz 11-11-2001 moved this before call to add_gdpm
          call radius
          call thickness(1)
       end if
+c       
+c subroutine called to eliminate negative areas. This is 
+c only done after the coefficients are generated or read.
+c the modified coeefficients are never saved to a "stor" file
+c
+c gaz 11-25-11    
+      if(icoef_neg.ne.0) then
+       call coeff_management(1)
+      endif     
+c      
 c
 c     Call routine to adjust the connectivity array if needed
 c     to add gdpm nodes
@@ -643,8 +634,9 @@ c trying to maintain compatibility of add_gdpm and river_ctr
       if (irun.eq.1) then
 c add gdpm connections
 c calculate the dimensions on a control volume  
-c neq_primary still defined as gdpm primary grid    
-         call area_length_calc(3) 
+c neq_primary still defined as gdpm primary grid  
+c gaz 122311 moved lower 
+c         call area_length_calc(3) 
 c         
          if (gdpm_flag .ne. 0) call add_gdpm
 c modify permeabilities if necessary 
@@ -681,11 +673,13 @@ c        call river_ctr(1)
             call river_ctr(3)	
 c printout to file volumes,areas etc.
             call river_ctr(-3)	
-            call river_ctr(4)
+             call river_ctr(4)
 c printout to file connectivities
             call river_ctr(-4)
          endif
       end if
+c gaz moved 122311 from above      
+       call area_length_calc(3) 
 c
 c  calculate gridblock height (if necessary) for subsidence calculations
 c  (ico2 chance so embedded call to airctr in subsidence) goes through
@@ -743,7 +737,7 @@ c
       ldna=ncont-neqp1
       if(irun.eq.1) then
 
-         if(idof_co2.gt.0 ) then
+         if(idof_co2.gt.0) then
             allocate(c_axy(ldna))
             allocate(c_vxy(ldna))
             c_axy = 0.d0
@@ -1218,7 +1212,14 @@ c convert from head to pressure for boundary nodes
       
 c**** set array ordering if necessary ****
       if(compute_flow .or. iccen .eq. 1) then
+       if(icarb.eq.0) then
          call setord
+       else
+         idof_save = idof
+         idof = 3
+         call setord
+         idof = idof_save
+       endif
       end if
 c**** initialize porosities in subsidence calcs ****
       call subsidence(-2)      
@@ -1229,7 +1230,7 @@ c**** initialize coefficients adjust volumes in dpdp calcs ****
       call dpdp (1)
       do i = 1, n
          volume(i) = sx1(i)
-c gaz 01-18-2011 change code to allow for negative temperatures         
+c gaz 01-18-2011 chane code to allow for negative temperatures         
 c         if (to (i) .le. zero_t)   to (i) = tin0
          if(irdof.ne.13) then
             if (pho(i) .le. zero_t)   pho (i) = pein
@@ -1246,7 +1247,6 @@ c         if (to (i) .le. zero_t)   to (i) = tin0
          deallocate (mass_var)
          iconv = iconv_tmp
       end if
-
 c initialize pressures and temperatures
       if(ipini.eq.0.or.iread.eq.0) then      
          phini = pho
@@ -1387,8 +1387,8 @@ c     nonisothermal problem
       end if
 c
 c calculate areas for use in flow through boundary conditions
-c
-      call area_length_calc(1)     
+c gaz 12222001
+c      call area_length_calc(1)     
 c      
       if(compute_flow ) then
 c**** initialize some variables **** 
