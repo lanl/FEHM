@@ -252,6 +252,15 @@ c     print out worst residuals
                   ibp=i
                endif
             enddo
+            if (ibp.eq.0.and.ibp1.eq.0.and.ibp2.eq.0.and.
+     &          ibp3.eq.0) then
+             if (iptty .ne. 0) 
+     &        write(iptty,*)"Nans for all residuals: stopping"
+             if (ntty .ne. 0) 
+     &        write(ntty,*)"Nans for all residuals: stopping"  
+              write(ierr,*)"Nans for all residuals: stopping"   
+              stop
+            endif         
             if (iptty .ne. 0) then
                write(iptty,900) 'EQ1',bp(ibp1+nrhs(1)),ibp1,cord(ibp1,1)
      $              ,cord(ibp1,2),cord(ibp1,3)
