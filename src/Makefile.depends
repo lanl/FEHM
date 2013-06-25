@@ -27,7 +27,7 @@ anonp.o: comai.o combi.o comdi.o comdti.o comei.o comsi.o
 anonp_ani.o: comai.o combi.o comdi.o comdti.o comei.o
 area_flow_bc.o: comai.o combi.o comci.o comdi.o comdti.o comki.o davidi.o
 area_length_calc.o: comai.o combi.o comci.o comdi.o comdti.o comji.o comki.o
-area_length_calc.o: davidi.o
+area_length_calc.o: comriv.o davidi.o
 area_vol_weightctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 area_vol_weightctr.o: comgi.o comii.o comrxni.o davidi.o
 avs_io.o: avsio.o comai.o combi.o comchem.o comdi.o comdti.o commeth.o comriv.o
@@ -76,6 +76,8 @@ co2h2o_combine.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o
 co2h2o_combine.o: comfi.o comgi.o comhi.o davidi.o
 coef_replace_ctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 coef_replace_ctr.o: comflow.o comgi.o comii.o comji.o comki.o comxi.o davidi.o
+coeff_management.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
+coeff_management.o: comgi.o davidi.o
 coeffc.o: comai.o
 compute_average_stress.o: comai.o combi.o comdi.o comfem.o comsi.o
 compute_exit_new.o: comai.o combi.o comdi.o comflow.o comsk.o comsptr.o
@@ -382,7 +384,7 @@ inmptr.o: comsptr.o comxi.o
 innode.o: comai.o combi.o comdi.o comdti.o comki.o
 inpatran.o: comai.o combi.o comdti.o
 inperm.o: comai.o comdi.o comdti.o comki.o
-inpres.o: comai.o comdi.o comdti.o comki.o davidi.o
+inpres.o: comai.o comco2.o comdi.o comdti.o comki.o davidi.o
 inptrk.o: comai.o combi.o comdi.o comdti.o comki.o compart.o compfrac.o comsk.o
 inptrk.o: comsptr.o
 input.o: comai.o combi.o comchem.o comci.o comco2.o comdi.o comdti.o comevap.o
