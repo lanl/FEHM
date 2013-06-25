@@ -201,7 +201,8 @@
       use davidi
       implicit none
 
-      real*8 pl, tl, dum1, dumb, dumc(9)
+c      real*8 pl, tl, dum1, dumb, dumc(9)
+      real*8 pl, tl, dum1, dumb
       real*8 dummyreal,tolw,sat_dum,satr
       parameter(tolw=1.d-99,sat_dum= 1.d00)
       integer jx,mi,ncount,nc,nc1,nc2,nc3,nd1,nd2,nd3,j,nx,ny,ii,i
@@ -485,11 +486,13 @@ c Use values from input
                         fow(i) = fw(i)
                         fol(i) = fl(i)
                         fog(i) = fg(i)
+                        yoc(i) = yc(i)
                      endif
                   enddo
                   fw = fow
                   fl = fol
                   fg = fog
+                  yc = yoc
                   ieos = ieoso
                   ices = iceso
                else
@@ -688,6 +691,13 @@ c Liquid CO2 saturation
 c Dissolved CO2
                   if (read_co2(1)) then
                      read (iread, *) (yc(mi), mi = 1,ncount )
+                      do i = 1, ncount
+                        if(inico2flg(i).eq.1) then
+c Use values from input
+                         yc(i) = yc_tmp(i)
+                         yoc(i) = yc(i)
+                        endif
+                      enddo
                   else
                      read (iread, *) ( dummyreal, mi = 1,ncount )
                      if (iout .ne. 0) write(iout, 400) 'dissolvled co2'
@@ -783,6 +793,7 @@ c Initial pressures and temps
                   end if
                case ('xstr')
                   if (read_strx(1)) then
+                     if(.not.allocated(str_x0)) allocate (str_x0(n0))
                      read(iread, *)  ( str_x0 (mi) , mi=1,ncount )
                      read_strx(2) = .TRUE.
                   else
@@ -794,7 +805,8 @@ c Initial pressures and temps
                   end if
                case ('ystr')
                   if (read_stry(1)) then
-                     read(iread, *)  ( str_y0 (mi) , mi=1,ncount )
+                  if(.not.allocated(str_y0)) allocate (str_y0(n0))
+                     read(iread, *)  ( str_y0 (mi) , mi=1,ncount )               
                      read_stry(2) = .TRUE.
                   else
                      read (iread, *) ( dummyreal, mi = 1,ncount )
@@ -805,6 +817,7 @@ c Initial pressures and temps
                   end if
                case ('xyst')
                   if (read_strxy(1)) then
+                  if(.not.allocated(str_xy0))allocate (str_xy0(n0))
                      read(iread, *)  ( str_xy0 (mi) , mi=1,ncount )
                      read_strxy(2) = .TRUE.
                   else
@@ -816,6 +829,7 @@ c Initial pressures and temps
                   end if
                case ('zstr')
                   if (read_strz(1)) then
+                  if(.not.allocated(str_z0))allocate (str_z0(n0))
                      read(iread, *)  ( str_z0 (mi) , mi=1,ncount )
                      read_strz(2) = .TRUE.
                   else
@@ -827,6 +841,7 @@ c Initial pressures and temps
                   end if
                case ('xzst')
                   if (read_strxz(1)) then
+                  if(.not.allocated(str_xz0))allocate (str_xz0(n0))
                      read(iread, *)  ( str_xz0 (mi) , mi=1,ncount )
                      read_strxz(2) = .TRUE.
                   else
@@ -838,6 +853,7 @@ c Initial pressures and temps
                   end if
                case ('yzst')
                   if (read_stryz(1)) then
+                  if(.not.allocated(str_yz0)) allocate (str_yz0(n0))
                      read(iread, *)  ( str_yz0 (mi) , mi=1,ncount )
                      read_stryz(2) = .TRUE.
                   else
