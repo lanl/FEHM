@@ -215,18 +215,22 @@ C***********************************************************************
       implicit none
 
       integer i, idof, islord, iswitch, neq, nrhs(*), nrhsb(*)
-      real*8 bp(*), bpdum2, bpdum3
+      real*8 bp(*), bpdum1, bpdum2, bpdum3
 
 *     Change if test to eliminate return at start of routine
       if (islord .ne. 0) then
          if (idof .eq. 3) then
             if (iswitch .eq. 2) then
                do i=1,neq
+                  bpdum1=bp(i+nrhs(1))
                   bpdum2=bp(i+nrhs(2))
                   bpdum3=bp(i+nrhs(3))
+                  bp(i+nrhsb(1))=bpdum1
                   bp(i+nrhsb(2))=bpdum2
                   bp(i+nrhsb(3))=bpdum3
                enddo
+            else
+c no change:equations ordered naturally, variables arranged diff               
             end if
          else if (idof .eq. 2) then
             if (iswitch .eq. 1 .and. islord .eq. -1) then
