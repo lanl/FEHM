@@ -584,7 +584,7 @@ c
  233              format('$$$$$$$  >>>>>> ', 2i8,1p,3g14.4)
           else if(icarb.ne.0) then
             call icectrco2(-1,0)
-            ieos = 1
+c            ieos = 1
           endif 
 c     
                else if(ico2.gt.0) then
@@ -708,7 +708,7 @@ c
             if(ico2.gt.0) then
                call thrmwc(ndummy)
             else if(ico2.eq.0) then
-c RJP 04/10/07
+c RJP 04/10/07 
             if(icarb.eq.1) then
                call icectrco2(-34,ndummy)
 c              call icectrco2(3,ndummy)
