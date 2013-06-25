@@ -218,7 +218,7 @@ C***********************************************************************
 * Change if test to eliminate return at start of routine
       if (islord .ne. 0) then
          if (idof .eq. 3) then
-            if (islord .eq. 1) then
+            if (islord .ne. 0) then
                if (iswitch .eq. 1) then
                   do i = 1, 9
                      nmat(i) = nmatb(i)
