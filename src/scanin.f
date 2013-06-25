@@ -415,6 +415,7 @@ c new initial value stuff 12/3/98 GAZ
       icm=0
       iwght = 1
       isty = 0
+      icoef_neg = 0
 c zvd 17-Aug-09 move boun flag initializations here
 
       if(allocated(izone_free_nodes)) izone_free_nodes = 0
