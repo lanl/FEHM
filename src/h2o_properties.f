@@ -78,10 +78,10 @@ c     remove following declarations later
       real*8 dlpta,dlp2ta,dlpt2a,dlb0,dlpb1,dlpb2,dlpb3,dltb1,dltb2
       real*8 dltb3,dlptb,dlp2tb,dlpt2b,vla0,vlpa1,vlpa2,vlpa3,vlta1
       real*8 enwn1,enwn2,enwn3,enwn,enwd1,enwd2,enwd3
-      real*8 enwd,enw,enl,dhwpn1,dhwpn2,dhwpn,dhwpd,dhwp,dhwtn1
-      real*8 dhwtn2,dhwtn,dhwtd,dhwt,dhlt,dhlp,rnwn1,rnwn2,rnwn3
-      real*8 rnwd1,rnwd2,rnwd3,rnwn,rnwd,rnw,rol,drlpn1,drlpn2
-      real*8 drlpn,drolpd,drolp,drlen1,drlen2,drlen,droled,drolt
+      real*8 enwd,dhwpn1,dhwpn2,dhwpn,dhwpd,dhwp,dhwtn1
+      real*8 dhwtn2,dhwtn,dhwtd,dhwt,rnwn1,rnwn2,rnwn3
+      real*8 rnwd1,rnwd2,rnwd3,rnwn,rnwd,rnw,drlpn1,drlpn2
+      real*8 drlpn,drolpd,drlen1,drlen2,drlen,droled
       real*8 vlta2,vlta3
       real*8 vlpta,vlp2ta,vlpt2a
       real*8 vlb0,vlpb1,vlpb2,vlpb3,vltb1,vltb2,vltb3
@@ -94,12 +94,12 @@ c     remove following declarations later
       real*8 evpa3,evta1,evta2,evta3,evpta,evp2ta,evpt2a,evb0,evpb1
       real*8 evpb2,evpb3,evtb1,evtb2,evtb3,evptb,evp2tb,evpt2b
       real*8 ensn,ensn1,ensn2,ensn3,ensd1,ensd2,ensd3
-      real*8 ensd,ens,env,dhvp1,dhvp2,dhvpn,dhvpd,dhvt1,dhvt2
+      real*8 ensd,ens,dhvp1,dhvp2,dhvpn,dhvpd,dhvt1,dhvt2
       real*8 dhvtn,dhvtd,dva0,rnsn1,rnsn2,rnsn3,rnsd1,rnsd2
-      real*8 rnsd3,rnsn,rnsd,rns,rov,drspn1,drspn2,drspn,drospd
+      real*8 rnsd3,rnsn,rnsd,rns,drspn1,drspn2,drspn,drospd
       real*8 drsen1,drsen2,drsen,drostd,visn1,visn2,visn3,visn,visd1
       real*8 visd2,visd3,visd,vis,xvisv,dvspn1,dvspn2,dvspn,dvispd
-      real*8 dvisvp,dvsen1,dvsen2,dvsen,dvised
+      real*8 dvsen1,dvsen2,dvsen,dvised
       real*8 dvpa1,dvpa2,dvpa3,dvta1,dvta2,dvta3,dvpta,dvp2ta,dvpt2a
       real*8 dvb0,dvpb1,dvpb2,dvpb3,dvtb1,dvtb2,dvtb3,dvptb,dvp2tb
       real*8 dvpt2b,vva0,vvpa1,vvpa2,vvpa3,vvta1,vvta2,vvta3,vvpta
