@@ -302,7 +302,7 @@ C***********************************************************************
       use comai
       implicit none
       
-      integer icsh, nele, neu, neumax, nga, nrq, nsl
+      integer icsh, nele, neu, neumax, nga, nrq, nsl, i, j
       integer ij, indx(4), iq, ir, jz, k, kb, kjz, knum
       real*8  aj(neumax,*)
       real*8  cpb(4,4), vpebi(4)
@@ -313,6 +313,7 @@ C***********************************************************************
       real*8  cord1, cord2, cord3, detja, dnga, dterm
       real*8  sa11, sa12, sa13, sa21, sa22, sa23, sa31, sa32, sa33
       real*8  vold, vold4, volt, wxnga, wynga, wznga
+
       
 c     if icsh=1 calculate jacobian information
 c     
@@ -918,8 +919,16 @@ c     pebi tetrahedrals
             if(ireord.eq.10) then
                call area_vol_tet(xt,yt,zt,cpb,vpebi)
             else 
-               call pebi3( xt,yt,zt,cpb,vpebi)
+               call pebi3(xt,yt,zt,cpb,vpebi)
             endif
+            if(ich_pebi.ne.0) then
+                do i = 1, 4
+                  vpebi(i) = - vpebi(i)
+                  do j = 1, 4  
+                   cpb(i,j) = - cpb(i,j)
+                  enddo
+                enddo
+            endif  
 c     calculate volumes
             bcoef(neu,1)=vpebi(1)
             bcoef(neu,2)=0.0
