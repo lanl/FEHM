@@ -91,11 +91,12 @@ c
       real*8  ar1,ar2,vv_max,vl_max,vb_max,akuta,vcar
       real*8  well1, well2 , well3, well4, well5, well6, well_rad  
       real*8 term1a,dterm1a,term1,dterm1,rlgas,drlgass
-      real*8 rov,drovt,drovp,dvisvt,dvisvp
-      real*8 rol,drolt,drolp,dvislt,dvislp  
+c      real*8 rov,drovt,drovp,dvisvt,dvisvp
+c      real*8 rol,drolt,drolp,dvislt,dvislp  
       real*8 vismix,dvismixp,dvismixt,dvismixs  
-      real*8 sw,visv,visl,divipl,tref,tempc
-      real*8 pcl0,roc0,xvisl0,xvisl,drocp0
+c      real*8 sw,visv,visl,divipl,tref,tempc
+      real*8 sw,divipl,tref,tempc
+      real*8 xvisl0,xvisl,drocp0
       real*8 pl,pref,xvisv,agrav
 
       real*8, allocatable  :: dum(:)
@@ -110,8 +111,8 @@ c
 c     
       parameter (area_tol=1.e-10, pi= 3.1415927, pi2=6.2831850)
       parameter (max_seg_div = 100,max_con = 10,max_well_con= 4)
-      parameter(pcl0 = 0.101325)
-      parameter(roc0 = 1.292864)
+c      parameter(pcl0 = 0.101325)
+c      parameter(roc0 = 1.292864)
 c     
 
       logical null1
@@ -127,7 +128,9 @@ C#######################################################################
 C     
 c     
 c     return if no (non-darcy) well physics  
-c     
+c   
+      pcl0 = 0.101325 
+      roc0 = 1.292864
       if(nwellphy.eq.0) return
       agrav = abs(grav)
       if(iflg.eq.0) then
