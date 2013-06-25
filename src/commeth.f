@@ -89,6 +89,7 @@
       real*8, allocatable ::  dewf(:)
       real*8, allocatable ::  dilw(:)
       real*8, allocatable ::  divw(:)
+      real*8, allocatable ::  divg(:)
       real*8, allocatable ::  deqw(:)
       real*8, allocatable ::  deqpw(:)
 
