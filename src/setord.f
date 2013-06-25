@@ -88,12 +88,12 @@ C***********************************************************************
       use combi
       use davidi
       use comrxni
-      use comcouple
       use comdti
+      use comcouple
       use comai
       implicit none
 
-      integer i, idofdb, neqp1, nsizea, nsizeb
+      integer i, idofdb, neqp1, nsizea, nsizeb, mdof
       integer neqp1_primary
 
 c load nb and nmat matrix
@@ -203,7 +203,19 @@ c changed size of nb
             nrhsb(1)=neq
             nrhsb(2)=0 
             nrhsb(3)=2*neq    
-         else if(islord.ge.3) then
+         else if(islord.eq.3) then
+            nmatb(3)=0
+            nmatb(2)=nsizea
+            nmatb(1)=2*nsizea
+            nmatb(6)=3*nsizea
+            nmatb(5)=4*nsizea
+            nmatb(4)=5*nsizea
+            nmatb(9)=6*nsizea
+            nmatb(8)=7*nsizea
+            nmatb(7)=8*nsizea
+            nrhsb(3)=0
+            nrhsb(2)=neq
+            nrhsb(1)=2*neq               
          endif
       else if(idofdb.eq.4) then
          if(islord.eq.0) then
