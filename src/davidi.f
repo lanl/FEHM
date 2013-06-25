@@ -159,5 +159,8 @@
       integer, allocatable :: nmatb(:)
       integer, allocatable :: nrhs(:)
       integer, allocatable :: nrhsb(:)
+      integer, allocatable :: nvar_select(:)
+      integer max_variables
+      parameter(max_variables = 12)
 
       end module davidi
