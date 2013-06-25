@@ -109,6 +109,9 @@
       real*8, allocatable ::  phoco2(:)
       real*8, allocatable ::  tco2(:) 
       real*8, allocatable ::  toco2(:)
+      real*8, allocatable ::  phih2o(:)
+      real*8, allocatable ::  phoh2o(:)
+      real*8, allocatable ::  dpsattf(:)
 
       real*8, allocatable ::  skco2_tot(:)
       real*8, allocatable ::  skco2w(:)
@@ -122,6 +125,18 @@
       real*8, allocatable ::  rolfco2(:)
       real*8, allocatable ::  enlfco2(:)
       real*8, allocatable ::  qhflxco2(:)
+      real*8, allocatable ::  rovfmix(:)
+      real*8, allocatable ::  drovfmixp(:)
+      real*8, allocatable ::  drovfmixe(:)
+      real*8, allocatable ::  envfmix(:)
+      real*8, allocatable ::  denvfmixp(:)
+      real*8, allocatable ::  denvfmixe(:)
+      real*8, allocatable ::  rol_co2(:)
+      real*8, allocatable ::  drol_co2p(:)
+      real*8, allocatable ::  drol_co2e(:)
+      real*8, allocatable ::  enl_co2(:)
+      real*8, allocatable ::  denl_co2p(:)
+      real*8, allocatable ::  denl_co2e(:)
 
       real*8, allocatable :: dpcpw(:)
       real*8, allocatable :: dpcpg(:)
@@ -212,6 +227,8 @@ c     integer, allocatable :: idco2(:)
       real*8, allocatable :: fw_tmp(:)
       real*8, allocatable :: fl_tmp(:)
       real*8, allocatable :: fg_tmp(:)
+      real*8, allocatable :: yc_tmp(:)
+      real*8, allocatable :: xco2_vapf(:)
       integer, allocatable ::  inico2flg(:)
 
       real*8, allocatable :: xoc(:)
@@ -242,6 +259,8 @@ c     real*8  aihyd
       real*8  qco2hyd_in,qeco2hyd_in,balco2hyd,baleco2hyd
       real*8  qco2hyd,qeco2hyd,qco2hydts,qeco2hydts
       real*8  qco2hydts_in,qeco2hydts_in
+      real*8  phi_vap_lmt
+      parameter (phi_vap_lmt = 1.d-5)
 
       integer idof_co2,ibrine, iprtype, ico2sol, icarb
       integer ico2diff_flg, ico2prop_flg, iwatdis
@@ -249,5 +268,70 @@ c impes-like flow terms
       integer imped_ex    
       real*8, allocatable :: permsd1_sv_w(:)
       real*8, allocatable :: permsd1_sv_co2(:)
+      
+      real*8 :: permsd11 = 0., dprmp1 = 0., dprmt1 = 0., dprmw1 = 0.
+      real*8 :: permsd12 = 0., dprmp2 = 0., dprmt2 = 0., dprmw2 = 0.
+      real*8 :: permsd13 = 0., dprmp3 = 0., dprmt3 = 0., dprmw3 = 0.
 
+      real*8 frac_cl,frac_cg,frac_c,frac_w, yco2,ywat,yair,xco2,xwat
+      real*8 rol_h2o,rol_d,emw,drol_dp,drol_dt,drol_dyc,drol_dya,xair
+      real*8 drolyc, drolya, roa, droadp, droadt, ena, denadt,denadp
+      real*8 dvisadp, denvt, denvp, visca
+      real*8 dvisadt, pw, rlw, drlww, drlwg, drlwp, drlwt
+      real*8 rll, drllw, drllg, drllp, drllt
+      real*8 enw,enl,dhlt,dhlp,dhvt,dhvp
+      real*8 drolw, denlt, denlp, denlw, denlya, denlyc
+      real*8 visl, dvislya, dvislyc, dvislw
+      real*8 row, drowp, drowt, drowya, drowyc, denwp, denwt
+      real*8 visw, dviswp, dviswt
+      real*8 dprmp, dprmt, dprmw, dprmyc, dprmya
+      real*8 damyc, damya, daeyc, daeya
+      real*8 dhprdyc, dhprdya, rlv, drlvw, drlvg, drlvp, drlvt
+      real*8 drovw, drovya, drovyc, denvw, denvya, denvyc, dvisvya
+      real*8 dvisvyc, dvisvw, demwyc, denwyc, denwya
+      real*8 vpartial,dvpardt
+      real*8 xs, dxsw, dxsg, denwfw, denwfg, s1, s2, ds1dw, ds1dg
+c new variables
+      real*8 enx,denxp,denxe,denxyc,denxya, vis_tol, xtol
+      real*8 pvap_h2o,pvap_co2,pcl0,roc0,drow_vp,denv_vapt
+      real*8 dxwat_vap,drov_co2p
+      real*8 dxco2p,env_h2o,env_co2,denv_co2p,denv_co2t
+      real*8 drov_co2w,drov_co2yc,drov_co2ya
+      real*8 dvisv_co2w,dvisv_co2yc,dvisv_c2ya
+      real*8 denv_co2w,denv_co2yc,denv_co2ya
+      real*8 visv_co2,dvisv_co2p,dvisv_co2ya,dvisv_co2t
+      real*8 denv_vap,frac_g,drow_vt,dxwat_vat,dxco2t,dyco2p
+      real*8 dpvap_h2op,drov_co2t,drow_vtw,drow_vpw,dyco2t
+      real*8 daml,damg,dumc(9)
+      real*8 daet1,daet2,dael,daeg
+      real*8 denv_h2op,denv_h2ot
+      real*8 visv_h2o, dvisv_h2op, dvisv_h2ot 
+      real*8 dxco2_vap,dxco2_vat
+      real*8 drov_h2ot,drov_h2op
+      
+      real*8 rov, d_rov_1, d_rov_2 ,d_rov_t
+      real*8 d_rol_1, d_rol_2 ,d_rol_t
+      real*8 d_row_1, d_row_2 ,d_row_t
+      real*8 env, d_env_1, d_env_2, d_env_t
+      real*8 d_enw_1, d_enw_2, d_enw_t
+      real*8 d_enl_1, d_enl_2, d_enl_t
+      real*8 visv, d_visv_1, d_visv_2, d_visv_t
+      real*8 erock, d_erock_1, d_erock_2, d_erock_t
+      real*8 d_am_2, d_ae_2
+      real*8 d_por_2, d_pvap_h2o_t
+      real*8  rov_h2o, d_rov_h2o_1, d_rov_h2o_2, d_rov_h2o_t 
+      real*8  rov_co2, d_rov_co2_1, d_rov_co2_2, d_rov_co2_t 
+      real*8 xwat_vap, d_xwat_vap_1, d_xwat_vap_2, d_xwat_vap_t
+      real*8 xco2_vap, d_xco2_vap_1, d_xco2_vap_2, d_xco2_vap_t
+      real*8  d_env_h2o_1, d_env_h2o_2, d_env_h2o_t 
+      real*8  d_env_co2_1, d_env_co2_2, d_env_co2_t 
+      real*8  d_env_vap_1, d_env_vap_2, d_env_vap_t     
+      real*8 d_visv_h2o_1, d_visv_h2o_2, d_visv_h2o_t
+      real*8 d_visv_co2_1, d_visv_co2_2, d_visv_co2_t
+      
+      real*8 permsd,dtsatpco2
+      real*8 drovt,drovp,dvisvt,dvisvp
+      real*8 rol,drolt,drolp,dvislt,dvislp
+      parameter (xtol = 1.d-16) 
+      
       end module comco2
