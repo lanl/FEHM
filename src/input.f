@@ -662,12 +662,14 @@ c     &           sat_ich, head_id
                sat_ich = xmsg(5)
                head_id = xmsg(6)
             else
+c            go to 1005
  995           head0 = 0.0
                temp0 = 20.0
                pres0 = 0.1   
                sat_ich = 0.0
                head_id= 0.0
             end if
+c 1005       continue
             call water_density(temp0, pres0, rol0)
             ichead=1
             if(.not.allocated(head)) allocate(head(n0))
@@ -1343,6 +1345,9 @@ c**** can be used with gdkm and gdpm models *****
          
          icoef_replace = 1
          call coef_replace_ctr(0)
+      else if (macro .eq. 'zneg') then   
+c zero out (not remove) negative areas after stor file read or create
+        icoef_neg = 1
       else if (macro .eq. 'rich') then
          jswitch = 1
          if (idpdp .eq. 1) joff = 4
@@ -1597,6 +1602,10 @@ c**** check if air macro called if head macro called
          allocate (time_ieos(n0))
          time_ieos = 0.0d0
       endif 
+c  
+c  calculate water vapor partial pressures for co2 problem
+c  (un comment out below for new co2-h2o gaz version)
+c      if(icarb.ne.0) call ther_co2_h2o(10,0)
 
       if (.not. mptr_call) close (inpt)
 
