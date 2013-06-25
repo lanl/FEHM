@@ -137,7 +137,7 @@ c     first lt i (if i2<i1 then no nodes lt)
                do jj = i1,i2
                   kb = nelm(jj)
                   i3 = nelmdg(kb)+1
-                  i4 = nelm(kb)
+                  i4 = nelm(kb+1)
                   do kk = i3,i4
                      kb1 = nelm(kk)
                      if(kb1.eq.i) then
