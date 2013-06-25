@@ -810,6 +810,7 @@ c
       subroutine generate_elements(nx,ny,nz)
 c     
 c     write out generated element connectivity 
+c     for equivalent 3D hex elements
 c    
       integer nx,ny,nz,nxny,kk
       integer i,j,k,ne,ns,npoint,il
