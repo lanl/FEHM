@@ -627,6 +627,7 @@ c bhl_12/8/05
       if(allocated(nb_sol)) deallocate(nb_sol)
       if(allocated(nmat_sol)) deallocate(nmat_sol)
       if(allocated(nrhs_sol)) deallocate(nrhs_sol)
+      if(allocated(nvar_select)) deallocate(nvar_select)
       if(allocated(t1)) deallocate(t1)
       if(allocated(t2)) deallocate(t2)
       if(allocated(t3)) deallocate(t3)
