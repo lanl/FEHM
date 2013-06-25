@@ -76,6 +76,7 @@ c
       neqp1=neq+1
       nmatd=nelm(neqp1)-neqp1
       nsizea=idof*idof*nmatd
+      nsizea1 = nmatd
       do i=1,nsizea
          a(i)=0.0
       enddo
@@ -163,7 +164,9 @@ c
 c   enforce equilibrium conditions as necessary
 c
       call co2h2o_combine(1,idofm)
-c remove farfield BC from NR residual calculation      
+c      
+c remove farfield BC from NR residual calculation  
+c      
       call bc_far_ctr(2)
       
 c
@@ -250,7 +253,7 @@ c     &        abs(nmatb(1)),(cord(abs(nmatb(1)),i),i=1,3)
          iad=maxit
          return
       endif
-      
+c      
 c     find residual
 c     
       fdum=sqrt(fdum2)
