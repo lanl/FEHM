@@ -233,6 +233,7 @@ C***********************************************************************
       use comai
       use comki
       use davidi
+      use comco2, only: icarb
       implicit none
 
       integer i,icode
@@ -279,7 +280,10 @@ c                 pho(i)=head0
             else if (abs (ieos(i)) .eq. 2) then
 c two phase
                if (irdof .ne. 13 .or. ifree .ne. 0) s (i) =  tmp(i)
-               if (ico2.ge.0) to(i) =  psat(pho(i), dtsatp, 1)
+               if(icarb.eq.0) then
+c gaz 120512 don't change T for co2-h20 problems               
+                if (ico2.ge.0) to(i) =  psat(pho(i), dtsatp, 1)
+               endif
             else if (abs (ieos(i)) .eq. 3) then
 c gas only
                to(i) =  tmp(i)
