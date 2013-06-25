@@ -56,24 +56,24 @@
       integer ndummy,mid,mi,ieosd,kq,icesd
       real*8 dtin,dporpl,dportl
       real*8 tl,pl,dpsatt
-      real*8 enw,enl
-      real*8 dhlt,dhlp
-      real*8 rol
-      real*8 drolp,drolt
+c      real*8 enw,enl
+c      real*8 dhlt,dhlp
+c      real*8 rol
+c      real*8 drolp,drolt
       real*8 xvisl
-      real*8 dvislp
-      real*8 dvislt
-      real*8 env
-      real*8 dhvt,dhvp
-      real*8 rov
+c      real*8 dvislp
+c      real*8 dvislt
+c      real*8 env
+c      real*8 dhvt,dhvp
+c      real*8 rov
       real*8 xvisv
-      real*8 dvisvp,dvisvt,qdis,dtd
-      real*8 cp,por,vol,pldif,permsd,eskd,eqdum
+      real*8 qdis,dtd
+      real*8 cp,por,vol,pldif,eskd,eqdum
       real*8 damp,daep,daep1,damh,daeh
       real*8 dql,hprod,dhprdp,dhprde,htc,tbound,hflux
       real*8 dhflxp,sbound,cprd,edif,denrd
       real*8 dpldt,daep2
-      real*8 dqv,dhflxe,dtps,drovp,drovt,permsd1
+      real*8 dqv,dhflxe,dtps,permsd1
       real*8 dhflxem,dhflxpm,daeh1,daeh2,pcpww
       real*8, allocatable :: sto1(:)
 
@@ -90,33 +90,31 @@ c     will over-ride above co2 production
       real*8 fracwmin
       real*8 value(9),dumb
       
-      real*8 frac_cl,frac_cg,frac_c,frac_w, yco2,ywat,yair,xco2,xwat
-      real*8 rol_h2o,rol_d,emw,drol_dp,drol_dt,drol_dyc,drol_dya,xair
-      real*8 drolyc, drolya, roa, droadp, droadt, ena, denadt,denadp
-      real*8 dvisadp, denvt, denvp, visca, ycp, dycp
-      real*8 dvisadt, pw, rlw, drlww, drlwg, drlwp, drlwt
-      real*8 rll, drllw, drllg, drllp, drllt
-      real*8 drolw, denlt, denlp, denlw, denlya, denlyc
-      real*8 visl, dvislya, dvislyc, dvislw
-      real*8 row, drowp, drowt, drowya, drowyc, denwp, denwt
-      real*8 visw, dviswp, dviswt
-      real*8 dprmp, dprmt, dprmw, dprmyc, dprmya
-      real*8 damyc, damya, daeyc, daeya
-      real*8 dhprdyc, dhprdya, rlv, drlvw, drlvg, drlvp, drlvt
-      real*8 drovw, drovya, drovyc, denvw, denvya, denvyc, visv, dvisvya
-      real*8 dvisvyc, dvisvw, demwyc, denwyc, denwya
-      real*8 vpartial,dvpardt
-      real*8 xs, dxsw, dxsg, denwfw, denwfg, s1, s2, ds1dw, ds1dg
+c      real*8 drolyc, drolya, roa, droadp, droadt, ena, denadt,denadp
+      real*8   ycp, dycp
+c      real*8  rlw, drlww, drlwg, drlwp, drlwt
+c      real*8 rll, drllw, drllg, drllp, drllt
+c      real*8 drolw, denlt, denlp, denlw, denlya, denlyc
+c      real*8 visl, dvislya, dvislyc, dvislw
+c      real*8 row, drowp, drowt, drowya, drowyc, denwp, denwt
+c      real*8 visw, dviswp, dviswt
+c      real*8 dprmp, dprmt, dprmw, dprmyc, dprmya
+c      real*8 damyc, damya, daeyc, daeya
+c      real*8 dhprdyc, dhprdya, rlv, drlvw, drlvg, drlvp, drlvt
+c      real*8 drovw, drovya, drovyc, denvw, denvya, denvyc, visv, dvisvya
+c      real*8 dvisvyc, dvisvw, demwyc, denwyc, denwya
+c      real*8 vpartial,dvpardt
+c      real*8 xs, dxsw, dxsg, denwfw, denwfg, s1, s2, ds1dw, ds1dg
 c new variables
-      real*8 enx,denxp,denxe,denxyc,denxya, vis_tol
+c      real*8 enx,denxp,denxe,denxyc,denxya, vis_tol
       real*8 :: cden_correction, mol
-      real*8 :: permsd11 = 0., dprmp1 = 0., dprmt1 = 0., dprmw1 = 0.
-      real*8 :: permsd12 = 0., dprmp2 = 0., dprmt2 = 0., dprmw2 = 0.
-      real*8 :: permsd13 = 0., dprmp3 = 0., dprmt3 = 0., dprmw3 = 0.
-      parameter (fracwmin=0.1,vis_tol = 1.d-12)
+c      real*8 :: permsd11 = 0., dprmp1 = 0., dprmt1 = 0., dprmw1 = 0.
+c      real*8 :: permsd12 = 0., dprmp2 = 0., dprmt2 = 0., dprmw2 = 0.
+c      real*8 :: permsd13 = 0., dprmp3 = 0., dprmt3 = 0., dprmw3 = 0.
+c      parameter (fracwmin=0.1,vis_tol = 1.d-12)
       integer iflg,duma
       
-      save dprmya
+c      save dprmya
 
       allocate(sto1(n0*2))
 c     
@@ -130,7 +128,9 @@ c     rl   -  relative permeability of liquid phase
 c     rv   -  relative permeability of vapour phase
 c     tfun -  temperature
 c     sw   -  saturation liquid
-c     
+c
+      fracwmin=0.1     
+      vis_tol = 1.d-12
       dtin=1.0/dtot
 
 c     ****************************************************************
