@@ -335,6 +335,8 @@ c set some parameters
       idualp = 0
       izeolites = 0
       ichng = 0
+c gaz 061513
+      ich_pebi = 0
       if(irun.eq.1) then
          isox=1
          isoy=2
