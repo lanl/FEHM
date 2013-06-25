@@ -352,6 +352,11 @@ c**** element node data ****
             else
              ielemorder = 1
             endif
+            if(elem_order.eq.'trad'.and.ns.eq.4.and.icnl.eq.0) then
+             ich_pebi = 1
+            else
+             ich_pebi = 0
+            endif
             
  30         continue
 
