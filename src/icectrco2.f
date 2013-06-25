@@ -67,7 +67,7 @@
       real*8, allocatable :: esktmp(:)
       integer, allocatable :: iflg_flowmac(:)
       real*8 tliquid,dummyreal
-      real*8 pw,tw,pc,tc,ensrc,delsrc,phase_frac,skmd,qhmd
+      real*8 tw,pc,tc,ensrc,delsrc,phase_frac,skmd,qhmd
       real*8 skmd1,skmd10,skmd2,skmd3,amco2w,amco2w1,amco21
       real*8 amco2w0,skmd21,skmd31,amco2f,amco2f0,amco2f1
       real*8 dtps,dum1,dum2,dum3,dum4,dum5,dum6,dum7,dum8
@@ -80,11 +80,11 @@
       real*8 amaxflx, dums1,tolw, zero_e
       real*8 teinfl, flemax, amaxener
       real*8 fh, power, dpowerh, px,py,pz
-      real*8 pcrit, tcrit,dumb,dumc(9)
+      real*8 pcrit, tcrit,dumb
       real*8 psatd, tl1,tl2,dtps1,dtps2,dpsatt
       real*8 sl,sg,sw, pl, tl, tsolid
       real*8 denc,dencp,denct,enc,encp,enct,visc,viscp,visct
-      real*8 denw,denwp,denwt,enw,enwp,enwt,visw,viswp,viswt
+      real*8 denw,enwp,enwt,viswp,viswt
       real*8 ycmax, xwp, xcp, xcpb, mwc, mww, xc_prime, tmp1
       integer ico2d, ico2dc
       integer imped_ex_0
