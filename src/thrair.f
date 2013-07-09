@@ -1,4 +1,4 @@
-      subroutine thrair(ndummy) 
+       subroutine thrair(ndummy) 
 !***********************************************************************
 !  Copyright, 2004,  The  Regents  of the  University of California.
 !  This program was prepared by the Regents of the University of 
@@ -346,6 +346,7 @@ c
       real*8 dsatp, rlpmin, qwmax_fac, qwmax
       real*8 pld,dis_ex,wat_ex,dwat_exs, time_max
       real*8 seep_facv,seep_facl,permsdv,permsdl,plwt
+      real*8 rol_b, rolref_b
       real*8 cden_correction, cden_cor
       integer i_mem_rlp
       integer iadka        
@@ -364,7 +365,8 @@ c
       real*8, allocatable :: drlfs0(:)
       real*8, allocatable :: rvf0(:)
       real*8, allocatable :: drvfs0(:)
-      
+c gaz debug  050712    
+      mi = l
       if(irdof.ne.13) then
          if(abs(iexrlp).ne.0.and.i_mem_rlp.eq.0) then
             i_mem_rlp=1
@@ -420,7 +422,7 @@ c     misc. constants
       pref=crl(4,1)
       xvisv=crl(5,1)
       rcomd=comw*rolref
-      seep_facl = rolref/xvisl0
+
       seep_facv = roc0/xvisv
 c     
 c     liquid viscosity
@@ -493,7 +495,14 @@ c
          else
             xvisl=xvisl0
          endif
-
+c manage brines wrt density         
+       if(cden)then
+        rolref_b= rolref+cden_correction(mi)
+       else
+        rolref_b= rolref
+       endif
+       rolf(mi) = rolref_b
+       seep_facl = rolref_b/xvisl0
 c     
          if(irdof.ne.13) then
 c     water relative perm
@@ -553,7 +562,7 @@ c
 c peaceman solution only available for models kq(-1,-2,1)
 c           
              if(izonewel1(mi).ne.0) then
-              permsd = wellim(mi)*rolref/xvisl
+              permsd = wellim(mi)*rolref_b/xvisl
              endif
             endif
             pflowd=pflow(mi)
@@ -603,7 +612,7 @@ c     ===(each node at the free drainage boundary needs to be specified
 c     ===explicitly, also the area or length associated with that node)
 c     area is read in the flow rate or pressure slot and transferred to array wellim
 c     rol = rolref*(1.0+comw*(pl-pref))
-            rol = rolref
+            rol = rolref_b
             area=wellim(mi)
             uperm=-pnx(mi)*rol*rol*grav*area/xvisl
             qwdis=uperm*xrl
@@ -624,7 +633,7 @@ c     ===(each node at the free drainage boundary needs to be specified
 c     ===explicitly, also the area or length associated with that node)
 c     area is read in the flow rate or pressure slot and transferred to array wellim
 c     rol = rolref*(1.0+comw*(pl-pref))
-            rol = rolref
+            rol = rolref_b
             area=wellim(mi)
             uperm=-pnx(mi)*rol*rol*grav*area/xvisl
             qwdis=uperm*sl
@@ -732,7 +741,7 @@ c     might need rlxyf here
          else if(kq.eq.-6.and.irdof.ne.13) then
 c     ===Ponding condition for air and water 
 c     ===area input in pflow term
-            rol = rolref
+            rol = rolref_b
             area=pflow(mi)
             uperm=-pnx(mi)*rol*rol*grav*area/xvisl            
             wat_ex= (sl-1.0)/sl
@@ -790,7 +799,18 @@ c     no derivatives of rlps
                dqws = 0.0d00
                dqwp = 0.0d00
             endif
-         else if(kq.eq.-11.or.kq.eq.-12.or.kq.eq.-13) then
+         else if(kq.eq.-13.and.ifree.eq.0) then
+c     ===specified saturation (air source)
+               permsd=abs(wellim(mi))
+               pflowd=pflow(mi)
+               sflux = esk(mi)             
+               qadis =-permsd*(sl-sflux)
+               dqap = 0.0
+               dqas = -permsd
+               qwdis = 0.0
+               dqws = 0.0d00
+               dqwp = 0.0d00            
+         else if(kq.eq.-11.or.kq.eq.-12) then
 c     ===x dir geralized head BC
 c     ===wellim calculated in area_flow_bc
                permsd=abs(wellim(mi))
@@ -906,11 +926,7 @@ c     water density
             pld=phi(mi)
          endif
          rol=rolref*(1.0+comw*(pld-pref))
-         if(cden) then
-c     Add correction for liquid species
-            cden_cor = cden_correction(mi)
-            rol = rol + cden_cor
-         end if
+         if(cden) rol= rol+cden_correction(mi)
          drolp=rcomd
          drols=0.0
 c     accumulation terms
@@ -935,7 +951,7 @@ c     density of air
             drocs=0.0
             drocp=0.0
 c     water density
-            rol=rolref
+            rol=rolref_b
             drolp=0.0
             drols=0.0		 
          endif
@@ -945,7 +961,7 @@ c     liquid
          dil(mi)=dql
          dilp(mi)=drolp/xvisl*xrl
          dglp(mi)=drolp
-         rolf(mi)=rol
+c         rolf(mi)=rol
 c     vapour
          if(irdof.ne.13) then
             dqv=roc/xvisv*xrv
@@ -1004,7 +1020,7 @@ c check for peaceman calculation
 c       
             if(iwelimd.ne.0)then        
              if(izonewel1(mi).ne.0) then
-              permsd = wellim(mi)*rolref/xvisl
+              permsd = wellim(mi)*rolref_b/xvisl
              endif
              pflow(mi)=phi(mi) - sk(mi)/permsd
             endif
