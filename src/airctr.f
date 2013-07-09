@@ -388,6 +388,7 @@ c
       real*8 dfdum11i,dfdum12i,dfdum21i,dfdum22i,detdf
       real*8 fdum01,fdum02,sx1d,phidum,phi_dif,phi_1,phi_2
       real*8 hmax, hmin, hmid
+      real*8 cden_correction
       character*80 form_string
       real*8 pref_1_2,pref_2_1,s_1_2
 c      parameter (pchng = 0.005,schng = 0.005)
@@ -473,7 +474,12 @@ c     reference liquid viscosity is in crl(2,1)
 c     reference compressibility is in crl(3,1)
 c     reference pressure in crl(4,1)
 c     reference air viscosity is in crl(5,1)
-            crl(1,1)=rolf(1)
+c     subtract initial density calculation (added back in thrair.f)
+            if(cden) then
+             crl(1,1)=rolf(1)  - cden_correction(1)
+            else
+             crl(1,1)=rolf(1)
+            endif
             crl(2,1)=1.0/(dil(1)/rolf(1))
             crl(3,1)=dmpf(1)/rolf(1)
             crl(4,1)=pref
