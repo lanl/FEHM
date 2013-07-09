@@ -292,6 +292,8 @@ c calculate cell lengths for GDPM and GDKM calculations
        if(.not.allocated(dxrg)) allocate(dxrg(n))   
        if(gdkm_flag.ne.0) then   
         n_loop = neq_primary
+       else if(idpdp.ne.0) then
+        n_loop = neq_primary
        else
         n_loop = n
        endif
