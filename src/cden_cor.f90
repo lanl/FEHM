@@ -32,7 +32,7 @@ real*8 function cden_correction(i)
   case (0)
      ! Single species density correction (original implementation)
      i2 = i + (ispcden - 1)*n0
-     if (anl(i2) .gt. 0.d0) cden_correction = anl(i) * factcden
+     if (anl(i2) .gt. 0.d0) cden_correction = anl(i2) * factcden
 
   case (1)
      ! All acqueous species, C - moles/kg-water, MW - g/mole)
