@@ -419,6 +419,9 @@
       real*8, allocatable :: mw_mineral(:), rho_mineral(:)
 
 	real*8, allocatable :: ps_rxn(:,:), ps_delta_rxn(:)
+c spc 9-10-2013
+	real*8, allocatable :: ps_delta_rxn_s(:)
+c spc 9-10-2013
 
       real*8, allocatable :: pdstic(:,:)
 
