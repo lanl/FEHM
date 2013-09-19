@@ -421,7 +421,11 @@ C***********************************************************************
 c symmetry check on = 1, off = 0      
       parameter (ic_sym = 0)
       parameter (very_small= 1.d-30)
+c gaz debug 080813
 
+c      call saltctr(-10,0,0.0d00)
+
+c
 c     Calculate rho1grav
 c      rho1grav = crl(1,1)*(9.81d-6)
 c      rho1grav = 997.*9.81d-6
@@ -570,7 +574,16 @@ c**** complete element information ****
 !      endif
 
 c**** complete pest information(if interpolation is used) ****
+c
       call pest(-1)
+c
+c gaz temp call to split 072613
+c      ivf = -1
+c      call split(0)
+c      write(ierr,*) 'stopping startup line 579'
+c      if(iout.ne.0) write(iout,*) 'stopping startup line 579'
+c      stop
+c
       if (mlz .ne. 0. and. irun .eq. 1 .and. lda .le. 0.and.ianpe.eq.0) 
      &    call split(0)
       if (lda .le. 0.and.irun.eq.1) then
@@ -1317,11 +1330,14 @@ c get cell lengths for wtsi if necessary
       endif
 
 c change porosity and permeability if necessary if Gangi model is used
-      if(iporos.ne.0)call porosi(3)
+      if(iporos.ne.0) call porosi(3)
 
 c**** determine initial coefficients for thermo fits ****
       call coeffc
-
+c
+c gaz debug 090113
+c**** insure anl = anlo for cden to get density right for firsat timestep****
+       call concen(6,0)
 c**** determine initial variable state ****
 c gaz 10-18-2001     call sice (1)
       if(compute_flow .or. iccen .eq. 1) then
@@ -1471,7 +1487,7 @@ c
 !         call contr_days (-1)
 !         call contr_days ( 1)
 !      endif
-
+c 
 c**** initalize concentration ****
       if (iccen .ne. 0)  call concen (-1,0)
 
