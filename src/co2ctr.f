@@ -14,7 +14,7 @@ C**********************************************************************
 CD1
 CD1 PURPOSE
 CD1
-CD1 To provide overall control for an isothermal air-water simulation.
+CD1 To provide overall control for a nonisothermal air-water simulation.
 CD1
 C**********************************************************************
 CD2
@@ -400,12 +400,15 @@ c code written by g zyvoloski feb 1980
 
       real*8 bpd,tbnd,pcid,pv,dtsatp,dpsats,dpsatt,tdumm
       integer iflg,ico2d,i,istflag,mi,it
-      real*8 hum,alp,beta,sr,smax,qtcd,dencht
+      real*8 hum,alp,beta,sr,smax,qtcd,dencht,tol_p
       real(8) :: qtotci = 0.
       integer mlev1,mlev2,mdd,md
       real*8 rqd,qcd,psatl,qcmax
+      integer ngas_flag2
       logical ngas_flag
-      save ngas_flag
+      character*90 wdum
+      parameter (tol_p = 1.d-3)
+      save ngas_flag, ngas_flag2
       
 c     set tbnd for pco2 change(see about line 580)
       parameter(tbnd = -1.0)
@@ -416,6 +419,29 @@ c
       if(ico2.gt.0) then
 c     iflg is used to tell if call is for initialization
          if(iflg.eq.0) then
+c
+c check macro line for more information
+c
+          backspace inpt
+            ngas_flag = 0
+            read(inpt,'(a90)') wdum 
+            do i = 5,80
+             if(wdum(i:i+5).eq.'normal') ngas_flag2 = 0
+             if(wdum(i:i+6).eq.'reset T') ngas_flag2 = 1
+             if(wdum(i:i+6).eq.'reset P') ngas_flag2 = 2
+            enddo
+            if(ngas_flag2.eq.1) then
+             if(iout.ne.0) write(iout,12)
+             if(iptty.ne.0) write(iptty,12)          
+            elseif(ngas_flag2.eq.2) then 
+             if(iout.ne.0) write(iout,13)
+             if(iptty.ne.0) write(iptty,13)     
+            endif
+12     format('temperature reset to h2o vapor pressure at total', 
+     &        'initial pressure')
+13     format('total pressure reset to h2o vapor pressure at ', 
+     &        'initial temperature if h2o vapor pressure is greater',
+     &          'than initial total presssure')
             qtc=0.0
             qtotc=0.0
             amc=0.0
@@ -495,7 +521,8 @@ c
                pcid=pci(i)
                if(pcid. eq. -999. .or. pcid .eq. -666.) then
                 pcid=-to(i)
-               endif
+               endif            
+
                if(pcid.lt.tbnd) then
                   if(ieos(i).ne.2) then
                      write (ierr, 100)
@@ -505,12 +532,27 @@ c
                      goto 9000
  100                 format ('cannot input ngas temp in single phase')
                   endif
-                  if (ngas_flag) then
-                     pv = 0.
+                  if(ngas_flag) then
+                   pv = 0.0
+                   pci(i)=pho(i)-pv
                   else
-                     pv= psatl(-pcid,pcp(i),dpcef(i),dpsatt,dpsats,0)
-                  end if
-                  pci(i)=pho(i)-pv
+                    pv= psatl(-pcid,pcp(i),dpcef(i),dpsatt,dpsats,0)
+                    if (ngas_flag2.eq.1) then
+                     tdumm=psatl(pho(i)-tol_p,pcp(i),dpcef(i),dtsatp,
+     &               dpsats,1)
+                     pv = pho(i)
+                     pci(i)=tol_p
+                     to(i) = tdumm
+                    elseif (ngas_flag2.eq.2.and.pv.ge.pho(i)) then
+                     pci(i) = tol_p
+                     pho(i) = pv + tol_p
+                     phi(i) = pho(i)
+                     to(i) = -pcid
+                    else
+                     pci(i)=pho(i)-pv 
+                     to(i) = -pcid              
+                    end if
+                  endif
                   if(pci(i).lt.tbnd) then
                      write(ierr, 110)
                      if (iout .ne. 0) write(iout, 110)
@@ -525,7 +567,7 @@ c
      &                    'pressure given')
  120                 format ('max allowable temperature ', g15.4)
                   endif
-                  to(i)=-pcid
+c                  to(i)=-pcid
                else if(ieos(i).eq.2) then
 c================================================================
 c      PHS  9/1/2006   Modification so that code does not 
@@ -570,7 +612,7 @@ c     specified ngas pressure rules over temperature
                      goto 9000
                   endif
                   if(ieos(i).eq.2) then
-                     if (.not. ngas_flag) then
+                     if (ngas_flag2.eq.0.and..not.ngas_flag) then
                         to(i)=psatl(pv,pcp(i),dpcef(i),dtsatp,dpsats,1)
                      end if
                      if (iout .ne. 0) write(iout,*)
