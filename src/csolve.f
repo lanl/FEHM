@@ -333,6 +333,8 @@ C**********************************************************************
 CD6
 CD6 FUNCTIONAL DESCRIPTION
 CD6 
+
+
 CD6 This routine performs the following functions:
 CD6 
 CD6   Initialize time parameters, initialize number of iterations for
@@ -1435,20 +1437,10 @@ c     Add counter for total SIA iterations
          end if
  3050    format ('# SIA Iterations ', i5, ' (total = ', i5, ')')
          reset_tracer = .FALSE.
-c calculate porosity change due to mineral reactions
-c         ps_delta_rxn = 0.
-         do im = 1, nimm
-            nsp = pimm(im)
-            npn = npt(nsp)
-            if(mw_mineral(im).ne.0)then
-               do i = 1, n0
-                  ja = i + npn
-                  ps_delta_rxn(i) = ps_delta_rxn(i) - ((an(ja) -
-     &                 anlo(ja))*mw_mineral(im)*denr(i))/
-     &                 (rho_mineral(im)*100*100*100)
-               enddo
-            endif
-         enddo
+
+c check for porosity changes if salt simulation
+         call saltctr(2,0,0.0d00)
+
       end if
  3011 format ('*****************************************************')
 
