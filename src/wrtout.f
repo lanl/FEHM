@@ -236,7 +236,9 @@ c     insert diagnostics code here
             call diagnostics(1)
             call diagnostics(2)
          endif
-
+         if(iccen.ne.0) then
+          resid_out = .false.
+         endif
          if ((ntty.eq.2).and.(m.gt.0).and.resid_out) then
             write(iout,774)
             if (iatty.gt.0)  write(iatty,774)
@@ -297,7 +299,7 @@ c Isothermal
 c Heat and mass w/o head output
  6030          format(50x, 'source/sink', 2x, 'E source/sink', /, 3x,
      &              'Node', 2x, ' P (MPa)', 3x, ' E (MJ)', 4x, 'L sat',
-     &              5x, 'Temp (C)', 4x, '(kg/s)', 7x, '(MJ/s)')
+     &     5x, 'Temp (C)', 4x, '(kg/s)', 7x, '(MJ/s)')
 c Heat and mass w/ head output
  6330          format(61x, 'source/sink', 2x, 'E source/sink', /,
      &              3x, 'Node', 2x, 'Head (m)', 3x, 'P (MPa)', 4x,
@@ -382,9 +384,9 @@ c     CHANGE ABOVE TO JUST PRINT OUT qh ARRAY
      *                          phod , eqd , sl , t(md) , rqd
                         else
                            write(iout, 6031)  md ,
-     *                          phod , eqd , sl , t(md) , rqd , qh(md) 
+     *             phod , eqd , sl , t(md) , rqd , qh(md)
                            if ( iatty .gt. 0 )  write(iatty ,6031) md ,
-     *                          phod , eqd , sl , t(md) , rqd , qh(md)
+     *             phod , eqd , sl , t(md) , rqd , qh(md)
                         end if
                      else
                         if(ichead.eq.0) then
@@ -426,7 +428,14 @@ c     phod is head with offset removed
 c     
 c**** call varible porosity output ****
 c     
-               if (iporos.ne.0)  call porosi (2)
+               if (iporos.ne.0) then
+                 call porosi (2)
+                 call saltctr(8,0,0.0d00)
+               elseif(isalt. ne.0) then
+                call saltctr(7,0,0.0d00)
+                call saltctr(8,0,0.0d00)
+               endif
+      
 c     
 c**** output for co2 ****
 c     
