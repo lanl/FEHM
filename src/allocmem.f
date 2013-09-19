@@ -624,7 +624,7 @@ c     ***** COMMON Block biopara *****
 c     ***** COMMON Block precdis *****
          allocate(sarea(numrxn),pdstic(numrxn,ncpnt),pd_flag(nimm,n0))
 	   allocate(mw_mineral(nimm), rho_mineral(nimm))
-	   allocate(ps_delta_rxn(n0))
+	   allocate(ps_delta_rxn(n0),ps_delta_rxn_s(n0))
 c     ***** COMMON Block concs *****
          allocate(totaq(ncpnt),cpnt(ncpnt),cplx(101:ncplx+100))
 c     ***** COMMON Block rates *****
@@ -688,15 +688,24 @@ c     ***** COMMON Block fdd *****
             allocate(pnx(n3))
             allocate(pny(n3))
             allocate(pnz(n3))
+            allocate(pnxi(n3))
+            allocate(pnyi(n3))
+            allocate(pnzi(n3))
          else
             allocate(pnx(n2))
             allocate(pny(n2))
             allocate(pnz(n2))
+            allocate(pnxi(n2))
+            allocate(pnyi(n2))
+            allocate(pnzi(n2))
          end if
       else
          allocate(pnx(1))
          allocate(pny(1))
          allocate(pnz(1))
+         allocate(pnxi(1))
+         allocate(pnyi(1))
+         allocate(pnzi(1))
       endif
       allocate(ps(n0))
       if (iccen .eq. 1 .or. sptrak) then
@@ -732,6 +741,7 @@ c gaz 10-19-2001
          allocate(qflux(1))
          allocate(qflxm(1))
       endif
+      allocate(dvas(n0))
       allocate(to(n0))
       allocate(vf(n0))
       allocate(volume(n0))
@@ -824,13 +834,15 @@ c     ***** COMMON Block fdd2 *****
          allocate(nskw3(n8)) 
          allocate(amgang(n8),dporp(n8),dport(n8),pgangi(n8),
      &        wgangi(n8),sgangi(n8),agangi(n8),tenma_ww(n8))
-      else if(iporos.eq.5) then
+      else if(iporos.eq.5.or.iporos.eq.7) then
 c        parameters for temperature-dependent porosity
          allocate(dporp(n8),dport(n8))
          allocate(porTemp1(n8),porTemp2(n8),porTemp3(n8),porTemp4(n8))
       else if(iporos.eq.-5) then
          allocate(amgang(n8),dporp(n8),dport(n8),wgangi(n8))
-      else 
+      else if(iporos.eq.6.or.iporos.eq.7) then
+      	 allocate(amgang(n8),dporp(n0),dport(n0))
+      else
          allocate(dporp(n0),dport(n0))
       endif
 ****   TENMA   ****
