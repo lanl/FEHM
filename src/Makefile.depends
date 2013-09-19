@@ -176,7 +176,7 @@ explicit.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
 explicit.o: comgi.o comji.o davidi.o
 fd_calc_heat.o: comai.o combi.o comci.o comdi.o comdti.o comji.o comki.o
 fd_calc_heat.o: davidi.o
-fehmn.o: comai.o combi.o comci.o comco2.o comcomp.o comdi.o comdti.o comei.o
+fehmn.o: comai.o combi.o comchem.o comci.o comco2.o comdi.o comdti.o comei.o
 fehmn.o: comevap.o comfem.o comfi.o comflow.o compart.o comriv.o comrtd.o
 fehmn.o: comrxni.o comsi.o comsk.o comsplitts.o comsptr.o comuserc.o comwt.o
 fehmn.o: comxi.o davidi.o interpolate.o
@@ -428,8 +428,8 @@ nr_stop_ctr.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o
 nr_stop_ctr.o: comfi.o comflow.o comgi.o comii.o comji.o comki.o comxi.o
 nr_stop_ctr.o: davidi.o
 open_file.o: comai.o
-outbnd.o: comai.o combi.o comco2.o comdi.o comdti.o comfi.o comii.o commeth.o
-outbnd.o: davidi.o
+outbnd.o: comai.o combi.o comchem.o comco2.o comdi.o comdti.o comfi.o comii.o
+outbnd.o: commeth.o comrxni.o davidi.o
 paractr.o: com_part.o comai.o combi.o comdi.o comdti.o comgi.o davidi.o
 part_track.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 part_track.o: comflow.o comgi.o comhi.o comji.o compart.o compfrac.o comsk.o
@@ -453,8 +453,8 @@ plot_new.o: comrlp.o comsi.o comwt.o comzone.o davidi.o
 plotc1.o: comai.o combi.o comchem.o comci.o comdi.o comdti.o compart.o
 plotc1.o: comrxni.o comsptr.o
 pod_derivatives.o: comai.o comci.o comdi.o comsptr.o comxi.o
-porosi.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
-porosi.o: comii.o comki.o comnire.o comwt.o comxi.o
+porosi.o: comai.o combi.o comchem.o comci.o comdi.o comdti.o comei.o comfi.o
+porosi.o: comgi.o comii.o comki.o comnire.o comwt.o comxi.o
 porosity_gradient_log.o: comai.o combi.o comdi.o comsptr.o
 porosity_gradient_omr.o: comai.o combi.o comdi.o comsptr.o
 porosity_wrt_displacements.o: comai.o comdi.o comsi.o
@@ -504,6 +504,9 @@ rlperm_hyd.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comhi.o
 rlperm_hyd.o: comki.o commeth.o
 rlperm_wtsi.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comgi.o comii.o
 rlperm_wtsi.o: comwt.o
+saltctr.o: comai.o combi.o comchem.o comci.o comco2.o comdi.o comdti.o comei.o
+saltctr.o: comfi.o comgi.o comii.o comki.o commeth.o comriv.o comrxni.o
+saltctr.o: comsplitts.o comxi.o davidi.o
 scaled_perm.o: comai.o comdi.o comdti.o comki.o
 scanin.o: comai.o combi.o comchem.o comco2.o comcouple.o comdi.o comdti.o
 scanin.o: compart.o comriv.o comrlp.o comrxni.o comsi.o comsk.o comsplitts.o
