@@ -298,7 +298,7 @@ c
       use comai
       implicit none
       
-      integer iz,hmon, lstep
+      integer iz, hmon, lstep, i , i2
       real(8) begin_time, end_time
 c hmon is 1 if heat and mass solution is active
 
@@ -341,7 +341,14 @@ c hmon is 1 if heat and mass solution is active
             end if
          else if ( iz .eq. 5 )  then
             call  contrc
-         end if
+         else if ( iz .eq. 6 )  then
+          if(cden) then
+           do i = 1,neq
+            i2 = i + (ispcden - 1)*n0
+            anl(i2) = anlo(i2)
+           enddo
+          endif
+         endif
       end if
 
       return
