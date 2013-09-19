@@ -470,7 +470,12 @@ c KCL 5-2-11, for DeltaPoros subroutine
       real*8, allocatable ::  pho(:)
       real*8, allocatable ::  pnx(:) 
       real*8, allocatable ::  pny(:)
-      real*8, allocatable ::  pnz(:) 
+      real*8, allocatable ::  pnz(:)
+      real*8, allocatable ::  pnxi(:) 
+      real*8, allocatable ::  pnyi(:)
+      real*8, allocatable ::  pnzi(:)
+c gaz 090113
+      real*8, allocatable ::  pnx_old(:)
       real*8, allocatable ::  anxy(:) 
       real*8, allocatable ::  anxz(:) 
       real*8, allocatable ::  anyz(:) 
@@ -631,6 +636,8 @@ c KCL 5-2-11, for DeltaPoros subroutine
       real*8, allocatable ::  phini(:) 
       real*8, allocatable ::  psini(:) 
       real*8, allocatable ::  tini(:) 
+c gaz 090113 array for last TS porosity
+      real*8, allocatable ::  ps_old(:)
  
 !     ***** pointers in COMMON Block fice *****
       real*8, allocatable ::  sii(:) 
@@ -883,5 +890,7 @@ c some simple thermo
       integer,  allocatable :: ii_vol(:)
       integer,  allocatable :: icon_area1(:)
       integer,  allocatable :: icon_area2(:)
+c gaz 090113 
+      real*8 por_salt_min
       
       end module comdi
