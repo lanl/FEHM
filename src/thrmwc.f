@@ -1,4 +1,4 @@
-      subroutine thrmwc(ndummy)
+	subroutine thrmwc(ndummy)
 !***********************************************************************
 !  Copyright, 2004,  The  Regents  of the  University of California.
 !  This program was prepared by the Regents of the University of 
@@ -1421,6 +1421,8 @@ c mixture of water and air,co2
       real*8 fimped 
       real*8 p_energy
       real*8 cden_correction, cden_cor
+      real*8 spec1, fracc,ms,xf,af,bf,cf,df,ef,dumf,tltemp
+      real*8 pv_tol
 c
 c     rol  -  density liquid
 c     ros  -  density steam
@@ -1443,6 +1445,7 @@ c     sl   -  saturation liquid
 c
       parameter(xtol=1.d-16)
       parameter(flow_tol=1.d-31)
+      parameter(pv_tol=1.d-9)
 c note flow_tol=1.d-31 because of default dqpc=1.d-30
 c and default dqpc should look like 0.0 but specified flow
 c
@@ -1457,6 +1460,7 @@ c
       real*8, allocatable :: rvf0(:)
       real*8, allocatable :: drvfs0(:)
  
+
       if(abs(iexrlp).ne.0.and.i_mem_rlp.eq.0) then
         i_mem_rlp=1
         allocate(s0(n),pcp0(n),dpcps0(n),rlf0(n))
@@ -1728,15 +1732,19 @@ c two phase conditions
 c
       dpsatt=0.0
       if(ieosd.eq.2) then
-         if( ivapl .ne. 0) then
+        if(isalt.ne.0) then
+c DRH 12/03/12
+c gaz 070813 call added saltctr
+            call saltctr(1,mi,dpsatt)
+            pcl = pci(mi)
             pv=pl-pcl
-            pcl=pl-psatl(tl,pcp(mi),dpcef(mi),dpsatt,dpsats,0)
+            dpct=-dpsatt
          else
             pcl=pl-psatl(tl,pcp(mi),dpcef(mi),dpsatt,dpsats,0)
             pv=pl-pcl
+            pci(mi)=pcl
+            dpct=-dpsatt
          end if
-      pci(mi)=pcl
-      dpct=-dpsatt
       endif
 c
 c calculate vapor pressure
@@ -1744,7 +1752,11 @@ c
 c GAZ 5/8/97
 c     if(ieosd.ne.1) then
       pv=pl-pcl
-      xv=pv
+      if(pv.lt.pv_tol) then
+       xv= pv_tol
+      else
+       xv= pv
+      endif
       xv2=xv*xv
       xv3=xv2*xv
 c     endif
