@@ -447,7 +447,9 @@ c GAZ 11/02/08
       integer             nenrinodes
       integer             ibcfar,i_subsid,i_init
 c GAZ 061513
-      integer ich_pebi
+      integer             ich_pebi
+c GAZ 072513      
+      integer             isalt,ivaprsalt,isalt_pnx,isalt_ps
 
       real*8              pchng, schng 
       
@@ -475,6 +477,8 @@ c gaz 11-06-2007
 c gaz 11-29-2009   
       real*8              p_stop,t_stop,s_stop,pa_stop,s2_stop
       real*8              co2f_stop,h_stop    
+c gaz 090113
+      real*8              permavg_salt, poravg_salt
 
       real*8              strd_iter, strd_rich, tol_phase
 
