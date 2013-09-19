@@ -232,6 +232,8 @@ C**********************************************************************
       use comai
       use comco2
       use commeth
+      use comrxni
+      use comchem,  only : ps_delta_rxn
       use davidi
       implicit none
 
@@ -434,6 +436,10 @@ c         time_ieos(i) = 0.0d0
      &           cord(ii,3)
             write(iout, 9012) pl, tl, sl
             if(ico2.gt.0  .and. icarb .eq. 0) write(iout, 9013) pci(i)
+            write(iout, 9015) ps(i)
+            if (rxn_flag.ne.0)then
+                write(iout, 9016) ps_delta_rxn(i)
+            endif
          end if
          if(iptty.gt.0) then
             write(iptty, 9010) l, day
@@ -441,13 +447,23 @@ c         time_ieos(i) = 0.0d0
      &           cord(ii,3)
             write(iptty, 9012) pl, tl, sl
             if(ico2.gt.0 .and. icarb .eq. 0) write(iptty, 9013) pci(i)
+            write(iptty, 9015) ps(i)
+            if (rxn_flag.ne.0)then
+                write(iptty, 9016) ps_delta_rxn(i)
+            endif
+            if(isalt.ne.0) then
+             call saltctr(7,0,0.0d00)
+             call saltctr(8,0,0.0d00)
+            endif
          endif
       endif
 
  9010 format ('time step = ', i8, ' time step size = ', g21.14)
  9011 format ('out of bounds : node ', i8,
-     $     ' x = ', g12.4, ' y = ', g12.4, ' z = ', g12.4)
+     &     ' x = ', g12.4, ' y = ', g12.4, ' z = ', g12.4)
  9012 format (' p = ', g16.9, ' t =', g16.9, ' s = ', g16.9)
  9013 format (' pci = ', g16.9)
+ 9015 format (' porosity = ',g16.9)
+ 9016 format (' ps_delta_rxn = ',g16.9)
       return
       end
