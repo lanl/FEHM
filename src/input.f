@@ -629,6 +629,11 @@ c**** input with mixed physics ****
       else if (macro .eq. 'alti') then
 c**** alternate element input, read in incoord subroutine ****
 
+      else if (macro .eq. 'salt') then
+c***  DRH 1/2/2013 salt problem
+      isalt = 1
+      call saltctr(0,0,0.0d00)
+
       else if (macro .eq. 'head') then
 c**** input in terms of head, not pressures   ****
 c bous macro enabled
@@ -689,6 +694,7 @@ c don't break connection between nodes with boundary conditions
          inobr = 1
 
       else if (macro .eq. 'cden') then
+c new form cden FEHM ver 3.2
          backspace (inpt)
          read (inpt, '(a80)') input_msg
          call parse_string(input_msg,imsg,msg,xmsg,cmsg,nwds)
