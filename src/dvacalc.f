@@ -215,13 +215,14 @@ c--------------------------------------------------------------------
 
       real*8 dva0,theta,p0,t0,rat,dratp,dratt,dva0d,dva0p,dva0c,dva0e
       real*8 t_min, t_max, atort, dratc, temp, temp2, diffcoeff
-      real*8 tort2
+      real*8 tort2, dvas_denom_min, dvas_denom, s_dva_term
       integer i
       parameter(dva0=2.23e-5)
       parameter(theta=1.810)
       parameter(p0=0.1)
       parameter(t0=273.15)
       parameter(t_min=10.0,t_max=350.0)
+      parameter(dvas_denom_min = 1.d-6)
 
       if(iadif.ne.0.and.tort.ge.0.0.and.tort.le.1.0) then
          do i=1,n
@@ -317,7 +318,7 @@ c   these are the same as in concadiff but with extra
 c     (1-s)*porosity
 c-------------------------------------------------------
 
-      else if(iadif.ne.0.and.tort.GT.1.0) then
+      else if(iadif.ne.0.and.tort.GT.1.0.and.tort.NE.333) then
          tort2 = tort
          do i=1,n
 
@@ -386,6 +387,76 @@ c
             ddvac(i)= 0.0
           
          end do
+c-------------------------------------------
+c   NEW SECTION  Water Vapor following MillingtonQuirk
+c    to calculated tortuosity for the dva f(PT) preuss equation.
+c   tort2 is the toruosity from MQ plugged into the original 
+c   section of code from the top of this routine.
+c-------------------------------------------------------
+
+      else if(tort.EQ.333) then
+
+        do i=1,n
+
+           temp=(1-s(i))*ps(i)
+           tort2 = temp**2.3333/(ps(i)**2)
+c
+c  New stuff   PHS took out density from rat
+c              now no derivatives wrt density! 
+c              dgvc dgvp dgve go away! 
+c
+           if(t(i).ge.t_min.and.t(i).le.t_max) then
+              rat=(p0/phi(i))*((t(i)+t0)/t0)**theta
+              dratp=-rat/phi(i)
+              dratt=(p0/phi(i))*theta*(((t(i)+t0)/t0)**(theta-1.0))/t0
+c     dratc=-rat/phi(i)
+              dratc = 0
+           else if(t(i).lt.t_min) then
+              rat=(p0/phi(i))*((t_min+t0)/t0)**theta
+              dratp=-rat/phi(i)
+              dratt=0.0
+              dratc=-rat/phi(i)
+           else if(t(i).gt.t_max) then
+              rat=(p0/phi(i))*((t_max+t0)/t0)**theta
+              dratp=-rat/phi(i)
+              dratt=0.0
+              dratc=-rat/phi(i)
+           endif
+c
+           dva0d=tort2*ps(i)*(1.0-s(i))*dva0
+c
+c parts of derivatives  for ieos=2  TotPres, Temp, GasPres
+c                                    P        E      C
+c                        are primary variables
+c
+
+           dva0p=0.0
+           dva0c=0.0
+           dva0e=0.0
+           dva(i)=dva0d*rat
+c           dvas(i) = dva(i)/(temp)
+c          if(iatty.NE.0) write(iatty,*) 'dvacalc dva=',dva(i),tort2,dva0
+           if(ieos(i).ne.2) then
+              ddvap(i)=dva0d*dratp+dva0p*rat
+              ddvae(i)=dva0d*dratt+dva0e*rat
+              ddvac(i)=dva0d*dratc+dva0c*rat
+           else
+              ddvae(i)=-tort*ps(i)*dva0*rat
+              ddvac(i)=0.0
+              ddvap(i)=dva0d*dratp
+           endif
+        enddo      ! (i = 1,n)
+
+      endif     !   (tort.EQ.333)
+
+c - - - - - - - - 7/17/13  PHS  Load dva/(air content) into dvas - - - - - 
+      if(irdof.ne.13) then
+       do i = 1,n
+         s_dva_term = max(1.0,1.0-s(i))
+         s_dva_term = min(0.0,s_dva_term)
+         dvas_denom = max(ps(i)*s_dva_term,dvas_denom_min)
+         dvas(i) = dva(i)/dvas_denom
+       end do
       endif
       return
 
