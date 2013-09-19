@@ -294,6 +294,9 @@
       real*8, pointer ::   dtpa(:) 
       real*8, pointer ::   dtpae(:) 
       real*8, pointer ::   dva(:) 
+c spc 9-10-2013
+      real*8, pointer ::   dvas(:) 
+c spc 9-10-2013
       real*8, pointer ::   enlf(:) 
       real*8, pointer ::   enva(:)
       real*8, pointer ::   envf(:)
