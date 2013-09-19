@@ -312,6 +312,7 @@ c calculate pressure dependant porosity and derivative
       use comxi
       use comwt
       use comnire
+      use comchem
 c
       implicit  none
 c
@@ -320,7 +321,8 @@ c
 c
       real*8  dpp ,dclost, pso, delp, closur, gt, xrl, dgtp, dgtt, drl
       real*8  dclosp, delpsb, permsb, dsigt, sy, alength, tmpPor
-      real*8  den_w0, comp_w0,hmid,hmin,hmax,por_ll
+      real*8  den_w0, comp_w0,hmid,hmin,hmax,por_ll, pwv
+      real*8  pnx_new, dum1
       parameter(den_w0=997.808d00,comp_w0=5.687D-4,por_ll=1.d-8)
       save yama1, yama2
 
@@ -571,7 +573,66 @@ c               this option was added by ZL for temperature-dependent porosity
 
                macroread(4) =  .TRUE.
 
-            end   if
+            else if ( iporos .eq. 6 ) then
+                if( nspeci .le. 0 ) then
+                   write(*,*) ""
+                   write(*,*) "Chemistry required for ppor model 6"
+                   write(*,*) ""
+               stop
+            endif
+c           DRH: updates based on ps_delta_rxn for salt
+               narrays    =   1
+               itype  (1) =   8
+               default(1) =   0.0d0
+               macro      =   "ppor"
+               igroup     =   2
+c
+               call  initdata2  ( inpt, ischk, n0, narrays, itype,
+     *              default, macroread(4), macro, igroup, ireturn,
+     1              r8_1=amgang(1:n0) )
+c
+               macroread(4) =  .TRUE.
+
+c
+            else if ( iporos .eq. 7 ) then
+c      DRH 1/2/2013: perm-poro relation taken from
+c      FCRD-UFD-2013-000064, which references
+c      Cinar et al. (2006) Transport in Porous Media 64,
+c      pp. 199-228.
+c      k = 4.866e-9*ps^4.637
+c      valid up to porosity = 0.3
+            if( nspeci .le. 0 ) then
+                   write(*,*) ""
+                   write(*,*) "Chemistry required for ppor model 7"
+                   write(*,*) ""
+               stop
+            endif
+c           DRH: updates based on ps_delta_rxn for salt
+               narrays    =   4
+               itype  (1) =   8
+               itype  (2) =   8
+               itype  (3) =   8
+               itype  (4) =   8
+c              multiplier for exponential function
+               default(1) =   0.d0 
+c              power for exponential function
+               default(2) =   0.d0
+c              lower porosity limit for exponential function
+               default(3) =   0.d0
+c              upper porosity limit for exponential function
+               default(4) =   0.d0
+               macro      =   "ppor"
+               igroup     =   2
+c
+               call  initdata2  ( inpt, ischk, n0, narrays, itype,
+     *              default, macroread(4), macro, igroup, ireturn,
+     1              r8_1=porTemp1(1:n0),
+     2              r8_2=porTemp2(1:n0),
+     3              r8_3=porTemp3(1:n0),
+     4              r8_4=porTemp4(1:n0) )
+c
+               macroread(4) =  .TRUE.
+            endif
 c
          else if ( iz .eq. 1 )  then
 c
@@ -789,10 +850,77 @@ c
                      end   if
                   end   if
                end   do
-            end   if
+c            end   if
 
-         else if ( iz .eq. 2 )  then
+            else if ( iporos .eq. 6 )  then
 c
+****   DRH: salt model 1: simple perm/poro relationship based   ****
+****   on change in porosity ****
+c
+
+               do   jji=1,n
+               		if( amgang(jji) .gt. 0.0d0 ) then
+                  		pso = psini(jji)
+                  		if(pso > 1.e-6) then
+                  			ps(jji) =  ps(jji) + ps_delta_rxn(jji)
+                  			pnx(jji) = pnxi(jji)*(ps(jji)/psini(jji))**2
+               				pny(jji) = pnyi(jji)*(ps(jji)/psini(jji))**2
+               				pnz(jji) = pnzi(jji)*(ps(jji)/psini(jji))**2
+                  		endif
+                  	endif
+               end   do
+c
+           else if ( iporos .eq. 7 )  then
+c
+****   DRH: salt model 2 - Crushed salt:  ****
+c      DRH 1/2/2013: perm-poro relation taken from
+c      FCRD-UFD-2013-000064, which references
+c      Cinar et al. (2006) Transport in Porous Media 64,
+c      pp. 199-228.
+c      valid up to porosity = 0.3
+c      Scaled by 1.e6 to jive with rest of code.
+c      Initialization below for (iz .eq. 3)
+c      PHS 8/5/13  Adding check if negative porosity = 0.0
+c                  Also removed zeroing out of ps_delta_rxn, done in csolve now.
+c
+c gaz 090113 added por_salt_min and averaging            
+               do   jji=1,n
+                if( porTemp1(jji) .gt. 0. ) then
+
+c                   ps_trac(jji) = ps_trac(jji) + ps_delta_rxn(jji) 
+                    ps(jji) =  ps(jji) + ps_delta_rxn(jji)
+                    if(ps(jji).LT.por_salt_min) ps(jji) = por_salt_min
+                    pso = ps(jji)
+c
+c                calculate permeabilitiy for new porosity
+c
+                    dum1 = pnx(jji)
+                    if(pso>=porTemp3(jji).and.pso<=porTemp4(jji)) then
+                     pnx_new = porTemp1(jji)
+     1                   *ps(jji)**porTemp2(jji)*1.e6
+                    else if(pso > porTemp4(jji)) then
+c                    Set to upper limit
+                     pnx_new = porTemp1(jji)
+     1                   *porTemp4(jji)**porTemp2(jji)*1.e6
+                    else if(pso < porTemp3(jji)) then
+c                    Set to lower limit
+                     pnx_new = porTemp1(jji)
+     1                   *porTemp3(jji)**porTemp2(jji)*1.e6
+                    endif
+c                    pnx(jji) = (pnx_new + dum1)*0.5
+c                    pny(jji) = pnx(jji)
+c                    pnz(jji) = pnx(jji)
+                     pnx(jji) = pnx_new
+                     pny(jji) = pnx(jji)
+                    pnz(jji) = pnx(jji)            
+                endif
+               end   do
+ 666    format(4G12.6)
+           endif
+c
+c
+         else if ( iz .eq. 2 )  then
+c additional printout for variable porosity
             if ( iporos .ne. 3 )  then
 c
 ****   printout varible porosity information   ****
@@ -822,7 +950,15 @@ c
                else if ( iporos .eq. 5 ) then
                else if ( iporos .eq. 1 ) then
                else if ( iporos .eq. -1 ) then
-               else if ( iporos .ne. -4 )  then
+
+c   - - - - PHS 7/17/13 added output to screen and out file for model 7 SALT
+               else if  ( iporos .eq. 7 ) then
+c
+c gaz 090113 moved salt output to saltctr
+c
+                call saltctr(7,0,0.0d00)
+
+               else if ( iporos .ne. -4.AND.iporos .ne.7 )  then
 c
 ****   GZ gangi model   ****
 c
@@ -893,7 +1029,7 @@ c
 c
 *           call welbor(12)
 c
-            end  if
+            end  if    !  (iz = 2)
 c
          else if ( iz .eq. 3 )  then
 c
@@ -1048,8 +1184,40 @@ c
 c
                end   do
 c
-            end   if
 c
+            else if ( iporos .eq. 6 )  then
+c              If model 6, set copy initial perms
+               	pnxi = pnx
+               	pnyi = pny
+               	pnzi = pnz
+c
+c              If model 7, initialize perms
+            else if ( iporos .eq. 7 ) then
+             do   jji=1,n
+              if( porTemp1(jji) .gt. 0. ) then
+               pso = ps(jji)
+               if(pso>=porTemp3(jji).and.pso<=porTemp4(jji)) then
+                pnx(jji) = porTemp1(jji)*ps(jji)**porTemp2(jji)*1.e6
+                pny(jji) = pnx(jji)
+                pnz(jji) = pnx(jji)
+               else if(pso > porTemp4(jji)) then
+c                    Set to upper limit
+c  gaz debug 082713
+c
+                pnx(jji) = 
+     &          porTemp1(jji)*porTemp4(jji)**porTemp2(jji)*1.e6
+                pny(jji) = pnx(jji)
+                pnz(jji) = pnx(jji)
+               else if(pso < porTemp3(jji)) then
+c                    Set to lower limit
+                pnx(jji) = 
+     &          porTemp1(jji)*porTemp3(jji)**porTemp2(jji)*1.e6
+                pny(jji) = pnx(jji)
+                pnz(jji) = pnx(jji)
+               endif
+              endif
+             enddo
+            endif
          else if(iz.eq.4) then
 c 
 c set inital pressures and temperatures (only)
