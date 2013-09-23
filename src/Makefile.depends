@@ -176,7 +176,7 @@ explicit.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
 explicit.o: comgi.o comji.o davidi.o
 fd_calc_heat.o: comai.o combi.o comci.o comdi.o comdti.o comji.o comki.o
 fd_calc_heat.o: davidi.o
-fehmn.o: comai.o combi.o comchem.o comci.o comco2.o comdi.o comdti.o comei.o
+fehmn.o: comai.o combi.o comci.o comco2.o comcomp.o comdi.o comdti.o comei.o
 fehmn.o: comevap.o comfem.o comfi.o comflow.o compart.o comriv.o comrtd.o
 fehmn.o: comrxni.o comsi.o comsk.o comsplitts.o comsptr.o comuserc.o comwt.o
 fehmn.o: comxi.o davidi.o interpolate.o
