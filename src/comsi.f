@@ -38,7 +38,7 @@
       integer ispmd,ipermstr1,ipermstr2,ipermstr3
       integer ipermstr4,ipermstr5,ipermstr6,ipermstr7,ipermstr8
       integer ipermstr11,ipermstr21,ipermstr22,ipermstr222
-      integer ipermstr23, ipermstr24
+      integer ipermstr23, ipermstr24, ipermstr25
       integer ipermstr91, ipermstr31, ipermstr100
       integer istresscall,ilitho,iad_strs,istresspor,idisp_rel
       integer cnum_stress, ilithgrad, permfile
@@ -398,6 +398,19 @@ c s kelkar for permmodel_22 zero out initial excess hsear stress
       real*8, allocatable ::  str_xz0_perm(:)
       real*8, allocatable ::  str_yz0_perm(:)
       real*8, allocatable ::  str_pf0_perm(:)
+
+c d dempsey, for permmodel_25, save fracture orientations from file
+      real*8, allocatable ::  str25_dip(:)
+      real*8, allocatable ::  str25_azi(:)
+      real*8, allocatable ::  str25_xfrac(:,:)
+      real*8, allocatable ::  str25_yfrac(:,:)
+      real*8, allocatable ::  str25_zfrac(:,:)
+      real*8, allocatable ::  perm_mult1(:)
+      real*8, allocatable ::  perm_mult2(:)
+      real*8, allocatable ::  perm_mult3(:)
+      real*8 str25_density(1000)
+      integer str25_N_obs
+
 
 
 
