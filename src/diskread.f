@@ -268,6 +268,7 @@ c      real*8 pl, tl, dum1, dumb, dumc(9)
             if (iccen .ne. 0) read_trac(1) = .TRUE.
             if (ptrak) read_ptrk(1) = .TRUE.
             if (istrs .eq. 1) then
+               residual_stress = .TRUE.
                read_disx(1) = .TRUE. 
                read_disy(1) = .TRUE.
                read_disz(1) = .TRUE. 
