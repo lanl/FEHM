@@ -26,9 +26,11 @@ c allocate special use arrays for stress/displacement-permeability
 c     model 2 and model 4 require an initial setup      
 c     
 c     
+         write(*,*) ipermstr25
       if(ipermstr2.ne.0.or.ipermstr6.ne.0.or.ipermstr21.ne.0
      &     .or.ipermstr22.ne.0.or.ipermstr31.ne.0.or.
-     &     ipermstr222.ne.0.or.ipermstr24.ne.0) then
+     &     ipermstr222.ne.0.or.ipermstr24.ne.0.or.
+     &     ipermstr25.ne.0) then
 c     allocate space for parameters      
          if(.not.allocated(pnx0)) then
             allocate(pnx0(neq))
