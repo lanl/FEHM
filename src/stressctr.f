@@ -153,6 +153,11 @@ c     s kelkar nov 5 2010
 
       real*8 temp_junk
       real*8 stress_factor_initial
+	  
+c     d dempsey Feb 2013
+      character*80 ltest2
+      logical null_new
+      integer line_number
 c..................................................................
       
       parameter (pi=3.1415926535)
@@ -685,6 +690,57 @@ c     y-prime is along the median principal stress
                   read(inpt,*)ispmt(i),spm1f(i),spm2f(i),spm3f(i),
      &                 spm4f(i),spm5f(i),spm6f(i),spm7f(i),spm8f(i),
      &                 spm9f(i)
+c...............................
+c     David Dempsey, Feb 2013, mohr-coulomb with fracture distribution
+               else if (ispmd .eq. 25) then
+                  incremental_shear_permmodel = 1
+                  if(.not.allocated(str_x0_perm)) then
+                     allocate (str_x0_perm(n0))
+                     allocate (str_y0_perm(n0))
+                     allocate (str_z0_perm(n0))
+                     allocate (str_xy0_perm(n0))
+                     allocate (str_xz0_perm(n0))
+                     allocate (str_yz0_perm(n0))
+                     allocate (str_pf0_perm(n0))
+                     allocate (str25_xfrac(n0,1000))
+                     allocate (str25_yfrac(n0,1000))
+                     allocate (str25_zfrac(n0,1000))
+c initial values of 2. indicate these have yet to be assigned
+                     do line_number=1,n0
+                       str25_xfrac(line_number,1)=2.
+                     enddo
+                  endif
+c read in fracture orientation data from 'fracture_orientations.dat'
+                  allocate (str25_dip(10000))
+                  allocate (str25_azi(10000))
+                  open(unit=92,file='fracture_orientations.dat')
+                  str25_N_obs=0
+                  str25_density = 0.
+                  do line_number=1,10000
+                    read(92,'(a80)',end=7012) ltest2
+                    if(.not.null_new(ltest2)) then
+                      read(ltest2,*,end=7012,err=7012) 
+     &                  str25_dip(line_number),str25_azi(line_number)
+                      str25_N_obs = str25_N_obs + 1
+                    else
+                      goto 7012
+                    endif
+                  enddo					
+ 7012             continue
+c     spm1f: shear fracture toughness
+c     spm2f: static friction coefficient
+c     spm3f: dynamic friction coefficient
+c     spm4f: number of fractures per control volume
+c     spm5f: shear displacement at which perm enhancement begins
+c     spm6f: shear displacement interval to complete perm enhancement
+c     spm7f: total perm enhancement (in log(perm))
+c     spm8f: fracture cohesion
+
+c     here z-prime is along the normal to the plane of failure, and
+c     y-prime is along the median principal stress
+                  read(inpt,*)ispmt(i),spm1f(i),spm2f(i),spm3f(i),
+     &                 spm4f(i),spm5f(i),spm6f(i),spm7f(i),spm8f(i)
+                  
 c................................................
                else if (ispmd .eq. 23) then
                   if(.not.allocated(itemp_perm23)) 
@@ -808,6 +864,7 @@ c     model for changing properties when ice is present
                if(ispmt(i).eq.22) ipermstr22 = ispmt(i)
                if(ispmt(i).eq.23) ipermstr23 = ispmt(i)
                if(ispmt(i).eq.24) ipermstr24 = ispmt(i)
+               if(ispmt(i).eq.25) ipermstr25 = ispmt(i)
                if(ispmt(i).eq.31) ipermstr31 = ispmt(i)            
                if(ispmt(i).eq.222) ipermstr222 = ispmt(i)
                if(ispmt(i).eq.91) ipermstr91 = ispmt(i)
@@ -1402,6 +1459,12 @@ c
             if (.not.allocated(excess_shear)) then
                allocate (excess_shear(n0))
                excess_shear = 0.
+               allocate (perm_mult1(n0))
+               perm_mult1 = 1.
+               allocate (perm_mult2(n0))
+               perm_mult2 = 1.
+               allocate (perm_mult3(n0))
+               perm_mult3 = 1.
             endif
             if (.not.allocated(shear_angle)) then
                allocate (shear_angle(n0))
