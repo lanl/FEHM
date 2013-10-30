@@ -2380,6 +2380,22 @@ c                     open(unit=97,file='debug_permmodel_91.dat')
          endif
          stop
       endif
+
+      if (iccen.eq.1 .and. rxn_flag .eq. 0) then
+c     Check that no solid species are used without reaction
+         if (nimm .ne. 0) then
+            write(ierr,*) 'ERROR: Can not using solid species in trac',
+     &           ' without rxn'
+            write(ierr,*) 'Code Aborted in scanin'
+            if (iatty.ne.0) then
+               write(iatty,*) 'ERROR: Can not using solid species in ',
+     &           'trac without rxn'
+               write(iatty,*) 'Code Aborted in scanin'
+            end if
+            stop
+        end if
+      end if
+
       return
 
  50   write (ierr, 55) 'STOP'
