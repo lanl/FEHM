@@ -452,8 +452,8 @@ c          if(iatty.NE.0) write(iatty,*) 'dvacalc dva=',dva(i),tort2,dva0
 c - - - - - - - - 7/17/13  PHS  Load dva/(air content) into dvas - - - - - 
       if(irdof.ne.13) then
        do i = 1,n
-         s_dva_term = max(1.0,1.0-s(i))
-         s_dva_term = min(0.0,s_dva_term)
+         s_dva_term = min(1.0,1.0-s(i))
+         s_dva_term = max(0.0,s_dva_term)
          dvas_denom = max(ps(i)*s_dva_term,dvas_denom_min)
          dvas(i) = dva(i)/dvas_denom
        end do
