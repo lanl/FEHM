@@ -2,7 +2,7 @@ import unittest
 import os,sys
 import numpy as np
 import re
-from subprocess import Popen, PIPE
+from subprocess import call, PIPE
 __unittest = True # Suppresses tracebacks
 
 class Tests(unittest.TestCase):
@@ -55,10 +55,12 @@ class Tests(unittest.TestCase):
             kxc.append(kx_temp)
         #############################################################
         # Run intact salt model
-        Popen(exe+' intact.files', shell=True, stdout=PIPE)
+        call(exe+' intact.files', shell=True, stdout=PIPE)
         # Open FEHM output file and read
         f = open('intact.out', 'r')
         data = f.readlines()
+        f.close()
+        os.remove('intact.out')
         # Search for thermal conductivity column heading 'Kx'
         for i in range(len(data)):
             if re.search('Kx',data[i]): break
@@ -75,10 +77,12 @@ class Tests(unittest.TestCase):
             nodeno += 1
         #############################################################
         # Run crushed salt model
-        Popen(exe+' crushed.files', shell=True, stdout=PIPE)
+        call(exe+' crushed.files', shell=True, stdout=PIPE)
         # Open FEHM output file and read
         f = open('crushed.out', 'r')
         data = f.readlines()
+        f.close()
+        os.remove('crushed.out')
         # Search for thermal conductivity column heading 'Kx'
         for i in range(len(data)):
             if re.search('Kx',data[i]): break
