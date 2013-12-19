@@ -10,6 +10,9 @@ class Tests(unittest.TestCase):
     def saltvcon(self):
         ''' saltvcon macro test
 
+            Modification: new Dec 19 2013 dharp@lanl.gov
+            Modification: 
+
             This function tests the saltvcon macro which calculates thermal
             conductivity of crushed and intact salt.
 
@@ -106,6 +109,10 @@ def suite(case):
     suite = unittest.TestSuite()
     if case == 'all':
         suite.addTest(Tests('saltvcon'))
+    elif case == 'developer':
+        pass
+    elif case == 'admin':
+        pass
     return suite
 
 if __name__ == '__main__':
