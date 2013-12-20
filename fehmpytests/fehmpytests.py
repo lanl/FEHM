@@ -7,7 +7,7 @@ __unittest = True # Suppresses tracebacks
 class Tests(unittest.TestCase):
 
     def cleanup(self,files):
-        ''' Remove files after test
+        ''' Utility function to remove files after test
 
             :param files: list of file names to remove
             :type files: lst(str)
@@ -84,7 +84,7 @@ class Tests(unittest.TestCase):
         nodeno = 1
         for true,sim in zip(kxi,kx_sim):   
             relerr = abs(true-sim)/true
-            self.assertTrue(relerr<maxerr, 'Intact salt thermal conductivity relative error greater than '+str(maxerr)+' ('+str(relerr)+') for node '+str(nodeno)+' Expected='+str(true)+' Simulated='+str(sim))
+            self.assertTrue(relerr<maxerr, '\nIncorrect intact salt thermal conductivity for node '+str(nodeno)+'\nRelative error: '+str(relerr)+', Threshold: '+str(maxerr)+'\nExpected='+str(true)+' Simulated='+str(sim))
             nodeno += 1
         #############################################################
         # Run crushed salt model
@@ -106,7 +106,7 @@ class Tests(unittest.TestCase):
         nodeno = 1
         for true,sim in zip(kxc,kx_sim):   
             relerr = abs(true-sim)/true
-            self.assertTrue(relerr<maxerr, 'Crushed salt thermal conductivity relative error greater than '+str(maxerr)+' ('+str(relerr)+') for node '+str(nodeno)+' Expected='+str(true)+' Simulated='+str(sim))
+            self.assertTrue(relerr<maxerr, '\nIncorrect crushed salt thermal conductivity for node '+str(nodeno)+'\nRelative error: '+str(relerr)+', Threshold: '+str(maxerr)+'\nExpected='+str(true)+' Simulated='+str(sim))
             nodeno += 1
         #############################################################
         # Return to main directory
