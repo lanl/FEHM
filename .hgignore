@@ -5,3 +5,4 @@ syntax: glob
 debug/*
 build/*
 src/dated.f
+*.pyc

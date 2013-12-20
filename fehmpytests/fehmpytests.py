@@ -2,6 +2,17 @@ import unittest
 import os,sys
 import re
 from subprocess import call, PIPE
+try:
+    import fpost as fp
+except ImportError:
+    try:
+        import pyfehm.fpost as fp
+    except ImportError as err:
+        print 'ERROR: Unable to import pyfehm fpost module'
+        print err
+        os._exit(0)
+
+
 __unittest = True # Suppresses tracebacks
 
 class Tests(unittest.TestCase):
