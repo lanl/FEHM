@@ -7,6 +7,15 @@ __unittest = True # Suppresses tracebacks
 
 class Tests(unittest.TestCase):
 
+    def cleanup(self,files):
+        ''' Remove files after test
+
+            :param files: list of file names to remove
+            :type files: lst(str)
+        '''
+        for f in files:
+            if os.path.exists(f): os.remove(f)
+
     def saltvcon(self):
         ''' saltvcon macro test
 
@@ -102,6 +111,7 @@ class Tests(unittest.TestCase):
             nodeno += 1
         #############################################################
         # Return to main directory
+        self.cleanup(['nop.temp','fehmn.err'])
         os.chdir(cwd)
 
 

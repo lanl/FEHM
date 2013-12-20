@@ -3,8 +3,6 @@ input: intact.dat
 outpu: intact.out
 grida: 1dgrid.grid
 stori: 1dgrid.stor
-error: intact.err
-check: intact.chk
 
 none
 

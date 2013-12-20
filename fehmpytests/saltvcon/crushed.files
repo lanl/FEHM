@@ -3,8 +3,6 @@ input: crushed.dat
 outpu: crushed.out
 grida: 1dgrid.grid
 stori: 1dgrid.stor
-error: crushed.err
-check: crushed.chk
 
 none
 
