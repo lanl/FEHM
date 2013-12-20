@@ -2,3 +2,6 @@ syntax: glob
 
 *.o
 *.mod
+debug/*
+build/*
+src/dated.f
