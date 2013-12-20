@@ -1,6 +1,5 @@
 import unittest
 import os,sys
-import numpy as np
 import re
 from subprocess import call, PIPE
 __unittest = True # Suppresses tracebacks
@@ -49,10 +48,10 @@ class Tests(unittest.TestCase):
         os.chdir(dir)
         #############################################################
         # Calculate thermal conductivities
-        T = np.array([20,40,60,80,100,120]) # Temperature [C] at nodes
-        phi = np.array([0.01,0.1,0.3,0.5,0.7,0.9]) # Porosity
-        Ai = np.array([26.85,5.4,1.14]) # Intact salt coefficients
-        Ac = np.array([26.85,1.08,-270,370,-136,1.5,5,1.14]) # Crushed salt coefficients
+        T = [20,40,60,80,100,120] # Temperature [C] at nodes
+        phi = [0.01,0.1,0.3,0.5,0.7,0.9] # Porosity
+        Ai = [26.85,5.4,1.14] # Intact salt coefficients
+        Ac = [26.85,1.08,-270,370,-136,1.5,5,1.14] # Crushed salt coefficients
         #Calculate intact salt thermal conductivities
         kxi = []
         for t in T:
