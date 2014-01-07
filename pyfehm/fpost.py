@@ -30,7 +30,7 @@ try:
 	import matplotlib
 except ImportError:
 	'placeholder'
-from copy import copy
+from copy import copy,deepcopy
 from ftool import*
 import platform
 
@@ -2407,3 +2407,63 @@ class fvtk(object):
 		f.close()
 	def _get_filename(self): return self.path.absolute_to_file+slash+self.path.filename
 	filename = property(_get_filename) #: (**)
+
+def fdiff( in1, in2, format='diff', times=[], variables=[]):
+	'''Take the difference of two fpost objects
+	
+	:param in1: First fpost object
+	:type filename: fpost object (fcontour)
+	:param in2: First fpost object
+	:type filename: fpost object (fcontour)
+	:param format: Format of diff: diff->in1-in2 relative->(in1-in2)/abs(in2) percent->100*abs((in1-in2)/in2)
+	:type format: str
+	:param times: Times to diff
+	:type times: lst(fl64)
+	:param variables: Variables to diff
+	:type variables: lst(str)
+	:returns: fpost object of same type as in1 and in2
+	'''
+
+	if type(in1) is not type(in2):
+		print "ERROR: fpost objects are not of the same type: "+str(type(in1))+" and "+str(type(in2))
+		return
+	if isinstance(in1, fcontour):
+		# Find common times
+		t = np.intersect1d(in1.times,in2.times)
+		if len(t) == 0:
+			print "ERROR: fpost object times do not have any matching values"
+			return
+		if len(times) > 0:
+			times = np.intersect1d(times,t)
+			if len(times) == 0:
+				print "ERROR: provided times are not concident with fpost object times"
+				return
+		else:
+			times = t
+		# Find common variables
+		v = np.intersect1d(in1.variables,in2.variables)
+		if len(v) == 0:
+			print "ERROR: fpost object times do not have any matching values"
+			return
+		if len(variables) > 0:
+			variables = np.intersect1d(variables,v)
+			if len(variables) == 0:
+				print "ERROR: provided times are not concident with fpost object times"
+				return
+		else:
+			variables = v
+		out = deepcopy(in1)
+		out._times = times
+		out._variables = variables
+		out._data = {}
+		for t in times:
+			if format is 'diff':
+				out._data[t] = dict([(v,in1[t][v] - in2[t][v]) for v in variables])
+			elif format is 'relative':
+				out._data[t] = dict([(v,(in1[t][v] - in2[t][v])/np.abs(in2[t][v])) for v in variables])
+			elif format is 'percent':
+				out._data[t] = dict([(v,100*np.abs((in1[t][v] - in2[t][v])/in2[t][v])) for v in variables])
+		return out
+
+
+	
