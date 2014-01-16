@@ -3,10 +3,11 @@ import os,sys
 import re
 from subprocess import call, PIPE
 try:
-    import fpost as fp
+    from fpost import *
 except ImportError:
     try:
-        import pyfehm.fpost as fp
+        sys.path.insert(0,'../pyfehm')
+        from fpost import *
     except ImportError as err:
         print 'ERROR: Unable to import pyfehm fpost module'
         print err
@@ -125,10 +126,43 @@ class Tests(unittest.TestCase):
         os.chdir(cwd)
 
 
+
+
+    def dissolution(self):
+        ''' dissolution test
+
+            Modification: new Jan 7 2014 dharp@lanl.gov
+            Modification: 
+
+        '''
+        #############################################################
+        cwd = os.getcwd()
+        # Relative error theshold
+        maxerr = 1.e-4
+        # Test directory name
+        dir = 'dissolution'
+        # Change directory to test directory
+        os.chdir(dir)
+        #############################################################
+        # Read in comparison files
+        f_old = fcontour('compare.*_con_node.csv')
+        # Run intact salt model
+        call(exe, shell=True, stdout=PIPE)
+        # Read in 
+        f_new = fcontour('dissolution.*_con_node.csv')
+        # Diff new and old files
+        f_dif = fdiff(f_old,f_new,variables=['Np[aq] (Moles/kg H20)'])
+        # Test for correct concentrations
+        for t in f_dif.times:
+            self.assertTrue(f_dif[t]['Np[aq] (Moles/kg H20)'].all()<maxerr, '\nIncorrect concentration at time '+str(t))
+        os.chdir(cwd)
+
+
 def suite(case):
     suite = unittest.TestSuite()
     if case == 'all':
         suite.addTest(Tests('saltvcon'))
+        suite.addTest(Tests('dissolution'))
     elif case == 'developer':
         pass
     elif case == 'admin':
