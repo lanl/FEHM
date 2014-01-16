@@ -12,6 +12,7 @@ except ImportError:
         print 'ERROR: Unable to import pyfehm fpost module'
         print err
         os._exit(0)
+from glob import glob
 
 
 __unittest = True # Suppresses tracebacks
@@ -24,8 +25,9 @@ class Tests(unittest.TestCase):
             :param files: list of file names to remove
             :type files: lst(str)
         '''
-        for f in files:
-            if os.path.exists(f): os.remove(f)
+        for g in files:
+            for f in glob(g):
+                if os.path.exists(f): os.remove(f)
 
     def saltvcon(self):
         ''' saltvcon macro test
@@ -122,7 +124,7 @@ class Tests(unittest.TestCase):
             nodeno += 1
         #############################################################
         # Return to main directory
-        self.cleanup(['nop.temp','fehmn.err'])
+        self.cleanup(['nop.temp','fehmn.err','*.avs*','*_head'])
         os.chdir(cwd)
 
 
@@ -148,13 +150,14 @@ class Tests(unittest.TestCase):
         f_old = fcontour('compare.*_con_node.csv')
         # Run intact salt model
         call(exe, shell=True, stdout=PIPE)
-        # Read in 
+        # Read in new output files
         f_new = fcontour('dissolution.*_con_node.csv')
         # Diff new and old files
         f_dif = fdiff(f_old,f_new,variables=['Np[aq] (Moles/kg H20)'])
         # Test for correct concentrations
         for t in f_dif.times:
             self.assertTrue(f_dif[t]['Np[aq] (Moles/kg H20)'].all()<maxerr, '\nIncorrect concentration at time '+str(t))
+        self.cleanup(['nop.temp','fehmn.err','dissolution*.csv','*.avs_log','*geo','*.out','*.trc','*.his','*_head'])
         os.chdir(cwd)
 
 
