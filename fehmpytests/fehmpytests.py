@@ -187,7 +187,7 @@ class Tests(unittest.TestCase):
         # Test for correct permeabilities
         for node,dif,k_old,k_new in zip(f_dif[1]['n'],f_dif[1]['perm_x'],f_old[1]['perm_x'],f_new[1]['perm_x']):
             self.assertTrue(dif<maxerr, '\nIncorrect permeability at node '+str(node)+'. Expected '+str(k_old)+', Simulated '+str(k_new)) 
-        self.cleanup(['nop.temp','fehmn.err','run*.csv','*.out'])
+        self.cleanup(['nop.temp','fehmn.err','run*.csv','*.out','run.avs_log'])
         os.chdir(cwd)
 
 
