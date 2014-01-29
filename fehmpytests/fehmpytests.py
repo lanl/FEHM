@@ -30,7 +30,7 @@ class Tests(unittest.TestCase):
                 if os.path.exists(f): os.remove(f)
 
     def saltvcon(self):
-        ''' saltvcon macro test
+        ''' Salt variable conductivity
 
             Modification: new Dec 19 2013 dharp@lanl.gov
             Modification: 
@@ -131,7 +131,7 @@ class Tests(unittest.TestCase):
 
 
     def dissolution(self):
-        ''' dissolution test
+        ''' Dissolution
 
             Modification: new Jan 7 2014 dharp@lanl.gov
             Modification: 
@@ -160,12 +160,44 @@ class Tests(unittest.TestCase):
         self.cleanup(['nop.temp','fehmn.err','dissolution*.csv','*.avs_log','*geo','*.out','*.trc','*.his','*_head'])
         os.chdir(cwd)
 
+    def salt_perm_poro(self):
+        ''' Salt perm-poro function
+
+            Modification: new Jan 29 2014 dharp@lanl.gov
+            Modification: 
+
+        '''
+        #############################################################
+        cwd = os.getcwd()
+        # Relative error theshold
+        maxerr = 1.e-4
+        # Test directory name
+        dir = 'salt_perm_poro'
+        # Change directory to test directory
+        os.chdir(dir)
+        #############################################################
+        # Read in comparison files
+        f_old = fcontour('compare.00001_sca_node.csv')
+        # Run intact salt model
+        call(exe, shell=True, stdout=PIPE)
+        # Read in new output files
+        f_new = fcontour('run.00001_sca_node.csv')
+        # Diff new and old files
+        f_dif = fdiff(f_old,f_new,variables=['n','perm_x'])
+        # Test for correct permeabilities
+        for node,dif,k_old,k_new in zip(f_dif[1]['n'],f_dif[1]['perm_x'],f_old[1]['perm_x'],f_new[1]['perm_x']):
+            self.assertTrue(dif<maxerr, '\nIncorrect permeability at node '+str(node)+'. Expected '+str(k_old)+', Simulated '+str(k_new)) 
+        self.cleanup(['nop.temp','fehmn.err','run*.csv','*.out'])
+        os.chdir(cwd)
+
+
 
 def suite(case):
     suite = unittest.TestSuite()
     if case == 'all':
         suite.addTest(Tests('saltvcon'))
         suite.addTest(Tests('dissolution'))
+        suite.addTest(Tests('salt_perm_poro'))
     elif case == 'developer':
         pass
     elif case == 'admin':
