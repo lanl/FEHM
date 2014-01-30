@@ -136,6 +136,13 @@ class Tests(unittest.TestCase):
             Modification: new Jan 7 2014 dharp@lanl.gov
             Modification: 
 
+            A one-dimensional transport simulation of calcite (CaC03(s)) dissolution is
+            tested. Profiles of concentration versus reactor length, at selected times,
+            will be compared against the analytical solution.
+
+            Details of this test are described in the FEHM V2.21 Validation Test Plan
+            on pages 93-95 
+            (STN: 10086-2.21-00, Rev.No. 00, Document ID: 10086-VTP-2.21-00, August 2003)
         '''
         #############################################################
         cwd = os.getcwd()
@@ -157,6 +164,7 @@ class Tests(unittest.TestCase):
         # Test for correct concentrations
         for t in f_dif.times:
             self.assertTrue(f_dif[t]['Np[aq] (Moles/kg H20)'].all()<maxerr, '\nIncorrect concentration at time '+str(t))
+        # Remove created files
         self.cleanup(['nop.temp','fehmn.err','dissolution*.csv','*.avs_log','*geo','*.out','*.trc','*.his','*_head'])
         os.chdir(cwd)
 
@@ -166,6 +174,12 @@ class Tests(unittest.TestCase):
             Modification: new Jan 29 2014 dharp@lanl.gov
             Modification: 
 
+            The porosity-permeability function for compacted salt from Cinar et at. (2006) is tested
+            using a six node problem with porosities from 0.01 to 0.2. The excel spreadsheet in 
+            ./salt_perm_poro/salt-perm-poro.xlsx contains calculations of the perm-poro function.
+
+            Cinar, Y, G Pusch and V Reitenbach (2006) Petrophysical and capillary properties of compacted
+                salt. Transport in Porous Media. 64, p. 199-228, doi: 10.1007/s11242-005-2848-1
         '''
         #############################################################
         cwd = os.getcwd()
@@ -187,9 +201,11 @@ class Tests(unittest.TestCase):
         # Test for correct permeabilities
         for node,dif,k_old,k_new in zip(f_dif[1]['n'],f_dif[1]['perm_x'],f_old[1]['perm_x'],f_new[1]['perm_x']):
             self.assertTrue(dif<maxerr, '\nIncorrect permeability at node '+str(node)+'. Expected '+str(k_old)+', Simulated '+str(k_new)) 
+        # Remove created files
         self.cleanup(['nop.temp','fehmn.err','run*.csv','*.out','run.avs_log'])
         os.chdir(cwd)
 
+    def 
 
 
 def suite(case):
