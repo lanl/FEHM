@@ -19,15 +19,7 @@ __unittest = True # Suppresses tracebacks
 
 class Tests(unittest.TestCase):
 
-    def cleanup(self,files):
-        ''' Utility function to remove files after test
-
-            :param files: list of file names to remove
-            :type files: lst(str)
-        '''
-        for g in files:
-            for f in glob(g):
-                if os.path.exists(f): os.remove(f)
+    # TESTS ######################################################
 
     def saltvcon(self):
         ''' Salt variable conductivity
@@ -53,7 +45,6 @@ class Tests(unittest.TestCase):
             kx = (k_{t-300}/kx_asse)*(300/T)^1.14
             if kx is less then 1.e-6, set to 1.e-6
         '''
-        cwd = os.getcwd()
         # Relative error theshold
         maxerr = 1.e-4
         # Test directory name
@@ -80,7 +71,7 @@ class Tests(unittest.TestCase):
             kxc.append(kx_temp)
         #############################################################
         # Run intact salt model
-        call(exe+' intact.files', shell=True, stdout=PIPE)
+        self.run_fehm('intact.files')
         # Open FEHM output file and read
         f = open('intact.out', 'r')
         data = f.readlines()
@@ -102,7 +93,7 @@ class Tests(unittest.TestCase):
             nodeno += 1
         #############################################################
         # Run crushed salt model
-        call(exe+' crushed.files', shell=True, stdout=PIPE)
+        self.run_fehm('crushed.files')
         # Open FEHM output file and read
         f = open('crushed.out', 'r')
         data = f.readlines()
@@ -125,10 +116,7 @@ class Tests(unittest.TestCase):
         #############################################################
         # Return to main directory
         self.cleanup(['nop.temp','fehmn.err','*.avs*','*_head'])
-        os.chdir(cwd)
-
-
-
+        os.chdir(self.maindir)
 
     def dissolution(self):
         ''' Dissolution
@@ -145,7 +133,6 @@ class Tests(unittest.TestCase):
             (STN: 10086-2.21-00, Rev.No. 00, Document ID: 10086-VTP-2.21-00, August 2003)
         '''
         #############################################################
-        cwd = os.getcwd()
         # Relative error theshold
         maxerr = 1.e-4
         # Test directory name
@@ -156,7 +143,7 @@ class Tests(unittest.TestCase):
         # Read in comparison files
         f_old = fcontour('compare.*_con_node.csv')
         # Run intact salt model
-        call(exe, shell=True, stdout=PIPE)
+        self.run_fehm()
         # Read in new output files
         f_new = fcontour('dissolution.*_con_node.csv')
         # Diff new and old files
@@ -166,7 +153,7 @@ class Tests(unittest.TestCase):
             self.assertTrue(f_dif[t]['Np[aq] (Moles/kg H20)'].all()<maxerr, '\nIncorrect concentration at time '+str(t))
         # Remove created files
         self.cleanup(['nop.temp','fehmn.err','dissolution*.csv','*.avs_log','*geo','*.out','*.trc','*.his','*_head'])
-        os.chdir(cwd)
+        os.chdir(self.maindir)
 
     def salt_perm_poro(self):
         ''' Salt perm-poro function
@@ -193,7 +180,7 @@ class Tests(unittest.TestCase):
         # Read in comparison files
         f_old = fcontour('compare.00001_sca_node.csv')
         # Run intact salt model
-        call(exe, shell=True, stdout=PIPE)
+        self.run_fehm()
         # Read in new output files
         f_new = fcontour('run.00001_sca_node.csv')
         # Diff new and old files
@@ -203,9 +190,59 @@ class Tests(unittest.TestCase):
             self.assertTrue(dif<maxerr, '\nIncorrect permeability at node '+str(node)+'. Expected '+str(k_old)+', Simulated '+str(k_new)) 
         # Remove created files
         self.cleanup(['nop.temp','fehmn.err','run*.csv','*.out','run.avs_log'])
-        os.chdir(cwd)
+        os.chdir(self.maindir)
 
-    def 
+    # UTILITIES ######################################################
+
+    def setUp(self):
+        # Set location of main directory
+        self.maindir = os.getcwd()
+
+    def cleanup(self,files):
+        ''' Utility function to remove files after test
+
+            :param files: list of file names to remove
+            :type files: lst(str)
+        '''
+        for g in files:
+            for f in glob(g):
+                if os.path.exists(f): os.remove(f)
+
+    def run_fehm(self, filesfile='fehmn.files'):
+        ''' Utility function to run fehm
+            Asserts that fehm terminates successfully
+
+            :param filesfile: name of fehm files file
+            :type filesfile: str
+        '''
+        call(exe+' '+filesfile, shell=True, stdout=PIPE)
+        outfile = None
+        errfile = 'fehmn.err'
+        with open( filesfile, 'r' ) as f:
+            lines = f.readlines()
+            # Check for new filesfile format
+            for line in lines:
+                if 'outp' in line:
+                    outfile = line.split(':')[1].strip()
+                elif 'error' in line:
+                    errfile = line.split(':')[1].strip()
+            # Assume old format
+            if outfile is None and ':' not in lines[0]: outfile = lines[3].strip()
+        complete = False
+        if outfile:
+            with open( outfile, 'r' ) as f:
+                for line in reversed(f.readlines()):
+                    if 'End Date' in line:
+                        complete = True
+                        break
+        if os.path.exists(errfile): errstr = open( errfile, 'r' ).read()
+        else: errstr = ''
+        curdir = os.getcwd()
+        # Change to maindir in case assertTrue fails
+        os.chdir(self.maindir)
+        self.assertTrue(complete, 'Unsuccessful fehm simulation\nContents of '+errfile+':\n\n'+errstr)
+        os.chdir(curdir)
+
 
 
 def suite(case):
