@@ -1,0 +1,233 @@
+FEHM V3.2.0lin 13-12-17 QA:NA    02/06/2014    10:03:08
+
+Copyright  2013.   Los Alamos National Security, LLC.  This material was
+produced under U.S. Government contract DE-AC52-06NA25396 for Los Alamos
+National  Laboratory  (LANL),  which is operated by  Los Alamos National
+Security, LLC  for the U. S. Department of Energy.  The U. S. Government
+has rights to use, reproduce, and distribute this software.  Neither the
+U. S. Government nor Los Alamos National Security, LLC or persons acting
+on their behalf,  make any warranty,  express or implied, or assumes any
+liability for the accuracy, completeness, or usefulness of the software,
+any information pertaining to the software,  or  represents that its use
+would not infringe privately owned rights.
+
+The  software  being licensed  may  be Export Controlled.  It may not be
+distributed  or  used by individuals  or entities prohibited from having
+access to the software package, pursuant to United States export control
+laws and regulations. An export control review and determination must be
+completed before LANS will provide access to the identified Software.
+
+
+ title: 1-d heat pipe calculation               11/28/12                         
+
+
+
+ File purpose - Variable - Unit number - File name
+
+    control       - iocntl -  1 - intact.files                                                                                        
+    input         - inpt   - 11 - intact.dat                                                                                          
+    geometry      - incoor - 12 - 1dgrid.grid                                                                                         
+    zone          - inzone - 11 - intact.dat                                                                                          
+    output        - iout   - 14 - intact.out                                                                                          
+    initial state - iread  -  0 - not using                                                                                           
+    final state   - isave  -  0 - not using                                                                                           
+    time history  - ishis  -  0 - not using                                                                                           
+    time his.(tr) - istrc  -  0 - not using                                                                                           
+    contour plot  - iscon  -  0 - not using                                                                                           
+    con plot (dp) - iscon1 -  0 - not using                                                                                           
+    fe coef stor  - isstor - 21 - 1dgrid.stor                                                                                         
+    input check   - ischk  -  0 - not using                                                                                           
+ Value provided to subroutine user: not using
+
+ **** input title : coor **** incoor =  12 ****
+ **** input title : elem **** incoor =  12 ****
+ **** input title : stop **** incoor =  12 ****
+ **** input title : zone **** inpt =  11 ****
+ **** input title : salt **** inpt =  11 ****
+   **** salt sub macro : saltvapr **** 
+   **** salt sub macro : saltnum  **** 
+   **** salt sub macro : saltvcon **** 
+   **** salt sub macro : saltppor **** 
+warning:porosity model   7 used in salt simulation
+   **** salt sub macro : saltadif **** 
+warning: adif model  333.00 used in salt simulation
+ **** input title : node **** inpt =  11 ****
+ **** input title : perm **** inpt =  11 ****
+ **** input title : rlp  **** inpt =  11 ****
+ **** input title : rock **** inpt =  11 ****
+ **** input title : time **** inpt =  11 ****
+ **** input title : ctrl **** inpt =  11 ****
+ **** input title : iter **** inpt =  11 ****
+ **** input title : sol  **** inpt =  11 ****
+ **** input title : pres **** inpt =  11 ****
+ **** input title : ngas **** inpt =  11 ****
+total pressure reset to h2o vapor pressure at initial temperature if h2o vapor pressure is greaterthan initial total presssure
+ **** input title : hflx **** inpt =  11 ****
+ **** input title : cden **** inpt =  11 ****
+ **** input title : trac **** inpt =  11 ****
+ **** input title : rxn  **** inpt =  11 ****
+ **** input title : stop **** inpt =  11 ****
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ Coefficients read from file 1dgrid.stor
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+ storage for geometric coefficients         17 in common(nr)         17
+ gmres method chosen 
+ >>>reading nop from file nop.temp .....
+ >>>reading nop was succesful .....
+
+ storage needed for ncon             23 available         23
+ storage needed for nop              23 available         23
+ storage needed for a matrix        144 available        144
+ storage needed for b matrix        144 available        531
+ storage for acceleration       450 available        450
+ storage available for b matrix resized to        144<<<<<<
+
+
+ time for reading input, forming coefficients  0.400E-02
+
+
+
+ tracer started at days = 0.0
+*********************************************************************
+ Time Step         1
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+     0.273785079E-06     0.100000000E-03    0.100000000E-03
+ Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+
+                    Equation Performance
+ Number of N-R Iterations:          6
+ Avg # of Linear Equation Solver Iterations:   2.0
+ Number of Active Nodes:         6.
+ Total Number of Iterations, N-R:          6 , Solver:         12
+ Phase Changes This Time Step:        1 Total           1
+ Number of partially filled cells            0
+                    Largest Residuals
+ EQ1 R=  0.3813E-10 node=      6 x=0.1000     y= 0.000     z= 0.000    
+ EQ2 R=   0.000     node=      1 x= 0.000     y= 0.000     z= 0.000    
+ EQ3 R=   0.000     node=      1 x= 0.000     y= 0.000     z= 0.000    
+
+                    Nodal Information (Water)
+                                                  source/sink  E source/sink
+   Node   P (MPa)    E (MJ)    L sat     Temp (C)    (kg/s)       (MJ/s)
+      1   0.1002      0.00     0.100       20.000    0.000       0.5336E-02
+      2   0.1024      0.00     0.116       40.000    0.000      -0.3247E-05
+      3   0.1024      0.00     0.124       60.000    0.000       0.1769E-02
+      4   0.1025      0.00     0.127       80.000    0.000       0.6303E-02
+      5   0.1025      0.00     0.131      100.000    0.000       0.3201    
+      6   0.1218      0.00      0.00      120.000    0.000      -0.3153    
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   Node     perm (m2)      porosity       Kx W/(m K)     Pwv (MPa)      D*wv (m2/s)   ps_delta_rxn
+      1     0.25892E-17    0.10000E-01     5.5441        0.20470E-02    0.42603E-05   -0.50384E-08
+      2     0.11225E-12    0.10000         5.1423        0.75638E-02    0.97142E-05    0.33863E-06
+      3     0.27929E-11    0.30000         4.7918        0.20158E-01    0.15324E-04    0.36533E-06
+      4     0.27929E-11    0.50000         4.4837        0.47280E-01    0.20044E-04    0.32514E-06
+      5     0.27929E-11    0.70000         4.2108        0.10113        0.24445E-04    0.23365E-06
+      6     0.27929E-11    0.89807         3.9675        0.12181        0.34167E-04   -0.19308E-02
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   Node     density (kg/m3)
+      1      1183.2    
+      2      1177.5    
+      3      1168.6    
+      4      1157.3    
+      5      1143.8    
+      6      0.0000    
+
+                    Nodal Information (Gas)
+        Partial P   Capillary   Liquid      Gas source/sink
+   Node Gas (MPa)   Pres (MPa)  Pres (MPa)     (kg/s)       Residual
+      1  0.9819E-01  0.1350     -0.3476E-01  0.1000E-29       0.000    
+      2  0.9488E-01  0.1327     -0.3021E-01  0.1000E-29       0.000    
+      3  0.8229E-01  0.1314     -0.2894E-01  0.1000E-29       0.000    
+      4  0.5517E-01  0.1310     -0.2853E-01  0.1000E-29       0.000    
+      5  0.1420E-02  0.1303     -0.2774E-01  0.1000E-29       0.000    
+      6  0.6170E-05  0.1500     -0.2818E-01  0.1000E-29       0.000    
+
+net gas discharge     0.51840E-28 con error gas      0.0000    
+
+this time step discharges : ,gas
+      0.000E+00 kg 
+
+cumulative discharges : ,gas
+      5.184E-29 kg 
+
+                    Global Mass & Energy Balances
+ Total mass in system at this time:            0.474265E+01 kg
+ Total mass of steam in system at this time:   0.167224E-01 kg
+ Total enthalpy in system at this time:        0.828770E+01 MJ
+
+ Water discharge this time step:   0.000000E+00 kg (0.000000E+00 kg/s)
+ Water input this time step:       0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water discharge:            0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water input:                0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Enthalpy discharge this time step:  0.288123E+01 MJ (0.333476E+00 MJ/s)
+ Enthalpy input this time step:      0.272455E+01 MJ (0.315342E+00 MJ/s)
+ Total enthalpy discharge:           0.288123E+01 MJ (0.333476E+00 MJ/s)
+ Total enthalpy input:               0.272455E+01 MJ (0.315342E+00 MJ/s)
+
+ Net kg water discharge (total out-total in):   0.000000E+00
+ Net MJ energy discharge (total out-total in):   0.156677E+00
+ Conservation Errors:   0.000000E+00 (mass),   0.244827E-06 (energy)
+
+                   *************************
+ Solute information at time =   0.100000E-03 days
+ Average step size =   0.100000E-03    Iter =     0
+
+                    Nodal Information (Tracer)
+ Solute output information, species number     1
+                                                 src/sink     sinkint      equation
+    Node      an          anl          anv         mol/s                   residual
+       1   6.1560       6.1560       0.0000       0.0000       0.0000      0.87136E-15
+       2   5.1840       5.1840       0.0000       0.0000       0.0000      0.24270E-15
+       3   4.8674       4.8674       0.0000       0.0000       0.0000     -0.86722E-15
+       4   4.6027       4.6027       0.0000       0.0000       0.0000      0.13586E-14
+       5   4.3379       4.3379       0.0000       0.0000       0.0000     -0.79573E-15
+       6   59565.       59565.       0.0000       0.0000       0.0000      0.38131E-10
+
+   initial mass =                      0.290914E+02 mol
+   current mass =                      0.216019E+02 mol
+   total injected mass =               0.000000E+00 mol (0.000000E+00 mol/s)
+   total produced mass =               0.000000E+00 mol (0.000000E+00 mol/s)
+   total mass produced by reaction =  -0.748948E+01 mol
+   net mass balance =                  0.799361E-14 mol
+
+                    Nodal Information (Tracer)
+ Solute output information, species number     2
+                                                 src/sink     sinkint      equation
+    Node      an          anl          anv         mol/s                   residual
+       1   17.241       17.241       0.0000       0.0000       0.0000      0.87136E-15
+       2   17.241       17.241       0.0000       0.0000       0.0000      0.24270E-15
+       3   17.241       17.241       0.0000       0.0000       0.0000     -0.86722E-15
+       4   17.241       17.241       0.0000       0.0000       0.0000      0.13586E-14
+       5   17.241       17.241       0.0000       0.0000       0.0000     -0.79573E-15
+       6   17.241       17.241       0.0000       0.0000       0.0000      0.38131E-10
+
+   initial mass =                      0.373276E+04 mol
+   current mass =                      0.373276E+04 mol
+   total injected mass =               0.000000E+00 mol (0.000000E+00 mol/s)
+   total produced mass =               0.000000E+00 mol (0.000000E+00 mol/s)
+   total mass produced by reaction =   0.748948E+01 mol
+   net mass balance =                 -0.748948E+01 mol
+
+
+ simulation ended: days  1.00000000000000004792170E-04 timesteps     1
+
+
+ total N-R iterations =          6
+ total solver iterations =         12
+
+
+ total code time(timesteps) =      0.000000
+
+
+ ****---------------------------------------------------------****
+ **** This program for                                        ****
+ ****   Finite Element Heat and Mass Transfer in porous media ****
+ ****---------------------------------------------------------****
+ ****               Version  : FEHM V3.2.0lin 13-12-17 QA:NA  ****
+ ****               End Date : 02/06/2014                     ****
+ ****                   Time : 10:03:08                       ****
+ ****---------------------------------------------------------****
