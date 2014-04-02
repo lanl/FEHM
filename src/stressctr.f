@@ -184,6 +184,10 @@ c     s kelkar 4/20/2010
          allocate (dEdt(1:n0))
          allocate (dNuedt(1:n0))
          allocate (poisson_ini(1:n0))
+c     d dempsey 3/11/2014
+         allocate (bodyforce_x(n0))
+         allocate (bodyforce_y(n0))
+         allocate (bodyforce_z(n0))
          
 c     s kelkar 12/6/09 axisymmetric anisotropy
 c     for now, arrays are allocated while reading input,lines ~684-700
@@ -292,6 +296,10 @@ c     nvfcl = 0
 c     axisymmetric anisotropy
          stress_anisotropy_in = .false.
          stress_anisotropy_use = .false.
+		 
+         bodyforce_x = 0.0d0
+         bodyforce_y = 0.0d0
+         bodyforce_z = 0.0d0
 c......................................
          bulk = 0.0d0
          alp = 0.0d0
@@ -482,7 +490,33 @@ c
 c     
 c     enable body force (weight of rock)
 c     
+            backspace inpt
+            read (inpt, '(a80)') wdd1
+            call parse_string(wdd1, imsg, msg, xmsg, cmsg, nwds)
             ibodyforce = 3
+            if(nwds.gt.1) then
+              if(cmsg(2).eq.'force') then
+                ibodyforce = 4
+              else if(cmsg(2).eq.'acceleration') then
+                ibodyforce = 5
+              endif
+				
+            igroup = 1
+            narrays = 3
+            itype(1) = 8
+            itype(2) = 8
+            itype(3) = 8
+            default(1) = 0.
+            default(2) = 0.
+            default(3) = 0.
+            
+            call initdata2( inpt, ischk, n0, narrays,
+     &           itype, default, macroread(8), macro, igroup, ireturn,
+     &           r8_1 = bodyforce_x(1:n0),r8_2 = bodyforce_y(1:n0),
+     &           r8_3 = bodyforce_z(1:n0))
+				
+            endif
+
             
          else if(macro1.eq.'reldisp   ') then
 c     
