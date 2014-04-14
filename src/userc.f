@@ -91,7 +91,8 @@ c     SPC
       real*8 srmiml, rc_ss_erosion, drc_ss_erosion
       real*8 inflrate, molesin, molesout
 c     SPC  add for transformation factor
-      real*8 transform_kd(8,10)
+c     real*8 transform_kd(8,10)
+      real*8 transform_kd(100,100)
       integer flag_kd, i1,j1, ii, jj,  tf1
       
       logical used
