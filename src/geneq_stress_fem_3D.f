@@ -172,15 +172,39 @@
           bforcey = 0.0d0
           bforcez = 0.0d0
 
-          if(ibodyforce.ne.0) then
+          if(ibodyforce.eq.3) then
             do k=1,8
+              nodei = node(k)
               if(igrav.eq.1) then
-                bforcex(k) = -denr(k)*grav*Psi(i,j,k)*fac
+                bforcex(k) = -denr(nodei)*grav*Psi(i,j,k)*fac
               elseif(igrav.eq.2) then
-                bforcey(k) = -denr(k)*grav*Psi(i,j,k)*fac
+                bforcey(k) = -denr(nodei)*grav*Psi(i,j,k)*fac
               elseif(igrav.eq.3) then
-                bforcez(k) = -denr(k)*grav*Psi(i,j,k)*fac
+                bforcez(k) = -denr(nodei)*grav*Psi(i,j,k)*fac
               endif
+              bp(node(k) + nrhs(1)) = bp(node(k) + nrhs(1)) + bforcex(k)
+              bp(node(k) + nrhs(2)) = bp(node(k) + nrhs(2)) + bforcey(k)
+              bp(node(k) + nrhs(3)) = bp(node(k) + nrhs(3)) + bforcez(k)
+            enddo
+          else if(ibodyforce.eq.4) then
+            do k=1,8
+              nodei = node(k)
+              bforcex(k) = -bodyforce_x(nodei)*Psi(i,j,k)*fac
+              bforcey(k) = -bodyforce_y(nodei)*Psi(i,j,k)*fac
+              bforcez(k) = -bodyforce_z(nodei)*Psi(i,j,k)*fac
+              bp(node(k) + nrhs(1)) = bp(node(k) + nrhs(1)) + bforcex(k)
+              bp(node(k) + nrhs(2)) = bp(node(k) + nrhs(2)) + bforcey(k)
+              bp(node(k) + nrhs(3)) = bp(node(k) + nrhs(3)) + bforcez(k)
+            enddo
+          else if(ibodyforce.eq.5) then
+            do k=1,8
+              nodei = node(k)
+              bforcex(k) = -denr(nodei)*bodyforce_x(nodei)/1.e6* 
+     &         Psi(i,j,k)*fac
+              bforcey(k) = -denr(nodei)*bodyforce_y(nodei)/1.e6* 
+     &         Psi(i,j,k)*fac
+              bforcez(k) = -denr(nodei)*bodyforce_z(nodei)/1.e6* 
+     &         Psi(i,j,k)*fac
               bp(node(k) + nrhs(1)) = bp(node(k) + nrhs(1)) + bforcex(k)
               bp(node(k) + nrhs(2)) = bp(node(k) + nrhs(2)) + bforcey(k)
               bp(node(k) + nrhs(3)) = bp(node(k) + nrhs(3)) + bforcez(k)

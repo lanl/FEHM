@@ -76,6 +76,10 @@ c s kelkar 12/6/09 axisymmetric anisotropy
         real*8, allocatable ::  e4(:)
         real*8, allocatable ::  ezz(:)
         real*8, allocatable ::  shearmod_t(:)
+c d dempsey 03/11/14 bodyforce vector
+      real*8, allocatable ::  bodyforce_x(:)
+      real*8, allocatable ::  bodyforce_y(:)
+      real*8, allocatable ::  bodyforce_z(:)
 
 c......................................
 c sai - variables needed for plasticity
