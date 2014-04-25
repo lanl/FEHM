@@ -480,6 +480,7 @@ c
                   read(iread ,*) ( fol (mi), mi = 1,ncount )
                   read(iread ,*) ( ieoso (mi),  mi = 1,ncount )
                   read(iread ,*) ( iceso (mi),  mi = 1,ncount )
+                  read(iread ,*) ( ico2diso (mi),  mi = 1,ncount )
                   read_co2(2) = .TRUE.
                   do i = 1, ncount
                      if(inico2flg(i).eq.1) then
@@ -496,6 +497,7 @@ c Use values from input
                   yc = yoc
                   ieos = ieoso
                   ices = iceso
+                  ico2dis = ico2diso
                else
                   if (icarb .eq. 1) then
                      do i = 1, ncount + npoint_riv
@@ -525,6 +527,7 @@ c Use values from input
                         fl(i) = fl(iriver_con_node(i-ncount))
                         ieoso(i) = ieoso(iriver_con_node(i-ncount))
                         iceso(i) = iceso(iriver_con_node(i-ncount))
+                       ico2diso(i) = ico2diso(iriver_con_node(i-ncount))
                      end if
 		  enddo
                end if
@@ -541,9 +544,11 @@ c Use values from input
                      iceso = ices
                      ieos = 1
                      ieoso = ieos
+				   ico2diso = ico2dis
                   else
                      ieos = ieoso
                      ices = iceso
+				   ico2dis = ico2diso
                   end if
                   toco2 = tco2
                   phoco2 = phico2
@@ -727,6 +732,18 @@ c Phase-state of CO2
      &                    'phase-state of co2'
                      if (iptty .ne. 0)write(iptty, 400)
      &                    'phase-state of co2'
+                     read_co2(2) = .FALSE.
+                  end if
+               case ('eosd')
+c Array of dissolved CO2 flag
+                  if (read_co2(1)) then
+                     read (iread, *) (ico2diso(mi), mi = 1,ncount )
+                  else
+                     read (iread, *) ( dummyint, mi = 1,ncount )
+                     if (iout .ne. 0) write(iout, 400)
+     &                    'check of equilibrium co2 solubility'
+                     if (iptty .ne. 0)write(iptty, 400)
+     &                    'check of equilibrium co2 solubility'
                      read_co2(2) = .FALSE.
                   end if
                case ('mass')
@@ -1027,6 +1044,7 @@ c
                   read(iread) ( fol (mi), mi = 1,ncount )
                   read(iread) ( ieoso (mi),  mi = 1,ncount )
                   read(iread) ( iceso (mi),  mi = 1,ncount )
+                  read(iread) ( ico2diso (mi),  mi = 1,ncount )
                   read_co2(2) = .TRUE.
                   do i = 1, ncount
                      if(inico2flg(i).eq.1) then
@@ -1041,6 +1059,7 @@ c Use values from input
                   fg = fog
                   ieos = ieoso
                   ices = iceso
+                  ico2dis = ico2diso
                else
                   if (icarb .eq. 1) then
                      do i = 1, ncount + npoint_riv
@@ -1070,6 +1089,7 @@ c Use values from input
                         fl(i) = fl(iriver_con_node(i-ncount))
                         ieoso(i) = ieoso(iriver_con_node(i-ncount))
                         iceso(i) = iceso(iriver_con_node(i-ncount))
+                       ico2diso(i) = ico2diso(iriver_con_node(i-ncount))
                      end if
 		  enddo
                end if
@@ -1086,9 +1106,11 @@ c Use values from input
                      iceso = ices
                      ieos = 1
                      ieoso = ieos
+				   ico2diso = ico2dis
                   else
                      ieos = ieoso
                      ices = iceso
+				   ico2dis = ico2diso
                    end if
                   toco2 = tco2
                   phoco2 = phico2
@@ -1267,6 +1289,19 @@ c Phase-state of CO2
      &                    'phase-state of co2'
                      read_co2(2) = .FALSE.
                   end if
+               case ('eosd')
+c Phase-state of CO2
+                  if (read_co2(1)) then
+                     read (iread) (ico2diso(mi), mi = 1,ncount )
+                  else
+                     read (iread) ( dummyint, mi = 1,ncount )
+                     if (iout .ne. 0) write(iout, 400)
+     &                    'check of equilibrium co2 solubility'
+                     if (iptty .ne. 0)write(iptty, 400)
+     &                    'check of equilibrium co2 solubility'
+                     read_co2(2) = .FALSE.
+                  end if
+
                case ('mass')
                   if (read_mass(1)) then
                      read (iread) (mass_var(mi), mi = 1,ncount )
@@ -1438,6 +1473,7 @@ c Set CO2 parameters using t and phi
          iceso = ices
          ieos = 1
          ieoso = ieos
+         ico2diso = ico2dis
          do i = 1, ncount + npoint_riv
             if(inico2flg(i).ne.1) then
                fw(i) = 1.d0
@@ -1469,6 +1505,7 @@ c Set CO2 parameters using t and phi
          phoco2 = phico2
          ieos = ieoso
          ices = iceso
+         ico2dis = ico2diso
          if (.not. read_temp(2)) then
             t = tco2
             to = tco2
