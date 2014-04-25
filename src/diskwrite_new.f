@@ -351,17 +351,19 @@ c            write(isave, 6002)  (max(to(mi),tolw),   mi=1,n )
             write(isave, '(a11)') 'co2temperat'
             write(isave, 6002)  (max(toco2(mi),tolw),   mi=1,n )
             write(isave, '(a11)') 'co2pressure'
-            write(isave, 6002)  (max(phoco2(mi),tolw),  mi=1,n )
+            write(isave, 6002)  (max(phoco2(mi),0.d0),  mi=1,n )
             write(isave, '(a11)') 'wsaturation'
-            write(isave, 6002)  (max(fow(mi),tolw),    mi=1,n )
+            write(isave, 6002)  (max(fow(mi),0.d0),    mi=1,n )
             write(isave, '(a11)') 'lco2saturat'
-            write(isave, 6002)  (max(fol(mi),tolw),    mi=1,n )
+            write(isave, 6002)  (max(fol(mi),0.d0),    mi=1,n )
             write(isave, '(a11)') 'dissolvdco2'
-            write(isave, 6002)  (max(yc(mi),tolw),    mi=1,n )
+            write(isave, 6002)  (max(yc(mi),0.d0),    mi=1,n )
             write(isave, '(a11)') 'eoswater   '
             write(isave, 6003)  (ieoso(mi),    mi=1,n )
             write(isave, '(a11)') 'eosco2     '
             write(isave, 6003)  (iceso(mi),    mi=1,n )
+            write(isave, '(a11)') 'eosdc      '
+            write(isave, 6003)  (ico2diso(mi),    mi=1,n )
          end if
          if (write_mass) then
             if (.not. allocated(mass_var)) allocate(mass_var(n))
