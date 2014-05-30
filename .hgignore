@@ -6,3 +6,4 @@ debug/*
 build/*
 src/dated.f
 *.pyc
+*~

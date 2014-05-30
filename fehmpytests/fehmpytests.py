@@ -14,15 +14,14 @@ except ImportError:
         os._exit(0)
 from glob import glob
 
-
 __unittest = True # Suppresses tracebacks
 
 class Tests(unittest.TestCase):
 
-    # TESTS ######################################################
+    # TESTS ######################################################### 
 
     def saltvcon(self):
-        ''' Salt variable conductivity
+        """ Salt variable conductivity
 
             Modification: new Dec 19 2013 dharp@lanl.gov
             Modification: updated to use f_dif function Feb 6 2014
@@ -46,41 +45,62 @@ class Tests(unittest.TestCase):
             if kx is less then 1.e-6, set to 1.e-6
 
             The excel spreadsheet in ./saltvcon/saltvcon.xlsx contains the
-            associated calculations.
-        '''
+            associated calculations. """
+            
         # Relative error theshold
         maxerr = 1.e-4
-        # Test directory name
-        dir = 'saltvcon'
+           
         # Change directory to test directory
-        os.chdir(dir)
+        os.chdir('saltvcon')
+        
         # Read in comparison output file
         f_old = foutput('intact-compare.out')
+        
         # Run intact salt model
         self.run_fehm('intact.files')
+        
         # Read in simulation output file
         f_new = foutput('intact.out')
+        
+        #Calculate the difference between the new and the old data.
         f_dif = fdiff(f_new,f_old,components=['water'],variables=['Kx'],format='relative')
+        
         for n in f_dif.nodes:
-            self.assertTrue(f_dif.node['water'][n]['Kx'][0]<maxerr, '\nIncorrect intact salt thermal conductivity for node '+str(n)+'\nRelative error: '+str(f_dif.node['water'][n]['Kx'][0])+', Threshold: '+str(maxerr)+'\nExpected='+str(f_old.node['water'][n]['Kx'][0])+' Simulated='+str(f_new.node['water'][n]['Kx'][0]))
+            self.assertTrue(f_dif.node['water'][n]['Kx'][0]<maxerr, '\nIncorrect intact salt thermal conductivity for node '+str(n)\
+                                                                                             +'\nRelative error: '+str(f_dif.node['water'][n]['Kx'][0])+\
+                                                                                             ', Threshold: '+str(maxerr)+'\nExpected='+\
+                                                                                             str(f_old.node['water'][n]['Kx'][0])+' Simulated='+\
+                                                                                             str(f_new.node['water'][n]['Kx'][0]))
+                                                                                             
         del f_old, f_new, f_dif
 
         # Read in comparison output file
         f_old = foutput('crushed-compare.out')
+        
         # Run intact salt model
         self.run_fehm('crushed.files')
+        
         # Read in simulation output file
         f_new = foutput('crushed.out')
+        
+        #Calculate the difference between the new and the old data.
         f_dif = fdiff(f_new,f_old,components=['water'],variables=['Kx'],format='relative')
+        
         for n in f_dif.nodes:
-            self.assertTrue(f_dif.node['water'][n]['Kx'][0]<maxerr, '\nIncorrect intact salt thermal conductivity for node '+str(n)+'\nRelative error: '+str(f_dif.node['water'][n]['Kx'][0])+', Threshold: '+str(maxerr)+'\nExpected='+str(f_old.node['water'][n]['Kx'][0])+' Simulated='+str(f_new.node['water'][n]['Kx'][0]))
+            self.assertTrue(f_dif.node['water'][n]['Kx'][0]<maxerr, '\nIncorrect intact salt thermal conductivity for node '+str(n)\
+                                                                                             +'\nRelative error: '+str(f_dif.node['water'][n]['Kx'][0])+\
+                                                                                             ', Threshold: '+str(maxerr)+'\nExpected='+\
+                                                                                             str(f_old.node['water'][n]['Kx'][0])+' Simulated='\
+                                                                                             +str(f_new.node['water'][n]['Kx'][0]))
+                                                                                             
         # Remove files
         self.cleanup(['nop.temp','fehmn.err','*.avs*','*_head','intact.out','crushed.out'])
+        
         # Return to main directory
         os.chdir(self.maindir)
 
     def dissolution(self):
-        ''' Dissolution
+        """ Dissolution
 
             Modification: new Jan 7 2014 dharp@lanl.gov
             Modification: 
@@ -92,32 +112,35 @@ class Tests(unittest.TestCase):
             Details of this test are described in the FEHM V2.21 Validation Test Plan
             on pages 93-95 
             (STN: 10086-2.21-00, Rev.No. 00, Document ID: 10086-VTP-2.21-00, August 2003)
-        '''
-        #############################################################
+        """
+        
         # Relative error theshold
         maxerr = 1.e-4
         # Test directory name
         dir = 'dissolution'
         # Change directory to test directory
         os.chdir(dir)
-        #############################################################
+        
         # Read in comparison files
         f_old = fcontour('compare.*_con_node.csv')
-        # Run intact salt model
-        self.run_fehm()
+        
         # Read in new output files
+        self.run_fehm()
         f_new = fcontour('dissolution.*_con_node.csv')
+        
         # Diff new and old files
         f_dif = fdiff(f_new,f_old,variables=['Np[aq] (Moles/kg H20)'])
+        
         # Test for correct concentrations
         for t in f_dif.times:
             self.assertTrue(f_dif[t]['Np[aq] (Moles/kg H20)'].all()<maxerr, '\nIncorrect concentration at time '+str(t))
+            
         # Remove created files
         self.cleanup(['nop.temp','fehmn.err','dissolution*.csv','*.avs_log','*geo','*.out','*.trc','*.his','*_head'])
         os.chdir(self.maindir)
 
     def salt_perm_poro(self):
-        ''' Salt perm-poro function
+        """ Salt perm-poro function
 
             Modification: new Jan 29 2014 dharp@lanl.gov
             Modification: 
@@ -127,29 +150,130 @@ class Tests(unittest.TestCase):
             ./salt_perm_poro/salt-perm-poro.xlsx contains calculations of the perm-poro function.
 
             Cinar, Y, G Pusch and V Reitenbach (2006) Petrophysical and capillary properties of compacted
-                salt. Transport in Porous Media. 64, p. 199-228, doi: 10.1007/s11242-005-2848-1
-        '''
+                salt. Transport in Porous Media. 64, p. 199-228, doi: 10.1007/s11242-005-2848-1 """
+        
         cwd = os.getcwd()
+        
         # Relative error theshold
         maxerr = 1.e-4
+        
         # Test directory name
         dir = 'salt_perm_poro'
+        
         # Change directory to test directory
         os.chdir(dir)
         # Read in comparison files
         f_old = fcontour('compare.00001_sca_node.csv')
-        # Run intact salt model
-        self.run_fehm()
+        
         # Read in new output files
+        self.run_fehm()
         f_new = fcontour('run.00001_sca_node.csv')
+        
         # Diff new and old files
         f_dif = fdiff(f_new,f_old,variables=['n','perm_x'])
+        
         # Test for correct permeabilities
         for node,dif,k_old,k_new in zip(f_dif[1]['n'],f_dif[1]['perm_x'],f_old[1]['perm_x'],f_new[1]['perm_x']):
-            self.assertTrue(dif<maxerr, '\nIncorrect permeability at node '+str(node)+'. Expected '+str(k_old)+', Simulated '+str(k_new)) 
+            self.assertTrue(dif<maxerr, '\nIncorrect permeability at node '+str(node)+'. Expected '+str(k_old)+', Simulated '\
+                                                      +str(k_new)) 
+            
         # Remove created files
         self.cleanup(['nop.temp','fehmn.err','run*.csv','*.out','run.avs_log'])
         os.chdir(self.maindir)
+      
+    def avdonin(self):
+        """ Avdonin Radial Heat and Mass Transfer Test 
+        Tests that the temperatures at each time are correct.
+        Developed by mlange806@gmail.com on May 29, 2014 """
+        
+        #Error threshold - May need to change.
+        maxerr = 1.e-4 
+        
+        #Change to test directory.
+        os.chdir('avdonin')
+        
+        #Test three different cases.
+        cases = ['84', '400', '800']
+        for case in cases: 
+            #Read in comparison files.
+            f_old = fcontour('compare'+case+'.*_sca_node.csv')
+            
+            #Create fehmn.files for current case.
+            generic_files = open('generic_fehmn.files')
+            data = generic_files.read()
+            data = re.sub('case', case, data)
+            files = open('fehmn.files', 'w')
+            files.write(data)
+            generic_files.close()
+            files.close()
+            
+            #Read in new output files.
+            self.run_fehm()
+            f_new = fcontour('avdonin'+case+'.*.csv')
+            
+            #f_dif is a np array of temperature differences. 
+            f_dif = fdiff(f_new, f_old)
+            
+            #For each time, test for correct temperatures.   
+            error = 'Incorrect temperature at time '
+            for t in f_dif.times:
+            	self.assertTrue(max(f_dif[t]['T'])<maxerr, error+str(t) + '.')
+            
+            #Remove created files.
+            trash = ['avdonin'+case+'.*.csv', '*.avs_log', '*.con', '*.geo', 
+                     '*.his', '*.out', '*.err', 'all', 'fehmn.files']
+            self.cleanup(trash)
+        
+        #Return to the main directory.       
+        os.chdir(self.maindir)
+        
+    def barometric(self):
+    	""" Comming Soon """
+    	pass
+        
+    def binmode(self):
+        """ Comming Soon """
+        pass
+        
+    def test_boundry(self):
+        """ Boundry Test
+        Todo: Add description.
+        Developed by mlange806@gmail.com """
+        
+        #Error Threshold
+        maxerr = 1.e-4
+        
+        #Change to test directory.
+        os.chdir('boundry')
+        
+        #Test the 3 boundry cases.
+        cases = ['1', '2', '3']
+        for case in cases:
+            #Read in old files.
+            f_old = fcontour('compare_boun'+case+'*')
+            print f_old.times
+            
+            #Create fehmn.files for current case.
+            generic_files = open('generic_fehmn.files')
+            data = generic_files.read()
+            data = re.sub('<CASE>', case, data)
+            files = open('fehmn.files', 'w')
+            files.write(data)
+            generic_files.close()
+            files.close()
+            
+            #Read in new files.
+            self.run_fehm()
+        
+        #Assume true for now.
+        self.assertTrue(True, 'Somehow true is false.')
+        
+        #Remove created files.
+        trash = ['none', '*.con', '*.out', '*.trc', '*.his', '*.geo', 'p*.csv',
+                 '*.temp', '*.sca_head', '*.avs_log', '*.err', 'fehmn.files']
+        self.cleanup(trash)
+    
+    	
 
     # UTILITIES ######################################################
 
@@ -168,15 +292,18 @@ class Tests(unittest.TestCase):
                 if os.path.exists(f): os.remove(f)
 
     def run_fehm(self, filesfile='fehmn.files'):
-        ''' Utility function to run fehm
+        """
+            Utility function to run fehm
             Asserts that fehm terminates successfully
 
             :param filesfile: name of fehm files file
             :type filesfile: str
-        '''
+        """
+        
         call(exe+' '+filesfile, shell=True, stdout=PIPE)
         outfile = None
         errfile = 'fehmn.err'
+        
         with open( filesfile, 'r' ) as f:
             lines = f.readlines()
             # Check for new filesfile format
@@ -185,8 +312,10 @@ class Tests(unittest.TestCase):
                     outfile = line.split(':')[1].strip()
                 elif 'error' in line:
                     errfile = line.split(':')[1].strip()
+                           
             # Assume old format
-            if outfile is None and ':' not in lines[0]: outfile = lines[3].strip()
+            if outfile is None and ':' not in lines[0]: outfile=lines[3].strip()
+        
         complete = False
         if outfile:
             with open( outfile, 'r' ) as f:
@@ -202,14 +331,16 @@ class Tests(unittest.TestCase):
         self.assertTrue(complete, 'Unsuccessful fehm simulation\nContents of '+errfile+':\n\n'+errstr)
         os.chdir(curdir)
 
-
-
 def suite(case):
     suite = unittest.TestSuite()
     if case == 'all':
         suite.addTest(Tests('saltvcon'))
         suite.addTest(Tests('dissolution'))
         suite.addTest(Tests('salt_perm_poro'))
+        suite.addTest(Tests('avdonin'))
+        #suite.addTest(Tests('barometric'))
+        #suite.addTest(Tests('binmode'))
+        #suite.addTest(Tests('test_boundry'))
     elif case == 'developer':
         pass
     elif case == 'admin':
@@ -220,12 +351,12 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         exe = os.path.abspath(sys.argv[1])
     else:
-        print "Usage: python fehm_tests.py 'fehm executable'"
+        print "Usage: python fehmpytests.py 'fehm executable'"
         os._exit(0)
     # Case set to all for now
     case = 'all'
     runner = unittest.TextTestRunner(verbosity=2)
     test_suite = suite(case)
-    runner.run (test_suite) 
+    runner.run (test_suite)
 
 
