@@ -237,8 +237,8 @@ class Tests(unittest.TestCase):
         
     def test_boundry(self):
         """ Boundry Test
-        Todo: Add description.
-        Developed by mlange806@gmail.com """
+        Tests for correct flow at three different boundaries.
+        Developed by mlange806@gmail.com on May 30, 2014 """
         
         #Error Threshold
         maxerr = 1.e-4
@@ -250,8 +250,7 @@ class Tests(unittest.TestCase):
         cases = ['1', '2', '3']
         for case in cases:
             #Read in old files.
-            f_old = fcontour('compare_boun'+case+'*')
-            print f_old.times
+            f_old = fcontour('compare_boun'+case+'.*_sca_node.csv')
             
             #Create fehmn.files for current case.
             generic_files = open('generic_fehmn.files')
@@ -264,10 +263,18 @@ class Tests(unittest.TestCase):
             
             #Read in new files.
             self.run_fehm()
-        
-        #Assume true for now.
-        self.assertTrue(True, 'Somehow true is false.')
-        
+            f_new = fcontour('prob_well_boun'+case+'.*_sca_node.csv')
+            
+            #Calculate the difference.
+            f_diff = fdiff(f_new, f_old)
+            
+            #Check for the correct flow.
+            msg = 'Incorrect flow calculation at boundry '+case+'.'
+            variables = ['x', 'y', 'z', 'P', 'Hydraulic Head (m)']
+            for t in f_diff.times:
+                for v in variables:
+                    self.assertTrue(max(f_diff[t][v])<maxerr, msg)
+                    
         #Remove created files.
         trash = ['none', '*.con', '*.out', '*.trc', '*.his', '*.geo', 'p*.csv',
                  '*.temp', '*.sca_head', '*.avs_log', '*.err', 'fehmn.files']
@@ -340,7 +347,7 @@ def suite(case):
         suite.addTest(Tests('avdonin'))
         #suite.addTest(Tests('barometric'))
         #suite.addTest(Tests('binmode'))
-        #suite.addTest(Tests('test_boundry'))
+        suite.addTest(Tests('test_boundry'))
     elif case == 'developer':
         pass
     elif case == 'admin':
