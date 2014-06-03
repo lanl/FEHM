@@ -1,17 +1,22 @@
-#IMPORTANT - This script is hardcoded to work with /home/mlange.
-
 import os,sys
 import re
 from glob import glob
 
-def convert_test(name):
+def convert_test(name, new_path):
     """ Convert Test
-    Configured to be run in /home/mlange - Converts old test case to new by
-    creating a folder in fehmpytests and copying files over.
-    Developed by mlange806@gmail.com on June 2, 2014."""
+    
+    Automates part of old to new test-case conversion for a given test-case,
+    'name', by creating a folder in the new test location, specified by 
+    'new_path', and copying the file-list, input, and grid files. Code 
+    generation will be added soon.
+    
+    *Test-case must be in a single folder in the old suite.
+    
+    Modified by mlange806@gmail.com on June 3, 2014. """
 
     #Change directory to specified test case.
-    os.chdir('old_test_suite/'+name+'/input')
+    old_path = '/n/swdev/FEHM_dev/VERIFICATION_linux/VERIFICATION_V3.2linux/'
+    os.chdir(old_path+name+'/input')
     
     #Find the name of the file list.
     file_name = glob('*.files')[0]
@@ -21,13 +26,13 @@ def convert_test(name):
     file_list_whole = opened_file.read()
     opened_file.close()
     
-    #Store the file list as a dictionary and extras as a list.
+    #Store the file list as a dictionary.
     file_list = {}
     with open(file_name) as opened_file:
         for line in opened_file:
             try:
-                #Add line to file_list if it can be split into (key, value).
-                (key, value) = line.split(' ')
+                #Add line to file_list if it can be split into kvpairs.
+                (key, value) = line.split(': ')
                 
                 #Tidy up the string.
                 value = re.sub('N.', '*.', value)
@@ -36,13 +41,13 @@ def convert_test(name):
                 #Set the entry.
                 file_list[key] = value
             except:
-                #Otherwise ignore.
+                #If the line can not be split into kvpairs, ignore.
                 pass
     
     os.chdir('..')
                 
     #Determine the input file names.
-    file_names = glob(file_list['input:'])
+    file_names = glob(file_list['input'])
     
     #Store the contents of each input file as a dictionary.
     input_files = {}
@@ -52,22 +57,29 @@ def convert_test(name):
         opened_file.close()
     
     #Determine the grid file name.
-    file_name = file_list['gridf:']
+    file_name = file_list['gridf']
     
     #Read in the contents of the grid file.
     opened_file = open(file_name)
     grid_file = opened_file.read()
     opened_file.close()
     
-    #Navigate to fehmpytest.
-    path = '/home/mlange/sft-files/fehm-open/fehmpytests'
-    os.chdir(path)
+    #Get the compare files.
+    os.chdir('output')
+    file_names = glob('*.avs')
     
-    #Create folder for test case.
-    os.makedirs(name)
-    os.chdir(name)
-    os.makedirs('input')
-    os.makedirs('output')
+    #Navigate to fehmpytest.
+    os.chdir(new_path)
+    
+    #Create folder for test case, unless it already exists.
+    try:
+        os.makedirs(name)
+        os.chdir(name)
+        os.makedirs('input')
+        os.makedirs('output')
+    except:
+        print 'ERROR: There is already a folder for this test case.'
+        os._exit(0)
     
     #Write the file list from the old test suite.
     opened_file = open('fehmn.files', 'w')
@@ -81,18 +93,19 @@ def convert_test(name):
         opened_file.close()
     
     #Write the grid file from the old test suite.
-    opened_file = open(file_list['gridf:'], 'w')
+    opened_file = open(file_list['gridf'], 'w')
     opened_file.write(grid_file)
     opened_file.close()
     
 if __name__ == '__main__':
     #Check that a directory name was specified.
-    if len(sys.argv) == 2:
+    if len(sys.argv) == 3:
         name = sys.argv[1]
+        new_path = sys.argv[2]
     else:
-        print "Usage: python old2new.py '<folder-name>'"
+        print "Usage: python old2new.py '<test-name>' '<test-location>'"
         os._exit(0)
      
     #Converts 'name' from old_test_suite to test case in fehmpytests.py.   
-    convert_test(name)
+    convert_test(name, new_path)
     
