@@ -196,7 +196,9 @@ class Tests(unittest.TestCase):
         cases = ['84', '400', '800']
         for case in cases: 
             #Read in comparison files.
-            f_old = fcontour('compare'+case+'.*_sca_node.csv')
+            f_old_con = fcontour('compare'+case+'.*_sca_node.csv')
+            f_old_his = fhistory('compare'+case+'_temp.his')
+            f_old_his.format
             
             #Create fehmn.files for current case.
             generic_files = open('generic_fehmn.files')
@@ -209,19 +211,35 @@ class Tests(unittest.TestCase):
             
             #Read in new output files.
             self.run_fehm()
-            f_new = fcontour('avdonin'+case+'.*.csv')
+            f_new_con = fcontour('avdonin'+case+'.*.csv')
+            f_new_his = fhistory('avdonin'+case+'_temp.his')
             
-            #f_dif is a np array of temperature differences. 
-            f_dif = fdiff(f_new, f_old)
+            #Find the difference between the old and new. 
+            f_dif_con = fdiff(f_new_con, f_old_con)
+            f_dif_his = fdiff(f_new_his, f_old_his)
             
             #For each time, test for correct temperatures.   
             error = 'Incorrect temperature at time '
-            for t in f_dif.times:
-            	self.assertTrue(max(f_dif[t]['T'])<maxerr, error+str(t) + '.')
+            
+            #Get the contour information.
+            times = f_dif_con.times
+            variables = f_dif_con.variables
+            
+            #Check that the new contour files are still the same.
+            for t, v in [(t, v) for t in times for v in variables]:
+            	self.assertTrue(max(f_dif_con[t][v])<maxerr, error+str(t)+'.')
+            
+            #Get the history information.
+            variables = f_dif_his.variables
+            nodes = f_dif_his.nodes
+            	
+            #Check that the new history files are still the same.
+            for v, n in [(v, n) for v in variables for n in nodes]:
+            	self.assertTrue(max(f_dif_his[v][n])<maxerr, error+str(t)+'.')   
             
             #Remove created files.
             trash = ['avdonin'+case+'.*.csv', '*.avs_log', '*.con', '*.geo', 
-                     '*.his', '*.out', '*.err', 'all', 'fehmn.files']
+                     'avdonin*.his', '*.out', '*.err', 'all', 'fehmn.files']
             self.cleanup(trash)
         
         #Return to the main directory.       
@@ -279,6 +297,9 @@ class Tests(unittest.TestCase):
         trash = ['none', '*.con', '*.out', '*.trc', '*.his', '*.geo', 'p*.csv',
                  '*.temp', '*.sca_head', '*.avs_log', '*.err', 'fehmn.files']
         self.cleanup(trash)
+        
+        #Return to the main directory.       
+        os.chdir(self.maindir)
     
     	
 
@@ -341,13 +362,13 @@ class Tests(unittest.TestCase):
 def suite(case):
     suite = unittest.TestSuite()
     if case == 'all':
-        suite.addTest(Tests('saltvcon'))
-        suite.addTest(Tests('dissolution'))
-        suite.addTest(Tests('salt_perm_poro'))
+        #suite.addTest(Tests('saltvcon'))
+        #suite.addTest(Tests('dissolution'))
+        #suite.addTest(Tests('salt_perm_poro'))
         suite.addTest(Tests('avdonin'))
         #suite.addTest(Tests('barometric'))
         #suite.addTest(Tests('binmode'))
-        suite.addTest(Tests('test_boundry'))
+        #suite.addTest(Tests('test_boundry'))
     elif case == 'developer':
         pass
     elif case == 'admin':
