@@ -184,7 +184,7 @@ class Tests(unittest.TestCase):
     def avdonin(self):
         """ Avdonin Radial Heat and Mass Transfer Test 
         Tests that the temperatures at each time are correct.
-        Developed by mlange806@gmail.com on May 29, 2014 """
+        Modified by mlange806@gmail.com on June 3, 2014 """
         
         #Error threshold - May need to change.
         maxerr = 1.e-4 
@@ -198,7 +198,6 @@ class Tests(unittest.TestCase):
             #Read in comparison files.
             f_old_con = fcontour('compare'+case+'.*_sca_node.csv')
             f_old_his = fhistory('compare'+case+'_temp.his')
-            f_old_his.format
             
             #Create fehmn.files for current case.
             generic_files = open('generic_fehmn.files')
@@ -218,24 +217,27 @@ class Tests(unittest.TestCase):
             f_dif_con = fdiff(f_new_con, f_old_con)
             f_dif_his = fdiff(f_new_his, f_old_his)
             
-            #For each time, test for correct temperatures.   
-            error = 'Incorrect temperature at time '
-            
             #Get the contour information.
             times = f_dif_con.times
             variables = f_dif_con.variables
             
+            #Error Message for Incorrect Contour    
+            msg = 'Incorrect %s at time %s.'
+            
             #Check that the new contour files are still the same.
             for t, v in [(t, v) for t in times for v in variables]:
-            	self.assertTrue(max(f_dif_con[t][v])<maxerr, error+str(t)+'.')
+            	self.assertTrue(max(f_dif_con[t][v])<maxerr, msg%(v, t))
             
             #Get the history information.
             variables = f_dif_his.variables
             nodes = f_dif_his.nodes
+            
+            #Error Message for Incorrect History    
+            msg = 'Incorrect %s at node %s.'
             	
             #Check that the new history files are still the same.
             for v, n in [(v, n) for v in variables for n in nodes]:
-            	self.assertTrue(max(f_dif_his[v][n])<maxerr, error+str(t)+'.')   
+            	self.assertTrue(max(f_dif_his[v][n])<maxerr, msg%(v, n))   
             
             #Remove created files.
             trash = ['avdonin'+case+'.*.csv', '*.avs_log', '*.con', '*.geo', 
@@ -301,8 +303,6 @@ class Tests(unittest.TestCase):
         #Return to the main directory.       
         os.chdir(self.maindir)
     
-    	
-
     # UTILITIES ######################################################
 
     def setUp(self):
@@ -362,13 +362,13 @@ class Tests(unittest.TestCase):
 def suite(case):
     suite = unittest.TestSuite()
     if case == 'all':
-        #suite.addTest(Tests('saltvcon'))
-        #suite.addTest(Tests('dissolution'))
-        #suite.addTest(Tests('salt_perm_poro'))
+        suite.addTest(Tests('saltvcon'))
+        suite.addTest(Tests('dissolution'))
+        suite.addTest(Tests('salt_perm_poro'))
         suite.addTest(Tests('avdonin'))
         #suite.addTest(Tests('barometric'))
         #suite.addTest(Tests('binmode'))
-        #suite.addTest(Tests('test_boundry'))
+        suite.addTest(Tests('test_boundry'))
     elif case == 'developer':
         pass
     elif case == 'admin':

@@ -1,13 +1,8 @@
-avdonin.in
-avdonincase.grid
-avdonin.in
-avdonincase.out
+input: avdonin.in
+grida: avdonincase.grid
+outp: avdonincase.out
+hist: avdonincase.his
+root: avdonincase
 
-
-avdonincase.his
-avdonincase.con
-
-
-
-all
+none
 0
