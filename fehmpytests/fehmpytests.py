@@ -302,7 +302,23 @@ class Tests(unittest.TestCase):
         
         #Return to the main directory.       
         os.chdir(self.maindir)
-    
+        
+    def test_general(self):
+        """ General Test Case 
+        Should be able to test any test case.
+        Modified by mlange806@gmail.com on June 4, 2014"""
+        
+        #Error Threshold
+        maxerr = 1.e-4
+        
+        #Change to test directory.
+        os.chdir('cden_test')
+        
+        #Find the subcases.
+        subcases = self.getSubcases()
+        
+        print subcases 
+          
     # UTILITIES ######################################################
 
     def setUp(self):
@@ -358,17 +374,43 @@ class Tests(unittest.TestCase):
         os.chdir(self.maindir)
         self.assertTrue(complete, 'Unsuccessful fehm simulation\nContents of '+errfile+':\n\n'+errstr)
         os.chdir(curdir)
-
+        
+    def getSubcases(self):
+        """ Get Cases
+        Assumming that subcases are numbers, returns a set of cases using a 
+        test-case's comparison files.
+        
+        *Must be inside the test-case folder.
+        
+        Developed by mlange806@gmail.com on June 4, 2014"""
+    
+        #Find the names of every comparison file.
+        types = ['*.csv', '*.his']
+        file_names = []
+        for t in types:
+            file_names = file_names+glob('compare/'+t)
+        
+        #Using the comparison files, extract the subcase numbers.    
+        subcases = []
+        for file_name in file_names:
+            pattern = re.compile(r'\d+')
+            subcase = pattern.findall(file_name)[0]
+            if subcase not in subcases:
+                subcases.append(subcase)
+                
+        return subcases
+       
 def suite(case):
     suite = unittest.TestSuite()
     if case == 'all':
-        suite.addTest(Tests('saltvcon'))
-        suite.addTest(Tests('dissolution'))
-        suite.addTest(Tests('salt_perm_poro'))
-        suite.addTest(Tests('avdonin'))
+        #suite.addTest(Tests('saltvcon'))
+        #suite.addTest(Tests('dissolution'))
+        #suite.addTest(Tests('salt_perm_poro'))
+        #suite.addTest(Tests('avdonin'))
         #suite.addTest(Tests('barometric'))
         #suite.addTest(Tests('binmode'))
-        suite.addTest(Tests('test_boundry'))
+        #suite.addTest(Tests('test_boundry'))
+        suite.addTest(Tests('test_general'))
     elif case == 'developer':
         pass
     elif case == 'admin':
