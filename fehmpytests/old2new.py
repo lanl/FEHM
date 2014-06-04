@@ -86,6 +86,7 @@ def convert_test(name, new_path):
         os.chdir(name)
         os.makedirs('input')
         os.makedirs('output')
+        os.makedirs('compare')
     except:
         print 'ERROR: There is already a folder for this test case.'
         os._exit(0)
@@ -108,7 +109,7 @@ def convert_test(name, new_path):
     
     #Write the comparison files from the old test suite.
     for key in comparison_files:
-        opened_file = open('output/'+key, 'w')
+        opened_file = open('compare/'+key, 'w')
         opened_file.write(comparison_files[key])
         opened_file.close()
         
