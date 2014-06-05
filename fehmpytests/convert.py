@@ -29,14 +29,29 @@ class Convertor():
         input_files = self._readFiles(control_file.getFiles('input'))
         
         #Get grid file.
-        grid_file = self._readFiles(control_file.getFiles('gridf'))
+        try:
+            grid_file = self._readFiles(control_file.getFiles('gridf'))
+        except:
+            grid_file = self._readFiles(control_file.getFiles('grid'))
         
         #Get compare files.
         os.chdir('output')
         types = ['*.avs', '*.his']
         compare_files = {}
-        for t in types:    
-            compare_files.update(self._readFiles(t))
+        for t in types:
+            #If the file type is avs, convert to 
+            if t == '*.avs':
+                old_format = self._readFiles(t)
+                new_format = {}
+                for key in old_format:
+                    new_contents = self._convertFormat(key)
+                    new_key = re.sub('.avs', '.csv', key)
+                    new_format[new_key] = new_contents     
+                compare_files.update(new_format)
+                
+            #Else, just read the files as they are.
+            else:
+                compare_files.update(self._readFiles(t))
             
         #Navigate to fehmpytest.
         os.chdir(new_path)
@@ -128,13 +143,55 @@ class Convertor():
         """ Write Files
         Given a dictionary of files, writes each file. """
         for key in files:
-        
-            opened_file = open(key, 'w')
+            #Create new file name.
+            pattern = re.compile(r'([^0-9]+|[0-9]+)')
+            first_section = pattern.findall(key)[0]
+            new_name = re.sub(first_section, 'compare', key)
+            
+            opened_file = open(new_name, 'w')
             opened_file.write(files[key])
             opened_file.close()
     
-    def _convertFormat(self):
-        pass
+    def _convertFormat(self, filename):
+        """ AVS to CSV Converter
+        Takes in an AVS filename and converts it to CSV.
+        Developed by mlange806@gmail.com May 29, 2014 """
+        
+        #Store the attributes and convert each line.
+        data = []
+        header = ''     
+        with open(filename) as fp:
+            #Read column numbers.
+            first_line = fp.readline()
+            first_line = first_line.split()
+            column_num = int(first_line[0])
+            
+            #Read the column names.
+            names = []
+            i = 0
+            while i < column_num:
+                names.append(fp.readline())
+                
+                #Remove the extra dimension.
+                names[i] = names[i].split(',')
+                names[i] = names[i][0]
+                
+                i = i + 1
+            
+            #Create the header.        
+            header = ', '.join(names)
+                
+            #For each row, change the spaces to commas.
+            for line in fp:
+                data.append(', '.join(line.split()))
+    
+        #Write the changes to the original file.
+        new_format = header+'\n'  
+        for line in data:
+            new_format = new_format + '\n'+line
+        
+        return new_format
+        
         
 class ControlFile():
     """ Control File
