@@ -39,7 +39,7 @@ class Convertor():
         types = ['*.avs', '*.his']
         compare_files = {}
         for t in types:
-            #If the file type is avs, convert to 
+            #If the file type is avs, convert to csv.
             if t == '*.avs':
                 old_format = self._readFiles(t)
                 new_format = {}
@@ -63,15 +63,18 @@ class Convertor():
             print 'ERROR: There is already a folder for this test case.'
             os._exit(0)
         
-        #Write the control file.
+        #Enter input folder.
+        
+        
+        #Write generic control file.
+        os.chdir('input') 
         opened_file = open('generic_fehmn.files', 'w')
         opened_file.write(control_file.getData())
         opened_file.close()
+        os.chdir('..')
         
-        #Write the input files.
+        #Write the input and grid files
         self._writeFiles(input_files)
-        
-        #Write the grid file.
         self._writeFiles(grid_file)
         
         #Write the compare files.
@@ -103,8 +106,10 @@ class Convertor():
                     (key, value) = line.split(': ')
                     
                     #Tidy up the string.
-                    value = re.sub('N.', '*.', value)
+                    value = re.sub('N', '*', value)
+                    value = re.sub('UM', '', value)
                     value = re.sub('\n', '', value)
+                    value = re.sub(' ', '', value)
                     
                     files[key] = value
                 except:
@@ -136,19 +141,13 @@ class Convertor():
         os.makedirs(name)
         os.chdir(name)
         os.makedirs('input')
-        os.makedirs('output')
         os.makedirs('compare')
         
     def _writeFiles(self, files):
         """ Write Files
         Given a dictionary of files, writes each file. """
-        for key in files:
-            #Create new file name.
-            pattern = re.compile(r'([^0-9]+|[0-9]+)')
-            first_section = pattern.findall(key)[0]
-            new_name = re.sub(first_section, 'compare', key)
-            
-            opened_file = open(new_name, 'w')
+        for key in files:  
+            opened_file = open(key, 'w')
             opened_file.write(files[key])
             opened_file.close()
     
