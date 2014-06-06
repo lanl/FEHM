@@ -5,7 +5,7 @@ import glob
 class Convertor():
     """ Converter 
     Converts old test-cases into new tet-cases.
-    Developed by mlange806@gmail.com on June 5, 2014."""
+    Modified by mlange806@gmail.com on June 6, 2014."""
     
     def __init__(self, new_path):
         """ Default Constructor 
@@ -28,11 +28,8 @@ class Convertor():
         #Get input files.
         input_files = self._readFiles(control_file.getFiles('input'))
         
-        #Get grid file.
-        try:
-            grid_file = self._readFiles(control_file.getFiles('gridf'))
-        except:
-            grid_file = self._readFiles(control_file.getFiles('grid'))
+        #Get grid file
+        grid_file = self._readFiles(control_file.getFiles('grid'))
         
         #Get compare files.
         os.chdir('output')
@@ -63,16 +60,9 @@ class Convertor():
             print 'ERROR: There is already a folder for this test case.'
             os._exit(0)
         
-        #Enter input folder.
-        
-        
         #Write generic control file.
-        os.chdir('input') 
-        opened_file = open('generic_fehmn.files', 'w')
-        opened_file.write(control_file.getData())
-        opened_file.close()
-        os.chdir('..')
-        
+        self._writeControlFile(control_file)
+
         #Write the input and grid files
         self._writeFiles(input_files)
         self._writeFiles(grid_file)
@@ -120,6 +110,28 @@ class Convertor():
         control_file = ControlFile(data, files)
         return control_file
         
+    def _writeControlFile(self, control_file):
+        """ Write Control File
+        Writes the control file to the new test-suite in a format known to work
+        currently. """
+        
+        #Open the file.
+        opened_file = open('input/generic_fehmn.files', 'w')
+        
+        #Write the first lines.
+        opened_file.write(control_file.getFiles('input')+'\n')
+        opened_file.write(control_file.getFiles('grid')+'\n')
+        opened_file.write(control_file.getFiles('input')+'\n')
+        opened_file.write('out*.out\n\n')
+        
+        #Write the output lines.
+        opened_file.write('history*.his\n')
+        opened_file.write('countour*.con\n\n')
+        
+        #Write the last lines.
+        opened_file.write('none\n')
+        opened_file.write('0\n')
+               
     def _readFiles(self, pattern):
         """ Read Files
         Given a glob pattern, reads files into a dictionary. """
@@ -137,7 +149,9 @@ class Convertor():
         return files
         
     def _createTestFolder(self, name):
-        #Creates a folder called 'name' with subfolders for the files.
+        """ Create Test Folder
+        Creates a folder called 'name' with subfolders for the files. """
+        
         os.makedirs(name)
         os.chdir(name)
         os.makedirs('input')
@@ -146,6 +160,7 @@ class Convertor():
     def _writeFiles(self, files):
         """ Write Files
         Given a dictionary of files, writes each file. """
+        
         for key in files:  
             opened_file = open(key, 'w')
             opened_file.write(files[key])
@@ -207,9 +222,20 @@ class ControlFile():
         return self._data
         
     def getFiles(self, file_type):
-        #For a specific file_type, i.e. 'input', a list of files is returned.
-        return self._files[file_type]        
+        """ Get Files
+        Returns glob pattern for category, i.e. 'input' or 'grid'. """
         
+        #Work-around for different grid names in control file
+        if file_type == 'grid':
+            known_grids = ['grid', 'gridf']
+            for grid in known_grids:
+                if grid in self._files:
+                    return self._files[grid]
+                    
+        #For now, there are not any other exceptions known.
+        else:
+            return self._files[file_type]               
+                      
 if __name__ == '__main__':
     #Check that a directory name was specified.
     if len(sys.argv) == 3:
