@@ -1,6 +1,7 @@
 import os,sys
 import re
 import glob
+import distutils.core
 
 class Convertor():
     """ Converter 
@@ -11,29 +12,68 @@ class Convertor():
         """ Default Constructor 
         Sets the default path for the old test suite. """
         
-        self.old_path = \
+        self._old_path = \
           '/n/swdev/FEHM_dev/VERIFICATION_linux/VERIFICATION_V3.2linux/'        
-        self.new_path = new_path  
+        self._new_path = new_path  
     
     def convertCase(self, name):
         """ Convert Case
         Takes a test-case 'name' from the old path and copies files to the new 
         test directory. """
+     
+        #Navigate to fehmpytest.
+        os.chdir(self._new_path)
         
-        #Read the control file.
-        os.chdir(self.old_path+name+'/input')
-        control_file = self._readControlFile() 
-        os.chdir('..')
+        #Create folder for test case, unless it already exists.
+        try:
+            self._createTestFolder(name)
+        except:
+            print 'ERROR: There is already a folder for this test case.'
+            os._exit(0)
+            
+        #Copy the input files from old to new test suite.
+        source = self._old_path+name+'/input'
+        dest = self._new_path+name+'/input'
+        distutils.dir_util.copy_tree(source, dest)  
         
-        #Get input files.
-        input_files = self._readFiles(control_file.getFiles('input'))
+        #Prime the control file in the new test-case.
+        self._primeControlFile(name) 
+             
+        #Get the compare files.
+        self._copyCompareFiles(name)
+         
+        print 'Done.'
+                                  
+    def _primeControlFile(self, name):
+        """ Prime Control File
+        Makes the control file ready for FEHM execution by renaming it to 
+        fehmn.files and removing 'output/' occurrences. """
         
-        #Get grid file
-        grid_file = self._readFiles(control_file.getFiles('grid'))
+        #Change the control file's name.
+        os.chdir(self._new_path+name+'/input')
+        control_file = glob.glob('*.files')[0]
+        os.rename(control_file, 'generic_fehmn.files')
         
-        #Get compare files.
-        os.chdir('output')
-        types = ['*.avs', '*.his']
+        #Remove all 'output/' from the control file.
+        opened_file = open('generic_fehmn.files', 'r+')
+        data = opened_file.read()
+        data = re.sub('output/', '', data)
+        opened_file.seek(0)
+        opened_file.write(data)
+        opened_file.truncate()
+        opened_file.close()
+        
+    def _copyCompareFiles(self, name):
+        """ Copy Compare Files
+        For test-case, 'name', copies all csv, avs, and history files from the 
+        old test-suite to the new test-suite. If the format is avs, they are 
+        converted into csv and then copied. """
+        
+        #Change directory to the old test-case's output folder.
+        os.chdir(self._old_path+name+'/output')
+        
+        #Read all files in this list of types.
+        types = ['*.csv', '*.avs', '*.his']
         compare_files = {}
         for t in types:
             #If the file type is avs, convert to csv.
@@ -44,94 +84,16 @@ class Convertor():
                     new_contents = self._convertFormat(key)
                     new_key = re.sub('.avs', '.csv', key)
                     new_format[new_key] = new_contents     
-                compare_files.update(new_format)
-                
+                compare_files.update(new_format)          
             #Else, just read the files as they are.
             else:
                 compare_files.update(self._readFiles(t))
-            
-        #Navigate to fehmpytest.
-        os.chdir(new_path)
         
-        #Create folder for test case, unless it already exists.
-        try:
-            self._createTestFolder(name)
-        except:
-            print 'ERROR: There is already a folder for this test case.'
-            os._exit(0)
-        
-        #Write generic control file.
-        self._writeControlFile(control_file)
-
-        #Write the input and grid files
-        self._writeFiles(input_files)
-        self._writeFiles(grid_file)
-        
-        #Write the compare files.
-        os.chdir('compare')
+        #Write the files to the compare folder in the new test-case.
+        os.chdir(self._new_path+name+'/compare')
         self._writeFiles(compare_files)
         os.chdir('..')
-        
-        print 'Done.'
-                                  
-    def _readControlFile(self):    
-        """ Read Control File
-        Reads the control file for a test-case into a ControlFile object which
-        can be copied and queried for specific files. """
-        
-        #Find the name of the control file.
-        file_name = glob.glob('*.files')[0]
-    
-        #Read in the contents of the control file.
-        opened_file = open(file_name)
-        data = opened_file.read()
-        opened_file.close()
-        
-        #Store the file list as a dictionary.
-        files = {}
-        with open(file_name) as opened_file:
-            for line in opened_file:
-                try:
-                    #Add line to file_list if it can be split into kvpairs.
-                    (key, value) = line.split(': ')
-                    
-                    #Tidy up the string.
-                    value = re.sub('N', '*', value)
-                    value = re.sub('UM', '', value)
-                    value = re.sub('\n', '', value)
-                    value = re.sub(' ', '', value)
-                    
-                    files[key] = value
-                except:
-                    #If the line can not be split into kvpairs, ignore.
-                    pass
-         
-        #Create the control file object and return.           
-        control_file = ControlFile(data, files)
-        return control_file
-        
-    def _writeControlFile(self, control_file):
-        """ Write Control File
-        Writes the control file to the new test-suite in a format known to work
-        currently. """
-        
-        #Open the file.
-        opened_file = open('input/generic_fehmn.files', 'w')
-        
-        #Write the first lines.
-        opened_file.write(control_file.getFiles('input')+'\n')
-        opened_file.write(control_file.getFiles('grid')+'\n')
-        opened_file.write(control_file.getFiles('input')+'\n')
-        opened_file.write('out*.out\n\n')
-        
-        #Write the output lines.
-        opened_file.write('history*.his\n')
-        opened_file.write('countour*.con\n\n')
-        
-        #Write the last lines.
-        opened_file.write('none\n')
-        opened_file.write('0\n')
-               
+                 
     def _readFiles(self, pattern):
         """ Read Files
         Given a glob pattern, reads files into a dictionary. """
@@ -205,8 +167,7 @@ class Convertor():
             new_format = new_format + '\n'+line
         
         return new_format
-        
-        
+              
 class ControlFile():
     """ Control File
     Stores file contents and the name of files by category. File contents and 
