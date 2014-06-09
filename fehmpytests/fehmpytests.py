@@ -21,7 +21,7 @@ class Tests(unittest.TestCase):
     # TESTS ######################################################### 
 
     def saltvcon(self):
-        """ Salt variable conductivity
+        ''' Salt variable conductivity
 
             Modification: new Dec 19 2013 dharp@lanl.gov
             Modification: updated to use f_dif function Feb 6 2014
@@ -45,7 +45,7 @@ class Tests(unittest.TestCase):
             if kx is less then 1.e-6, set to 1.e-6
 
             The excel spreadsheet in ./saltvcon/saltvcon.xlsx contains the
-            associated calculations. """
+            associated calculations. '''
             
         # Relative error theshold
         maxerr = 1.e-4
@@ -100,7 +100,7 @@ class Tests(unittest.TestCase):
         os.chdir(self.maindir)
 
     def dissolution(self):
-        """ Dissolution
+        '''  Dissolution
 
             Modification: new Jan 7 2014 dharp@lanl.gov
             Modification: 
@@ -111,26 +111,27 @@ class Tests(unittest.TestCase):
 
             Details of this test are described in the FEHM V2.21 Validation Test Plan
             on pages 93-95 
-            (STN: 10086-2.21-00, Rev.No. 00, Document ID: 10086-VTP-2.21-00, August 2003)
-        """
-        
+            (STN: 10086-2.21-00, Rev.No. 00, Document ID: 10086-VTP-2.21-00, August 2003) 
+            
+        '''
+             
         # Relative error theshold
         maxerr = 1.e-4
         # Test directory name
         dir = 'dissolution'
         # Change directory to test directory
         os.chdir(dir)
-        
+
         # Read in comparison files
         f_old = fcontour('compare.*_con_node.csv')
-        
+
         # Read in new output files
         self.run_fehm()
         f_new = fcontour('dissolution.*_con_node.csv')
-        
+
         # Diff new and old files
         f_dif = fdiff(f_new,f_old,variables=['Np[aq] (Moles/kg H20)'])
-        
+
         # Test for correct concentrations
         for t in f_dif.times:
             self.assertTrue(f_dif[t]['Np[aq] (Moles/kg H20)'].all()<maxerr, '\nIncorrect concentration at time '+str(t))
@@ -140,7 +141,7 @@ class Tests(unittest.TestCase):
         os.chdir(self.maindir)
 
     def salt_perm_poro(self):
-        """ Salt perm-poro function
+        ''' Salt perm-poro function
 
             Modification: new Jan 29 2014 dharp@lanl.gov
             Modification: 
@@ -150,7 +151,7 @@ class Tests(unittest.TestCase):
             ./salt_perm_poro/salt-perm-poro.xlsx contains calculations of the perm-poro function.
 
             Cinar, Y, G Pusch and V Reitenbach (2006) Petrophysical and capillary properties of compacted
-                salt. Transport in Porous Media. 64, p. 199-228, doi: 10.1007/s11242-005-2848-1 """
+                salt. Transport in Porous Media. 64, p. 199-228, doi: 10.1007/s11242-005-2848-1 '''
         
         cwd = os.getcwd()
         
@@ -182,9 +183,9 @@ class Tests(unittest.TestCase):
         os.chdir(self.maindir)
       
     def avdonin(self):
-        """ Avdonin Radial Heat and Mass Transfer Test 
+        ''' Avdonin Radial Heat and Mass Transfer Test 
         Tests that the temperatures at each time are correct.
-        Modified by mlange806@gmail.com on June 3, 2014 """
+        Modified by mlange806@gmail.com on June 3, 2014 '''
         
         #Error threshold - May need to change.
         maxerr = 1.e-4 
@@ -255,71 +256,119 @@ class Tests(unittest.TestCase):
         """ Comming Soon """
         pass
         
-    def test_boundry(self):
-        """ Boundry Test
-        Tests for correct flow at three different boundaries.
-        Developed by mlange806@gmail.com on May 30, 2014 """
+    def test_boun(self): 
+        self._test_case('boun_test') 
         
-        #Error Threshold
-        maxerr = 1.e-4
+    def test_cflxz(self):
+        self._test_case('cflxz')
         
-        #Change to test directory.
-        os.chdir('boundry')
+    def test_cden(self):
+        self._test_case('cden_test')
         
-        #Test the 3 boundry cases.
-        cases = ['1', '2', '3']
-        for case in cases:
-            #Read in old files.
-            f_old = fcontour('compare_boun'+case+'.*_sca_node.csv')
-            
-            #Create fehmn.files for current case.
-            generic_files = open('generic_fehmn.files')
-            data = generic_files.read()
-            data = re.sub('<CASE>', case, data)
-            files = open('fehmn.files', 'w')
-            files.write(data)
-            generic_files.close()
-            files.close()
-            
-            #Read in new files.
-            self.run_fehm()
-            f_new = fcontour('prob_well_boun'+case+'.*_sca_node.csv')
-            
-            #Calculate the difference.
-            f_diff = fdiff(f_new, f_old)
-            
-            #Check for the correct flow.
-            msg = 'Incorrect flow calculation at boundry '+case+'.'
-            variables = ['x', 'y', 'z', 'P', 'Hydraulic Head (m)']
-            for t in f_diff.times:
-                for v in variables:
-                    self.assertTrue(max(f_diff[t][v])<maxerr, msg)
-                    
-        #Remove created files.
-        trash = ['none', '*.con', '*.out', '*.trc', '*.his', '*.geo', 'p*.csv',
-                 '*.temp', '*.sca_head', '*.avs_log', '*.err', 'fehmn.files']
-        self.cleanup(trash)
+    def test_chain(self):
+        self._test_case('chain')
         
-        #Return to the main directory.       
-        os.chdir(self.maindir)
+    def test_co2test(self):
+        self._test_case('co2test')
         
-    def test_general(self):
+    def test_convection(self):
+        self._test_case('convection')
+        
+    def test_doe(self):
+        self._test_case('doe')
+    
+    def test_dpdp_rich(self):
+        self._test_case('dpdp_rich')
+        
+    def test_erosion(self):
+        self._test_case('erosion_test')
+    
+    def test_evaporation(self):
+        self._test_case('evaporation')
+        
+    def test_forward(self):
+        self._test_case('forward')
+        
+    def test_gdpm(self):
+        self._test_case('gdpm')
+    
+    def test_head(self):
+        self._test_case('head')
+        
+    def test_lost_part(self):
+        self._test_case('lost_part')
+    
+    def test_mptr(self):
+        self._test_case('mptr_test')
+                   
+    # UTILITIES ######################################################
+    
+    def _test_case(self, name):
         """ General Test Case 
         Should be able to test any test case.
-        Modified by mlange806@gmail.com on June 4, 2014"""
+        Modified by mlange806@gmail.com on June 4, 2014. """
         
         #Error Threshold
         maxerr = 1.e-4
         
         #Change to test directory.
-        os.chdir('cden_test')
+        os.chdir(name)
         
         #Find the subcases.
         subcases = self.getSubcases()
         
-        print subcases 
-          
-    # UTILITIES ######################################################
+        #Test each subcase.
+        for subcase in subcases:
+            #Test each output file type.
+            file_types = ['*.csv', '*.his']
+            for file_type in file_types:
+                #Check to make sure there are files of this type.
+                if len(glob('compare/'+file_type)) > 0:
+                    #Read in the old comparison files.
+                    f_old = self.fgeneral('compare/'+file_type)
+                    
+                    #Create fehmn.files for current case.
+                    generic_files = open('input/generic_fehmn.files')
+                    data = generic_files.read()
+                    data = re.sub('N', subcase, data)
+                    data = re.sub('UM', '', data)
+                    files = open('fehmn.files', 'w')
+                    files.write(data)
+                    generic_files.close()
+                    files.close()
+                    
+                    #Read in new files.
+                    self.run_fehm()
+                    f_new = self.fgeneral(file_type)
+                    
+                    #Find the difference between the two files.
+                    f_dif = fdiff(f_new, f_old)
+                    
+                    #Get the history information.
+                    variables = f_dif.variables
+                    nodes = f_dif.nodes
+                    
+                    #Error Message for Incorrect History    
+                    msg = 'Incorrect %s at node %s.'
+                    	
+                    #Check that the new history files are still the same.
+                    for v, n in [(v, n) for v in variables for n in nodes]:
+                        #If the key combination exists, test.
+                        try:
+                    	    self.assertTrue(max(f_dif[v][n])<maxerr, msg%(v, n))
+                    	#Otherwise, ignore.
+                    	except:  
+                            pass
+                            
+                #There are no files of this type so ignore this test.    
+                else:
+                    pass
+                                 
+        #Remove all files created outside compare and input.
+        self.cleanup(['*.*'])
+        
+        #Return to the main directory.       
+        os.chdir(self.maindir)
 
     def setUp(self):
         # Set location of main directory
@@ -347,7 +396,7 @@ class Tests(unittest.TestCase):
         call(exe+' '+filesfile, shell=True, stdout=PIPE)
         outfile = None
         errfile = 'fehmn.err'
-        
+
         with open( filesfile, 'r' ) as f:
             lines = f.readlines()
             # Check for new filesfile format
@@ -359,7 +408,7 @@ class Tests(unittest.TestCase):
                            
             # Assume old format
             if outfile is None and ':' not in lines[0]: outfile=lines[3].strip()
-        
+ 
         complete = False
         if outfile:
             with open( outfile, 'r' ) as f:
@@ -367,6 +416,7 @@ class Tests(unittest.TestCase):
                     if 'End Date' in line:
                         complete = True
                         break
+                        
         if os.path.exists(errfile): errstr = open( errfile, 'r' ).read()
         else: errstr = ''
         curdir = os.getcwd()
@@ -377,12 +427,12 @@ class Tests(unittest.TestCase):
         
     def getSubcases(self):
         """ Get Cases
-        Assumming that subcases are numbers, returns a set of cases using a 
+        Assumming that subcases are numbers, returns a set of subcases using a 
         test-case's comparison files.
         
         *Must be inside the test-case folder.
         
-        Developed by mlange806@gmail.com on June 4, 2014"""
+        Developed by mlange806@gmail.com on June 4, 2014 """
     
         #Find the names of every comparison file.
         types = ['*.csv', '*.his']
@@ -399,18 +449,39 @@ class Tests(unittest.TestCase):
                 subcases.append(subcase)
                 
         return subcases
-       
+        
+    def fgeneral(self, file_pattern):
+        #Chooses the correct fpost object to represent output files.
+        if '.csv' in file_pattern:
+            return fcontour(file_pattern)
+        elif '.his' in file_pattern:
+            return fhistory(file_pattern)
+             
 def suite(case):
     suite = unittest.TestSuite()
     if case == 'all':
-        #suite.addTest(Tests('saltvcon'))
-        #suite.addTest(Tests('dissolution'))
-        #suite.addTest(Tests('salt_perm_poro'))
-        #suite.addTest(Tests('avdonin'))
+        suite.addTest(Tests('saltvcon'))
+        suite.addTest(Tests('dissolution'))
+        suite.addTest(Tests('salt_perm_poro'))
+        suite.addTest(Tests('avdonin'))
         #suite.addTest(Tests('barometric'))
         #suite.addTest(Tests('binmode'))
-        #suite.addTest(Tests('test_boundry'))
-        suite.addTest(Tests('test_general'))
+        #suite.addTest(Tests('test_boun'))
+        suite.addTest(Tests('test_cden'))
+        #suite.addTest(Tests('test_cden'))
+        suite.addTest(Tests('test_chain'))
+        #suite.addTest(Tests('test_co2test'))
+        #suite.addTest(Tests('test_convection'))
+        #suite.addTest(Tests('test_doe'))
+        suite.addTest(Tests('test_dpdp_rich'))
+        #suite.addTest(Tests('test_erosion'))
+        #suite.addTest(Tests('test_evaporation'))
+        suite.addTest(Tests('test_forward'))
+        suite.addTest(Tests('test_gdpm'))
+        #suite.addTest(Tests('test_head'))
+        #suite.addTest(Tests('test_lost_part'))
+        suite.addTest(Tests('test_mptr'))
+        
     elif case == 'developer':
         pass
     elif case == 'admin':

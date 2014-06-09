@@ -1,0 +1,14 @@
+Multi-species Particle Tracking Test
+Comparison of Species 1 with Species 2 at final timestep
+Run Num: ID
+historfn                Data type
+output/fehm_test_mptrNum.ptrk
+output/fehm_test_mptrNum.ptrk
+output/fehm_test_mptrNum_VAR.comp
+0                       Simulated 1-D
+DP1	2		Data position file1, and header lines if dimen = 0
+DP2	2		Data position file2, and header lines if dimen = 0
+0. 1. 0. 1.		Translate X1, Scale X1, Translate Y1, Scale Y1 
+0. 1. 0. 1.		Translate X2, Scale X2, Translate Y2, Scale Y2
+7270752. 7305000. 0.	Low X, high X, minimum Y
+.FALSE.             	Print arrays

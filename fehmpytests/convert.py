@@ -188,7 +188,7 @@ class ControlFile():
         
         #Work-around for different grid names in control file
         if file_type == 'grid':
-            known_grids = ['grid', 'gridf']
+            known_grids = ['grid', 'gridf', 'grida']
             for grid in known_grids:
                 if grid in self._files:
                     return self._files[grid]

@@ -1,0 +1,112 @@
+One dimensional simulation of flow through layered stratigrapy
+#
+#***********************************************************************
+#
+#
+#	Layered stratigraphy set in zone file layers.zone
+#
+#	Base case properties used
+#
+#	Material Definitions - La Canyon 2000 Model
+#
+#
+#
+#---------------------------------------
+rich
+1. 1.e-4
+dpdp
+file
+input/dpdp.macro
+perm
+file
+input/perm_emk.macro
+#input/ER-12-3.perm
+#---------------------------------------
+rlp
+file
+input/rlp_dpdp.macro
+rock
+file
+input/rock_emk.macro
+#input/ER-12-3.rock
+#rock
+#  1    0     0     2.50E+03     1.00E+03    .4
+#
+#---------------------------------------
+pres
+1  0   0   0.10000     0.50000    2
+317 632 1  0.10000     0.50000    2
+
+#file
+#input/ER-12-3.pres 
+#	Done with material definitions, define top and bottom
+#	nodes as zones, set flow bc's and initial condition
+#	at the bottom
+#  Zone file generated with program:
+#---------------------------------------
+zone
+     101 
+nnum
+      1
+     1
+     102 
+nnum
+      1
+    316 
+ 
+#---------------------------------------
+flow
+   -101 0 0   -3.1618E-07   -0.1000000        0.000000
+
+#---------------------------------------
+boun
+model 1
+ti
+2 0. 1.e20
+s
+0.999   .999
+
+ -102 0 0    1
+ 
+#---------------------------------------
+text
+One dimensional simulation of flow through layered stratigrapy
+ 
+#---------------------------------------
+time
+1.e-1  50.  1000    1  1999  2 0.
+ 
+#---------------------------------------
+ctrl
+50   1.e-3   15 200 gmres
+1   0 0 2
+ 
+1.0   2  1.
+50   2.  1.e-10 1.e0
+1  1
+#---------------------------------------
+iter
+1.e-5 1.e-5 0.001 -5.e-4 1.2
+0 0 0 5   1e30
+#---------------------------------------
+sol
+1    -1
+#---------------------------------------
+air
+3
+20.0 0.1
+node
+block
+1 10 1
+301 316 1
+
+#***********************************************************************
+cont
+tec	100000	1.e20
+dpdp
+liquid
+saturation
+pres
+material
+endavs
+stop

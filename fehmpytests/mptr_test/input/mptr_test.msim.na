@@ -1,0 +1,10 @@
+1
+# fehmn.pre
+gunzip input/glaqma.ini.gz
+gunzip input/fehmn.stor.gz
+gunzip input/uz_la_tfcurves.in.gz
+post
+# fehmn.post
+gzip input/glaqma.ini
+gzip input/fehmn.stor
+gzip input/uz_la_tfcurves.in
