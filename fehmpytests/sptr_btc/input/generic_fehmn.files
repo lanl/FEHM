@@ -1,0 +1,15 @@
+input/sptr_long1CASE.dat
+../streamline/input/sptr.geom
+input/sptr_long1CASE.dat
+sptr_long1CASE.out
+../streamline/input/valid1.ini
+
+
+
+
+
+../streamline/input/valid1.stor         
+
+none
+0
+
