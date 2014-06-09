@@ -300,6 +300,24 @@ class Tests(unittest.TestCase):
     
     def test_mptr(self):
         self._test_case('mptr_test')
+        
+    def test_multi_solute(self):
+        self._test_case('multi_solute')
+        
+    def test_particle_capture(self):
+        self._test_case('particle_capture')
+    
+    def test_ramey(self):
+        self._test_case('ramey')
+        
+    def test_sorption(self):
+        self._test_case('sorption')
+        
+    def test_sptr_btc(self):
+        self._test_case('sptr_btc')
+    
+    def test_theis(self):
+        self._test_case('theis')
                    
     # UTILITIES ######################################################
     
@@ -481,6 +499,12 @@ def suite(case):
         #suite.addTest(Tests('test_head'))
         #suite.addTest(Tests('test_lost_part'))
         suite.addTest(Tests('test_mptr'))
+        suite.addTest(Tests('test_multi_solute'))
+        #suite.addTest(Tests('test_particle_capture'))
+        #suite.addTest(Tests('test_ramey'))
+        #suite.addTest(Tests('test_sorption'))
+        suite.addTest(Tests('test_sptr_btc'))
+        #suite.addTest(Tests('test_theis'))
         
     elif case == 'developer':
         pass
