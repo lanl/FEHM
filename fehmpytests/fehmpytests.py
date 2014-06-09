@@ -345,8 +345,6 @@ class Tests(unittest.TestCase):
                     #Read in the old comparison files.
                     f_old = self.fgeneral('compare/'+file_type)
                     
-                    f_old.what
-                    
                     #Create fehmn.files for current case.
                     generic_files = open('input/generic_fehmn.files')
                     data = generic_files.read()
@@ -361,19 +359,19 @@ class Tests(unittest.TestCase):
                     self.run_fehm()
                     f_new = self.fgeneral(file_type)
                     
-                    f_new.what
-                    
                     #Find the difference between the two files.
                     f_dif = fdiff(f_new, f_old)
                     
-                    #Get the history information.
+                    f_dif.what
+                    
+                    #Get the information.
                     variables = f_dif.variables
                     nodes = f_dif.nodes
                     
                     #Error Message for Incorrect History    
                     msg = 'Incorrect %s at node %s.'
                     	
-                    #Check that the new history files are still the same.
+                    #Check that the new files are still the same.
                     for v, n in [(v, n) for v in variables for n in nodes]:
                         #If the key combination exists, test.
                         try:
@@ -381,13 +379,9 @@ class Tests(unittest.TestCase):
                     	#Otherwise, ignore.
                     	except:  
                             pass
-                            
-                #There are no files of this type so ignore this test.    
-                else:
-                    pass
                                  
         #Remove all files created outside compare and input.
-        #self.cleanup(['*.*'])
+        self.cleanup(['*.*'])
         
         #Return to the main directory.       
         os.chdir(self.maindir)
@@ -470,6 +464,10 @@ class Tests(unittest.TestCase):
             if subcase not in subcases:
                 subcases.append(subcase)
                 
+        #If there were no subcases found, insert a blank placeholder.
+        if len(subcases) == 0:
+            subcases = ['']
+                
         return subcases
         
     def fgeneral(self, file_pattern):
@@ -477,7 +475,6 @@ class Tests(unittest.TestCase):
         if '.csv' in file_pattern:
             return fcontour(file_pattern)
         elif '.his' in file_pattern:
-            print 'fhistory chosen.'
             return fhistory(file_pattern)
              
 def suite(case, test_case):
