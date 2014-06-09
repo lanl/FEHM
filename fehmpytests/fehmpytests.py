@@ -345,6 +345,8 @@ class Tests(unittest.TestCase):
                     #Read in the old comparison files.
                     f_old = self.fgeneral('compare/'+file_type)
                     
+                    f_old.what
+                    
                     #Create fehmn.files for current case.
                     generic_files = open('input/generic_fehmn.files')
                     data = generic_files.read()
@@ -358,6 +360,8 @@ class Tests(unittest.TestCase):
                     #Read in new files.
                     self.run_fehm()
                     f_new = self.fgeneral(file_type)
+                    
+                    f_new.what
                     
                     #Find the difference between the two files.
                     f_dif = fdiff(f_new, f_old)
@@ -383,7 +387,7 @@ class Tests(unittest.TestCase):
                     pass
                                  
         #Remove all files created outside compare and input.
-        self.cleanup(['*.*'])
+        #self.cleanup(['*.*'])
         
         #Return to the main directory.       
         os.chdir(self.maindir)
@@ -473,9 +477,10 @@ class Tests(unittest.TestCase):
         if '.csv' in file_pattern:
             return fcontour(file_pattern)
         elif '.his' in file_pattern:
+            print 'fhistory chosen.'
             return fhistory(file_pattern)
              
-def suite(case):
+def suite(case, test_case):
     suite = unittest.TestSuite()
     if case == 'all':
         suite.addTest(Tests('saltvcon'))
@@ -507,7 +512,7 @@ def suite(case):
         #suite.addTest(Tests('test_theis'))
         
     elif case == 'developer':
-        pass
+        suite.addTest(Tests(test_case))
     elif case == 'admin':
         pass
     return suite
@@ -515,13 +520,18 @@ def suite(case):
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         exe = os.path.abspath(sys.argv[1])
+        case = 'all'
+        test_case = ''
+        
+        if len(sys.argv) == 3:
+            case = 'developer'
+            test_case = sys.argv[2]
     else:
-        print "Usage: python fehmpytests.py 'fehm executable'"
+        print "Usage: python fehmpytests.py 'fehm executable' 'test'(optional)"
         os._exit(0)
-    # Case set to all for now
-    case = 'all'
+
     runner = unittest.TextTestRunner(verbosity=2)
-    test_suite = suite(case)
+    test_suite = suite(case, test_case)
     runner.run (test_suite)
 
 

@@ -1,0 +1,37 @@
+Problem 1: Check of FEHMN dispersion particle tracking - Pe = 20
+rest
+old
+lflux
+
+cond
+1 0 0 2.7 2.7 2.7
+
+ctrl
+50 1e-6 8
+1 0 0 2
+
+1 0 0.5
+25 1.2 1.5e-8 1.e-3
+1 0
+flow
+1 13 12 -11.218809 -25 0
+12 24 12 1. -25 -1
+
+init
+1. 25 25 0 1000 25 0 0
+node
+11
+1 3 4 5 6 7 8 9 10 11 12
+perm
+1 0 0 5.0e-11 5.0e-30 5.0e-30
+
+rock
+1 0 0 2500 1000 0.3
+
+sol
+1 -1
+time
+1.5e-6 5.543209e-4 1000 100 95 03
+1.543209e-4 4e-4 1. 100
+
+stop

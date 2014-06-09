@@ -1,0 +1,14 @@
+Fracture Transport with Matrix Diffusion
+Comparison of Model and Analytical Solution for Concentration vs Time 
+type Sorption
+tracer
+output/tangtestNum.trc
+input/tangNum.analyt
+output/tangtestNum.comp
+2			2-D
+1			Coordinate position
+1			Specie 
+100. 86400. 0. 1.       Translate X1, Scale X1, Translate Y1, Scale Y1 
+0. 1. 0. 1.		Translate X2, Scale X2, Translate Y2, Scale Y2
+86.41 4.732776e10 .1 	Low X, high X, minimum Y
+.FALSE.			Print arrays

@@ -1,0 +1,14 @@
+FEHM V3.2.0lin 14-04-25 QA:NA   04/25/2014  11:34:33
+***Compare wellbore module***
+trac
+Output file format: Standard text
+Parameters written to individual history files:
+ Water, vapor, and capillary pressure Temperature Water and air density Concentration
+for the following nodes:
+Number of output nodes:    5
+       1   0.00000000       0.00000000       0.00000000    
+     100   1.00000000       49.0000000       0.00000000    
+     400   1.00000000       199.000000       0.00000000    
+     500   1.00000000       249.000000       0.00000000    
+     601   0.00000000       300.000000       0.00000000    
+
