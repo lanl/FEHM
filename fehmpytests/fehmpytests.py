@@ -1,6 +1,8 @@
 import unittest
-import os,sys
+import os
+import sys
 import re
+import numpy as np
 from subprocess import call, PIPE
 try:
     from fdata import *
@@ -17,6 +19,23 @@ from glob import glob
 __unittest = True # Suppresses tracebacks
 
 class Tests(unittest.TestCase):
+
+    def __init__(self, testname, variables=[], nodes=[]):
+        """ Tests Contructor
+        Sets variables and nodes as empty or assigns them values past in from 
+        the command-line. """
+        
+        super(Tests, self).__init__(testname)
+        
+        #Assign object variables.
+        self.variables = variables
+        self.nodes = nodes
+        
+        #If variables or nodes were specified, turn them into an array.
+        if len(variables) > 0:
+            self.variables = variables.split(' ')
+        if len(nodes) > 0:
+            self.nodes = nodes.split(' ')
 
     # TESTS ######################################################### 
 
@@ -229,7 +248,7 @@ class Tests(unittest.TestCase):
             for t, v in [(t, v) for t in times for v in variables]:
             	self.assertTrue(max(f_dif_con[t][v])<maxerr, msg%(v, t))
             
-            #Get the history information.
+            #Get fpost information.
             variables = f_dif_his.variables
             nodes = f_dif_his.nodes
             
@@ -325,7 +344,7 @@ class Tests(unittest.TestCase):
         """ General Test Case 
         Should be able to test any test case.
         Modified by mlange806@gmail.com on June 4, 2014. """
-        
+       
         #Error Threshold
         maxerr = 1.e-4
         
@@ -345,7 +364,7 @@ class Tests(unittest.TestCase):
                     #Read in the old comparison files.
                     f_old = self.fgeneral('compare/'+file_type)
                     
-                    #Create fehmn.files for current case.
+                    #Create fehmn.files for current subcase.
                     generic_files = open('input/generic_fehmn.files')
                     data = generic_files.read()
                     data = re.sub('N', subcase, data)
@@ -362,23 +381,27 @@ class Tests(unittest.TestCase):
                     #Find the difference between the two files.
                     f_dif = fdiff(f_new, f_old)
                     
-                    f_dif.what
+                    #Get variables and nodes.
+                    variables = self.variables
+                    nodes = self.nodes
                     
-                    #Get the information.
-                    variables = f_dif.variables
-                    nodes = f_dif.nodes
+                    if len(variables) == 0:
+                        variables = f_dif.variables
+                    if len(nodes) == 0:
+                        nodes = f_dif.nodes
+                    
+                    #TODO - This is currently set up to check history files. 
+                    #       Need to modify code to check contour files. Possible
+                    #       cause of index error on some test-cases currently 
+                    #       disabled.
                     
                     #Error Message for Incorrect History    
                     msg = 'Incorrect %s at node %s.'
                     	
-                    #Check that the new files are still the same.
-                    for v, n in [(v, n) for v in variables for n in nodes]:
-                        #If the key combination exists, test.
-                        try:
+                    #Check that the new history files are still the same.
+                    for v in variables:
+                        for n in np.intersect1d(f_dif[v], nodes):     
                     	    self.assertTrue(max(f_dif[v][n])<maxerr, msg%(v, n))
-                    	#Otherwise, ignore.
-                    	except:  
-                            pass
                                  
         #Remove all files created outside compare and input.
         self.cleanup(['*.*'])
@@ -477,7 +500,7 @@ class Tests(unittest.TestCase):
         elif '.his' in file_pattern:
             return fhistory(file_pattern)
              
-def suite(case, test_case):
+def suite(case, test_case, variables, nodes):
     suite = unittest.TestSuite()
     if case == 'all':
         suite.addTest(Tests('saltvcon'))
@@ -488,7 +511,6 @@ def suite(case, test_case):
         #suite.addTest(Tests('binmode'))
         #suite.addTest(Tests('test_boun'))
         suite.addTest(Tests('test_cden'))
-        #suite.addTest(Tests('test_cden'))
         suite.addTest(Tests('test_chain'))
         #suite.addTest(Tests('test_co2test'))
         #suite.addTest(Tests('test_convection'))
@@ -509,26 +531,40 @@ def suite(case, test_case):
         #suite.addTest(Tests('test_theis'))
         
     elif case == 'developer':
-        suite.addTest(Tests(test_case))
+        suite.addTest(Tests(test_case, variables, nodes))
     elif case == 'admin':
         pass
     return suite
 
 if __name__ == '__main__':
+    #By default, run all test cases.
     if len(sys.argv) > 1:
         exe = os.path.abspath(sys.argv[1])
         case = 'all'
         test_case = ''
-        
-        if len(sys.argv) == 3:
+        variables = []
+        nodes = []
+    
+        #A developer can (currently) specify 1 test-case to run.    
+        if len(sys.argv) > 2:
             case = 'developer'
             test_case = sys.argv[2]
+        
+        #Can also specify variables to check with list: 'V1 V2 V2...'.        
+        if len(sys.argv) > 3:
+            variables = sys.argv[3]
+        
+        #Can also specify nodes to check with list: 'N1 N2 N3...'.    
+        if len(sys.argv) > 4:
+            nodes = sys.argv[3]
+                       
     else:
-        print "Usage: python fehmpytests.py 'fehm executable' 'test'(optional)"
+        print "Usage: python fehmpytests.py 'fehm-executable' " + \
+              "test(optional) 'V1 V2..'(optional) 'N1 N2..'(optional)"  
         os._exit(0)
 
     runner = unittest.TextTestRunner(verbosity=2)
-    test_suite = suite(case, test_case)
-    runner.run (test_suite)
+    test_suite = suite(case, test_case, variables, nodes)
+    runner.run(test_suite)
 
 
