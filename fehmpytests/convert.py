@@ -1,17 +1,16 @@
-import os,sys
+import os
+import sys
 import re
 import glob
 import distutils.core
 
 class Convertor():
     """ Converter 
-    Converts old test-cases into new tet-cases.
+    Converts old test-cases into new test-cases.
+    
     Modified by mlange806@gmail.com on June 6, 2014."""
     
-    def __init__(self, new_path):
-        """ Default Constructor 
-        Sets the default path for the old test suite. """
-        
+    def __init__(self, new_path):        
         self._old_path = \
           '/n/swdev/FEHM_dev/VERIFICATION_linux/VERIFICATION_V3.2linux/'        
         self._new_path = new_path  
@@ -143,9 +142,9 @@ class Convertor():
             column_num = int(first_line[0])
             
             #Read the column names.
-            names = []
-            i = 0
-            while i < column_num:
+            names = ['node']
+            i = 1
+            while i < column_num+1:
                 names.append(fp.readline())
                 
                 #Remove the extra dimension.
@@ -162,7 +161,7 @@ class Convertor():
                 data.append(', '.join(line.split()))
     
         #Write the changes to the original file.
-        new_format = header+'\n'  
+        new_format = header  
         for line in data:
             new_format = new_format + '\n'+line
         
