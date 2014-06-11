@@ -319,7 +319,7 @@ class Tests(unittest.TestCase):
         """ General Test Case 
         Should be able to test any test case. """ 
         os.chdir(name)
-        subcases = self.getSubcases()
+        subcases = self._getSubcases()
         
         #Test each subcase.
         for subcase in subcases:
@@ -329,7 +329,7 @@ class Tests(unittest.TestCase):
                 #Check to make sure there are files of this type.
                 if len(glob('compare/'+file_type)) > 0:
                     #Read in the old comparison files. 
-                    f_old = self.fgeneral('compare/'+file_type)
+                    f_old = self._fgeneral('compare/'+file_type)
                     
                     #Create fehmn.files for current subcase.
                     generic_files = open('input/generic_fehmn.files')
@@ -343,7 +343,7 @@ class Tests(unittest.TestCase):
                     
                     #Read in new files.
                     self.run_fehm()   
-                    f_new = self.fgeneral(file_type)
+                    f_new = self._fgeneral(file_type)
                     
                     #Find the difference between the two files.
                     f_dif = fdiff(f_new, f_old)
@@ -361,24 +361,11 @@ class Tests(unittest.TestCase):
                     try:
                         self._checkDifference(values)
                     finally:
+                        self.cleanup(['*.*']) 
                         os.chdir(self.maindir)
-                                                  
+                                    
         self.cleanup(['*.*'])          
         os.chdir(self.maindir)
-
-    def setUp(self):
-        # Set location of main directory
-        self.maindir = os.getcwd()
-
-    def cleanup(self,files):
-        ''' Utility function to remove files after test
-
-            :param files: list of file names to remove
-            :type files: lst(str)
-        '''
-        for g in files:
-            for f in glob(g):
-                if os.path.exists(f): os.remove(f)
                 
     def _checkDifference(self, values):
         """ Check Difference
@@ -422,15 +409,61 @@ class Tests(unittest.TestCase):
             for v in variables:
                 for n in np.intersect1d(f_dif[v], nodes):     
             	    self.assertTrue(max(f_dif[v][n])<maxerr, msg%(v, n))
+            	    
+    def _getSubcases(self):
+        """ Get Subcases
+        Assumming that subcases are numbers, returns a set of subcases using a 
+        test-case's comparison files.
+        
+        *Must be inside the test-case folder. """
+    
+        #Find the names of every comparison file.
+        types = ['*.avs', '*.csv', '*.his']
+        file_names = []
+        for t in types:
+            file_names = file_names+glob('compare/'+t)
+        
+        #Using the comparison files, extract the subcase numbers.    
+        subcases = []
+        for file_name in file_names:
+            pattern = re.compile(r'\d+')
+            subcase = pattern.findall(file_name)[0]
+            if subcase not in subcases:
+                subcases.append(subcase)
+                
+        #If there were no subcases found, insert a blank placeholder.
+        if len(subcases) == 0:
+            subcases = ['']
+                
+        return subcases
+        
+    def _fgeneral(self, file_pattern):
+        #Chooses the correct fpost object to represent output files.
+        if '.avs' in file_pattern:
+            return fcontour(file_pattern)
+        elif '.csv' in file_pattern:
+            return fcontour(file_pattern)
+        elif '.his' in file_pattern:
+            return fhistory(file_pattern)
+            	    
+    def setUp(self):
+        self.maindir = os.getcwd()
+
+    def cleanup(self,files):
+        ''' Utility function to remove files after test
+
+            :param files: list of file names to remove
+            :type files: lst(str) '''
+        for g in files:
+            for f in glob(g):
+                if os.path.exists(f): os.remove(f)
 
     def run_fehm(self, filesfile='fehmn.files'):
-        """
-            Utility function to run fehm
+        """ Utility function to run fehm
             Asserts that fehm terminates successfully
 
             :param filesfile: name of fehm files file
-            :type filesfile: str
-        """
+            :type filesfile: str """
         
         call(exe+' '+filesfile, shell=True, stdout=PIPE)
         outfile = None
@@ -463,43 +496,7 @@ class Tests(unittest.TestCase):
         os.chdir(self.maindir)
         self.assertTrue(complete, 'Unsuccessful fehm simulation\nContents of '+errfile+':\n\n'+errstr)
         os.chdir(curdir)
-        
-    def getSubcases(self):
-        """ Get Subcases
-        Assumming that subcases are numbers, returns a set of subcases using a 
-        test-case's comparison files.
-        
-        *Must be inside the test-case folder. """
-    
-        #Find the names of every comparison file.
-        types = ['*.avs', '*.csv', '*.his']
-        file_names = []
-        for t in types:
-            file_names = file_names+glob('compare/'+t)
-        
-        #Using the comparison files, extract the subcase numbers.    
-        subcases = []
-        for file_name in file_names:
-            pattern = re.compile(r'\d+')
-            subcase = pattern.findall(file_name)[0]
-            if subcase not in subcases:
-                subcases.append(subcase)
-                
-        #If there were no subcases found, insert a blank placeholder.
-        if len(subcases) == 0:
-            subcases = ['']
-                
-        return subcases
-        
-    def fgeneral(self, file_pattern):
-        #Chooses the correct fpost object to represent output files.
-        if '.avs' in file_pattern:
-            return fcontour(file_pattern)
-        elif '.csv' in file_pattern:
-            return fcontour(file_pattern)
-        elif '.his' in file_pattern:
-            return fhistory(file_pattern)
-             
+      
 def suite(case, test_case):
     suite = unittest.TestSuite()
     
@@ -547,22 +544,13 @@ if __name__ == '__main__':
         mode = 'all'
         test_case = ''
     
-        #A developer can (currently) specify 1 test-case to run.    
+        #Single mode can (currently) specify 1 test-case to run.    
         if len(sys.argv) > 2:
             mode = 'single'
             test_case = sys.argv[2]
-        
-        #Can also specify variables to check with list: 'V1 V2 V2...'.        
-        if len(sys.argv) > 3:
-            variables = sys.argv[3]
-        
-        #Can also specify nodes to check with list: 'N1 N2 N3...'.    
-        if len(sys.argv) > 4:
-            nodes = sys.argv[3]
                        
     else:
-        print "Usage: python fehmpytests.py 'fehm-executable' " + \
-              "test(optional) 'V1 V2..'(optional) 'N1 N2..'(optional)"  
+        print "Usage: python fehmpytests.py fehm-executable test(optional)"  
         os._exit(0)
     
     runner = unittest.TextTestRunner(verbosity=2)
