@@ -250,14 +250,6 @@ class Tests(unittest.TestCase):
         #Return to the main directory.       
         os.chdir(self.maindir)
         
-    def barometric(self):
-    	""" Comming Soon """
-    	pass
-        
-    def binmode(self):
-        """ Comming Soon """
-        pass
-        
     def test_boun(self): 
         self._test_case('boun_test') 
         
@@ -323,24 +315,16 @@ class Tests(unittest.TestCase):
                    
     # UTILITIES ######################################################
     
-    def _test_case(self, name, variables=[], nodes=[], times=[]):
+    def _test_case(self, name, variables=[], nodes=[], times=[], maxerr=1.e-5):
         """ General Test Case 
-        Should be able to test any test case.
-        Modified by mlange806@gmail.com on June 4, 2014. """
-       
-        #Error Threshold
-        maxerr = 1.e-4
-        
-        #Change to test directory.
+        Should be able to test any test case. """ 
         os.chdir(name)
-        
-        #Find the subcases.
         subcases = self.getSubcases()
         
         #Test each subcase.
         for subcase in subcases:
             #Test each output file type.
-            file_types = ['*.avs', '*.his']
+            file_types = ['*.avs', '*.csv' '*.his']
             for file_type in file_types:
                 #Check to make sure there are files of this type.
                 if len(glob('compare/'+file_type)) > 0:
@@ -374,12 +358,12 @@ class Tests(unittest.TestCase):
                     values['file_type'] = file_type
                     
                     #Check for any significant differences.
-                    self._checkDifference(values)
+                    try:
+                        self._checkDifference(values)
+                    finally:
+                        os.chdir(self.maindir)
                                                   
-        #Remove all files created outside compare and input.
-        #self.cleanup(['*.*'])
-        
-        #Return to the main directory.       
+        self.cleanup(['*.*'])          
         os.chdir(self.maindir)
 
     def setUp(self):
@@ -409,23 +393,29 @@ class Tests(unittest.TestCase):
         maxerr = values['maxerr']
         file_type = values['file_type']
       
-        #If no pre-specified attributes, grab them from f_dif.
-        if len(times) is 0:    
+        #If no pre-specified times and variables, grab them from f_dif.
+        if len(times) == 0:    
             times = f_dif.times
-        if len(variables) is 0:
+        if len(variables) == 0:
             variables = f_dif.variables
-        if len(nodes) is 0:
-            nodes = f_dif.nodes
-    
-        #Choose the correct test for the file type.
-        if file_type is '*.csv':
+
+        #Choose if testing contour files.        
+        condition1 = file_type == '*.avs'
+        condition2 = file_type == '*.csv'     
+        if condition1 or condition2:
             msg = 'Incorrect %s at time %s.'
             
             #Check the variables at each time for any significant differences.
             for t, v in [(t, v) for t in times for v in variables]:
-            	self.assertTrue(max(f_dif_con[t][v])<maxerr, msg%(v, t))
-              
-        elif file_type is '*.his':
+            	self.assertTrue(max(f_dif[t][v])<maxerr, msg%(v, t))
+            	print 'tested '+str(t)+' '+str(v)
+        
+        #Choose if testing history files.       
+        elif file_type == '*.his':
+            #If no pre-specifed nodes, grab them from f_dif.
+            if len(nodes) == 0:
+                nodes = f_dif.nodes
+        
             msg = 'Incorrect %s at node %s.'  
             
             #Check the nodes at each variable for any significant differences.   
@@ -475,16 +465,14 @@ class Tests(unittest.TestCase):
         os.chdir(curdir)
         
     def getSubcases(self):
-        """ Get Cases
+        """ Get Subcases
         Assumming that subcases are numbers, returns a set of subcases using a 
         test-case's comparison files.
         
-        *Must be inside the test-case folder.
-        
-        Developed by mlange806@gmail.com on June 4, 2014 """
+        *Must be inside the test-case folder. """
     
         #Find the names of every comparison file.
-        types = ['*.csv', '*.his']
+        types = ['*.avs', '*.csv', '*.his']
         file_names = []
         for t in types:
             file_names = file_names+glob('compare/'+t)
@@ -505,39 +493,40 @@ class Tests(unittest.TestCase):
         
     def fgeneral(self, file_pattern):
         #Chooses the correct fpost object to represent output files.
-        if '.csv' in file_pattern:
+        if '.avs' in file_pattern:
+            return fcontour(file_pattern)
+        elif '.csv' in file_pattern:
             return fcontour(file_pattern)
         elif '.his' in file_pattern:
             return fhistory(file_pattern)
              
 def suite(case, test_case):
     suite = unittest.TestSuite()
+    
     if case == 'all':
         suite.addTest(Tests('saltvcon'))
         suite.addTest(Tests('dissolution'))
         suite.addTest(Tests('salt_perm_poro'))
         suite.addTest(Tests('avdonin'))
-        #suite.addTest(Tests('barometric'))
-        #suite.addTest(Tests('binmode'))
         suite.addTest(Tests('test_boun'))
         suite.addTest(Tests('test_cden'))
-        suite.addTest(Tests('test_chain'))
+        #suite.addTest(Tests('test_chain'))
         #suite.addTest(Tests('test_co2test'))
         #suite.addTest(Tests('test_convection'))
         #suite.addTest(Tests('test_doe'))
-        suite.addTest(Tests('test_dpdp_rich'))
+        #suite.addTest(Tests('test_dpdp_rich'))
         #suite.addTest(Tests('test_erosion'))
         #suite.addTest(Tests('test_evaporation'))
-        suite.addTest(Tests('test_forward'))
-        suite.addTest(Tests('test_gdpm'))
+        #suite.addTest(Tests('test_forward'))
+        #suite.addTest(Tests('test_gdpm'))
         #suite.addTest(Tests('test_head'))
         #suite.addTest(Tests('test_lost_part'))
-        suite.addTest(Tests('test_mptr'))
-        suite.addTest(Tests('test_multi_solute'))
+        #suite.addTest(Tests('test_mptr'))
+        #suite.addTest(Tests('test_multi_solute'))
         #suite.addTest(Tests('test_particle_capture'))
         #suite.addTest(Tests('test_ramey'))
         #suite.addTest(Tests('test_sorption'))
-        suite.addTest(Tests('test_sptr_btc'))
+        #suite.addTest(Tests('test_sptr_btc'))
         #suite.addTest(Tests('test_theis'))
              
     elif case == 'single':
@@ -575,7 +564,7 @@ if __name__ == '__main__':
         print "Usage: python fehmpytests.py 'fehm-executable' " + \
               "test(optional) 'V1 V2..'(optional) 'N1 N2..'(optional)"  
         os._exit(0)
-
+    
     runner = unittest.TextTestRunner(verbosity=2)
     test_suite = suite(mode, test_case)
     runner.run(test_suite)
