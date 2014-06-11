@@ -20,23 +20,6 @@ __unittest = True # Suppresses tracebacks
 
 class Tests(unittest.TestCase):
 
-    def __init__(self, testname, variables=[], nodes=[]):
-        """ Tests Contructor
-        Sets variables and nodes as empty or assigns them values past in from 
-        the command-line. """
-        
-        super(Tests, self).__init__(testname)
-        
-        #Assign object variables.
-        self.variables = variables
-        self.nodes = nodes
-        
-        #If variables or nodes were specified, turn them into an array.
-        if len(variables) > 0:
-            self.variables = variables.split(' ')
-        if len(nodes) > 0:
-            self.nodes = nodes.split(' ')
-
     # TESTS ######################################################### 
 
     def saltvcon(self):
@@ -340,7 +323,7 @@ class Tests(unittest.TestCase):
                    
     # UTILITIES ######################################################
     
-    def _test_case(self, name):
+    def _test_case(self, name, variables=[], nodes=[], times=[]):
         """ General Test Case 
         Should be able to test any test case.
         Modified by mlange806@gmail.com on June 4, 2014. """
@@ -357,11 +340,11 @@ class Tests(unittest.TestCase):
         #Test each subcase.
         for subcase in subcases:
             #Test each output file type.
-            file_types = ['*.csv', '*.his']
+            file_types = ['*.avs', '*.his']
             for file_type in file_types:
                 #Check to make sure there are files of this type.
                 if len(glob('compare/'+file_type)) > 0:
-                    #Read in the old comparison files.
+                    #Read in the old comparison files. 
                     f_old = self.fgeneral('compare/'+file_type)
                     
                     #Create fehmn.files for current subcase.
@@ -375,36 +358,26 @@ class Tests(unittest.TestCase):
                     files.close()
                     
                     #Read in new files.
-                    self.run_fehm()
+                    self.run_fehm()   
                     f_new = self.fgeneral(file_type)
                     
                     #Find the difference between the two files.
                     f_dif = fdiff(f_new, f_old)
                     
-                    #Get variables and nodes.
-                    variables = self.variables
-                    nodes = self.nodes
+                    #Load arguments into values
+                    values = {}
+                    values['f_dif'] = f_dif
+                    values['times'] = times
+                    values['variables'] = variables
+                    values['nodes']  = nodes
+                    values['maxerr'] = maxerr
+                    values['file_type'] = file_type
                     
-                    if len(variables) == 0:
-                        variables = f_dif.variables
-                    if len(nodes) == 0:
-                        nodes = f_dif.nodes
-                    
-                    #TODO - This is currently set up to check history files. 
-                    #       Need to modify code to check contour files. Possible
-                    #       cause of index error on some test-cases currently 
-                    #       disabled.
-                    
-                    #Error Message for Incorrect History    
-                    msg = 'Incorrect %s at node %s.'
-                    	
-                    #Check that the new history files are still the same.
-                    for v in variables:
-                        for n in np.intersect1d(f_dif[v], nodes):     
-                    	    self.assertTrue(max(f_dif[v][n])<maxerr, msg%(v, n))
-                                 
+                    #Check for any significant differences.
+                    self._checkDifference(values)
+                                                  
         #Remove all files created outside compare and input.
-        self.cleanup(['*.*'])
+        #self.cleanup(['*.*'])
         
         #Return to the main directory.       
         os.chdir(self.maindir)
@@ -422,6 +395,43 @@ class Tests(unittest.TestCase):
         for g in files:
             for f in glob(g):
                 if os.path.exists(f): os.remove(f)
+                
+    def _checkDifference(self, values):
+        """ Check Difference
+        Checks f_dif, the difference between two fpost objects, for significant
+        differences. Fails the test-case if significantly different. """
+    
+        #Get parameters from call.
+        f_dif = values['f_dif']
+        times = values['times']
+        variables = values['variables']
+        nodes  = values['nodes']
+        maxerr = values['maxerr']
+        file_type = values['file_type']
+      
+        #If no pre-specified attributes, grab them from f_dif.
+        if len(times) is 0:    
+            times = f_dif.times
+        if len(variables) is 0:
+            variables = f_dif.variables
+        if len(nodes) is 0:
+            nodes = f_dif.nodes
+    
+        #Choose the correct test for the file type.
+        if file_type is '*.csv':
+            msg = 'Incorrect %s at time %s.'
+            
+            #Check the variables at each time for any significant differences.
+            for t, v in [(t, v) for t in times for v in variables]:
+            	self.assertTrue(max(f_dif_con[t][v])<maxerr, msg%(v, t))
+              
+        elif file_type is '*.his':
+            msg = 'Incorrect %s at node %s.'  
+            
+            #Check the nodes at each variable for any significant differences.   
+            for v in variables:
+                for n in np.intersect1d(f_dif[v], nodes):     
+            	    self.assertTrue(max(f_dif[v][n])<maxerr, msg%(v, n))
 
     def run_fehm(self, filesfile='fehmn.files'):
         """
@@ -500,7 +510,7 @@ class Tests(unittest.TestCase):
         elif '.his' in file_pattern:
             return fhistory(file_pattern)
              
-def suite(case, test_case, variables, nodes):
+def suite(case, test_case):
     suite = unittest.TestSuite()
     if case == 'all':
         suite.addTest(Tests('saltvcon'))
@@ -509,7 +519,7 @@ def suite(case, test_case, variables, nodes):
         suite.addTest(Tests('avdonin'))
         #suite.addTest(Tests('barometric'))
         #suite.addTest(Tests('binmode'))
-        #suite.addTest(Tests('test_boun'))
+        suite.addTest(Tests('test_boun'))
         suite.addTest(Tests('test_cden'))
         suite.addTest(Tests('test_chain'))
         #suite.addTest(Tests('test_co2test'))
@@ -529,25 +539,28 @@ def suite(case, test_case, variables, nodes):
         #suite.addTest(Tests('test_sorption'))
         suite.addTest(Tests('test_sptr_btc'))
         #suite.addTest(Tests('test_theis'))
+             
+    elif case == 'single':
+        suite.addTest(Tests(test_case))
         
     elif case == 'developer':
-        suite.addTest(Tests(test_case, variables, nodes))
+        pass
+        
     elif case == 'admin':
         pass
+        
     return suite
 
 if __name__ == '__main__':
     #By default, run all test cases.
     if len(sys.argv) > 1:
         exe = os.path.abspath(sys.argv[1])
-        case = 'all'
+        mode = 'all'
         test_case = ''
-        variables = []
-        nodes = []
     
         #A developer can (currently) specify 1 test-case to run.    
         if len(sys.argv) > 2:
-            case = 'developer'
+            mode = 'single'
             test_case = sys.argv[2]
         
         #Can also specify variables to check with list: 'V1 V2 V2...'.        
@@ -564,7 +577,7 @@ if __name__ == '__main__':
         os._exit(0)
 
     runner = unittest.TextTestRunner(verbosity=2)
-    test_suite = suite(case, test_case, variables, nodes)
+    test_suite = suite(mode, test_case)
     runner.run(test_suite)
 
 
