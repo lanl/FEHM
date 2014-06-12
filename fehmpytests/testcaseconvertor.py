@@ -95,9 +95,10 @@ class TestCaseConvertor():
         data = opened_file.read()
         data = re.sub('output/', '', data)
         
-        #Subsitute N or NUM with the subcase number.
+        #Subsitute 'N', 'NUM', and 'base' with the subcase number.
         data = re.sub('N', subcase, data)
         data = re.sub('UM', '', data)
+        data = re.sub('base', subcase, data)
         
         #Write the changes to the file.
         opened_file.seek(0)
