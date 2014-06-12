@@ -69,10 +69,10 @@ class Tests(unittest.TestCase):
         
         for n in f_dif.nodes:
             self.assertTrue(f_dif.node['water'][n]['Kx'][0]<maxerr, '\nIncorrect intact salt thermal conductivity for node '+str(n)\
-                                                                                             +'\nRelative error: '+str(f_dif.node['water'][n]['Kx'][0])+\
-                                                                                             ', Threshold: '+str(maxerr)+'\nExpected='+\
-                                                                                             str(f_old.node['water'][n]['Kx'][0])+' Simulated='+\
-                                                                                             str(f_new.node['water'][n]['Kx'][0]))
+                                                                   +'\nRelative error: '+str(f_dif.node['water'][n]['Kx'][0])+\
+                                                                    ', Threshold: '+str(maxerr)+'\nExpected='+\
+                                                                    str(f_old.node['water'][n]['Kx'][0])+' Simulated='+\
+                                                                    str(f_new.node['water'][n]['Kx'][0]))
                                                                                              
         del f_old, f_new, f_dif
 
@@ -324,12 +324,12 @@ class Tests(unittest.TestCase):
         #Test each subcase.
         for subcase in subcases:
             #Test each output file type.
-            file_types = ['*.avs', '*.csv' '*.his']
-            for file_type in file_types:
+            file_patterns = ['*%s.*.avs', '*%s.*.csv', '*%s.*.his']
+            for file_pattern in file_patterns:
                 #Check to make sure there are files of this type.
-                if len(glob('compare/'+file_type)) > 0:
+                if len(glob('compare/'+file_pattern%subcase)) > 0:
                     #Read in the old comparison files. 
-                    f_old = self._fgeneral('compare/'+file_type)
+                    f_old = self._fgeneral('compare/'+file_pattern%subcase)
                     
                     #Create fehmn.files for current subcase.
                     generic_files = open('input/generic_fehmn.files')
@@ -343,7 +343,7 @@ class Tests(unittest.TestCase):
                     
                     #Read in new files.
                     self.run_fehm()   
-                    f_new = self._fgeneral(file_type)
+                    f_new = self._fgeneral(file_pattern%subcase)
                     
                     #Find the difference between the two files.
                     f_dif = fdiff(f_new, f_old)
@@ -355,7 +355,7 @@ class Tests(unittest.TestCase):
                     values['variables'] = variables
                     values['nodes']  = nodes
                     values['maxerr'] = maxerr
-                    values['file_type'] = file_type
+                    values['file_pattern'] = file_pattern
                     
                     #Check for any significant differences.
                     try:
@@ -363,10 +363,7 @@ class Tests(unittest.TestCase):
                     finally:
                         self.cleanup(['*.*']) 
                         os.chdir(self.maindir)
-                                    
-        self.cleanup(['*.*'])          
-        os.chdir(self.maindir)
-                
+            
     def _checkDifference(self, values):
         """ Check Difference
         Checks f_dif, the difference between two fpost objects, for significant
@@ -378,7 +375,7 @@ class Tests(unittest.TestCase):
         variables = values['variables']
         nodes  = values['nodes']
         maxerr = values['maxerr']
-        file_type = values['file_type']
+        file_pattern = values['file_pattern']
       
         #If no pre-specified times and variables, grab them from f_dif.
         if len(times) == 0:    
@@ -387,18 +384,17 @@ class Tests(unittest.TestCase):
             variables = f_dif.variables
 
         #Choose if testing contour files.        
-        condition1 = file_type == '*.avs'
-        condition2 = file_type == '*.csv'     
+        condition1 = '.avs' in file_pattern
+        condition2 = '.csv' in file_pattern  
         if condition1 or condition2:
             msg = 'Incorrect %s at time %s.'
             
             #Check the variables at each time for any significant differences.
-            for t, v in [(t, v) for t in times for v in variables]:
+            for t, v in [(t, v) for t in times for v in variables]:               
             	self.assertTrue(max(f_dif[t][v])<maxerr, msg%(v, t))
-            	print 'tested '+str(t)+' '+str(v)
         
         #Choose if testing history files.       
-        elif file_type == '*.his':
+        elif '.his' in file_pattern:
             #If no pre-specifed nodes, grab them from f_dif.
             if len(nodes) == 0:
                 nodes = f_dif.nodes
@@ -450,10 +446,11 @@ class Tests(unittest.TestCase):
         self.maindir = os.getcwd()
 
     def cleanup(self,files):
-        ''' Utility function to remove files after test
+        """ Utility function to remove files after test
 
             :param files: list of file names to remove
-            :type files: lst(str) '''
+            :type files: lst(str) """
+            
         for g in files:
             for f in glob(g):
                 if os.path.exists(f): os.remove(f)
