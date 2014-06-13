@@ -102,7 +102,7 @@ class Tests(unittest.TestCase):
         os.chdir(self.maindir)
 
     def dissolution(self):
-        '''  Dissolution
+        ''' Dissolution
 
             Modification: new Jan 7 2014 dharp@lanl.gov
             Modification: 
@@ -187,6 +187,19 @@ class Tests(unittest.TestCase):
         self.cleanup(['nop.temp','fehmn.err','run*.csv','*.out','run.avs_log'])
         os.chdir(self.maindir)
         
+    def test_saltvcon(self):
+        """
+        Tests that function calculates the correct Kx values in water. 
+        Information about the function can be found in the folder 'information'.
+        """
+        
+        arguments = {}
+        arguments['components'] = ['water']
+        arguments['variables']  = ['Kx']
+        arguments['format'] = 'relative' 
+        
+        self._test_case('saltvcon', arguments)
+  
     def test_avdonin(self):
         self._test_case('avdonin')
         
@@ -255,76 +268,93 @@ class Tests(unittest.TestCase):
                    
     # UTILITIES ######################################################
     
-    def _test_case(self, name, variables=[], nodes=[], times=[], maxerr=1.e-4):
+    def _test_case(self, name, parameters={}):
         """ General Test Case 
-        Should be able to test any test case. """ 
-        os.chdir(name)
-        subcases = self._getSubcases()
+        Should be able to test any test case with the following folder set-up:
+            test-case-name: [compare, input, subcase-N1, subcase-N2, etc.],
+        where compare contains data known to be correct, input contains the
+        needed input files, and subcase-X contains a control file for a subcase.
         
-        #Test each subcase.
+        Normally tests all values using a relative difference that must be less 
+        than 1.e-4, but these values can be set by passing a dictionary with 
+        keys variables, times, nodes, components and/or format assigned to the 
+        new values you would like to use instead. """ 
+         
+        os.chdir(name)
+        
+        #Search for folders with 'subcase-' and extract subcase name.
+        filenames = glob('subcase-*')
+        subcases = []
+        for filename in filenames:
+            subcases.append(re.sub('subcase-', '', filename))
+
+        #Test the new files generated with each subcase.
         for subcase in subcases:
-            #Test each output file type.
-            file_patterns = ['*%s.*.avs', '*%s.*.csv', '*%s.*.his']
-            for file_pattern in file_patterns:
+            filetypes = ['*.avs', '*.csv', '*.his', '*.out']
+            for filetype in filetypes:
                 #Check to make sure there are files of this type.
-                if len(glob('compare/'+file_pattern%subcase)) > 0:
-                    #Read in the old comparison files. 
-                    f_old = self._fgeneral('compare/'+file_pattern%subcase)             
-                    
-                    #Read in new files.
-                    self.run_fehm(subcase)   
-                    f_new = self._fgeneral(file_pattern%subcase)
-                    
-                    #Find the difference between the two files.
-                    f_dif = fdiff(f_new, f_old)
-                    
-                    #Load arguments into values
-                    values = {}
-                    values['f_dif'] = f_dif
-                    values['times'] = times
-                    values['variables'] = variables
-                    values['nodes']  = nodes
-                    values['maxerr'] = maxerr
-                    values['file_pattern'] = file_pattern
-                    
+                if len(glob('compare/'+'*'+subcase+filetype)) > 0:
                     #Check for any significant differences.
                     try:
-                        self._checkDifferences(values)
+                        self._checkDifferences(filetype, subcase, parameters)
                     finally:
+                        #Allows other tests to be performed after exception.
                         self.cleanup(['*.*'])
                         os.chdir(self.maindir)
-            
-    def _checkDifferences(self, values):
+         
+    def _checkDifferences(self, filetype, subcase, parameters={}):
         """ Check Difference
-        Checks f_dif, the difference between two fpost objects, for significant
-        differences. Fails the test-case if significantly different. """
-    
-        #Get parameters from call.
-        f_dif = values['f_dif']
-        times = values['times']
+        Checks the difference between old and new output. Fails if the
+        difference is greater than maxerr, defaulted to 1.e-4. """
+        
+        #Get pre-specified parameters from call.
+        keys = ['variables', 'times', 'nodes', 'components', 'format']
+        values = dict.fromkeys(keys, [])
+        values['maxerr'] = 1.e-4
+        format = 'relative'
+        for key in values:
+            if key in parameters:
+                values[key] = parameters[key]
+                
         variables = values['variables']
-        nodes  = values['nodes']
-        maxerr = values['maxerr']
-        file_pattern = values['file_pattern']
-      
-        #If no pre-specified times and variables, grab them from f_dif.
-        if len(times) == 0:    
-            times = f_dif.times
+        times = values['times']
+        nodes = values['nodes']
+        mxerr = values['maxerr']
+        components = values['components']
+        format = values['format']
+        
+        #Read in the old comparison files. 
+        f_old = self._fgeneral('compare/*'+subcase+filetype)       
+        
+        #Read in new files.
+        self.run_fehm(subcase)   
+        f_new = self._fgeneral('*'+subcase+filetype)
+        
+        #Find the difference between the two files.
+        f_dif = fdiff(f_new, f_old)
+        
+        #If no pre-specified variables, grab them from f_dif.
         if len(variables) == 0:
             variables = f_dif.variables
 
         #Choose if testing contour files.        
-        condition1 = '.avs' in file_pattern
-        condition2 = '.csv' in file_pattern  
+        condition1 = '.avs' in filetype
+        condition2 = '.csv' in filetype  
         if condition1 or condition2:
+            #If no pre-specified times, grab them from f_dif.
+            if len(times) == 0:    
+                times = f_dif.times
+        
             msg = 'Incorrect %s at time %s.'
             
             #Check the variables at each time for any significant differences.
-            for t, v in [(t, v) for t in times for v in variables]:               
-            	self.assertTrue(max(f_dif[t][v])<maxerr, msg%(v, t))
+            for t in times: 
+                #Its possible some times do not have all variables in f_dif.
+                for v in np.intersect1d(variables, f_dif[t]):              
+            	    self.assertTrue(max(f_dif[t][v])<mxerr, msg%(v, t))
         
         #Choose if testing history files.       
-        elif '.his' in file_pattern:
+        elif '.his' in filetype:
             #If no pre-specifed nodes, grab them from f_dif.
             if len(nodes) == 0:
                 nodes = f_dif.nodes
@@ -333,36 +363,30 @@ class Tests(unittest.TestCase):
             
             #Check the nodes at each variable for any significant differences.   
             for v in variables:
-                for n in np.intersect1d(f_dif[v], nodes):     
-            	    self.assertTrue(max(f_dif[v][n])<maxerr, msg%(v, n))
+                #Its possible some variables do not have all nodes in f_dif.
+                for n in np.intersect1d(nodes, f_dif[v]):     
+            	    self.assertTrue(max(f_dif[v][n])<mxerr, msg%(v, n))
             	    
-    def _getSubcases(self):
-        """ Get Subcases
-        Assumming that subcases are numbers, returns a set of subcases using a 
-        test-case's comparison files.
-        
-        *Must be inside the test-case folder. """
-    
-        #Find the names of every comparison file.
-        types = ['*.avs', '*.csv', '*.his']
-        file_names = []
-        for t in types:
-            file_names = file_names+glob('compare/'+t)
-        
-        #Using the comparison files, extract the subcase numbers.    
-        subcases = []
-        for file_name in file_names:
-            pattern = re.compile(r'\d+')
-            subcase = pattern.findall(file_name)[0]
-            if subcase not in subcases:
-                subcases.append(subcase)
+        #Choose if testing output files.
+        elif '.out' in filetype:
+            #If no prespecified componets, grab them from f_dif.
+            if len(components) == 0:
+                components = f_dif.components
                 
-        #If there were no subcases found, insert a blank placeholder.
-        if len(subcases) == 0:
-            subcases = ['']
+            #If no pre-specifed nodes, grab them from f_dif.
+            if len(nodes) == 0:
+                nodes = f_dif.nodes
                 
-        return subcases
-        
+            msg = 'Incorrect %s at %s node %s.'  
+            
+            #Check the node at each component for significant differences.   
+            for c in components:
+                #Its possible some componets do not have all nodes in f_dif.
+                for n in nodes:
+                    #In case variables are different per node, intersect.
+                    for v in variables:
+                        self.assertTrue(f_dif.node[c][n][v]<mxerr, msg%(v,c,n))
+   
     def _fgeneral(self, file_pattern):
         #Chooses the correct fpost object to represent output files.
         if '.avs' in file_pattern:
@@ -371,6 +395,10 @@ class Tests(unittest.TestCase):
             return fcontour(file_pattern)
         elif '.his' in file_pattern:
             return fhistory(file_pattern)
+        elif '.out' in file_pattern:
+            #Assuming each subcase has only 1 file, use glob to find it.
+            filename = glob(file_pattern)[0]
+            return foutput(filename)
             	    
     def setUp(self):
         self.maindir = os.getcwd()
@@ -434,6 +462,7 @@ def suite(case, test_case):
         #suite.addTest(Tests('dissolution'))
         #suite.addTest(Tests('salt_perm_poro'))
         
+        suite.addTest(Tests('test_saltvcon'))
         suite.addTest(Tests('test_avdonin'))
         suite.addTest(Tests('test_boun'))
         suite.addTest(Tests('test_cden'))

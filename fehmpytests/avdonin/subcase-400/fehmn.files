@@ -1,0 +1,8 @@
+input: input/avdonin.in
+grida: input/avdonin400.geom
+outp: avdonin400.out
+hist: avdonin400.his
+root: avdonin400
+
+none
+0

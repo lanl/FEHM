@@ -1,0 +1,26 @@
+Salt variable conductivity
+
+Modification: new June 13, 2014 mlange806@gmail.com
+Modification: new Dec 19 2013 dharp@lanl.gov
+Modification: updated to use f_dif function Feb 6 2014
+
+This function tests the saltvcon macro which calculates thermal
+conductivity of crushed and intact salt.
+
+Intact salt:
+kxi = k_{t-300}(300/T)^1.14
+Munson et al. (1990) Overtest for Simulate Defense High-Level
+    Waste (Room B): In Situ Data Report. WIPP. Sandia National
+    Laboratories, SAND89-2671
+
+Crushed salt:
+Thermal conductivity of crushed salt from Asse mine
+kx_asse = -270*phi^4+370*phi^3-136*phi^2+1.5*phi+5  
+Bechtold et al. (2004) Backfilling and sealing of underground
+    respositories for radioactive waste in salt (BAMBUS II
+    project), EUR 20621, ISBN 92-894-7767-9
+kx = (k_{t-300}/kx_asse)*(300/T)^1.14
+if kx is less then 1.e-6, set to 1.e-6
+
+The excel spreadsheet in ./information/saltvcon.xlsx contains the
+associated calculations. 

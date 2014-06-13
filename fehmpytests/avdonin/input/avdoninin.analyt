@@ -1,0 +1,17 @@
+output/avdoninout.analyt_time
+output/avdoninout.analyt_pos
+Analytical Solution for Avdonin Radial Heat and Mass Transfer Problem
+1                       Number of coordinate positions
+37.5                	Radial Coordinates, meters
+0. 1000. 5.		Coordinate span, spacing
+100.			Reservoir thickness (m)
+170.                    Initial temperature (C)
+160.                    Input fluid temperature (C)
+0.2			Porosity
+20.                     Rock thermal conductivity (W/mK)
+2500.                   Rock density (kg/m^3)
+1000.                   Rock specific heat (J/kgK)
+1000.                   Water density (kg/m^3)
+4442.5			Water specific heat (J/kgK)
+10.			Injection rate (kg/s)
+1.e7 1.e9 5.e6		Start time, End time, Timestep (seconds)

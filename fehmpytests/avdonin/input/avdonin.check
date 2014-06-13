@@ -1,0 +1,7 @@
+Avdonin Radial Heat and Mass Transfer Problem
+84 nodes            
+output/avdonin84.out
+400 nodes           
+output/avdonin400.out
+800 nodes           
+output/avdonin800.out
