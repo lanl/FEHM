@@ -189,7 +189,7 @@ class Tests(unittest.TestCase):
         
     def test_saltvcon(self):
         """
-        Tests that function calculates the correct Kx values in water. 
+        Tests that function calculates relatively correct Kx values in water. 
         Information about the function can be found in the folder 'information'.
         """
         
@@ -202,8 +202,32 @@ class Tests(unittest.TestCase):
         
         
     def test_dissolution(self):
-        arguments = {'variables': ['Np[aq] (Moles/kg H20)'], 'subcases': ''}
+        """
+        Tests that the function calculates the correct concentrations. Because
+        the folder structure is not set up yet to handle no subcases, the empty 
+        list is used to find the folder 'subcase-' which has the control file. 
+        Information about the function can be found in the folder 'information'.
+        """
+    
+        arguments = {}
+        arguments['variables'] = ['Np[aq] (Moles/kg H20)']
+        arguments['subcases']  = ['']
+        
         self._test_case('dissolution', arguments)
+        
+    def test_salt_perm_poro(self):
+        """
+        Tests that the function calculates the correct porosities. Because
+        the folder structure is not set up yet to handle no subcases, the empty 
+        list is used to find the folder 'subcase-' which has the control file. 
+        Information about the function can be found in the folder 'information'.
+        """
+    
+        arguments = {}
+        arguments['variables'] = ['n', 'perm_x']    
+        arguments['subcases']  = ['']
+        
+        self._test_case('salt_perm_poro', arguments)
   
     def test_avdonin(self):
         self._test_case('avdonin')
@@ -463,12 +487,9 @@ def suite(case, test_case):
     suite = unittest.TestSuite()
     
     if case == 'all':
-        #TODO - With modification of run_fehm, these no longer work properly.
-        #suite.addTest(Tests('saltvcon'))
-        #suite.addTest(Tests('dissolution'))
-        #suite.addTest(Tests('salt_perm_poro'))
-        
         suite.addTest(Tests('test_saltvcon'))
+        suite.addTest(Tests('test_dissolution'))
+        suite.addTest(Tests('test_salt_perm_poro'))
         suite.addTest(Tests('test_avdonin'))
         suite.addTest(Tests('test_boun'))
         suite.addTest(Tests('test_cden'))

@@ -1,0 +1,10 @@
+root: run
+input: input/run.dat
+outpu: run.out
+grida: input/1dgrid.grid
+stori: input/1dgrid.stor
+
+none
+
+
+
