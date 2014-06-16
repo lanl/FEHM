@@ -199,6 +199,11 @@ class Tests(unittest.TestCase):
         arguments['format'] = 'relative' 
         
         self._test_case('saltvcon', arguments)
+        
+        
+    def test_dissolution(self):
+        arguments = {'variables': ['Np[aq] (Moles/kg H20)'], 'subcases': ''}
+        self._test_case('dissolution', arguments)
   
     def test_avdonin(self):
         self._test_case('avdonin')
@@ -350,8 +355,9 @@ class Tests(unittest.TestCase):
             #Check the variables at each time for any significant differences.
             for t in times: 
                 #Its possible some times do not have all variables in f_dif.
-                for v in np.intersect1d(variables, f_dif[t]):              
-            	    self.assertTrue(max(f_dif[t][v])<mxerr, msg%(v, t))
+                for v in np.intersect1d(variables, f_dif[t]):
+                    f_dif[t][v] = map(abs, f_dif[t][v])             
+            	    self.assertTrue(max(f_dif[t][v]) < mxerr, msg%(v, t))
         
         #Choose if testing history files.       
         elif '.his' in filetype:
