@@ -415,7 +415,8 @@ class Tests(unittest.TestCase):
                 for n in nodes:
                     #In case variables are different per node, intersect.
                     for v in variables:
-                        self.assertTrue(f_dif.node[c][n][v]<mxerr, msg%(v,c,n))
+                        difference = max(f_dif.node[c][n][v])
+                        self.assertTrue(difference < mxerr, msg%(v,c,n))
    
     def _fgeneral(self, file_pattern):
         #Chooses the correct fpost object to represent output files.
