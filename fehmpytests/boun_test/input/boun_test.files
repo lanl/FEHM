@@ -1,0 +1,6 @@
+input: input/prob_well_bounNUM.dat 
+grid: input/mdat_3d_21_21_16.grid
+outp: output/prob_well_bounNUM.out
+root: output/prob_well_bounNUM
+
+none
