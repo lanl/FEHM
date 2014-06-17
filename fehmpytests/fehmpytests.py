@@ -377,7 +377,7 @@ class Tests(unittest.TestCase):
             for t in times: 
                 #Its possible some times do not have all variables in f_dif.
                 for v in np.intersect1d(variables, f_dif[t]):
-                    f_dif[t][v] = map(abs, f_dif[t][v])             
+                    f_dif[t][v] = map(abs, f_dif[t][v])   
             	    self.assertTrue(max(f_dif[t][v]) < mxerr, msg%(v, t))
         
         #Choose if testing history files.       
