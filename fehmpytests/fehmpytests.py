@@ -222,7 +222,6 @@ class Tests(unittest.TestCase):
     
         arguments = {}
         arguments['variables'] = ['n', 'perm_x']    
-        arguments['subcases']  = ['']
         
         self._test_case('salt_perm_poro', arguments)
   
@@ -313,20 +312,21 @@ class Tests(unittest.TestCase):
         subcases = []
         for filename in filenames:
             subcases.append(re.sub('subcase-', '', filename))
-
-        #Test the new files generated with each subcase.
-        for subcase in subcases:
-            filetypes = ['*.avs', '*.csv', '*.his', '*.out']
-            for filetype in filetypes:
-                #Check to make sure there are files of this type.
-                if len(glob('compare/'+'*'+subcase+filetype)) > 0:
-                    #Check for any significant differences.
-                    try:
+  
+        try:
+            #Test the new files generated with each subcase.
+            for subcase in subcases:
+                filetypes = ['*.avs', '*.csv', '*.his', '*.out']
+                for filetype in filetypes:
+                    #Check to make sure there are files of this type.
+                    if len(glob('compare/'+'*'+subcase+filetype)) > 0:
+                        #Check for any significant differences.
                         self._checkDifferences(filetype, subcase, parameters)
-                    finally:
-                        #Allows other tests to be performed after exception.
-                        self.cleanup(['*.*'])
-                        os.chdir(self.maindir)
+                        
+        finally:
+            #Allows other tests to be performed after exception.
+            self.cleanup(['*.*'])
+            os.chdir(self.maindir)
          
     def _checkDifferences(self, filetype, subcase, parameters={}):
         """ Check Difference
