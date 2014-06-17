@@ -52,9 +52,7 @@ from fhelp import*
 dflt = fdflt()
 
 WINDOWS = platform.system()=='Windows'
-if WINDOWS: copyStr = 'copy'; delStr = 'del'; slash = '\\'
-else: copyStr = 'cp'; delStr = 'rm'; slash = '/'
-
+if not WINDOWS: has_ctypes = False
 # list of macros that might be encountered
 fdata_sections = ['cont','pres','zonn','zone','cond','time','ctrl','iter','rock','perm',
 					'boun','flow','strs','text','sol','nfin','hist','node','carb','rlp','grad','nobr',
@@ -85,6 +83,12 @@ permDicts = dict((
 	(25,['shear_frac_tough',
 	'static_frict_coef','dynamic_frict_coef','frac_num','onset_disp','disp_interval','max_perm_change',
 	'frac_cohesion']),
+	
+	(100,['perm_mult_x','perm_mult_y','perm_mult_z','ramp_range']),
+	))
+# dictionary of plastic model parameters, indexed by plastic model number, ORDER OF LIST MUST EQUAL ORDER OF INPUT
+plasticDicts = dict((
+	(3,['youngs_modulus','poissons_ratio','eta_drucker','zeta_drucker','c_drucker']),
 	))
 # dictionary of perm model units, indexed by perm model number, ORDER OF LIST MUST EQUAL ORDER OF INPUT
 permUnits = dict((
@@ -92,8 +96,8 @@ permUnits = dict((
 	(21,['','','','','MPa','','MPa','','','','','','']),
 	(22,['','MPa','','MPa','','','','','','','','','MPa']),
 	(24,['MPa/m','','','','m','m','log(m^2)','MPa','']),
-	#(25,['m','m','MPa/m','MPa/m','degrees','','','','m','m','log(m^2)','MPa','']),
 	(25,['MPa/m','','','','m','m','log(m^2)','MPa']),
+	(100,['','','','MPa']),
 	))
 # dictionary of relative permeability model parameters, indexed by model number, ORDER OF LIST MUST EQUAL ORDER OF INPUT
 rlpDicts = dict((
@@ -134,6 +138,7 @@ pporDicts = dict((
 	(7,['param1','param2','param3','param4']), 		# unknown - salt
 	))
 model_list = dict((('permmodel',permDicts),
+		('plasticmodel',plasticDicts),
 		('rlp',rlpDicts),
 		('vcon',vconDicts),
 		('ppor',pporDicts),
@@ -141,6 +146,7 @@ model_list = dict((('permmodel',permDicts),
 		('diffusion',diffusionDicts)))
 model_titles = dict((('rlp','RELATIVE PERMEABILITY'),
 					 ('permmodel',''),
+					 ('plasticmodel',''),
 					 ('vcon','VARIABLE THERMAL CONDUCTIVITY'),
 					 ('ppor','VARIABLE POROSITY'),
 					 ('dispersion',''),
@@ -155,6 +161,7 @@ frock = (('density',None),('specific_heat',None),('porosity',None))
 fgrad = (('reference_coord',None),('direction',None),('variable',None),('reference_value',None),('gradient',None))
 fbiot = (('thermal_expansion',None),('pressure_coupling',None))
 felastic = (('youngs_modulus',None),('poissons_ratio',None))
+fbodyforce = (('fx',None),('fy',None),('fz',None))
 fco2frac = (('water_rich_sat',None),('co2_rich_sat',None),('co2_mass_frac',None),('init_salt_conc',None),('override_flag',None))
 fco2flow = (('rate',None),('energy',None),('impedance',None),('bc_flag',None))
 fco2diff = (('diffusion',None),('tortuosity',None))
@@ -164,10 +171,8 @@ fhflx = (('heat_flow',None),('multiplier',None))
 ftpor = (('tracer_porosity',None),)
 
 macro_list = dict((('pres',fpres),('perm',fperm),('cond',fcond),('flow',fflow),('rock',frock),
-			('biot',fbiot),('elastic',felastic),('co2frac',fco2frac),('co2flow',fco2flow),
+			('biot',fbiot),('elastic',felastic),('bodyforce',fbodyforce),('co2frac',fco2frac),('co2flow',fco2flow),
 			('co2pres',fco2pres),('co2diff',fco2diff),
-			#('permmodel',fpermmodel),
-			#	('rlp',frlp),
 			('stressboun',fstressboun),('grad',fgrad),('hflx',fhflx),('tpor',ftpor)))
 			
 # potential nodal properties
@@ -183,32 +188,35 @@ macro_titles = dict((('pres','INITIAL TEMPERATURE AND PRESSURE'),
 					 ('grad','INITIAL VARIABLE GRADIENTS'),
 					 ('elastic',''),
 					 ('biot',''),
+					 ('bodyforce',''),
 					 ('co2flow',''),
 					 ('co2frac',''),
 					 ('co2pres',''),
 					 ('co2diff',''),
 					 ('stressboun',''),
-#					 ('permmodel',''),
-#					 ('rlp',''),
 					 ('rlpm','RELATIVE PERMEABILITY'),
 					 ('tpor',''),))
-macro_descriptor = dict((('pres','Initial conditions'),
-					 ('perm','Permeability'),
-					 ('cond','Thermal conductivity properties'),
-					 ('flow','Source or sink'),
-					 ('rock','Material properties'),
-					 ('grad','Initial condition gradients'),
-					 ('elastic','Elastic properties'),
-					 ('biot','Fluid-stress coupling properties'),
-					 ('co2flow','CO2 source of sink'),
-					 ('co2frac','CO2 fraction'),
-					 ('co2pres','CO2 initial conditions'),
-					 ('co2diff','CO2 diffusion properties'),
-					 ('stressboun','Stress boundary condition'),
-					 ('permmodel','Stress permeability relationship'),
-					 ('rlp','Relative permeablity relationship'),
-					 ('hflx','Heat flux boundary condition'),
-					 ('tpor','Tracer porosity'),))
+macro_descriptor = dict((
+	('pres','Initial conditions'),
+	('perm','Permeability'),
+	('cond','Thermal conductivity properties'),
+	('flow','Source or sink'),
+	('rock','Material properties'),
+	('grad','Initial condition gradients'),
+	('elastic','Elastic properties'),
+	('bodyforce','Body force at node'),
+	('biot','Fluid-stress coupling properties'),
+	('co2flow','CO2 source of sink'),
+	('co2frac','CO2 fraction'),
+	('co2pres','CO2 initial conditions'),
+	('co2diff','CO2 diffusion properties'),
+	('stressboun','Stress boundary condition'),
+	('permmodel','Stress permeability relationship'),
+	('plasticmodel','Plasticity relationship'),
+	('rlp','Relative permeablity relationship'),
+	('hflx','Heat flux boundary condition'),
+	('tpor','Tracer porosity'),)
+	)
 rlpm_dicts=dict((
 	('constant',{}),
 	('linear',(('minimum_saturation',0),('maximum_saturation',1))),
@@ -242,6 +250,38 @@ def _title_string(s,n): 						#prepends headers to sections of FEHM input file
 	ws+='\n'
 	return ws
 def _zone_ind(indStr): return abs(int(indStr))-(int(indStr)+abs(int(indStr)))/2
+def process_output(filename,input=None,grid=None,hide=False,silent=False,write=True):
+	"""Runs an FEHM \*.outp file through the diagnostic tool. Writes output files containing simulation balance, 
+	   convergence, time stepping information.
+	   
+	   :param filename: Path to the \*.outp file.
+	   :type filename: str
+	   :param input: Path to corresponding FEHM input file .
+	   :type input: str
+	   :param grid: Path to corresponding FEHM grid file.
+	   :type grid: str
+	   :param hide: Suppress diagnostic window (default False).
+	   :type hide: bool
+	   :param silent: Suppress output to the screen (default False).
+	   :type silent: bool
+	   :param write: Write output files (default True).
+	   :type write: bool
+	"""
+	
+	if input and grid: dat = fdata(filename=input,gridfilename=grid)
+	else: 
+		dat = fdata()
+		dat._path.filename=filename
+	dat.files.root = dat.filename.split('.')[0]
+	dat.hist.variables=list(flatten(dat.hist.variables))
+	dat._diagnostic.hide = hide
+	dat._diagnostic.write = write
+	dat._diagnostic.silent = silent
+	dat._diagnostic.refresh_nodes()
+	dat._diagnostic.stdout = open(filename)
+	dat._diagnostic.poll = True
+	dat._diagnostic.read_with_tcl()
+	return dat._diagnostic
 class fzone(object):						#FEHM zone object.
 	"""FEHM Zone object.
 	
@@ -317,7 +357,8 @@ class fzone(object):						#FEHM zone object.
 			ymax,ymin = np.max([p1[1],p2[1]]),np.min([p1[1],p2[1]])
 			self.points=[[xmin,xmax,xmax,xmin,xmin,xmax,xmax,xmin],
 						 [ymax,ymax,ymin,ymin,ymax,ymax,ymin,ymin],
-						 [0., 0., 0., 0., 0., 0., 0., 0.]]
+						 #[0., 0., 0., 0., 0., 0., 0., 0.]
+						 ]
 		elif len(p1) == 3:
 			xmax,xmin = np.max([p1[0],p2[0]]),np.min([p1[0],p2[0]])
 			ymax,ymin = np.max([p1[1],p2[1]]),np.min([p1[1],p2[1]])
@@ -341,11 +382,11 @@ class fzone(object):						#FEHM zone object.
 			return
 		self._parent.add(fmacro('hflx',zone=self,param=(('heat_flow',T),('multiplier',multiplier)),file=file))
 		self._fixedT = T
-	def fix_pressure(self,P, T=30., impedance=1.e6, file = None):
+	def fix_pressure(self,P=0, T=30., impedance=1.e6, file = None):
 		''' Fixes pressures at nodes within this zone. Pressures fixed by adding a FLOW macro with high
 			impedance.
 			
-			:param P: Pressure to fix.
+			:param P: Pressure to fix. Default is 0, corresponding to fixing initial pressure.
 			:type P: fl64
 			:param T: Temperature to fix (default = 30 degC).
 			:type T: fl64
@@ -359,6 +400,76 @@ class fzone(object):						#FEHM zone object.
 			return
 		self._parent.add(fmacro('flow',zone=self,param=(('rate',P),('energy',-T),('impedance',impedance)),file=file))
 		self._fixedP = [P,T]
+	def fix_displacement(self,direction,displacement,file=None):
+		''' Fixes displacement at nodes within this zone. Displacements fixed by adding a STRESSBOUN macro.
+			
+			:param direction: Direction in which displacement is fixed. Specify as string or integer, e.g., 1 = 'x', 2 = 'y', 3 = 'z'.
+			:type direction: str, int
+			:param displacement: Fixed displacement
+			:type displacement: fl64
+			:param file: Name of auxiliary file to save macro.
+			:type file: str
+		'''
+		if not self._parent: 
+			pyfehm_print('fix_displacement() only available if zone associated with fdata() object')
+			return
+		if direction == 'x': direction = 1
+		elif direction == 'y': direction = 2
+		elif direction == 'z': direction = 3
+		elif direction in [1,2,3]: pass
+		else:
+			pyfehm_print('direction must be specified as either 1, 2, 3, \'x\', \'y\', \'z\'.')
+			return
+		self._parent.add(fmacro('stressboun',zone=self,param=(('direction',direction),('value',displacement)),file=file))
+	def fix_stress(self,direction,stress,file=None):
+		''' Fixes displacement at nodes within this zone. Displacements fixed by adding a STRESSBOUN macro.
+			
+			:param direction: Direction in which stress is fixed. Specify as string or integer, e.g., 1 = 'x', 2 = 'y', 3 = 'z'.
+			:type direction: str, int
+			:param stress: Fixed stress
+			:type stress: fl64
+			:param file: Name of auxiliary file to save macro.
+			:type file: str
+		'''
+		if not self._parent: 
+			pyfehm_print('fix_stress() only available if zone associated with fdata() object')
+			return
+		if direction == 'x': direction = 1
+		elif direction == 'y': direction = 2
+		elif direction == 'z': direction = 3
+		elif abs(direction) in [1,2,3]: pass
+		else:
+			pyfehm_print('direction must be specified as either 1, 2, 3, \'x\', \'y\', \'z\'.')
+			return
+		self._parent.add(fmacro('stressboun',zone=self,param=(('direction',-abs(direction)),('value',stress)),file=file))
+	def roller(self,direction=None,file=None):
+		''' Assigns a roller boundary condition to the zone (zero displacement in normal direction).
+			
+			:param direction: Normal of roller. Specify as string or integer, e.g., 1 = 'x', 2 = 'y', 3 = 'z'. Defaults to zone normal for 'XMIN', 'ZMAX' etc.
+			:type direction: str, int
+		'''
+		if direction is None:
+			if self.name in ['XMIN','XMAX']: direction = 1
+			elif self.name in ['YMIN','YMAX']: direction = 2
+			elif self.name in ['ZMIN','ZMAX']: direction = 3
+			else:
+				pyfehm_print('no direction specified')
+				return
+		self.fix_displacement(direction=direction,displacement=0,file=file)
+	def free_surface(self,direction=None,file=None):
+		''' Assigns a free surface boundary condition to the zone (zero stress in normal direction).
+			
+			:param direction: Normal of free surface. Specify as string or integer, e.g., 1 = 'x', 2 = 'y', 3 = 'z'. Defaults to zone normal for 'XMIN', 'ZMAX' etc.
+			:type direction: str, int
+		'''
+		if direction is None:
+			if self.name in ['XMIN','XMAX']: direction = -1
+			elif self.name in ['YMIN','YMAX']: direction = -2
+			elif self.name in ['ZMIN','ZMAX']: direction = -3
+			else:
+				pyfehm_print('no direction specified')
+				return
+		self.fix_stress(direction=direction,stress=0,file=file)
 	def copy_from(self,from_zone=None,grid_new=None,method = 'nearest',grid_old=None):
 		'''Transfer zone information from one grid to another.
 		
@@ -695,16 +806,14 @@ class fzone(object):						#FEHM zone object.
 			if not self._parent.grid: self._nodelist = nds; return self._nodelist
 			xmax,xmin = np.max(self.points[0]),np.min(self.points[0])
 			ymax,ymin = np.max(self.points[1]),np.min(self.points[1])
-			if self._parent.grid.dimensions == 3:
+			if self._parent._grid.dimensions == 3:
 				zmax,zmin = np.max(self.points[2]),np.min(self.points[2])
 			else:
-				zmax,zmin = self._parent.grid.zmax+.01,self._parent.grid.zmin-.01
-			for nd in self._parent.grid.nodelist:
-				x,y,z = nd.position
-				if (x<=xmax) and (x>=xmin) and (y<=ymax) and (y>=ymin) and (z<=zmax) and (z>=zmin):
-					nds.append(nd)
-			self._nodelist = nds
-		if self.index == 0: self._nodelist = self._parent.grid.nodelist
+				zmax,zmin = self._parent._grid.zmax+.01,self._parent._grid.zmin-.01
+			x,y,z = np.array([nd._position for nd in self._parent._grid._nodelist]).T
+			inds = np.where((x<=xmax)&(x>=xmin)&(y<=ymax)&(y>=ymin)&(z<=zmax)&(z>=zmin))
+			self._nodelist = [self._parent._grid._nodelist[i] for i in inds[0]]			
+		if self._index == 0: self._nodelist = self._parent._grid._nodelist
 		return self._nodelist
 	def _set_nodes(self,value):
 		if self.type == 'rect': 
@@ -722,6 +831,7 @@ class fzone(object):						#FEHM zone object.
 			row = []
 			if self.type == 'nnum': row.append(len(self.nodelist))
 			for nd in self.nodelist:
+				if isinstance(nd,int): nd = self._parent.grid.node[nd]
 				if self.type == 'list': pts.append(nd.position)
 				elif self.type == 'nnum': row.append(nd.index)
 				if len(row) == 10: pts.append(row); row = []
@@ -772,139 +882,68 @@ class fzone(object):						#FEHM zone object.
 				if not (nd.conductivity is not None and self.index == 0): 
 					nd._conductivity = np.array([kx,ky,kz])
 	conductivity = property(_get_conductivity, _set_conductivity) #: (*fl64*,*lst*) Conductivity properties of zone.
-	def _get_density(self): return self._density
-	def _set_density(self,value): 
-		self._density = value
-		# set commands
+	def _set_property(self,value,prop0,props,macro):
+		self.__setattr__(prop0,value)
+				
 		if not self._parent: 
 			pyfehm_print('Zone not associated with input file, no macro changes made.')
 			return
-		if self.index in self._parent.rock.keys():
+		
+		# macro creation/modification
+		ks = self._parent.__getattribute__(macro).keys()
+		if self.index in ks:
 			if self._updateFlag:
-				self._parent.rock[self.index].param['density']=value
+				self._parent.__getattribute__(macro)[self.index].param[prop0[1:]]=value
 		else:
-			self._parent.add(fmacro('rock',zone=self.index,param=(('density',value),('specific_heat',dflt.specific_heat),('porosity',dflt.porosity))))
-			_buildWarnings('WARNING: Assigning default specific heat (%6.1f'%dflt.specific_heat+' kJ/kg/K) and porosity (%4.3f'%dflt.porosity+') to zone '+str(self.index)+'.')
-			self.specific_heat = dflt.specific_heat
-			self.porosity = dflt.porosity
+			params = [(prop0[1:],value)]
+			for prop in props:
+				params.append((prop[1:],dflt.__getattribute__(prop[1:])))
+			self._parent.add(fmacro(macro,zone=self.index,param=tuple(params)))
+			warn_string = 'WARNING: Assigning default '
+			for prop in props:
+				warn_string += prop[1:]+' (%6.1f'%dflt.__getattribute__(prop[1:])+'), '
+			warn_string = warn_string[:-2] + ' to zone '+str(self.index)+'.'
+			_buildWarnings(warn_string)
+			for prop in props:
+				self.__setattr__(prop[1:],dflt.__getattribute__(prop[1:]))
+		
+		# node association
 		if self._parent:
-			for nd in self.nodelist:
-				if not (nd.density is not None and self.index == 0): 
-					nd._density = value
+			for nd in self._nodelist:
+				if isinstance(nd,int): nd = self._parent.grid.node[nd]
+				if len(set([zn.index for zn in nd.zonelist])-set([994,995,996,997,998,999]))==0:
+					nd.__setattr__(prop0,value)		
+				elif len([zn.index for zn in nd.zonelist if zn.index in ks])==0:				
+					nd.__setattr__(prop0,value)			
+				elif self.index == np.max([zn.index for zn in nd.zonelist if zn.index in ks]):
+					nd.__setattr__(prop0,value)
+	def _get_density(self): return self._density
+	def _set_density(self,value): 
+		self._set_property(value,'_density',['_specific_heat','_porosity'],'rock')
 	density = property(_get_density, _set_density) #: (*fl64*) 	Density of zone.
 	def _get_specific_heat(self): return self._specific_heat
 	def _set_specific_heat(self,value): 
-		self._specific_heat = value
-		# set commands
-		if not self._parent: 
-			pyfehm_print('Zone not associated with input file, no macro changes made.')
-			return
-		if self.index in self._parent.rock.keys():
-			if self._updateFlag:
-				self._parent.rock[self.index].param['specific_heat']=value			
-		else:
-			self._parent.add(fmacro('rock',zone=self.index,param=(('density',dflt.density),('specific_heat',value),('porosity',dflt.porosity))))
-			_buildWarnings('WARNING: Assigning default density (%6.1f'%dflt.density+' kg/m^3) and porosity (%4.3f'%dflt.porosity+') to zone '+str(self.index)+'.')
-			self.density = dflt.density
-			self.porosity = dflt.porosity
-		if self._parent:
-			for nd in self.nodelist:
-				if not (nd.specific_heat is not None and self.index == 0): 
-					nd._specific_heat = value
+		self._set_property(value,'_specific_heat',['_density','_porosity'],'rock')
 	specific_heat = property(_get_specific_heat, _set_specific_heat) #: (*fl64*) Specific heat of zone.
 	def _get_porosity(self): return self._porosity
 	def _set_porosity(self,value): 
-		self._porosity = value
-		# set commands
-		if not self._parent: 
-			pyfehm_print('Zone not associated with input file, no macro changes made.')
-			return
-		if self.index in self._parent.rock.keys():
-			if self._updateFlag:
-				self._parent.rock[self.index].param['porosity']=value
-		else:
-			self._parent.add(fmacro('rock',zone=self.index,param=(('density',dflt.density),('specific_heat',dflt.specific_heat),('porosity',value))))
-			_buildWarnings('WARNING: Assigning default density (%6.1f'%dflt.density+' kg/m^3) and specific heat (%6.1f'%dflt.specific_heat+' kJ/kg/K) to zone '+str(self.index)+'.')
-			self.specific_heat = dflt.specific_heat
-			self.density = dflt.density
-		if self._parent:
-			for nd in self.nodelist:
-				if not (nd.porosity is not None and self.index == 0): 
-					nd._porosity = value
+		self._set_property(value,'_porosity',['_density','_specific_heat'],'rock')
 	porosity = property(_get_porosity, _set_porosity) #: (*fl64*) Porosity of zone.
 	def _get_youngs_modulus(self): return self._youngs_modulus
 	def _set_youngs_modulus(self,value): 
-		self._youngs_modulus = value
-		# set commands
-		if not self._parent: 
-			pyfehm_print('Zone not associated with input file, no macro changes made.')
-			return
-		if self.index in self._parent.elastic.keys():
-			if self._updateFlag:
-				self._parent.elastic[self.index].param['youngs_modulus']=value
-		else:
-			self._parent.add(fmacro('elastic',zone=self.index,param=(('youngs_modulus',value),('poissons_ratio',dflt.poissons_ratio))))
-			_buildWarnings('WARNING: Assigning default Poissons ratio (%4.3f'%dflt.poissons_ratio+') to zone '+str(self.index)+'.')
-			self.poissons_ratio = dflt.poissons_ratio
-		if self._parent:
-			for nd in self.nodelist:
-				if not (nd.youngs_modulus is not None and self.index == 0): 
-					nd._youngs_modulus = value
+		self._set_property(value,'_youngs_modulus',['_poissons_ratio'],'elastic')
 	youngs_modulus = property(_get_youngs_modulus, _set_youngs_modulus) #: (*fl64*) Young's modulus of zone.
 	def _get_poissons_ratio(self): return self._poissons_ratio
 	def _set_poissons_ratio(self,value): 
-		self._poissons_ratio = value
-		# set commands
-		if not self._parent: 
-			pyfehm_print('Zone not associated with input file, no macro changes made.')
-			return
-		if self.index in self._parent.elastic.keys():
-			if self._updateFlag:
-				self._parent.elastic[self.index].param['poissons_ratio']=value
-		else:
-			self._parent.add(fmacro('elastic',zone=self.index,param=(('youngs_modulus',dflt.youngs_modulus),('poissons_ratio',value))))
-			_buildWarnings('WARNING: Assigning default Youngs modulus (%5.1f'%dflt.youngs_modulus+' MPa) to zone '+str(self.index)+'.')
-			self.youngs_modulus = dflt.youngs_modulus
-		if self._parent:
-			for nd in self.nodelist:
-				if not (nd.poissons_ratio is not None and self.index == 0): 
-					nd._poissons_ratio = value
+		self._set_property(value,'_poissons_ratio',['_youngs_modulus'],'elastic')
 	poissons_ratio = property(_get_poissons_ratio, _set_poissons_ratio) #: (*fl64*) Poisson's ratio of zone.
 	def _get_thermal_expansion(self): return self._thermal_expansion
 	def _set_thermal_expansion(self,value): 
-		self._thermal_expansion = value
-		# set commands
-		if not self._parent: 
-			pyfehm_print('Zone not associated with input file, no macro changes made.')
-			return
-		if self.index in self._parent.biot.keys():
-			if self._updateFlag:
-				self._parent.biot[self.index].param['thermal_expansion']=value
-		else:
-			self._parent.add(fmacro('biot',zone=self.index,param=(('thermal_expansion',value),('pressure_coupling',dflt.pressure_coupling))))
-			_buildWarnings('WARNING: Assigning default pressure coupling (%4.3f'%dflt.pressure_coupling+') to zone '+str(self.index)+'.')
-			self.pressure_coupling = dflt.pressure_coupling
-		if self._parent:
-			for nd in self.nodelist:
-				if not (nd.thermal_expansion is not None and self.index == 0): 
-					nd._thermal_expansion = value
+		self._set_property(value,'_thermal_expansion',['_pressure_coupling'],'biot')
 	thermal_expansion = property(_get_thermal_expansion, _set_thermal_expansion) #: (*fl64*) Coefficient of thermal expansion of zone.
 	def _get_pressure_coupling(self): return self._pressure_coupling
 	def _set_pressure_coupling(self,value): 
-		self._pressure_coupling = value
-		# set commands
-		if not self._parent: _buildWarnings('Zone not associated with input file, no macro changes made.'); return
-		if self.index in self._parent.biot.keys():
-			if self._updateFlag:
-				self._parent.biot[self.index].param['pressure_coupling']=value
-		else:
-			self._parent.add(fmacro('biot',zone=self.index,param=(('thermal_expansion',dflt.thermal_expansion),('pressure_coupling',value))))
-			_buildWarnings('WARNING: Assigning default thermal expansion (%4.3e'%dflt.thermal_expansion+' K^-1) to zone '+str(self.index)+'.')
-			self.thermal_expansion = dflt.thermal_expansion
-		if self._parent:
-			for nd in self.nodelist:
-				if not (nd.pressure_coupling is not None and self.index == 0): 
-					nd._pressure_coupling = value
+		self._set_property(value,'_pressure_coupling',['_thermal_expansion'],'biot')
 	pressure_coupling = property(_get_pressure_coupling, _set_pressure_coupling) #: (*fl64*) Pressure coupling term of zone.
 	def _get_Pi(self): return self._Pi
 	def _set_Pi(self,value): 
@@ -988,6 +1027,8 @@ class fmacro(object): 						#FEHM macro object
 	def __init__(self,type='',zone=[],param=[],subtype='',file = None,write_one_macro=False):
 		self._type = type 		
 		if type == 'stressboun' and not subtype: subtype = 'fixed'
+		if type == 'bodyforce' and not subtype: subtype = 'force'
+		if type == 'stressboun': write_one_macro = True
 		self._param = None 		
 		self._check_type()
 		self._assign_param()
@@ -1016,6 +1057,8 @@ class fmacro(object): 						#FEHM macro object
 		'''Determine if zone definitions are acceptable.'''
 		if not self.zone: return
 		elif isinstance(self.zone,fzone): return
+		elif isinstance(self.zone,fnode): 
+			self.zone = (self.zone.index,self.zone.index,1)
 		elif isinstance(self.zone,tuple):
 			if len(self.zone) != 3: self.zone=None; return
 			self.zone = tuple([int(pt) for pt in self.zone])
@@ -1056,8 +1099,8 @@ class fmacro(object): 						#FEHM macro object
 	def _get_subtype(self): return self._subtype
 	def _set_subtype(self,value):
 		self._subtype = value
-		if self.type != 'stressboun': _buildWarnings('WARNING: subtype ignored for non-stressboun macros')
-	subtype = property(_get_subtype,_set_subtype)	#: (*str*) Macro subtype, required for **STRESSBOUN** macro.
+		if self.type not in ['stressboun','bodyforce']: _buildWarnings('WARNING: subtype ignored unless macro is stressboun or bodyforce')
+	subtype = property(_get_subtype,_set_subtype)	#: (*str*) Macro subtype, required for **STRESSBOUN**  or **BODYFORCE** macros.
 	def _get_file(self): return self._file
 	def _set_file(self,value): self._file = value
 	file = property(_get_file,_set_file)#: (*str*) File string where information about the macro is stored. If file does not currently exist, it will be created and written to when the FEHM input file is written.
@@ -1256,6 +1299,9 @@ class fincon(object): 						#FEHM restart object.
 	Reading one of these files associates the temperature, pressure, saturation etc. data with grid nodes
 	and sets up fehmn.files to use the file for restarting.
 	'''
+	__slots__ = ['_source','_parent','_time','_changeTime','_writeOut','_stressgradCalled','_T','_P','_S',
+		'_co2aq','_eos','_co2_eos','_dc_eos','_S_co2l','_strs_xx','_strs_yy','_strs_zz','_strs_xy',
+		'_strs_yz','_strs_xz','_disp_x','_disp_y','_disp_z','_path']
 	def __init__(self,inconfilename=''):
 		self._source = ''
 		self._parent = None
@@ -1289,6 +1335,11 @@ class fincon(object): 						#FEHM restart object.
 			return 'no initial conditions'
 		else:
 			return self.filename			#Print out details
+	def __getstate__(self):
+		return dict((k, getattr(self, k)) for k in self.__slots__)
+	def __setstate__(self, data_dict):
+		for (name, value) in data_dict.iteritems():
+			setattr(self, name, value)
 	def read(self,inconfilename='',if_new = False):
 		'''Parse a restart file for variable information.
 		
@@ -1378,9 +1429,13 @@ class fincon(object): 						#FEHM restart object.
 		if inconfilename: 
 			self._path.filename = inconfilename
 		if self._parent.work_dir:
-			outfile = open(self._path.absolute_to_workdir+slash+self._path.filename,'w')
+			path = self._path.absolute_to_workdir+os.sep+self._path.filename
 		else:
-			outfile = open(self._path.full_path,'w')
+			path = self._path.full_path
+		outfile = open(path,'w')
+		self._parent.files.incon = path
+		self._path.filename = path
+		
 		pyfehm_print('Writing new INCON file '+inconfilename+'.')
 		# write headers
 		outfile.write('PyFEHM V1.0                      ')
@@ -1680,6 +1735,7 @@ class fstrs(object):						#FEHM stress module.
 	"""Stress module object, sets properties for execution of FEHM stress module (see macro **STRS**).
 	
 	"""
+	__slots__ = ['_initcalc','_fem','_parent','_bodyforce','_tolerance','_param','_excess_she']
 	def __init__(self,initcalc=True,fem=True,bodyforce=True,tolerance=-0.01,param={},parent=None):
 		self._initcalc=initcalc 			
 		self._fem=fem					
@@ -1689,6 +1745,7 @@ class fstrs(object):						#FEHM stress module.
 		self._param={}					
 		self._param['IHMS']=-3
 		self._param['ISTRS']=0
+		self._param['porosity_factor']=None
 		self._excess_she = {}			
 		self._excess_she['PAR1']=None
 		self._excess_she['PAR2']=None
@@ -1697,6 +1754,11 @@ class fstrs(object):						#FEHM stress module.
 	def __repr__(self): 
 		if not self.param['ISTRS']: return 'stress module inactive'
 		else: return 'stress module active'
+	def __getstate__(self):
+		return dict((k, getattr(self, k)) for k in self.__slots__)
+	def __setstate__(self, data_dict):
+		for (name, value) in data_dict.iteritems():
+			setattr(self, name, value)
 	def on(self):
 		"""Set parameters to turn stress calculations ON.
 		
@@ -1787,6 +1849,7 @@ class fcarb(object):						#FEHM CO2 module.
 	"""CO2 module object, sets properties for execution of FEHM CO2 module (see macro **CARB**).
 	
 	"""
+	__slots__ = ['_iprtype','_brine','_parent']
 	def __init__(self,iprtype=1,brine=False,parent=None):
 		self._iprtype = iprtype 		
 		self._brine = brine			
@@ -1794,6 +1857,11 @@ class fcarb(object):						#FEHM CO2 module.
 	def __repr__(self): 
 		if self.iprtype==1: return 'CO2 module inactive'
 		else: return 'CO2 module active'
+	def __getstate__(self):
+		return dict((k, getattr(self, k)) for k in self.__slots__)
+	def __setstate__(self, data_dict):
+		for (name, value) in data_dict.iteritems():
+			setattr(self, name, value)
 	def on(self,iprtype=3):
 		"""Set parameters to turn CO2 calculations ON.
 		
@@ -2055,6 +2123,12 @@ class _tracer_generator(object):
 	def _get_zone(self): return self._zone
 	def _set_zone(self,value): self._zone = value
 	zone = property(_get_zone,_set_zone) #: (**)
+class fstorage(object):
+	"""Storage object - allows user to save information to the dat file.
+	
+	"""
+	def __init__(self,parent=None):		
+		self._parent =parent
 class fcont(object):						#FEHM contour output object.
 	"""Contour output object, makes request for contour data to be output (see macro **CONT**).
 	
@@ -2444,7 +2518,8 @@ class files(object):						#FEHM file constructor.
 	'''Class containing information necessary to write out fehmn.files.
 	'''
 	__slots__ = ['_root','_input','_grid','_incon','_use_incon','_rsto','_use_rsto','_outp','_use_outp','_check',
-		'_use_check','_hist','_use_hist','_co2in','_use_co2in','_stor','_use_stor','_parent','_exe','_co2_inj_time']
+		'_use_check','_hist','_use_hist','_co2in','_use_co2in','_stor','_use_stor','_parent','_exe','_co2_inj_time',
+		'_nopf','_use_nopf','_error','_use_error']
 	def __init__(self,root='',input='',grid='',incon='',rsto='',outp='',check='',hist='',co2in='',stor='',exe='fehm.exe',co2_inj_time=None):
 		self._root = ''
 		self._input = ''
@@ -2462,7 +2537,11 @@ class files(object):						#FEHM file constructor.
 		self._co2in = ''
 		self._use_co2in = False
 		self._stor = ''
-		self._use_stor = False		
+		self._use_stor = False	
+		self._nopf = ''
+		self._use_nopf = False		
+		self._error = ''
+		self._use_error = False		
 		self._parent = None
 		self._exe = exe
 		self._co2_inj_time = co2_inj_time
@@ -2498,7 +2577,7 @@ class files(object):						#FEHM file constructor.
 		'''		
 		
 		if self._parent.work_dir:
-			outfile = open(self._parent.work_dir+slash+'fehmn.files','w')
+			outfile = open(self._parent.work_dir+os.sep+'fehmn.files','w')
 		else:
 			outfile = open('fehmn.files','w')
 			
@@ -2541,6 +2620,12 @@ class files(object):						#FEHM file constructor.
 		if self._use_co2in: 
 			outfile.write('co2in: '+co2_path.full_path+'\n')	
 			
+		if self._use_nopf: 
+			outfile.write('nopf: '+self._nopf+'\n')	
+			
+		if self._use_error: 
+			outfile.write('error: '+self._error+'\n')	
+			
 		if self._use_stor: 
 			outfile.write('stor:')	
 			if not self.stor: self.stor = self.root+'.stor'
@@ -2559,7 +2644,7 @@ class files(object):						#FEHM file constructor.
 				outfile.write('999\n')
 
 				if self._parent.work_dir:
-					co2_inj_file = open(self._parent.work_dir+slash+'co2_inj.txt','w')
+					co2_inj_file = open(self._parent.work_dir+os.sep+'co2_inj.txt','w')
 				else: 
 					outfile = open('co2_inj.txt','w')
 
@@ -2574,7 +2659,10 @@ class files(object):						#FEHM file constructor.
 			self._root = self._input.split('.')[0]
 	input = property(_get_input,_set_input) #: (*str*) Name of input file. This is set automatically when reading an input file in PyFEHM or when running a simulation.
 	def _get_root(self): return self._root
-	def _set_root(self,value):  self._root = value
+	def _set_root(self,value):  
+		self._root = value
+		self.outp = self.root +'.outp'
+		self.check = self.root +'.chk'
 	root = property(_get_root,_set_root)	#: (*str*) Default file name string. If not already specified, this is set automatically when running a simulation.
 	def _get_grid(self): return self._grid
 	def _set_grid(self,value):  self._grid = value
@@ -2616,10 +2704,10 @@ class fdata(object):						#FEHM data file.
 	
 	"""		
 	__slots__ = ['_gridfilename','_inconfilename','_sticky_zones','_allMacro','_allModel','_associate',
-			'_bounlist','_cont','_ctrl','_grid','_incon','_hist','_iter','_nfinv','_nobr','_vapl','_adif','_rlpmlist','_sol',
+			'_bounlist','_cont','_ctrl','_grid','_incon','_hist','_iter','_nfinv','_nobr','_head','_vapl','_adif','_rlpmlist','_sol',
 			'_time','text','_times','_zonelist','_writeSubFiles','_strs','_ngas','_carb','_trac','_files','_verbose',
 			'_tf','_ti','_dti','_dtmin','_dtmax','_dtn','_dtx','_sections','_help','_running','_unparsed_blocks','keep_unknown','_flxo',
-			'_output_times','_path','_vtk','_diagnostic']
+			'_output_times','_path','_vtk','_diagnostic','_storage']
 	def __init__(self,filename='',gridfilename='',inconfilename='',sticky_zones=dflt.sticky_zones,associate=dflt.associate,work_dir = None,
 		full_connectivity=dflt.full_connectivity,skip=[],keep_unknown=dflt.keep_unknown):		#Initialise data file
 		from copy import copy
@@ -2636,10 +2724,13 @@ class fdata(object):						#FEHM data file.
 		self.grid._parent = self
 		self._incon=fincon() 			
 		self.incon._parent = self
+		self._storage = fstorage()
+		self._storage._parent = self
 		self._hist = fhist()				
 		self._iter=copy(dflt.iter)
 		self._nfinv = False
-		self._nobr = False					
+		self._nobr = False		
+		self._head = False					
 		self._vapl = False					
 		self._adif = None
 		self._rlpmlist=[]
@@ -2693,27 +2784,40 @@ class fdata(object):						#FEHM data file.
 			if temp_path.absolute_to_file != os.getcwd():
 				self.work_dir = temp_path.absolute_to_file
 			
-			wd = temp_path.absolute_to_file+slash
+			wd = temp_path.absolute_to_file+os.sep
 			inconfilename = None
 			with open(filename) as f:
 				for ln in f.readlines():
 					if ln.startswith('rsti:'): 
-						inconfilename = wd+ln.split('rsti:')[-1].strip()
+						inconfilename = ln.split('rsti:')[-1].strip()
 					if ln.startswith('grida:'): 
-						gridfilename = wd+ln.split('grida:')[-1].strip()
+						gridfilename = ln.split('grida:')[-1].strip()
+					if ln.startswith('grid:'): 
+						gridfilename = ln.split('grid:')[-1].strip()
 					if ln.startswith('gridf:'): 
-						gridfilename = wd+ln.split('gridf:')[-1].strip()
+						gridfilename = ln.split('gridf:')[-1].strip()
 					if ln.startswith('input:'): 
-						filename = wd+ln.split('input:')[-1].strip()
+						filename = ln.split('input:')[-1].strip()
 					if ln.startswith('stor:'): 
-						storfilename = wd+ln.split('stor:')[-1].strip()
+						storfilename = ln.split('stor:')[-1].strip()
 						self.files.stor = storfilename
+					if ln.startswith('stori:'): 
+						storfilename = ln.split('stori:')[-1].strip()
+						self.files.stor = storfilename
+					if ln.startswith('root:'): 
+						self.files.root = ln.split('root:')[-1].strip()
+					if ln.startswith('error:'): 
+						self.files._error = ln.split('error:')[-1].strip()
+						self.files._use_error = True
+					if ln.startswith('nopf:'): 
+						self.files._nopf = ln.split('nopf:')[-1].strip()
+						self.files._use_nopf = True
 			
 			# set up  path objects then pass to read function
 			self._path.filename = filename
 			self.grid._path.filename = gridfilename
 			if inconfilename:
-				self.incon._path.inconfilename
+				self.incon._path.filename
 			self.read(full_connectivity=full_connectivity,skip=skip)
 			
 		# 2. nothing passed - no path objects to set up, no reading required
@@ -2790,7 +2894,7 @@ class fdata(object):						#FEHM data file.
 						 self._read_time,self._read_ctrl,self._read_iter,self._read_macro,self._read_macro,
 						 self._read_boun,self._read_macro,self._read_strs,self._read_text,self._read_sol,
 						self._read_nfinv,self._read_hist,self._read_histnode,self._read_carb,self._read_model,
-						 self._read_macro,self._read_nobr,self._read_flxz,self._read_rlpm,self._read_macro,
+						 self._read_macro,self._read_nobr,self._read_head, self._read_flxz,self._read_rlpm,self._read_macro,
 						 self._read_trac,self._read_model,self._read_model,self._read_vapl,self._read_adif,
 						 self._read_ngas,self._read_flxo]))
 		self._sections=[]
@@ -2821,8 +2925,14 @@ class fdata(object):						#FEHM data file.
 					precedingZoneKey = None
 				else:
 					if keyword in ['zone','zonn']:
-						block = fn(infile)
-						precedingZoneKey = copy(precedingKey)
+						if 'rad' in line:
+							self._read_zonn_rad(infile)
+						else:
+							block = fn(infile)
+							precedingZoneKey = copy(precedingKey)
+					elif keyword in ['head']:
+						fn(infile,line)
+						precedingZoneKey = None
 					else:
 						fn(infile)
 						precedingZoneKey = None
@@ -2882,13 +2992,14 @@ class fdata(object):						#FEHM data file.
 		except:
 			pass
 		# open file
-		outfile = open(wd+slash+self._path.filename,'w')
+		outfile = open(wd+os.sep+self._path.filename,'w')
 		outfile.write('# '+self.filename+'\n')
 		self._write_unparsed(outfile,'start')
 		if self.text: self._write_text(outfile); self._write_unparsed(outfile,'text')
 		if self.sol: self._write_sol(outfile); self._write_unparsed(outfile,'sol')
 		if self.nfinv: self._write_nfinv(outfile); self._write_unparsed(outfile,'nfinv')
 		if self.nobr: self._write_nobr(outfile); self._write_unparsed(outfile,'nobr')
+		if self.head: self._write_head(outfile); self._write_unparsed(outfile,'head')
 		if self.vapl: self._write_vapl(outfile); self._write_unparsed(outfile,'vapl')
 		if self.adif != None: self._write_adif(outfile); self._write_unparsed(outfile,'adif')
 		if self.flxo: self._write_flxo(outfile); self._write_unparsed(outfile,'flxo')
@@ -2953,11 +3064,21 @@ class fdata(object):						#FEHM data file.
 				elif isinstance(obji,fboun): self._delete_boun(obji)
 				elif isinstance(obji,frlpm): self._delete_rlpm(obji)
 				elif isinstance(obji,frlpm_table): self._delete_rlpm(obji)
+	def picklable(self):
+		"""Call before multi-processing simulations in Windows to ensure fdata is picklable.
+		"""
+		for zn in self.zonelist:
+			zn._nodelist = [nd._index for nd in zn._nodelist]
+		for nd in self.grid.nodelist:
+			nd._connected_nodes = [ndi._index for ndi in nd._connected_nodes]
+			nd._elements = [el._index for el in nd._elements]
+		for con in self.grid.connlist:
+			con._nodes = [con._nodes[0]._index,con._nodes[1]._index]
 	def _add_boundary_zones(self): 						#Automatically creates zones corresponding to x,y,z boundaries
 		x0,x1 = self.grid.xmin,self.grid.xmax
 		y0,y1 = self.grid.ymin,self.grid.ymax
-		x = np.sort(np.unique([nd.position[0] for nd in self.grid.nodelist]))
-		y = np.sort(np.unique([nd.position[1] for nd in self.grid.nodelist]))
+		x = np.sort(np.unique([nd._position[0] for nd in self.grid._nodelist]))
+		y = np.sort(np.unique([nd._position[1] for nd in self.grid._nodelist]))
 		if self.grid.dimensions == 2:
 			ks = [999,998,997,996,'XMIN','XMAX','YMIN','YMAX']
 			for k in ks:
@@ -3035,11 +3156,13 @@ class fdata(object):						#FEHM data file.
 			if self._running:
 				if strs2D: nd._strs = [self.incon.strs_xx[i],self.incon.strs_yy[i],self.incon.strs_xy[i]]
 				elif strs3D: nd._strs = [self.incon.strs_xx[i],self.incon.strs_yy[i],self.incon.strs_zz[i],self.incon.strs_xy[i],self.incon.strs_yz[i],self.incon.strs_xz[i]]
+				if len(self.incon.disp_x) == 0: continue
 				if strs2D: nd._disp = [self.incon.disp_x[i],self.incon.disp_y[i]]
 				elif strs3D: nd._disp = [self.incon.disp_x[i],self.incon.disp_y[i],self.incon.disp_z[i]]
 			else:
 				if strs2D: nd._strsi = [self.incon.strs_xx[i],self.incon.strs_yy[i],self.incon.strs_xy[i]]
 				elif strs3D: nd._strsi = [self.incon.strs_xx[i],self.incon.strs_yy[i],self.incon.strs_zz[i],self.incon.strs_xy[i],self.incon.strs_yz[i],self.incon.strs_xz[i]]
+				if len(self.incon.disp_x) == 0: continue
 				if strs2D: nd._dispi = [self.incon.disp_x[i],self.incon.disp_y[i]]
 				elif strs3D: nd._dispi = [self.incon.disp_x[i],self.incon.disp_y[i],self.incon.disp_z[i]]
 	def _write_unparsed(self,outfile,key):
@@ -3069,13 +3192,20 @@ class fdata(object):						#FEHM data file.
 			new_boun.type = line
 			line=infile.readline().strip()
 			nums = line.split()
+			N = int(nums[0])
 			new_boun.times = [float(num) for num in nums[1:]]
+			while len(new_boun.times) != N:
+				line=infile.readline().strip()
+				nums = line.split()
+				for num in nums: new_boun.times.append(float(num))
 			line=infile.readline().strip() 			# read next model
 			while not (line.startswith('model') or not line or line.startswith('end')):
 				var = [line,]
-				line=infile.readline().strip()
-				nums = line.split()
-				for num in nums: var.append(float(num))
+				while len(var) != (len(new_boun.times)+1):
+					line=infile.readline().strip()
+					nums = line.split()
+					for num in nums: 
+						var.append(float(num))
 				new_boun.variable.append(var)
 				line=infile.readline().strip() 			# read next model
 			new_bouns.append(new_boun)
@@ -3084,14 +3214,14 @@ class fdata(object):						#FEHM data file.
 			line=infile.readline().strip()
 			if not os.path.isfile(line):
 				# check if in subdirectory with input file
-				fname = self.filename.split(slash)
+				fname = self.filename.split(os.sep)
 				if len(fname)>0:
 					fn0 = ''
 					for fn in fname[:-1]: fn0 += fn
-					if not os.path.isfile(fn0+slash+line):
+					if not os.path.isfile(fn0+os.sep+line):
 						pyfehm_print('ERROR: cannot find macro file '+line)
 					else:
-						macrofile = open(fn0+slash+line)
+						macrofile = open(fn0+os.sep+line)
 						line = macrofile.readline().strip()
 						self._read_boun(macrofile)
 						macrofile.close()
@@ -3164,7 +3294,7 @@ class fdata(object):						#FEHM data file.
 		outfile.write('\n')
 	def _add_boun(self,boun=fboun()):							#Adds a BOUN model.
 		boun._parent = self
-		if isinstance(boun.zone,(int,tuple)): boun.zone = [boun.zone]
+		if isinstance(boun.zone,(int,tuple,str)): boun.zone = [boun.zone]
 		zns = []
 		for zn in boun.zone:
 			if isinstance(zn,tuple): 
@@ -3201,8 +3331,13 @@ class fdata(object):						#FEHM data file.
 		outfile.write('restart\n\n')
 		if self.sticky_zones:
 			zns = []
-			for key in ['co2frac','co2flow','co2pres','co2diff']:
-				zns += [m.zone for m in self._allMacro[key] if m.zone.index]
+			for key in ['co2frac','co2flow','co2pres','co2diff']:				
+				for m in self._allMacro[key]:
+					if isinstance(m.zone,fzone):
+						if m.zone.index : zns.append(m.zone)
+					elif isinstance(m.zone,list) and len(m.zone) != 0:
+						for zn in m.zone:
+							if zn.index : zns.append(zn)
 			self._write_zonn_one(outfile,list(set(zns)))
 		outfile.write('carb\n')
 		outfile.write(str(self.carb.iprtype)+'\n')
@@ -3412,6 +3547,17 @@ class fdata(object):						#FEHM data file.
 					_buildWarnings('WARNING: zone ' +num+' in FLXZ not defined.')
 				newind += 1
 			if newind == node_num: more = False
+	def _read_head(self,infile,line):						#HEAD: Reads HEAD macro.
+		line = line.rstrip().split()
+		if len(line) == 2:
+			self.head=float(line[-1])
+		else:
+			self.head=True
+	def _write_head(self,outfile):								#Writes HEAD macro.
+		if self.head is True:
+			outfile.write('head\n')
+		else:
+			outfile.write('head\t'+str(self.head)+'\n')
 	def _write_hist(self,outfile):								#Writes HIST macro.
 		if not self.hist.nodelist and not self.hist.zonelist and not self.hist.zoneflux: _buildWarnings('WARNING: no zones or nodes specified for history output'); return
 		if not self.hist.variables: _buildWarnings('WARNING: no variables requested in hist')
@@ -3696,10 +3842,21 @@ class fdata(object):						#FEHM data file.
 		nums = line.split()
 		self.strs.param['ISTRS'] = int(nums[0])
 		self.strs.param['IHMS'] = int(nums[1])
+		try:
+			self.strs.param['porosity_factor'] = float(nums[2])
+		except:
+			self.strs.param['porosity_factor'] = None
 		line=infile.readline().strip()
 		while not line.startswith('stressend'):
 			if line.startswith('bodyforce'): 				# bodyforce boolean
-				self.strs.bodyforce = 1
+				if line.endswith('force'):
+					self._read_macro(infile,'bodyforce')
+					for m in self.bodyforcelist: m.subtype = 'force'
+				elif line.endswith('acceleration'):
+					self._read_macro(infile,'bodyforce')
+					for m in self.bodyforcelist: m.subtype = 'acceleration'
+				else:
+					self.strs.bodyforce = True
 			elif line.startswith('initcalc'):				# initcalc boolean
 				self.strs.initcalc = 1
 			elif line.startswith('fem'):					# fem boolean
@@ -3713,6 +3870,8 @@ class fdata(object):						#FEHM data file.
 				self.strs.excess_she['PAR3']=nums[2]
 			elif line.startswith('permmodel'):				# read details of stress/permeability model
 				self._read_model(infile,'permmodel')
+			elif line.startswith('plastic'):				# read details of stress/permeability model
+				self._read_model(infile,'plastic')
 			elif line.startswith('elastic'):
 				self._read_macro(infile,'elastic')
 			elif line.startswith('stressboun'):
@@ -3728,11 +3887,15 @@ class fdata(object):						#FEHM data file.
 			line=infile.readline().strip()
 	def _write_strs(self,outfile):								#Writes STRS and associated macros.
 		ws = _title_string('STRESS MODULE',72)
-		outfile.write(ws)
+		outfile.write(ws)                                
 		outfile.write('strs\n')
 		outfile.write(str(self.strs.param['ISTRS'])+'\t')
-		outfile.write(str(self.strs.param['IHMS'])+'\n')
-		if self.strs.bodyforce: outfile.write('bodyforce\n')
+		outfile.write(str(self.strs.param['IHMS'])+'\t')
+		if self.strs.param['porosity_factor'] is not None:
+			outfile.write(str(self.strs.param['porosity_factor'])+'\t')
+		outfile.write('\n')
+		if self.bodyforcelist: self._write_macro(outfile,'bodyforce')
+		elif self.strs.bodyforce: outfile.write('bodyforce\n')
 		if self.strs.initcalc: outfile.write('initcalc\n')
 		if self.strs.fem: outfile.write('fem\n')
 		if self.strs.excess_she['PAR1']:
@@ -3742,6 +3905,7 @@ class fdata(object):						#FEHM data file.
 			if self.strs.excess_she['PAR3']: outfile.write(str(self.strs.excess_she['PAR3'])+'\t')
 			outfile.write('\n')
 		if self.permmodellist: self._write_model(outfile,'permmodel')
+		if self.plasticmodellist: self._write_model(outfile,'plastic')
 		if self.stressbounlist: self._write_macro(outfile,'stressboun')
 		if self.elasticlist: self._write_macro(outfile,'elastic')
 		if self.biotlist: self._write_macro(outfile,'biot')
@@ -4143,7 +4307,7 @@ class fdata(object):						#FEHM data file.
 	def _write_vapl(self,outfile):								#Writes VAPL macro.
 		if self.vapl:
 			outfile.write('vapl\n')
-	def new_zone(self,index,name=None,rect=None,nodelist=None,file=None,permeability=None,conductivity=None,density=None,
+	def new_zone(self,index=None,name=None,rect=None,nodelist=None,file=None,from_file = None,permeability=None,conductivity=None,density=None,
 		specific_heat=None,porosity=None,youngs_modulus=None,poissons_ratio=None,thermal_expansion=None,pressure_coupling=None,
 		Pi=None,Ti=None,Si=None,overwrite=False):
 		''' Create and assign a new zone. Material properties are optionally specified, new macros will be created if required.
@@ -4158,6 +4322,8 @@ class fdata(object):						#FEHM data file.
 		:type nodelist: lst
 		:param file: Name of auxiliary file for zone
 		:type file: str
+		:param from_file: Name of auxiliary file in which to find zone information.
+		:type from_file: str
 		:param permeability: Permeability of zone. One float for isotropic, three item list [x,y,z] for anisotropic.
 		:type permeability: fl64, list
 		:param conductivity: Conductivity of zone. One float for isotropic, three item list [x,y,z] for anisotropic.
@@ -4185,7 +4351,13 @@ class fdata(object):						#FEHM data file.
 		:param overwrite: If zone already exists, delete it and create the new one.
 		:type overwrite: bool
 		'''
-		
+		if index is None and from_file is None: return
+		# from file zones
+		if from_file:
+			if not os.path.isfile(from_file):
+				print 'ERROR: no such zone file '+from_file
+				return
+			self._read_zonn_file(from_file)		
 		# if neither rect nor nodelist specified, not enough information to create the zone
 		if not rect and not nodelist:
 			pyfehm_print('ERROR: either rect or nodelist must be specified')
@@ -4380,7 +4552,7 @@ class fdata(object):						#FEHM data file.
 			self.zone[index]._Pi = Pi
 			self.zone[index]._Ti = Ti
 			self.zone[index]._Si = Si
-	def run(self,input='',grid = '',incon='',exe=dflt.fehm_path,files=dflt.files,verbose = None, until=None,autorestart=0,use_paths=False,write_files_only = False,diagnostic = False):
+	def run(self,input='',grid = '',incon='',exe=dflt.fehm_path,files=dflt.files,verbose = None, until=None,autorestart=0,use_paths=False,write_files_only = False,diagnostic = False, clean = False):
 		'''Run an fehm simulation. This command first writes out the input file, *fehmn.files* and this incon file
 		if changes have been made. A command line call is then made to the FEHM executable at the specified path (defaults
 		to *fehm.exe* in the working directory if not specified).
@@ -4405,42 +4577,30 @@ class fdata(object):						#FEHM data file.
 		:type write_files_only: bool
 		:param diagnostic: Flag to indicate PyFEHM should flash up a diagnostic window to monitor the simulation.
 		:type diagnostic: bool
+		:param clean: Delete files after simulation 'nop.temp'
+		:type clean: bool
 		'''
 		
 		if verbose != None: self._verbose = verbose
+		if diagnostic: self._verbose = True
 		
 		# set up and check path to executable
 		exe_path = fpath()
 		exe_path.filename = exe
 		
 		if not os.path.isfile(exe_path.full_path): 	# if can't find the executable, halt
-			pyfehm_print('ERROR: No executable at location '+exe)
+			#pyfehm_print()
+			raise NameError('No executable at location '+exe)
 			return
-		
-		tempRstoFlag = False
-		if until is not None and self.files.rsto == '':	tempRstoFlag = True
 						
-		# if using 'until' to break a simulation, we require a restart file to be written each timestep
-		# restart files are written at the same frequency as contour output, hence contour output will
-		# need to be written every timestep - manage this data by deleting it
-		contUnchanged = True 			# flag to indicate whether we have modified cont
-		if until:
-			if self.cont.timestep_interval == 1 and self.cont.variables: contUnchanged = True
-			else:
-				from copy import deepcopy
-				oldCont = deepcopy(self.cont)
-				if not self.cont.variables: self.cont.variables.append('temperature')
-				self.cont.timestep_interval = 1
-				contUnchanged = False
-				
 		# option to write input, grid, incon files to new names
 		if input: self._path.filename = input
 		if grid: self.grid._path.filename = grid
 		if incon: self.incon._path.filename = incon
 		
 		# ASSEMBLE FILES IN CORRECT DIRECTORIES
-		if self.work_dir: wd = self.work_dir + slash
-		else: wd = os.getcwd() + slash
+		if self.work_dir: wd = self.work_dir + os.sep
+		else: wd = os.getcwd() + os.sep
 		returnFlag = self.write(wd+self._path.filename) 				# ALWAYS write input file
 		if not returnFlag: 
 			pyfehm_print('ERROR: writing files')
@@ -4501,56 +4661,24 @@ class fdata(object):						#FEHM data file.
 			if breakAutorestart: break
 			untilFlag = False
 			if diagnostic: self._diagnostic.refresh_nodes()
-			p = Popen(exe_path.full_path,stdout=PIPE)
 			if until is None:
+				p = Popen(exe_path.full_path,stdout=PIPE)
 				if diagnostic:
 					self._diagnostic.stdout = p.stdout
 					self._diagnostic.poll = p.poll
 					self._diagnostic.construct_viewer() 			# construct the diagnosis window
-					
-				for line in iter(p.stdout.readline, b''):
-					print line.rstrip() 	# print remainder to screen	
+				if self._verbose:
+					for line in iter(p.stdout.readline, b''):
+						print line.rstrip() 	# print remainder to screen	
+				else:
+					p.communicate()
 			else:
+				p = Popen(exe_path.full_path)
 				self._running = True
-				interval = 0
-				delFiles = []
 				while self._running:					# loop for checking if stop condition is met
 					sleep(dflt.sleep_time) 					# wait 
-					is_new = self.incon.read(self.files.rsto, if_new = True) 	# read new input file
-					if is_new: 
-						untilFlag = until(self) 				# check stop condition
-						if not contUnchanged: #delete cont file that was created
-							
-							if delFiles: 
-								for delFile in delFiles: os.remove(delFile)
-							delFiles = []
-								
-							interval += 1
-							if interval%oldCont.timestep_interval == 0: continue
-							
-							if self.cont.format == 'surf': suffix = 'csv'
-							elif self.cont.format == 'tec': suffix = 'dat'
-							elif self.cont.format == 'avsx': suffix = 'avsx'
-							
-							# use glob to find most recently created file							
-							from glob import glob
-							outtypes = ['_vec','_sca','_con']
-							for outtype in outtypes:
-								files = filter(os.path.isfile, glob(self.files.root+'*'+outtype+'*.'+suffix))
-								if not files: continue
-								files.sort(key=lambda x: os.path.getmtime(x))
-								files = files[-2:]
-							
-								# delete file if 
-								ts = [fl.split(outtype)[0] for fl in files]
-								ts = [fl.split('_days')[0] for fl in ts]
-								ts = [fl.split('.')[-2:] for fl in ts]
-								ts = [float(tsi[0]+'.'+tsi[1]) for tsi in ts]
-								
-								if (1-(abs(ts[0]-ts[1])/oldCont.time_interval)) <0.001: continue
-								delFiles.append(files[-1])
-							
-					p.poll() 								# check if run finished on its own
+					untilFlag = until(self) 		
+					p.poll() 						# check if run finished on its own
 					if p.returncode == 0:					# IF run finshed on its own
 						self._running = False					# break the loop
 					if untilFlag and self._running: 		# IF stop condition met
@@ -4564,24 +4692,16 @@ class fdata(object):						#FEHM data file.
 			else:
 				breakAutorestart = True
 		
-		if not contUnchanged: 
-			if self.cont.format == 'surf': suffix = 'csv'
-			elif self.cont.format == 'tec': suffix = 'dat'
-			elif self.cont.format == 'avsx': suffix = 'avsx'
-			self._cont = oldCont
-			if len(self.cont.variables) == 0:
-				outtypes = ['_vec','_sca','_con']
-				for outtype in outtypes:
-					files = filter(os.path.isfile, glob(self.files.root+'*'+outtype+'*.'+suffix))
-					if files:
-						for file in files: os.remove(file)
-				
+		if clean:
+			try: os.remove('nop.temp')
+			except: pass
+			try: os.remove('fort.97')
+			except: pass
+		
 		if self.work_dir: os.chdir(cwd)
 		
-		if tempRstoFlag: 
-			self.files.incon = ''
-			self.files.write()
-	def paraview(self,exe = 'paraview',filename = 'temp.vtk',contour = None,show='kx',zones = 'user',diff = False,zscale = 1.):
+	def paraview(self,exe = dflt.paraview_path,filename = 'temp.vtk',contour = None, history = None, show='kx',zones = 'user',diff = True,zscale = 1.,
+		spatial_derivatives = False, time_derivatives = False):
 		'''Exports the model object to VTK and loads in paraview.
 		
 		:param exe: Path to Paraview executable.
@@ -4590,6 +4710,8 @@ class fdata(object):						#FEHM data file.
 		:type filename: str
 		:param contour: Contout output data object loaded using fcontour().
 		:type contour: fcontour
+		:param history: History output data object loaded using fhistory().
+		:type history: fhistory
 		:param show: Variable to show when Paraview starts up (default = 'kx').
 		:type show: str
 		:param zones: Zones to plot: 'user' = user-defined zones (default), 'all' = all zones except zone[0].
@@ -4598,14 +4720,63 @@ class fdata(object):						#FEHM data file.
 		:type diff: bool
 		:param zscale: Factor by which to scale z-axis. Useful for visualising laterally extensive flow systems.
 		:type zscale: fl64
+		:param spatial_derivatives: Calculate new fields for spatial derivatives of contour data. 
+		:type spatial_derivatives: bool
+		:param time_derivatives: Calculate new fields for time derivatives of contour data. For precision reasons, derivatives are calculated with units of 'per day'.
+		:type time_derivatives: bool
 		'''
-		self._vtk = fvtk(parent=self,filename=filename,contour=contour,show_zones = zones,diff=diff,zscale = zscale)
-		self._vtk.assemble()
-		fls = self._vtk.write()
+		# check for empty contour object
+		self.write_vtk(filename=filename,contour=contour,diff=diff,zscale=zscale,spatial_derivatives=spatial_derivatives,time_derivatives=time_derivatives)
+		if history is not None:
+			from string import join
+			filename_csv = join(filename.split('.')[:-1],'.')+'.csv'
+			self.write_csv(filename=filename_csv,history=history,diff=diff,time_derivatives=time_derivatives)
+		self._vtk.show_zones=zones
+		
 		self._vtk.initial_display(show)
 		self._vtk.startup_script()
 		
 		p = Popen(exe+' --script=pyfehm_paraview_startup.py',shell=(not WINDOWS))		
+	def write_vtk(self, filename = 'temp.vtk',contour=None,diff = True,zscale = 1.,
+			spatial_derivatives = False, time_derivatives = False):
+		'''Exports the model object to VTK.
+		
+		:param filename: Name of VTK file to be output.
+		:type filename: str
+		:param contour: Contout output data object loaded using fcontour().
+		:type contour: fcontour
+		:param diff: Flag to request PyFEHM to also plot differences of contour variables (from initial state) with time.
+		:type diff: bool
+		:param zscale: Factor by which to scale z-axis. Useful for visualising laterally extensive flow systems.
+		:type zscale: fl64
+		:param spatial_derivatives: Calculate new fields for spatial derivatives of contour data. 
+		:type spatial_derivatives: bool
+		:param time_derivatives: Calculate new fields for time derivatives of contour data. For precision reasons, derivatives are calculated with units of 'per day'.
+		:type time_derivatives: bool
+		'''
+		if contour is not None:
+			if len(contour.variables) == 0: contour = None		
+		# write vtk files for contour output data
+		self._vtk = fvtk(parent=self,filename=filename,contour=contour,diff=diff,zscale = zscale,spatial_derivatives = spatial_derivatives, time_derivatives = time_derivatives)
+		self._vtk.assemble()
+		fls = self._vtk.write()	
+	def write_csv(self, filename = 'temp.csv',history=None,diff = True,	time_derivatives = False):
+		'''Exports the fhistory object to CSV for reading into paraview.
+		
+		:param filename: Name of CSV file to be output.
+		:type filename: str
+		:param history: History output data object loaded using fhistory().
+		:type history: fhistory
+		:param diff: Flag to request PyFEHM to also plot differences of contour variables (from initial state) with time.
+		:type diff: bool
+		:param time_derivatives: Calculate new fields for time derivatives of contour data. For precision reasons, derivatives are calculated with units of 'per day'.
+		:type time_derivatives: bool
+		'''
+		if history is not None:
+			if len(history.variables) == 0: history = None		
+		# write vtk files for contour output data
+		self._vtk.csv = fcsv(parent=self,filename=filename,history=history,diff=diff,time_derivatives = time_derivatives)
+		self._vtk.csv.write()
 	def visit(self,exe = 'visit',filename = 'temp.vtk',contour = None):
 		'''Exports the model object to VTK and loads in paraview.
 		
@@ -4623,9 +4794,9 @@ class fdata(object):						#FEHM data file.
 		if self.work_dir: wd = self.work_dir
 		else: wd = self._path.absolute_to_file		
 		if len(fls)>1:
-			p = Popen(exe+' -o '+wd+slash+self._vtk.path.filename[:-4]+'*.vtk',shell=(not WINDOWS))		
+			p = Popen(exe+' -o '+wd+os.sep+self._vtk.path.filename[:-4]+'*.vtk',shell=(not WINDOWS))		
 		else:
-			p = Popen(exe+' -o '+wd+slash+self._vtk.path.filename,shell=(not WINDOWS))		
+			p = Popen(exe+' -o '+wd+os.sep+self._vtk.path.filename,shell=(not WINDOWS))		
 	def _summary(self):		
 		L = 62
 		s = ['']
@@ -4762,7 +4933,7 @@ class fdata(object):						#FEHM data file.
 						s+= stri+'!!!!\n'
 						stri = ' !!!!   '
 			s+= ' !!!!---------------------------------------------------------!!!!\n'
-			if self.work_dir: fp = open(self.work_dir+slash+'pyfehm.err','w')
+			if self.work_dir: fp = open(self.work_dir+os.sep+'pyfehm.err','w')
 			else: fp = open('pyfehm.err','w')
 			fp.write(s)
 			fp.close()
@@ -4770,7 +4941,7 @@ class fdata(object):						#FEHM data file.
 			checkWarnings = []
 			buildWarnings = []
 		return False
-	def temperature_gradient(self,filename,offset=0.,first_zone = 100,auxiliary_file=None,hydrostatic = 0):
+	def temperature_gradient(self,filename,offset=0.,first_zone = 100,auxiliary_file=None,hydrostatic = 0,flip_depth_sign=False):
 		'''Assign initial temperature distribution to model based on supplied temperature profile.
 		
 		:param filename: Name of a file containing temperature gradient data. File should be two columns, comma or space separated, with elevation in the first column and temperature (degC) in the second.
@@ -4783,6 +4954,8 @@ class fdata(object):						#FEHM data file.
 		:type auxiliary_file: str
 		:param hydrostatic: Pressure at top of well profile. PyFEHM will calculate hydrostatic pressures consistent with the temperature profile. If left blank, default pressures will be used.
 		:type hydrostatic: fl64
+		:param flip_depth_sign: If sign of depths in file does not match z coordinate in simulation, flip the sign.
+		:type flip_depth_sign: bool
 		'''
 		# check if file exists
 		if not os.path.isfile(filename): 
@@ -4806,7 +4979,10 @@ class fdata(object):						#FEHM data file.
 		else: tempdat = np.loadtxt(filename)
 		zt = tempdat[:,0]; tt = tempdat[:,1]
 		zt = zt + offset
-		if (zt[0]>zt[-1] and z[0]<z[-1]) or (zt[0]<zt[-1] and z[0]>z[-1]): zt = np.flipud(zt); tt = np.flipud(tt)
+		if flip_depth_sign: zt = -zt
+		if (zt[0]>zt[-1] and z[0]<z[-1]) or (zt[0]<zt[-1] and z[0]>z[-1]): 
+			zt = np.flipud(zt)
+			tt = np.flipud(tt)
 		# calculate pressure to assign
 		if 0 in self.pres.keys():
 			p0 = self.pres[0].param['pressure']
@@ -4863,10 +5039,14 @@ class fdata(object):						#FEHM data file.
 						else: new_zone.nodelist.append(self.grid.node_nearest_point([float(pt) for pt in pts]))
 				elif line[0:4] == 'nnum':
 					new_zone.type='nnum'
+					#nextval = valgen(infile)
+					#N = int(nextval.next())
+					
 					line=infile.readline().strip()#; block.append(line+'\n')		
 					nums = line.split()
 					number_nodes = int(nums[0])		
-					new_zone.nodelist = list(np.zeros((1,number_nodes))[0])
+					#new_zone.nodelist = [self._grid._nodelist[int(nextval.next())-1] for i in range(N)]
+					new_zone.nodelist = [None]*number_nodes
 					i = 0
 					for num in nums[1:]: 
 						new_zone.nodelist[i] = self.grid.node[int(num)]
@@ -4916,17 +5096,10 @@ class fdata(object):						#FEHM data file.
 						if (x0n != x0o) or (x1n != x1o) or (y0n != y0o) or (y1n != y1o) or (z0n != z0o) or (z1n != z1o):
 							_buildWarnings('WARNING: zone '+str(zind)+' was defined earlier in the input file. PyFEHM assumes unique zone definitions. This zone will be ignored.')
 					else:
-						nds_old = zn_old.nodelist
-						nds_new = new_zone.nodelist
 						different_zone = False
-						for nd in nds_old:
-							if nd not in nds_new:
-								different_zone = True
-								break
-						for nd in nds_new:
-							if nd not in nds_old:
-								different_zone = True
-								break
+						if len(set(zn_old.nodelist).symmetric_difference(new_zone.nodelist)) != 0:
+							different_zone = True
+						
 						if different_zone:
 							_buildWarnings('WARNING: zone '+str(zind)+' was defined earlier in the input file. PyFEHM assumes unique zone definitions. This zone will be ignored.')
 				
@@ -4934,6 +5107,35 @@ class fdata(object):						#FEHM data file.
 				line=infile.readline(); block.append(line+'\n')
 				if not line.strip(): more = False
 		return block
+	def _read_zonn_rad(self,infile,file=''):					#ZONE: Reads ZONE or ZONN macro.
+		line=infile.readline().strip()
+		more = True
+		while more:
+			# assess whether zone has already been defined
+			zind = int(line.split()[0])
+			name = None
+			if line.rfind('#') != -1: name = line[line.rfind('#')+1:].strip()
+			
+			if self.ctrl['geometry_ICNL']: return
+			
+			r_pts = line=infile.readline().strip().split('#')[0]
+			r_pts = [float(pi) for pi in r_pts.split()]
+			z_pts = line=infile.readline().strip().split('#')[0]
+			z_pts = [float(pi) for pi in z_pts.split()]
+			
+			r_min,r_max = np.min(r_pts),np.max(r_pts)
+			z_min,z_max = np.min(z_pts),np.max(z_pts)
+			
+			pts = np.array([nd.position for nd in self.grid.nodelist])
+			r = np.sqrt(pts[:,0]**2+pts[:,1]**2)
+			z = pts[:,2]
+			
+			inds = np.where((z>z_min)&(z<z_max)*(r>r_min)&(r<r_max))[0]
+			nds = [self.grid.nodelist[i] for i in inds]
+			self.new_zone(zind, name=name, nodelist = nds)
+
+			line=infile.readline()
+			if not line.strip(): more = False
 	def _read_zonn_file(self,file):								#Reads ZONN from specified file.
 		zone_file = open(file,'r')
 		line = zone_file.readline().strip()
@@ -5003,9 +5205,9 @@ class fdata(object):						#FEHM data file.
 				outfile.write('file\n')
 				outfile.write(file_nm+'\n')		
 				# if filename does not exist, write file
-				if not os.path.isfile(self.work_dir+slash+file_nm) or self._writeSubFiles:
+				if not os.path.isfile(self.work_dir+os.sep+file_nm) or self._writeSubFiles:
 					if self.work_dir:
-						zonefile = open(self.work_dir+slash+file_nm,'w')
+						zonefile = open(self.work_dir+os.sep+file_nm,'w')
 					else:
 						zonefile = open(file_nm,'w')
 					zns = [zn for zn in self.zonelist if zn.file==file_nm]
@@ -5307,14 +5509,14 @@ class fdata(object):						#FEHM data file.
 			line=infile.readline().strip()
 			if not os.path.isfile(line):
 				# check if in subdirectory with input file
-				fname = self._path.split(slash)
+				fname = self._path.filename.split(os.sep)
 				if len(fname)>0:
 					fn0 = ''
 					for fn in fname[:-1]: fn0 += fn
-					if not os.path.isfile(fn0+slash+line):
+					if not os.path.isfile(fn0+os.sep+line):
 						pyfehm_print('ERROR: cannot find macro file '+line)
 					else:
-						macrofile = open(fn0+slash+line)
+						macrofile = open(fn0+os.sep+line)
 						line = macrofile.readline().strip()
 						self._read_macro(macrofile,macroName,second = True)
 						macrofile.close()
@@ -5470,7 +5672,10 @@ class fdata(object):						#FEHM data file.
 							if zn.index : zns.append(zn)
 				self._write_zonn_one(outfile,zns)
 		if textmacros:
-			outfile.write(macroName+'\n')
+			if macroName == 'bodyforce':
+				outfile.write(macroName+' '+textmacros[0].subtype+'\n')
+			else:
+				outfile.write(macroName+'\n')
 				#vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 				#vvvvvvvvvvvvvvvvvvvvvvv exception for grad vvvvvvvvvvvvvvvvvvvvvvvvvvvv
 			if macroName == 'grad': outfile.write(str(len(self._allMacro[macroName]))+'\n')
@@ -5524,7 +5729,10 @@ class fdata(object):						#FEHM data file.
 		if singlemacros:
 			for macro in singlemacros:
 				self._write_zonn_one(outfile,[macro.zone])
-				outfile.write(macroName+'\n')
+				if macroName == 'bodyforce':
+					outfile.write(macroName+' '+singlemacros[0].subtype+'\n')
+				else:
+					outfile.write(macroName+'\n')
 					#vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 					#vvvvvvvvvvvvvvvvvvvvvvv exception for grad vvvvvvvvvvvvvvvvvvvvvvvvvvvv
 				if macroName == 'grad': outfile.write(str(len(self._allMacro[macroName]))+'\n')
@@ -5570,13 +5778,16 @@ class fdata(object):						#FEHM data file.
 			for macro in filemacros: 
 				if macro.file not in unique_fnames: unique_fnames.append(macro.file)
 			for file_nm in unique_fnames:
-				outfile.write(macroName+'\n')
+				if macroName == 'bodyforce':
+					outfile.write(macroName+' '+filemacros[0].subtype+'\n')
+				else:
+					outfile.write(macroName+'\n')
 				outfile.write('file\n')
 				outfile.write(file_nm+'\n')	
 				# if filename does not exist, write file
-				file_nm = file_nm.split(slash)[-1]
-				if not os.path.isfile(self.work_dir+slash+file_nm) or self._writeSubFiles:
-					if self.work_dir: macrofile = open(self.work_dir+slash+file_nm,'w')
+				file_nm = file_nm.split(os.sep)[-1]
+				if not os.path.isfile(self.work_dir+os.sep+file_nm) or self._writeSubFiles:
+					if self.work_dir: macrofile = open(self.work_dir+os.sep+file_nm,'w')
 					else: macrofile = open(file_nm,'w')
 					macros = [macro for macro in self._allMacro[macroName] if macro.file==file_nm]
 					for macro in macros: macro.file = -1
@@ -5602,6 +5813,7 @@ class fdata(object):						#FEHM data file.
 	def _read_model(self,infile,modelName): 				#MODEL: Reads general format models
 		# redirect of special cases
 		if modelName == 'ppor':	self._read_model_ppor(infile); return
+		if modelName == 'plastic':	self._read_model_plastic(infile); return
 		line = infile.readline().strip()
 		models=[]
 		while line != '':									# perm model specification
@@ -5627,6 +5839,20 @@ class fdata(object):						#FEHM data file.
 			models[int(nums[-1])-1].zonelist.append(self._macro_zone(nums))
 			line = infile.readline().strip()
 		for m in models: self._add_model(m)
+	def _read_model_plastic(self,infile): 		
+		# redirect of special cases
+		line = infile.readline().strip()
+		line = infile.readline().strip()
+		nums = line.split()
+		m = fmodel('plasticmodel',index=int(nums[0]))
+		m.zonelist = [0]
+		parVector = [float(num) for num in nums[1:]] 	# parameter values
+		if m.index in model_list['plasticmodel'].keys():
+			parList = model_list['plasticmodel'][m.index] 		# parameter names
+		else: 	# enumerate generic parameter names
+			parList = ['param'+str(i+1) for i in range(len(parVector))]
+		m.param = dict(zip(parList,parVector)) 	# make dictionary
+		self._add_model(m)
 	def _read_model_trac(self,infile,transverseFlag): 
 		line = infile.readline().strip()
 		models1 = []
@@ -5712,6 +5938,7 @@ class fdata(object):						#FEHM data file.
 	def _write_model(self,outfile,modelName):
 		# redirect of special cases
 		if modelName == 'ppor':	self._write_model_ppor(outfile); return
+		if modelName == 'plastic':	self._write_model_plastic(outfile); return
 		ws = _title_string(model_titles[modelName],72)
 		outfile.write(ws)
 		if self.sticky_zones:
@@ -5796,6 +6023,25 @@ class fdata(object):						#FEHM data file.
 					outfile.write('0 ')
 			outfile.write('\n')
 		outfile.write('\n')	
+	def _write_model_plastic(self,outfile):
+		ws = _title_string(model_titles['plasticmodel'],72)
+		outfile.write(ws)
+		from operator import itemgetter
+		self._allModel['plasticmodel'].sort(key=lambda x: x.index)
+		outfile.write('plastic\n')
+		outfile.write('1\n')
+		for model in self._allModel['plasticmodel']:
+			if model.index in model_list['plasticmodel'].keys():
+				paramList = model_list['plasticmodel'][model.index] 		# parameter names
+			else: 	# enumerate generic parameter names
+				paramList = ['param'+str(i+1) for i in range(len(model.param.keys()))]
+			outfile.write(str(model.index)+'\t')
+			for key in paramList:
+				if key in model.param.keys():
+					outfile.write(str(model.param[key])+' ')
+				elif key =='write0':
+					outfile.write('0 ')
+			outfile.write('\n')
 	def _get_model(self,model):
 		return dict([(m.index,m) for m in self._allModel[model]])
 ################## MACRO, ZONE, BOUN LISTS
@@ -5835,6 +6081,10 @@ class fdata(object):						#FEHM data file.
 	elastic = property(_get_elastic)
 	def _get_elasticlist(self): return self._allMacro['elastic']
 	elasticlist = property(_get_elasticlist)
+	def _get_bodyforce(self): return self._get_macro('bodyforce')
+	bodyforce = property(_get_bodyforce)
+	def _get_bodyforcelist(self): return self._allMacro['bodyforce']
+	bodyforcelist = property(_get_bodyforcelist)
 	def _get_co2frac(self): return self._get_macro('co2frac')
 	co2frac = property(_get_co2frac)
 	def _get_co2fraclist(self): return self._allMacro['co2frac']
@@ -5859,6 +6109,10 @@ class fdata(object):						#FEHM data file.
 	permmodel = property(_get_permmodel)
 	def _get_permmodellist(self): return self._allModel['permmodel']
 	permmodellist = property(_get_permmodellist)
+	def _get_plasticmodel(self): return self._get_model('plasticmodel')
+	plasticmodel = property(_get_plasticmodel)
+	def _get_plasticmodellist(self): return self._allModel['plasticmodel']
+	plasticmodellist = property(_get_plasticmodellist)
 	def _get_tpor(self): return self._get_macro('tpor')
 	tpor = property(_get_tpor)
 	def _get_tporlist(self): return self._allMacro['tpor']
@@ -5922,6 +6176,9 @@ class fdata(object):						#FEHM data file.
 	def _get_nobr(self): return self._nobr
 	def _set_nobr(self,value): self._nobr = value
 	nobr = property(_get_nobr, _set_nobr) #: (*int*) Boolean integer calling for no breaking of connections between boundary condition nodes.
+	def _get_head(self): return self._head
+	def _set_head(self,value): self._head = value
+	head = property(_get_head, _set_head) #: (*int*,*fl64*) Boolean integer calling for head inputs (instead of pressure) in FEHM. If assigned a float, then all input heads will be incremented by this amount.
 	def _get_vapl(self): return self._vapl
 	def _set_vapl(self,value): self._vapl = value
 	vapl = property(_get_vapl, _set_vapl) #: (*int*) Boolean integer calling for vapor pressure lowering.
@@ -5954,6 +6211,9 @@ class fdata(object):						#FEHM data file.
 	hist = property(_get_hist) #: (*fhist*) History output for the model.
 	def _get_incon(self): return self._incon
 	incon = property(_get_incon) #: (*fincon*) Initial conditions (restart file) associated with the model.
+	def _get_storage(self): return self._storage
+	def _set_storage(self,value): self._storage = value
+	storage = property(_get_storage, _set_storage) #: (*fstorage*) Storage object. No restrictions on creating, setting attributes. Created attributes will not be used by PyFEHM.
 	def _get_work_dir(self): 
 		if self._path.absolute_to_workdir: return self._path.absolute_to_workdir
 		else: return ''
@@ -6028,6 +6288,7 @@ class fdata(object):						#FEHM data file.
 		if np.max(self._output_times)>self.tf:
 			_buildWarnings('WARNING: output requested for times after the simulation end time.')
 	output_times = property(_get_output_times, _set_output_times) #: (*lst*) List of times at which FEHM should produce output.
+
 class fdiagdata(object):
 	"""Class for diagnostic data object."""
 	def __init__(self,parent,name,label,data,lim=[-1.e-9,1.e-9],label_color='k',linestyle='ko-',markersize=4,log=False):
@@ -6129,9 +6390,9 @@ class fdiagax(object):
 		
 		# re add data
 		for slot in self.slot0:
-			self.plot0[slot].set_data(self.parent.__getattribute__(slot).time,self.parent.__getattribute__(slot).data)
+			self.plot0[slot].set_data(copy(self.parent.__getattribute__(slot).time),copy(self.parent.__getattribute__(slot).data))
 		for slot in self.slot1:
-			self.plot1[slot].set_data(self.parent.__getattribute__(slot).time,self.parent.__getattribute__(slot).data)
+			self.plot1[slot].set_data(copy(self.parent.__getattribute__(slot).time),copy(self.parent.__getattribute__(slot).data))
 			
 		if replotResidual:
 			tol = self.parent.parent.ctrl['newton_cycle_tolerance_EPM']
@@ -6194,7 +6455,6 @@ class fdiagax(object):
 			self.legend_plts.append(self.sub1.plot([x1,x1+ln_len*dx],[y1,y1],entry[1],zorder=300)[0])
 			self.legend_txts.append(self.sub1.text(x1+(ln_len+txt_gap)*dx,y1,entry[0],size=text_size,ha='left',va='center',zorder=300))
 			y1 = y1 + dyi
-			
 	def redraw_legend(self):
 		x,y = self.sub1.get_xlim()[0], self.sub1.get_ylim()[0]
 		dx,dy = np.diff(self.sub1.get_xlim()),np.diff(self.sub1.get_ylim())
@@ -6281,18 +6541,19 @@ class fdiagNR(object):
 		self.R3_node = []
 		
 		self.R_time = []
-		
 	def new_node(self,data,node,type):
+		try: node = self.parent.parent.grid.node[node]
+		except: pass
 		if type == 1:
 			self.R1_data.append(data)
-			self.R1_node.append(self.parent.parent.grid.node[node])		
+			self.R1_node.append(node)		
 			self.R_time.append(self.parent.time.data[-1])
 		elif type == 2:
 			self.R2_data.append(data)
-			self.R2_node.append(self.parent.parent.grid.node[node])			
+			self.R2_node.append(node)			
 		elif type == 3:
 			self.R3_data.append(data)
-			self.R3_node.append(self.parent.parent.grid.node[node])			
+			self.R3_node.append(node)			
 		else:
 			print 'Invalid type'
 	def redraw(self):
@@ -6351,7 +6612,7 @@ class fdiagNR(object):
 		self.parent.texts[2].set_text(txt)
 		
 		self.parent.fig.canvas.draw()
-	def text_R(self,i):
+	def text_R(self,i,more=False):
 		nd = self.R_node[i]
 		txt =  'EQ'+str(self.R_type[i])+', '
 		txt += 'R = %3.2E, '%self.R_data[i]
@@ -6374,6 +6635,11 @@ class fdiagNR(object):
 			txt += 'Unzoned'
 		txt += '\n'		
 		
+		if more:
+			txt += 'Connected nodes: '
+			for ndi in nd.connected_nodes: txt += str(ndi.index)+', '
+			txt = txt[:-2]+'\n'
+			
 		if isinstance(nd.permeability,(float,int)):
 			k = [nd.permeability,nd.permeability,nd.permeability]
 		else: k = nd.permeability
@@ -6413,6 +6679,14 @@ class fdiagnostic(object):
 	"""		
 	def __init__(self,parent):
 		self.parent = parent
+		self.file_cv = None         # write out information collected by diagnostic tool
+		self.file_nr = None 		# write out information collected by diagnostic tool
+		self.file_nd = None 		# write out information collected by diagnostic tool
+		self.nds = []
+		self.nd_vars = ['pressure','temperature','flow']
+		self.hide = False
+		self.silent = False
+		self.write = True
 		
 		self._job = True
 		
@@ -6457,10 +6731,14 @@ class fdiagnostic(object):
 		
 		self.ax3.slot0 = []
 		self.ax3.slot1 = []
+		
+		self.node = dict([('water',None),('gas',None),('tracer1',None),('tracer2',None)])
 	def refresh_nodes(self):
 		ndN = len(self.parent.hist.nodelist)
 		varN = len(self.parent.hist.variables)
+		self.write_nd = False
 		if ndN == 0 or varN == 0: return
+		self.write_nd = True
 		if ndN > 0:
 			self.ax3.slot0.append('nd'+str(self.parent.hist.nodelist[0].index)+'_')
 			self.ax3.slot0[-1] += self.parent.hist.variables[0]
@@ -6516,10 +6794,16 @@ class fdiagnostic(object):
 		if len(ln2) == 0: return None
 		
 		return ln2
+	def printout(self,ln):
+		if not self.silent: print ln
 	def parse_line(self):
 		line = self.stdout.readline()
-		if not line and self.poll() is not None: return
-		print line.rstrip() 
+		if not line:
+			try:
+				if self.poll() is not None: return
+			except:
+				if self.poll == False: return
+		self.printout(line.rstrip())
 		ln = self.split_line(line)
 		if ln is not None:
 			if self.update_timestep(ln): pass
@@ -6529,21 +6813,33 @@ class fdiagnostic(object):
 			elif self.update_mass_output(ln): pass
 			elif self.update_enthalpy_input(ln): pass
 			elif self.update_enthalpy_output(ln): pass
-			elif self.update_node(ln): pass
+			#elif self.update_node(ln): pass
+			elif self.update_node2(ln): pass
 			elif self.update_errors(ln): pass			
 			elif self.update_residuals(ln): pass			
 			elif self.update_largestNR(ln): pass			
-		self._job = self.root.after(0,self.parse_line)
+			elif self.close_files(ln): pass		
+		if not self.hide:
+			self._job = self.root.after(0,self.parse_line)
 	def handler(self):
 		self.root.quit()
 		self.root.destroy()
 	def construct_viewer(self):
 		""" Assembles axes on the screen.
 		"""
+		# set residual slots
+		if self.parent.carb.iprtype != 1:
+			self.ax2.slot0 = ['residual1','residual2','residual3']
+		elif self.parent.strs.param['ISTRS']==1:
+			self.ax2.slot0 = ['residual1','residual2','residual3']
+		else:
+			self.ax2.slot0 = ['residual1','residual2']
+		
 		# create figure window
 		self.root = tk.Tk()
 		self.root.wm_title('PyFEHM diagnostic window: '+self.parent.filename)
 		self.root.protocol('WM_DELETE_WINDOW', self.handler)
+		
 		if has_ctypes:
 			user32 = ctypes.windll.user32
 			screensize = np.array([user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)])
@@ -6635,6 +6931,7 @@ class fdiagnostic(object):
 					t.set_color(col)
 		
 			if k == '3': self.axs[k].make_legend()
+		
 		self.canvas = FigureCanvasTkAgg(self.fig,master = self.root)
 		self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 		self.canvas.show()
@@ -6642,10 +6939,14 @@ class fdiagnostic(object):
 		for k in self.axs.keys():
 			self.axs[k].add_empty_plots()
 			self.axs[k].reset_bg()
-			
+		
 		self.root.after(0,self.parse_line)
 		self.root.mainloop()
+	def read_with_tcl(self):
+		while self.poll: self.parse_line()
+		self.close_files('timestep less than daymin')
 	def update_tlim(self):
+		if self.hide: return
 		if not self.time.data[-1]>self.time.lim[-1]: return
 		self.time.lim[1] = np.min([self.time.data[-1]*self.rel_frame,self.parent.tf])
 		for k in self.axs.keys():
@@ -6655,6 +6956,7 @@ class fdiagnostic(object):
 			self.axs[k].sub1.hold(True)
 	def update_lim(self,name):
 		""" Redraw vertical axes if necessary. """
+		if self.hide: return
 		# rescale axes
 		ax = None
 		for k in self.axs.keys():
@@ -6707,23 +7009,163 @@ class fdiagnostic(object):
 		
 		self.axs[k].reset_bg()
 	def update_plot(self,name):
+		if self.hide: return
 		ax = None
 		for k in self.axs.keys():
 			if name in self.axs[k].slot0: ax = 0; break
 			elif name in self.axs[k].slot1: ax = 1; break
 		if ax is None: return
 		
-		if ax: self.axs[k].plot1[name].set_data(self.__getattribute__(name).time,self.__getattribute__(name).data)
-		else: self.axs[k].plot0[name].set_data(self.__getattribute__(name).time,self.__getattribute__(name).data)
+		if ax: 
+			self.axs[k].plot1[name].set_data(copy(self.__getattribute__(name).time),copy(self.__getattribute__(name).data))
+		else: 
+			self.axs[k].plot0[name].set_data(copy(self.__getattribute__(name).time),copy(self.__getattribute__(name).data))
 		
 		self.axs[k].redraw()
+	def close_files(self,ln):
+		cs1 = 'total code time(timesteps)'
+		cs2 = 'timestep less than daymin'
+		returnFlag = True
+		if all([(lni == chk) for lni, chk in zip(cs1.split(),ln)]): returnFlag = False
+		if all([(lni == chk) for lni, chk in zip(cs2.split(),ln)]): returnFlag = False
+		if returnFlag: return
+		
+		if self.file_cv: self.file_cv.close()
+		if self.file_nr: 
+			self.summarise_nr()
+			self.file_nr.close()
+		if self.file_nd: self.file_nd.close()
+		
+		if self.poll is True: self.poll = False
+	def summarise_nr(self):
+		
+		self.file_nr.write('\n')
+		self.file_nr.write('#############################################################################\n')
+		self.file_nr.write('#############################   SUMMARY   ###################################\n')
+		self.file_nr.write('#############################################################################\n')
+		self.file_nr.write('\n')
+		self.file_nr.write('FIRST largest N-R correction\n')
+		self.file_nr.write(self.largest_NR.text_R(0,True))
+		self.file_nr.write('\n')
+		self.file_nr.write('\n')
+		
+		self.file_nr.write('MOST FREQUENT largest N-R corrections\n')
+		c = Counter(np.array([nd.index for nd in self.largest_NR.R_node]))
+		cnts = c.most_common(2)
+		nd_max = cnts[0][0]
+		
+		for i,nd in enumerate(self.largest_NR.R_node):
+			if nd.index == nd_max: break
+				
+		txt = self.largest_NR.text_R(i,True)		
+		txt2 = '(1) '+str(cnts[0][1])+' appearance'
+		if cnts[0][1]>1: txt2 += 's'
+		txt2 += ':\n'
+		
+		txt = txt2+txt+'\n'
+		
+		if len(cnts)>1:
+			nd_max = cnts[1][0]
+			for i,nd in enumerate(self.largest_NR.R_node):
+				if nd.index == nd_max: break
+					
+			txt1 = self.largest_NR.text_R(i,True)		
+			txt2 = '(2) '+str(cnts[1][1])+' appearance'
+			if cnts[1][1]>1: txt2 += 's'
+			txt2 += ':\n'				
+		
+			txt += txt2+txt1
+		
+		self.file_nr.write(txt)
+		
+		self.file_nr.write('\n')
+		self.file_nr.write('\n')
+		
+		self.file_nr.write('MOST RECENT largest N-R correction\n')
+		txt = self.largest_NR.text_R(-1,True)		
+		self.file_nr.write(txt)
+		
+		# create a zone for largestNR nodes in case of export to paraview
+		if 980 not in self.parent.zone.keys():			
+			self.parent.new_zone(980,'largestNR',nodelist = self.largest_NR.R_node)
+	def write_NR(self):
+		if self.file_nr is None:
+			# first time step, open file
+			if self.parent.work_dir: wd = self.parent.work_dir+os.sep
+			else: wd=''
+			self.file_nr = open(wd+self.parent.files.root+'_NR.dgs','w')
+		
+		self.file_nr.write('largest N-R correction, timestep %5i\n'%(len(self.timestep.data)+1))
+		self.file_nr.write(self.largest_NR.text_R(-1,True))
+		self.file_nr.write('\n')
+		
+		self.file_nr.flush()
+		os.fsync(self.file_nr)
+	def write_timestep(self):
+		""" Writes data for a single time step to file.
+		"""
+		headers = ['timestep','time','total_mass','total_energy','residual1','residual2','residual3','mass_input_rate',
+			'mass_output_rate','enthalpy_input_rate','enthalpy_output_rate','mass_error','energy_error']
+		if self.file_cv is None:
+			if self.parent.work_dir: wd = self.parent.work_dir+os.sep
+			else: wd=''
+			# first time step, open files
+			self.file_cv = open(wd+self.parent.files.root+'_convergence.dgs','w',1)
+			# write headers			
+			self.file_cv.write('index   ')
+			N = 14
+			for h in headers:
+				if len(h)>N: h = h[:N]
+				self.file_cv.write('%14s'%h+'\t')
+			self.file_cv.write('\n')				
+				
+			return
+
+		if self.write_nd and not self.file_nd:
+			if self.parent.work_dir: wd = self.parent.work_dir+os.sep
+			else: wd=''
+			self.file_nd = open(wd+self.parent.files.root+'_node.dgs','w')
+			self.file_nd.write('index   ')
+			nm = 'time(days)'
+			self.file_nd.write('%16s'%nm+'  ')
+			for nd in self.nds:
+				for nm in self.nd_vars:
+					nm = 'nd_'+str(nd)+'_'+nm
+					if len(nm)>15: nm = nm[:15]
+					self.file_nd.write('%16s'%nm+'  ')
+			self.file_nd.write('\n')				
+				
+		# write time step
+		self.file_cv.write('%5i   '%len(self.timestep.data))
+		for h in headers:
+			try:
+				self.file_cv.write('% 8.7e  '%(self.__getattribute__(h).data[-1]))
+			except:
+				self.file_cv.write('% 8.7e  '%(0))
+		self.file_cv.write('\n')
+		self.file_cv.flush()
+		os.fsync(self.file_cv)
+		
+		if self.file_nd:
+			self.file_nd.write('%5i   '%len(self.timestep.data))
+			self.file_nd.write('% 10.9e  '%self.time.data[-1])
+			for nd in self.nds:
+				for nm in self.nd_vars:
+					try: val=self.__getattribute__('nd'+str(nd)+'_'+nm).data[-1]
+					except: val=self.__getattribute__('nd'+str(nd)+'_'+nm)[-1]
+					self.file_nd.write('% 10.9e  '%(val))
+			self.file_nd.write('\n')
+			self.file_nd.flush()
+			os.fsync(self.file_nd)
 	def update_timestep(self,ln):
 		""" Update the time step plot.
 		"""
 		check_string = 'Years  Days  Step Size'
+		if len(check_string.split()) > len(ln): return False
 		if not all([(lni == chk) for lni, chk in zip(check_string.split(),ln)]): return False
+		if self.write: self.write_timestep()
 		line = self.stdout.readline()
-		print line.rstrip() 
+		self.printout(line.rstrip())
 		ln = self.split_line(line)
 		
 		yr, day, dt = ln
@@ -6739,6 +7181,7 @@ class fdiagnostic(object):
 		return True
 	def update_mass(self,ln):
 		check_string = 'Net kg water discharge'
+		if len(check_string.split()) > len(ln): return False
 		if not all([(lni == chk) for lni, chk in zip(check_string.split(),ln)]): return False
 		self.total_mass.data.append(ln[-1])
 		if len(self.total_mass.data) == 1: return True
@@ -6748,6 +7191,7 @@ class fdiagnostic(object):
 		return True
 	def update_energy(self,ln):
 		check_string = 'Net MJ energy discharge'
+		if len(check_string.split()) > len(ln): return False
 		if not all([(lni == chk) for lni, chk in zip(check_string.split(),ln)]): return False
 		self.total_energy.data.append(ln[-1])
 		if len(self.total_energy.data) == 1: return True
@@ -6757,6 +7201,7 @@ class fdiagnostic(object):
 		return True
 	def update_mass_input(self,ln):
 		check_string = 'Water input this time step:'
+		if len(check_string.split()) > len(ln): return False
 		if not all([(lni == chk) for lni, chk in zip(check_string.split(),ln)]): return False
 		self.mass_input_rate.data.append(float(ln[-2][1:]))
 		
@@ -6765,6 +7210,7 @@ class fdiagnostic(object):
 		return True
 	def update_mass_output(self,ln):
 		check_string = 'Water discharge this time step:'
+		if len(check_string.split()) > len(ln): return False
 		if not all([(lni == chk) for lni, chk in zip(check_string.split(),ln)]): return False
 		self.mass_output_rate.data.append(float(ln[-2][1:]))
 		
@@ -6773,6 +7219,7 @@ class fdiagnostic(object):
 		return True		
 	def update_enthalpy_input(self,ln):
 		check_string = 'Enthalpy input this time step:'
+		if len(check_string.split()) > len(ln): return False
 		if not all([(lni == chk) for lni, chk in zip(check_string.split(),ln)]): return False
 		self.enthalpy_input_rate.data.append(float(ln[-2][1:]))
 		
@@ -6781,6 +7228,7 @@ class fdiagnostic(object):
 		return True
 	def update_enthalpy_output(self,ln):
 		check_string = 'Enthalpy discharge this time step:'
+		if len(check_string.split()) > len(ln): return False
 		if not all([(lni == chk) for lni, chk in zip(check_string.split(),ln)]): return False
 		self.enthalpy_output_rate.data.append(float(ln[-2][1:]))
 		
@@ -6789,42 +7237,118 @@ class fdiagnostic(object):
 		return True
 	def update_node(self,ln):
 		check_string = 'Nodal Information (Water)'
+		if len(check_string.split()) > len(ln): return False
 		if not all([(lni == chk) for lni, chk in zip(check_string.split(),ln)]): return False
-		print self.stdout.readline().rstrip()
-		print self.stdout.readline().rstrip()
+		self.printout(self.stdout.readline().rstrip())
+		self.printout(self.stdout.readline().rstrip())
+		self.write_nd = True
 		
 		keepReading = True
 		updates = []
 		while keepReading:
 			# get line to process
 			line = self.stdout.readline()
-			print line.rstrip() 
+			self.printout(line.rstrip() )
 			ln = self.split_line(line)
 			# check if line empty -> break
 			if ln == None: break
 			# parse line, store information
-			nd,ndP,ndE,ndL,ndT,ndQ,ndQE = ln
+			if len(ln) == 7:
+				nd,ndP,ndE,ndL,ndT,ndQ,ndQE = ln
+			elif len(ln) == 8:
+				nd,ndP,ndT,ndSw,ndSaq,ndS, ndQ,ndQE = ln
+			if int(nd) not in self.nds: self.nds.append(int(nd))
 			nd = str(int(nd))
-			try: 
-				self.__getattribute__('nd'+nd+'_pressure').data.append(ndP)
-				updates.append('nd'+nd+'_pressure')
-			except: pass
-			try: 
-				self.__getattribute__('nd'+nd+'_temperature').data.append(ndT)
-				updates.append('nd'+nd+'_temperature')
-			except: pass
-			try: 
-				self.__getattribute__('nd'+nd+'_flow').data.append(ndQ)
-				updates.append('nd'+nd+'_flow')
-			except: pass
+			for nm,ndI in zip(self.nd_vars,[ndP,ndT,ndQ]):
+				nm = 'nd'+nd+'_'+nm
+				try: 
+					self.__getattribute__(nm).data.append(ndI)
+					updates.append(nm)
+				except:
+					try: self.__getattribute__(nm).append(ndI)
+					except: self.__setattr__(nm,[ndI])
 		
 		for update in updates:
 			self.update_lim(update)
 			self.update_plot(update)
 		
 		return True
+	def update_node2(self,ln):
+		check_string = 'Nodal Information'
+		if len(check_string.split()) > len(ln): return False
+		if not all([(lni == chk) for lni, chk in zip(check_string.split(),ln)]): return False
+		
+		####### 1. check species type, e.g., water, gas, tracer
+		node_type = ln[-1]
+		if node_type == '(Water)': self.update_node_general('water')
+		elif node_type == '(Gas)': self.update_node_general('gas')
+		elif node_type == '(Tracer)': 
+			ln = self.stdout.readline().rstrip()
+			self.printout(ln)
+			ln = ln.split()[-1]
+			self.update_node_general('tracer'+ln)
+	def update_node_general(self,type):
+		if self.node[type] == None:
+			self.node[type]={}
+		lns = [self.stdout.readline().rstrip()]
+		while lns[-1].split()[0] != 'Node': lns.append(self.stdout.readline().rstrip())
+		for ln in lns: self.printout(ln)
+		if type == 'water': 
+			keys_read = ['P (MPa)','E (MJ)','L sat','Temp (C)','(kg/s)','(MJ/s)','perm (m2)','porosity','Kx W/(m K)','Pwv (MPa)','D*wv (m2/s)','ps_delta_rxn','density (kg/m3)']
+			keys_save = ['P','E','sat','T','Qm','Qe','perm','por','Kx','Pwv','D*wv','ps_delta','dens']
+		elif type == 'gas': 
+			keys_read = ['Gas (MPa)','Pres (MPa)','(kg/s)','Residual'] 
+			keys_read2 = ['Capillary','Liquid']
+			
+			keys_save = ['P_gas','Pres (MPa)','Qgas','residual'] 
+			keys_save2 = ['P_cap','P_liq']
+		elif type.startswith('tracer'): 
+			keys_read = ['an','anl','anw','mol/s','residual']
+			keys_read2 = ['sinkint']
+			keys_save = ['an','anl','anw','Q','residual']
+			keys_save2 = ['sinkint']
+		key_pos = []
+		for kr,ks in zip(keys_read,keys_save):
+			if kr in lns[-1]: 
+				if kr == 'Pres (MPa)':
+					for kr2,ks2 in zip(keys_read2,keys_save2):
+						if kr2 in lns[0]: 
+							key_pos.append((ks2,len(lns[-1].split(kr2)[0])))
+				else:
+					key_pos.append((ks,len(lns[-1].split(kr)[0])))
+		if type.startswith('tracer'):
+			for kr2,ks2 in zip(keys_read2,keys_save2):
+				if kr2 in lns[0]: 
+					key_pos.append((ks2,len(lns[-1].split(kr2)[0])))
+		key_pos.sort(key=lambda x: x[1])
+		
+		ln = self.stdout.readline().rstrip()
+		self.printout(ln)
+		ln = ln.split()
+		while ln[0] != '-':
+			nd = int(ln[0])
+			vals = [float(lni) for lni in ln[1:]]
+			if nd not in self.node[type].keys():
+				self.node[type][nd] = dict([(k[0],[]) for k in key_pos])
+			for k,val in zip(key_pos,vals):
+				if k[0] not in self.node[type][nd].keys(): self.node[type][nd][k[0]] = []
+				self.node[type][nd][k[0]].append(val)
+			ln = self.stdout.readline().rstrip()
+			self.printout(ln)
+			ln = ln.split()
+			if len(ln) == 0: break
+			if not ln[0].isdigit():
+				while not ln[0]=='-':
+					ln = self.stdout.readline().rstrip()
+					self.printout(ln)
+					ln = ln.split()
+					
+				self.update_node_general(type)
+				return
+		return
 	def update_errors(self,ln):
 		check_string = 'Conservation Errors:'
+		if len(check_string.split()) > len(ln): return False
 		if not all([(lni == chk) for lni, chk in zip(check_string.split(),ln)]): return False
 		self.mass_error.data.append(ln[2])
 		self.energy_error.data.append(ln[-2])
@@ -6837,39 +7361,39 @@ class fdiagnostic(object):
 		return True
 	def update_residuals(self,ln):
 		check_string = 'Largest Residuals'
+		if len(check_string.split()) > len(ln): return False
 		if not all([(lni == chk) for lni, chk in zip(check_string.split(),ln)]): return False
 		# get first residual
 		r = []
 		nd = []
 		line = self.stdout.readline()
-		print line.rstrip() 
+		self.printout(line.rstrip())
 		ln = self.split_line(line)
-		self.residual1.data.append(ln[2])
+		self.residual1.data.append(abs(ln[2]))
 		self.residual1.node.append(int(ln[4]))
 		if len(self.residual1.data) == 1: 
 			pt = self.residual1.data[0]
 			self.residual1.lim = [pt-1.e-30,pt+1.e-30]
 		# get second residual
 		line = self.stdout.readline()
-		print line.rstrip() 
+		self.printout(line.rstrip())
 		ln = self.split_line(line)
-		self.residual2.data.append(ln[2])
+		self.residual2.data.append(abs(ln[2]))
 		self.residual2.node.append(int(ln[4]))
 		if len(self.residual2.data) == 1: 
 			pt = self.residual2.data[0]
 			self.residual2.lim = [pt-1.e-30,pt+1.e-30]
 		# get third residual
 		line = self.stdout.readline()
-		print line.rstrip() 
+		self.printout(line.rstrip())
 		ln = self.split_line(line)
-		try:
-			self.residual3.data.append(ln[2])
+		if ln[0] == 'EQ3':
+			self.residual3.data.append(abs(ln[2]))
 			self.residual3.node.append(int(ln[4]))
 			if len(self.residual3.data) == 1: 
 				pt = self.residual3.data[0]
 				self.residual3.lim = [pt-1.e-30,pt+1.e-30]
-		except: pass
-		
+				
 		# plot residuals on log axes
 		self.update_lim('residual1')
 		self.update_plot('residual1')
@@ -6877,25 +7401,30 @@ class fdiagnostic(object):
 		self.update_lim('residual2')
 		self.update_plot('residual2')
 		
-		self.update_lim('residual3')
-		self.update_plot('residual3')
+		if ln[0] == 'EQ3':
+			self.update_lim('residual3')
+			self.update_plot('residual3')
 	def update_largestNR(self,ln):
 		check_string = '#### largest N-R corrections, timestep'
+		if len(check_string.split()) > len(ln): return False
 		if not all([(lni == chk) for lni, chk in zip(check_string.split(),ln)]): return False
 		
-		self.largest_NR.timestep.append(int(ln[-2]))
 		line = self.stdout.readline()
-		print line.rstrip() 
+		self.printout(line.rstrip())
+		try: self.split_line(line)[2]
+		except: return
+		
+		self.largest_NR.timestep.append(int(ln[-2]))
 		ln = self.split_line(line)
 		self.largest_NR.new_node(ln[2],int(ln[4]),1)
 		
 		line = self.stdout.readline()
-		print line.rstrip() 
+		self.printout(line.rstrip())
 		ln = self.split_line(line)
 		self.largest_NR.new_node(ln[2],int(ln[4]),2)
 		
 		line = self.stdout.readline()
-		print line.rstrip() 
+		self.printout(line.rstrip())
 		ln = self.split_line(line)
 		try:
 			self.largest_NR.new_node(ln[2],int(ln[4]),3)
@@ -6903,12 +7432,77 @@ class fdiagnostic(object):
 			self.largest_NR.R3_data.append(1.e-30)
 			self.largest_NR.R3_node.append([])
 		
-		self.largest_NR.redraw()
-		self.largest_NR.retext()
+		if len(self.parent.grid.nodelist) ==0:
+			pass
+		else:
+			if self.write: self.write_NR()
+			self.largest_NR.redraw()
+			self.largest_NR.retext()
 	def _get_axs(self): return dict(zip(['0','1','2','3'],[self.ax0,self.ax1,self.ax2,self.ax3]))
 	axs = property(_get_axs)
+class foutput(object):
+	from copy import deepcopy
+	def __init__(self,filename = None, input=None, grid = None, hide = True, silent=True, write = False):
+		self._filename = filename
+		if self._filename:
+			if input and grid:
+				diag = process_output(filename, hide = hide,silent = silent,input=input,grid=grid,write=write)
+			else:
+				diag = process_output(filename, hide = hide,silent=silent,write=write)		
+		self._node = deepcopy(diag.node)
+		self._times = deepcopy(diag.time.data[1:])
+	def _get_node(self): return self._node
+	node = property(_get_node) #: (*dict*) Dictionary of node output, keyed first on component ('water','gas','tracer1'), then on node number, then on variable.
+	def _get_nodes(self): 
+		for type in ['water','gas','tracer1']:
+			if self._node[type] == None: continue
+			nds = self._node[type].keys()
+			nds.sort()
+			return nds
+		return None
+	nodes = property(_get_nodes)
 	
+	def _get_variables(self):
+		""" Get Variables
+		Returns the variables in the foutput object or returns None if no 
+		variables. """
+
+		for type in ['water','gas','tracer1']:
+			for node in self.nodes:
+				if self._node[type][node] == None: 
+					continue
+					
+				vrbls = self._node[type][node].keys()
+				vrbls.sort()
+				
+				return vrbls
+			
+		return None
+
+	variables = property(_get_variables)
+    
+	def _get_components(self): 
+		cpts = []
+		for type in ['water','gas','tracer1','tracer2']:		
+			if self._node[type] != None: cpts.append(type)
+		return cpts
+	components = property(_get_components) #: (**) List of component names for which nodal information available
 	
+	def _get_times(self): return self._times
+	times = property(_get_times) #: (*ndarray*) Vector of output times.
+	def _get_filename(self): return self._filename
+	def _set_filename(self,value): self._filename = value
+	filename = property(_get_filename, _set_filename) #: (*str*) Name of output file
+	def _get_information(self):
+		print 'FEHM output file \''+self.filename+'\''
+		print '    call format: foutput.node[component][node][variable]'
+		prntStr =  '    components: '
+		for cpt in self.components: prntStr += str(cpt)+', '
+		print prntStr[:-2]
+		prntStr = '    nodes: '
+		for nd in self.nodes: prntStr += str(nd)+', '
+		print prntStr[:-2]
+	what = property(_get_information) #:(*str*) Print out information about the fcontour object.
 	
 	
 	

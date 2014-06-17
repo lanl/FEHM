@@ -23,10 +23,6 @@ Public License for more details.
 
 import os,platform,pkgutil
 
-WINDOWS = platform.system()=='Windows'
-if WINDOWS: copyStr = 'copy'; delStr = 'del'; slash = '\\'
-else: copyStr = 'cp'; delStr = 'rm'; slash = '/'
-
 from types import*
 
 floatKeys = ['linear_converge_NRmult_G1','quadratic_converge_NRmult_G2','stop_criteria_NRmult_G3',
@@ -68,11 +64,15 @@ class fdflt(object):
 		self.parental_cont 			= 	True
 
 		# set this to the fehm executable to be used if no default assigned
-		self.fehm_path 				=	'c:\\users\\264485\\fehm\\source\\src\\fehm.exe'
-		self.lagrit_path			=	'c:\\users\\264485\\python\\pyfehm\\lagrit_win.exe'
+		self.fehm_path 				=	'c:\\path\\to\\fehm\\fehm.exe'
+		if os.name is not 'posix':
+			self.paraview_path 			=	'paraview.exe'
+		else:
+			self.paraview_path 			=	'paraview'
+		self.lagrit_path			=	'c:\\path\\to\\lagrit\\lagrit.exe'
 		self.files 					=	['outp','hist','check']
-		self.co2_interp_path 		= 	'c:\\users\\264485\\python\\pyfehm\\co2_interp_table.txt'
-		self.co2_interp_path_2 		= 	'/home/ddempsey/python/pyfehm/co2_interp_table.txt'
+		self.co2_interp_path 		= 	'c:\\path\\to\\co2\\co2_interp_table.txt'
+		self.co2_interp_path_2 		= 	'/alternate/path/to/co2/co2_interp_table.txt'
 		if not os.path.isfile(self.co2_interp_path):
 			self.co2_interp_path = self.co2_interp_path_2
 
@@ -166,11 +166,11 @@ class fdflt(object):
 		self._check_rc()
 	def _check_rc(self):
 		# check if pyfehmrc file exists		
-		rc_lib = pkgutil.get_loader('fdflt').filename.split(slash)
-		rc_lib1 = slash.join(rc_lib[:-1])+slash+'.pyfehmrc'
-		rc_lib2 = slash.join(rc_lib[:-1])+slash+'pyfehmrc'
-		rc_home1 = os.path.expanduser('~')+slash+'.pyfehmrc'
-		rc_home2 = os.path.expanduser('~')+slash+'pyfehmrc'
+		rc_lib = pkgutil.get_loader('fdflt').filename.split(os.sep)
+		rc_lib1 = os.sep.join(rc_lib[:-1])+os.sep+'.pyfehmrc'
+		rc_lib2 = os.sep.join(rc_lib[:-1])+os.sep+'pyfehmrc'
+		rc_home1 = os.path.expanduser('~')+os.sep+'.pyfehmrc'
+		rc_home2 = os.path.expanduser('~')+os.sep+'pyfehmrc'
 		if os.path.isfile(rc_lib1): fp = open(rc_lib1)
 		elif os.path.isfile(rc_lib2): fp = open(rc_lib2)
 		elif os.path.isfile(rc_home1): fp = open(rc_home1)

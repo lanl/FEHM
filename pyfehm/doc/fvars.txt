@@ -1,0 +1,49 @@
+.. _fvars-chapter:
+
+fvars: FEHM thermodynamic calculations
+======================================
+
+It is occasionally useful to be able to calculate thermodynamic properties of the fluids that FEHM simulates. 
+For convenience, the functions that calculate these properties, for two-phase water and CO2, are supplied here. Density 
+(:func:`~fvars.dens`), enthalpy (:func:`~fvars.enth`) and viscosity (:func:`~fvars.visc`), and their corresponding 
+derivatives with respect to pressure and temperature, can be calculated for
+given pressure and temperature conditions. Furthermore, the position and derivatives of the saturation line for water
+can be calculated for a given temperature or pressure (:func:`~fvars.sat` and :func:`~fvars.tsat`).
+
+Note, these functions are vectorised; that is, the user can supply vectors of temperature and pressure to output a 
+vector of the corresponding variable.
+
+Functions
+---------
+   
+.. autofunction:: fvars.dens
+.. autofunction:: fvars.enth
+.. autofunction:: fvars.visc
+.. autofunction:: fvars.sat
+.. autofunction:: fvars.tsat
+.. autofunction:: fvars.fluid_column
+
+Examples
+--------
+
+1. Calculate the density of liquid water at 10 MPa and 150degC
+
+  ``rho=``\ :meth:`dens <fvars.dens>`\ ``(10,150)[0]``
+  
+2. Calculate the derivative of water vapor enthalpy with respect to temperature, at 2 MPa and 200 - 250 degC.
+
+  ``dhdt=``\ :meth:`enth <fvars.enth>`\ ``(2,np.linspace(200,250,10),'T')[1]``
+
+3. Calculate the pressure at which water turns two-phase, for a temperature of 200degC.
+
+  ``Psat=``\ :meth:`sat <fvars.sat>`\ ``(200)[0]``
+  
+4. Calculate the viscosity of CO2 at 40degC and 9 MPa.
+
+  ``mu=``\ :meth:`visc <fvars.visc>`\ ``(9,40)[2]``
+
+5. Calculate the pressure of a column of CO2, with a surface pressure of 8 MPa, and a geothermal gradient of 25degC / km.
+
+  ``z=np.linspace(0,4e3,200)``
+  
+  ``Pco2=``\ :meth:`fluid_column <fvars.fluid_column>`\ ``(z,0.025,20,8)[2][:,0]``

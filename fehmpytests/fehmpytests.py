@@ -5,15 +5,12 @@ import re
 import numpy as np
 from subprocess import call, PIPE
 try:
+    sys.path.insert(0,'../pyfehm')
     from fdata import *
-except ImportError:
-    try:
-        sys.path.insert(0,'../pyfehm')
-        from fdata import *
-    except ImportError as err:
-        print 'ERROR: Unable to import pyfehm fpost module'
-        print err
-        os._exit(0)
+except ImportError as err:
+    print 'ERROR: Unable to import pyfehm fpost module'
+    print err
+    os._exit(0)
 from glob import glob
 
 __unittest = True # Suppresses tracebacks

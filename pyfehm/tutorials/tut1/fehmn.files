@@ -1,0 +1,9 @@
+input: tut1_INPUT.dat
+grida: /scratch/er/dharp/source/pyfehm/tutorials/tut1/tut1_GRID.inp
+rsto: tut1.rsto
+outp: tut1.outp
+check: tut1.chk
+hist: 
+root:tut1
+
+all

@@ -97,7 +97,7 @@ if True: 					# output variable dictionaries defined in here, indented for code 
 	('Vapor Pressure (MPa)','P_vap'),
 	('Capillary Pressure (MPa)','P_cap'),
 	('Saturation','saturation'),
-	('Water Saturation','saturation'),
+	('Water Saturation','water'),
 	('Super-Critical/Liquid CO2 Saturation','co2_liquid'),
 	('Gaseous CO2 Saturation','co2_gas'),
 	('Dissolved CO2 Mass Fraction','co2_aq'),
@@ -361,7 +361,7 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 						file = file.split('_vec')[0]
 						file = file.split('_days')[0]						
 						file = file.split('.')
-						file = [fl for fl in file if fl[0].isdigit()]
+						file = [fl for fl in file if fl.isdigit()]
 						ts.append(float('.'.join(file)))
 					ts = np.unique(ts)
 					
@@ -396,22 +396,22 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 		FILES = []
 		for file_type in file_types:
 			tag = '_'+file_type+'_node'
-			FILES.append([file for file in files if tag in file])
-		FILES = np.array(FILES)	
+			FILES.append(sort_tec_files([file for file in files if tag in file]))
+		FILES = np.array(FILES)
 		
 		# determine headers for 'tec' output
 		for i in range(FILES.shape[1]):
 			if not self._variables:
 				files = FILES[:,i]
 				headers = []
-				for file in sorted(files):
+				for file in sort_tec_files(files):
 					fp = open(file,'rU')
 					headers.append(fp.readline())
 					fp.close()
 				firstFile = self._detect_format(headers)
 				if self._format=='tec' and firstFile: 
 					headers = []
-					for file in sorted(files):
+					for file in sort_tec_files(files):
 						fp = open(file,'rU')
 						fp.readline()
 						headers.append(fp.readline())
@@ -421,16 +421,16 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 		# read in output data
 		for i in range(FILES.shape[1]):
 			files = FILES[:,i]
-			for file in sorted(files): pyfehm_print(file)
+			for file in sort_tec_files(files): pyfehm_print(file)
 			if not self._variables:
 				headers = []
-				for file in sorted(files):
+				for file in sort_tec_files(files):
 					fp = open(file,'rU')
 					headers.append(fp.readline())
 					fp.close()
 				self._detect_format(headers)
 				#if self._format=='tec': self._setup_headers_tec(headers)
-				if self._format=='avs': self._setup_headers_avs(headers)
+				if self._format=='avs': self._setup_headers_avs(headers,files)
 				elif self._format=='avsx': self._setup_headers_avsx(headers)
 				elif self._format=='surf': self._setup_headers_surf(headers)
 				else: pyfehm_print('ERROR: Unrecognised format');return
@@ -517,26 +517,44 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 			fp.close()
 			data = np.array([[float(d) for d in ln.strip().split(':')[1:]] for ln in lns])
 			self._material= dict([(var,data[:,icol]) for icol,var in enumerate(self._material_properties)])
-	def _setup_headers_avs(self,header): 		# headers for the AVS output format
-		lns_num = int(header.strip().split(' ')[0])
-		self._variables.append('n')
-		for i in range(lns_num): 
-			ln = self._file.readline().strip().split(',')[0]
-			var = cont_var_names_avs[ln]
-			self._variables.append(var)
-	def _read_data_avs(self,fname):		# read data in AVS format
-		lni = fname.split('.',1)[1]
-		lni = lni.split('_',1)
-		time = float(lni[0])
-		if lni[1].startswith('days'):
-			time = time*24*2600
-		self._times.append(time)		
-		if self._variables: 
-			for var in self.variables: lni=self._file.readline()
-		lns = self._file.readlines()
-		data = []
-		for ln in lns: data.append([float(d) for d in ln.strip().split()])
-		data = np.array(data)
+	def _setup_headers_avs(self,headers,files): 		# headers for the AVS output format
+		for header,file in zip(headers,files):
+			lns_num = int(header.strip().split()[0])
+			fp = open(file)
+			lns = [fp.readline() for i in range(lns_num+1)][1:]
+			fp.close()
+			self._variables.append('n')
+			for ln in lns:
+				varname = ln.strip().split(',')[0]
+				if varname in cont_var_names_avs.keys():
+					var = cont_var_names_avs[varname]
+				else: var = varname
+				if var not in self._variables: self._variables.append(var)
+	def _read_data_avs(self,files,mat_file):		# read data in AVS format
+		datas = []
+		for file in sorted(files):
+			first = (file == sorted(files)[0])
+			fp = open(file,'rU')
+			lns = fp.readlines()
+			lns = lns[int(float(lns[0].split()[0]))+1:]
+			
+			if first: 
+				file = file.split('_node')[0]
+				file = file.split('_sca')[0]
+				file = file.split('_con')[0]
+				file = file.split('_vec')[0]
+				file = file.split('_days')[0]						
+				file = file.split('.')
+				file = [fl for fl in file if fl.isdigit() or 'E-' in fl]
+				time = float('.'.join(file))
+				self._times.append(time)
+			
+			if first: 
+				datas.append(np.array([[float0(d) for d in ln.strip().split()] for ln in lns]))
+			else:
+				datas.append(np.array([[float0(d) for d in ln.strip().split()[4:]] for ln in lns]))
+			
+		data = np.concatenate(datas,1)
 		self._data[time] = dict([(var,data[:,icol]) for icol,var in enumerate(self.variables)])
 	def _setup_headers_surf(self,headers): 		# headers for the SURF output format
 		for header in headers:
@@ -562,7 +580,7 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 				file = file.split('_vec')[0]
 				file = file.split('_days')[0]						
 				file = file.split('.')
-				file = [fl for fl in file if fl[0].isdigit()]
+				file = [fl for fl in file if fl.isdigit() or 'E-' in fl]
 				time = float('.'.join(file))
 				self._times.append(time)
 			
@@ -571,9 +589,9 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 			fp.close()
 			
 			if first: 
-				datas.append(np.array([[float(d) for d in ln.strip().split(',')] for ln in lns]))
+				datas.append(np.array([[float0(d) for d in ln.strip().split(',')] for ln in lns]))
 			else:
-				datas.append(np.array([[float(d) for d in ln.strip().split(',')[4:]] for ln in lns]))
+				datas.append(np.array([[float0(d) for d in ln.strip().split(',')[4:]] for ln in lns]))
 			
 		data = np.concatenate(datas,1)
 		self._data[time] = dict([(var,data[:,icol]) for icol,var in enumerate(self.variables)])
@@ -624,14 +642,14 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 			
 			if has_xyz:
 				if first: 
-					datas.append(np.array([[float(d) for d in ln.strip().split()] for ln in lns]))
+					datas.append(np.array([[float0(d) for d in ln.strip().split()] for ln in lns]))
 				else:
-					datas.append(np.array([[float(d) for d in ln.strip().split()[4:]] for ln in lns]))
+					datas.append(np.array([[float0(d) for d in ln.strip().split()[4:]] for ln in lns]))
 			else:
 				if first: 
-					datas.append(np.array([[float(d) for d in ln.strip().split()] for ln in lns]))
+					datas.append(np.array([[float0(d) for d in ln.strip().split()] for ln in lns]))
 				else:
-					datas.append(np.array([[float(d) for d in ln.strip().split()[1:]] for ln in lns]))
+					datas.append(np.array([[float0(d) for d in ln.strip().split()[1:]] for ln in lns]))
 						
 		data = np.concatenate(datas,1)
 		if data.shape[1]< len(self.variables): 		# insert xyz data from previous read
@@ -639,29 +657,28 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 			j = 0
 			for var in self.variables:
 				if var == 'x': 
-					x0 = self._data[self.times[0]]['x']
-					data2.append(x0)
+					data2.append(self._data[self.times[0]]['x'])
 				elif var == 'y': 
-					y0 = self._data[self.times[0]]['y']
-					data2.append(y0)
+					data2.append(self._data[self.times[0]]['y'])
 				elif var == 'z': 
-					z0 = self._data[self.times[0]]['z']
-					data2.append(z0)
+					data2.append(self._data[self.times[0]]['z'])
+				elif var == 'zone': 
+					data2.append(self._data[self.times[0]]['zone'])
 				else: 
 					data2.append(data[:,j]); j +=1
 			data = np.transpose(np.array(data2))
 		self._data[time] = dict([(var,data[:,icol]) for icol,var in enumerate(self.variables)])
-		
 		if mat_file and not self._material_properties:
 			fp = open(mat_file,'rU')
 			fp.readline()
 			header = fp.readline()
 			for mat_prop in header.split(' "')[5:]:
-				if 'specific heat' not in mat_prop:
-					self._material_properties.append(mat_prop.split('"')[0].strip())
+				self._material_properties.append(mat_prop.split('"')[0].strip())
 			lns = fp.readlines()
+			if lns[0].startswith('ZONE'): lns = lns[1:]
 			fp.close()
-			data = np.array([[float(d) for d in ln.strip().split()[4:]] for ln in lns])
+			if nds: lns = lns[:nds] 		# truncate to remove connectivity information
+			data = np.array([[float(d) for d in ln.strip().split()[4:]] for ln in lns[:-1]])
 			self._material= dict([(var,data[:,icol]) for icol,var in enumerate(self._material_properties)])
 	def _check_inputs(self,variable, time, slice):	# assesses whether sufficient input information for slice plot
 		if not variable: 
@@ -820,7 +837,7 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 			X,Y,Z,sxy = self.slice('strs_xy', slice, divisions, time, method)
 			X,Y,Z,sxz = self.slice('strs_xz', slice, divisions, time, method)
 			X,Y,Z,syz = self.slice('strs_yz', slice, divisions, time, method)
-			X,Y,Z,sp  = self.slice('P',       slice, divisions, time, method)
+			X,Y,Z,sp  = self.slice('P',	   slice, divisions, time, method)
 			
 			dip = variable[2]/180.*math.pi
 			azi = variable[1]/180.*math.pi+3.14159/2.
@@ -842,7 +859,7 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 				X,Y,Z,sxy = self.slice('strs_xy', slice, divisions, time0, method)
 				X,Y,Z,sxz = self.slice('strs_xz', slice, divisions, time0, method)
 				X,Y,Z,syz = self.slice('strs_yz', slice, divisions, time0, method)
-				X,Y,Z,sp  = self.slice('P',       slice, divisions, time0, method)
+				X,Y,Z,sp  = self.slice('P',	   slice, divisions, time0, method)
 				
 				px = sxx*nhat[0]+sxy*nhat[1]+sxz*nhat[2]
 				py = sxy*nhat[0]+syy*nhat[1]+syz*nhat[2]
@@ -1409,6 +1426,34 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 		else:
 			outdat = self[time][variable][nd]
 		return outdat
+	def paraview(self, grid, stor = None, exe = dflt.paraview_path,filename = 'temp.vtk',show=None,diff = False,zscale = 1., time_derivatives = False):
+		""" Launches an instance of Paraview that displays the contour object.
+		
+		:param grid: Path to grid file associated with FEHM simulation that produced the contour output.
+		:type grid: str
+		:param stor: Path to grid file associated with FEHM simulation that produced the contour output.
+		:type stor: str
+		:param exe: Path to Paraview executable.
+		:type exe: str
+		:param filename: Name of VTK file to be output.
+		:type filename: str
+		:param show: Variable to show when Paraview starts up (default = first available variable in contour object).
+		:type show: str
+		:param diff: Flag to request PyFEHM to also plot differences of contour variables (from initial state) with time.
+		:type diff: bool
+		:param zscale: Factor by which to scale z-axis. Useful for visualising laterally extensive flow systems.
+		:type zscale: fl64
+		:param time_derivatives: Calculate new fields for time derivatives of contour data. For precision reasons, derivatives are calculated with units of 'per day'.
+		:type time_derivatives: bool
+		"""
+		from fdata import fdata
+		dat = fdata()
+		dat.grid.read(grid,storfilename=stor)
+		if show is None: 
+			for var in self.variables:
+				if var not in ['x','y','z','n']: break
+			show = var
+		dat.paraview(exe=exe,filename=filename,contour=self,show=show,diff=diff,zscale=zscale,time_derivatives=time_derivatives)
 	def _get_variables(self): return self._variables
 	variables = property(_get_variables)#: (*lst[str]*) List of variables for which output data are available.
 	def _get_user_variables(self): return self._user_variables
@@ -1454,11 +1499,11 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 	zmax = property(_get_zmax, _set_zmax) #: (*fl64*) Maximum nodal z-coordinate for grid.
 	def _get_information(self):
 		print 'FEHM contour output - format '+self._format
-		print '    call format: fcontour[time][variable][node_index-1]'
-		prntStr =  '    times ('+str(len(self.times))+'): '
+		print '	call format: fcontour[time][variable][node_index-1]'
+		prntStr =  '	times ('+str(len(self.times))+'): '
 		for time in self.times: prntStr += str(time)+', '
 		print prntStr[:-2]+' days'
-		prntStr = '    variables: '
+		prntStr = '	variables: '
 		for var in self.variables: prntStr += str(var)+', '
 		print prntStr
 	what = property(_get_information) #:(*str*) Print out information about the fcontour object.
@@ -1468,6 +1513,7 @@ class fhistory(object):						# Reading and plotting methods associated with hist
 	'''
 	def __init__(self,filename=None,verbose=True):
 		self._filename=None	
+		self._format = ''
 		self._times=[]	
 		self._verbose = verbose
 		self._data={}
@@ -1475,6 +1521,7 @@ class fhistory(object):						# Reading and plotting methods associated with hist
 		self._nodes=[]	
 		self._zones = []
 		self._variables=[] 
+		self._user_variables = []
 		self._keyrows={}
 		self.column_name=[]
 		self.num_columns=0
@@ -1482,7 +1529,7 @@ class fhistory(object):						# Reading and plotting methods associated with hist
 		filename = os_path(filename)
 		if filename: self._filename=filename; self.read(filename)
 	def __getitem__(self,key):
-		if key in self.variables:
+		if key in self.variables or key in self.user_variables:
 			return self._data[key]
 		else: return None
 	def __repr__(self): 
@@ -1511,7 +1558,8 @@ class fhistory(object):						# Reading and plotting methods associated with hist
 		files=glob(filename)
 		configured=False
 		for i,fname in enumerate(files):
-			pyfehm_print(fname)
+			if self._verbose:
+				pyfehm_print(fname)
 			self._file=open(fname,'rU')
 			header=self._file.readline()
 			if header.strip()=='': continue				# empty file
@@ -1676,8 +1724,28 @@ class fhistory(object):						# Reading and plotting methods associated with hist
 		if pdf: 
 			os.system('epstopdf ' + save_fname)
 			os.remove(save_fname)	
+	def new_variable(self,name,node,data): 	
+		'''Creates a new variable, which is some combination of the available variables.
+		
+		:param name: Name for the variable.
+		:type name: str
+		:param time: Node key which the variable should be associated with. Must be one of the existing keys, i.e., an item in fhistory.nodes.
+		:type time: fl64
+		:param data: Variable data, most likely some combination of the available parameters, e.g., pressure*temperature, pressure[t=10] - pressure[t=5]
+		:type data: lst[fl64]
+		'''
+		if node not in self.nodes: 
+			pyfehm_print('ERROR: supplied node must correspond to an existing node in fhistory.nodes')
+			return
+		if name not in self._user_variables:
+			self._data.update({name:dict([(nd,None) for nd in self.nodes])})
+			self._user_variables.append(name)
+		self._data[name][node] = data
 	def _get_variables(self): return self._variables
 	variables = property(_get_variables)#: (*lst[str]*) List of variables for which output data are available.
+	def _get_user_variables(self): return self._user_variables
+	def _set_user_variables(self,value): self._user_variables = value
+	user_variables = property(_get_user_variables, _set_user_variables) #: (*lst[str]*) List of user-defined variables for which output data are available.
 	def _get_format(self): return self._format
 	format = property(_get_format) #: (*str*) Format of output file, options are 'tec', 'surf', 'avs' and 'avsx'.
 	def _get_filename(self): return self._filename
@@ -1688,14 +1756,14 @@ class fhistory(object):						# Reading and plotting methods associated with hist
 	nodes = property(_get_nodes)	#: (*lst[fl64]*) List of node indices for which output data are available.
 	def _get_information(self):
 		print 'FEHM history output - format '+self._format
-		print '    call format: fhistory[variable][node][time_index]'
-		prntStr = '    nodes: '
+		print '	call format: fhistory[variable][node][time_index]'
+		prntStr = '	nodes: '
 		for nd in self.nodes: prntStr += str(nd)+', '
 		print prntStr
-		prntStr =  '    times ('+str(len(self.times))+'): '
+		prntStr =  '	times ('+str(len(self.times))+'): '
 		for time in self.times: prntStr += str(time)+', '
 		print prntStr[:-2]+' days'
-		prntStr = '    variables: '
+		prntStr = '	variables: '
 		for var in self.variables: prntStr += str(var)+', '
 		print prntStr
 	what = property(_get_information) #:(*str*) Print out information about the fhistory object.
@@ -1941,6 +2009,65 @@ class multi_pdf(object):
 	save = property(_get_save, _set_save) #: (*str*) Name of the final pdf to output.
 
 """Classes for VTK output."""
+class fStructuredGrid(pv.StructuredGrid):
+	def __init__(self,dimensions,points):
+		pv.StructuredGrid.__init__(self,dimensions,points)
+	def to_string(self, time = None, format='ascii'):
+		t = self.get_datatype(self.points)
+		ret = ['DATASET STRUCTURED_GRID']
+		
+		# include time information
+		if time is not None:
+			ret.append('FIELD FieldData 2')
+			ret.append('TIME 1 1 double')
+			ret.append('%8.7f'%time)
+			ret.append('CYCLE 1 1 int')
+			ret.append('123')
+		
+		ret.append('DIMENSIONS %s %s %s'%self.dimensions)
+		ret.append('POINTS %s %s'%(self.get_size(),t))
+		ret.append(self.seq_to_string(self.points,format,t))
+		
+		return '\n'.join(ret)
+class fUnstructuredGrid(pv.UnstructuredGrid):
+	def __init__(self,points,vertex=[],poly_vertex=[],line=[],poly_line=[],
+				 triangle=[],triangle_strip=[],polygon=[],pixel=[],
+				 quad=[],tetra=[],voxel=[],hexahedron=[],wedge=[],pyramid=[]):
+		pv.UnstructuredGrid.__init__(self,points,vertex=vertex,poly_vertex=poly_vertex,line=line,poly_line=poly_line,
+				 triangle=triangle,triangle_strip=triangle_strip,polygon=polygon,pixel=pixel,
+				 quad=quad,tetra=tetra,voxel=voxel,hexahedron=hexahedron,wedge=wedge,pyramid=pyramid)			
+	def to_string(self,time = None,format='ascii'):
+		t = self.get_datatype(self.points)
+		ret = ['DATASET UNSTRUCTURED_GRID']
+		
+		# include time information
+		if time is not None:
+			ret.append('FIELD FieldData 2')
+			ret.append('TIME 1 1 double')
+			ret.append('%8.7f'%time)
+			ret.append('CYCLE 1 1 int')
+			ret.append('123')
+		
+		ret.append('POINTS %s %s'%(self.get_size(),t))
+		ret.append(self.seq_to_string(self.points,format,t))
+		tps = []
+		r = []
+		sz = 0
+		for k in self._vtk_cell_types_map.keys():
+			kv = getattr(self,k)
+			if kv==[] or kv[0]==[]: continue
+			s = self.seq_to_string([[len(v)]+list(v) for v in kv],format,'int')
+			r .append(s)
+			for v in kv:
+				tps.append(self._vtk_cell_types_map[k])
+				sz += len(v)+1
+		sep = (format=='ascii' and '\n') or (format=='binary' and '')
+		r = sep.join(r)
+		ret += ['CELLS %s %s'%(len(tps),sz),
+				r,
+				'CELL_TYPES %s'%(len(tps)),
+				self.seq_to_string(tps,format,'int')]
+		return '\n'.join(ret)
 class fVtkData(pv.VtkData):
 	def __init__(self,*args,**kws):
 		pv.VtkData.__init__(self,*args,**kws)
@@ -1951,15 +2078,15 @@ class fVtkData(pv.VtkData):
 		ret = ['# vtk DataFile Version 2.0',
 			   self.header,
 			   format.upper(),
-			   self.structure.to_string(format)
+			   self.structure.to_string(time=time,format=format)
 			   ]
 		if self.cell_data.data:
-			ret.append(self.cell_data.to_string(format))
+			ret.append(self.cell_data.to_string(format=format))
 		if material:
-			ret.append(self.material.to_string(format))
+			ret.append(self.material.to_string(format=format))
 		else:
 			if self.contour[time].data:
-				ret.append(self.contour[time].to_string(format))
+				ret.append(self.contour[time].to_string(format=format))
 		return '\n'.join(ret)
 	def tofile(self, filename, format = 'ascii'):
 		"""Save VTK data to file.
@@ -1978,7 +2105,7 @@ class fVtkData(pv.VtkData):
 		# first write material properties file
 		filename_int = ''.join(filename[:-4]+'_mat.vtk')
 		f = open(filename_int,'wb')
-		f.write(self.to_string(format,material=True))
+		f.write(self.to_string(format=format,material=True))
 		f.close()
 		written_files.append(filename_int)
 		
@@ -1991,12 +2118,12 @@ class fVtkData(pv.VtkData):
 				filename_int = filename
 			#print 'Creating file',`filename`
 			f = open(filename_int,'wb')
-			f.write(self.to_string(time,format))
+			f.write(self.to_string(time=time,format=format))
 			f.close()
 			written_files.append(filename_int)
 		return written_files
 class fvtk(object):
-	def __init__(self,parent,filename,contour,show_zones,diff,zscale):
+	def __init__(self,parent,filename,contour,diff,zscale,spatial_derivatives,time_derivatives):
 		self.parent = parent
 		self.path = fpath(parent = self)
 		self.path.filename = filename
@@ -2005,9 +2132,15 @@ class fvtk(object):
 		self.variables = []
 		self.materials = []
 		self.zones = []
-		self.show_zones = show_zones
 		self.diff = diff
+		self.spatial_derivatives = spatial_derivatives
+		self.time_derivatives = time_derivatives
 		self.zscale = zscale
+	def __getstate__(self):
+		return dict((k, getattr(self, k)) for k in self.__slots__)
+	def __setstate__(self, data_dict):
+		for (name, value) in data_dict.iteritems():
+			setattr(self, name, value)
 	def assemble(self):		
 		"""Assemble all information in pyvtk objects."""			
 		self.assemble_grid()		# add grid information
@@ -2025,7 +2158,13 @@ class fvtk(object):
 		cns = [[nd.index-1 for nd in el.nodes] for el in self.parent.grid.elemlist]
 		
 		# make grid
-		self.data = fVtkData(pv.UnstructuredGrid(nds,hexahedron=cns),'PyFEHM VTK model output')
+		if len(cns[0]) == 4:
+			self.data = fVtkData(fUnstructuredGrid(nds,tetra=cns),'PyFEHM VTK model output')
+		elif len(cns[0]) == 8:
+			self.data = fVtkData(fUnstructuredGrid(nds,hexahedron=cns),'PyFEHM VTK model output')
+		else:
+			print "ERROR: Number of connections in connectivity not recognized: "+str(len(cns[0]))
+			return
 		
 		# grid information
 		dat = np.array([nd.position for nd in self.parent.grid.nodelist])
@@ -2060,11 +2199,16 @@ class fvtk(object):
 		"""Assemble material properties in pyvtk objects."""
 		# permeabilities
 		perms = np.array([nd.permeability for nd in self.parent.grid.nodelist])
-		if np.mean(perms)>0.: perms = np.log10(perms)
-		
-		self.add_material('perm_x',perms[:,0])
-		self.add_material('perm_y',perms[:,1])
-		self.add_material('perm_z',perms[:,2])
+		if not all(v is None for v in perms):
+			if np.mean(perms)>0.: perms = np.log10(perms)
+			self.add_material('perm_x',perms[:,0])
+			self.add_material('perm_y',perms[:,1])
+			self.add_material('perm_z',perms[:,2])
+		else:
+			blank = [-1.e30 for nd in self.parent.grid.nodelist]
+			self.add_material('perm_x',blank)
+			self.add_material('perm_y',blank)
+			self.add_material('perm_z',blank)
 
 		props = np.array([[nd.density, nd.porosity, nd.specific_heat, nd.youngs_modulus,nd.poissons_ratio,nd.thermal_expansion,nd.pressure_coupling,nd.Ti,nd.Pi,nd.Si] 	for nd in self.parent.grid.nodelist])
 		names = ['density','porosity','specific_heat','youngs_modulus','poissons_ratio','thermal_expansion','pressure_coupling','Pi','Ti','Si']
@@ -2082,26 +2226,56 @@ class fvtk(object):
 		if self.diff: time0 = self.contour.times[0]
 		for time in self.contour.times:
 			do_lims = (time == self.contour.times[-1])
-			for var in self.contour.variables:
-				if time != self.contour.times[0] and var in ['x','y','z','n']: continue
+			for var in self.contour.variables+self.contour.user_variables:
+				# skip conditions
+				if var in self.contour.variables:
+					if time != self.contour.times[0] and var in ['x','y','z','n']: continue
+				else:
+					if var not in self.contour[time].keys(): continue
+					if self.diff:
+						if var not in self.contour[time0].keys(): continue
+				
+				# field for contour variable
 				if var not in self.variables: self.variables.append(var)
 				self.data.contour[time].append(pv.Scalars(self.contour[time][var],name=var,lookup_table='default'))
+				if var in ['x','y','z','n']: continue
+				if do_lims: self.__setattr__(var+'_lim',[np.min(self.contour[time][var]),np.max(self.contour[time][var])])
+				
+				# differences from initial value
 				if self.diff:
 					self.data.contour[time].append(pv.Scalars(self.contour[time][var]-self.contour[time0][var],name='diff_'+var,lookup_table='default'))
-				if do_lims: self.__setattr__(var+'_lim',[np.min(self.contour[time][var]),np.max(self.contour[time][var])])
-			for var in self.contour.user_variables:
-				if var not in self.variables: self.variables.append(var)
-				if var not in self.contour[time].keys(): continue
-				self.data.contour[time].append(pv.Scalars(self.contour[time][var],name=var,lookup_table='default'))
-				if self.diff:
-					if var not in self.contour[time0].keys(): continue
-					self.data.contour[time].append(pv.Scalars(self.contour[time][var]-self.contour[time0][var],name='diff_'+var,lookup_table='default'))
-				if do_lims: self.__setattr__(var+'_lim',[np.min(self.contour[time][var]),np.max(self.contour[time][var])])
+				# time derivatives
+				if self.time_derivatives:
+					# find position, determines type of differencing
+					ind = np.where(time==self.contour.times)[0][0]
+					if ind == 0: 
+						# forward difference
+						dt = self.contour.times[1]-time
+						f0 = self.contour[time][var]
+						f1 = self.contour[self.contour.times[1]][var]
+						dat = (f1-f0)/dt
+					elif ind == (len(self.contour.times)-1): 
+						# backward difference
+						dt = time-self.contour.times[-2]
+						f0 = self.contour[self.contour.times[-2]][var]
+						f1 = self.contour[time][var]
+						dat = (f1-f0)/dt
+					else:
+						# central difference
+						dt1 = time - self.contour.times[ind-1]
+						dt2 = self.contour.times[ind+1] - time
+						f0 = self.contour[self.contour.times[ind-1]][var]
+						f1 = self.contour[time][var]
+						f2 = self.contour[self.contour.times[ind+1]][var]
+						dat = -dt2/(dt1*(dt1+dt2))*f0 + (dt2-dt1)/(dt1*dt2)*f1 + dt1/(dt2*(dt1+dt2))*f2
+					self.data.contour[time].append(pv.Scalars(dat,name='d_'+var+'_dt',lookup_table='default'))
 	def write(self):	
 		"""Call to write out vtk files."""
 		if self.parent.work_dir: wd = self.parent.work_dir
 		else: wd = self.parent._path.absolute_to_file
-		fls = self.data.tofile(wd+slash+self.path.filename)
+		if wd is None: wd = ''
+		else: wd += os.sep
+		fls = self.data.tofile(wd+self.path.filename)
 		# save file names for later use
 		self.material_file = fls[0]
 		self.contour_files = []
@@ -2113,7 +2287,6 @@ class fvtk(object):
 		mat_vars = ['n','x','y','z','perm_x','perm_y','perm_z','porosity','density','cond_x','cond_y','cond_z']
 		if self.contour:
 			cont_vars = self.contour.variables
-		
 		# convert k* format to perm_*
 		if show == 'kx': show = 'perm_x'
 		elif show == 'ky': show = 'perm_y'
@@ -2298,8 +2471,9 @@ class fvtk(object):
 		
 		zones = []; cols = []
 		for zone,color in zip(self.zones,colors):
-			if self.show_zones == 'user':			
+			if self.show_zones == 'user':		
 				if ('XMIN' in zone) or ('XMAX' in zone) or ('YMIN' in zone) or ('YMAX' in zone) or ('ZMIN' in zone) or ('ZMAX' in zone): continue
+			elif self.show_zones == 'none': continue
 			zones.append(zone)
 			cols.append(color)
 		
@@ -2403,12 +2577,145 @@ class fvtk(object):
 					'model_rep.Visibility = 0',
 					'cont_rep.Visibility = 1',
 					]			
+		
+		################################### load in history output ###################################	
+		lns += ['xyview = CreateXYPlotView()']
+		lns += ['xyview.BottomAxisRange = [0.0, 5.0]']
+		lns += ['xyview.TopAxisRange = [0.0, 6.66]']
+		lns += ['xyview.ViewTime = 0.0']
+		lns += ['xyview.LeftAxisRange = [0.0, 10.0]']
+		lns += ['xyview.RightAxisRange = [0.0, 6.66]']
+		lns += ['']
+		if os.path.isfile(self.csv.filename):
+			lns += ['hout = CSVReader( FileName=[r\''+self.csv.filename+'\'] )']
+			lns += ['RenameSource("history_output",hout)']
+			
+			fp = open(self.csv.filename)
+			ln = fp.readline().rstrip()
+			fp.close()
+			headers = [lni for lni in ln.split(',')]
+			
+			# put variables in order to account for diff or time derivatives
+			vars = []
+			for variable in self.csv.history.variables:
+				vars.append(variable)
+				if self.csv.diff: vars.append('diff_'+variable)
+				#if self.time_derivatives: vars.append('d'+variable+'_dt')
+			for i,variable in enumerate(vars):
+				plot_title = variable+'_history'
+				lns += []
+				lns += [plot_title+' = PlotData()']
+				lns += ['RenameSource("'+plot_title+'",'+plot_title+')']
+				
+				lns += ['mr = Show()']
+				lns += ['mr = GetDisplayProperties('+plot_title+')']
+				lns += ['mr.XArrayName = \'time\'']
+				lns += ['mr.UseIndexForXAxis = 0']
+				lns += ['mr.SeriesColor = [\'time\', \'0\', \'0\', \'0\']']
+				lns += ['mr.AttributeType = \'Row Data\'']
+				switch_off = [header for header in headers if not header.strip().startswith(variable+':')]
+				ln = 'mr.SeriesVisibility = [\'vtkOriginalIndices\', \'0\', \'time\', \'0\''
+				for header in switch_off:
+					ln+=', \''+header+'\',\'0\''
+					
+				#lns += ['mr.SeriesVisibility = [\'vtkOriginalIndices\', \'0\', \'time\', \'0\']']
+				lns += [ln+']']
+				if i != (len(vars)-1):
+					lns += ['mr.Visibility = 0']
+		
+		lns += ['']
+		lns += ['AnimationScene1.ViewModules = [ RenderView1, SpreadSheetView1, XYChartView1 ]']
+		
+		lns += ['Render()']
+		
 		f.writelines('\n'.join(lns))
 		f.close()
-	def _get_filename(self): return self.path.absolute_to_file+slash+self.path.filename
+	def _get_filename(self): return self.path.absolute_to_file+os.sep+self.path.filename
 	filename = property(_get_filename) #: (**)
-
-def fdiff( in1, in2, format='diff', times=[], variables=[]):
+class fcsv(object):
+	def __init__(self,parent,filename,history,diff,time_derivatives):
+		self.parent = parent
+		self.path = fpath(parent = self)
+		self.path.filename = filename
+		self.data = None
+		self.history = history
+		self.diff = diff
+		self.time_derivatives = time_derivatives
+		if diff:
+			self.assemble_diff()
+		if time_derivatives:
+			self.assemble_time_derivatives()
+	def assemble_diff(self):
+		for variable in self.history.variables:
+			for node in self.history.nodes:
+				self.history.new_variable('diff_'+variable,node,self.history[variable][node]-self.history[variable][node][0])
+	def assemble_time_derivatives(self):
+		return
+		#for variable in self.history.variables:
+		#	for node in self.history.nodes:
+		#		data = self.history[variable][node]
+		#		time = self.history.times
+		#		self.history.new_variable('d'+variable+'_dt',node,dt)
+		#		
+		#			ind = np.where(time==self.contour.times)[0][0]
+		#			if ind == 0: 
+		#				# forward difference
+		#				dt = self.contour.times[1]-time
+		#				f0 = self.contour[time][var]
+		#				f1 = self.contour[self.contour.times[1]][var]
+		#				dat = (f1-f0)/dt
+		#			elif ind == (len(self.contour.times)-1): 
+		#				# backward difference
+		#				dt = time-self.contour.times[-2]
+		#				f0 = self.contour[self.contour.times[-2]][var]
+		#				f1 = self.contour[time][var]
+		#				dat = (f1-f0)/dt
+		#			else:
+		#				# central difference
+		#				dt1 = time - self.contour.times[ind-1]
+		#				dt2 = self.contour.times[ind+1] - time
+		#				f0 = self.contour[self.contour.times[ind-1]][var]
+		#				f1 = self.contour[time][var]
+		#				f2 = self.contour[self.contour.times[ind+1]][var]
+		#				dat = -dt2/(dt1*(dt1+dt2))*f0 + (dt2-dt1)/(dt1*dt2)*f1 + dt1/(dt2*(dt1+dt2))*f2
+		#			self.data.contour[time].append(pv.Scalars(dat,name='d_'+var+'_dt',lookup_table='default'))
+					
+	def write(self):	
+		"""Call to write out csv files."""
+		if self.parent.work_dir: wd = self.parent.work_dir
+		else: wd = self.parent._path.absolute_to_file
+		if wd is None: wd = ''
+		else: wd += os.sep
+		
+		# write one large .csv file for all variables, nodes
+		from string import join
+		fp = open(wd+self.path.filename,'w')
+		self.filename = wd+self.path.filename
+		# write headers
+		ln = '%16s,'%('time')
+		vars = []
+		for variable in self.history.variables:
+			vars.append(variable)
+			if self.diff: vars.append('diff_'+variable)
+			#if self.time_derivatives: vars.append('d'+variable+'_dt')
+		for variable in vars:
+			for node in self.history.nodes:		
+				var = variable
+				#if len(var)>6: var = var[:6]
+				ln += '%16s,'%(var+': nd '+str(node))
+		fp.write(ln[:-1]+'\n')
+		
+		# write row for each time
+		for i,time in enumerate(self.history.times): 		# each row is one time output
+			ln = '%16.8e,'%time
+			for variable in vars:
+				for node in self.history.nodes:			# each column is one node
+					ln += '%16.8e,'%self.history[variable][node][i]
+			ln = ln[:-1]+'\n'
+			fp.write(ln)
+		fp.close()		
+	
+def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes=[]):
 	'''Take the difference of two fpost objects
 	
 	:param in1: First fpost object
@@ -2421,13 +2728,18 @@ def fdiff( in1, in2, format='diff', times=[], variables=[]):
 	:type times: lst(fl64)
 	:param variables: Variables to diff
 	:type variables: lst(str)
+	:param components: Components to diff (foutput objects)
+	:type components: lst(str)
 	:returns: fpost object of same type as in1 and in2
 	'''
-
+	
+	# Copy in1 and in2 in case they get modified below
+	in1 = deepcopy(in1)
+	in2 = deepcopy(in2)
 	if type(in1) is not type(in2):
 		print "ERROR: fpost objects are not of the same type: "+str(type(in1))+" and "+str(type(in2))
 		return
-	if isinstance(in1, fcontour):
+	if isinstance(in1, fcontour) or isinstance(in1, fhistory) or 'foutput' in str(in1.__class__):
 		# Find common times
 		t = np.intersect1d(in1.times,in2.times)
 		if len(t) == 0:
@@ -2436,19 +2748,21 @@ def fdiff( in1, in2, format='diff', times=[], variables=[]):
 		if len(times) > 0:
 			times = np.intersect1d(times,t)
 			if len(times) == 0:
-				print "ERROR: provided times are not concident with fpost object times"
+				print "ERROR: provided times are not coincident with fpost object times"
 				return
 		else:
 			times = t
+			
+	if isinstance(in1, fcontour):
 		# Find common variables
 		v = np.intersect1d(in1.variables,in2.variables)
 		if len(v) == 0:
-			print "ERROR: fpost object times do not have any matching values"
+			print "ERROR: fcontour object variables do not have any matching values"
 			return
 		if len(variables) > 0:
 			variables = np.intersect1d(variables,v)
 			if len(variables) == 0:
-				print "ERROR: provided times are not concident with fpost object times"
+				print "ERROR: provided variables are not coincident with fcontour object variables"
 				return
 		else:
 			variables = v
@@ -2464,6 +2778,114 @@ def fdiff( in1, in2, format='diff', times=[], variables=[]):
 			elif format is 'percent':
 				out._data[t] = dict([(v,100*np.abs((in1[t][v] - in2[t][v])/in2[t][v])) for v in variables])
 		return out
+	
+	#Takes the difference of two fhistory objects.	
+	elif isinstance(in1, fhistory):
+		# Find common variables
+		v = np.intersect1d(in1.variables, in2.variables)		
+		if len(v) == 0:
+			print "ERROR: fhistory object variables do not have any matching values"
+			return
+		if len(variables) > 0:
+			variables = np.intersect1d(variables,v)
+			if len(variables) == 0:
+				print "ERROR: provided variables are not coincident with fhistory object variables"
+				return
+		else:
+			variables = v
+			
+		#Find common nodes.
+		n = np.intersect1d(in1.nodes, in2.nodes)
+		if len(n) == 0:
+			print "ERROR: fhistory object nodes do not have any matching values"
+			return
+		if len(nodes) > 0:
+			nodes = np.intersect1d(nodes,n)
+			if len(nodes) == 0:
+				print "ERROR: provided nodes are not coincident with fhistory object nodes"
+				return
+		else:
+			nodes = n
+		
+		#Set up the out object.
+		out = deepcopy(in1)
+		out._times = times
+		out._variables = variables
+		out._nodes = nodes
+		out._data = {}
+		
+		#Find the difference at each time index for a variable and node.
+		for v in variables:
+			for n in nodes:
+				i = 0
+				diff = []
+				while i < len(times):
+					if format is 'diff':
+						diff.append(in1[v][n][i]-in2[v][n][i]) 	
+					elif format is 'relative':
+						diff.append((in1[t][v] - in2[t][v])/np.abs(in2[t][v])) 
+					elif format is 'percent':
+						diff.append(100*np.abs((in1[t][v] - in2[t][v])/in2[t][v])) 	
+					i = i + 1
+				out._data[v] = dict([(n, diff)])
+				
+		#Return the difference.		
+		return out
+	  		
+	elif 'foutput' in str(in1.__class__):
+		# Find common components
+		c = np.intersect1d(in1.components,in2.components)
+		if len(c) == 0:
+			print "ERROR: foutput object components do not have any matching values"
+			return
+		if len(components) > 0:
+			components = np.intersect1d(components,c)
+			if len(components) == 0:
+				print "ERROR: provided components are not coincident with foutput object components"
+				return
+		else:
+			components = c		
+		out = deepcopy(in1)
+		out._times = times
+		out._node = {}
+		for tp in ['water','gas','tracer1','tracer2']:		
+			out._node[tp] = None
+		for cp in components:
+			if format is 'diff':
+				if len(variables):
+					out._node[cp] = dict([(n,dict([(v,np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v])) for v in in1._node[cp][n].keys() if v in variables])) for n in in1.nodes])
+				else:
+					out._node[cp] = dict([(n,dict([(v,np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v])) for v in in1._node[cp][n].keys()])) for n in in1.nodes])
+			elif format is 'relative':
+				if len(variables):
+					out._node[cp] = dict([(n,dict([(v,(np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v]))/np.abs(in2._node[cp][n][v])) for v in in1._node[cp][n].keys() if v in variables])) for n in in1.nodes])
+				else:
+					out._node[cp] = dict([(n,dict([(v,(np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v]))/np.abs(in2._node[cp][n][v])) for v in in1._node[cp][n].keys()])) for n in in1.nodes])
+			elif format is 'percent':
+				if len(variables):
+					out._node[cp] = dict([(n,dict([(v,100*np.abs((np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v]))/in2._node[cp][n][v])) for v in in1._node[cp][n].keys() if v in variables])) for n in in1.nodes])
+				else:
+					out._node[cp] = dict([(n,dict([(v,100*np.abs((np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v]))/in2._node[cp][n][v])) for v in in1._node[cp][n].keys()])) for n in in1.nodes])
+						
+		return out
+		
+def sort_tec_files(files):
+	# sort first by number, then by type
+	from string import join
+	for file in files:
+		if not file.endswith('.dat'): return files
+	paths = [join(file.split(os.sep)[:-1],os.sep) for file in files]
+	files = [file.split(os.sep)[-1] for file in files]
+	
+	times = []
+	for file in files: 
+		for type in ['_sca_node','_vec_node','_con_node']:
+			if type in file: times.append(float(file.split(type)[0].split('.')[-1]))
+	times = sorted(enumerate(times), key=lambda x: x[1])
+	
+	paths = [paths[ind] for ind,time in times]
+	files = [files[ind] for ind,time in times]
 
-
+	return [path+os.sep+file if path else file for path,file in zip(paths,files)]
+	
 	

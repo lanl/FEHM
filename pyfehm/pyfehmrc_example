@@ -47,11 +47,12 @@
 #	parental_cont 			& 	True
 
 # set this to the fehm executable to be used if no default assigned
-#	fehm_path 				&	c:\\users\\264485\\fehm\\source\\src\\fehm.exe
-#	lagrit_path				&	c:\\users\\264485\\python\\pyfehm\\lagrit_win.exe
+#	fehm_path 				&	c:\\path\\to\\fehm\\fehm.exe
+#	paraview_path			&	paraview.exe
+#	lagrit_path				&	c:\\path\\to\\lagrit\\lagrit_win.exe
 #	files 					&	[outp,hist,check]
-#	co2_interp_path 		& 	c:\\users\\264485\\python\\pyfehm\\co2_interp_table.txt
-#	co2_interp_path_2 		& 	/home/ddempsey/python/pyfehm/co2_interp_table.txt
+#	co2_interp_path 		& 	c:\\path\\to\\co2\\co2_interp_table.txt
+#	co2_interp_path_2 		& 	/alternate/path/to/co2/co2_interp_table.txt
 	
 # fdata booleans
 #	associate 				& 	True		# associate macro, zone information with nodes

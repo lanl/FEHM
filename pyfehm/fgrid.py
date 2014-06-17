@@ -38,11 +38,9 @@ except ImportError:
 from fpost import*
 from ftool import*
 
-dflt = fdflt()
+from itertools import izip
 
-WINDOWS = platform.system()=='Windows'
-if WINDOWS: slash = '\\'
-else: slash = '/'
+dflt = fdflt()
 
 node_props = ('kx','ky','kz','cond_x','cond_y','cond_z','density','specific_heat','porosity','thermal_expansion','pressure_coupling',
 'youngs_modulus','poissons_ratio')
@@ -80,13 +78,14 @@ def repair_grid(gridfilename):
 class fnode(object):				#Node object.
 	""" FEHM grid node object.
 	"""
-	__slots__ = ['_index','_position','_connections','_elements','_generator','_zone',
+	__slots__ = ['_index','_position','_connections','_elements','_generator','_zone','_connected_nodes',
 		'_permeability','_conductivity','_density','_specific_heat','_porosity','_youngs_modulus','_poissons_ratio','_thermal_expansion',
 		'_pressure_coupling','_Pi','_Ti','_Si','_S_co2gi','_S_co2li','_co2aqi','_strsi','_dispi','_P','_T','_S',
 		'_S_co2g','_S_co2l','_co2aq','_strs','_disp','_vol','_rlpmodel','_permmodel','_pormodel','_condmodel']
-	def __init__(self,index=None,position=None):		
+	def __init__(self,index,position):		
 		self._index = index			
 		self._position=position	
+		self._connected_nodes = []
 		self._connections = []	
 		self._elements = []	
 		self._generator = {}
@@ -121,7 +120,7 @@ class fnode(object):				#Node object.
 		self._permmodel = None
 		self._pormodel = None
 		self._condmodel = None
-	def __repr__(self): return 'nd'+str(self.index)
+	def __repr__(self): return 'nd'+str(self._index)
 	def __getstate__(self):
 		return dict((k, getattr(self, k)) for k in self.__slots__)
 	def __setstate__(self, data_dict):
@@ -209,11 +208,7 @@ class fnode(object):				#Node object.
 		print prntStr
 	what = property(_get_info)							#: Print to screen information about the node.
 	def _get_connected_nodes(self):
-		ndlist = []
-		for con in self.connections:
-			for nd in con.nodes:
-				if nd != self: ndlist.append(nd)
-		return ndlist
+		return self._connected_nodes
 	connected_nodes = property(_get_connected_nodes)		#: (*lst[fnode]*) List of node objects connected to this node. This information only available if full_connectivity=True passed to fgrid.read()
 	def _get_connections(self): return self._connections
 	connections = property(_get_connections)#: (*lst[fconn]*) List of connection objects of which the node is a member.
@@ -286,13 +281,16 @@ class fconn(object):				#Connection object.
 
 	A connection is associated with a distance between the two nodes.
 	"""
-	def __init__(self,nodes=[fnode(),fnode()]):
+	__slots__=['_nodes','_distance','_geom_coef']
+	def __init__(self,nodes):
 		self._nodes = nodes		
-		pos1 = self.nodes[0].position; pos2 = self.nodes[1].position
-		if pos1 == None and pos2 == None: self._distance = None
-		else: self._distance = np.sqrt((pos1[0]-pos2[0])**2+(pos1[1]-pos2[1])**2+(pos1[2]-pos2[2])**2)
 		self._geom_coef = 0.
-	def __repr__(self):	return 'n'+str(self.nodes[0].index)+':n'+str(self.nodes[1].index)	
+	def __repr__(self):	return 'n'+str(self._nodes[0]._index)+':n'+str(self._nodes[1]._index)	
+	def __getstate__(self):
+		return dict((k, getattr(self, k)) for k in self.__slots__)
+	def __setstate__(self, data_dict):
+		for (name, value) in data_dict.iteritems():
+			setattr(self, name, value)
 	def _get_distance(self): return self._distance
 	distance = property(_get_distance)	#: (*fl64*) Distance between the two connected nodes.
 	def _get_nodes(self): return self._nodes
@@ -304,6 +302,7 @@ class felem(object):				#Element object.
 	
 	A finite element is associated with an element centre and an element volume.
 	"""
+	__slots__=['_index','_nodes']
 	def __init__(self,index=None,nodes = []):
 		self._index = index			
 		self._nodes = nodes			
@@ -311,6 +310,11 @@ class felem(object):				#Element object.
 		retStr = 'el'+str(self.index)+': '
 		for nd in self.nodes: retStr+='nd'+str(nd.index)+', '
 		return retStr
+	def __getstate__(self):
+		return dict((k, getattr(self, k)) for k in self.__slots__)
+	def __setstate__(self, data_dict):
+		for (name, value) in data_dict.iteritems():
+			setattr(self, name, value)
 	def _get_index(self): return self._index
 	index = property(_get_index)#: (*int*) Integer number denoting the element.		
 	def _get_centre(self):
@@ -468,6 +472,8 @@ class fgrid(object):				#Grid object.
 	""" FEHM grid object.
 	
 	"""
+	__slots__ = ['_nodelist','_node','_connlist','_conn','_elemlist','_elem','_octree','_dimensions','_parent',
+		'_full_connectivity','_path','_stor','_pos_matrix']
 	def __init__(self,full_connectivity=True):
 		self._nodelist=[]			
 		self._node={}				
@@ -487,6 +493,11 @@ class fgrid(object):				#Grid object.
 			return 'no grid'
 		else:
 			return self.filename			#Print out details
+	def __getstate__(self):
+		return dict((k, getattr(self, k)) for k in self.__slots__)
+	def __setstate__(self, data_dict):
+		for (name, value) in data_dict.iteritems():
+			setattr(self, name, value)
 	def read(self,gridfilename,full_connectivity=True,octree=False,storfilename=None): 
 		"""Read data from an FEHM or AVS grid file. If an AVS grid is specified, PyFEHM will write out the corresponding FEHM grid file.
 
@@ -533,7 +544,7 @@ class fgrid(object):				#Grid object.
 			pyfehm_print('ERROR: Unrecognized grid format.')
 			
 		if octree: self.add_nodetree()
-		else: self._pos_matrix = np.array([nd.position for nd in self.nodelist])
+		else: self._pos_matrix = np.array([nd._position for nd in self._nodelist])
 		if self._parent: self._parent._add_boundary_zones()
 	def _read_fehm(self,storfilename=None): 		#Read in fehm meshfile for node,element data .
 		self._nodelist = []
@@ -545,9 +556,10 @@ class fgrid(object):				#Grid object.
 			
 		ln = infile.readline()
 		N = int(infile.readline())
+		self._nodelist = [None]*N
 		for i in range(N):
 			nd = infile.readline().strip().split()
-			new_node = fnode(index=int(nd[0]),position=np.array([float(nd[1]),float(nd[2]),float(nd[3])]))
+			new_node = fnode(int(nd[0]),np.array([float(nd[1]),float(nd[2]),float(nd[3])]))
 			self.add_node(new_node)	
 		
 		infile.readline()
@@ -555,11 +567,15 @@ class fgrid(object):				#Grid object.
 		N = infile.readline()
 		connectivity = int(N.strip().split()[0])
 		N = int(N.strip().split()[1])
-		for i in range(N):
-			el = [int(eli) for eli in infile.readline().strip().split()]
+		self._elemlist = [None]*N
+		
+		lns = infile.readlines()
+		
+		for i,ln in enumerate(lns[:N]):
+			el = [int(eli) for eli in ln.strip().split()]
 			
 			if self._full_connectivity:
-				new_elem = felem(index = el[0], nodes = [self.node[eli] for eli in el[1:]])
+				new_elem = felem(index = el[0], nodes = [self._nodelist[eli-1] for eli in el[1:]])
 				self.add_elem(new_elem)
 				if connectivity == 8:
 					nds1 = [el[1],el[1],el[1],el[7],el[7],el[7],el[4],el[4],el[6],el[6],el[2],el[5]]
@@ -570,38 +586,34 @@ class fgrid(object):				#Grid object.
 				elif connectivity == 3:
 					nds1 = [el[1],el[2],el[3]]
 					nds2 = [el[2],el[3],el[1]]
-				else:
-					pyfehm_print('ERROR: unrecognized connectivity')
-					return
-				if storfilename is None:
-					for nd1,nd2 in zip(nds1,nds2):
-						if nd1>nd2: ndi = nd2; nd2 = nd1; nd1 = ndi
-						nd1 = self.node[nd1]; nd2 = self.node[nd2]
-						new_conn = fconn(nodes = [nd1,nd2])
+				if storfilename is None:					
+					for ndi1,ndi2 in izip(nds1,nds2):					
+						# check if connection exists					
+						if ndi1>ndi2: ndi = ndi2; ndi2 = ndi1; ndi1 = ndi
+						nd1 = self._nodelist[ndi1-1]; nd2 = self._nodelist[ndi2-1]
+						if nd2 in nd1._connected_nodes: continue
 						
-						nd1inds = []
-						for con in nd1.connections:
-						    for nd in con.nodes: nd1inds.append(nd.index)
+						nd1._connected_nodes.append(nd2)
+						nd2._connected_nodes.append(nd1)
 						
-						if nd2.index in nd1inds: continue
+						self.add_conn(fconn([nd1,nd2]))
+						nd1._connections.append(self.connlist[-1])
+						nd2._connections.append(self.connlist[-1])
 						
-						self.add_conn(new_conn)
-						nd1.connections.append(new_conn)
-						nd2.connections.append(new_conn)
 				# associate element nodes with element
-				for nd in self.elemlist[-1].nodes: 
-					self._node[nd.index].elements.append(self.elemlist[-1])		
+				for nd in self._elemlist[i]._nodes: 
+					self._nodelist[nd._index-1]._elements.append(self._elemlist[i])		
 			else:
-				self._elemlist.append(el[1:])
-				self._elem[el[0]] = self.elemlist[-1]
+				self._elemlist[i] = el[1:]
+				self._elem[el[0]] = self.elemlist[i]
+		self._conn_dist()
 		infile.close()		
 		if not storfilename is None:
 			self._read_stor(storfilename)
-		if ((len(np.unique([nd.position[0] for nd in self.nodelist])) == 1) or
-			 (len(np.unique([nd.position[1] for nd in self.nodelist])) == 1) or
-			 (len(np.unique([nd.position[2] for nd in self.nodelist])) == 1)):
+		if ((len(np.unique([nd._position[0] for nd in self._nodelist])) == 1) or
+			 (len(np.unique([nd._position[1] for nd in self.nodelist])) == 1) or
+			 (len(np.unique([nd._position[2] for nd in self.nodelist])) == 1)):
 			self._dimensions = 2
-		else: self._dimensions = 3
 	def _read_stor(self,filename):
 		# Define function to parse values in file one at a time
 		self._full_connectivity = True
@@ -734,7 +746,7 @@ class fgrid(object):				#Grid object.
 			 (len(np.unique([nd.position[2] for nd in self.nodelist])) == 1)):
 			self._dimensions = 2
 		else: self._dimensions = 3
-	def write(self,filename=None,format='fehm', remove_duplicates = True, recalculate_coefficients=True):
+	def write(self,filename=None,format='fehm', remove_duplicates = True, recalculate_coefficients=True,compress_eps=1.e-5):
 		"""Write grid object to a grid file (FEHM, AVS STOR file formats supported). Stor file support only for orthogonal hexahedral grids.
 
 		:param filename: name of FEHM grid file to write to, including path specification, e.g. c:\\path\\file_out.inp
@@ -774,13 +786,13 @@ class fgrid(object):				#Grid object.
 			if self._parent.work_dir:
 				try: os.makedirs(self._path.absolute_to_workdir)
 				except:	pass
-				path = self._path.absolute_to_workdir+slash+temp_path.filename
+				path = self._path.absolute_to_workdir+os.sep+temp_path.filename
 				
 		outfile = open(path,'w')
 		
 		if format == 'fehm': self._write_fehm(outfile)
 		elif format == 'avs': self._write_avs(outfile)
-		elif format == 'stor': self._write_stor(outfile,remove_duplicates,recalculate_coefficients)
+		elif format == 'stor': self._write_stor(outfile,remove_duplicates,recalculate_coefficients,compress_eps=compress_eps)
 		else: pyfehm_print('ERROR: Unrecognized format '+format+'.');return
 		
 		if format == 'stor': 
@@ -841,7 +853,7 @@ class fgrid(object):				#Grid object.
 					outfile.write(str(nd)+'   ')
 				outfile.write('\n')
 		outfile.close()
-	def _write_stor(self,outfile,remove_duplicates,recalculate_coefficients):
+	def _write_stor(self,outfile,remove_duplicates,recalculate_coefficients,compress_eps=1.e-5):
 		# calculate volumes and geometric coefficients
 		if recalculate_coefficients:
 			for conn in self.connlist: conn._geom_coef = None
@@ -850,7 +862,7 @@ class fgrid(object):				#Grid object.
 				self._vorvol(nd) 		# calculate voronoi volume of node
 		
 		if remove_duplicates:
-			tol = 1.e-5
+			tol = compress_eps
 			indices1 = [] 			# for populating later
 			geom_coefs = [con.geom_coef for con in self.connlist] 	# all coefficients
 			gcU = np.ones((1,len(geom_coefs)))[0]*float('Inf')
@@ -1013,7 +1025,7 @@ class fgrid(object):				#Grid object.
 		:param tolerance: Relative tolerance below which connections will be removed (default = 1.e-8).
 		:type tolerance: fl64
 		:param keepcons: List of connections to keep in stor file ignoring tolerance.
-		:type keepcons: lst(connection keys)
+		:type keepcons: lst(connection keys) or lst(connections)
 		"""
 		
 		connlist = self.connlist # Save temporary connlist
@@ -1025,6 +1037,13 @@ class fgrid(object):				#Grid object.
 		pyfehm_print("Minimum coefficient value to keep:"+str(mincoef))
 		pyfehm_print("Number of connections (incl. zeros):"+str(len(geom_coefs)))
 		# Collect connections to keep (less than because coef are given negative sign)
+		for i,j in enumerate(keepcons):
+			if isinstance(j,fconn):
+				keepcons[i] = (j.nodes[0].index,j.nodes[1].index)
+			elif isinstance(j,tuple): pass
+			else:
+				print "ERROR: keepconns contains unknown connection type"
+				return
 		keepcoef = [c for c in connlist if (c.geom_coef < mincoef or (c.nodes[0].index,c.nodes[1].index) in keepcons)]
 		for con in keepcoef:
 				self.add_conn(con)
@@ -1033,7 +1052,7 @@ class fgrid(object):				#Grid object.
 			con.nodes[0].connections.append(con)
 			con.nodes[1].connections.append(con)
 		pyfehm_print("Number of connections (zeros removed):"+str(len(self.connlist)))
-	def make(self,gridfilename,x,y,z,full_connectivity=True,octree=False):
+	def make(self,gridfilename,x,y,z,full_connectivity=True,octree=False,radial=False):
 		""" Generates an orthogonal mesh for input node positions. 
 		
 		The mesh is constructed using the ``fgrid.``\ **fmake** object and an FEHM grid file is written for the mesh.
@@ -1048,6 +1067,8 @@ class fgrid(object):				#Grid object.
 		:type z: list[fl64]
 		:param full_connectivity: read element and connection data and construct corresponding objects. Defaults to False. Use if access to connectivity information will be useful.
 		:type full_connectivity: bool
+		:param radial: Creates a radial grid (ignores z coordinate)
+		:type radial: bool
 		"""
 		# ASSUMPTIONS FOR MAKE
 		# if no parent - interpret string literally
@@ -1063,10 +1084,10 @@ class fgrid(object):				#Grid object.
 		path = temp_path.full_path
 		if self._parent:
 			if self._parent.work_dir:
-				path = self._path.absolute_to_workdir+slash+temp_path.filename
+				path = self._path.absolute_to_workdir+os.sep+temp_path.filename
 		
 		fm = fmake(path,x,y,z)
-		fm.write()		
+		fm.write(radial=radial)		
 		self.read(path,full_connectivity,octree)
 	def lagrit_stor(self, grid = None, stor = None, exe = dflt.lagrit_path, overwrite = False):
 		"""Uses LaGriT to create a stor file for the simulation, this will be used in subsequent runs.
@@ -1179,7 +1200,7 @@ class fgrid(object):				#Grid object.
 			if self._parent.work_dir:
 				try: os.makedirs(self._path.absolute_to_workdir)
 				except:	pass
-				stor = self._path.absolute_to_workdir+slash+temp_path.filename
+				stor = self._path.absolute_to_workdir+os.sep+temp_path.filename
 		
 		shutil.move('lagrit_out.stor',stor)
 		if self._parent:
@@ -1210,15 +1231,21 @@ class fgrid(object):				#Grid object.
 			ndI = int(line[1])
 			ndV = float(line[i+1])
 			self.node[ndI]._vol = ndV
-	def add_node(self,node=fnode()):		#Add a node object.
-		self._nodelist.append(node)
-		self._node[node.index] = self._nodelist[-1]
-	def add_conn(self,conn=fconn()):		#Add a connection object.
+	def add_node(self,node):		#Add a node object.
+		self._nodelist[node._index-1] = node
+		self._node[node._index] = node
+	def add_conn(self,conn):		#Add a connection object.
 		self._connlist.append(conn)
-		self._conn[(conn.nodes[0].index,conn.nodes[1].index)] = self.connlist[-1]
-	def add_elem(self,elem=felem()):		#Add an element object.
-		self._elemlist.append(elem)
-		self._elem[elem.index] = self.elemlist[-1]
+		self._conn[(conn._nodes[0]._index,conn._nodes[1]._index)] = self._connlist[-1]
+	def _conn_dist(self):
+		if not self._full_connectivity: return
+		# populate distance attribute for each conn object
+		dist = np.array([c._nodes[0]._position-c._nodes[1]._position for c in self._connlist])
+		dist = np.sqrt((dist[:,0])**2+(dist[:,1])**2+(dist[:,2])**2)			
+		for i,c in enumerate(self.connlist): c._distance = dist[i]			
+	def add_elem(self,elem):		#Add an element object.
+		self._elemlist[elem._index-1] = elem
+		self._elem[elem._index] = elem
 	def node_nearest_point(self,pos = []):
 		"""Return node object nearest to position in space. Method uses octree structure for speed up if available.
 
@@ -1451,7 +1478,7 @@ class fgrid(object):				#Grid object.
 			if self._parent.work_dir and not os.path.isdir(self._parent.work_dir): 
 				os.makedirs(self._parent.work_dir)
 			if self._parent.work_dir:
-				plt.savefig(self._parent.work_dir+slash+save_fname, dpi=200, facecolor='w', edgecolor='w',orientation='portrait', 
+				plt.savefig(self._parent.work_dir+os.sep+save_fname, dpi=200, facecolor='w', edgecolor='w',orientation='portrait', 
 					format=extension,transparent=True, bbox_inches=None, pad_inches=0.1)
 			else:
 				plt.savefig(save_fname, dpi=200, facecolor='w', edgecolor='w',orientation='portrait', 
@@ -1462,6 +1489,26 @@ class fgrid(object):				#Grid object.
 		if pdf: 
 			os.system('epstopdf ' + save_fname)
 			os.remove(save_fname)			
+	def geom_coef_hist(self,log=True,plot=True):
+		""" Plot histogram of geometric coefficients, sign is changed so they are positive
+
+			:param log: Log10 scale coefficients if True, coefficients less than or equal to zero will not be included
+			:type log: bool
+			:param plot: Show plot if True
+			:type plot: bool
+			:returns: (lst(int),lst(fl64)) - tuple of count array and bin array
+		"""
+		conns = np.array([-c.geom_coef for c in self.connlist])
+		if log: 
+			conns = conns[np.where(conns!=0)[0]]
+			conns = np.log10(conns)
+			plt.xlabel('Log10(geom_coef)')
+		else:
+			plt.xlabel('geom_coef')
+		h = plt.hist(conns)
+		plt.ylabel('Count')
+		plt.show()
+		return h
 	def add_nodetree(self,repair=False):
 		""" Constuct octree for node positions. Call to update if changes made to grid.
 		"""
@@ -1575,17 +1622,17 @@ class fgrid(object):				#Grid object.
 	connlist = property(_get_connlist)#: (*lst[fconn]*) List of all connection objects in the grid.
 	def _get_dimensions(self): return self._dimensions
 	dimensions = property(_get_dimensions) #: (*int*) Dimensions of the grid.
-	def get_xmin(self): return np.min([nd.position[0] for nd in self.nodelist])
+	def get_xmin(self): return np.min([nd._position[0] for nd in self._nodelist])
 	xmin = property(get_xmin) 				#: Minimum x-coordinate for all nodes.
-	def get_xmax(self): return np.max([nd.position[0] for nd in self.nodelist])
+	def get_xmax(self): return np.max([nd._position[0] for nd in self._nodelist])
 	xmax = property(get_xmax)				#: Maximum x-coordinate for all nodes.
-	def get_ymin(self): return np.min([nd.position[1] for nd in self.nodelist])
+	def get_ymin(self): return np.min([nd._position[1] for nd in self._nodelist])
 	ymin = property(get_ymin)				#: Minimum y-coordinate for all nodes.
-	def get_ymax(self): return np.max([nd.position[1] for nd in self.nodelist])
+	def get_ymax(self): return np.max([nd._position[1] for nd in self._nodelist])
 	ymax = property(get_ymax)				#: Maximum y-coordinate for all nodes.
-	def get_zmin(self): return np.min([nd.position[2] for nd in self.nodelist])
+	def get_zmin(self): return np.min([nd._position[2] for nd in self._nodelist])
 	zmin = property(get_zmin)				#: Minimum z-coordinate for all nodes.
-	def get_zmax(self): return np.max([nd.position[2] for nd in self.nodelist])
+	def get_zmax(self): return np.max([nd._position[2] for nd in self._nodelist])
 	zmax = property(get_zmax)				#: Maximum z-coordinate for all nodes.
 	def get_node_number(self): return len(self.nodelist)
 	number_nodes = property(get_node_number)#: Number of nodes in grid.
@@ -1615,7 +1662,7 @@ class fmake(object): 				#Rectilinear grid constructor.
 		self._dimension = None
 		self._meshname = ''
 		if meshname: self._meshname = meshname
-	def write(self,meshname=''):
+	def write(self,meshname='',radial=False):
 		"""Write out the grid file.
 		
 		:param meshname: Name of the grid file.
@@ -1643,19 +1690,11 @@ class fmake(object): 				#Rectilinear grid constructor.
 			outfile.write('\n')
 		outfile.write('\t0\n')
 		outfile.write('elem\n')
-		#if self._full_connectivity:
-		#	outfile.write(str(len(self.elemlist[0].nodes))+' '+str(len(self.elemlist))+'\n')		
-		#	for el in self.elemlist:
-		#		outfile.write(str(int(el.index))+'   ')
-		#		for nd in el.nodes:
-		#			outfile.write(str(nd.index)+'   ')
-		#		outfile.write('\n')
-		#else:
 		outfile.write(str(len(self.elemlist[0]))+' '+str(len(self.elemlist))+'\n')		
 		for i,el in enumerate(self.elemlist):
 			outfile.write(str(i+1)+'   ')
 			for nd in el:
-				outfile.write(str(nd.index)+'   ')
+				outfile.write(str(nd._index)+'   ')
 			outfile.write('\n')
 		outfile.write('\nstop\n')
 		outfile.close()
@@ -1663,15 +1702,37 @@ class fmake(object): 				#Rectilinear grid constructor.
 		"""Generate grid node and element objects corresponding to x y and z seeds.
 		"""
 		# first determine dimension of grid
-		xF = self.x != None; yF = self.y != None; zF = self.z != None
+		xF = len(self.x) > 1; yF = len(self.y) > 1; zF = len(self.z) > 1
 		if xF and yF and zF: self.dimension = 3
 		elif (xF and yF and not zF) or (xF and zF and not yF) or (zF and yF and not xF): self.dimension = 2
 		else: 
 			pyfehm_print('ERROR: not enough dimensions specified')
 			return
 		if self.dimension == 2: 
-			pyfehm_print('ERROR: two dimensional grids not supported')
-			return
+			# create nodes
+			self._nodelist = []
+			ind = 1
+			self._z = 0.
+			self._x = list(np.sort(self._x))
+			self._y = list(np.sort(self._y))
+			for yi in self._y:
+				for xi in self._x:
+					self._nodelist.append(fnode(index=ind,position=[xi,yi,0.]))
+					ind +=1
+			
+			# create elements
+			self._elemlist = []
+			ind = 1
+			xL = len(self._x); yL = len(self._y)
+			for j in range(1,len(self._y)):
+				for k in range(1,len(self._x)):
+					nodes=[
+						self._nodelist[(j-1)*xL + k-1],
+						self._nodelist[(j-1)*xL + k],
+						self._nodelist[j*xL + k],
+						self._nodelist[j*xL + k-1],
+						]
+					self._elemlist.append(nodes)
 		if self.dimension == 3:
 			# create nodes
 			self._nodelist = []
@@ -1702,10 +1763,6 @@ class fmake(object): 				#Rectilinear grid constructor.
 							self._nodelist[(i-1)*xL*yL + j*xL + k],
 							self._nodelist[(i-1)*xL*yL + j*xL + k-1],
 							]
-						#if self._full_connectivity:
-						#	self._elemlist.append(felem(index=ind,nodes=nodes))
-						#	ind +=1
-						#else:
 						self._elemlist.append(nodes)
 	def _get_x(self): return self._x
 	def _set_x(self,value): self._x = value

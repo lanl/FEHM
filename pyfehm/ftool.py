@@ -259,11 +259,17 @@ def pyfehm_print(s):
 #------------------------------ FUNCTIONS AND CLASSES FOR INTERNAL USE -------------------------------
 #-----------------------------------------------------------------------------------------------------
 class fpath(object):
+	__slots__ = ['_filename','absolute_to_file','absolute_to_workdir','parent']
 	def __init__(self,filename = None,work_dir = None,parent = None):
 		self._filename = filename
 		self.absolute_to_file = None		# location where originally read DOES NOT CHANGE
 		self.absolute_to_workdir = None	# working directory CAN CHANGE
 		self.parent = parent
+	def __getstate__(self):
+		return dict((k, getattr(self, k)) for k in self.__slots__)
+	def __setstate__(self, data_dict):
+		for (name, value) in data_dict.iteritems():
+			setattr(self, name, value)
 	def update(self, wd):
 		'''called when work_dir is updated'''		
 		if wd == None: 
@@ -314,7 +320,9 @@ def dict_key_check(dict,keys,dict_name):
 	returnFlag = False
 	ws = 'Key error in '+dict_name+'.\n'
 	for k in dict.keys():
-		if k not in keys:
+		if k in ['sdepth','gdepth']:
+			continue
+		elif k not in keys:
 			ws += 'No such key \''+k+'\''
 			if len(k)>2:
 				matches = difflib.get_close_matches(k,keys)
@@ -335,6 +343,9 @@ def os_path(path):
 	if WINDOWS: path = path.replace('/','\\')
 	else: path = path.replace('\\','/')
 	return path
+def float0(f):
+	try: return float(f)
+	except: return 0.
 def _title_string(s,n): 						#prepends headers to sections of FEHM input file
 	if not n: return
 	ws = '# '
@@ -441,4 +452,8 @@ def make_directory(fname):
 	dirname = ''
 	for f in fname: dirname += f
 	if not os.path.isdir(dirname): os.system('mkdir '+dirname)
+def valgen(fhandle):
+	for line in fhandle:
+		for v in line.split():
+			yield v
 	

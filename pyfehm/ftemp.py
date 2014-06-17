@@ -28,6 +28,9 @@ from fdata import*
 from ftool import*
 from matplotlib import pyplot as plt
 from fvars import*
+from fdflt import*
+
+dflt = fdflt()
 
 #-----------------------------------------------------------------------------------------------------
 #------------------------------------- FEHM MODEL TEMPLATES ------------------------------------------
@@ -82,8 +85,8 @@ class wellbore_model(fdata):
 	
 	:param inputfilename: Name of input file.
 	:type inputfilename: str
-	:param meshfilename: Name of grid file.
-	:type meshfilename: str
+	:param gridfilename: Name of grid file.
+	:type gridfilename: str
 	
 	:param pipe_density: Density of steel pipe.
 	:type pipe_density: fl64
@@ -101,9 +104,6 @@ class wellbore_model(fdata):
 	:type reservoir_permeability: fl64, lst[fl64]
 	:param wellbore_permeability: Wellbore permeability, surrogate representing rapid transport down well. Set to high value.
 	:type wellbore_permeability: fl64, lst[fl64]
-	
-	:param gridder_path: Path to gridder.exe, grid construction tool.
-	:type gridder_path: str
 	'''
 	def __init__(self,
 		xL, zL, wellbore_radius, wellbore_xdiv, pipe_width, pipe_xdiv, casing_width, casing_xdiv, 
@@ -115,19 +115,19 @@ class wellbore_model(fdata):
 		
 		simulation_time,
 		
-		inputfilename='', meshfilename='', 
+		inputfilename='', gridfilename='', work_dir = None,
 		
 		pipe_density = 2500., pipe_specific_heat=1.e3, pipe_conductivity = 2., 
 		casing_density = 2500., casing_specific_heat=1.e3, casing_conductivity = 0.5, 
 		reservoir_density = 2500., reservoir_specific_heat=1.e3, reservoir_conductivity = 1., reservoir_porosity = 0.1, reservoir_permeability = 1.e-15, 
 		wellbore_permeability=1.e-4,
 		
-		surface_pressure=0.1, surface_temperature=25.,
-		
-		gridder_path=''):
+		surface_pressure=0.1, surface_temperature=25.
+		):
 		
 		# 1. inherit properties and initialise
-		super(wellbore_model,self).__init__(filename='',meshfilename='',inconfilename='',sticky_zones=True)
+		super(wellbore_model,self).__init__(filename='',gridfilename='',inconfilename='',sticky_zones=dflt.sticky_zones,associate=dflt.associate,work_dir = None,
+			full_connectivity=dflt.full_connectivity,skip=[],keep_unknown=dflt.keep_unknown)
 		self.nobr = True
 		
 		self._injection_temperature = injection_temperature
@@ -159,26 +159,28 @@ class wellbore_model(fdata):
 		self._remember_inittemp = None
 		
 		if inputfilename: self._filename = inputfilename
-		if meshfilename: self.grid._filename = meshfilename; self.meshfilename =meshfilename
+		if gridfilename: self.grid._path.filename = gridfilename
+		
+		self.work_dir = work_dir
 				
 		# 2. create a grid
 		if xL == 0 or zL == 0: print 'Error: grid dimensions must be non-zero'; return
 		if wellbore_radius+casing_width+pipe_width>xL: print 'Error: No room for reservoir rock.'; return
 		#if (abs(feedzone_depth)+feedzone_width/2)>abs(zL): print 'Error: model not deep enough to include feedzone.'; return
 		
-		if meshfilename: meshname = meshfilename
+		if gridfilename: meshname = gridfilename
 		elif inputfilename: meshname = inputfilename.split('.')[0]+'grid'
 		else: meshname = 'wellbore.grid'
 		zL = abs(zL); xL = abs(xL)
 		reservoir_width = xL - wellbore_radius - pipe_width - casing_width
-		gm = gmake(meshname = meshname,dimension=2,xmin=0,xmax=xL,ymin=-zL,ymax=0,
-			xprop=[wellbore_radius/xL,pipe_width/xL,casing_width/xL,reservoir_width/xL],
-			yprop=[1],
-			xdiv=[wellbore_xdiv,pipe_xdiv,casing_xdiv,reservoir_xdiv],ydiv=zdiv)
-		#self.grid.make(meshfilename,x,y,z)
-		if gridder_path: gm.run(executable=gridder_path)
-		else: gm.run()
-		self.grid.read(meshname)
+		
+		x = (list(np.linspace(0,wellbore_radius,wellbore_xdiv))+
+			list(np.linspace(wellbore_radius,wellbore_radius+pipe_width,pipe_xdiv))[1:]+
+			list(np.linspace(wellbore_radius+pipe_width,wellbore_radius+pipe_width+casing_width,casing_xdiv))[1:]+
+			list(np.linspace(wellbore_radius+pipe_width+casing_width,xL,reservoir_xdiv))[1:])
+		z = np.linspace(-zL,0,zdiv)
+		
+		self.grid.make(meshname,x=x,y=z,z=[0.],radial=True)
 		
 		# 3. create zones
 		x0,x1 = self.grid.xmin,self.grid.xmax
@@ -284,15 +286,11 @@ class wellbore_model(fdata):
 		# 9. assign history and contour output
 		self.hist.variables.append(['pressure','temperature','flow'])
 		self.hist.timestep_interval=1
-		self.hist.type='tec'
+		self.hist.format='tec'
 		self.hist.time_interval=1.e20
 		self.hist.nodelist = self.zone['wellbore'].nodelist
 
 		self.cont.variables.append(['temperature','pressure','xyz','liquid'])
-		self.cont.timestep_interval=1.e30
-		self.cont.type='surf'
-		self.cont.time_interval=1.e30
-		self.cont.file_tag='time'
 	def _set_reservoir_temperature(self):
 		if isinstance(self._initial_temperature,str):
 			if not os.path.isfile(self._initial_temperature): print 'ERROR: '+self._initial_temperature+' does not exist.'; return
@@ -362,13 +360,20 @@ class wellbore_model(fdata):
 		:type combineString: str
 		'''
 		# read in contour data
-		if self.cont.type == 'surf' and self.cont.file_tag == 'time':
-			cont = fcontour(self.files.root+'.*_days_sca_node.csv',latest=True)
+		if self.cont.format == 'surf':
+			if self.work_dir:
+				cont = fcontour(self.work_dir+os.sep+self.files.root+'.*_days_sca_node.csv',latest=True)
+			else:
+				cont = fcontour(self.files.root+'.*_days_sca_node.csv',latest=True)
 		# read in history data
-		if self.hist.type == 'tec':
-			hist = fhistory(self.files.root+'_*_his.dat')
+		if self.hist.format == 'tec':
+			if self.work_dir:
+				hist = fhistory(self.work_dir+os.sep+self.files.root+'_*_his.dat')
+			else:
+				hist = fhistory(self.files.root+'_*_his.dat')
 		
 		if pdf: 
+			if self.work_dir: pdf = self.work_dir+os.sep+pdf
 			ext = 'eps'
 			mp = multi_pdf(save=pdf)
 			mp.combineString = combineString
@@ -385,7 +390,7 @@ class wellbore_model(fdata):
 			scale = 1.
 			title = 'temperature / $^o$C'
 			if imperial_units: scale = [9/5.,+32.]; title = 'temperature / $^o$F'
-			cont.slice_plot_fill(variable = 'T',save=self.files.root+'_temperature.'+ext,cbar = True,
+			cont.slice_plot(variable = 'T',save=self.files.root+'_temperature.'+ext,cbar = True,
 				ylabel='z / m',title = title,xlims = xlims,
 				ylims = ylims,divisions=Tslice_divisions,method=Tslice_method,
 				equal_axes = eqa,scale = scale)			
@@ -401,7 +406,7 @@ class wellbore_model(fdata):
 			scale = 1.
 			title = 'pressure / MPa'
 			if imperial_units: scale = 145.05; title = 'pressure / psi'
-			cont.slice_plot_fill(variable = 'P',save=self.files.root+'_pressure.'+ext,cbar = True,
+			cont.slice_plot(variable = 'P',save=self.files.root+'_pressure.'+ext,cbar = True,
 				ylabel='z / m',title = title,xlims = xlims,
 				ylims = ylims,divisions=Pslice_divisions,method=Pslice_method,
 				equal_axes = eqa,scale=scale)			
@@ -429,7 +434,10 @@ class wellbore_model(fdata):
 			
 			# write out text 
 			if write_out:
-				of = open(self.files.root+'_DH_temp.dat','w')
+				if self.work_dir:
+					of = open(self.work_dir+os.sep+self.files.root+'_DH_temp.dat','w')
+				else:
+					of = open(self.files.root+'_DH_temp.dat','w')
 				t = hist.times
 				T = hist['T'][nd.index]
 				for ti,Ti in zip(t,T):
@@ -598,8 +606,12 @@ class wellbore_model(fdata):
 			
 			# write out text 
 			if write_out:
-				of = open(self.files.root+'_DH_dens_corr.dat','w')
-				of2 = open(self.files.root+'_DH_pres.dat','w')
+				if self.work_dir:
+					of = open(self.work_dir+os.sep+self.files.root+'_DH_dens_corr.dat','w')
+					of2 = open(self.work_dir+os.sep+self.files.root+'_DH_pres.dat','w')
+				else:
+					of = open(self.files.root+'_DH_dens_corr.dat','w')
+					of2 = open(self.files.root+'_DH_pres.dat','w')
 				t = hist.times
 				for ti,dp in zip(t,dP):
 					of.write(str(ti)+','+str(dp)+'\n')
