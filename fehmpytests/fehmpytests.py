@@ -16,7 +16,7 @@ from glob import glob
 __unittest = True # Suppresses tracebacks
 
 class Tests(unittest.TestCase):
-
+    """ """
     # TESTS ######################################################### 
 
     def saltvcon(self):
@@ -185,9 +185,32 @@ class Tests(unittest.TestCase):
         os.chdir(self.maindir)
         
     def test_saltvcon(self):
-        """
-        Tests that function calculates relatively correct Kx values in water. 
-        Information about the function can be found in the folder 'information'.
+        """ 
+        Salt variable conductivity
+
+        Modification: new Dec 19 2013 dharp@lanl.gov
+        Modification: updated to use f_dif function Feb 6 2014
+
+        This function tests the saltvcon macro which calculates thermal
+        conductivity of crushed and intact salt.
+
+        Intact salt:
+        kxi = k_{t-300}(300/T)^1.14
+        Munson et al. (1990) Overtest for Simulate Defense High-Level
+            Waste (Room B): In Situ Data Report. WIPP. Sandia National
+            Laboratories, SAND89-2671
+
+        Crushed salt:
+        Thermal conductivity of crushed salt from Asse mine
+        kx_asse = -270*phi^4+370*phi^3-136*phi^2+1.5*phi+5  
+        Bechtold et al. (2004) Backfilling and sealing of underground
+            respositories for radioactive waste in salt (BAMBUS II
+            project), EUR 20621, ISBN 92-894-7767-9
+        kx = (k_{t-300}/kx_asse)*(300/T)^1.14
+        if kx is less then 1.e-6, set to 1.e-6
+
+        The excel spreadsheet in /information/saltvcon.xlsx contains the
+        associated calculations. 
         """
         
         arguments = {}
@@ -294,7 +317,9 @@ class Tests(unittest.TestCase):
     # UTILITIES ######################################################
     
     def _test_case(self, name, parameters={}):
-        """ General Test Case 
+        """ 
+        General Test Case
+         
         Should be able to test any test case with the following folder set-up:
             test-case-name: [compare, input, subcase-N1, subcase-N2, etc.],
         where compare contains data known to be correct, input contains the
@@ -303,16 +328,25 @@ class Tests(unittest.TestCase):
         Normally tests all values using a relative difference that must be less 
         than 1.e-4, but these values can be set by passing a dictionary with 
         keys variables, times, nodes, components and/or format assigned to the 
-        new values you would like to use instead. """ 
+        new values you would like to use instead. 
+        """ 
          
         os.chdir(name)
         
-        #Search for folders with 'subcase-' and extract subcase name.
-        filenames = glob('subcase-*')
-        subcases = []
+        #Search for fehmn control files and extract subcases.
+        filenames = glob('input/control/*.files')
+        subcases  = []
         for filename in filenames:
-            subcases.append(re.sub('subcase-', '', filename))
-  
+            subcase = re.sub('input/control/', '', filename)
+            subcase = re.sub('.files', '', subcase)
+            
+            #File named 'fehmn.files' to be used for tests with single case.
+            if subcase != 'fehmn':
+                subcases.append(subcase)
+            else:
+                subcases = ['']
+                break
+                
         try:
             #Test the new files generated with each subcase.
             for subcase in subcases:
@@ -396,7 +430,7 @@ class Tests(unittest.TestCase):
             	    
         #Choose if testing output files.
         elif '.out' in filetype:
-            #If no prespecified componets, grab them from f_dif.
+            #If no pre-specified componets, grab them from f_dif.
             if len(components) == 0:
                 components = f_dif.components
                 
@@ -448,7 +482,12 @@ class Tests(unittest.TestCase):
             :param filesfile: name of fehm files file
             :type filesfile: str """
         
-        filesfile = 'subcase-'+subcase+'/fehmn.files'
+        #Find the control file for the test-case or for the subcase. 
+        if subcase == '':
+            filesfile = 'input/control/fehmn.files'
+        else:
+            filesfile = 'input/control/'+subcase+'.files'
+            
         call(exe+' '+filesfile, shell=True, stdout=PIPE)
         outfile = None
         errfile = 'fehmn.err'
