@@ -1,3 +1,17 @@
+#***********************************************************************
+# Copyright 2014 Los Alamos National Security, LLC All rights reserved
+# Unless otherwise indicated, this information has been authored by an
+# employee or employees of the Los Alamos National Security, LLC (LANS),
+# operator of the Los Alamos National Laboratory under Contract No.
+# DE-AC52-06NA25396 with the U.S. Department of Energy. The U.S.
+# Government has rights to use, reproduce, and distribute this
+# information. The public may copy and use this information without
+# charge, provided that this  Notice and any statement of authorship are
+# reproduced on all copies. Neither the Government nor LANS makes any
+# warranty, express or  implied, or assumes any liability or
+# responsibility for the use of this information.      
+#***********************************************************************
+
 import unittest
 import os
 import sys
@@ -13,204 +27,55 @@ except ImportError as err:
     os._exit(0)
 from glob import glob
 
-__unittest = True # Suppresses tracebacks
+#Suppresses tracebacks
+__unittest = True 
+
 
 class Tests(unittest.TestCase):
-    """ """
+    """
+    Represents a FEHM test-case. 
+    
+    Initialize with the name of the test-case folder as a string argument.
+    Example: test_case = Tests('saltvcon')
+    
+    To add the test-case to a suite, initialize a suite object, and call
+    addTest() with the test-case as an argument.
+    Example: suite = unittest.TestSuite()
+             suite.addTest(test_case)
+              
+    Authors: Dylan Harp, Mark Lange
+    Updated: June 2014 
+    """    
+    
     # TESTS ######################################################### 
-
-    def saltvcon(self):
-        ''' Salt variable conductivity
-
-            Modification: new Dec 19 2013 dharp@lanl.gov
-            Modification: updated to use f_dif function Feb 6 2014
-
-            This function tests the saltvcon macro which calculates thermal
-            conductivity of crushed and intact salt.
-
-            Intact salt:
-            kxi = k_{t-300}(300/T)^1.14
-            Munson et al. (1990) Overtest for Simulate Defense High-Level
-                Waste (Room B): In Situ Data Report. WIPP. Sandia National
-                Laboratories, SAND89-2671
-
-            Crushed salt:
-            Thermal conductivity of crushed salt from Asse mine
-            kx_asse = -270*phi^4+370*phi^3-136*phi^2+1.5*phi+5  
-            Bechtold et al. (2004) Backfilling and sealing of underground
-                respositories for radioactive waste in salt (BAMBUS II
-                project), EUR 20621, ISBN 92-894-7767-9
-            kx = (k_{t-300}/kx_asse)*(300/T)^1.14
-            if kx is less then 1.e-6, set to 1.e-6
-
-            The excel spreadsheet in ./saltvcon/saltvcon.xlsx contains the
-            associated calculations. '''
-            
-        # Relative error theshold
-        maxerr = 1.e-4
-           
-        # Change directory to test directory
-        os.chdir('saltvcon')
-        
-        # Read in comparison output file
-        f_old = foutput('intact-compare.out')
-        
-        # Run intact salt model
-        self.run_fehm('intact.files')
-        
-        # Read in simulation output file
-        f_new = foutput('intact.out')
-        
-        #Calculate the difference between the new and the old data.
-        f_dif = fdiff(f_new,f_old,components=['water'],variables=['Kx'],format='relative')
-        
-        for n in f_dif.nodes:
-            self.assertTrue(f_dif.node['water'][n]['Kx'][0]<maxerr, '\nIncorrect intact salt thermal conductivity for node '+str(n)\
-                                                                   +'\nRelative error: '+str(f_dif.node['water'][n]['Kx'][0])+\
-                                                                    ', Threshold: '+str(maxerr)+'\nExpected='+\
-                                                                    str(f_old.node['water'][n]['Kx'][0])+' Simulated='+\
-                                                                    str(f_new.node['water'][n]['Kx'][0]))
-                                                                                             
-        del f_old, f_new, f_dif
-
-        # Read in comparison output file
-        f_old = foutput('crushed-compare.out')
-        
-        # Run intact salt model
-        self.run_fehm('crushed.files')
-        
-        # Read in simulation output file
-        f_new = foutput('crushed.out')
-        
-        #Calculate the difference between the new and the old data.
-        f_dif = fdiff(f_new,f_old,components=['water'],variables=['Kx'],format='relative')
-        
-        for n in f_dif.nodes:
-            self.assertTrue(f_dif.node['water'][n]['Kx'][0]<maxerr, '\nIncorrect intact salt thermal conductivity for node '+str(n)\
-                                                                                             +'\nRelative error: '+str(f_dif.node['water'][n]['Kx'][0])+\
-                                                                                             ', Threshold: '+str(maxerr)+'\nExpected='+\
-                                                                                             str(f_old.node['water'][n]['Kx'][0])+' Simulated='\
-                                                                                             +str(f_new.node['water'][n]['Kx'][0]))
-                                                                                             
-        # Remove files
-        self.cleanup(['nop.temp','fehmn.err','*.avs*','*_head','intact.out','crushed.out'])
-        
-        # Return to main directory
-        os.chdir(self.maindir)
-
-    def dissolution(self):
-        ''' Dissolution
-
-            Modification: new Jan 7 2014 dharp@lanl.gov
-            Modification: 
-
-            A one-dimensional transport simulation of calcite (CaC03(s)) dissolution is
-            tested. Profiles of concentration versus reactor length, at selected times,
-            will be compared against the analytical solution.
-
-            Details of this test are described in the FEHM V2.21 Validation Test Plan
-            on pages 93-95 
-            (STN: 10086-2.21-00, Rev.No. 00, Document ID: 10086-VTP-2.21-00, August 2003) 
-            
-        '''
-             
-        # Relative error theshold
-        maxerr = 1.e-4
-        # Test directory name
-        dir = 'dissolution'
-        # Change directory to test directory
-        os.chdir(dir)
-
-        # Read in comparison files
-        f_old = fcontour('compare.*_con_node.csv')
-
-        # Read in new output files
-        self.run_fehm()
-        f_new = fcontour('dissolution.*_con_node.csv')
-
-        # Diff new and old files
-        f_dif = fdiff(f_new,f_old,variables=['Np[aq] (Moles/kg H20)'])
-
-        # Test for correct concentrations
-        for t in f_dif.times:
-            self.assertTrue(f_dif[t]['Np[aq] (Moles/kg H20)'].all()<maxerr, '\nIncorrect concentration at time '+str(t))
-            
-        # Remove created files
-        self.cleanup(['nop.temp','fehmn.err','dissolution*.csv','*.avs_log','*geo','*.out','*.trc','*.his','*_head'])
-        os.chdir(self.maindir)
-
-    def salt_perm_poro(self):
-        ''' Salt perm-poro function
-
-            Modification: new Jan 29 2014 dharp@lanl.gov
-            Modification: 
-
-            The porosity-permeability function for compacted salt from Cinar et 
-            at. (2006) is tested using a six node problem with porosities from 
-            0.01 to 0.2. The excel spreadsheet in 
-            ./salt_perm_poro/salt-perm-poro.xlsx contains calculations of the 
-            perm-poro function.
-
-            Cinar, Y, G Pusch and V Reitenbach (2006) Petrophysical and 
-            capillary properties of compacted salt. Transport in Porous Media. 
-            64, p. 199-228, doi: 10.1007/s11242-005-2848-1 '''
-        
-        cwd = os.getcwd()
-        
-        # Relative error theshold
-        maxerr = 1.e-4
-        
-        # Test directory name
-        dir = 'salt_perm_poro'
-        
-        # Change directory to test directory
-        os.chdir(dir)
-        # Read in comparison files
-        f_old = fcontour('compare.00001_sca_node.csv')
-        
-        # Read in new output files
-        self.run_fehm()
-        f_new = fcontour('run.00001_sca_node.csv')
-        
-        # Diff new and old files
-        f_dif = fdiff(f_new,f_old,variables=['n','perm_x'])
-        
-        # Test for correct permeabilities
-        for node,dif,k_old,k_new in zip(f_dif[1]['n'],f_dif[1]['perm_x'],f_old[1]['perm_x'],f_new[1]['perm_x']):
-            self.assertTrue(dif<maxerr, '\nIncorrect permeability at node '+str(node)+'. Expected '+str(k_old)+', Simulated '\
-                                                      +str(k_new)) 
-            
-        # Remove created files
-        self.cleanup(['nop.temp','fehmn.err','run*.csv','*.out','run.avs_log'])
-        os.chdir(self.maindir)
         
     def test_saltvcon(self):
-        """ 
-        Salt variable conductivity
-
-        Modification: new Dec 19 2013 dharp@lanl.gov
-        Modification: updated to use f_dif function Feb 6 2014
-
-        This function tests the saltvcon macro which calculates thermal
-        conductivity of crushed and intact salt.
+        """
+        **Test the Salt Variable Conductivity Macro**
+         
+        Tests the calculations of thermal conductivity of crushed and intact 
+        salt.
 
         Intact salt:
-        kxi = k_{t-300}(300/T)^1.14
-        Munson et al. (1990) Overtest for Simulate Defense High-Level
-            Waste (Room B): In Situ Data Report. WIPP. Sandia National
-            Laboratories, SAND89-2671
+            ``kxi = k_{t-300}(300/T)^1.14``
+            *Munson et al. (1990) Overtest for Simulate Defense High-Level*
+            *Waste (Room B): In Situ Data Report. WIPP. Sandia National*
+            *Laboratories, SAND89-2671*
 
-        Crushed salt:
-        Thermal conductivity of crushed salt from Asse mine
-        kx_asse = -270*phi^4+370*phi^3-136*phi^2+1.5*phi+5  
-        Bechtold et al. (2004) Backfilling and sealing of underground
-            respositories for radioactive waste in salt (BAMBUS II
-            project), EUR 20621, ISBN 92-894-7767-9
-        kx = (k_{t-300}/kx_asse)*(300/T)^1.14
-        if kx is less then 1.e-6, set to 1.e-6
+        Thermal conductivity of crushed salt from Asse mine:
+            ``kx_asse = -270*phi^4+370*phi^3-136*phi^2+1.5*phi+5`` 
+            *Bechtold et al. (2004) Backfilling and sealing of underground*
+            *respositories for radioactive waste in salt 
+            *(BAMBUS II project), EUR 20621, ISBN 92-894-7767-9*
+            
+        ``kx = (k_{t-300}/kx_asse)*(300/T)^1.14`` if kx is less then 1.e-6, set 
+        to 1.e-6.
 
-        The excel spreadsheet in /information/saltvcon.xlsx contains the
+        The excel spreadsheet /information/saltvcon.xlsx contains the
         associated calculations. 
+        
+        .. Authors: Dylan Harp, Mark Lange
+        .. Updated: June 2014 by Mark Lange
         """
         
         arguments = {}
@@ -218,117 +83,122 @@ class Tests(unittest.TestCase):
         arguments['variables']  = ['Kx']
         arguments['format'] = 'relative' 
         
-        self._test_case('saltvcon', arguments)
+        #test_case() does not actually display this custom error message yet.
+        arguments['err_msg'] = \
+            '\nIncorrect intact salt thermal conductivity for node %s \
+             \nRelative error: %s, Threshold: %s \
+             \nExpected = %s Simulated = %s'
+        
+        self.test_case('saltvcon', arguments)
         
         
     def test_dissolution(self):
-        """
-        Tests that the function calculates the correct concentrations. Because
-        the folder structure is not set up yet to handle no subcases, the empty 
-        list is used to find the folder 'subcase-' which has the control file. 
-        Information about the function can be found in the folder 'information'.
+        """ 
+        **Test the Dissoultion Macro**
+        
+        A one-dimensional transport simulation of calcite (CaC03(s)) 
+        dissolution is tested. Profiles of concentration versus reactor 
+        length, at selected times, will be compared against the analytical 
+        solution.
+
+        Details of this test are described in the FEHM V2.21 Validation Test 
+        Plan on pages 93-95 *(STN: 10086-2.21-00, Rev.No. 00, Document ID: 
+        10086-VTP-2.21-00, August 2003)* 
+        
+        .. Authors: Dylan Harp, Mark Lange    
+        .. Updated: June 2014 by Mark Lange          
         """
     
         arguments = {}
         arguments['variables'] = ['Np[aq] (Moles/kg H20)']
         arguments['subcases']  = ['']
         
-        self._test_case('dissolution', arguments)
+        #test_case() does not actually display this custom error message yet.
+        arguments['err_msg'] = '\nIncorrect concentration at time %s'
+        
+        self.test_case('dissolution', arguments)
         
     def test_salt_perm_poro(self):
-        """
-        Tests that the function calculates the correct porosities. Because
-        the folder structure is not set up yet to handle no subcases, the empty 
-        list is used to find the folder 'subcase-' which has the control file. 
-        Information about the function can be found in the folder 'information'.
+        """ 
+        **Test the Salt Permeability and Porosity Macro**
+
+        The porosity-permeability function for compacted salt from *Cinar et 
+        at. (2006)* is tested using a six node problem with porosities from 
+        0.01 to 0.2. The excel spreadsheet in information/salt-perm-poro.xlsx 
+        contains calculations of the perm-poro function.
+
+        *Cinar, Y, G Pusch and V Reitenbach (2006) Petrophysical and 
+        capillary properties of compacted salt. Transport in Porous Media. 
+        64, p. 199-228, doi: 10.1007/s11242-005-2848-1* 
+        
+        .. Authors: Dylan Harp, Mark Lange
+        .. Updated: June 2014 by Mark Lange
         """
     
         arguments = {}
-        arguments['variables'] = ['n', 'perm_x']    
+        arguments['variables'] = ['n', 'perm_x']
         
-        self._test_case('salt_perm_poro', arguments)
+        #test_case() does not actually display this custom error message yet.
+        arguments['err_msg'] = \
+            '\nIncorrect permeability at node %s. Expected %s, Simulated '    
+        
+        self.test_case('salt_perm_poro', arguments)
   
     def test_avdonin(self):
-        self._test_case('avdonin')
+        """
+        **Test the Radial Heat and Mass Transfer Problem Macro**
+        
+        Tests that the temeratures are correct for each time.
+        
+        .. Authors: Mark Lange
+        .. Updated: June 2014 by Mark Lange    
+        """
+    
+        self.test_case('avdonin')
         
     def test_boun(self): 
-        self._test_case('boun_test') 
+        """
+        **Test the Boundry Macro**
         
-    def test_cflxz(self):
-        self._test_case('cflxz')
+        Tests that the flow is correct at each boundry.
+        
+        .. Authors: Mark Lange
+        .. Updated: June 2014 by Mark Lange
+        """
+    
+        self.test_case('boun_test') 
         
     def test_cden(self):
-        self._test_case('cden_test')
+        """
+        **Test the Concentration Dependent Brine Density Macro**
         
-    def test_chain(self):
-        self._test_case('chain')
+        Tests for correct density at each time.
         
-    def test_co2test(self):
-        self._test_case('co2test')
-        
-    def test_convection(self):
-        self._test_case('convection')
-        
-    def test_doe(self):
-        self._test_case('doe')
+        .. Authors: Mark Lange
+        .. Updated: June 2014 by Mark Lange
+        """
     
-    def test_dpdp_rich(self):
-        self._test_case('dpdp_rich')
+        self.test_case('cden_test')      
         
-    def test_erosion(self):
-        self._test_case('erosion_test')
-    
-    def test_evaporation(self):
-        self._test_case('evaporation')
+    # Test Developer Functionality ############################################
         
-    def test_forward(self):
-        self._test_case('forward')
-        
-    def test_gdpm(self):
-        self._test_case('gdpm')
-    
-    def test_head(self):
-        self._test_case('head')
-        
-    def test_lost_part(self):
-        self._test_case('lost_part')
-    
-    def test_mptr(self):
-        self._test_case('mptr_test')
-        
-    def test_multi_solute(self):
-        self._test_case('multi_solute')
-        
-    def test_particle_capture(self):
-        self._test_case('particle_capture')
-    
-    def test_ramey(self):
-        self._test_case('ramey')
-        
-    def test_sorption(self):
-        self._test_case('sorption')
-        
-    def test_sptr_btc(self):
-        self._test_case('sptr_btc')
-    
-    def test_theis(self):
-        self._test_case('theis')
-                   
-    # UTILITIES ######################################################
-    
-    def _test_case(self, name, parameters={}):
+    def test_case(self, name, parameters={}):
         """ 
-        General Test Case
+        Performs a test on a FEHM simulation and raises an AssertError if it 
+        fails the test. 
          
-        Should be able to test any test case with the following folder set-up:
-            test-case-name: [compare, input, subcase-N1, subcase-N2, etc.],
-        where compare contains data known to be correct, input contains the
-        needed input files, and subcase-X contains a control file for a subcase.
+        :param name: The name of the test-case folder.
+        :type name: str
         
-        Normally tests all values using a relative difference that must be less 
-        than 1.e-4, but these values can be set by passing a dictionary with 
-        keys variables, times, nodes, components and/or format assigned to the 
-        new values you would like to use instead. 
+        :param parameters: Attribute values that override default values.
+        :type parameters: dict
+            
+        The folder 'name' in fehmpytests must exist with correct structure.
+        If parameters are not passed into this method, all simulated attributes 
+        will be checked for a relative difference of less than 1.e-4. 
+        
+        Authors: Mark Lange
+        Updated: June 2014 by Mark Lange                                
         """ 
          
         os.chdir(name)
@@ -359,8 +229,10 @@ class Tests(unittest.TestCase):
                         
         finally:
             #Allows other tests to be performed after exception.
-            self.cleanup(['*.*'])
+            self._cleanup(['*.*'])
             os.chdir(self.maindir)
+                   
+    # UTILITIES ######################################################
          
     def _checkDifferences(self, filetype, subcase, parameters={}):
         """ Check Difference
@@ -387,7 +259,7 @@ class Tests(unittest.TestCase):
         f_old = self._fgeneral('compare/*'+subcase+filetype)       
         
         #Read in new files.
-        self.run_fehm(subcase)   
+        self._run_fehm(subcase)   
         f_new = self._fgeneral('*'+subcase+filetype)
         
         #Find the difference between the two files.
@@ -465,7 +337,7 @@ class Tests(unittest.TestCase):
     def setUp(self):
         self.maindir = os.getcwd()
 
-    def cleanup(self,files):
+    def _cleanup(self,files):
         """ Utility function to remove files after test
 
             :param files: list of file names to remove
@@ -475,7 +347,7 @@ class Tests(unittest.TestCase):
             for f in glob(g):
                 if os.path.exists(f): os.remove(f)
 
-    def run_fehm(self, subcase):
+    def _run_fehm(self, subcase):
         """ Utility function to run fehm
             Asserts that fehm terminates successfully
 

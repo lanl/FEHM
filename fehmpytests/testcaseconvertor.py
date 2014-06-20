@@ -1,3 +1,17 @@
+#***********************************************************************
+# Copyright 2014 Los Alamos National Security, LLC All rights reserved
+# Unless otherwise indicated, this information has been authored by an
+# employee or employees of the Los Alamos National Security, LLC (LANS),
+# operator of the Los Alamos National Laboratory under Contract No.
+# DE-AC52-06NA25396 with the U.S. Department of Energy. The U.S.
+# Government has rights to use, reproduce, and distribute this
+# information. The public may copy and use this information without
+# charge, provided that this  Notice and any statement of authorship are
+# reproduced on all copies. Neither the Government nor LANS makes any
+# warranty, express or  implied, or assumes any liability or
+# responsibility for the use of this information.      
+#***********************************************************************
+
 import os
 import sys
 import re
@@ -6,10 +20,14 @@ import distutils.core
 import shutil
 
 class TestCaseConvertor():
-    """ Test Case Convertor 
+    """ 
+    Test Case Convertor
+     
     Converts old test-cases into new test-cases.
     
-    Changed by mlange806@gmail.com on June 11, 2014. """
+    Authors: Mark Lange
+    Updated: June 2014 by Mark Lange
+    """
     
     def __init__(self, new_path):        
         self._old_path = \
@@ -22,7 +40,7 @@ class TestCaseConvertor():
         test directory. """
         
         #Find subcases.
-        subcases = self._getSubcases(name)
+        subcases = self._getSubcases(name)     
      
         #Navigate to fehmpytest.
         os.chdir(self._new_path)
@@ -40,8 +58,11 @@ class TestCaseConvertor():
         distutils.dir_util.copy_tree(source, dest)  
         
         #Create a control file for each subcase.
-        for subcase in subcases:
-            self._primeControlFile(name, subcase)
+        if len(subcases) > 1:    
+            for subcase in subcases:
+                self._primeControlFile(name, subcase)
+        else:
+            self._primeControlFile(name, 'fehmn')
   
         #Copy the comparison files over from the old test-case.
         self._copyCompareFiles(name)
@@ -49,9 +70,12 @@ class TestCaseConvertor():
         print 'Done.'
         
     def _getSubcases(self, name):
-        """ Get Subcases
+        """ 
+        Get Subcases
+        
         Assumming that subcases are numbers, returns a set of subcases using a 
-        test-case's output files. """
+        test-case's output files. 
+        """
         
         #Get cwd and go to the old test-case's output folder.
         return_path = os.getcwd()
@@ -66,46 +90,68 @@ class TestCaseConvertor():
         #Using the comparison files, extract the subcase numbers.    
         subcases = []
         for file_name in file_names:
-            pattern = re.compile(r'\d+')
-            subcase = pattern.findall(file_name)[0]
+            #Everything up to the first dot should be the unique subcase.
+            subcase = file_name.split('.')[0]
             if subcase not in subcases:
                 subcases.append(subcase)
-                
+                              
         os.chdir(return_path)        
         return subcases
                                   
     def _primeControlFile(self, name, subcase):
-        """ Prime Control File
+        """ 
+        Prime Control File
+        
         Makes the control file ready for FEHM execution by renaming it to 
-        fehmn.files and removing 'output/' occurrences. """
+        fehmn.files and removing 'output/' occurrences. 
+        """
         
         #Save the cwd and go to the new test-case.
         return_path = os.getcwd()
-        os.chdir(self._new_path+name)
+        os.chdir(self._new_path+name+'/input')
         
-        #Copy the control file to the subcase folder.
-        source = glob.glob('input/*.files')[0]
-        dest = 'subcase-'+subcase+'/fehmn.files'
+        #Copy the control file to the control folder.
+        source = glob.glob('*.files')[0]
+        dest = 'control/'+subcase+'.files'
         shutil.copyfile(source, dest)
-           
-        #Open the file for editing.
-        opened_file = open('subcase-'+subcase+'/fehmn.files', 'r+')
         
-        #Remove all 'output/' from the control file.
-        data = opened_file.read()
-        data = re.sub('output/', '', data)
-        
-        #Subsitute 'N', 'NUM', and 'base' with the subcase number.
-        data = re.sub('N', subcase, data)
-        data = re.sub('UM', '', data)
-        data = re.sub('base', subcase, data)
-        
-        #Write the changes to the file.
-        opened_file.seek(0)
-        opened_file.write(data)
-        opened_file.truncate()
-        opened_file.close()
-        
+        #For a generic control file, it must be changed for the subcase.
+        if subcase != 'fehmn':
+            f = open(dest, 'r+')
+            data = f.read()
+            data = data.split('\n')
+            
+            edited_file = []
+            
+            for line in data:
+                var_positions = ['N', 'base']
+                for vp in var_positions:
+                    #Search for the placeholder range.
+                    start = line.find('/')
+                    end = line.find(vp)
+                    
+                    #The end will be negative if it was not found.
+                    if end > 0:                
+                        #Replace the place holder with the subcase.
+                        placeholder = line[start+1 : end+len(vp)]
+                        line = re.sub(placeholder, subcase, line)
+                        
+                #Some files use NUM instead of N.
+                line = re.sub('UM', '', line)
+                
+                #No output folder. Remove '/output/' occurences.
+                line = re.sub('output/', '', line)
+                
+                #Append the line to edit list.
+                edited_file.append(line)
+            
+            #Write the changes to the file.
+            edited_file = '\n'.join(edited_file)    
+            f.seek(0)
+            f.write(edited_file)
+            f.truncate()
+            f.close()
+  
         os.chdir(return_path)
         
     def _copyCompareFiles(self, name):
@@ -144,16 +190,18 @@ class TestCaseConvertor():
         return files
         
     def _createTestFolder(self, name, subcases):
-        """ Create Test Folder
-        Creates a folder in the new test-suite for 'name' with a folder for 
-        input, old comparison files, and a folder for each new subcase run. """
+        """ 
+        Create Test Folder
+        
+        Creates a test folder for name with folder input and compare inside.
+        Inside the input folder, creates a control folder. 
+        """
     
         os.makedirs(name)
         os.chdir(name)
         os.makedirs('input')
+        os.makedirs('input/control')
         os.makedirs('compare')
-        for subcase in subcases:
-            os.makedirs('subcase-'+subcase)
         
     def _writeFromDictionary(self, files):
         for key in files:  
@@ -167,7 +215,9 @@ if __name__ == '__main__':
         name = sys.argv[1]
         new_path = sys.argv[2]
     else:
-        print "Usage: python testcaseconvertor.py <test-name> <old-test-location>"
+        print 'Usage: python testcaseconvertor.py <test-name> '+ \
+              '<old-test-location>'
+              
         os._exit(0)
      
     #Converts 'name' from old_test_suite to test case in fehmpytests.py. 
