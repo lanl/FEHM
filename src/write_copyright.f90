@@ -1,6 +1,6 @@
 subroutine write_copyright(termunit)
 !***********************************************************************
-! Copyright 2013. Los Alamos National Security, LLC.  This material was 
+! Copyright 2014. Los Alamos National Security, LLC.  This material was 
 ! produced under U.S. Government contract DE-AC52-06NA25396 for Los 
 ! Alamos National Laboratory (LANL), which is operated by Los Alamos 
 ! National Security, LLC for the U.S. Department of Energy. The U.S. 
@@ -30,7 +30,7 @@ subroutine write_copyright(termunit)
 
 1 format (a30, 3x, a11, 3x, a8, /)
 
-2 format ('Copyright  2013.   Los Alamos National Security, LLC.  This material was', /, & 
+2 format ('Copyright  2014.   Los Alamos National Security, LLC.  This material was', /, & 
        'produced under U.S. Government contract DE-AC52-06NA25396 for Los Alamos', /, &
        'National  Laboratory  (LANL),  which is operated by  Los Alamos National', /, & 
        'Security, LLC  for the U. S. Department of Energy.  The U. S. Government', /, & 
