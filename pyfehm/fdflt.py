@@ -171,10 +171,14 @@ class fdflt(object):
 		rc_lib2 = os.sep.join(rc_lib[:-1])+os.sep+'pyfehmrc'
 		rc_home1 = os.path.expanduser('~')+os.sep+'.pyfehmrc'
 		rc_home2 = os.path.expanduser('~')+os.sep+'pyfehmrc'
-		if os.path.isfile(rc_lib1): fp = open(rc_lib1)
-		elif os.path.isfile(rc_lib2): fp = open(rc_lib2)
+		rc_cur1 = os.path.expanduser('.')+os.sep+'.pyfehmrc'
+		rc_cur2 = os.path.expanduser('.')+os.sep+'pyfehmrc'
+		if os.path.isfile(rc_cur1): fp = open(rc_cur1)
+		elif os.path.isfile(rc_cur2): fp = open(rc_cur2)		
 		elif os.path.isfile(rc_home1): fp = open(rc_home1)
 		elif os.path.isfile(rc_home2): fp = open(rc_home2)
+		elif os.path.isfile(rc_lib1): fp = open(rc_lib1)
+		elif os.path.isfile(rc_lib2): fp = open(rc_lib2)
 		else: return
 		
 		lns = fp.readlines()

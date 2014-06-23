@@ -44,15 +44,14 @@
 # output data formats
 #	hist_format 			& 	tec
 #	cont_format 			& 	surf
-#	parental_cont 			& 	True
+	parental_cont 			& 	False
 
 # set this to the fehm executable to be used if no default assigned
-#	fehm_path 				&	c:\\path\\to\\fehm\\fehm.exe
-#	paraview_path			&	paraview.exe
-#	lagrit_path				&	c:\\path\\to\\lagrit\\lagrit_win.exe
+	fehm_path 				&   /home/dharp/bin/xfehm	
+	paraview_path			&	/scratch/er/dharp/source/ParaView-4.1.0-RC1-Linux-64bit/bin/paraview
+#	lagrit_path				&	c:\\users\\264485\\python\\pyfehm\\lagrit_win.exe
 #	files 					&	[outp,hist,check]
-#	co2_interp_path 		& 	c:\\path\\to\\co2\\co2_interp_table.txt
-#	co2_interp_path_2 		& 	/alternate/path/to/co2/co2_interp_table.txt
+	co2_interp_path 		& 	/scratch/er/dharp/projects/co2/co2_interp_table.txt
 	
 # fdata booleans
 #	associate 				& 	True		# associate macro, zone information with nodes
@@ -60,7 +59,7 @@
 #	full_connectivity 		&	True	
 #	sleep_time 				& 	1.
 #	keep_unknown 			& 	True 		# set true if PyFEHM should preserve unknown macros in future output files
-#	silent					& 	False		# turns off all PyFEHM verbiage
+	silent					& 	True		# turns off all PyFEHM verbiage
 		
 # default values for mactro ITER (parameters controlling solver)
 #	iter	&	linear_converge_NRmult_G1		&	1.e-5 			# convergence criteria

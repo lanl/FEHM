@@ -73,8 +73,10 @@ class TestCaseConvertor():
         """ 
         Get Subcases
         
-        Assumming that subcases are numbers, returns a set of subcases using a 
-        test-case's output files. 
+        Args 
+            name: name of the old test-case folder. 
+        
+        Returns a list of subcase names. 
         """
         
         #Get cwd and go to the old test-case's output folder.
@@ -82,7 +84,7 @@ class TestCaseConvertor():
         os.chdir(self._old_path+name+'/output/')  
 
         #Find the names of every comparison file.
-        types = ['*.avs', '*.csv', '*.his']
+        types = ['*.avs', '*.csv', '*.his', '*.out']
         file_names = []
         for t in types:
             file_names = file_names+glob.glob(t)
@@ -102,8 +104,8 @@ class TestCaseConvertor():
         """ 
         Prime Control File
         
-        Makes the control file ready for FEHM execution by renaming it to 
-        fehmn.files and removing 'output/' occurrences. 
+        Makes the control file ready for FEHM execution by renaming it to either
+        the subcase name or 'fehmn.files' and removing 'output/' occurrences. 
         """
         
         #Save the cwd and go to the new test-case.
@@ -124,7 +126,7 @@ class TestCaseConvertor():
             edited_file = []
             
             for line in data:
-                var_positions = ['N', 'base']
+                var_positions = ['N', 'base', 'CASE', 'TEST']
                 for vp in var_positions:
                     #Search for the placeholder range.
                     start = line.find('/')
@@ -163,7 +165,7 @@ class TestCaseConvertor():
         os.chdir(self._old_path+name+'/output')
         
         #Read all files in this list of types.
-        types = ['*.avs', '*.csv' '*.his']
+        types = ['*.avs', '*.csv' '*.his', '*.out']
         compare_files = {}
         for t in types:
             compare_files.update(self._readToDictionary(t))

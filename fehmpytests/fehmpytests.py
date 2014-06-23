@@ -178,7 +178,12 @@ class Tests(unittest.TestCase):
         .. Updated: June 2014 by Mark Lange
         """
     
-        self.test_case('cden_test')      
+        self.test_case('cden_test') 
+        
+    def test_doe(self):
+        self.test_case('doe')
+        
+         
         
     # Test Developer Functionality ############################################
         
@@ -259,7 +264,7 @@ class Tests(unittest.TestCase):
         f_old = self._fgeneral('compare/*'+subcase+filetype)       
         
         #Read in new files.
-        self._run_fehm(subcase)   
+        self._run_fehm(subcase)
         f_new = self._fgeneral('*'+subcase+filetype)
         
         #Find the difference between the two files.
@@ -402,12 +407,13 @@ def suite(case, test_case):
         suite.addTest(Tests('test_avdonin'))
         suite.addTest(Tests('test_boun'))
         suite.addTest(Tests('test_cden'))
+        suite.addTest(Tests('test_doe'))
+        
         
         #TODO - Find or generate some compare files.
         #suite.addTest(Tests('test_chain'))
         #suite.addTest(Tests('test_co2test'))
         #suite.addTest(Tests('test_convection'))
-        #suite.addTest(Tests('test_doe'))
         #suite.addTest(Tests('test_dpdp_rich'))
         #suite.addTest(Tests('test_erosion'))
         #suite.addTest(Tests('test_evaporation'))
