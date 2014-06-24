@@ -32,6 +32,7 @@ c mohr-coulomb failure criteria on the plane of maximum shear
       fac_por=1.
       iispmd = ispm(jpt) 
       call stressperm_22_failure(jpt,fail_flag,rm)
+
       if(fail_flag.eq.1) then
          if(itemp_perm22(jpt).eq.0) then
             write(91,*)jpt
@@ -39,20 +40,20 @@ c mohr-coulomb failure criteria on the plane of maximum shear
          endif
          call stressperm_22_perm(jpt,rm, fac, fac_por)
          call stressperm_22_emod(jpt,rm,fac_E)
-
+      endif
+      
          pnx(jpt)=pnx0(jpt)*fac(1,1)
          pny(jpt)=pny0(jpt)*fac(2,2)
          pnz(jpt)=pnz0(jpt)*fac(3,3)
-
+      
          porosity_damage_factor = 1.
          if(spm11f(iispmd).gt.0.) 
-     &        porosity_damage_factor=1.0 + (spm11f(iispmd)-1.)*fac_por
+     &     porosity_damage_factor=1.0 + (spm11f(iispmd)-1.)*fac_por
          ps(jpt) = min(1.d0, porosity_damage_factor * psini(jpt))
-
+      
          e1(jpt)=e10(jpt)*fac_E(1)
          e2(jpt)=e20(jpt)*fac_E(1)
          e3(jpt)=e30(jpt)*fac_E(1)
-      endif
       
 
       return
@@ -119,9 +120,9 @@ c rm(column3)= direction cos of (z-prime) etc.
       rm(1,2)=eigenvec(1,2)
       rm(2,2)=eigenvec(2,2)
       rm(3,2)=eigenvec(3,2)
-      rm(1,1)=rm(2,3)*rm(3,2)-rm(3,3)*rm(2,2)
-      rm(2,1)=rm(1,3)*rm(3,1)-rm(3,3)*rm(1,2)
-      rm(3,1)=rm(1,3)*rm(2,2)-rm(2,3)*rm(1,2)
+      rm(1,1)= rm(2,3)*rm(3,2)-rm(3,3)*rm(2,2)
+      rm(2,1)=-rm(1,3)*rm(3,2)+rm(3,3)*rm(1,2)
+      rm(3,1)= rm(1,3)*rm(2,2)-rm(2,3)*rm(1,2)
 
       if(excess_shear(jpt).gt.shear_threshold) then
          fail_flag = 1
