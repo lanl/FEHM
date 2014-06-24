@@ -1,0 +1,8 @@
+input: input/doe_table.dat
+outpu: doe_table.out
+rsti:  input/doe.ini
+hist:  doe_table.his
+root:  doe_table
+
+none
+0

@@ -182,9 +182,28 @@ class Tests(unittest.TestCase):
         
     def test_doe(self):
         self.test_case('doe')
+       
+    def test_evaporation(self):
+        self.test_case('evaporation')  
         
-         
+    def test_forward(self):
+        self.test_case('forward') 
         
+    def test_head(self):
+        self.test_case('head')
+        
+    def test_particle_capture(self):
+        self.test_case('particle_capture')
+        
+    def test_gdpm(self):
+        self.test_case('gdpm')
+        
+    def test_ramey(self):
+        self.test_case('ramey')
+   
+    def test_theis(self):
+        self.test_case('theis')
+   
     # Test Developer Functionality ############################################
         
     def test_case(self, name, parameters={}):
@@ -231,19 +250,26 @@ class Tests(unittest.TestCase):
                     if len(glob('compare/'+'*'+subcase+filetype)) > 0:
                         #Check for any significant differences.
                         self._checkDifferences(filetype, subcase, parameters)
-                        
+                 
         finally:
             #Allows other tests to be performed after exception.
             self._cleanup(['*.*'])
             os.chdir(self.maindir)
+            
                    
     # UTILITIES ######################################################
          
     def _checkDifferences(self, filetype, subcase, parameters={}):
-        """ Check Difference
-        Checks the difference between old and new output. Fails if the
-        difference is greater than maxerr, defaulted to 1.e-4. """
+        """ 
+        Check Difference
         
+        Checks the difference between old and new output. Fails if the
+        difference is greater than maxerr, defaulted to 1.e-4. 
+        
+        Authors: Mark Lange
+        Updated: June 2014
+        """
+
         #Get pre-specified parameters from call.
         keys = ['variables', 'times', 'nodes', 'components', 'format']
         values = dict.fromkeys(keys, [])
@@ -261,7 +287,7 @@ class Tests(unittest.TestCase):
         format = values['format']
         
         #Read in the old comparison files. 
-        f_old = self._fgeneral('compare/*'+subcase+filetype)       
+        f_old = self._fgeneral('compare/*'+subcase+filetype)  
         
         #Read in new files.
         self._run_fehm(subcase)
@@ -304,7 +330,7 @@ class Tests(unittest.TestCase):
                 #Its possible some variables do not have all nodes in f_dif.
                 for n in np.intersect1d(nodes, f_dif[v]):     
             	    self.assertTrue(max(f_dif[v][n])<mxerr, msg%(v, n))
-            	    
+
         #Choose if testing output files.
         elif '.out' in filetype:
             #If no pre-specified componets, grab them from f_dif.
@@ -319,13 +345,11 @@ class Tests(unittest.TestCase):
             
             #Check the node at each component for significant differences.   
             for c in components:
-                #Its possible some componets do not have all nodes in f_dif.
                 for n in nodes:
-                    #In case variables are different per node, intersect.
                     for v in variables:
                         difference = max(f_dif.node[c][n][v])
                         self.assertTrue(difference < mxerr, msg%(v,c,n))
-   
+                        
     def _fgeneral(self, file_pattern):
         #Chooses the correct fpost object to represent output files.
         if '.avs' in file_pattern:
@@ -407,27 +431,28 @@ def suite(case, test_case):
         suite.addTest(Tests('test_avdonin'))
         suite.addTest(Tests('test_boun'))
         suite.addTest(Tests('test_cden'))
-        suite.addTest(Tests('test_doe'))
+        suite.addTest(Tests('test_doe'))  
+        suite.addTest(Tests('test_forward'))
+        suite.addTest(Tests('test_head'))
+        suite.addTest(Tests('test_ramey'))
+        suite.addTest(Tests('test_theis'))
         
+        #TODO - Look into why this tests take so long.
+        #suite.addTest(Tests('test_evaporation'))
         
-        #TODO - Find or generate some compare files.
+        #TODO - Figure out how to read some other formats.
+        #suite.addTest(Tests('test_sptr_btc'))
+        #suite.addTest(Tests('test_sorption'))
+        #suite.addTest(Tests('test_particle_capture'))
+        #suite.addTest(Tests('test_multi_solute'))
+        #suite.addTest(Tests('test_mptr'))
+        #suite.addTest(Tests('test_lost_part'))
         #suite.addTest(Tests('test_chain'))
         #suite.addTest(Tests('test_co2test'))
         #suite.addTest(Tests('test_convection'))
         #suite.addTest(Tests('test_dpdp_rich'))
         #suite.addTest(Tests('test_erosion'))
-        #suite.addTest(Tests('test_evaporation'))
-        #suite.addTest(Tests('test_forward'))
         #suite.addTest(Tests('test_gdpm'))
-        #suite.addTest(Tests('test_head'))
-        #suite.addTest(Tests('test_lost_part'))
-        #suite.addTest(Tests('test_mptr'))
-        #suite.addTest(Tests('test_multi_solute'))
-        #suite.addTest(Tests('test_particle_capture'))
-        #suite.addTest(Tests('test_ramey'))
-        #suite.addTest(Tests('test_sorption'))
-        #suite.addTest(Tests('test_sptr_btc'))
-        #suite.addTest(Tests('test_theis'))
              
     elif case == 'single':
         suite.addTest(Tests(test_case))

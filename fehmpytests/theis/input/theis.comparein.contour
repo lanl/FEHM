@@ -1,0 +1,20 @@
+Pressure Transient Analysis (Theis) Problem
+Comparison of Model and Analytical Solution for Pressure vs Position
+Time 1 day
+contour
+output/theis.
+input/theisout.analyt_pos
+output/theis.comp_pos
+1                       Time
+1                       Time position
+sca                   	 AVS data type
+00002                   File number
+86400.			Simulation time (seconds)
+2 1                     1D radial (X,Y coordinates), X slice (fixed Y)
+output/theis.geo
+0. 0.                   Y value, Z value
+1                       Data parameter position (pressure)
+0. 1. 0. 1.             Translate X1, Scale X1, Translate X2, Scale X2
+0. 1. 0. 1.             Translate Y1, Scale Y1, Translate Y2, Scale Y2
+.0144 1000. 1.          Low X, high X, minimum Y
+.FALSE.                 Print data

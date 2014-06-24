@@ -1,0 +1,20 @@
+Temperature in a Wellbore (Ramey) Problem
+Comparison of Model and Analytical Solution for Temperature vs Depth
+Time 25 days
+contour
+output/ramey.
+input/rameyout.analyt_pos
+output/ramey.comp_pos
+1			Time
+1                       Time position
+sca                     AVS data type
+00002                   File number
+2.16e6			Simulation time (seconds)
+2 2			2D (X,Y coordinates), Y slice (fixed X)
+input/ramey.geo
+0. 0.			X value, Z value
+1			Data parameter position (temperature)
+0. 1. 0. 1.		Translate X1, Scale X1, Translate X2, Scale X2
+0. 1. 0. 1.             Translate Y1, Scale Y1, Translate Y2, Scale Y2
+-2000. 0. 20.		Low X, high X, minimum Y
+.FALSE.			Print data

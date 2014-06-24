@@ -1,0 +1,19 @@
+Code 1 Solution for DOE Code Comparison Project, Problem 5, Case A
+X_coordinates	62.5	162.5
+Y_coordinates	62.5	137.5
+Time(yrs)	Production DPressure	Observation DPressure
+.11  		0.23    		0.1 
+.295     	0.29    		0.11
+.60  		0.36    		0.14
+1.10 		0.49    		0.18
+1.655		0.56    		0.23
+2.23 		0.6     		0.27
+2.87 		0.62    		0.29
+3.585		0.61    		0.3 
+4.265		0.6     		0.29
+4.97 		0.57    		0.28
+5.555		0.57    		0.27
+6.105		0.56    		0.27
+6.88 		0.55    		0.26
+7.495    	0.55    		0.26
+8.39 		0.54    		0.26

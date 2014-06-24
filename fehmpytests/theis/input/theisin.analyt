@@ -1,0 +1,15 @@
+output/theisout.analyt_time
+output/theisout.analyt_pos
+Analytical Solution for 1-D Theis pressure transient problem 
+2			Number of coordinate positions
+50.			Depth, meters (reservoir midpoint)
+0. 1000.                Coordinate range, meters
+0.00144 3.44825 	Radial Coordinates, meters
+.4			Porosity
+5.48e-10		Viscosity (MPa s)
+5.06e-04		Compressibility (1/MPa)
+1.e-14			Permeability (m^2)
+2.22e-07		Flow rate (m^3/s)
+1.			Initial pressure (MPa)
+0, 86400, 300		Start time, End time, Timestep (seconds)
+

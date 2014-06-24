@@ -1,0 +1,14 @@
+Temperature in a Wellbore (Ramey) Problem
+Comparison of Model and Analytical Solution for Temperature vs Time
+Depth CPOS meters
+history
+output/ramey.his
+input/rameyout.analyt_time
+output/ramey.compcpos_time
+2			2-D radial problem
+cpos			Coordinate position
+4			Temperature
+0. 86400. 0. 1.		Translate X1, Scale X1, Translate X2, Scale X2 
+0. 1. 0. 1.		Translate Y1, Scale Y1, Translate Y2, Scale Y2
+0. 2.16e6 19.		Low X, high X, minimum Y
+.FALSE.			Print arrays

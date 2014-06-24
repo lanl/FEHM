@@ -1,0 +1,8 @@
+input: input/doe_TEST.dat
+outpu: output/doe_TEST.out
+rsti:  input/doe.ini
+hist:  output/doe_TEST.his
+root:  output/doe_TEST
+
+none
+0

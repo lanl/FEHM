@@ -1,0 +1,18 @@
+output/rameyout.analyt_time
+output/rameyout.analyt_pos
+Semi-Analytical Solution for Ramey Temperature in a Wellbore 
+3			Number of coordinate positions
+-2000. 0. 10		Depth range, spacing (m)
+0. 0.    0.		X coordinates (m)
+0. -1000. -2000.	Y coordinates (m)
+.09808			Wellbore radius (m)
+2000.			Total depth (m)
+2700.			Rock density (kg/m^3)
+1000.			Rock specific heat (J/[kg K])
+0.03			Geothermal gradient (deg. C/m)
+20.			Surface rock temperature (C)
+20.			Fluid injection temperatyre (C)
+0.5			Flow rate (kg/s)
+2.7			Rock thermal conductivity (W/[m K])
+4200.			Fluid heat capacity (J/[kg K])
+0, 2.16e6 		Start time, End time (seconds)

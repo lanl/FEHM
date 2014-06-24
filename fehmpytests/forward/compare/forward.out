@@ -1,0 +1,829 @@
+FEHM V3.2.0lin 14-04-25 QA:NA    04/25/2014    12:05:04
+
+Copyright  2013.   Los Alamos National Security, LLC.  This material was
+produced under U.S. Government contract DE-AC52-06NA25396 for Los Alamos
+National  Laboratory  (LANL),  which is operated by  Los Alamos National
+Security, LLC  for the U. S. Department of Energy.  The U. S. Government
+has rights to use, reproduce, and distribute this software.  Neither the
+U. S. Government nor Los Alamos National Security, LLC or persons acting
+on their behalf,  make any warranty,  express or implied, or assumes any
+liability for the accuracy, completeness, or usefulness of the software,
+any information pertaining to the software,  or  represents that its use
+would not infringe privately owned rights.
+
+The  software  being licensed  may  be Export Controlled.  It may not be
+distributed  or  used by individuals  or entities prohibited from having
+access to the software package, pursuant to United States export control
+laws and regulations. An export control review and determination must be
+completed before LANS will provide access to the identified Software.
+
+
+ *** forward for reverse-tracking verification, B&F 87 model **                  
+
+
+
+ File purpose - Variable - Unit number - File name
+
+    control       - iocntl -  1 - fehmn.files                                                                                         
+    input         - inpt   - 11 - input/forward.dat                                                                                   
+    geometry      - incoor - 12 - input/forward-reverse.geom                                                                          
+    zone          - inzone - 11 - input/forward.dat                                                                                   
+    output        - iout   - 14 - output/forward.out                                                                                  
+    initial state - iread  -  0 - not using                                                                                           
+    final state   - isave  - 16 - output/forward.fin                                                                                  
+    time history  - ishis  -  0 - not using                                                                                           
+    time his.(tr) - istrc  -  0 - not using                                                                                           
+    contour plot  - iscon  -  0 - not using                                                                                           
+    con plot (dp) - iscon1 -  0 - not using                                                                                           
+    fe coef stor  - isstor - 21 - input/forward.stor                                                                                  
+    input check   - ischk  -  0 - not using                                                                                           
+ Value provided to subroutine user: not using
+
+ **** input title : coor **** incoor =  12 ****
+ **** input title : elem **** incoor =  12 ****
+ **** input title : stop **** incoor =  12 ****
+ **** input title : isot **** inpt =  11 ****
+ **** input title : sol  **** inpt =  11 ****
+ **** input title : head **** inpt =  11 ****
+ **** input title : bous **** inpt =  11 ****
+ **** input title : air  **** inpt =  11 ****
+ **** input title : node **** inpt =  11 ****
+ **** input title : perm **** inpt =  11 ****
+ **** input title : rock **** inpt =  11 ****
+ **** input title : pres **** inpt =  11 ****
+ **** input title : iter **** inpt =  11 ****
+ **** input title : ctrl **** inpt =  11 ****
+ **** input title : time **** inpt =  11 ****
+ **** input title : flow **** inpt =  11 ****
+ flow read from optional input file: input/right_constant.boun                                                                           
+ **** input title : flow **** inpt =  11 ****
+ flow read from optional input file: input/top.boun                                                                                      
+ **** input title : sptr **** inpt =  11 ****
+ **** input title : stop **** inpt =  11 ****
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ Coefficients read from file input/forward.stor
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+ storage for geometric coefficients      50549 in common(nr)      50549
+ BC to BC connection(s) found (now set=0.0)
+ gmres method chosen 
+Number of OMR nodes set to    17600
+Actual number of OMR nodes        0
+ >>>generating nop .....
+ >>>writing nop to file nop.temp .....
+
+ storage needed for ncon         136297 available     136297
+ storage needed for nop          233065 available     233065
+ storage needed for a matrix     118696 available     474784
+ storage needed for b matrix     215464 available     409297
+ storage for acceleration    369600 available     369600
+SZ only simulation, true size of a matrix :
+ storage available for a matrix resized to     118696<<<<<<
+ storage available for b matrix resized to     215464<<<<<<
+
+
+ time for reading input, forming coefficients  0.517    
+
+
+Initial number of partially filled cells:        0
+
+*********************************************************************
+ Time Step         1
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+      273.785079          100000.000         100000.000    
+ Cpu Sec for Time Step =  0.1710     Current Total =    0.1710    
+
+                    Equation Performance
+ Number of N-R Iterations:          1
+ Avg # of Linear Equation Solver Iterations:  56.0
+ Number of Active Nodes:     35200.
+ Total Number of Iterations, N-R:          1 , Solver:         56
+ Phase Changes This Time Step:        0 Total           0
+ Number of partially filled cells            0
+                    Largest Residuals
+ EQ1 R=  0.8956E-08 node=  13598 x= 188.8     y= 15.00     z= 14.22    
+ EQ2 R=   0.000     node=      1 x= 0.000     y= 0.000     z= 0.000    
+   Node   Equation 1 Residual   Equation 2 Residual
+  16801      0.856906E-16           0.000000E+00
+  16865     -0.607664E-16           0.000000E+00
+  16905      0.600707E-15           0.000000E+00
+  16994     -0.104467E-16           0.000000E+00
+  17160     -0.226577E-15           0.000000E+00
+      1      0.201663E-14           0.000000E+00
+    222      0.327051E-09           0.000000E+00
+    444     -0.420289E-09           0.000000E+00
+    666      0.114218E-08           0.000000E+00
+    777     -0.123170E-08           0.000000E+00
+     50     -0.200182E-15           0.000000E+00
+   5300     -0.921896E-15           0.000000E+00
+   8600     -0.102011E-14           0.000000E+00
+  11850     -0.112424E-14           0.000000E+00
+  17600      0.000000E+00           0.000000E+00
+  16361      0.207391E-08           0.000000E+00
+  16363      0.210764E-08           0.000000E+00
+  16411      0.239838E-09           0.000000E+00
+  15561      0.206287E-08           0.000000E+00
+   9972      0.133367E-09           0.000000E+00
+   9973      0.627324E-10           0.000000E+00
+  10022      0.715325E-09           0.000000E+00
+  10772      0.661101E-09           0.000000E+00
+   7580      0.204371E-09           0.000000E+00
+   7581      0.148449E-09           0.000000E+00
+   7630      0.371408E-09           0.000000E+00
+   8380      0.928748E-10           0.000000E+00
+   5987     -0.833027E-09           0.000000E+00
+   5988     -0.108249E-08           0.000000E+00
+   6037     -0.107642E-08           0.000000E+00
+   6787     -0.418760E-09           0.000000E+00
+   5993     -0.705068E-09           0.000000E+00
+   5994     -0.130677E-08           0.000000E+00
+   6043     -0.107932E-08           0.000000E+00
+   6793     -0.293758E-09           0.000000E+00
+   5998     -0.445918E-09           0.000000E+00
+   5999     -0.254751E-09           0.000000E+00
+   6048     -0.164753E-09           0.000000E+00
+   6798     -0.382298E-10           0.000000E+00
+
+                    Nodal Information (Water)
+                                                           source/sink
+   Node  Head (m)    P (MPa)    E (MJ)    L sat   Temp (C)    (kg/s)
+  16801   5021.      49.0      0.00      1.00       25.000   -0.8569E-05
+  16865   5021.      49.0      0.00      1.00       25.000    0.6077E-05
+  16905   5021.      49.0      0.00      1.00       25.000   -0.6007E-04
+  16994   5020.      49.0      0.00      1.00       25.000    0.1045E-05
+  17160   5021.      49.0      0.00      1.00       25.000    0.2266E-04
+      1   5021.      49.2      0.00      1.00       25.000     0.000    
+    222   5021.      49.2      0.00      1.00       25.000     0.000    
+    444   5020.      49.2      0.00      1.00       25.000     0.000    
+    666   5021.      49.2      0.00      1.00       25.000     0.000    
+    777   5021.      49.2      0.00      1.00       25.000     0.000    
+     50   5020.      49.2      0.00      1.00       25.000    0.2002E-04
+   5300   5020.      49.1      0.00      1.00       25.000    0.9219E-04
+   8600   5020.      49.1      0.00      1.00       25.000    0.1020E-03
+  11850   5020.      49.1      0.00      1.00       25.000    0.1124E-03
+  17600   5020.      49.0      0.00      1.00       25.000    -0.000    
+  16361   5021.      49.0      0.00      1.00       25.000     0.000    
+  16363   5021.      49.0      0.00      1.00       25.000     0.000    
+  16411   5021.      49.0      0.00      1.00       25.000     0.000    
+  15561   5021.      49.0      0.00      1.00       25.000     0.000    
+   9972   5021.      49.1      0.00      1.00       25.000     0.000    
+   9973   5021.      49.1      0.00      1.00       25.000     0.000    
+  10022   5021.      49.1      0.00      1.00       25.000     0.000    
+  10772   5021.      49.1      0.00      1.00       25.000     0.000    
+   7580   5021.      49.1      0.00      1.00       25.000     0.000    
+   7581   5021.      49.1      0.00      1.00       25.000     0.000    
+   7630   5021.      49.1      0.00      1.00       25.000     0.000    
+   8380   5021.      49.1      0.00      1.00       25.000     0.000    
+   5987   5021.      49.1      0.00      1.00       25.000     0.000    
+   5988   5021.      49.1      0.00      1.00       25.000     0.000    
+   6037   5021.      49.1      0.00      1.00       25.000     0.000    
+   6787   5021.      49.1      0.00      1.00       25.000     0.000    
+   5993   5020.      49.1      0.00      1.00       25.000     0.000    
+   5994   5020.      49.1      0.00      1.00       25.000     0.000    
+   6043   5020.      49.1      0.00      1.00       25.000     0.000    
+   6793   5020.      49.1      0.00      1.00       25.000     0.000    
+   5998   5020.      49.1      0.00      1.00       25.000     0.000    
+   5999   5020.      49.1      0.00      1.00       25.000     0.000    
+   6048   5020.      49.1      0.00      1.00       25.000     0.000    
+   6798   5020.      49.1      0.00      1.00       25.000     0.000    
+
+                    Global Water & Air Balances
+ Total water in system at this time:           0.214982E+08 kg
+ Total mass of steam in system at this time:   0.000000E+00 kg
+ Total Air(gas) in system at this time:        0.000000E+00 kg
+
+ Water discharge this time step:   0.318977E+09 kg (0.369186E-01 kg/s)
+ Water input this time step:       0.318952E+09 kg (0.369157E-01 kg/s)
+ Total water discharge:            0.318977E+09 kg (0.369186E-01 kg/s)
+ Total water input:                0.318952E+09 kg (0.369157E-01 kg/s)
+
+ Air(gas) discharge this time step:  0.000000E+00 kg (0.000000E+00 kg/s)
+ Air(gas) input this time step:      0.000000E+00 kg (0.000000E+00 kg/s)
+ Total air(gas) discharge:           0.000000E+00 kg (0.000000E+00 kg/s)
+ Total air(gas) input:               0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Net kg water discharge (total out-total in):   0.249339E+05
+ Net kg air discharge   (total out-total in):   0.000000E+00
+ Conservation Errors:   0.712663E-04 (water),   0.000000E+00 (air)
+*********************************************************************
+ Time Step         2
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+      274058.864          100100000.         100000000.    
+ Cpu Sec for Time Step =  0.1050     Current Total =    0.3479    
+
+                    Equation Performance
+ Number of N-R Iterations:          1
+ Avg # of Linear Equation Solver Iterations:  29.0
+ Number of Active Nodes:     35200.
+ Total Number of Iterations, N-R:          2 , Solver:         85
+ Phase Changes This Time Step:        0 Total           0
+ Number of partially filled cells            0
+                    Largest Residuals
+ EQ1 R=  0.3957E-11 node=  16799 x= 194.4     y= 15.00     z= 18.78    
+ EQ2 R=   0.000     node=      1 x= 0.000     y= 0.000     z= 0.000    
+   Node   Equation 1 Residual   Equation 2 Residual
+  16801      0.860059E-16           0.000000E+00
+  16865     -0.595640E-16           0.000000E+00
+  16905      0.601842E-15           0.000000E+00
+  16994     -0.122938E-16           0.000000E+00
+  17160     -0.225562E-15           0.000000E+00
+      1     -0.218320E-14           0.000000E+00
+    222      0.281661E-12           0.000000E+00
+    444      0.501039E-13           0.000000E+00
+    666      0.162351E-12           0.000000E+00
+    777      0.520229E-12           0.000000E+00
+     50     -0.200218E-15           0.000000E+00
+   5300     -0.922028E-15           0.000000E+00
+   8600     -0.102024E-14           0.000000E+00
+  11850     -0.112433E-14           0.000000E+00
+  17600      0.000000E+00           0.000000E+00
+  16361      0.700413E-13           0.000000E+00
+  16363      0.170786E-12           0.000000E+00
+  16411      0.134400E-11           0.000000E+00
+  15561      0.877332E-12           0.000000E+00
+   9972     -0.310425E-13           0.000000E+00
+   9973     -0.274587E-12           0.000000E+00
+  10022      0.927937E-14           0.000000E+00
+  10772      0.104172E-11           0.000000E+00
+   7580      0.130666E-11           0.000000E+00
+   7581      0.119614E-11           0.000000E+00
+   7630      0.129463E-11           0.000000E+00
+   8380      0.789891E-12           0.000000E+00
+   5987      0.651007E-12           0.000000E+00
+   5988      0.599439E-12           0.000000E+00
+   6037      0.577639E-13           0.000000E+00
+   6787      0.766764E-12           0.000000E+00
+   5993      0.749914E-12           0.000000E+00
+   5994      0.583999E-12           0.000000E+00
+   6043     -0.805208E-13           0.000000E+00
+   6793      0.971545E-12           0.000000E+00
+   5998      0.123537E-11           0.000000E+00
+   5999      0.986793E-12           0.000000E+00
+   6048      0.711408E-12           0.000000E+00
+   6798      0.135256E-11           0.000000E+00
+
+                    Nodal Information (Water)
+                                                           source/sink
+   Node  Head (m)    P (MPa)    E (MJ)    L sat   Temp (C)    (kg/s)
+  16801   5021.      49.0      0.00      1.00       25.000   -0.8601E-05
+  16865   5021.      49.0      0.00      1.00       25.000    0.5956E-05
+  16905   5021.      49.0      0.00      1.00       25.000   -0.6018E-04
+  16994   5020.      49.0      0.00      1.00       25.000    0.1229E-05
+  17160   5021.      49.0      0.00      1.00       25.000    0.2256E-04
+      1   5021.      49.2      0.00      1.00       25.000     0.000    
+    222   5021.      49.2      0.00      1.00       25.000     0.000    
+    444   5020.      49.2      0.00      1.00       25.000     0.000    
+    666   5021.      49.2      0.00      1.00       25.000     0.000    
+    777   5021.      49.2      0.00      1.00       25.000     0.000    
+     50   5020.      49.2      0.00      1.00       25.000    0.2002E-04
+   5300   5020.      49.1      0.00      1.00       25.000    0.9220E-04
+   8600   5020.      49.1      0.00      1.00       25.000    0.1020E-03
+  11850   5020.      49.1      0.00      1.00       25.000    0.1124E-03
+  17600   5020.      49.0      0.00      1.00       25.000    -0.000    
+  16361   5021.      49.0      0.00      1.00       25.000     0.000    
+  16363   5021.      49.0      0.00      1.00       25.000     0.000    
+  16411   5021.      49.0      0.00      1.00       25.000     0.000    
+  15561   5021.      49.0      0.00      1.00       25.000     0.000    
+   9972   5021.      49.1      0.00      1.00       25.000     0.000    
+   9973   5021.      49.1      0.00      1.00       25.000     0.000    
+  10022   5021.      49.1      0.00      1.00       25.000     0.000    
+  10772   5021.      49.1      0.00      1.00       25.000     0.000    
+   7580   5021.      49.1      0.00      1.00       25.000     0.000    
+   7581   5021.      49.1      0.00      1.00       25.000     0.000    
+   7630   5021.      49.1      0.00      1.00       25.000     0.000    
+   8380   5021.      49.1      0.00      1.00       25.000     0.000    
+   5987   5021.      49.1      0.00      1.00       25.000     0.000    
+   5988   5021.      49.1      0.00      1.00       25.000     0.000    
+   6037   5021.      49.1      0.00      1.00       25.000     0.000    
+   6787   5021.      49.1      0.00      1.00       25.000     0.000    
+   5993   5020.      49.1      0.00      1.00       25.000     0.000    
+   5994   5020.      49.1      0.00      1.00       25.000     0.000    
+   6043   5020.      49.1      0.00      1.00       25.000     0.000    
+   6793   5020.      49.1      0.00      1.00       25.000     0.000    
+   5998   5020.      49.1      0.00      1.00       25.000     0.000    
+   5999   5020.      49.1      0.00      1.00       25.000     0.000    
+   6048   5020.      49.1      0.00      1.00       25.000     0.000    
+   6798   5020.      49.1      0.00      1.00       25.000     0.000    
+
+                    Global Water & Air Balances
+ Total water in system at this time:           0.214982E+08 kg
+ Total mass of steam in system at this time:   0.000000E+00 kg
+ Total Air(gas) in system at this time:        0.000000E+00 kg
+
+ Water discharge this time step:   0.319017E+12 kg (0.369232E-01 kg/s)
+ Water input this time step:       0.319016E+12 kg (0.369231E-01 kg/s)
+ Total water discharge:            0.319336E+12 kg (0.369232E-01 kg/s)
+ Total water input:                0.319335E+12 kg (0.369231E-01 kg/s)
+
+ Air(gas) discharge this time step:  0.000000E+00 kg (0.000000E+00 kg/s)
+ Air(gas) input this time step:      0.000000E+00 kg (0.000000E+00 kg/s)
+ Total air(gas) discharge:           0.000000E+00 kg (0.000000E+00 kg/s)
+ Total air(gas) input:               0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Net kg water discharge (total out-total in):   0.753168E+06
+ Net kg air discharge   (total out-total in):   0.000000E+00
+ Conservation Errors:   0.235165E-05 (water),   0.000000E+00 (air)
+*********************************************************************
+ Time Step         3
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+      274059138.         0.100100100E+12    0.100000000E+12
+ Cpu Sec for Time Step =  0.3500E-01 Current Total =    0.4049    
+
+                    Equation Performance
+ Number of N-R Iterations:          1
+ Avg # of Linear Equation Solver Iterations:   1.0
+ Number of Active Nodes:     35200.
+ Total Number of Iterations, N-R:          3 , Solver:         86
+ Phase Changes This Time Step:        0 Total           0
+ Number of partially filled cells            0
+                    Largest Residuals
+ EQ1 R=  0.2371E-11 node=  16799 x= 194.4     y= 15.00     z= 18.78    
+ EQ2 R=   0.000     node=      1 x= 0.000     y= 0.000     z= 0.000    
+   Node   Equation 1 Residual   Equation 2 Residual
+  16801      0.860059E-16           0.000000E+00
+  16865     -0.595640E-16           0.000000E+00
+  16905      0.601842E-15           0.000000E+00
+  16994     -0.122937E-16           0.000000E+00
+  17160     -0.225562E-15           0.000000E+00
+      1      0.101623E-12           0.000000E+00
+    222      0.361752E-12           0.000000E+00
+    444      0.196602E-12           0.000000E+00
+    666      0.167224E-12           0.000000E+00
+    777      0.432660E-12           0.000000E+00
+     50     -0.200218E-15           0.000000E+00
+   5300     -0.922028E-15           0.000000E+00
+   8600     -0.102024E-14           0.000000E+00
+  11850     -0.112433E-14           0.000000E+00
+  17600      0.000000E+00           0.000000E+00
+  16361      0.551465E-12           0.000000E+00
+  16363      0.622927E-12           0.000000E+00
+  16411     -0.236411E-12           0.000000E+00
+  15561      0.296131E-13           0.000000E+00
+   9972      0.291794E-12           0.000000E+00
+   9973      0.798628E-13           0.000000E+00
+  10022      0.249642E-12           0.000000E+00
+  10772      0.720026E-12           0.000000E+00
+   7580      0.103729E-11           0.000000E+00
+   7581      0.934925E-12           0.000000E+00
+   7630      0.101172E-11           0.000000E+00
+   8380      0.659434E-12           0.000000E+00
+   5987      0.571905E-12           0.000000E+00
+   5988      0.505475E-12           0.000000E+00
+   6037      0.140647E-12           0.000000E+00
+   6787      0.586345E-12           0.000000E+00
+   5993      0.655459E-12           0.000000E+00
+   5994      0.519250E-12           0.000000E+00
+   6043      0.517374E-13           0.000000E+00
+   6793      0.756384E-12           0.000000E+00
+   5998      0.111902E-11           0.000000E+00
+   5999      0.908969E-12           0.000000E+00
+   6048      0.728994E-12           0.000000E+00
+   6798      0.116603E-11           0.000000E+00
+
+                    Nodal Information (Water)
+                                                           source/sink
+   Node  Head (m)    P (MPa)    E (MJ)    L sat   Temp (C)    (kg/s)
+  16801   5021.      49.0      0.00      1.00       25.000   -0.8601E-05
+  16865   5021.      49.0      0.00      1.00       25.000    0.5956E-05
+  16905   5021.      49.0      0.00      1.00       25.000   -0.6018E-04
+  16994   5020.      49.0      0.00      1.00       25.000    0.1229E-05
+  17160   5021.      49.0      0.00      1.00       25.000    0.2256E-04
+      1   5021.      49.2      0.00      1.00       25.000     0.000    
+    222   5021.      49.2      0.00      1.00       25.000     0.000    
+    444   5020.      49.2      0.00      1.00       25.000     0.000    
+    666   5021.      49.2      0.00      1.00       25.000     0.000    
+    777   5021.      49.2      0.00      1.00       25.000     0.000    
+     50   5020.      49.2      0.00      1.00       25.000    0.2002E-04
+   5300   5020.      49.1      0.00      1.00       25.000    0.9220E-04
+   8600   5020.      49.1      0.00      1.00       25.000    0.1020E-03
+  11850   5020.      49.1      0.00      1.00       25.000    0.1124E-03
+  17600   5020.      49.0      0.00      1.00       25.000    -0.000    
+  16361   5021.      49.0      0.00      1.00       25.000     0.000    
+  16363   5021.      49.0      0.00      1.00       25.000     0.000    
+  16411   5021.      49.0      0.00      1.00       25.000     0.000    
+  15561   5021.      49.0      0.00      1.00       25.000     0.000    
+   9972   5021.      49.1      0.00      1.00       25.000     0.000    
+   9973   5021.      49.1      0.00      1.00       25.000     0.000    
+  10022   5021.      49.1      0.00      1.00       25.000     0.000    
+  10772   5021.      49.1      0.00      1.00       25.000     0.000    
+   7580   5021.      49.1      0.00      1.00       25.000     0.000    
+   7581   5021.      49.1      0.00      1.00       25.000     0.000    
+   7630   5021.      49.1      0.00      1.00       25.000     0.000    
+   8380   5021.      49.1      0.00      1.00       25.000     0.000    
+   5987   5021.      49.1      0.00      1.00       25.000     0.000    
+   5988   5021.      49.1      0.00      1.00       25.000     0.000    
+   6037   5021.      49.1      0.00      1.00       25.000     0.000    
+   6787   5021.      49.1      0.00      1.00       25.000     0.000    
+   5993   5020.      49.1      0.00      1.00       25.000     0.000    
+   5994   5020.      49.1      0.00      1.00       25.000     0.000    
+   6043   5020.      49.1      0.00      1.00       25.000     0.000    
+   6793   5020.      49.1      0.00      1.00       25.000     0.000    
+   5998   5020.      49.1      0.00      1.00       25.000     0.000    
+   5999   5020.      49.1      0.00      1.00       25.000     0.000    
+   6048   5020.      49.1      0.00      1.00       25.000     0.000    
+   6798   5020.      49.1      0.00      1.00       25.000     0.000    
+
+                    Global Water & Air Balances
+ Total water in system at this time:           0.214982E+08 kg
+ Total mass of steam in system at this time:   0.000000E+00 kg
+ Total Air(gas) in system at this time:        0.000000E+00 kg
+
+ Water discharge this time step:   0.319017E+15 kg (0.369232E-01 kg/s)
+ Water input this time step:       0.319016E+15 kg (0.369231E-01 kg/s)
+ Total water discharge:            0.319336E+15 kg (0.369232E-01 kg/s)
+ Total water input:                0.319335E+15 kg (0.369231E-01 kg/s)
+
+ Air(gas) discharge this time step:  0.000000E+00 kg (0.000000E+00 kg/s)
+ Air(gas) input this time step:      0.000000E+00 kg (0.000000E+00 kg/s)
+ Total air(gas) discharge:           0.000000E+00 kg (0.000000E+00 kg/s)
+ Total air(gas) input:               0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Net kg water discharge (total out-total in):   0.719553E+09
+ Net kg air discharge   (total out-total in):   0.000000E+00
+ Conservation Errors:   0.225327E-05 (water),   0.000000E+00 (air)
+*********************************************************************
+ Time Step         4
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+     0.274059138E+12     0.100100100E+15    0.100000000E+15
+ Cpu Sec for Time Step =  0.3100E-01 Current Total =    0.4569    
+
+                    Equation Performance
+ Number of N-R Iterations:          1
+ Avg # of Linear Equation Solver Iterations:   1.0
+ Number of Active Nodes:     35200.
+ Total Number of Iterations, N-R:          4 , Solver:         87
+ Phase Changes This Time Step:        0 Total           0
+ Number of partially filled cells            0
+                    Largest Residuals
+ EQ1 R=  0.1480E-11 node=   5146 x= 177.5     y= 6.000     z= 4.662    
+ EQ2 R=   0.000     node=      1 x= 0.000     y= 0.000     z= 0.000    
+   Node   Equation 1 Residual   Equation 2 Residual
+  16801      0.860059E-16           0.000000E+00
+  16865     -0.595639E-16           0.000000E+00
+  16905      0.601842E-15           0.000000E+00
+  16994     -0.122937E-16           0.000000E+00
+  17160     -0.225562E-15           0.000000E+00
+      1      0.180672E-12           0.000000E+00
+    222      0.326580E-12           0.000000E+00
+    444      0.226957E-12           0.000000E+00
+    666      0.899299E-13           0.000000E+00
+    777      0.265853E-12           0.000000E+00
+     50     -0.200218E-15           0.000000E+00
+   5300     -0.922028E-15           0.000000E+00
+   8600     -0.102024E-14           0.000000E+00
+  11850     -0.112433E-14           0.000000E+00
+  17600      0.000000E+00           0.000000E+00
+  16361      0.103141E-12           0.000000E+00
+  16363      0.175353E-12           0.000000E+00
+  16411     -0.145456E-13           0.000000E+00
+  15561      0.948754E-13           0.000000E+00
+   9972      0.347995E-12           0.000000E+00
+   9973      0.163285E-12           0.000000E+00
+  10022      0.310926E-12           0.000000E+00
+  10772      0.551874E-12           0.000000E+00
+   7580      0.880380E-12           0.000000E+00
+   7581      0.780440E-12           0.000000E+00
+   7630      0.862599E-12           0.000000E+00
+   8380      0.630174E-12           0.000000E+00
+   5987      0.511616E-12           0.000000E+00
+   5988      0.420535E-12           0.000000E+00
+   6037      0.196435E-12           0.000000E+00
+   6787      0.460350E-12           0.000000E+00
+   5993      0.575440E-12           0.000000E+00
+   5994      0.449990E-12           0.000000E+00
+   6043      0.155202E-12           0.000000E+00
+   6793      0.616193E-12           0.000000E+00
+   5998      0.102514E-11           0.000000E+00
+   5999      0.827077E-12           0.000000E+00
+   6048      0.740986E-12           0.000000E+00
+   6798      0.101889E-11           0.000000E+00
+
+                    Nodal Information (Water)
+                                                           source/sink
+   Node  Head (m)    P (MPa)    E (MJ)    L sat   Temp (C)    (kg/s)
+  16801   5021.      49.0      0.00      1.00       25.000   -0.8601E-05
+  16865   5021.      49.0      0.00      1.00       25.000    0.5956E-05
+  16905   5021.      49.0      0.00      1.00       25.000   -0.6018E-04
+  16994   5020.      49.0      0.00      1.00       25.000    0.1229E-05
+  17160   5021.      49.0      0.00      1.00       25.000    0.2256E-04
+      1   5021.      49.2      0.00      1.00       25.000     0.000    
+    222   5021.      49.2      0.00      1.00       25.000     0.000    
+    444   5020.      49.2      0.00      1.00       25.000     0.000    
+    666   5021.      49.2      0.00      1.00       25.000     0.000    
+    777   5021.      49.2      0.00      1.00       25.000     0.000    
+     50   5020.      49.2      0.00      1.00       25.000    0.2002E-04
+   5300   5020.      49.1      0.00      1.00       25.000    0.9220E-04
+   8600   5020.      49.1      0.00      1.00       25.000    0.1020E-03
+  11850   5020.      49.1      0.00      1.00       25.000    0.1124E-03
+  17600   5020.      49.0      0.00      1.00       25.000    -0.000    
+  16361   5021.      49.0      0.00      1.00       25.000     0.000    
+  16363   5021.      49.0      0.00      1.00       25.000     0.000    
+  16411   5021.      49.0      0.00      1.00       25.000     0.000    
+  15561   5021.      49.0      0.00      1.00       25.000     0.000    
+   9972   5021.      49.1      0.00      1.00       25.000     0.000    
+   9973   5021.      49.1      0.00      1.00       25.000     0.000    
+  10022   5021.      49.1      0.00      1.00       25.000     0.000    
+  10772   5021.      49.1      0.00      1.00       25.000     0.000    
+   7580   5021.      49.1      0.00      1.00       25.000     0.000    
+   7581   5021.      49.1      0.00      1.00       25.000     0.000    
+   7630   5021.      49.1      0.00      1.00       25.000     0.000    
+   8380   5021.      49.1      0.00      1.00       25.000     0.000    
+   5987   5021.      49.1      0.00      1.00       25.000     0.000    
+   5988   5021.      49.1      0.00      1.00       25.000     0.000    
+   6037   5021.      49.1      0.00      1.00       25.000     0.000    
+   6787   5021.      49.1      0.00      1.00       25.000     0.000    
+   5993   5020.      49.1      0.00      1.00       25.000     0.000    
+   5994   5020.      49.1      0.00      1.00       25.000     0.000    
+   6043   5020.      49.1      0.00      1.00       25.000     0.000    
+   6793   5020.      49.1      0.00      1.00       25.000     0.000    
+   5998   5020.      49.1      0.00      1.00       25.000     0.000    
+   5999   5020.      49.1      0.00      1.00       25.000     0.000    
+   6048   5020.      49.1      0.00      1.00       25.000     0.000    
+   6798   5020.      49.1      0.00      1.00       25.000     0.000    
+
+                    Global Water & Air Balances
+ Total water in system at this time:           0.214982E+08 kg
+ Total mass of steam in system at this time:   0.000000E+00 kg
+ Total Air(gas) in system at this time:        0.000000E+00 kg
+
+ Water discharge this time step:   0.319017E+18 kg (0.369232E-01 kg/s)
+ Water input this time step:       0.319016E+18 kg (0.369231E-01 kg/s)
+ Total water discharge:            0.319336E+18 kg (0.369232E-01 kg/s)
+ Total water input:                0.319335E+18 kg (0.369231E-01 kg/s)
+
+ Air(gas) discharge this time step:  0.000000E+00 kg (0.000000E+00 kg/s)
+ Air(gas) input this time step:      0.000000E+00 kg (0.000000E+00 kg/s)
+ Total air(gas) discharge:           0.000000E+00 kg (0.000000E+00 kg/s)
+ Total air(gas) input:               0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Net kg water discharge (total out-total in):   0.711997E+12
+ Net kg air discharge   (total out-total in):   0.000000E+00
+ Conservation Errors:   0.222962E-05 (water),   0.000000E+00 (air)
+*********************************************************************
+ Time Step         5
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+     0.274059138E+15     0.100100100E+18    0.100000000E+18
+ Cpu Sec for Time Step =  0.1700E-01 Current Total =    0.4849    
+
+                    Equation Performance
+ Number of N-R Iterations:          1
+ Avg # of Linear Equation Solver Iterations:   1.0
+ Number of Active Nodes:     35200.
+ Total Number of Iterations, N-R:          5 , Solver:         88
+ Phase Changes This Time Step:        0 Total           0
+ Number of partially filled cells            0
+                    Largest Residuals
+ EQ1 R=  0.1367E-11 node=   5146 x= 177.5     y= 6.000     z= 4.662    
+ EQ2 R=   0.000     node=      1 x= 0.000     y= 0.000     z= 0.000    
+   Node   Equation 1 Residual   Equation 2 Residual
+  16801      0.860059E-16           0.000000E+00
+  16865     -0.595639E-16           0.000000E+00
+  16905      0.601842E-15           0.000000E+00
+  16994     -0.122937E-16           0.000000E+00
+  17160     -0.225562E-15           0.000000E+00
+      1      0.292959E-12           0.000000E+00
+    222      0.331727E-12           0.000000E+00
+    444      0.241716E-12           0.000000E+00
+    666      0.472095E-13           0.000000E+00
+    777      0.254154E-12           0.000000E+00
+     50     -0.200218E-15           0.000000E+00
+   5300     -0.922028E-15           0.000000E+00
+   8600     -0.102024E-14           0.000000E+00
+  11850     -0.112433E-14           0.000000E+00
+  17600      0.000000E+00           0.000000E+00
+  16361      0.660450E-13           0.000000E+00
+  16363      0.127419E-12           0.000000E+00
+  16411     -0.550222E-13           0.000000E+00
+  15561     -0.858646E-14           0.000000E+00
+   9972      0.358153E-12           0.000000E+00
+   9973      0.186469E-12           0.000000E+00
+  10022      0.365796E-12           0.000000E+00
+  10772      0.463389E-12           0.000000E+00
+   7580      0.795162E-12           0.000000E+00
+   7581      0.694520E-12           0.000000E+00
+   7630      0.776135E-12           0.000000E+00
+   8380      0.624892E-12           0.000000E+00
+   5987      0.455419E-12           0.000000E+00
+   5988      0.364125E-12           0.000000E+00
+   6037      0.234567E-12           0.000000E+00
+   6787      0.388061E-12           0.000000E+00
+   5993      0.524129E-12           0.000000E+00
+   5994      0.414315E-12           0.000000E+00
+   6043      0.216237E-12           0.000000E+00
+   6793      0.523362E-12           0.000000E+00
+   5998      0.939067E-12           0.000000E+00
+   5999      0.765994E-12           0.000000E+00
+   6048      0.755688E-12           0.000000E+00
+   6798      0.932457E-12           0.000000E+00
+
+                    Nodal Information (Water)
+                                                           source/sink
+   Node  Head (m)    P (MPa)    E (MJ)    L sat   Temp (C)    (kg/s)
+  16801   5021.      49.0      0.00      1.00       25.000   -0.8601E-05
+  16865   5021.      49.0      0.00      1.00       25.000    0.5956E-05
+  16905   5021.      49.0      0.00      1.00       25.000   -0.6018E-04
+  16994   5020.      49.0      0.00      1.00       25.000    0.1229E-05
+  17160   5021.      49.0      0.00      1.00       25.000    0.2256E-04
+      1   5021.      49.2      0.00      1.00       25.000     0.000    
+    222   5021.      49.2      0.00      1.00       25.000     0.000    
+    444   5020.      49.2      0.00      1.00       25.000     0.000    
+    666   5021.      49.2      0.00      1.00       25.000     0.000    
+    777   5021.      49.2      0.00      1.00       25.000     0.000    
+     50   5020.      49.2      0.00      1.00       25.000    0.2002E-04
+   5300   5020.      49.1      0.00      1.00       25.000    0.9220E-04
+   8600   5020.      49.1      0.00      1.00       25.000    0.1020E-03
+  11850   5020.      49.1      0.00      1.00       25.000    0.1124E-03
+  17600   5020.      49.0      0.00      1.00       25.000    -0.000    
+  16361   5021.      49.0      0.00      1.00       25.000     0.000    
+  16363   5021.      49.0      0.00      1.00       25.000     0.000    
+  16411   5021.      49.0      0.00      1.00       25.000     0.000    
+  15561   5021.      49.0      0.00      1.00       25.000     0.000    
+   9972   5021.      49.1      0.00      1.00       25.000     0.000    
+   9973   5021.      49.1      0.00      1.00       25.000     0.000    
+  10022   5021.      49.1      0.00      1.00       25.000     0.000    
+  10772   5021.      49.1      0.00      1.00       25.000     0.000    
+   7580   5021.      49.1      0.00      1.00       25.000     0.000    
+   7581   5021.      49.1      0.00      1.00       25.000     0.000    
+   7630   5021.      49.1      0.00      1.00       25.000     0.000    
+   8380   5021.      49.1      0.00      1.00       25.000     0.000    
+   5987   5021.      49.1      0.00      1.00       25.000     0.000    
+   5988   5021.      49.1      0.00      1.00       25.000     0.000    
+   6037   5021.      49.1      0.00      1.00       25.000     0.000    
+   6787   5021.      49.1      0.00      1.00       25.000     0.000    
+   5993   5020.      49.1      0.00      1.00       25.000     0.000    
+   5994   5020.      49.1      0.00      1.00       25.000     0.000    
+   6043   5020.      49.1      0.00      1.00       25.000     0.000    
+   6793   5020.      49.1      0.00      1.00       25.000     0.000    
+   5998   5020.      49.1      0.00      1.00       25.000     0.000    
+   5999   5020.      49.1      0.00      1.00       25.000     0.000    
+   6048   5020.      49.1      0.00      1.00       25.000     0.000    
+   6798   5020.      49.1      0.00      1.00       25.000     0.000    
+
+                    Global Water & Air Balances
+ Total water in system at this time:           0.214982E+08 kg
+ Total mass of steam in system at this time:   0.000000E+00 kg
+ Total Air(gas) in system at this time:        0.000000E+00 kg
+
+ Water discharge this time step:   0.319017E+21 kg (0.369232E-01 kg/s)
+ Water input this time step:       0.319016E+21 kg (0.369231E-01 kg/s)
+ Total water discharge:            0.319336E+21 kg (0.369232E-01 kg/s)
+ Total water input:                0.319335E+21 kg (0.369231E-01 kg/s)
+
+ Air(gas) discharge this time step:  0.000000E+00 kg (0.000000E+00 kg/s)
+ Air(gas) input this time step:      0.000000E+00 kg (0.000000E+00 kg/s)
+ Total air(gas) discharge:           0.000000E+00 kg (0.000000E+00 kg/s)
+ Total air(gas) input:               0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Net kg water discharge (total out-total in):   0.706286E+15
+ Net kg air discharge   (total out-total in):   0.000000E+00
+ Conservation Errors:   0.221173E-05 (water),   0.000000E+00 (air)
+*********************************************************************
+ Time Step         6
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+     0.100000000E+16     0.365250000E+18    0.265149900E+18
+ Cpu Sec for Time Step =  0.1700E-01 Current Total =    0.5129    
+
+                    Equation Performance
+ Number of N-R Iterations:          1
+ Avg # of Linear Equation Solver Iterations:   1.0
+ Number of Active Nodes:     35200.
+ Total Number of Iterations, N-R:          6 , Solver:         89
+ Phase Changes This Time Step:        0 Total           0
+ Number of partially filled cells            0
+                    Largest Residuals
+ EQ1 R=  0.1292E-11 node=   5146 x= 177.5     y= 6.000     z= 4.662    
+ EQ2 R=   0.000     node=      1 x= 0.000     y= 0.000     z= 0.000    
+   Node   Equation 1 Residual   Equation 2 Residual
+  16801      0.860059E-16           0.000000E+00
+  16865     -0.595639E-16           0.000000E+00
+  16905      0.601842E-15           0.000000E+00
+  16994     -0.122937E-16           0.000000E+00
+  17160     -0.225562E-15           0.000000E+00
+      1      0.354933E-12           0.000000E+00
+    222      0.320413E-12           0.000000E+00
+    444      0.250228E-12           0.000000E+00
+    666      0.914612E-14           0.000000E+00
+    777      0.184782E-12           0.000000E+00
+     50     -0.200218E-15           0.000000E+00
+   5300     -0.922028E-15           0.000000E+00
+   8600     -0.102024E-14           0.000000E+00
+  11850     -0.112433E-14           0.000000E+00
+  17600      0.000000E+00           0.000000E+00
+  16361      0.157773E-13           0.000000E+00
+  16363      0.733767E-13           0.000000E+00
+  16411     -0.560738E-13           0.000000E+00
+  15561     -0.367516E-13           0.000000E+00
+   9972      0.362117E-12           0.000000E+00
+   9973      0.203586E-12           0.000000E+00
+  10022      0.387346E-12           0.000000E+00
+  10772      0.413662E-12           0.000000E+00
+   7580      0.741925E-12           0.000000E+00
+   7581      0.645776E-12           0.000000E+00
+   7630      0.718737E-12           0.000000E+00
+   8380      0.607209E-12           0.000000E+00
+   5987      0.427511E-12           0.000000E+00
+   5988      0.324723E-12           0.000000E+00
+   6037      0.258422E-12           0.000000E+00
+   6787      0.343548E-12           0.000000E+00
+   5993      0.483012E-12           0.000000E+00
+   5994      0.376875E-12           0.000000E+00
+   6043      0.268794E-12           0.000000E+00
+   6793      0.472474E-12           0.000000E+00
+   5998      0.888520E-12           0.000000E+00
+   5999      0.711270E-12           0.000000E+00
+   6048      0.746865E-12           0.000000E+00
+   6798      0.867106E-12           0.000000E+00
+
+                    Nodal Information (Water)
+                                                           source/sink
+   Node  Head (m)    P (MPa)    E (MJ)    L sat   Temp (C)    (kg/s)
+  16801   5021.      49.0      0.00      1.00       25.000   -0.8601E-05
+  16865   5021.      49.0      0.00      1.00       25.000    0.5956E-05
+  16905   5021.      49.0      0.00      1.00       25.000   -0.6018E-04
+  16994   5020.      49.0      0.00      1.00       25.000    0.1229E-05
+  17160   5021.      49.0      0.00      1.00       25.000    0.2256E-04
+      1   5021.      49.2      0.00      1.00       25.000     0.000    
+    222   5021.      49.2      0.00      1.00       25.000     0.000    
+    444   5020.      49.2      0.00      1.00       25.000     0.000    
+    666   5021.      49.2      0.00      1.00       25.000     0.000    
+    777   5021.      49.2      0.00      1.00       25.000     0.000    
+     50   5020.      49.2      0.00      1.00       25.000    0.2002E-04
+   5300   5020.      49.1      0.00      1.00       25.000    0.9220E-04
+   8600   5020.      49.1      0.00      1.00       25.000    0.1020E-03
+  11850   5020.      49.1      0.00      1.00       25.000    0.1124E-03
+  17600   5020.      49.0      0.00      1.00       25.000    -0.000    
+  16361   5021.      49.0      0.00      1.00       25.000     0.000    
+  16363   5021.      49.0      0.00      1.00       25.000     0.000    
+  16411   5021.      49.0      0.00      1.00       25.000     0.000    
+  15561   5021.      49.0      0.00      1.00       25.000     0.000    
+   9972   5021.      49.1      0.00      1.00       25.000     0.000    
+   9973   5021.      49.1      0.00      1.00       25.000     0.000    
+  10022   5021.      49.1      0.00      1.00       25.000     0.000    
+  10772   5021.      49.1      0.00      1.00       25.000     0.000    
+   7580   5021.      49.1      0.00      1.00       25.000     0.000    
+   7581   5021.      49.1      0.00      1.00       25.000     0.000    
+   7630   5021.      49.1      0.00      1.00       25.000     0.000    
+   8380   5021.      49.1      0.00      1.00       25.000     0.000    
+   5987   5021.      49.1      0.00      1.00       25.000     0.000    
+   5988   5021.      49.1      0.00      1.00       25.000     0.000    
+   6037   5021.      49.1      0.00      1.00       25.000     0.000    
+   6787   5021.      49.1      0.00      1.00       25.000     0.000    
+   5993   5020.      49.1      0.00      1.00       25.000     0.000    
+   5994   5020.      49.1      0.00      1.00       25.000     0.000    
+   6043   5020.      49.1      0.00      1.00       25.000     0.000    
+   6793   5020.      49.1      0.00      1.00       25.000     0.000    
+   5998   5020.      49.1      0.00      1.00       25.000     0.000    
+   5999   5020.      49.1      0.00      1.00       25.000     0.000    
+   6048   5020.      49.1      0.00      1.00       25.000     0.000    
+   6798   5020.      49.1      0.00      1.00       25.000     0.000    
+
+                    Global Water & Air Balances
+ Total water in system at this time:           0.214982E+08 kg
+ Total mass of steam in system at this time:   0.000000E+00 kg
+ Total Air(gas) in system at this time:        0.000000E+00 kg
+
+ Water discharge this time step:   0.845872E+21 kg (0.369232E-01 kg/s)
+ Water input this time step:       0.845871E+21 kg (0.369231E-01 kg/s)
+ Total water discharge:            0.116521E+22 kg (0.369232E-01 kg/s)
+ Total water input:                0.116521E+22 kg (0.369231E-01 kg/s)
+
+ Air(gas) discharge this time step:  0.000000E+00 kg (0.000000E+00 kg/s)
+ Air(gas) input this time step:      0.000000E+00 kg (0.000000E+00 kg/s)
+ Total air(gas) discharge:           0.000000E+00 kg (0.000000E+00 kg/s)
+ Total air(gas) input:               0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Net kg water discharge (total out-total in):   0.256563E+16
+ Net kg air discharge   (total out-total in):   0.000000E+00
+ Conservation Errors:   0.220187E-05 (water),   0.000000E+00 (air)
+
+
+ simulation ended: days   365250000000000000.00000     timesteps     6
+
+
+ total N-R iterations =          6
+ total solver iterations =         89
+
+
+ total code time(timesteps) =      0.548917
+
+
+ ****---------------------------------------------------------****
+ **** This program for                                        ****
+ ****   Finite Element Heat and Mass Transfer in porous media ****
+ ****---------------------------------------------------------****
+ ****               Version  : FEHM V3.2.0lin 14-04-25 QA:NA  ****
+ ****               End Date : 04/25/2014                     ****
+ ****                   Time : 12:05:06                       ****
+ ****---------------------------------------------------------****
