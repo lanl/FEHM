@@ -111,7 +111,6 @@ class Tests(unittest.TestCase):
     
         arguments = {}
         arguments['variables'] = ['Np[aq] (Moles/kg H20)']
-        arguments['subcases']  = ['']
         
         #test_case() does not actually display this custom error message yet.
         arguments['err_msg'] = '\nIncorrect concentration at time %s'
@@ -146,38 +145,47 @@ class Tests(unittest.TestCase):
   
     def test_avdonin(self):
         """
-        **Test the Radial Heat and Mass Transfer Problem Macro**
+        **Test the Radial Heat and Mass Transfer Problem**
         
-        Tests that the temeratures are correct for each time.
+        Compares the simulated temperature at each postion for day 2 and the 
+        simulated temperatures at each time to correct data.
         
         .. Authors: Mark Lange
         .. Updated: June 2014 by Mark Lange    
         """
-    
-        self.test_case('avdonin')
+        
+        arguments = {}
+        arguments['times'] = [2.0]
+        arguments['variables'] = ['T']
+        
+        self.test_case('avdonin', arguments)
         
     def test_boun(self): 
         """
-        **Test the Boundry Macro**
+        **Test the Boundry Functionality**
         
-        Tests that the flow is correct at each boundry.
+        Compares simulated pressure and head values for day 2 to correct data.
         
         .. Authors: Mark Lange
         .. Updated: June 2014 by Mark Lange
         """
+        
+        arguments = {}
+        arguments['variables'] = ['P', 'Hydraulic Head (m)']
+        arguments['times'] = [2.0]
     
-        self.test_case('boun_test') 
+        self.test_case('boun_test', arguments) 
         
     def test_cden(self):
         """
-        **Test the Concentration Dependent Brine Density Macro**
+        **Test the Concentration Dependent Brine Density Functionality**
         
         Tests for correct density at each time.
         
         .. Authors: Mark Lange
         .. Updated: June 2014 by Mark Lange
         """
-    
+         
         self.test_case('cden_test') 
         
     def test_doe(self):
@@ -351,13 +359,27 @@ class Tests(unittest.TestCase):
                         self.assertTrue(difference < mxerr, msg%(v,c,n))
                         
     def _fgeneral(self, file_pattern):
-        #Chooses the correct fpost object to represent output files.
-        if '.avs' in file_pattern:
+        """
+        Process General fdata
+        
+        Chooses the correct fdata method to process FEHM calculations.
+        
+        :param file_pattern: File pattern to processed.
+        :type file_pattern:  str
+        
+        Author: Mark Lange
+        Updated: June 2014 
+        """
+    
+        #Is a history file even if it ends in .avs or .csv if _his in pattern.
+        if '_his.' in file_pattern:
+            return fhistory(file_pattern)  
+        elif '.his' in file_pattern:
+            return fhistory(file_pattern)
+        elif '.avs' in file_pattern:
             return fcontour(file_pattern)
         elif '.csv' in file_pattern:
             return fcontour(file_pattern)
-        elif '.his' in file_pattern:
-            return fhistory(file_pattern)
         elif '.out' in file_pattern:
             #Assuming each subcase has only 1 file, use glob to find it.
             filename = glob(file_pattern)[0]
