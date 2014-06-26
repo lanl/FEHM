@@ -10,6 +10,9 @@ avs	10000	25.
 geom
 temperature
 end
+hist
+deg
+end
 sol
   1 -1
 init

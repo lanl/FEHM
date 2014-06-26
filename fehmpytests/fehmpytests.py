@@ -147,8 +147,10 @@ class Tests(unittest.TestCase):
         """
         **Test the Radial Heat and Mass Transfer Problem**
         
-        Compares the simulated temperature at each postion for day 2 and the 
-        simulated temperatures at each time to correct data.
+        Compares the generated contour and history files to old contour and 
+        history files that are known to be correct. For contour files, only the
+        temperature values at day 2 are tested. For history files, all 
+        temperature values are tested. 
         
         .. Authors: Mark Lange
         .. Updated: June 2014 by Mark Lange    
@@ -164,53 +166,108 @@ class Tests(unittest.TestCase):
         """
         **Test the Boundry Functionality**
         
-        Compares simulated pressure and head values for day 2 to correct data.
+        Compares the generated contour files to old contour files that are known
+        to be correct. Only the pressure and hydraulic head values at day 2 are 
+        tested.
         
         .. Authors: Mark Lange
         .. Updated: June 2014 by Mark Lange
         """
         
         arguments = {}
-        arguments['variables'] = ['P', 'Hydraulic Head (m)']
         arguments['times'] = [2.0]
-    
+        arguments['variables'] = ['P', 'Hydraulic Head (m)']
+
         self.test_case('boun_test', arguments) 
         
     def test_cden(self):
         """
         **Test the Concentration Dependent Brine Density Functionality**
         
-        Tests for correct density at each time.
+        Compares generated history files to old history files that are known to 
+        be correct. Only the density values are tested.
         
         .. Authors: Mark Lange
         .. Updated: June 2014 by Mark Lange
         """
+        
+        arguments = {}
+        arguments['variables'] = ['density']
          
         self.test_case('cden_test') 
         
     def test_doe(self):
-        self.test_case('doe')
-       
-    def test_evaporation(self):
-        self.test_case('evaporation')  
+        """
+        **Test the DOE Code Comparison Project, Problem 5, Case A**
         
-    def test_forward(self):
-        self.test_case('forward') 
+        Compares the generated contour and history files to old contour and
+        history files that are known to be correct. For contour files, only the
+        pressure, temperature, and saturation values at day 3 are tested. For 
+        history files, all pressure, temperature, and saturation values are 
+        tested.
+        
+        .. Authors: Mark Lange
+        .. Updated: June 2014 by Mark Lange
+        """
+        
+        arguments = {}
+        arguments['times'] = [3.0]
+        arguments['variables'] = ['P', 'T', 'saturation']
+        
+        self.test_case('doe', arguments)
         
     def test_head(self):
-        self.test_case('head')
+        """
+        **Test Head Pressure Problem**
         
-    def test_particle_capture(self):
-        self.test_case('particle_capture')
+        Compares the generated contour files to old contour files that are known
+        to be correct. Only the pressure values at day 2 are tested.
         
-    def test_gdpm(self):
-        self.test_case('gdpm')
+        .. Authors: Mark Lange
+        .. Updated: June 2014 by Mark Lange 
+        """
         
+        arguments = {}
+        arguments['times'] = [2.0]
+        arguments['variables'] = ['P']
+        
+        self.test_case('head', arguments)
+                    
     def test_ramey(self):
-        self.test_case('ramey')
+        """
+        **Test Temperature in a Wellbore Problem**
+        
+        Compares the generated contour and history files to old contour and
+        history file that are known to be correct. For the contour files, only 
+        the temperature values at day 2 are tested. For the history files, all 
+        temperature values are tested.
+        
+        .. Authors: Mark Lange
+        .. Updated: June 2014 by Mark Lange
+        """
+        
+        arguments = {}
+        arguments['times'] = [2.0]
+        arguments['variables'] = ['T']
+        
+        self.test_case('ramey', arguments)
    
     def test_theis(self):
-        self.test_case('theis')
+        """
+        **Test Pressure Transient Analysis Problem**
+        
+        Compares the generated contour files to old contour files known to be 
+        correct. Only the pressure values at day 2 are tested.
+        
+        .. Authors: Mark Lange
+        .. Updated: June 2014 by Mark Lange
+        """
+        
+        arguments = {}
+        arguments['times'] = [2.0]
+        arguments['variables'] = ['P']
+        
+        self.test_case('theis', arguments)
    
     # Test Developer Functionality ############################################
         
@@ -269,13 +326,13 @@ class Tests(unittest.TestCase):
          
     def _checkDifferences(self, filetype, subcase, parameters={}):
         """ 
-        Check Difference
+        **Check Difference**
         
         Checks the difference between old and new output. Fails if the
         difference is greater than maxerr, defaulted to 1.e-4. 
         
-        Authors: Mark Lange
-        Updated: June 2014
+        .. Authors: Mark Lange
+        .. Updated: June 2014
         """
 
         #Get pre-specified parameters from call.
@@ -295,8 +352,8 @@ class Tests(unittest.TestCase):
         format = values['format']
         
         #Read in the old comparison files. 
-        f_old = self._fgeneral('compare/*'+subcase+filetype)  
-        
+        f_old = self._fgeneral('compare/*'+subcase+filetype) 
+
         #Read in new files.
         self._run_fehm(subcase)
         f_new = self._fgeneral('*'+subcase+filetype)
@@ -389,21 +446,25 @@ class Tests(unittest.TestCase):
         self.maindir = os.getcwd()
 
     def _cleanup(self,files):
-        """ Utility function to remove files after test
+        """ 
+        Utility function to remove files after test
 
-            :param files: list of file names to remove
-            :type files: lst(str) """
+        :param files: list of file names to remove
+        :type files: lst(str) 
+        """
             
         for g in files:
             for f in glob(g):
                 if os.path.exists(f): os.remove(f)
 
     def _run_fehm(self, subcase):
-        """ Utility function to run fehm
-            Asserts that fehm terminates successfully
+        """ 
+        Utility function to run fehm.
+        Asserts that fehm terminates successfully.
 
-            :param filesfile: name of fehm files file
-            :type filesfile: str """
+        :param filesfile: name of fehm files file
+        :type filesfile: str 
+        """
         
         #Find the control file for the test-case or for the subcase. 
         if subcase == '':
@@ -425,7 +486,8 @@ class Tests(unittest.TestCase):
                     errfile = line.split(':')[1].strip()
                            
             # Assume old format
-            if outfile is None and ':' not in lines[0]: outfile=lines[3].strip()
+            if outfile is None and ':' not in lines[0]: 
+                outfile=lines[3].strip()
  
         complete = False
         if outfile:
@@ -435,12 +497,17 @@ class Tests(unittest.TestCase):
                         complete = True
                         break
                         
-        if os.path.exists(errfile): errstr = open( errfile, 'r' ).read()
-        else: errstr = ''
-        curdir = os.getcwd()
-        # Change to maindir in case assertTrue fails
+        if os.path.exists(errfile): 
+            errstr = open( errfile, 'r' ).read()
+        else: 
+            errstr = ''
+            
+        # Change to maindir in case assertTrue fails    
+        curdir = os.getcwd() 
         os.chdir(self.maindir)
-        self.assertTrue(complete, 'Unsuccessful fehm simulation\nContents of '+errfile+':\n\n'+errstr)
+        
+        msg = 'Unsuccessful fehm simulation\nContents of '
+        self.assertTrue(complete, msg+errfile+':\n\n'+errstr)
         os.chdir(curdir)
       
 def suite(case, test_case):
@@ -453,8 +520,7 @@ def suite(case, test_case):
         suite.addTest(Tests('test_avdonin'))
         suite.addTest(Tests('test_boun'))
         suite.addTest(Tests('test_cden'))
-        suite.addTest(Tests('test_doe'))  
-        suite.addTest(Tests('test_forward'))
+        suite.addTest(Tests('test_doe'))       
         suite.addTest(Tests('test_head'))
         suite.addTest(Tests('test_ramey'))
         suite.addTest(Tests('test_theis'))
@@ -475,6 +541,7 @@ def suite(case, test_case):
         #suite.addTest(Tests('test_dpdp_rich'))
         #suite.addTest(Tests('test_erosion'))
         #suite.addTest(Tests('test_gdpm'))
+        #suite.addTest(Tests('test_forward'))
              
     elif case == 'single':
         suite.addTest(Tests(test_case))

@@ -10,6 +10,11 @@ pressure
 temperature
 saturation
 endavs
+hist
+pressure
+temperature
+saturation
+end
 sol
     1    1
 init

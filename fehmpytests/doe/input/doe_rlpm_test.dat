@@ -9,7 +9,7 @@ pressure
 temperature
 saturation
 endavs
-hist tecplot
+hist
 relperm 0.05
 end
 sol
