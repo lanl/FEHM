@@ -1,0 +1,20 @@
+Dry-Out of a Partially Saturated Medium
+Comparison of Dryout Front vs Time word Vapor Pressure Lowering
+Time DAYS days
+contourx    		Data type
+output/dryoutVPL_rlpm.
+input/dryout.analytNum
+output/dryoutVPL_rlpm.comp_frontNum
+1			Time
+1                       Time position
+sca                     AVS data type
+0000Num                 File number
+Days			Simulation time (seconds)
+2 1			1D radial (X,Y coordinates), X slice (fixed Y)
+input/dryout.geo
+1. 0.			Y value, Z value
+1			Data parameter position (saturation)
+0. 1. 0. 1.             Translate Y1, Scale Y1, Translate Y2, Scale Y2
+0. 1. 0. 1.		Translate X1, Scale X1, Translate X2, Scale X2
+1.e-20 0.198 0.		Low Y, high Y, minimum X (interpolating on Y)
+.FALSE.			Print data

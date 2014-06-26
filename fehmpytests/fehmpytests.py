@@ -149,7 +149,7 @@ class Tests(unittest.TestCase):
         
         Compares the generated contour and history files to old contour and 
         history files that are known to be correct. For contour files, only the
-        temperature values at day 2 are tested. For history files, all 
+        temperature values at time 2 are tested. For history files, all 
         temperature values are tested. 
         
         .. Authors: Mark Lange
@@ -167,7 +167,7 @@ class Tests(unittest.TestCase):
         **Test the Boundry Functionality**
         
         Compares the generated contour files to old contour files that are known
-        to be correct. Only the pressure and hydraulic head values at day 2 are 
+        to be correct. Only the pressure and hydraulic head values at time 2 are 
         tested.
         
         .. Authors: Mark Lange
@@ -202,7 +202,7 @@ class Tests(unittest.TestCase):
         
         Compares the generated contour and history files to old contour and
         history files that are known to be correct. For contour files, only the
-        pressure, temperature, and saturation values at day 3 are tested. For 
+        pressure, temperature, and saturation values at time 3 are tested. For 
         history files, all pressure, temperature, and saturation values are 
         tested.
         
@@ -239,7 +239,7 @@ class Tests(unittest.TestCase):
         
         Compares the generated contour and history files to old contour and
         history file that are known to be correct. For the contour files, only 
-        the temperature values at day 2 are tested. For the history files, all 
+        the temperature values at time 2 are tested. For the history files, all 
         temperature values are tested.
         
         .. Authors: Mark Lange
@@ -257,7 +257,7 @@ class Tests(unittest.TestCase):
         **Test Pressure Transient Analysis Problem**
         
         Compares the generated contour files to old contour files known to be 
-        correct. Only the pressure values at day 2 are tested.
+        correct. Only the pressure values at time 2 are tested.
         
         .. Authors: Mark Lange
         .. Updated: June 2014 by Mark Lange
@@ -268,7 +268,23 @@ class Tests(unittest.TestCase):
         arguments['variables'] = ['P']
         
         self.test_case('theis', arguments)
-   
+        
+    def test_dryout(self):
+        """
+        Test Dry-Out of a Partially Saturated Medium
+        
+        Compares the generated contour files to old contour files known to be 
+        correct. The saturation is tested for all times.
+        
+        .. Authors: Mark Lange
+        .. Updated: June 2014 by Mark Lange 
+        """
+        
+        arguments = {}
+        arguments['variables'] = ['saturation']
+        
+        self.test_case('dryout')
+        
     # Test Developer Functionality ############################################
         
     def test_case(self, name, parameters={}):
@@ -318,7 +334,7 @@ class Tests(unittest.TestCase):
                  
         finally:
             #Allows other tests to be performed after exception.
-            self._cleanup(['*.*'])
+            #self._cleanup(['*.*'])
             os.chdir(self.maindir)
             
                    
@@ -524,8 +540,9 @@ def suite(case, test_case):
         suite.addTest(Tests('test_head'))
         suite.addTest(Tests('test_ramey'))
         suite.addTest(Tests('test_theis'))
+        suite.addTest(Tests('test_dryout'))
         
-        #TODO - Look into why this tests take so long.
+        #TODO - Look into why this test take so long.
         #suite.addTest(Tests('test_evaporation'))
         
         #TODO - Figure out how to read some other formats.

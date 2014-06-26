@@ -1,0 +1,9 @@
+Dry-Out of a Partially Saturated Medium
+Dryout w/o VP lowering
+output/dryout1.out
+Dryout with VP lowering
+output/dryout2.out
+Dryout w/o VP lowerng N
+output/dryout1_rlpm.out
+Dryout with VP lowrng N
+output/dryout2_rlpm.out
