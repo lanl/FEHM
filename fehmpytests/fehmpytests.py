@@ -15,6 +15,7 @@
 import unittest
 import os
 import sys
+import argparse
 import re
 import numpy as np
 from subprocess import call, PIPE
@@ -285,6 +286,9 @@ class Tests(unittest.TestCase):
         
         self.test_case('dryout')
         
+    def test_multi_solute(self):
+        self.test_case('multi_solute')
+        
     # Test Developer Functionality ############################################
         
     def test_case(self, name, parameters={}):
@@ -325,7 +329,7 @@ class Tests(unittest.TestCase):
         try:
             #Test the new files generated with each subcase.
             for subcase in subcases:
-                filetypes = ['*.avs', '*.csv', '*.his', '*.out']
+                filetypes = ['*.avs', '*.csv', '*.his', '*.out', '*.trc']
                 for filetype in filetypes:
                     #Check to make sure there are files of this type.
                     if len(glob('compare/'+'*'+subcase+filetype)) > 0:
@@ -475,7 +479,8 @@ class Tests(unittest.TestCase):
 
     def _run_fehm(self, subcase):
         """ 
-        Utility function to run fehm.
+        **Utility function to run fehm**
+        
         Asserts that fehm terminates successfully.
 
         :param filesfile: name of fehm files file
@@ -526,10 +531,11 @@ class Tests(unittest.TestCase):
         self.assertTrue(complete, msg+errfile+':\n\n'+errstr)
         os.chdir(curdir)
       
-def suite(case, test_case):
+def suite(mode, test_case):
     suite = unittest.TestSuite()
     
-    if case == 'all':
+    #Default mode is admin for now. Should it be different?
+    if mode == 'admin' or mode == 'default':
         suite.addTest(Tests('test_saltvcon'))
         suite.addTest(Tests('test_dissolution'))
         suite.addTest(Tests('test_salt_perm_poro'))
@@ -559,34 +565,73 @@ def suite(case, test_case):
         #suite.addTest(Tests('test_erosion'))
         #suite.addTest(Tests('test_gdpm'))
         #suite.addTest(Tests('test_forward'))
-             
-    elif case == 'single':
-        suite.addTest(Tests(test_case))
-        
-    elif case == 'developer':
+    
+    elif mode == 'developer':
+        #This mode will be a reduced set that runs faster.
         pass
-        
-    elif case == 'admin':
+             
+    elif mode == 'solo':
+        suite.addTest(Tests(test_case))
+            
+    elif mode == 'admin':
         pass
         
     return suite
 
 if __name__ == '__main__':
-    #By default, run all test cases.
-    if len(sys.argv) > 1:
-        exe = os.path.abspath(sys.argv[1])
-        mode = 'all'
-        test_case = ''
     
-        #Single mode can (currently) specify 1 test-case to run.    
-        if len(sys.argv) > 2:
-            mode = 'single'
-            test_case = sys.argv[2]
-                       
+    #Unless the user specifies a single test-case, this isn't important.
+    test_case = ''
+
+    #Set up command-line interface.
+    parser = argparse.ArgumentParser(description='FEHM Test-Suite')
+    
+    group = parser.add_mutually_exclusive_group()
+    
+    a = 'store_true'
+    h = 'Run the entire test-suite.'
+    group.add_argument('-a', '--admin', help=h, action=a)
+    
+    h = 'Run a portion of the test-suite.'
+    group.add_argument('-d', '--dev', help=h, action=a)
+    
+    h = 'Run a single test-case.'
+    group.add_argument('-s', '--solo', help=h, action=a)
+
+    h = 'Path to the FEHM executable.'
+    parser.add_argument('exe', help=h)
+    
+    h = 'Single test-case to run.'
+    parser.add_argument('testcase', nargs='?', help=h, default=None)
+     
+    args = vars(parser.parse_args())
+    
+    exe = args['exe']
+        
+    if args['solo']:
+        #Make sure that the test-case was specified, otherwise show help.
+        if args['testcase'] != None:
+            mode = 'solo'
+            test_case = args['testcase']
+        else:
+            parser.print_help()   
+    
     else:
-        print "Usage: python fehmpytests.py fehm-executable test(optional)"  
-        os._exit(0)
-    
+        #Make sure user did not attempt to specify a test-case, show help if so.
+        if args['testcase'] == None:
+            if args['admin']:
+                mode = 'admin'
+            elif args['dev']:
+                mode = 'developer'
+            else:
+                mode = 'default'
+        else:
+            #If user didn't specify admin or dev, assume solo mode.
+            if not args['admin'] and not args['dev']:
+                mode = 'solo'
+            else:       
+                parser.print_help()
+        
     runner = unittest.TextTestRunner(verbosity=2)
     test_suite = suite(mode, test_case)
     runner.run(test_suite)
