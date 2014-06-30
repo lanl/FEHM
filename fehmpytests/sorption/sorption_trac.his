@@ -1,0 +1,10 @@
+FEHM V3.2.0lin 14-06-23 QA:NA    06/30/2014    14:27:14
+Check of FEHMN against SORBEQ, All isotherms                                    
+trac
+Output file format: Standard text
+Parameters written to individual history files:
+ Concentration
+for the following nodes:
+Number of output nodes:    1
+     201   1.00000000       1.00000000       0.00000000    
+

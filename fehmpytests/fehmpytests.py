@@ -292,9 +292,25 @@ class Tests(unittest.TestCase):
         
         Compares the generated tracer files to old tracer files known to be 
         correct. All concentraction values are tested.
+        
+        .. Authors: Mark Lange
+        .. Updated: June 2014 by Mark Lange
         """
         
         self.test_case('multi_solute')
+        
+    def test_sorption(self):
+        """
+        **Test One Dimensional Reactive Solute Transport**
+        
+        Compares the generated tracer files to old tracer files known to be
+        correct. All concentraction values are tested.
+        
+        .. Authors: Mark Lange
+        .. Updated: June  2014 by Mark Lange
+        """
+        
+        self.test_case('sorption')
         
     # Test Developer Functionality ############################################
         
@@ -345,7 +361,7 @@ class Tests(unittest.TestCase):
                  
         finally:
             #Allows other tests to be performed after exception.
-            self._cleanup(['*.*'])
+            #self._cleanup(['*.*'])
             os.chdir(self.maindir)
             
                    
@@ -413,7 +429,7 @@ class Tests(unittest.TestCase):
                     f_dif[t][v] = map(abs, f_dif[t][v])   
             	    self.assertTrue(max(f_dif[t][v]) < mxerr, msg%(v, t))
         
-        #Choose if testing history or  files.    
+        #Choose if testing history or tracer files.    
         elif condition3 or condition4:
             #If no pre-specifed nodes, grab them from f_dif.
             if len(nodes) == 0:
@@ -559,6 +575,7 @@ def suite(mode, test_case):
         suite.addTest(Tests('test_theis'))
         suite.addTest(Tests('test_dryout'))
         suite.addTest(Tests('test_multi_solute'))
+        suite.addTest(Tests('test_sorption'))
         
         #TODO - Look into why this test takes so long.
         #suite.addTest(Tests('test_evaporation'))
