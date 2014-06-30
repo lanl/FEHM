@@ -1,0 +1,16 @@
+output/multi_solute_trac.comp_Co_aq
+output/multi_solute_trac.comp_Fe_aq
+output/multi_solute_trac.comp_EDTA_aq
+output/multi_solute_trac.comp_CoEDTA_aq  
+output/multi_solute_trac.comp_FeEDTA_aq
+output/multi_solute_trac.comp_CoEDTA_s  
+output/multi_solute_trac.comp_Co_s
+output/multi_solute_trac.comp_FeEDTA_s
+output/multi_solute_trxn.comp_Co_aq
+output/multi_solute_trxn.comp_Fe_aq
+output/multi_solute_trxn.comp_EDTA_aq
+output/multi_solute_trxn.comp_CoEDTA_aq  
+output/multi_solute_trxn.comp_FeEDTA_aq
+output/multi_solute_trxn.comp_CoEDTA_s  
+output/multi_solute_trxn.comp_Co_s
+output/multi_solute_trxn.comp_FeEDTA_s

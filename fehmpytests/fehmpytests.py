@@ -272,7 +272,7 @@ class Tests(unittest.TestCase):
         
     def test_dryout(self):
         """
-        Test Dry-Out of a Partially Saturated Medium
+        **Test Dry-Out of a Partially Saturated Medium**
         
         Compares the generated contour files to old contour files known to be 
         correct. The saturation is tested for all times.
@@ -287,6 +287,13 @@ class Tests(unittest.TestCase):
         self.test_case('dryout')
         
     def test_multi_solute(self):
+        """
+        **Test Multi-Solute Transport with Chemical Reaction**
+        
+        Compares the generated tracer files to old tracer files known to be 
+        correct. All concentraction values are tested.
+        """
+        
         self.test_case('multi_solute')
         
     # Test Developer Functionality ############################################
@@ -338,7 +345,7 @@ class Tests(unittest.TestCase):
                  
         finally:
             #Allows other tests to be performed after exception.
-            #self._cleanup(['*.*'])
+            self._cleanup(['*.*'])
             os.chdir(self.maindir)
             
                    
@@ -384,10 +391,14 @@ class Tests(unittest.TestCase):
         #If no pre-specified variables, grab them from f_dif.
         if len(variables) == 0:
             variables = f_dif.variables
-
-        #Choose if testing contour files.        
+       
         condition1 = '.avs' in filetype
         condition2 = '.csv' in filetype  
+        condition3 = '.his' in filetype
+        condition4 = '.trc' in filetype
+        condition5 = '.out' in filetype
+        
+        #Choose if testing contour files. 
         if condition1 or condition2:
             #If no pre-specified times, grab them from f_dif.
             if len(times) == 0:    
@@ -402,8 +413,8 @@ class Tests(unittest.TestCase):
                     f_dif[t][v] = map(abs, f_dif[t][v])   
             	    self.assertTrue(max(f_dif[t][v]) < mxerr, msg%(v, t))
         
-        #Choose if testing history files.       
-        elif '.his' in filetype:
+        #Choose if testing history or  files.    
+        elif condition3 or condition4:
             #If no pre-specifed nodes, grab them from f_dif.
             if len(nodes) == 0:
                 nodes = f_dif.nodes
@@ -417,7 +428,7 @@ class Tests(unittest.TestCase):
             	    self.assertTrue(max(f_dif[v][n])<mxerr, msg%(v, n))
 
         #Choose if testing output files.
-        elif '.out' in filetype:
+        elif condition5:
             #If no pre-specified componets, grab them from f_dif.
             if len(components) == 0:
                 components = f_dif.components
@@ -448,15 +459,15 @@ class Tests(unittest.TestCase):
         Updated: June 2014 
         """
     
-        #Is a history file even if it ends in .avs or .csv if _his in pattern.
-        if '_his.' in file_pattern:
-            return fhistory(file_pattern)  
-        elif '.his' in file_pattern:
-            return fhistory(file_pattern)
-        elif '.avs' in file_pattern:
+        #Assume that .avs and .csv files are contour files.
+        if '.avs' in file_pattern:
             return fcontour(file_pattern)
         elif '.csv' in file_pattern:
             return fcontour(file_pattern)
+        elif '.his' in file_pattern:
+            return fhistory(file_pattern)
+        elif '.trc' in file_pattern:
+            return ftracer(file_pattern)    
         elif '.out' in file_pattern:
             #Assuming each subcase has only 1 file, use glob to find it.
             filename = glob(file_pattern)[0]
@@ -465,7 +476,7 @@ class Tests(unittest.TestCase):
     def setUp(self):
         self.maindir = os.getcwd()
 
-    def _cleanup(self,files):
+    def _cleanup(self, files):
         """ 
         Utility function to remove files after test
 
@@ -547,15 +558,15 @@ def suite(mode, test_case):
         suite.addTest(Tests('test_ramey'))
         suite.addTest(Tests('test_theis'))
         suite.addTest(Tests('test_dryout'))
+        suite.addTest(Tests('test_multi_solute'))
         
-        #TODO - Look into why this test take so long.
+        #TODO - Look into why this test takes so long.
         #suite.addTest(Tests('test_evaporation'))
         
         #TODO - Figure out how to read some other formats.
         #suite.addTest(Tests('test_sptr_btc'))
         #suite.addTest(Tests('test_sorption'))
         #suite.addTest(Tests('test_particle_capture'))
-        #suite.addTest(Tests('test_multi_solute'))
         #suite.addTest(Tests('test_mptr'))
         #suite.addTest(Tests('test_lost_part'))
         #suite.addTest(Tests('test_chain'))
@@ -606,7 +617,7 @@ if __name__ == '__main__':
      
     args = vars(parser.parse_args())
     
-    exe = args['exe']
+    exe = os.path.abspath(args['exe'])
         
     if args['solo']:
         #Make sure that the test-case was specified, otherwise show help.
@@ -629,6 +640,7 @@ if __name__ == '__main__':
             #If user didn't specify admin or dev, assume solo mode.
             if not args['admin'] and not args['dev']:
                 mode = 'solo'
+                test_case = args['testcase']
             else:       
                 parser.print_help()
         

@@ -1555,7 +1555,10 @@ class fhistory(object):						# Reading and plotting methods associated with hist
 		:type filename: str
 		'''
 		from glob import glob
-		files=glob(filename)
+		import re
+		glob_pattern = re.sub(r'\[','[[]',filename)
+		glob_pattern = re.sub(r'(?<!\[)\]','[]]', glob_pattern)
+		files=glob(glob_pattern)
 		configured=False
 		for i,fname in enumerate(files):
 			if self._verbose:
@@ -1922,6 +1925,34 @@ class fnodeflux(object): 					# Reading and plotting methods associated with int
 	def _get_nodepairs(self): return self._nodepairs
 	def _set_nodepairs(self,value): self._nodepairs = value
 	nodepairs = property(_get_nodepairs, _set_nodepairs) #: (*lst*) node pairs for which node flux information is available. Each node pair is represented as a two item tuple of node indices.
+class ftracer(fhistory): 					# Derived class of fhistory, for tracer output
+	'''Tracer history output information object.
+	'''
+	def __init__(self,filename=None,verbose=True):
+		super(ftracer,self).__init__(filename, verbose)
+		self._filename=None	
+		self._times=[]	
+		self._verbose = verbose
+		self._data={}
+		self._row=None
+		self._nodes=[]	
+		self._variables=[] 
+		self._keyrows={}
+		self.column_name=[]
+		self.num_columns=0
+		self._nkeys=1
+		if filename: self._filename=filename; self.read(filename)
+	def _read_data_default(self,var_key):
+		try: var_key = hist_var_names[var_key]
+		except: pass
+		self._variables.append(var_key)
+		lns = self._file.readlines()
+		data = []
+		for ln in lns: data.append([float(d) for d in ln.strip().split()])
+		data = np.array(data)
+		if data[-1,0]<data[-2,0]: data = data[:-1,:]
+		self._times = np.array(data[:,0])
+		self._data[var_key] = dict([(node,data[:,icol+1]) for icol,node in enumerate(self.nodes)])
 class multi_pdf(object):
 	'''Tool for making a single pdf document from multiple eps files.'''
 	def __init__(self,combineString = 'gswin64',
@@ -2740,7 +2771,7 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
 		print "ERROR: fpost objects are not of the same type: "+str(type(in1))+" and "+str(type(in2))
 		return
 	if isinstance(in1, fcontour) or isinstance(in1, fhistory) or 'foutput' in str(in1.__class__):
-		# Find common times
+		# Find common timesclear
 		t = np.intersect1d(in1.times,in2.times)
 		if len(t) == 0:
 			print "ERROR: fpost object times do not have any matching values"
@@ -2782,7 +2813,7 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
 	#Takes the difference of two fhistory objects.	
 	elif isinstance(in1, fhistory):
 		# Find common variables
-		v = np.intersect1d(in1.variables, in2.variables)		
+		v = np.intersect1d(in1.variables, in2.variables)
 		if len(v) == 0:
 			print "ERROR: fhistory object variables do not have any matching values"
 			return

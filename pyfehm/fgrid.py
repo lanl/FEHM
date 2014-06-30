@@ -1019,6 +1019,69 @@ class fgrid(object):				#Grid object.
 			elif N[2]>N[1] and N[2]>N[0]:	
 				#con._geom_coef = [areas[2]/(con.distance/2.),]
 				con._geom_coef = areas[2]/con.distance
+	def write_pylith(self,filename, materials=[0], zones=[]):
+		""" Write out grid in PyLith format.
+		"""
+		fp = open(filename,'w')
+		
+		# write mesh info
+		fp.write('// Pylith Mesh \''+filename+'\'')
+		fp.write('\n\n')
+		fp.write('mesh = {\n')
+		fp.write('\tdimension = 3\n')
+		fp.write('\tuse-index-zero = false\n')
+		
+		# write node info
+		fp.write('\tvertices = {\n')
+		fp.write('\t\tdimension = 3\n')
+		fp.write('\t\tcount = %6i\n'%len(self.nodelist))
+		fp.write('\t\tcoordinates = {\n')
+		for nd in self.nodelist:
+			fp.write('\t\t%6i %8.4f %8.4f %8.4f\n'%(nd.index,nd.position[0],nd.position[1],nd.position[2]))
+		fp.write('\t\t}\n')
+		fp.write('\t}\n\n')
+		
+		# write element info
+		fp.write('\tcells = {\n')
+		fp.write('\t\tcount = %6i\n'%len(self.elemlist))
+		fp.write('\t\tnum-corners = 8\n')
+		fp.write('\t\tsimplices = {\n')
+		for el in self.elemlist:
+			nums = (el.index, el.nodes[4].index, el.nodes[5].index, el.nodes[6].index, el.nodes[7].index, el.nodes[0].index, el.nodes[1].index, el.nodes[2].index, el.nodes[3].index)
+			fp.write('\t\t\t%6i %6i %6i %6i %6i %6i %6i %6i %6i\n'%nums)
+		fp.write('\t\t}\n')
+		
+		fp.write('\t\tmaterial-ids = {\n')
+		for el in self.elemlist:
+			nds = np.zeros((1,len(materials)))[0]
+			for nd in el.nodes:
+				for i,material in enumerate(materials):
+					if material in [zn.name for zn in nd.zonelist]: 
+						nds[i] +=1
+						break
+			num = materials.index(materials[np.argmax(nds)])
+			fp.write('\t\t\t%6i %6i\n'%(el.index,num))
+		fp.write('\t\t}\n')
+		fp.write('\t}\n')
+		
+		# write zone info
+		for zone in zones:
+			zone = self._parent.zone[zone]
+			fp.write('\n')
+			fp.write('\tgroup = {\n')
+			fp.write('\t\tname = %s\n'%zone.name)
+			fp.write('\t\ttype = vertices\n')
+			fp.write('\t\tcount = %6i\n'%len(zone.nodelist))
+			fp.write('\t\tindices = {\n')
+			for nd in zone.nodelist:
+				fp.write('\t\t\t%6i\n'%nd.index)
+			fp.write('\t\t}\n')
+			fp.write('\t}\n')
+		
+		fp.write('}\n')
+		
+		
+		return
 	def remove_zeros(self, tolerance = 1.e-8, keepcons = []):
 		""" Removes node connections with geometric coefficients smaller than a supplied tolerance.
 		
