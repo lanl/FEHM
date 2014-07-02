@@ -11,26 +11,25 @@
 # warranty, express or  implied, or assumes any liability or
 # responsibility for the use of this information.      
 #***********************************************************************
-
 import unittest
 import os
 import sys
 import argparse
 import re
 import numpy as np
-from subprocess import call, PIPE
+import glob
+from subprocess import call
+from subprocess import PIPE
 try:
     sys.path.insert(0,'../pyfehm')
-    from fdata import *
+    import fdata
 except ImportError as err:
     print 'ERROR: Unable to import pyfehm fpost module'
     print err
     os._exit(0)
-from glob import glob
 
 #Suppresses tracebacks
 __unittest = True 
-
 
 class Tests(unittest.TestCase):
     """
@@ -47,6 +46,12 @@ class Tests(unittest.TestCase):
     Authors: Dylan Harp, Mark Lange
     Updated: June 2014 
     """    
+    
+    switch = {}
+    
+    def setUp(self):
+        self.values = {}
+        self.maindir = os.getcwd()
     
     # TESTS ######################################################### 
         
@@ -336,7 +341,7 @@ class Tests(unittest.TestCase):
         os.chdir(name)
         
         #Search for fehmn control files and extract subcases.
-        filenames = glob('input/control/*.files')
+        filenames = glob.glob('input/control/*.files')
         subcases  = []
         for filename in filenames:
             subcase = re.sub('input/control/', '', filename)
@@ -352,32 +357,37 @@ class Tests(unittest.TestCase):
         try:
             #Test the new files generated with each subcase.
             for subcase in subcases:
+                parameters['subcase'] = subcase
                 filetypes = ['*.avs', '*.csv', '*.his', '*.out', '*.trc']
                 for filetype in filetypes:
+                    parameters['filetype'] = filetype
                     #Check to make sure there are files of this type.
-                    if len(glob('compare/'+'*'+subcase+filetype)) > 0:
-                        #Check for any significant differences.
-                        self._checkDifferences(filetype, subcase, parameters)
-                 
+                    if len(glob.glob('compare/'+'*'+subcase+filetype)) > 0: 
+                        test_method = \
+                          self._test_template(filetype, subcase, parameters)
+                        test_method()
+                                        
         finally:
             #Allows other tests to be performed after exception.
-            #self._cleanup(['*.*'])
+            cleanup(['*.*'])
             os.chdir(self.maindir)
             
-                   
-    # UTILITIES ######################################################
-         
-    def _checkDifferences(self, filetype, subcase, parameters={}):
-        """ 
-        **Check Difference**
-        
-        Checks the difference between old and new output. Fails if the
-        difference is greater than maxerr, defaulted to 1.e-4. 
-        
-        .. Authors: Mark Lange
-        .. Updated: June 2014
+    def _test_template(self, filetype, subcase, parameters={}):
         """
-
+        **Test Template**
+        
+        Calling this function with the filename and subcase will return the 
+        correct test method. 
+        
+        :param parameters: Stores optional prespecified variable, time, node, 
+                           component, and format values to override defaults.
+        :type filesfile:   dict 
+        
+        The intent behind creating this method was to make it pythonic. If you 
+        need to modify this function and need help understanding it, look into
+        'closure' and functions as 'first class objects'.
+        """
+            
         #Get pre-specified parameters from call.
         keys = ['variables', 'times', 'nodes', 'components', 'format']
         values = dict.fromkeys(keys, [])
@@ -385,56 +395,58 @@ class Tests(unittest.TestCase):
         format = 'relative'
         for key in values:
             if key in parameters:
-                values[key] = parameters[key]
-                
-        variables = values['variables']
-        times = values['times']
-        nodes = values['nodes']
+                values[key] = parameters[key]                      
         mxerr = values['maxerr']
         components = values['components']
         format = values['format']
         
-        #Read in the old comparison files. 
-        f_old = self._fgeneral('compare/*'+subcase+filetype) 
-
-        #Read in new files.
         self._run_fehm(subcase)
-        f_new = self._fgeneral('*'+subcase+filetype)
         
-        #Find the difference between the two files.
-        f_dif = fdiff(f_new, f_old)
-        
-        #If no pre-specified variables, grab them from f_dif.
-        if len(variables) == 0:
-            variables = f_dif.variables
-       
-        condition1 = '.avs' in filetype
-        condition2 = '.csv' in filetype  
-        condition3 = '.his' in filetype
-        condition4 = '.trc' in filetype
-        condition5 = '.out' in filetype
-        
-        #Choose if testing contour files. 
-        if condition1 or condition2:
-            #If no pre-specified times, grab them from f_dif.
-            if len(times) == 0:    
-                times = f_dif.times
-        
+        def contour_case():      
+            #Find the difference between the old and new
+            f_old = fdata.fcontour('compare/*'+subcase+filetype) 
+            f_new = fdata.fcontour('*'+subcase+filetype)
+            f_dif = fdata.fdiff(f_new, f_old)
+
             msg = 'Incorrect %s at time %s.'
+            
+            #If no pre-specified times, grab them from f_dif.
+            if len(values['times']) == 0:
+                times = f_dif.times
+            else:
+                times = values['times']
+            
+            #If no pre-specified variables, grab them from f_dif.         
+            if len(values['variables']) == 0:
+                variables = f_dif.variables
+            else:
+                variables = values['variables']
             
             #Check the variables at each time for any significant differences.
             for t in times: 
                 #Its possible some times do not have all variables in f_dif.
                 for v in np.intersect1d(variables, f_dif[t]):
                     f_dif[t][v] = map(abs, f_dif[t][v])   
-            	    self.assertTrue(max(f_dif[t][v]) < mxerr, msg%(v, t))
-        
-        #Choose if testing history or tracer files.    
-        elif condition3 or condition4:
+                    self.assertTrue(max(f_dif[t][v]) < mxerr, msg%(v, t))
+                      
+        def history_case():
+            #Find the difference between the old and new
+            f_old = fdata.fhistory('compare/*'+subcase+filetype) 
+            f_new = fdata.fhistory('*'+subcase+filetype)
+            f_dif = fdata.fdiff(f_new, f_old)
+            
+            #If no pre-specified variables, grab them from f_dif.         
+            if len(values['variables']) == 0:
+                variables = f_dif.variables
+            else:
+                variables = values['variables']
+            
             #If no pre-specifed nodes, grab them from f_dif.
-            if len(nodes) == 0:
+            if len(values['nodes']) == 0:
                 nodes = f_dif.nodes
-        
+            else:
+                nodes = values['nodes']   
+               
             msg = 'Incorrect %s at node %s.'  
             
             #Check the nodes at each variable for any significant differences.   
@@ -442,16 +454,52 @@ class Tests(unittest.TestCase):
                 #Its possible some variables do not have all nodes in f_dif.
                 for n in np.intersect1d(nodes, f_dif[v]):     
             	    self.assertTrue(max(f_dif[v][n])<mxerr, msg%(v, n))
-
-        #Choose if testing output files.
-        elif condition5:
-            #If no pre-specified componets, grab them from f_dif.
-            if len(components) == 0:
-                components = f_dif.components
-                
+            	    
+        def tracer_case():
+            #Find the difference between the old and new
+            f_old = fdata.ftracer('compare/*'+subcase+filetype) 
+            f_new = fdata.ftracer('*'+subcase+filetype)
+            f_dif = fdata.fdiff(f_new, f_old)
+            
+            #If no pre-specified variables, grab them from f_dif.         
+            if len(values['variables']) == 0:
+                variables = f_dif.variables
+            else:
+                variables = values['variables']
+            
             #If no pre-specifed nodes, grab them from f_dif.
-            if len(nodes) == 0:
+            if len(values['nodes']) == 0:
                 nodes = f_dif.nodes
+            else:
+                nodes = values['nodes']    
+
+            msg = 'Incorrect %s at node %s.'  
+            
+            #Check the nodes at each variable for any significant differences.   
+            for v in variables:
+                #Its possible some variables do not have all nodes in f_dif.
+                for n in np.intersect1d(nodes, f_dif[v]):     
+            	    self.assertTrue(max(f_dif[v][n])<mxerr, msg%(v, n))
+            
+        def output_case():
+            #Find difference between old and new file assume 1 file per subcase.
+            old_filename = glob.glob('compare/*'+subcase+filetype)[0]
+            new_filename = glob.glob('*'+subcase+filetype)[0]
+            f_old = fdata.foutput(old_filename)
+            f_new = fdata.foutput(new_filename)
+            f_dif = fdata.fdiff(f_new, f_old)
+            
+            #If no pre-specified variables, grab them from f_dif.         
+            if len(values['variables']) == 0:
+                variables = f_dif.variables
+            else:
+                variables = values['variables']
+
+            #If no pre-specifed nodes, grab them from f_dif.
+            if len(values['nodes']) == 0:
+                nodes = f_dif.nodes
+            else:
+                nodes = values['nodes']
                 
             msg = 'Incorrect %s at %s node %s.'  
             
@@ -461,49 +509,13 @@ class Tests(unittest.TestCase):
                     for v in variables:
                         difference = max(f_dif.node[c][n][v])
                         self.assertTrue(difference < mxerr, msg%(v,c,n))
-                        
-    def _fgeneral(self, file_pattern):
-        """
-        Process General fdata
         
-        Chooses the correct fdata method to process FEHM calculations.
-        
-        :param file_pattern: File pattern to processed.
-        :type file_pattern:  str
-        
-        Author: Mark Lange
-        Updated: June 2014 
-        """
-    
-        #Assume that .avs and .csv files are contour files.
-        if '.avs' in file_pattern:
-            return fcontour(file_pattern)
-        elif '.csv' in file_pattern:
-            return fcontour(file_pattern)
-        elif '.his' in file_pattern:
-            return fhistory(file_pattern)
-        elif '.trc' in file_pattern:
-            return ftracer(file_pattern)    
-        elif '.out' in file_pattern:
-            #Assuming each subcase has only 1 file, use glob to find it.
-            filename = glob(file_pattern)[0]
-            return foutput(filename)
-            	    
-    def setUp(self):
-        self.maindir = os.getcwd()
-
-    def _cleanup(self, files):
-        """ 
-        Utility function to remove files after test
-
-        :param files: list of file names to remove
-        :type files: lst(str) 
-        """
-            
-        for g in files:
-            for f in glob(g):
-                if os.path.exists(f): os.remove(f)
-
+        return { '*.avs': contour_case,
+                 '*.csv': contour_case,
+                 '*.his': history_case,
+                 '*.trc': tracer_case,
+                 '*.out': output_case, }[filetype]
+                                    
     def _run_fehm(self, subcase):
         """ 
         **Utility function to run fehm**
@@ -539,7 +551,7 @@ class Tests(unittest.TestCase):
  
         complete = False
         if outfile:
-            with open( outfile, 'r' ) as f:
+            with open(outfile, 'r' ) as f:
                 for line in reversed(f.readlines()):
                     if 'End Date' in line:
                         complete = True
@@ -557,6 +569,18 @@ class Tests(unittest.TestCase):
         msg = 'Unsuccessful fehm simulation\nContents of '
         self.assertTrue(complete, msg+errfile+':\n\n'+errstr)
         os.chdir(curdir)
+                     
+def cleanup(files):
+    """ 
+    Utility function to remove files after test
+
+    :param files: list of file names to remove
+    :type files: lst(str) 
+    """
+        
+    for g in files:
+        for f in glob.glob(g):
+            if os.path.exists(f): os.remove(f)
       
 def suite(mode, test_case):
     suite = unittest.TestSuite()
@@ -664,5 +688,6 @@ if __name__ == '__main__':
     runner = unittest.TextTestRunner(verbosity=2)
     test_suite = suite(mode, test_case)
     runner.run(test_suite)
+
 
 
