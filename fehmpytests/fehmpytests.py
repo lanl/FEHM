@@ -31,7 +31,7 @@ except ImportError as err:
 #Suppresses tracebacks
 __unittest = True 
 
-class Tests(unittest.TestCase):
+class fehmTest(unittest.TestCase):
     """
     Represents a FEHM test-case. 
     
@@ -46,11 +46,29 @@ class Tests(unittest.TestCase):
     Authors: Dylan Harp, Mark Lange
     Updated: June 2014 
     """    
+        
+    def __init__(self, testname, log):
+        """
+        Call the unittest constructor then initialize the main directory and
+        log switch values and create a fail log if the log switch is turned on.
+        
+        :param testname: The name of the test method.
+        :type name: str
+        
+        :param log: Switch that determines if a fail log will be generated.
+        :type name: bool
+        
+        .. Authors: Mark Lange
+        .. Updated: July 2014
+        """
     
-    switch = {}
-    
-    def setUp(self):
-        self.values = {}
+        super(fehmTest, self).__init__(testname)
+        self.log = log
+        
+        #If log switch is on, create the fail log file.
+        if self.log:
+            self.fail_log = open('fail_log.txt', 'w')
+        
         self.maindir = os.getcwd()
     
     # TESTS ######################################################### 
@@ -427,7 +445,18 @@ class Tests(unittest.TestCase):
                 #Its possible some times do not have all variables in f_dif.
                 for v in np.intersect1d(variables, f_dif[t]):
                     f_dif[t][v] = map(abs, f_dif[t][v])   
-                    self.assertTrue(max(f_dif[t][v]) < mxerr, msg%(v, t))
+                    try:
+                        self.assertTrue(max(f_dif[t][v]) < mxerr, msg%(v, t))
+                    except AssertionError as e:
+                        #Write to fail log if switch is on.
+                        if self.log:
+                            kvpairs = {'variable':str(v), 'time':str(t)}
+                            line = 'Failed at subcase:'+subcase
+                            line = line+' filetype:'+filetype
+                            for key in kvpairs:        
+                                line = line+' '+key+':'+kvpairs[key]
+                            self.fail_log.write(line)   
+                        raise e
                       
         def history_case():
             #Find the difference between the old and new
@@ -452,8 +481,19 @@ class Tests(unittest.TestCase):
             #Check the nodes at each variable for any significant differences.   
             for v in variables:
                 #Its possible some variables do not have all nodes in f_dif.
-                for n in np.intersect1d(nodes, f_dif[v]):     
-            	    self.assertTrue(max(f_dif[v][n])<mxerr, msg%(v, n))
+                for n in np.intersect1d(nodes, f_dif[v]):  
+                    try:   
+            	        self.assertTrue(max(f_dif[v][n])<mxerr, msg%(v, n))
+            	    except AssertionError as e:
+                        #Write to fail log if switch is on.
+                        if self.log:
+                            kvpairs = {'variable':str(v), 'node':str(n)}
+                            line = 'Failed at subcase:'+subcase
+                            line = line+' filetype:'+filetype
+                            for key in kvpairs:        
+                                line = line+' '+key+':'+kvpairs[key]
+                            self.fail_log.write(line)   
+                        raise e
             	    
         def tracer_case():
             #Find the difference between the old and new
@@ -479,7 +519,18 @@ class Tests(unittest.TestCase):
             for v in variables:
                 #Its possible some variables do not have all nodes in f_dif.
                 for n in np.intersect1d(nodes, f_dif[v]):     
-            	    self.assertTrue(max(f_dif[v][n])<mxerr, msg%(v, n))
+                    try:
+            	        self.assertTrue(max(f_dif[v][n])<mxerr, msg%(v, n))
+            	    except AssertionError as e:
+                        #Write to fail log if switch is on.
+                        if self.log:
+                            kvpairs = {'variable':str(v), 'node':str(n)}
+                            line = 'Failed at subcase:'+subcase
+                            line = line+' filetype:'+filetype
+                            for key in kvpairs:        
+                                line = line+' '+key+':'+kvpairs[key]
+                            self.fail_log.write(line)   
+                        raise e   
             
         def output_case():
             #Find difference between old and new file assume 1 file per subcase.
@@ -508,8 +559,22 @@ class Tests(unittest.TestCase):
                 for n in nodes:
                     for v in variables:
                         difference = max(f_dif.node[c][n][v])
-                        self.assertTrue(difference < mxerr, msg%(v,c,n))
+                        try:
+                            self.assertTrue(difference < mxerr, msg%(v,c,n))
+                        except AssertionError as e:
+                            #Write to fail log if switch is on.
+                            if self.log:
+                                kvpairs = { 'component': str(c), 
+                                            'node': str(n),
+                                            'variable': str(v), }
+                                line = 'Failed at subcase:'+subcase
+                                line = line+' filetype:'+filetype
+                                for key in kvpairs:        
+                                    line = line+' '+key+':'+kvpairs[key]
+                                self.fail_log.write(line)   
+                            raise e
         
+        #Returns the test method for filetype.
         return { '*.avs': contour_case,
                  '*.csv': contour_case,
                  '*.his': history_case,
@@ -581,55 +646,55 @@ def cleanup(files):
     for g in files:
         for f in glob.glob(g):
             if os.path.exists(f): os.remove(f)
-      
-def suite(mode, test_case):
+                  
+def suite(mode, test_case, log):
     suite = unittest.TestSuite()
     
     #Default mode is admin for now. Should it be different?
     if mode == 'admin' or mode == 'default':
-        suite.addTest(Tests('test_saltvcon'))
-        suite.addTest(Tests('test_dissolution'))
-        suite.addTest(Tests('test_salt_perm_poro'))
-        suite.addTest(Tests('test_avdonin'))
-        suite.addTest(Tests('test_boun'))
-        suite.addTest(Tests('test_cden'))
-        suite.addTest(Tests('test_doe'))       
-        suite.addTest(Tests('test_head'))
-        suite.addTest(Tests('test_ramey'))
-        suite.addTest(Tests('test_theis'))
-        suite.addTest(Tests('test_dryout'))
-        suite.addTest(Tests('test_multi_solute'))
-        suite.addTest(Tests('test_sorption'))
+        suite.addTest(fehmTest('test_saltvcon', log))
+        suite.addTest(fehmTest('test_dissolution', log))
+        suite.addTest(fehmTest('test_salt_perm_poro', log))
+        suite.addTest(fehmTest('test_avdonin', log))
+        suite.addTest(fehmTest('test_boun', log))
+        suite.addTest(fehmTest('test_cden', log))
+        suite.addTest(fehmTest('test_doe', log))       
+        suite.addTest(fehmTest('test_head', log))
+        suite.addTest(fehmTest('test_ramey', log))
+        suite.addTest(fehmTest('test_theis', log))
+        suite.addTest(fehmTest('test_dryout', log))
+        suite.addTest(fehmTest('test_multi_solute', log))
+        suite.addTest(fehmTest('test_sorption', log))
         
         #TODO - Look into why this test takes so long.
-        #suite.addTest(Tests('test_evaporation'))
+        #suite.addTest(fehmTest('test_evaporation', log))
         
         #TODO - Figure out how to read some other formats.
-        #suite.addTest(Tests('test_sptr_btc'))
-        #suite.addTest(Tests('test_sorption'))
-        #suite.addTest(Tests('test_particle_capture'))
-        #suite.addTest(Tests('test_mptr'))
-        #suite.addTest(Tests('test_lost_part'))
-        #suite.addTest(Tests('test_chain'))
-        #suite.addTest(Tests('test_co2test'))
-        #suite.addTest(Tests('test_convection'))
-        #suite.addTest(Tests('test_dpdp_rich'))
-        #suite.addTest(Tests('test_erosion'))
-        #suite.addTest(Tests('test_gdpm'))
-        #suite.addTest(Tests('test_forward'))
+        #suite.addTest(fehmTest('test_sptr_btc', log))
+        #suite.addTest(fehmTest('test_sorption', log))
+        #suite.addTest(fehmTest('test_particle_capture', log))
+        #suite.addTest(fehmTest('test_mptr', log))
+        #suite.addTest(fehmTest('test_lost_part', log))
+        #suite.addTest(fehmTest('test_chain', log))
+        #suite.addTest(fehmTest('test_co2test', log))
+        #suite.addTest(fehmTest('test_convection', log))
+        #suite.addTest(fehmTest('test_dpdp_rich', log))
+        #suite.addTest(fehmTest('test_erosion', log))
+        #suite.addTest(fehmTest('test_gdpm', log))
+        #suite.addTest(fehmTest('test_forward', log))
     
     elif mode == 'developer':
         #This mode will be a reduced set that runs faster.
         pass
              
     elif mode == 'solo':
-        suite.addTest(Tests(test_case))
+        suite.addTest(fehmTest(test_case, log))
             
     elif mode == 'admin':
         pass
         
     return suite
-
+    
 if __name__ == '__main__':
     
     #Unless the user specifies a single test-case, this isn't important.
@@ -638,28 +703,30 @@ if __name__ == '__main__':
     #Set up command-line interface.
     parser = argparse.ArgumentParser(description='FEHM Test-Suite')
     
-    group = parser.add_mutually_exclusive_group()
-    
+    #Comand-line Options
+    group = parser.add_mutually_exclusive_group()   
     a = 'store_true'
     h = 'Run the entire test-suite.'
     group.add_argument('-a', '--admin', help=h, action=a)
-    
     h = 'Run a portion of the test-suite.'
     group.add_argument('-d', '--dev', help=h, action=a)
-    
     h = 'Run a single test-case.'
     group.add_argument('-s', '--solo', help=h, action=a)
-
+    
+    h = "Create a fail statistics file 'fail_log.txt'"
+    parser.add_argument('-l', '--log', help=h, action=a)
+    
+    #Positional Arguments
     h = 'Path to the FEHM executable.'
     parser.add_argument('exe', help=h)
-    
     h = 'Single test-case to run.'
     parser.add_argument('testcase', nargs='?', help=h, default=None)
      
     args = vars(parser.parse_args())
     
     exe = os.path.abspath(args['exe'])
-        
+    
+    #Determine the mode.    
     if args['solo']:
         #Make sure that the test-case was specified, otherwise show help.
         if args['testcase'] != None:
@@ -667,7 +734,6 @@ if __name__ == '__main__':
             test_case = args['testcase']
         else:
             parser.print_help()   
-    
     else:
         #Make sure user did not attempt to specify a test-case, show help if so.
         if args['testcase'] == None:
@@ -684,9 +750,15 @@ if __name__ == '__main__':
                 test_case = args['testcase']
             else:       
                 parser.print_help()
-        
+                
+    #If the user wants a log, give them a log.
+    log = False            
+    if args['log']:
+        log = True
+    
+    #Run the test suite.    
     runner = unittest.TextTestRunner(verbosity=2)
-    test_suite = suite(mode, test_case)
+    test_suite = suite(mode, test_case, log)
     runner.run(test_suite)
 
 
