@@ -407,16 +407,16 @@ class fehmTest(unittest.TestCase):
         """
             
         #Get pre-specified parameters from call.
-        keys = ['variables', 'times', 'nodes', 'components', 'format']
+        keys = ['variables', 'times', 'nodes', 'components']
         values = dict.fromkeys(keys, [])
         values['maxerr'] = 1.e-4
-        format = 'relative'
+        values['test_measure'] = 'max_difference'
         for key in values:
             if key in parameters:
                 values[key] = parameters[key]                      
         mxerr = values['maxerr']
         components = values['components']
-        format = values['format']
+        test_measure = values['test_measure']
         
         self._run_fehm(subcase)
         
@@ -444,9 +444,14 @@ class fehmTest(unittest.TestCase):
             for t in times: 
                 #Its possible some times do not have all variables in f_dif.
                 for v in np.intersect1d(variables, f_dif[t]):
-                    f_dif[t][v] = map(abs, f_dif[t][v])   
+                    #Measure the difference into a single quantity.
+                    f_dif[t][v] = map(abs, f_dif[t][v])
+                    difference = { 
+                        'max_difference': max(f_dif[t][v]),
+                        'rms_difference': np.sqrt(np.mean(f_dif[t][v])) 
+                    }[test_measure]
                     try:
-                        self.assertTrue(max(f_dif[t][v]) < mxerr, msg%(v, t))
+                        self.assertTrue(difference<mxerr, msg%(v, t))
                     except AssertionError as e:
                         #Write to fail log if switch is on.
                         if self.log:
@@ -482,8 +487,13 @@ class fehmTest(unittest.TestCase):
             for v in variables:
                 #Its possible some variables do not have all nodes in f_dif.
                 for n in np.intersect1d(nodes, f_dif[v]):  
+                    f_dif[v][n] = map(abs, f_dif[v][n])
+                    difference = { 
+                        'max_difference': max(f_dif[v][n]),
+                        'rms_difference': np.sqrt(np.mean(f_dif[v][n])) 
+                    }[test_measure]
                     try:   
-            	        self.assertTrue(max(f_dif[v][n])<mxerr, msg%(v, n))
+            	        self.assertTrue(difference<mxerr, msg%(v, n))
             	    except AssertionError as e:
                         #Write to fail log if switch is on.
                         if self.log:
@@ -518,9 +528,15 @@ class fehmTest(unittest.TestCase):
             #Check the nodes at each variable for any significant differences.   
             for v in variables:
                 #Its possible some variables do not have all nodes in f_dif.
-                for n in np.intersect1d(nodes, f_dif[v]):     
+                for n in np.intersect1d(nodes, f_dif[v]):
+                    #Measure the difference into a single quantity.
+                    f_dif[v][n] = map(abs, f_dif[v][n])
+                    difference = { 
+                        'max_difference': max(f_dif[v][n]),
+                        'rms_difference': np.sqrt(np.mean(f_dif[v][n])) 
+                    }[test_measure]     
                     try:
-            	        self.assertTrue(max(f_dif[v][n])<mxerr, msg%(v, n))
+            	        self.assertTrue(difference<mxerr, msg%(v, n))
             	    except AssertionError as e:
                         #Write to fail log if switch is on.
                         if self.log:
@@ -558,7 +574,12 @@ class fehmTest(unittest.TestCase):
             for c in components:
                 for n in nodes:
                     for v in variables:
-                        difference = max(f_dif.node[c][n][v])
+                        #Measure the difference into a single quantity.
+                        fdiff_array = map(abs, f_dif.node[c][n][v])
+                        difference = { 
+                            'max_difference': max(fdiff_array),
+                            'rms_difference': np.sqrt(np.mean(fdiff_array)) 
+                        }[test_measure]
                         try:
                             self.assertTrue(difference < mxerr, msg%(v,c,n))
                         except AssertionError as e:
@@ -694,7 +715,7 @@ def suite(mode, test_case, log):
         pass
         
     return suite
-    
+        
 if __name__ == '__main__':
     
     #Unless the user specifies a single test-case, this isn't important.
