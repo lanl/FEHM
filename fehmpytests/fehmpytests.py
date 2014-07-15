@@ -335,6 +335,25 @@ class fehmTest(unittest.TestCase):
         
         self.test_case('sorption')
         
+    def test_baro_vel(self):
+        """
+        **Test Pore-Scale Velocity in a Homogeneous Media**
+        
+        Compares the generated contour files with the old files known to be
+        correct. Tests times 3-6 for a root mean square difference of less than 
+        0.01.
+        
+        .. Authors: Mark Lange
+        .. Updated: July 2014 by Mark Lange
+        """
+        
+        args = {}
+        args['test_measure'] = 'rms_difference'
+        args['maxerr'] = 0.01
+        args['times'] = [3.0, 4.0, 5.0, 6.0]
+        
+        self.test_case('baro_vel', args)
+                
     # Test Developer Functionality ############################################
         
     def test_case(self, name, parameters={}):
@@ -418,7 +437,9 @@ class fehmTest(unittest.TestCase):
         components = values['components']
         test_measure = values['test_measure']
         
+        print 'fehm start...'
         self._run_fehm(subcase)
+        print 'fehm end.'
         
         def contour_case():      
             #Find the difference between the old and new
@@ -582,6 +603,7 @@ class fehmTest(unittest.TestCase):
                         }[test_measure]
                         try:
                             self.assertTrue(difference < mxerr, msg%(v,c,n))
+                            print 'its good'
                         except AssertionError as e:
                             #Write to fail log if switch is on.
                             if self.log:
@@ -686,6 +708,7 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('test_dryout', log))
         suite.addTest(fehmTest('test_multi_solute', log))
         suite.addTest(fehmTest('test_sorption', log))
+        suite.addTest(fehmTest('test_baro_vel', log))
         
         #TODO - Look into why this test takes so long.
         #suite.addTest(fehmTest('test_evaporation', log))
