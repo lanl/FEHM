@@ -437,9 +437,7 @@ class fehmTest(unittest.TestCase):
         components = values['components']
         test_measure = values['test_measure']
         
-        print 'fehm start...'
         self._run_fehm(subcase)
-        print 'fehm end.'
         
         def contour_case():      
             #Find the difference between the old and new
@@ -603,7 +601,6 @@ class fehmTest(unittest.TestCase):
                         }[test_measure]
                         try:
                             self.assertTrue(difference < mxerr, msg%(v,c,n))
-                            print 'its good'
                         except AssertionError as e:
                             #Write to fail log if switch is on.
                             if self.log:
