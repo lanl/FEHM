@@ -530,8 +530,8 @@ class fehmTest(unittest.TestCase):
                         'rms_difference': np.sqrt(np.mean(f_dif[v][n])) 
                     }[test_measure]
                     try:   
-            	        self.assertTrue(difference<mxerr, msg%(v, n))
-            	    except AssertionError as e:
+                        self.assertTrue(difference<mxerr, msg%(v, n))
+                    except AssertionError as e:
                         #Write to fail log if switch is on.
                         if self.log:
                             kvpairs = {'variable':str(v), 'node':str(n)}
@@ -541,7 +541,7 @@ class fehmTest(unittest.TestCase):
                                 line = line+' '+key+':'+kvpairs[key]
                             self.fail_log.write(line)   
                         raise e
-            	    
+                    
         def tracer_case():
             #Find the difference between the old and new
             f_old = fdata.ftracer('compare/*'+subcase+filetype) 
@@ -573,8 +573,8 @@ class fehmTest(unittest.TestCase):
                         'rms_difference': np.sqrt(np.mean(f_dif[v][n])) 
                     }[test_measure]     
                     try:
-            	        self.assertTrue(difference<mxerr, msg%(v, n))
-            	    except AssertionError as e:
+                        self.assertTrue(difference<mxerr, msg%(v, n))
+                    except AssertionError as e:
                         #Write to fail log if switch is on.
                         if self.log:
                             kvpairs = {'variable':str(v), 'node':str(n)}
