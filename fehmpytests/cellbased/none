@@ -1,0 +1,136 @@
+FEHM V3.2.0lin 14-06-23 QA:NA    07/16/2014    16:48:08
+
+ Test of Breakthrough Curves for Decay-Chain Case                                
+
+
+
+ Macro: cond  Group:           1
+ Values were explicitly set for each node
+
+
+ Macro: ctrl  Group:           2
+ Values were explicitly set for each node
+
+
+ Macro: flow  Group:           1
+ Data explicitly set only for the following nodes:
+        1     201     202     402
+ The remainder are set to the default value
+ or were set in a previous invokation of this macro
+
+
+ Macro: perm  Group:           1
+ Values were explicitly set for each node
+
+
+ Macro: rock  Group:           1
+ Values were explicitly set for each node
+
+
+        1 nodes contained in zone =          1
+
+     201
+
+      401 nodes not assigned to a zone in call #          1
+
+ number of nodes in problem =        402
+
+ heat and mass transfer solution
+ lobatto (node point) quadrature used
+ value of upwind weight =   1.0000    
+ finite volume calculations used
+ n4 may be reduced to 1
+ n6 may be reduced to 1
+ n7 may be reduced to 1
+ n8 may be reduced to 1
+
+ icnl (macro ctrl) check for 3-d problem
+
+ EOS data obtained from internal equations
+
+
+ max total pressure, node number, x coordinate, y coordinate, z coordinate
+      1.0008952              1     0.00         1.00         0.00    
+
+ min total pressure, node number, x coordinate, y coordinate, z coordinate
+      1.0000005            201     1.00         1.00         0.00    
+
+ max temperature, node number, x coordinate, y coordinate, z coordinate
+      25.000199              1     0.00         1.00         0.00    
+
+ min temperature, node number, x coordinate, y coordinate, z coordinate
+      25.000199              1     0.00         1.00         0.00    
+
+ max saturation, node number, x coordinate, y coordinate, z coordinate
+      1.0000000              1     0.00         1.00         0.00    
+
+ min saturation, node number, x coordinate, y coordinate, z coordinate
+      1.0000000              1     0.00         1.00         0.00    
+
+ max porosity, node number, x coordinate, y coordinate, z coordinate
+     0.30000000              1     0.00         1.00         0.00    
+
+ min porosity, node number, x coordinate, y coordinate, z coordinate
+     0.30000000              1     0.00         1.00         0.00    
+
+ max permeability, node number, x coordinate, y coordinate, z coordinate
+     0.10000000E-17          1     0.00         1.00         0.00    
+
+ min permeability, node number, x coordinate, y coordinate, z coordinate
+     0.10000000E-17          1     0.00         1.00         0.00    
+
+ max rock density, node number, x coordinate, y coordinate, z coordinate
+      2500.0000              1     0.00         1.00         0.00    
+
+ min rock density, node number, x coordinate, y coordinate, z coordinate
+      2500.0000              1     0.00         1.00         0.00    
+
+ max heat capacity, node number, x coordinate, y coordinate, z coordinate
+     0.10000000E-02          1     0.00         1.00         0.00    
+
+ min heat capacity, node number, x coordinate, y coordinate, z coordinate
+     0.10000000E-02          1     0.00         1.00         0.00    
+
+ max t conductivity, node number, x coordinate, y coordinate, z coordinate
+     0.27000000E-05          1     0.00         1.00         0.00    
+
+ min t conductivity, node number, x coordinate, y coordinate, z coordinate
+     0.27000000E-05          1     0.00         1.00         0.00    
+
+ max x coordinate, node number, x coordinate, y coordinate, z coordinate
+      1.0000000            201     1.00         1.00         0.00    
+
+ min x coordinate, node number, x coordinate, y coordinate, z coordinate
+      0.0000000              1     0.00         1.00         0.00    
+
+ max y coordinate, node number, x coordinate, y coordinate, z coordinate
+      1.0000000              1     0.00         1.00         0.00    
+
+ min y coordinate, node number, x coordinate, y coordinate, z coordinate
+      0.0000000            202     0.00         0.00         0.00    
+
+ max cell volume, node number, x coordinate, y coordinate, z coordinate
+     0.25000000E-02        145    0.720         1.00         0.00    
+
+ min cell volume, node number, x coordinate, y coordinate, z coordinate
+     0.12500000E-02        201     1.00         1.00         0.00    
+
+ initial mass =   299.    
+        steam =   0.00    
+       energy =   75.1    
+ total volume =   1.00    
+ volumes and fe coefficients checked intg = node 
+ Sum of area/dis for control volumes =    40001.000000000000     
+
+storage for fe coefficients        801 allocated        802
+  
+
+        1 nodes contained in zone =          1
+
+     201
+
+      401 nodes not assigned to a zone in call #          1
+
+ Macro: mptr  Group:           5
+ Values were explicitly set for each node
+

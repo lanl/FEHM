@@ -1,0 +1,18 @@
+Barometric Pumping Test - effects on pore-scale velocity
+Comparison of Model and Analytical Solution for Velocity vs Depth during cycle
+Time DD days - MACRO
+contourn    		Data type
+output/baro_velRLP.
+input/auer_vel.analyt
+output/baro_vel_MACRO.comp_Num
+1			Time
+tpos                    Time during cycle position
+vec                    AVS data type
+0000Num                 File number
+0			Simulation time (days) [Value not used for comparisons]
+2 5			2D (X,Y coordinates), Node by node
+2			Data parameter position (velocity)
+0. 1. 0. 1.             Translate Y1, Scale Y1, Translate Y2, Scale Y2
+0. 1. 0. 1.		Translate X1, Scale X1, Translate X2, Scale X2
+3 242 -1.e-10		Low X, high X, minimum Y
+.FALSE.			Print data

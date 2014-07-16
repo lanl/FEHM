@@ -1,0 +1,14 @@
+Barometric Pumping Test - Contaminant Transport
+Comparison of Model and Analytical Solution for MFR vs Time
+Alpha 0.alpha - MACRO
+historfn    		Data type
+output/baro_MFR_alphaRLP.out
+input/auer_MFR.analyt
+output/baro_trans_MACRO.comp_alpha
+1                       1-D radial problem
+apos                    Alpha position analyt
+1                    	Alpha position model
+0. 1. 0. 0.16049819	Translate X1, Scale X1, Translate Y1, Scale Y1
+0. 365. 0. 1. 		Translate X2, Scale X2, Translate Y2, Scale Y2
+0.001 3637.5899999999996 0.8	Low X, high X, minimum Y
+.FALSE.			Print data

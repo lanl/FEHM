@@ -353,6 +353,24 @@ class fehmTest(unittest.TestCase):
         args['times'] = [3.0, 4.0, 5.0, 6.0]
         
         self.test_case('baro_vel', args)
+        
+    def test_cellbased(self):
+        """
+        **Test of Cell-Based Particle Tracking Model**
+        
+        Compares the generated output files with the old files known be correct.
+        All values are tested for a root mean square difference of less than
+        0.05.
+        
+        .. Authors: Mark Lange
+        .. Updated: July 2014 by Mark Lange
+        """
+        
+        args = {}
+        args['test_measure'] = 'rms_difference'
+        args['maxerr'] = 0.05
+        
+        self.test_case('cellbased')
                 
     # Test Developer Functionality ############################################
         
@@ -587,6 +605,12 @@ class fehmTest(unittest.TestCase):
             else:
                 nodes = values['nodes']
                 
+            #If no pre-specifed components, grab them from f_dif.
+            if len(values['components']) == 0:
+                components = f_dif.components
+            else:
+                components = values['components']
+                
             msg = 'Incorrect %s at %s node %s.'  
             
             #Check the node at each component for significant differences.   
@@ -706,6 +730,7 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('test_multi_solute', log))
         suite.addTest(fehmTest('test_sorption', log))
         suite.addTest(fehmTest('test_baro_vel', log))
+        suite.addTest(fehmTest('test_cellbased', log))
         
         #TODO - Look into why this test takes so long.
         #suite.addTest(fehmTest('test_evaporation', log))
