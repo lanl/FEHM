@@ -1,0 +1,5 @@
+Heat Pipe Problem -- Internode Fluxes
+FE formulation      
+output/heat_pipe_fe.out
+FDM formulation     
+output/heat_pipe_fdm.out

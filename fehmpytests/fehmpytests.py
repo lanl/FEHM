@@ -356,7 +356,7 @@ class fehmTest(unittest.TestCase):
         
     def test_cellbased(self):
         """
-        **Test of Cell-Based Particle Tracking Model**
+        **Test the Cell-Based Particle Tracking Model**
         
         Compares the generated output files with the old files known be correct.
         All values are tested for a root mean square difference of less than
@@ -371,6 +371,21 @@ class fehmTest(unittest.TestCase):
         args['maxerr'] = 0.05
         
         self.test_case('cellbased')
+        
+    def test_heat_pipe(self):      
+        """
+        **Test the Heat Pipe Problem**
+        
+        Compares the generated output files with the old files known to be
+        correct. All values are tested.
+        
+        RLPM subcases were excluded because they caused FEHM to produce too many
+        negative volumes.
+        
+        .. Authors: Mark Lange
+        .. Updatd: July 2014 by Mark Lange
+        """
+        self.test_case('heat_pipe')
                 
     # Test Developer Functionality ############################################
         
@@ -438,9 +453,10 @@ class fehmTest(unittest.TestCase):
                            component, and format values to override defaults.
         :type filesfile:   dict 
         
-        The intent behind creating this method was to make it pythonic. If you 
-        need to modify this function and need help understanding it, look into
-        'closure' and functions as 'first class objects'.
+        The intent behind creating this method was to make it easier to add new 
+        tests for other outputs in the future. If you need to modify this
+        function and need help understanding it, look into 'closure' and
+        functions as 'first class objects'.
         """
             
         #Get pre-specified parameters from call.
@@ -615,8 +631,8 @@ class fehmTest(unittest.TestCase):
             
             #Check the node at each component for significant differences.   
             for c in components:
-                for n in nodes:
-                    for v in variables:
+                for n in np.intersect1d(nodes, f_dif.node[c]):
+                    for v in np.intersect1d(variables, f_dif.node[c][n]):
                         #Measure the difference into a single quantity.
                         fdiff_array = map(abs, f_dif.node[c][n][v])
                         difference = { 
