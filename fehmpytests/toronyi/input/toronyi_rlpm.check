@@ -1,0 +1,9 @@
+Toronyi Two-phase Problem
+FE grid (rlp)        
+output/toronyi.out
+FDM grid (rlp)         
+output/toronyi_fdm.out
+FE grid (rlpm)      
+output/toronyi_rlpm.out
+FDM grid (rlpm)        
+output/toronyi_fdm_rlpm.out

@@ -1,0 +1,321 @@
+FEHM V3.2.0lin 14-06-23 QA:NA    07/24/2014    13:43:28
+
+Copyright  2014.   Los Alamos National Security, LLC.  This material was
+produced under U.S. Government contract DE-AC52-06NA25396 for Los Alamos
+National  Laboratory  (LANL),  which is operated by  Los Alamos National
+Security, LLC  for the U. S. Department of Energy.  The U. S. Government
+has rights to use, reproduce, and distribute this software.  Neither the
+U. S. Government nor Los Alamos National Security, LLC or persons acting
+on their behalf,  make any warranty,  express or implied, or assumes any
+liability for the accuracy, completeness, or usefulness of the software,
+any information pertaining to the software,  or  represents that its use
+would not infringe privately owned rights.
+
+The  software  being licensed  may  be Export Controlled.  It may not be
+distributed  or  used by individuals  or entities prohibited from having
+access to the software package, pursuant to United States export control
+laws and regulations. An export control review and determination must be
+completed before LANS will provide access to the identified Software.
+
+
+ **** Toronyi Two-Phase Problem ****                                             
+
+
+
+ File purpose - Variable - Unit number - File name
+
+    control       - iocntl -  1 - input/control/toronyi.files                                                                         
+    input         - inpt   - 11 - input/toronyi.in                                                                                    
+    geometry      - incoor - 11 - input/toronyi.in                                                                                    
+    zone          - inzone - 11 - input/toronyi.in                                                                                    
+    output        - iout   - 14 - toronyi.out                                                                                         
+    initial state - iread  -  0 - not using                                                                                           
+    final state   - isave  -  0 - not using                                                                                           
+    time history  - ishis  -  0 - not using                                                                                           
+    time his.(tr) - istrc  -  0 - not using                                                                                           
+    contour plot  - iscon  - 19 - toronyi.con                                                                                         
+    con plot (dp) - iscon1 -  0 - not using                                                                                           
+    fe coef stor  - isstor -  0 - not using                                                                                           
+    input check   - ischk  -  0 - not using                                                                                           
+ Value provided to subroutine user: not using
+
+ **** input title : coor **** incoor =  11 ****
+ **** input title : elem **** incoor =  11 ****
+ **** input title : stop **** incoor =  11 ****
+ **** input title : node **** inpt =  11 ****
+ **** input title : cont **** inpt =  11 ****
+ **** contour format defined  : avs  ****
+ **** input title : sol  **** inpt =  11 ****
+ **** input title : init **** inpt =  11 ****
+ **** input title : rlp  **** inpt =  11 ****
+ **** input title : pres **** inpt =  11 ****
+ **** input title : rock **** inpt =  11 ****
+ **** input title : cond **** inpt =  11 ****
+ **** input title : perm **** inpt =  11 ****
+ **** input title : flow **** inpt =  11 ****
+ **** input title : time **** inpt =  11 ****
+ **** input title : ctrl **** inpt =  11 ****
+ **** input title : coor **** inpt =  11 ****
+ **** input title : elem **** inpt =  11 ****
+ **** input title : stop **** inpt =  11 ****
+ >>>>>> Starting connectivity calcs <<<<<< 
+ >>>>>> Finished connectivity calcs <<<<<< 
+ >>>>>> Starting FE coef. calcs <<<<<< 
+ >>>>>> Finished FE coef. calcs <<<<<< 
+
+ pressures and temperatures set by gradients
+ gmres method chosen 
+ storage available for b matrix resized to       1544<<<<<<
+
+
+ time for reading input, forming coefficients  0.200E-02
+
+
+*********************************************************************
+ Time Step         1
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+     0.273785079E-01      10.0000000         10.0000000    
+ Cpu Sec for Time Step =  0.9990E-03 Current Total =    0.9990E-03
+
+                    Equation Performance
+ Number of N-R Iterations:          3
+ Avg # of Linear Equation Solver Iterations:   5.3
+ Number of Active Nodes:        64.
+ Total Number of Iterations, N-R:          3 , Solver:         16
+ Phase Changes This Time Step:        0 Total           0
+ Number of partially filled cells           64
+                    Largest Residuals
+ EQ1 R=  0.4739E-13 node=     47 x= 1676.     y= 45.70     z= 1.000    
+ EQ2 R=  0.2457E-13 node=     47 x= 1676.     y= 45.70     z= 1.000    
+   Node   Equation 1 Residual   Equation 2 Residual
+     10     -0.475912E-15           0.184926E-15
+     11     -0.711397E-15           0.335301E-15
+     12     -0.510083E-15           0.333141E-15
+     13     -0.424055E-14          -0.255913E-15
+     14     -0.847375E-16          -0.120966E-15
+     15      0.400904E-14           0.237836E-14
+     18      0.744500E-15           0.928195E-15
+     19     -0.631131E-14          -0.302810E-14
+     20     -0.810144E-15           0.232659E-15
+     21      0.452126E-14          -0.490068E-14
+     22      0.203030E-14           0.190498E-14
+     23      0.243179E-13           0.118575E-13
+     26      0.191080E-14           0.210373E-14
+     27      0.549718E-14           0.536039E-14
+     28     -0.339798E-15          -0.165102E-14
+     29      0.362924E-14          -0.213824E-13
+     30      0.223183E-14           0.250073E-15
+     31      0.359373E-13           0.196776E-13
+     34      0.441925E-14           0.381304E-14
+     35      0.210488E-13           0.126309E-13
+     36     -0.298041E-15          -0.191582E-14
+     37      0.699483E-14          -0.152083E-14
+     38      0.967594E-15           0.582076E-15
+     39     -0.181327E-13          -0.915882E-14
+     42      0.429010E-14           0.250268E-14
+     43      0.242283E-13           0.136850E-13
+     44     -0.108959E-14           0.193501E-15
+     45     -0.847402E-14          -0.554762E-15
+     46      0.661211E-15           0.212756E-14
+     47     -0.473899E-13          -0.245690E-13
+     50      0.204535E-14          -0.213198E-15
+     51     -0.151962E-13          -0.845381E-14
+     52     -0.108714E-14           0.127649E-14
+     53     -0.155635E-14           0.479146E-14
+     54     -0.737955E-15          -0.387431E-15
+     55     -0.177826E-13          -0.983011E-14
+
+                    Nodal Information (Water)
+                                                  source/sink  E source/sink
+   Node   P (MPa)    E (MJ)    L sat     Temp (C)    (kg/s)       (MJ/s)
+     10    4.299      1.27     0.200      253.811    0.000        0.000    
+     11    4.298      1.27     0.199      253.791    0.000        0.000    
+     12    4.291      1.27     0.195      253.693    0.000        0.000    
+     13    4.261      1.29     0.179      253.269    0.000        0.000    
+     14    4.291      1.27     0.195      253.691    0.000        0.000    
+     15    4.297      1.27     0.199      253.783    0.000        0.000    
+     18    4.299      1.27     0.200      253.811    0.000        0.000    
+     19    4.298      1.27     0.199      253.791    0.000        0.000    
+     20    4.291      1.27     0.195      253.693    0.000        0.000    
+     21    4.259      1.29     0.178      253.247    0.000        0.000    
+     22    4.291      1.27     0.195      253.691    0.000        0.000    
+     23    4.297      1.27     0.199      253.783    0.000        0.000    
+     26    4.299      1.27     0.200      253.811    0.000        0.000    
+     27    4.298      1.27     0.199      253.791    0.000        0.000    
+     28    4.291      1.27     0.195      253.693    0.000        0.000    
+     29    4.256      1.29     0.177      253.201   0.8201E-01   0.2288    
+     30    4.291      1.27     0.195      253.691    0.000        0.000    
+     31    4.297      1.27     0.199      253.783    0.000        0.000    
+     34    4.299      1.27     0.200      253.811    0.000        0.000    
+     35    4.298      1.27     0.199      253.791    0.000        0.000    
+     36    4.291      1.27     0.195      253.694    0.000        0.000    
+     37    4.260      1.29     0.179      253.264    0.000        0.000    
+     38    4.291      1.27     0.195      253.692    0.000        0.000    
+     39    4.297      1.27     0.199      253.783    0.000        0.000    
+     42    4.299      1.27     0.200      253.811    0.000        0.000    
+     43    4.298      1.27     0.199      253.791    0.000        0.000    
+     44    4.291      1.27     0.195      253.695    0.000        0.000    
+     45    4.263      1.29     0.181      253.305    0.000        0.000    
+     46    4.291      1.27     0.195      253.693    0.000        0.000    
+     47    4.297      1.27     0.199      253.783    0.000        0.000    
+     50    4.299      1.27     0.200      253.811    0.000        0.000    
+     51    4.298      1.27     0.199      253.791    0.000        0.000    
+     52    4.291      1.27     0.195      253.695    0.000        0.000    
+     53    4.265      1.29     0.181      253.324    0.000        0.000    
+     54    4.291      1.27     0.195      253.693    0.000        0.000    
+     55    4.297      1.27     0.199      253.783    0.000        0.000    
+
+                    Global Mass & Energy Balances
+ Total mass in system at this time:            0.287033E+07 kg
+ Total mass of steam in system at this time:   0.291189E+06 kg
+ Total enthalpy in system at this time:        0.212046E+09 MJ
+
+ Water discharge this time step:   0.708575E+05 kg (0.820110E-01 kg/s)
+ Water input this time step:       0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water discharge:            0.708575E+05 kg (0.820110E-01 kg/s)
+ Total water input:                0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Enthalpy discharge this time step:  0.197677E+06 MJ (0.228793E+00 MJ/s)
+ Enthalpy input this time step:      0.000000E+00 MJ (0.000000E+00 MJ/s)
+ Total enthalpy discharge:           0.197677E+06 MJ (0.228793E+00 MJ/s)
+ Total enthalpy input:               0.000000E+00 MJ (0.000000E+00 MJ/s)
+
+ Net kg water discharge (total out-total in):   0.708575E+05
+ Net MJ energy discharge (total out-total in):   0.197677E+06
+ Conservation Errors:  -0.160619E-11 (mass),  -0.165927E-11 (energy)
+*********************************************************************
+ Time Step         8
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+     0.214401095          78.3100000         8.31000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3999E-02
+
+                    Equation Performance
+ Number of N-R Iterations:          2
+ Avg # of Linear Equation Solver Iterations:   5.5
+ Number of Active Nodes:        64.
+ Total Number of Iterations, N-R:         19 , Solver:        106
+ Phase Changes This Time Step:        0 Total           0
+ Number of partially filled cells           64
+                    Largest Residuals
+ EQ1 R=  0.2008E-11 node=     29 x= 1066.     y= 106.6     z= 1.000    
+ EQ2 R=  0.9259E-12 node=     54 x= 1371.     y= 15.23     z= 1.000    
+   Node   Equation 1 Residual   Equation 2 Residual
+     10     -0.786870E-14           0.211822E-13
+     11      0.238955E-13          -0.274053E-13
+     12     -0.362957E-13           0.578809E-12
+     13     -0.155869E-12           0.304055E-12
+     14     -0.772117E-13           0.912783E-12
+     15      0.189964E-13           0.292009E-12
+     18     -0.157921E-13           0.216506E-13
+     19      0.468619E-13          -0.149738E-13
+     20     -0.713059E-13           0.584400E-12
+     21     -0.363485E-12          -0.763979E-13
+     22     -0.153027E-12           0.908148E-12
+     23      0.380377E-13           0.325402E-12
+     26     -0.163056E-13           0.237797E-13
+     27      0.474631E-13          -0.149197E-13
+     28     -0.726109E-13           0.595870E-12
+     29      0.200768E-11           0.622630E-12
+     30     -0.153718E-12           0.923790E-12
+     31      0.380531E-13           0.325015E-12
+     34     -0.166410E-13           0.214529E-13
+     35      0.466261E-13          -0.162546E-13
+     36     -0.714153E-13           0.590790E-12
+     37     -0.367497E-12          -0.679166E-13
+     38     -0.154160E-12           0.914056E-12
+     39      0.372527E-13           0.324750E-12
+     42     -0.162890E-13           0.239772E-13
+     43      0.467786E-13          -0.185438E-13
+     44     -0.709136E-13           0.596748E-12
+     45     -0.316021E-12           0.286734E-12
+     46     -0.154744E-12           0.920452E-12
+     47      0.378504E-13           0.321025E-12
+     50     -0.872089E-14           0.241263E-13
+     51      0.233326E-13          -0.251835E-13
+     52     -0.359004E-13           0.586789E-12
+     53     -0.165511E-12           0.466608E-12
+     54     -0.791255E-13           0.925850E-12
+     55      0.193138E-13           0.294281E-12
+
+                    Nodal Information (Water)
+                                                  source/sink  E source/sink
+   Node   P (MPa)    E (MJ)    L sat     Temp (C)    (kg/s)       (MJ/s)
+     10    4.268      1.28     0.183      253.365    0.000        0.000    
+     11    4.249      1.29     0.173      253.108    0.000        0.000    
+     12    4.210      1.32     0.153      252.550    0.000        0.000    
+     13    4.147      1.37     0.120      251.657    0.000        0.000    
+     14    4.203      1.32     0.149      252.455    0.000        0.000    
+     15    4.232      1.30     0.164      252.863    0.000        0.000    
+     18    4.268      1.28     0.183      253.365    0.000        0.000    
+     19    4.249      1.29     0.173      253.108    0.000        0.000    
+     20    4.210      1.32     0.153      252.550    0.000        0.000    
+     21    4.146      1.37     0.119      251.637    0.000        0.000    
+     22    4.203      1.32     0.149      252.455    0.000        0.000    
+     23    4.232      1.30     0.164      252.863    0.000        0.000    
+     26    4.268      1.28     0.183      253.365    0.000        0.000    
+     27    4.249      1.29     0.173      253.108    0.000        0.000    
+     28    4.210      1.32     0.153      252.550    0.000        0.000    
+     29    4.143      1.37     0.119      251.598   0.8201E-01   0.2293    
+     30    4.203      1.32     0.149      252.455    0.000        0.000    
+     31    4.232      1.30     0.164      252.863    0.000        0.000    
+     34    4.268      1.28     0.183      253.365    0.000        0.000    
+     35    4.249      1.29     0.173      253.108    0.000        0.000    
+     36    4.210      1.32     0.153      252.551    0.000        0.000    
+     37    4.147      1.37     0.120      251.655    0.000        0.000    
+     38    4.203      1.32     0.149      252.456    0.000        0.000    
+     39    4.232      1.30     0.164      252.863    0.000        0.000    
+     42    4.268      1.28     0.183      253.365    0.000        0.000    
+     43    4.249      1.29     0.173      253.108    0.000        0.000    
+     44    4.210      1.32     0.153      252.552    0.000        0.000    
+     45    4.150      1.37     0.121      251.693    0.000        0.000    
+     46    4.203      1.32     0.149      252.457    0.000        0.000    
+     47    4.232      1.30     0.164      252.863    0.000        0.000    
+     50    4.268      1.28     0.183      253.365    0.000        0.000    
+     51    4.249      1.29     0.173      253.108    0.000        0.000    
+     52    4.210      1.32     0.153      252.552    0.000        0.000    
+     53    4.151      1.36     0.122      251.712    0.000        0.000    
+     54    4.203      1.32     0.149      252.457    0.000        0.000    
+     55    4.232      1.30     0.164      252.863    0.000        0.000    
+
+                    Global Mass & Energy Balances
+ Total mass in system at this time:            0.238630E+07 kg
+ Total mass of steam in system at this time:   0.299419E+06 kg
+ Total enthalpy in system at this time:        0.210693E+09 MJ
+
+ Water discharge this time step:   0.588826E+05 kg (0.820110E-01 kg/s)
+ Water input this time step:       0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water discharge:            0.554885E+06 kg (0.820110E-01 kg/s)
+ Total water input:                0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Enthalpy discharge this time step:  0.164628E+06 MJ (0.229292E+00 MJ/s)
+ Enthalpy input this time step:      0.000000E+00 MJ (0.000000E+00 MJ/s)
+ Total enthalpy discharge:           0.155031E+07 MJ (0.229133E+00 MJ/s)
+ Total enthalpy input:               0.000000E+00 MJ (0.000000E+00 MJ/s)
+
+ Net kg water discharge (total out-total in):   0.554885E+06
+ Net MJ energy discharge (total out-total in):   0.155031E+07
+ Conservation Errors:  -0.249159E-09 (mass),  -0.446462E-09 (energy)
+
+
+ simulation ended: days   78.310000000000002273737     timesteps     8
+
+
+ total N-R iterations =         19
+ total solver iterations =        106
+
+
+ total code time(timesteps) =      0.004999
+
+
+ ****---------------------------------------------------------****
+ **** This program for                                        ****
+ ****   Finite Element Heat and Mass Transfer in porous media ****
+ ****---------------------------------------------------------****
+ ****               Version  : FEHM V3.2.0lin 14-06-23 QA:NA  ****
+ ****               End Date : 07/24/2014                     ****
+ ****                   Time : 13:43:28                       ****
+ ****---------------------------------------------------------****

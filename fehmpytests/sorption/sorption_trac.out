@@ -1,4 +1,4 @@
-FEHM V3.2.0lin 14-06-23 QA:NA    06/30/2014    14:27:14
+FEHM V3.2.0lin 14-06-23 QA:NA    07/24/2014    13:47:49
 
 Copyright  2014.   Los Alamos National Security, LLC.  This material was
 produced under U.S. Government contract DE-AC52-06NA25396 for Los Alamos
@@ -95,7 +95,7 @@ completed before LANS will provide access to the identified Software.
  storage available for b matrix resized to       9608<<<<<<
 
 
- time for reading input, forming coefficients  0.130E-01
+ time for reading input, forming coefficients  0.700E-02
 
 
 *********************************************************************
@@ -104,7 +104,7 @@ completed before LANS will provide access to the identified Software.
                     Timing Information
            Years              Days         Step Size (Days)
      0.410677618E-08     0.150000000E-05    0.150000000E-05
- Cpu Sec for Time Step =  0.1200E-01 Current Total =    0.1400E-01
+ Cpu Sec for Time Step =  0.6000E-02 Current Total =    0.7999E-02
 
                     Equation Performance
  Number of N-R Iterations:          6
@@ -146,7 +146,7 @@ completed before LANS will provide access to the identified Software.
                     Timing Information
            Years              Days         Step Size (Days)
      0.414784394E-06     0.151500000E-03    0.150000000E-05
- Cpu Sec for Time Step =  0.1999E-02 Current Total =    0.3150    
+ Cpu Sec for Time Step =  0.1000E-02 Current Total =    0.1500    
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -844,7 +844,7 @@ tracer injection stopped for node    1810 at days=0.130000E-02
                     Timing Information
            Years              Days         Step Size (Days)
      0.355920602E-05     0.130000000E-02    0.117910000E-05
- Cpu Sec for Time Step =  0.9995E-03 Current Total =     20.83    
+ Cpu Sec for Time Step =  0.9975E-03 Current Total =     21.12    
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -889,7 +889,7 @@ tracer injection stopped for node    1810 at days=0.130000E-02
  total solver iterations =        669
 
 
- total code time(timesteps) =     20.844833
+ total code time(timesteps) =     21.140785
 
 
  ****---------------------------------------------------------****
@@ -897,6 +897,6 @@ tracer injection stopped for node    1810 at days=0.130000E-02
  ****   Finite Element Heat and Mass Transfer in porous media ****
  ****---------------------------------------------------------****
  ****               Version  : FEHM V3.2.0lin 14-06-23 QA:NA  ****
- ****               End Date : 06/30/2014                     ****
- ****                   Time : 14:27:35                       ****
+ ****               End Date : 07/24/2014                     ****
+ ****                   Time : 13:48:10                       ****
  ****---------------------------------------------------------****

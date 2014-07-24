@@ -385,7 +385,25 @@ class fehmTest(unittest.TestCase):
         .. Authors: Mark Lange
         .. Updatd: July 2014 by Mark Lange
         """
+        
         self.test_case('heat_pipe')
+        
+    def test_toronyi(self):
+        """
+        **Test the Toronyi Two-Phase Problem**
+        
+        Compares the generated contour files with the old contour files known to
+        be correct. Tests all values at time 2.0.
+        
+        .. Authors: Mark Lange
+        .. Updated: July 2014 by Mark Lange
+        """
+    
+        args = {}
+        args['times'] = [2.0]
+        
+        self.test_case('toronyi', args)
+    
                 
     # Test Developer Functionality ############################################
         
@@ -439,7 +457,7 @@ class fehmTest(unittest.TestCase):
                                         
         finally:
             #Allows other tests to be performed after exception.
-            cleanup(['*.*'])
+            #cleanup(['*.*'])
             os.chdir(self.maindir)
             
     def _test_template(self, filetype, subcase, parameters={}):
@@ -475,10 +493,10 @@ class fehmTest(unittest.TestCase):
         
         def contour_case():      
             #Find the difference between the old and new
-            f_old = fdata.fcontour('compare/*'+subcase+filetype) 
-            f_new = fdata.fcontour('*'+subcase+filetype)
+            f_old = fdata.fcontour('compare/*'+subcase+'.'+filetype)
+            f_new = fdata.fcontour('*'+subcase+'.'+filetype)
             f_dif = fdata.fdiff(f_new, f_old)
-
+            
             msg = 'Incorrect %s at time %s.'
             
             #If no pre-specified times, grab them from f_dif.
@@ -747,6 +765,8 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('test_sorption', log))
         suite.addTest(fehmTest('test_baro_vel', log))
         suite.addTest(fehmTest('test_cellbased', log))
+        suite.addTest(fehmTest('test_heat_pipe', log))
+        suite.addTest(fehmTest('test_toronyi', log))
         
         #TODO - Look into why this test takes so long.
         #suite.addTest(fehmTest('test_evaporation', log))
