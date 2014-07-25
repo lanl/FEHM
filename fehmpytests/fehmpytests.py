@@ -362,6 +362,9 @@ class fehmTest(unittest.TestCase):
         All values are tested for a root mean square difference of less than
         0.05.
         
+        *TODO: This test does not regenerated chain.ini! This is something that 
+         needs to be fixed in the future.*
+        
         .. Authors: Mark Lange
         .. Updated: July 2014 by Mark Lange
         """
@@ -403,8 +406,7 @@ class fehmTest(unittest.TestCase):
         args['times'] = [2.0]
         
         self.test_case('toronyi', args)
-    
-                
+                    
     # Test Developer Functionality ############################################
         
     def test_case(self, name, parameters={}):
