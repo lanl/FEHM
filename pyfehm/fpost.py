@@ -300,6 +300,9 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 	def __getitem__(self,key):
 		if key in self.times:
 			return self._data[key]
+		elif np.min(abs(self.times-key)/self.times)<.01:
+			ind = np.argmin(abs(self.times-key))
+			return self._data[self.times[ind]]
 		else: return None
 	def read(self,filename,latest=False,first=False,nearest=[]): 						# read contents of file
 		'''Read in FEHM contour output information.
@@ -1953,6 +1956,58 @@ class ftracer(fhistory): 					# Derived class of fhistory, for tracer output
 		if data[-1,0]<data[-2,0]: data = data[:-1,:]
 		self._times = np.array(data[:,0])
 		self._data[var_key] = dict([(node,data[:,icol+1]) for icol,node in enumerate(self.nodes)])
+class fptrk(fhistory): 					# Derived class of fhistory, for particle tracking output
+	'''Tracer history output information object.
+	'''
+	def __init__(self,filename=None,verbose=True):
+		super(fptrk,self).__init__(filename, verbose)
+		self._filename=None	
+		self._times=[]	
+		self._verbose = verbose
+		self._data={}
+		self._row=None
+		self._nodes=[0]	
+		self._variables=[] 
+		self._keyrows={}
+		self.column_name=[]
+		self.num_columns=0
+		self._nkeys=1
+		if filename: self._filename=filename; self.read(filename)
+	def read(self,filename): 						# read contents of file
+		'''Read in FEHM particle tracking output information. Index by variable name.
+		
+		:param filename: File name for output data, can include wildcards to define multiple output files.
+		:type filename: str
+		'''
+		from glob import glob
+		import re
+		glob_pattern = re.sub(r'\[','[[]',filename)
+		glob_pattern = re.sub(r'(?<!\[)\]','[]]', glob_pattern)
+		files=glob(glob_pattern)
+		configured=False
+		for i,fname in enumerate(files):
+			if self._verbose:
+				pyfehm_print(fname)
+			self._file=open(fname,'rU')
+			header=self._file.readline()
+			if header.strip()=='': continue				# empty file
+			header=self._file.readline()
+			self._setup_headers_default(header)
+			self._read_data_default()
+			self._file.close()
+	def _setup_headers_default(self,header):
+		header=header.strip().split('"')[3:-1]
+		header = [h for h in header if h != ' ']
+		for var in header: self._variables.append(var)
+	def _read_data_default(self):
+		lns = self._file.readlines()
+		data = []
+		for ln in lns: data.append([float(d) for d in ln.strip().split()])
+		data = np.array(data)
+		if data[-1,0]<data[-2,0]: data = data[:-1,:]
+		self._times = np.array(data[:,0])
+		self._data = dict([(var,data[:,icol+1]) for icol,var in enumerate(self.variables)])
+
 class multi_pdf(object):
 	'''Tool for making a single pdf document from multiple eps files.'''
 	def __init__(self,combineString = 'gswin64',
@@ -2159,6 +2214,7 @@ class fvtk(object):
 		self.path = fpath(parent = self)
 		self.path.filename = filename
 		self.data = None
+		self.csv = None
 		self.contour = contour
 		self.variables = []
 		self.materials = []
@@ -2189,7 +2245,9 @@ class fvtk(object):
 		cns = [[nd.index-1 for nd in el.nodes] for el in self.parent.grid.elemlist]
 		
 		# make grid
-		if len(cns[0]) == 4:
+		if len(cns[0]) == 3:
+			self.data = fVtkData(fUnstructuredGrid(nds,triangle=cns),'PyFEHM VTK model output')
+		elif len(cns[0]) == 4:
 			self.data = fVtkData(fUnstructuredGrid(nds,tetra=cns),'PyFEHM VTK model output')
 		elif len(cns[0]) == 8:
 			self.data = fVtkData(fUnstructuredGrid(nds,hexahedron=cns),'PyFEHM VTK model output')
@@ -2241,8 +2299,8 @@ class fvtk(object):
 			self.add_material('perm_y',blank)
 			self.add_material('perm_z',blank)
 
-		props = np.array([[nd.density, nd.porosity, nd.specific_heat, nd.youngs_modulus,nd.poissons_ratio,nd.thermal_expansion,nd.pressure_coupling,nd.Ti,nd.Pi,nd.Si] 	for nd in self.parent.grid.nodelist])
-		names = ['density','porosity','specific_heat','youngs_modulus','poissons_ratio','thermal_expansion','pressure_coupling','Pi','Ti','Si']
+		props = np.array([[nd.density, nd.porosity, nd.specific_heat, nd.youngs_modulus,nd.poissons_ratio,nd.thermal_expansion,nd.pressure_coupling] 	for nd in self.parent.grid.nodelist])
+		names = ['density','porosity','specific_heat','youngs_modulus','poissons_ratio','thermal_expansion','pressure_coupling']
 		for name, column in zip(names,props.T):
 			self.add_material(name,column)
 	def add_material(self,name,data):
@@ -2609,56 +2667,57 @@ class fvtk(object):
 					'cont_rep.Visibility = 1',
 					]			
 		
-		################################### load in history output ###################################	
-		lns += ['xyview = CreateXYPlotView()']
-		lns += ['xyview.BottomAxisRange = [0.0, 5.0]']
-		lns += ['xyview.TopAxisRange = [0.0, 6.66]']
-		lns += ['xyview.ViewTime = 0.0']
-		lns += ['xyview.LeftAxisRange = [0.0, 10.0]']
-		lns += ['xyview.RightAxisRange = [0.0, 6.66]']
-		lns += ['']
-		if os.path.isfile(self.csv.filename):
-			lns += ['hout = CSVReader( FileName=[r\''+self.csv.filename+'\'] )']
-			lns += ['RenameSource("history_output",hout)']
-			
-			fp = open(self.csv.filename)
-			ln = fp.readline().rstrip()
-			fp.close()
-			headers = [lni for lni in ln.split(',')]
-			
-			# put variables in order to account for diff or time derivatives
-			vars = []
-			for variable in self.csv.history.variables:
-				vars.append(variable)
-				if self.csv.diff: vars.append('diff_'+variable)
-				#if self.time_derivatives: vars.append('d'+variable+'_dt')
-			for i,variable in enumerate(vars):
-				plot_title = variable+'_history'
-				lns += []
-				lns += [plot_title+' = PlotData()']
-				lns += ['RenameSource("'+plot_title+'",'+plot_title+')']
+		if self.csv is not None:
+			################################### load in history output ###################################	
+			lns += ['xyview = CreateXYPlotView()']
+			lns += ['xyview.BottomAxisRange = [0.0, 5.0]']
+			lns += ['xyview.TopAxisRange = [0.0, 6.66]']
+			lns += ['xyview.ViewTime = 0.0']
+			lns += ['xyview.LeftAxisRange = [0.0, 10.0]']
+			lns += ['xyview.RightAxisRange = [0.0, 6.66]']
+			lns += ['']
+			if os.path.isfile(self.csv.filename):
+				lns += ['hout = CSVReader( FileName=[r\''+self.csv.filename+'\'] )']
+				lns += ['RenameSource("history_output",hout)']
 				
-				lns += ['mr = Show()']
-				lns += ['mr = GetDisplayProperties('+plot_title+')']
-				lns += ['mr.XArrayName = \'time\'']
-				lns += ['mr.UseIndexForXAxis = 0']
-				lns += ['mr.SeriesColor = [\'time\', \'0\', \'0\', \'0\']']
-				lns += ['mr.AttributeType = \'Row Data\'']
-				switch_off = [header for header in headers if not header.strip().startswith(variable+':')]
-				ln = 'mr.SeriesVisibility = [\'vtkOriginalIndices\', \'0\', \'time\', \'0\''
-				for header in switch_off:
-					ln+=', \''+header+'\',\'0\''
+				fp = open(self.csv.filename)
+				ln = fp.readline().rstrip()
+				fp.close()
+				headers = [lni for lni in ln.split(',')]
+				
+				# put variables in order to account for diff or time derivatives
+				vars = []
+				for variable in self.csv.history.variables:
+					vars.append(variable)
+					if self.csv.diff: vars.append('diff_'+variable)
+					#if self.time_derivatives: vars.append('d'+variable+'_dt')
+				for i,variable in enumerate(vars):
+					plot_title = variable+'_history'
+					lns += []
+					lns += [plot_title+' = PlotData()']
+					lns += ['RenameSource("'+plot_title+'",'+plot_title+')']
 					
-				#lns += ['mr.SeriesVisibility = [\'vtkOriginalIndices\', \'0\', \'time\', \'0\']']
-				lns += [ln+']']
-				if i != (len(vars)-1):
-					lns += ['mr.Visibility = 0']
-		
-		lns += ['']
-		lns += ['AnimationScene1.ViewModules = [ RenderView1, SpreadSheetView1, XYChartView1 ]']
-		
-		lns += ['Render()']
-		
+					lns += ['mr = Show()']
+					lns += ['mr = GetDisplayProperties('+plot_title+')']
+					lns += ['mr.XArrayName = \'time\'']
+					lns += ['mr.UseIndexForXAxis = 0']
+					lns += ['mr.SeriesColor = [\'time\', \'0\', \'0\', \'0\']']
+					lns += ['mr.AttributeType = \'Row Data\'']
+					switch_off = [header for header in headers if not header.strip().startswith(variable+':')]
+					ln = 'mr.SeriesVisibility = [\'vtkOriginalIndices\', \'0\', \'time\', \'0\''
+					for header in switch_off:
+						ln+=', \''+header+'\',\'0\''
+						
+					#lns += ['mr.SeriesVisibility = [\'vtkOriginalIndices\', \'0\', \'time\', \'0\']']
+					lns += [ln+']']
+					if i != (len(vars)-1):
+						lns += ['mr.Visibility = 0']
+			
+			lns += ['']
+			lns += ['AnimationScene1.ViewModules = [ RenderView1, SpreadSheetView1, XYChartView1 ]']
+			
+			lns += ['Render()']
+			
 		f.writelines('\n'.join(lns))
 		f.close()
 	def _get_filename(self): return self.path.absolute_to_file+os.sep+self.path.filename
@@ -2852,13 +2911,20 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
 				diff = []
 				while i < len(times):
 					if format is 'diff':
-						diff.append(in1[v][n][i]-in2[v][n][i]) 	
+						#Quick fix to handle ptrk files.
+						if isinstance(in1, fptrk):
+							diff.append(in1[v][n]-in2[v][n]) 
+						else:
+							diff.append(in1[v][n][i]-in2[v][n][i])	
 					elif format is 'relative':
 						diff.append((in1[t][v] - in2[t][v])/np.abs(in2[t][v])) 
 					elif format is 'percent':
 						diff.append(100*np.abs((in1[t][v] - in2[t][v])/in2[t][v])) 	
 					i = i + 1
-				out._data[v] = dict([(n, diff)])
+				if isinstance(in1, fptrk):
+					out._data[v] = np.array(diff)
+				else:
+					out._data[v] = dict([(n, diff)])
 				
 		#Return the difference.		
 		return out

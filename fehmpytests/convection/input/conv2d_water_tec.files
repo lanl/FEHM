@@ -1,0 +1,7 @@
+input: input/conv2d_water_tec.dat
+outpu: output/conv2d_water_tecE.out
+rsto: output/conv2d_water_tec.fin
+root: output/conv2d_water_tecE
+
+none
+0

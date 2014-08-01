@@ -1,0 +1,65 @@
+test, 2-d convection, 8/30/93,  20-80C phlip 
+text
+2-d convection in a square box. the Rayleigh # is ~200
+101 nodes by 101 nodes. Linear thermodynamics
+
+#finv
+node
+ 4
+ -51 -100 -2401  -2450
+  0.00000      195.91837        0.00000
+200.00000      195.91837        0.00000
+  0.00000        4.08163        0.00000
+200.00000        4.08163        0.00000
+cont
+tec  1000 1000000.0
+grid
+temperature
+liquid
+velocity
+end
+init
+   10  0  70  -0.1 10000 70 -0.1 0
+zone
+1
+180. 200. 200. 180.
+1. 1. 20. 20.
+
+boun
+model 1
+ti
+1 0.
+tmi
+100.
+
+-1 0 0 1
+
+sol
+   1    -1
+rock
+1	0	0 	2700. 1000. 0.2
+
+cond
+1	0	0	2.7e-00   2.7e-00   2.7e-00
+
+perm 
+1	0	0	9.6e-13  9.6e-13  9.6e-13
+
+hflx
+1	101	1  50  1e3
+10101	10201   1  70  1e3
+ 
+time
+  1.e0 1.e6  1000    005  1993   07                   
+
+ctrl
+   6   1.e-05   13
+  1  2500  1  2
+    0    0    0    0
+  1.0   2   0.5
+  07   1.2   1.e-11  5e4  
+  1   0
+iter
+1.e-5 1.e-5 1.e-5 1.e-05 1.2
+0 0 0 0 1440
+stop

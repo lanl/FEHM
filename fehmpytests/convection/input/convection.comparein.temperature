@@ -1,0 +1,18 @@
+Free Convection Problem - Temperature
+Comparison of Temperature vs Position
+Node by node - base convection
+contourf
+output/conv2d_base.
+input/conv2d_base_check.
+output/conv2d_base.comp_nodesT
+1                       Time
+1                       Time position
+sca                     AVS data type
+00002                   File number
+1.e6                    Simulation time (days)
+3 5                     3D (X,Y coordinates), Node by Node
+1                       Data parameter position (temperature)
+0. 1. 0.0 1.            Translate X1, Scale X1, Translate Y1, Scale Y1
+0. 1. 0.0 1.            Translate X2, Scale X2, Translate Y2, Scale Y2
+1 2500 lowY             Low X, high X, minimum Y
+.FALSE.                 Print data

@@ -1,0 +1,14 @@
+Colloid Filtration Test
+Comparison of Colloid Filtration Tests vs Earlier Codes Verified Output
+Distribution STRING1
+historfn                Data type
+output/fehm_TSPA_baseNum1.ptrk
+output_v2.VER/fehm_TSPA_baseNum2.ptrk
+output/fehm_TSPA_base_STRING2_VS_2.VER.comp
+0			Simulated 2-D
+POS 	2		Data position file2, and header lines
+POS 	2		Data position file1, and header lines
+0. 1. 0. 1.		Translate X1, Scale X1, Translate Y1, Scale Y1
+0. 1. 0. 1.		Translate X2, Scale X2, Translate Y2, Scale Y2
+365.25 5478750. 0.	Low X, high X, minimum Y
+.false.			Print arrays

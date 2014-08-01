@@ -1,0 +1,8 @@
+input: input/conv2d_water_ng_tec.dat
+grida: input/conv101x101.grid2
+outpu: output/conv2d_water_tecE.out
+rsto: output/conv2d_water_tec.fin
+root: output/conv2d_water_tecE
+
+all
+0

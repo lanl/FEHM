@@ -18,6 +18,7 @@ import argparse
 import re
 import numpy as np
 import glob
+import itertools
 from subprocess import call
 from subprocess import PIPE
 try:
@@ -406,6 +407,20 @@ class fehmTest(unittest.TestCase):
         args['times'] = [2.0]
         
         self.test_case('toronyi', args)
+        
+        
+    def test_colloid_filtration(self):
+        '''
+        Test Colloid Filtration
+        
+        Compares the generated ptrk files with the old ptrk files know to be 
+        correct.
+        
+        .. Authors: Mark Lange
+        .. Updated: July 2014 by Mark Lange
+        '''
+        
+        self.test_case('colloid_filtration')
                     
     # Test Developer Functionality ############################################
         
@@ -448,7 +463,7 @@ class fehmTest(unittest.TestCase):
             #Test the new files generated with each subcase.
             for subcase in subcases:
                 parameters['subcase'] = subcase
-                filetypes = ['*.avs', '*.csv', '*.his', '*.out', '*.trc']
+                filetypes = ['*.avs','*.csv','*.his','*.out','*.trc','*.ptrk']
                 for filetype in filetypes:
                     parameters['filetype'] = filetype
                     #Check to make sure there are files of this type.
@@ -459,7 +474,7 @@ class fehmTest(unittest.TestCase):
                                         
         finally:
             #Allows other tests to be performed after exception.
-            #cleanup(['*.*'])
+            cleanup(['*.*'])
             os.chdir(self.maindir)
             
     def _test_template(self, filetype, subcase, parameters={}):
@@ -674,12 +689,48 @@ class fehmTest(unittest.TestCase):
                                 self.fail_log.write(line)   
                             raise e
         
+        def ptrack_case():
+            #Find the difference between the old and new
+            f_old = fdata.fptrk('compare/*'+subcase+filetype)
+            f_new = fdata.fptrk('*'+subcase+filetype)  
+            f_dif = fdata.fdiff(f_new, f_old)
+            
+            msg = 'Incorrect %s.'
+            
+            #If no pre-specified variables, grab them from f_dif.         
+            if len(values['variables']) == 0:
+                variables = f_dif.variables
+            else:
+                variables = values['variables']
+                
+            for v in variables:
+                #Measure the difference into a single quantity.
+                fdiff_array = map(abs, f_dif[v])
+                difference = { 
+                    'max_difference': max(fdiff_array),
+                    'rms_difference': np.sqrt(np.mean(fdiff_array)) 
+                }[test_measure]
+                #Perform test, if fail log switch is on, write a fail log.
+                try:
+                    self.assertTrue(difference < mxerr, msg%v)
+                except AssertionError as e:
+                    #Write to fail log if switch is on.
+                    if self.log:
+                        kvpairs = {'variable': str(v)}
+                        line = 'Failed at subcase:'+subcase
+                        line = line+' filetype:'+filetype
+                        for key in kvpairs:        
+                            line = line+' '+key+':'+kvpairs[key]
+                        self.fail_log.write(line)   
+                    raise e
+
         #Returns the test method for filetype.
-        return { '*.avs': contour_case,
-                 '*.csv': contour_case,
-                 '*.his': history_case,
-                 '*.trc': tracer_case,
-                 '*.out': output_case, }[filetype]
+        return { '*.avs':  contour_case,
+                 '*.csv':  contour_case,
+                 '*.his':  history_case,
+                 '*.trc':  tracer_case,
+                 '*.out':  output_case, 
+                 '*.ptrk': ptrack_case }[filetype]
                                     
     def _run_fehm(self, subcase):
         """ 
@@ -769,6 +820,7 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('test_cellbased', log))
         suite.addTest(fehmTest('test_heat_pipe', log))
         suite.addTest(fehmTest('test_toronyi', log))
+        suite.addTest(fehmTest('test_colloid_filtration', log))
         
         #TODO - Look into why this test takes so long.
         #suite.addTest(fehmTest('test_evaporation', log))

@@ -1,0 +1,7 @@
+Free Convection Problem
+Air convection (rlp)
+output/conv2d_air.out
+Air convection (rlpm)
+output/conv2d_air_rlpm.out
+Water convection    
+output/conv2d_water.out
