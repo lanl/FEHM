@@ -413,7 +413,7 @@ class fehmTest(unittest.TestCase):
         '''
         Test Colloid Filtration
         
-        Compares the generated ptrk files with the old ptrk files know to be 
+        Compares the generated ptrk files with the old ptrk files known to be 
         correct.
         
         .. Authors: Mark Lange
@@ -421,6 +421,19 @@ class fehmTest(unittest.TestCase):
         '''
         
         self.test_case('colloid_filtration')
+        
+    def test_mptr(self):
+        '''
+        Test Multi-Species Particle Tracking
+        
+        Compares the generated ptrk files with the old ptrk files knonw to be 
+        correct.
+        
+        .. Authors: Mark Lange
+        .. Updated: July 2014 by Mark Lange
+        '''
+        
+        self.test_case('mptr_test')
                     
     # Test Developer Functionality ############################################
         
@@ -474,7 +487,7 @@ class fehmTest(unittest.TestCase):
                                         
         finally:
             #Allows other tests to be performed after exception.
-            cleanup(['*.*'])
+            cleanup([x for x in glob.glob('*.*') if '.py' not in x])
             os.chdir(self.maindir)
             
     def _test_template(self, filetype, subcase, parameters={}):
@@ -821,6 +834,7 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('test_heat_pipe', log))
         suite.addTest(fehmTest('test_toronyi', log))
         suite.addTest(fehmTest('test_colloid_filtration', log))
+        suite.addTest(fehmTest('test_mptr', log))
         
         #TODO - Look into why this test takes so long.
         #suite.addTest(fehmTest('test_evaporation', log))
