@@ -1,0 +1,11 @@
+FEHM V3.2.0lin 14-07-23 QA:NA    08/06/2014    13:37:27
+# RUN_INPUT.dat                                                                 
+Output file format: Tecplot
+Parameters written to individual history files:
+ Water, vapor, and capillary pressure Temperature
+for the following nodes:
+Number of output nodes:    3
+       1   0.00000000       0.00000000       0.00000000    
+      51   50.0000000       0.00000000       0.00000000    
+     101   100.000000       0.00000000       0.00000000    
+

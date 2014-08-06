@@ -1,0 +1,10 @@
+# FEHM V3.2.0lin 14-07-23 QA:NA    08/06/2014 
+#   LOG AVS OUTPUT
+# # RUN_INPUT.dat                                                                 
+# Root filename               Output Time (days)
+ RUN.00001       0.00000000    
+ RUN.00002      0.115740741E-02
+ RUN.00003      0.115740741E-01
+ RUN.00004      0.115740741    
+ RUN.00005      0.578703704    
+ RUN.00006       1.15740741    

@@ -434,6 +434,23 @@ class fehmTest(unittest.TestCase):
         '''
         
         self.test_case('mptr_test')
+
+    def test_heatflux_1DConvection(self):
+        '''
+        Test heat flux output for a 1D convection only case
+
+        Compares the generated *_hf_node.csv files with a pre-established output
+
+        ..Authors: Sharad Kelkar, Zora Dash
+        ..Updated: 6 August 2014 by Sharad Kelkar
+        '''
+
+        args = {}
+        args['times'] = [10.0]
+        args['test_measure'] = 'perc_difference'
+        args['maxerr'] = 2.0
+
+        self.test_case('heatflux_1DConvection')
                     
     # Test Developer Functionality ############################################
         
