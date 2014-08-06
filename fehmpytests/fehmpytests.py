@@ -106,7 +106,7 @@ class fehmTest(unittest.TestCase):
         arguments = {}
         arguments['components'] = ['water']
         arguments['variables']  = ['Kx']
-        arguments['format'] = 'relative' 
+        arguments['test_measure'] = 'perc_difference' 
         
         #test_case() does not actually display this custom error message yet.
         arguments['err_msg'] = \
@@ -446,6 +446,16 @@ class fehmTest(unittest.TestCase):
         :type name: str
         
         :param parameters: Attribute values that override default values.
+                               Key Value Choices
+                                   'variables': list[str, str, ...]
+                                   'times': list[float, float, ...]
+                                   'nodes': list[int, int, ...]
+                                   'components': list[str, str, ...]
+                                   'maxerr': float
+                                   'test_measure': str - 'max_difference' or
+                                                         'rms_difference' or
+                                                         'perc_difference'
+                                   
         :type parameters: dict
             
         The folder 'name' in fehmpytests must exist with correct structure.
@@ -526,7 +536,7 @@ class fehmTest(unittest.TestCase):
             f_old = fdata.fcontour('compare/*'+subcase+'.'+filetype)
             f_new = fdata.fcontour('*'+subcase+'.'+filetype)
             f_dif = fdata.fdiff(f_new, f_old)
-            
+                
             msg = 'Incorrect %s at time %s.'
             
             #If no pre-specified times, grab them from f_dif.
@@ -547,9 +557,15 @@ class fehmTest(unittest.TestCase):
                 for v in np.intersect1d(variables, f_dif[t]):
                     #Measure the difference into a single quantity.
                     f_dif[t][v] = map(abs, f_dif[t][v])
+                    f_old[t][v] = map(abs, f_old[t][v])
                     difference = { 
                         'max_difference': max(f_dif[t][v]),
-                        'rms_difference': np.sqrt(np.mean(f_dif[t][v])) 
+                        'rms_difference': np.sqrt(np.mean(f_dif[t][v])), 
+                        'perc_difference':
+                            sum([x/float(y) 
+                                 for x,y in zip(f_dif[t][v], f_old[t][v])
+                                 if y != 0]) /
+                            float(len(f_dif[t][v]))
                     }[test_measure]
                     try:
                         self.assertTrue(difference<mxerr, msg%(v, t))
@@ -569,7 +585,7 @@ class fehmTest(unittest.TestCase):
             f_old = fdata.fhistory('compare/*'+subcase+filetype) 
             f_new = fdata.fhistory('*'+subcase+filetype)
             f_dif = fdata.fdiff(f_new, f_old)
-            
+
             #If no pre-specified variables, grab them from f_dif.         
             if len(values['variables']) == 0:
                 variables = f_dif.variables
@@ -591,7 +607,12 @@ class fehmTest(unittest.TestCase):
                     f_dif[v][n] = map(abs, f_dif[v][n])
                     difference = { 
                         'max_difference': max(f_dif[v][n]),
-                        'rms_difference': np.sqrt(np.mean(f_dif[v][n])) 
+                        'rms_difference': np.sqrt(np.mean(f_dif[v][n])), 
+                        'perc_difference':
+                            sum([x/float(y) 
+                                 for x,y in zip(f_dif[v][n], f_old[v][n])
+                                 if y != 0]) /
+                            float(len(f_dif[v][n]))
                     }[test_measure]
                     try:   
                         self.assertTrue(difference<mxerr, msg%(v, n))
@@ -634,7 +655,12 @@ class fehmTest(unittest.TestCase):
                     f_dif[v][n] = map(abs, f_dif[v][n])
                     difference = { 
                         'max_difference': max(f_dif[v][n]),
-                        'rms_difference': np.sqrt(np.mean(f_dif[v][n])) 
+                        'rms_difference': np.sqrt(np.mean(f_dif[v][n])), 
+                        'perc_difference':
+                            sum([x/float(y) 
+                                 for x,y in zip(f_dif[v][n], f_old[v][n])
+                                 if y != 0]) /
+                            float(len(f_dif[v][n]))
                     }[test_measure]     
                     try:
                         self.assertTrue(difference<mxerr, msg%(v, n))
@@ -685,7 +711,12 @@ class fehmTest(unittest.TestCase):
                         fdiff_array = map(abs, f_dif.node[c][n][v])
                         difference = { 
                             'max_difference': max(fdiff_array),
-                            'rms_difference': np.sqrt(np.mean(fdiff_array)) 
+                            'rms_difference': np.sqrt(np.mean(fdiff_array)),
+                            'perc_difference':
+                                sum([x/float(y) 
+                                     for x,y in zip(fdiff_array, fdiff_array)
+                                     if y != 0]) /
+                                float(len(fdiff_array)) 
                         }[test_measure]
                         try:
                             self.assertTrue(difference < mxerr, msg%(v,c,n))
@@ -721,7 +752,12 @@ class fehmTest(unittest.TestCase):
                 fdiff_array = map(abs, f_dif[v])
                 difference = { 
                     'max_difference': max(fdiff_array),
-                    'rms_difference': np.sqrt(np.mean(fdiff_array)) 
+                    'rms_difference': np.sqrt(np.mean(fdiff_array)),
+                    'perc_difference':
+                            sum([x/float(y) 
+                                 for x,y in zip(fdiff_array, fdiff_array)
+                                 if y != 0]) /
+                            float(len(fdiff_array)) 
                 }[test_measure]
                 #Perform test, if fail log switch is on, write a fail log.
                 try:
