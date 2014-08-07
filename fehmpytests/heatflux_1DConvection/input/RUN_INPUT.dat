@@ -5,6 +5,7 @@ sol
 # -----------------------CONTOUR OUTPUT REQUESTS-----------------------
 fhot
 cont
+surf
 tec	1000	1e+30	time	
 xyz
 pressure

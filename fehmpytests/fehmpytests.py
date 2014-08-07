@@ -21,6 +21,8 @@ import glob
 import itertools
 from subprocess import call
 from subprocess import PIPE
+from contextlib import contextmanager
+
 try:
     sys.path.insert(0,'../pyfehm')
     import fdata
@@ -664,7 +666,7 @@ class fehmTest(unittest.TestCase):
 
             msg = 'Incorrect %s at node %s.'  
             
-            #Check the nodes at each variable for any significant differences.   
+            #Check the nodes at each variable for any significant differences.
             for v in variables:
                 #Its possible some variables do not have all nodes in f_dif.
                 for n in np.intersect1d(nodes, f_dif[v]):
@@ -814,7 +816,11 @@ class fehmTest(unittest.TestCase):
         else:
             filesfile = 'input/control/'+subcase+'.files'
             
-        call(exe+' '+filesfile, shell=True, stdout=PIPE)
+        evalstr = exe+' '+filesfile
+        
+        with open(os.devnull, "w") as f:
+            call(evalstr, shell=True, stdout=f)
+        
         outfile = None
         errfile = 'fehmn.err'
 
@@ -889,6 +895,9 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('test_colloid_filtration', log))
         suite.addTest(fehmTest('test_mptr', log))
         
+        #Works with FEHM V3.2
+        #suite.addTest(fehmTest('test_heatflux_1DConvection', log))
+        
         #TODO - Look into why this test takes so long.
         #suite.addTest(fehmTest('test_evaporation', log))
         
@@ -917,7 +926,7 @@ def suite(mode, test_case, log):
         pass
         
     return suite
-        
+    
 if __name__ == '__main__':
     
     #Unless the user specifies a single test-case, this isn't important.
@@ -983,6 +992,8 @@ if __name__ == '__main__':
     runner = unittest.TextTestRunner(verbosity=2)
     test_suite = suite(mode, test_case, log)
     runner.run(test_suite)
+    
+
 
 
 
