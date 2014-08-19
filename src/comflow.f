@@ -73,5 +73,10 @@
 !       real*8, allocatable :: thetaresid(:,:), thetaresidv(:,:)
         integer dispsame,sehdonevel,hvliquid,hvvapor,sehsize,numflux
 
+c s kelkar 3 July 2014, for calculating heat flow vectors
+	logical flag_heat_out
+	real*8, allocatable :: e_axy_adv(:), e_axy_cond(:)
+	real*8, allocatable :: e_adv_nodal(:,:),e_cond_nodal(:,:)
+
 	end module comflow
 

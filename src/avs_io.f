@@ -200,6 +200,7 @@ c      write_avs_node_mat, write_avs_ucd_header
       character*14 head_vec_dual
       character*14 head_con
       character*14 head_con_dual
+      character*14 head_hf
       character*14 geom_tail
       character*14 material_tail
       character*14 material_dual_tail
@@ -209,6 +210,7 @@ c      write_avs_node_mat, write_avs_ucd_header
       character*14 dualv_tail
       character*14 concen_tail
       character*14 dualcon_tail
+      character*14 heatflux_tail
       character*14 log_tail
       character*14 wt_tail
       character*19 tmp_tail
@@ -219,6 +221,7 @@ c      write_avs_node_mat, write_avs_ucd_header
       integer ifdual, n1, ktmp, ktmp_head, ltmp, mout, iocord_temp
       integer nscalar, nscalar_dual, nvector, nvector_dual
       integer nconcen, nconcen_dual, nmaterial, nmaterial_dual
+      integer nheatflux
 C
       real*8, allocatable :: dum(:)
       logical null1, exists, opnd
@@ -231,11 +234,13 @@ C
       data head_sca /'sca_head'/
       data head_vec /'vec_head'/
       data head_con /'con_head'/
+      data head_hf /'hf_head'/
       data geom_tail /'_geo'/
       data material_tail /'mat_node'/
       data scalar_tail /'_sca_node'/
       data vector_tail /'_vec_node'/
       data concen_tail /'_con_node'/
+      data heatflux_tail /'_hf_node'/
       data log_tail /'avs_log'/
       data wt_tail /'_wt'/
       data icall /1/
@@ -345,6 +350,13 @@ c     No velocities for gdpm or gdkm
          end if
       else
          nvector_dual = 0
+      end if
+      if (idoff .eq. -1) then
+c     Heat conduction only
+         nheatflux = ioheatflux
+      else
+c     Advection and conduction
+         nheatflux = 2 * ioheatflux
       end if
       if (iomaterial .ne. 0) then
          mout = 0
@@ -651,6 +663,20 @@ C No binary option
             endif
          endif
 
+         if (nheatflux .ne. 0) then
+            if (altc(1:3) .eq. 'avs' ) 
+     &           call namefile1(lu,ioformat,avs_root,head_hf,iaroot,
+     &           ierr)
+            if (ioformat .eq. 1) then
+C No binary option
+            else
+               if (altc(1:3) .eq. 'avs' )
+     &              call write_avs_ucd_header(lu,verno,jdate,wdd,
+     &              neq_primary,nei,nheatflux*len_vec,num_cdata,
+     &              num_mdata)
+            endif
+         end if
+
          if (iogdkm .eq. 1) neq_tmp = neq
          
       else if (inj .lt. 0) then
@@ -869,6 +895,16 @@ c  PHS 4/27/2000   added altc and days to the pass to write_avs_node_con
                
             endif
          endif
+
+         if (nheatflux .ne. 0) then
+! No dual options for now
+            ifdual = 0
+            if (ioformat .eq. 1) then
+C     No binary option
+            else
+               call write_avs_node_hf(icall,neq,nheatflux,lu,ifdual)
+            end if
+         end if
          
 C     Write output to logfile
          

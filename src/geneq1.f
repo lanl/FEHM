@@ -206,6 +206,9 @@ C***********************************************************************
       real*8  swi, sx1d, sx2c, sx2t, sx3c, sx3t, sx4d, sx4h, sxzt
       real*8  thxi, thxkb, thyi, thykb, thzi, thzkb, ti
       real*8  vexy, vexyf, vxy, vxyd, vxyf
+
+      real*8 heatt
+
       parameter(dis_tol=1.d-12)
 c
 c
@@ -553,6 +556,12 @@ c changed by avw -- entered here by seh
       a_axy(iau+nmatavw)=axy
       a_axy(ial+nmatavw)=-axy
 
+c s kelkar 3 July 2014, for calculating heat flow vectors
+      if(flag_heat_out) then
+         e_axy_adv(iau+nmatavw)=aexy
+         e_axy_adv(ial+nmatavw)=-aexy
+      endif
+
       bp(iz+nrhs(1))=bp(iz+nrhs(1))+axy
       bp(kz+nrhs(1))=bp(kz+nrhs(1))-axy
       a(jmia+nmat(1))=a(jmia+nmat(1))+dlapi
@@ -696,8 +705,16 @@ c
       ial=it12(jm)
       jml=nelmdg(kz)-neqp1
       heatc=t5(neighc)
-      bp(iz+nrhs(2))=bp(iz+nrhs(2))+heatc*(t(kb)-ti)
-      bp(kz+nrhs(2))=bp(kz+nrhs(2))-heatc*(t(kb)-ti)
+      
+      heatt = +heatc*(t(kb)-ti)
+c s kelkar 3 July 2014, for calculating heat flow vectors
+      if(flag_heat_out) then
+         e_axy_cond(iau+nmatavw)=+heatt
+         e_axy_cond(ial+nmatavw)=-heatt
+      endif
+
+      bp(iz+nrhs(2))=bp(iz+nrhs(2))+heatt
+      bp(kz+nrhs(2))=bp(kz+nrhs(2))-heatt
       a(jmia+nmat(3))=a(jmia+nmat(3))-heatc*dtpa(i)
       a(jmia+nmat(4))=a(jmia+nmat(4))-heatc*dtpae(i)
       a(ial+nmat(3))=a(ial+nmat(3))+heatc*dtpa(i)

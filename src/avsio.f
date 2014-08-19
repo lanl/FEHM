@@ -151,7 +151,7 @@
       integer ioconcentration,iodisplacement,iohead,ioformat
       integer iofw,iofh,ioporosity,iosource,iodensity,iocord
       integer iopermeability,iogeo,iozone,iowt,iokd,iozid,iogrid
-      integer iocapillary,ioco2,iogdkm
+      integer iocapillary,ioco2,iogdkm,ioheatflux
       integer iodisp, iostrain, iostress      
 
       integer iaroot, timec_flag

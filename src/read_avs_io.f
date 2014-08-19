@@ -156,6 +156,7 @@ C***********************************************************************
       use comco2, only : icarb
       use comdi, only : nsurf, izone_surf, izone_surf_nodes, ifree
       use comdti, only : n0
+      use comflow, only : flag_heat_out
       use davidi, only : irdof
       implicit none
 
@@ -202,6 +203,7 @@ c     assign defaults
       iodisp = 0
       iostrain = 0
       iostress = 0
+      ioheatflux = 0
 c     default output, time in days (for tecplot)
       timec_flag = 2
       net_flux = .false.
@@ -310,10 +312,17 @@ c     output pressures, keyword: pressure
             end if
 
          elseif((chdum(1:2) .eq. 'he').or.(chdum(1:2) .eq. 'HE'))then
+c     output heat fluxes, keyword: heatflux
+            if ((chdum(3:4) .eq. 'at').or.(chdum(2:2) .eq. 'AT'))then
+               ioheatflux = 1
+               if (iptty .ne. 0) 
+     &              write(iptty, *) ' ioheatflux      ', ioheatflux
+            else
 c     output hydraulic head, keyword: head
-            iohead = 1
-            if (iptty .ne. 0) 
-     &           write(iptty, *) ' iohead          ', iohead
+               iohead = 1
+               if (iptty .ne. 0) 
+     &              write(iptty, *) ' iohead          ', iohead
+            end if
 
          elseif((chdum(1:2) .eq. 'wt').or.(chdum(1:2) .eq. 'WT'))then
 c     output water table elevation, keyword: wt
@@ -645,6 +654,22 @@ c     illegal character found
          end if                    
       end if
 
+      if (.not. flag_heat_out .and. ioheatflux .eq. 1) then
+         ioheatflux = 0
+         write(ierr, 110) 
+     &        'heat flux output specified but not calculated'
+         write(ierr, 120) 'heat flux'
+         write(ierr, 100) 
+         iogeo = 0
+         if (iptty .ne. 0) then
+            write(iptty, 100)
+            write(iptty, 110)  
+     &        'heat flux output specified but not calculated'
+            write(iptty, 120) 'heat flux'
+            write(iptty, 100)
+         end if                    
+      end if
+
       if(iopressure .ne. 0 .or. iovelocity .ne. 0 .or. ioflx .ne. 0
      &   .or. iodensity .ne. 0) then
          if((ioliquid .eq. 0) .and. (iovapor .eq. 0)) then
@@ -882,6 +907,7 @@ c     illegal character found
      .     , /, ' (ge)ometry      or (GE)OMETRY '
      .     , /, ' (gr)id          or (GR)ID '
      .     , /, ' (he)ad          or (HE)AD '
+     .     , /, ' (heat)flux      or (HEAT)FLUX '
      .     , /, ' (hy)drate       or (HY)DRATE '
      .     , /, ' (l)iquid        or (L)IQUID '
      .     , /, ' (m)aterial      or (M)ATERIAL '

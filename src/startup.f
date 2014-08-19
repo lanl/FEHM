@@ -763,6 +763,25 @@ c
             else
                allocate(a_axy(ldna))
             end if
+
+c s kelkar 3 July 2014, for calculating heat flow vectors
+            if(flag_heat_out) then
+               if (idpdp .ne. 0) then
+                  flag_heat_out = .false.
+       write(iptty,*),'heat out option currently only single porosity'
+       write(ierr,*),'heat out option currently only single porosity'
+               else
+                  allocate(e_axy_adv(ldna))
+                  allocate(e_axy_cond(ldna))
+                  allocate(e_adv_nodal(neq,3))
+                  allocate(e_cond_nodal(neq,3))
+                  e_axy_adv = 0
+                  e_axy_cond = 0
+                  e_adv_nodal = 0
+                  e_cond_nodal = 0
+               end if
+            endif
+
             if (irdof .ne. 13) then
                if (idpdp .ne. 0) then
                   allocate(a_vxy(2*ldna+neq))
@@ -784,6 +803,16 @@ c
             end if
          else
             allocate(a_axy(1),a_vxy(1),a_wvxy(1))
+            if (idoff .eq. -1 .and. flag_heat_out) then
+               allocate(e_axy_adv(l))
+               allocate(e_axy_cond(ldna))
+               allocate(e_adv_nodal(1,3))
+               allocate(e_cond_nodal(neq,3))
+               e_axy_adv = 0
+               e_axy_cond = 0
+               e_adv_nodal = 0
+               e_cond_nodal = 0
+            end if
          end if
       end if
       a_axy=0

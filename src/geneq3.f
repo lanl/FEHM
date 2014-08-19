@@ -71,15 +71,16 @@ CD4   FEHM Application Version 2.20
 CD4
 C***********************************************************************
 
+      use comai
       use combi
       use comci
       use comdi 
+      use comdti
       use comei
+      use comflow, only : flag_heat_out, e_axy_cond, e_cond_nodal
       use comgi
       use comji
       use davidi
-      use comdti
-      use comai
       implicit none
 
       integer i
@@ -96,6 +97,7 @@ C***********************************************************************
       real*8  radi, radkb
       real*8  sx1d, sx2c, sx2t, sx3c, sx3t, sxzt, sxzc
       real*8  thxi, thxkb, thyi, thykb, thzi, thzkb, ti
+      real*8 heatt
       parameter(dis_tol=1.d-12)
 c
 c generate equations for  heat conduction
@@ -106,16 +108,16 @@ c
       thzi=thz(i)
       ti=t(i)
       dtpaei=dtpae(i)
-c
-c form constants for i>neq
-c
+c     
+c     form constants for i>neq
+c     
       if(i.gt.neq.and.idualp.eq.0) then
-      icd=neq
+         icd=neq
       else
-      icd=0
+         icd=0
       endif
       iz=i-icd
-c
+c     
       ii1=nelm(i-icd)+1
       ii2=nelm(i-icd+1)
       idg=nelmdg(i-icd)-ii1+1
@@ -125,61 +127,61 @@ c
       jmia=jmi-neqp1
       sx_min = 0.0d00
       do 58 jm=jmi+1,ii2
-      iq=iq+1
-      kb=nelm(jm)+icd
-      it8(iq)=kb
-      it9(iq)=jm-ii1+1
-      it10(iq)=istrw(jm-neqp1)
-c gaz 11-18-2001
+         iq=iq+1
+         kb=nelm(jm)+icd
+         it8(iq)=kb
+         it9(iq)=jm-ii1+1
+         it10(iq)=istrw(jm-neqp1)
+c     gaz 11-18-2001
 c     if(imdnode.ne.0) then
-c       imd = mdnodes(i) + mdnodes(kb)
-c       if(imd.lt.2) it10(iq) = -abs(it10(iq))
+c     imd = mdnodes(i) + mdnodes(kb)
+c     if(imd.lt.2) it10(iq) = -abs(it10(iq))
 c     endif
-      it11(iq)=jm-neqp1
-      ij1=nelm(nelm(jm))+1
-      ij2=nelmdg(nelm(jm))-1
-      do 68 ij=ij1,ij2
-      if(nelm(ij).eq.iz) then
-      it12(iq)=ij-neqp1
-      endif
-68    continue
-58    continue
+         it11(iq)=jm-neqp1
+         ij1=nelm(nelm(jm))+1
+         ij2=nelmdg(nelm(jm))-1
+         do 68 ij=ij1,ij2
+            if(nelm(ij).eq.iz) then
+               it12(iq)=ij-neqp1
+            endif
+ 68      continue
+ 58   continue
       if(icnl.eq.0) then
-c
-c 3-d geometry
-c
-      do 59 jm=1,iq
-      kb=it8(jm)
-      kz=kb-icd
-      neighc=it9(jm)
-      iwd=it10(jm)
-      iw = abs(iwd)
-      sx2c=sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz)
-      thxkb=thx(kb)
-      thykb=thy(kb)
-      thzkb=thz(kb)
-      sx2t=2.*thxi*thxkb/(thxi+thxkb)
-      sx3t=2.*thyi*thykb/(thyi+thykb)
-      sxzt=2.*thzi*thzkb/(thzi+thzkb)
+c     
+c     3-d geometry
+c     
+         do 59 jm=1,iq
+            kb=it8(jm)
+            kz=kb-icd
+            neighc=it9(jm)
+            iwd=it10(jm)
+            iw = abs(iwd)
+            sx2c=sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz)
+            thxkb=thx(kb)
+            thykb=thy(kb)
+            thzkb=thz(kb)
+            sx2t=2.*thxi*thxkb/(thxi+thxkb)
+            sx3t=2.*thyi*thykb/(thyi+thykb)
+            sxzt=2.*thzi*thzkb/(thzi+thzkb)
             delx2=(cord(kz,1)-cord(iz,1))**2
             dely2=(cord(kz,2)-cord(iz,2))**2
             delz2=(cord(kz,3)-cord(iz,3))**2
             dis2=delx2+dely2+delz2
             if(dis2.gt.dis_tol.and.iwd.gt.0) then
-              sxzc=sx2c*dis2/
-     &          (delx2/sx2t+dely2/sx3t+
-     &           delz2/sxzt)
+               sxzc=sx2c*dis2/
+     &              (delx2/sx2t+dely2/sx3t+
+     &              delz2/sxzt)
             else
-              sxzc=sx2c*sx_mult*max(sx2t,sx3t,sxzt)
+               sxzc=sx2c*sx_mult*max(sx2t,sx3t,sxzt)
             endif
-      t5(neighc)=sxzc               
-59    continue
+            t5(neighc)=sxzc               
+ 59      continue
       else
-c
-c 2-d coding
-c
-            radi=cord(iz,3)
-            do 60 jm=1,iq
+c     
+c     2-d coding
+c     
+         radi=cord(iz,3)
+         do 60 jm=1,iq
             kb=it8(jm)
             kz=kb-icd
             neighc=it9(jm)
@@ -195,34 +197,42 @@ c
             dely2=(cord(kz,2)-cord(iz,2))**2
             dis2=delx2+dely2
             if(dis2.gt.dis_tol.and.iwd.gt.0) then
-              sx3c=sx2c*dis2/
-     &          (delx2/sx2t+dely2/sx3t)
+               sx3c=sx2c*dis2/
+     &              (delx2/sx2t+dely2/sx3t)
             else
-              sxzc=sx2c*sx_mult*max(sx2t,sx3t)
+               sxzc=sx2c*sx_mult*max(sx2t,sx3t)
             endif
-      t5(neighc)=sx3c
-60    continue
+            t5(neighc)=sx3c
+ 60      continue
       endif
-c
-c form equations
-c
-      do 66 jm=1,iq
-      kb=it8(jm)
-      kz=kb-icd
-      neighc=it9(jm)
-      heatc=t5(neighc)
-      iau=it11(jm)
-      ial=it12(jm)
-      jml=nelmdg(kz)-neqp1
-      heatc=t5(neighc)
-      bp(i)=bp(i)+heatc*(t(kb)-ti)
-      bp(kb)=bp(kb)-heatc*(t(kb)-ti)
-      a(jmia)=a(jmia)-heatc*dtpae(i)
-      a(ial)=a(ial)+heatc*dtpae(i)
-      a(iau)=a(iau)+heatc*dtpae(kb)
-      a(jml)=a(jml)-heatc*dtpae(kb)
-66    continue
-c
+c     
+c     form equations
+c     
+      do jm=1,iq
+         kb=it8(jm)
+         kz=kb-icd
+         neighc=it9(jm)
+         heatc=t5(neighc)
+         iau=it11(jm)
+         ial=it12(jm)
+         jml=nelmdg(kz)-neqp1
+         heatc=t5(neighc)
+
+c     s kelkar 3 July 2014, for calculating heat flow vectors
+         heatt = +heatc*(t(kb)-ti)
+         if(flag_heat_out) then
+            e_axy_cond(iau)=+heatt
+            e_axy_cond(ial)=-heatt
+         endif
+
+         bp(i)=bp(i)+heatc*(t(kb)-ti)
+         bp(kb)=bp(kb)-heatc*(t(kb)-ti)
+         a(jmia)=a(jmia)-heatc*dtpae(i)
+         a(ial)=a(ial)+heatc*dtpae(i)
+         a(iau)=a(iau)+heatc*dtpae(kb)
+         a(jml)=a(jml)-heatc*dtpae(kb)
+      end do
+c     
       bp(i)=bp(i)+sx1d*(aw*denei(i)+ay*denej(i))+qh(i)
       a(jmia)=a(jmia)+sx1d*aw*deef(i)+deqh(i)
 

@@ -184,7 +184,9 @@ C ---  Removed coupling with gas diffusion in ADIF case
       real*8  thxi, thxkb, thyi, thykb, thzi, thzkb, ti
       real*8  vcxy, vcxyf, vexy, vexyf, vxy, vxyd, vxyf, water_pressure
 
-      real*8  mpv_airi,mpv_airkb,mpv_wvi,mpv_wvkb,delmpv_air,delmpv_wv  
+      real*8  mpv_airi,mpv_airkb,mpv_wvi,mpv_wvkb,delmpv_air,delmpv_wv 
+
+      real*8 heatt
 
       parameter(dis_tol=1.d-12)
 
@@ -528,6 +530,12 @@ c
 c
             a_axy(iau+nmatavw)=axyd*(fid*dilkb+fid1*dili)
             a_axy(ial+nmatavw)=-a_axy(iau+nmatavw)
+
+c s kelkar 3 July 2014, for calculating heat flow vectors
+      if(flag_heat_out) then
+         e_axy_adv(iau+nmatavw)=aexy
+         e_axy_adv(ial+nmatavw)=-aexy
+      endif
 
             bp(iz+nrhs(1))=bp(iz+nrhs(1))+axy
             bp(kz+nrhs(1))=bp(kz+nrhs(1))-axy
@@ -1031,8 +1039,16 @@ c
          ial=it12(jm)
          jml=nelmdg(kz)-neqp1
          heatc=t5(neighc)
-         bp(iz+nrhs(2))=bp(iz+nrhs(2))+heatc*(t(kb)-ti)
-         bp(kz+nrhs(2))=bp(kz+nrhs(2))-heatc*(t(kb)-ti)
+      
+c s kelkar 3 July 2014, for calculating heat flow vectors
+      heatt = +heatc*(t(kb)-ti)
+      if(flag_heat_out) then
+         e_axy_cond(iau+nmatavw)=+heatt
+         e_axy_cond(ial+nmatavw)=-heatt
+      endif
+
+         bp(iz+nrhs(2))=bp(iz+nrhs(2))+heatt
+         bp(kz+nrhs(2))=bp(kz+nrhs(2))-heatt
          a(jmia+nmat(4))=a(jmia+nmat(4))-heatc*dtpa(i)
          a(jmia+nmat(5))=a(jmia+nmat(5))-heatc*dtpae(i)
          a(jmia+nmat(6))=a(jmia+nmat(6))-heatc*dtpac(i)

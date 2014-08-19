@@ -323,6 +323,7 @@ C***********************************************************************
       use comci
       use comdi
       use comdti
+      use comflow, only : flag_heat_out
       use comhi
       use comii
       use compart
@@ -346,6 +347,10 @@ c check for contour file output form
 c call veloc calculations here
 c both vapor and liquid velocities calculated with one call
       if(inj.gt.0.and.compute_flow) call veloc
+
+c add call to heatloc to calculate heat fluxes for output
+      if (inj.gt.0.and.flag_heat_out) call heatloc
+
 c if head data requested call airctr(8,0)
 c
       if(ichead.ne.0) then

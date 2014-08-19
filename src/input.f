@@ -490,6 +490,9 @@ C***********************************************************************
       use comwt
       use davidi
 	use trxnvars
+
+        use comflow, only: flag_heat_out
+
       implicit none
 
       integer i, izone, inode
@@ -513,6 +516,8 @@ C***********************************************************************
       cmsg = ''
       macro = ''
       last_macro = ''
+
+      flag_heat_out = .false.
 
       read (inptorig, '(a80)') wdd
 
@@ -934,6 +939,10 @@ c**** output source/sink node fluxes ****
 c**** calculate intermode fluxes ****
          ivelo = 1
          call flxo(0)
+
+      else if (macro .eq. 'fhot') then
+c s kelkar 3 July 2014, for calculating heat flow vectors
+         flag_heat_out = .true.
 
       else if (macro .eq. 'cflx') then
 c**** calculate concentration flux ****
