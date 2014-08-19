@@ -102,8 +102,8 @@ coneq1mdnode.o: comfi.o comflow.o comgi.o comji.o comrxni.o davidi.o
 connections_list.o: comai.o combi.o
 connectivity_symmmetry_test.o: comai.o combi.o comci.o comdi.o comdti.o comei.o
 connectivity_symmmetry_test.o: comfi.o comgi.o davidi.o
-contr.o: avsio.o comai.o combi.o comci.o comdi.o comdti.o comhi.o comii.o
-contr.o: compart.o comsi.o comwt.o comxi.o davidi.o
+contr.o: avsio.o comai.o combi.o comci.o comdi.o comdti.o comflow.o comhi.o
+contr.o: comii.o compart.o comsi.o comwt.o comxi.o davidi.o
 contrc.o: comai.o combi.o comdi.o comdti.o comxi.o
 contrj.o: comai.o combi.o comci.o comdi.o comdti.o
 convctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
@@ -252,8 +252,8 @@ geneq2_wtsi.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 geneq2_wtsi.o: comflow.o comgi.o comii.o comji.o comriv.o comwt.o davidi.o
 geneq2_wtsi_well.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 geneq2_wtsi_well.o: comflow.o comgi.o comii.o comji.o comwt.o davidi.o
-geneq3.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comgi.o comji.o
-geneq3.o: davidi.o
+geneq3.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comflow.o comgi.o
+geneq3.o: comji.o davidi.o
 geneq_air_co2.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o
 geneq_air_co2.o: comfi.o comflow.o comgi.o comhi.o comji.o commeth.o davidi.o
 geneq_co2.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o comfi.o
@@ -338,6 +338,7 @@ head_2phase.o: comai.o combi.o comdi.o comdti.o comfi.o comgi.o comii.o
 head_2phase.o: comrxni.o
 headctr.o: comai.o combi.o comdi.o comdti.o comfi.o comgi.o comii.o comrxni.o
 headctr.o: comwt.o
+heatloc.o: comai.o combi.o comci.o comdi.o comdti.o comflow.o comji.o davidi.o
 hstz.o: comai.o combi.o comco2.o comdi.o comii.o comwt.o comzone.o
 hyddiss.o: comai.o combi.o comdi.o comdti.o comki.o commeth.o
 hydrate_array.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
@@ -388,8 +389,8 @@ inpres.o: comai.o comco2.o comdi.o comdti.o comki.o davidi.o
 inptrk.o: comai.o combi.o comdi.o comdti.o comki.o compart.o compfrac.o comsk.o
 inptrk.o: comsptr.o
 input.o: comai.o combi.o comchem.o comci.o comco2.o comdi.o comdti.o comevap.o
-input.o: compart.o comriv.o comrxni.o comsi.o comsplitts.o comsptr.o comwt.o
-input.o: davidi.o trxnvars.o
+input.o: comflow.o compart.o comriv.o comrxni.o comsi.o comsplitts.o comsptr.o
+input.o: comwt.o davidi.o trxnvars.o
 inrestart.o: comai.o combi.o comxi.o
 inrlp.o: comai.o comco2.o comcomp.o comdi.o comdti.o comki.o comrlp.o
 inrock.o: comai.o comdi.o comdti.o comki.o
@@ -476,7 +477,8 @@ rdtr.o: comai.o combi.o comchem.o comci.o comco2.o comcouple.o comdi.o comdti.o
 rdtr.o: comflow.o compart.o comrxni.o lookupvars.o trxnvars.o
 react.o: comai.o combi.o comchem.o comci.o comcouple.o comdi.o comdti.o comei.o
 react.o: comfi.o comgi.o comrxni.o davidi.o
-read_avs_io.o: avsio.o comai.o combi.o comco2.o comdi.o comdti.o davidi.o
+read_avs_io.o: avsio.o comai.o combi.o comco2.o comdi.o comdti.o comflow.o
+read_avs_io.o: davidi.o
 read_rtd.o: comrtd.o
 read_rxn.o: comai.o combi.o comchem.o comco2.o comcouple.o comdi.o comdti.o
 read_rxn.o: comrxni.o
@@ -664,6 +666,7 @@ write_avs_head_s.o: avsio.o comai.o comdi.o comsi.o davidi.o
 write_avs_node_con.o: avsio.o comai.o combi.o comchem.o comdi.o comdti.o
 write_avs_node_con.o: compart.o comrxni.o
 write_avs_node_h.o: comai.o
+write_avs_node_hf.o: avsio.o comai.o combi.o comdi.o comflow.o
 write_avs_node_mat.o: avsio.o comai.o combi.o comchem.o comdi.o comriv.o
 write_avs_node_mat.o: comrxni.o davidi.o
 write_avs_node_s.o: avsio.o comai.o combi.o comci.o comco2.o comdi.o comfem.o
