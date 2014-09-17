@@ -1,6 +1,6 @@
-input/head.dat
-input/head3D.grid
-input/head.dat
+../input/head.dat
+../input/head3D.grid
+../input/head.dat
 head.out
 
 head.fin

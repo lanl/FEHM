@@ -1,11 +1,11 @@
-input/FILE.in
-input/chain.geom
-input/FILE.in
-output/FILE.out
-input/chain.ini
+../input/FILE.in
+../input/chain.geom
+../input/FILE.in
+FILE.out
+../input/chain.ini
 
 
-output/FILE.trc
+FILE.trc
 
 
 

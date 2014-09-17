@@ -1,5 +1,5 @@
-input: input/RUN_INPUT.dat
-grida: input/RUN_GRID.inp
+input: ../input/RUN_INPUT.dat
+grida: ../input/RUN_GRID.inp
 rsto: RUN.rsto
 outp: RUN.outp
 check: RUN.chk

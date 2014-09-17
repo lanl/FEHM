@@ -1,12 +1,12 @@
-input/cellbasedN.dat
-input/oned24.geom
-input/cellbasedN.dat
-output/cellbasedN.out
-output/flow_fieldNflux.ini
-output/cellbasedN.fin
+../input/cellbasedN.dat
+../input/oned24.geom
+../input/cellbasedN.dat
+cellbasedN.out
+flow_fieldNflux.ini
+cellbasedN.fin
 
-output/cellbasedN.trc
-output/cellbasedN.con
+cellbasedN.trc
+cellbasedN.con
 
 
 

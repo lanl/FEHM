@@ -9,14 +9,14 @@ mptr
 2 30
 tcurve
 3	0.9999
-input/uz_tfcurves_nn_dualk_4680.in
+../input/uz_tfcurves_nn_dualk_4680.in
 zptr
 4
 701 702 703 704
 244562 
 0. 	1.e20 	0. 	1.e20
 file
-input/Kd0_Dm0.dat
+../input/Kd0_Dm0.dat
 afm
 1.	1.	1.	0.		1.000000	0	0	//layer 1  tcwm1 zone 1
 1.	1.	1.	0.		1.000000	0	0	//layer 2  tcwm2 zone 2

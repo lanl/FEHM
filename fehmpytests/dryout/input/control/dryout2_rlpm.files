@@ -1,6 +1,6 @@
-input/dryout2_rlpm.in
-input/dryout.geom
-input/dryout2_rlpm.in
+../input/dryout2_rlpm.in
+../input/dryout.geom
+../input/dryout2_rlpm.in
 dryout2_rlpm.out
 
 

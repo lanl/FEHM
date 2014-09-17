@@ -2,7 +2,7 @@ Present-day mean inf ysw 8/30/2002; Update porosity and rock density gplu 5/8/20
 # Particle tracking for TOUGH2 flow field
 dpdp
 file
-input/fehm_amr_base.dpdp  
+../input/fehm_amr_base.dpdp  
 perm
 1  0  0   0.100E-14 0.100E-14 0.100E-14
 
@@ -13,7 +13,7 @@ rlp
 
 rock
 file
-input/fehm_amr_base.rock                             
+../input/fehm_amr_base.rock                             
 flow
 
 time
@@ -40,8 +40,8 @@ node
 1
 zone
 file
-input/fehmn.zone2                            
+../input/fehmn.zone2                            
 mptr
 file
-input/fehm_test_mptr.mptr
+../input/fehm_test_mptr.mptr
 stop

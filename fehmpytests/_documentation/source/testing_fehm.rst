@@ -65,7 +65,7 @@ To test a singe test-case:
 Creating an Error Log
 ^^^^^^^^^^^^^^^^^^^^^
 An error log .txt file can be created to show details about an error and where 
-it occured. To generate an error log, add the switch *log* after 
+it occurred. To generate an error log, add the switch *log* after 
 **fehmpytests.py** and before **<fehm-path>**. Here is an example:
 
 ``python fehmpytests.py --admin --log <fehm-path>``

@@ -1,5 +1,5 @@
 Cell-Based Particle Tracking - Decay-chain Test
 Diffusion           
-output/chain.out
+chain.out
 Free diffusion      
-output/chain_dfree.out
+chain_dfree.out

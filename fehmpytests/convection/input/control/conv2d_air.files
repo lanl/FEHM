@@ -1,6 +1,6 @@
-input/conv2d_air.dat
-input/conv2d_air.dat
-input/conv2d_air.dat
+../input/conv2d_air.dat
+../input/conv2d_air.dat
+../input/conv2d_air.dat
 conv2d_air.out
 
 

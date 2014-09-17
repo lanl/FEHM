@@ -1,6 +1,6 @@
-input/baro_vel.in
-input/baro.grid 
-input/baro_vel.in
+../input/baro_vel.in
+../input/baro.grid 
+../input/baro_vel.in
 baro_vel.out
 
 

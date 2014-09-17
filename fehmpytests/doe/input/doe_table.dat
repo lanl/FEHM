@@ -31,7 +31,7 @@ vapor same
 group 2
 table 1 4 water vapor water/vapor
 file
-input/doe_rlpm.table
+../input/doe_rlpm.table
 end
 1 140 1 2
 

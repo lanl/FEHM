@@ -3,7 +3,7 @@ mptr
 2 30
 tcurve
 3
-input/uz_la_tfcurves.in
+../input/uz_la_tfcurves.in
 244562 
 0. 	1.e20 	0. 	1.e20
 afm

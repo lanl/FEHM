@@ -5,7 +5,7 @@ Main data input file for FEHM in TSPA calculations
 #
 dpdp
 file
-../_resources/fehm_amr_base.dpdp  
+../../_resources/fehm_amr_base.dpdp  
 #
 # perm macro is a placeholder - values not used in TSPA particle tracking runs
 #
@@ -28,7 +28,7 @@ rlp
 #
 rock
 file
-input/fehm_amr_base.rock 
+../input/fehm_amr_base.rock 
 flow
 
 #
@@ -46,151 +46,151 @@ itfc
 1 1
 13  14  -1
 file
-../_resources/itfc_tsw5.txt
+../../_resources/itfc_tsw5.txt
 14  15  -1
 file
-../_resources/itfc_tsw6.txt
+../../_resources/itfc_tsw6.txt
 15  16  -1
 file
-../_resources/itfc_tsw7.txt
+../../_resources/itfc_tsw7.txt
 16  17  -1
 file
-../_resources/itfc_tsw8.txt
+../../_resources/itfc_tsw8.txt
 17  18  -1
 file
-../_resources/itfc_tsw9.txt
+../../_resources/itfc_tsw9.txt
 17  19  -1
 file
-../_resources/itfc_tsw9.txt
+../../_resources/itfc_tsw9.txt
 18  20  -1
 file
-../_resources/itfc_ch1.txt
+../../_resources/itfc_ch1.txt
 19  20  -1
 file
-../_resources/itfc_ch1.txt
+../../_resources/itfc_ch1.txt
 20  26  -1
 file
-../_resources/itfc_chz.txt
+../../_resources/itfc_chz.txt
 20  22  -1
 file
-../_resources/itfc_chv.txt
+../../_resources/itfc_chv.txt
 26  27  -1
 file
-../_resources/itfc_chz.txt
+../../_resources/itfc_chz.txt
 26  23  -1
 file
-../_resources/itfc_chv.txt
+../../_resources/itfc_chv.txt
 27  28  -1
 file
-../_resources/itfc_chz.txt
+../../_resources/itfc_chz.txt
 27  24  -1
 file
-../_resources/itfc_chv.txt
+../../_resources/itfc_chv.txt
 28  29  -1
 file
-../_resources/itfc_chz.txt
+../../_resources/itfc_chz.txt
 28  25  -1
 file
-../_resources/itfc_chv.txt
+../../_resources/itfc_chv.txt
 29  30  -1
 file
-../_resources/itfc_chz.txt
+../../_resources/itfc_chz.txt
 29  31  -1
 file
-../_resources/itfc_chv.txt
+../../_resources/itfc_chv.txt
 18  21  -1
 file
-../_resources/itfc_ch1.txt
+../../_resources/itfc_ch1.txt
 19  21  -1
 file
-../_resources/itfc_ch1.txt
+../../_resources/itfc_ch1.txt
 21  22  -1
 file
-../_resources/itfc_chv.txt
+../../_resources/itfc_chv.txt
 21  26  -1
 file
-../_resources/itfc_chz.txt
+../../_resources/itfc_chz.txt
 22  23  -1
 file
-../_resources/itfc_chv.txt
+../../_resources/itfc_chv.txt
 22  27  -1
 file
-../_resources/itfc_chz.txt
+../../_resources/itfc_chz.txt
 23  24  -1
 file
-../_resources/itfc_chv.txt
+../../_resources/itfc_chv.txt
 23  28  -1
 file
-../_resources/itfc_chz.txt
+../../_resources/itfc_chz.txt
 24  25  -1
 file
-../_resources/itfc_chv.txt
+../../_resources/itfc_chv.txt
 24  29  -1
 file
-../_resources/itfc_chz.txt
+../../_resources/itfc_chz.txt
 25  30  -1
 file
-../_resources/itfc_chz.txt
+../../_resources/itfc_chz.txt
 25  31  -1
 file
-../_resources/itfc_chv.txt
+../../_resources/itfc_chv.txt
 30  32  -1
 file
-../_resources/itfc_pp4.txt
+../../_resources/itfc_pp4.txt
 31  32  -1
 file
-../_resources/itfc_pp4.txt
+../../_resources/itfc_pp4.txt
 32  33  -1
 file
-../_resources/itfc_pp3.txt
+../../_resources/itfc_pp3.txt
 33  34  -1
 file
-../_resources/itfc_pp2.txt
+../../_resources/itfc_pp2.txt
 34  35  -1
 file
-../_resources/itfc_pp1.txt
+../../_resources/itfc_pp1.txt
 35  36  -1
 file
-../_resources/itfc_bf3.txt
+../../_resources/itfc_bf3.txt
 36  37  -1
 file
-../_resources/itfc_bf2.txt
+../../_resources/itfc_bf2.txt
 16  40  -1
 file
-../_resources/itfc_tsw8.txt
+../../_resources/itfc_tsw8.txt
 40  41  -1
 file
-../_resources/itfc_tsw9.txt
+../../_resources/itfc_tsw9.txt
 41  42  -1
 file
-../_resources/itfc_ch1.txt
+../../_resources/itfc_ch1.txt
 42  22  -1
 file
-../_resources/itfc_chv.txt
+../../_resources/itfc_chv.txt
 42  43  -1
 file
-../_resources/itfc_chz.txt
+../../_resources/itfc_chz.txt
 43  27  -1
 file
-../_resources/itfc_chz.txt
+../../_resources/itfc_chz.txt
 43  23  -1
 file
-../_resources/itfc_chv.txt
+../../_resources/itfc_chv.txt
 28  44  -1
 file
-../_resources/itfc_chz.txt
+../../_resources/itfc_chz.txt
 24  44  -1
 file
-../_resources/itfc_chz.txt
+../../_resources/itfc_chz.txt
 44  45  -1
 file
-../_resources/itfc_chz.txt
+../../_resources/itfc_chz.txt
 45  46  -1
 file
-../_resources/itfc_pp4.txt
+../../_resources/itfc_pp4.txt
 46  33  -1
 file
-../_resources/itfc_pp3.txt
+../../_resources/itfc_pp3.txt
 
 #
 # ctrl macro used to set run control parameters
@@ -241,8 +241,8 @@ node
 #
 zone
 file
-input/fehmn.zone2_gt10
+../input/fehmn.zone2_gt10
 mptr
 file
-input/fehm_TSPA_base2.mptr
+../input/fehm_TSPA_base2.mptr
 stop

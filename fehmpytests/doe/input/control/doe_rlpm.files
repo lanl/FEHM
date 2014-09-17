@@ -1,6 +1,6 @@
-input: input/doe_rlpm.dat
+input: ../input/doe_rlpm.dat
 outpu: doe_rlpm.out
-rsti:  input/doe.ini
+rsti:  ../input/doe.ini
 hist:  doe_rlpm.his
 root:  doe_rlpm
 

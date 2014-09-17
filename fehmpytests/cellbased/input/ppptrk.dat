@@ -1,6 +1,6 @@
 Problem Num
-input/oned24.geom
-output/cellbasedNum.fin
-output/cellbasedNum.post
+../input/oned24.geom
+cellbasedNum.fin
+cellbasedNum.post
 0.1 100 100 1.
 

@@ -1,14 +1,14 @@
-input/fehm_TSPA_base1.dat
-input/fehmn.grid 
-input/fehmn.zone
+../input/fehm_TSPA_base1.dat
+../input/fehmn.grid 
+../input/fehmn.zone
 fehm_TSPA_base1.out
-input/gt10wtrise.ini
+../input/gt10wtrise.ini
 
 
 
 
 
-input/fehmn.stor 
+../input/fehmn.stor 
 
 none
 0

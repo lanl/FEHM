@@ -2,9 +2,9 @@ Cell-Based Particle Tracking w/Advection, Dispersion & Matrix Diffusion
 Comparison of Model and Analytical Solution for Breakthrough Conc. vs Time 
 type Sorption
 historfn		Data type
-output/cellbasedNum.post
-input/tang_ptrkNum.analyt
-output/cellbasedNum.comp
+cellbasedNum.post
+../input/tang_ptrkNum.analyt
+cellbasedNum.comp
 1			Simulated 1-D
 1			Data position analytical
 2			Data position model 

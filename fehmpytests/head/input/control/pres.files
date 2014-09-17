@@ -1,6 +1,6 @@
-input/pres.dat
-input/head3D.grid
-input/pres.dat
+../input/pres.dat
+../input/head3D.grid
+../input/pres.dat
 pres.out
 
 pres.fin

@@ -1,6 +1,6 @@
-input/dryout2.in
-input/dryout.geom
-input/dryout2.in
+../input/dryout2.in
+../input/dryout.geom
+../input/dryout2.in
 dryout2.out
 
 

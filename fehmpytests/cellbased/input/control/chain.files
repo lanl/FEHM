@@ -1,8 +1,8 @@
-input/chain.in
-input/chain.geom
-input/chain.in
+../input/chain.in
+../input/chain.geom
+../input/chain.in
 chain.out
-input/chain.ini
+../input/chain.ini
 
 
 

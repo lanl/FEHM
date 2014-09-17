@@ -1,6 +1,6 @@
-input/heat_pipe_fe.dat
-input/fe.grid
-input/heat_pipe_fe.dat
+../input/heat_pipe_fe.dat
+../input/fe.grid
+../input/heat_pipe_fe.dat
 heat_pipe_fe.out
 	
 

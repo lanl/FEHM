@@ -2,9 +2,9 @@ Cell-Based Particle Tracking - Decay-FILE Test
 Comparison of Model and CHAIN Solution for Concentration vs Time 
 Species Num
 historfn		Data type
-output/FILE_spNum.post
-input/chainNum.analyt
-output/FILE_spNum.comp
+FILE_spNum.post
+../input/chainNum.analyt
+FILE_spNum.comp
 1			Simulated 1-D
 1			Data position analytical
 1			Data position model 

@@ -1,14 +1,14 @@
-input/fehm_test_mptr2.dat                              
-input/fehmn.grid                             
-input/fehmn.zone                             
+../input/fehm_test_mptr2.dat                              
+../input/fehmn.grid                             
+../input/fehmn.zone                             
 fehm_test_mptr2.out
-input/glaqma.ini                              
+../input/glaqma.ini                              
 
 
 
 
 
-input/fehmn.stor                             
+../input/fehmn.stor                             
 
 none
 0

@@ -1,5 +1,5 @@
-input: input/avdonin.in
-grida: input/avdonin800.geom
+input: ../input/avdonin.in
+grida: ../input/avdonin800.geom
 outp: avdonin800.out
 hist: avdonin800.his
 root: avdonin800

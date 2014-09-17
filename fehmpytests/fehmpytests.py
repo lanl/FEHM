@@ -22,6 +22,7 @@ import itertools
 from subprocess import call
 from subprocess import PIPE
 from contextlib import contextmanager
+import shutil
 
 try:
     sys.path.insert(0,'../pyfehm')
@@ -76,7 +77,7 @@ class fehmTest(unittest.TestCase):
     
     # TESTS ######################################################### 
         
-    def test_saltvcon(self):
+    def saltvcon(self):
         """
         **Test the Salt Variable Conductivity Macro**
          
@@ -119,7 +120,7 @@ class fehmTest(unittest.TestCase):
         self.test_case('saltvcon', arguments)
         
         
-    def test_dissolution(self):
+    def dissolution(self):
         """ 
         **Test the Dissoultion Macro**
         
@@ -144,7 +145,7 @@ class fehmTest(unittest.TestCase):
         
         self.test_case('dissolution', arguments)
         
-    def test_salt_perm_poro(self):
+    def salt_perm_poro(self):
         """ 
         **Test the Salt Permeability and Porosity Macro**
 
@@ -170,7 +171,7 @@ class fehmTest(unittest.TestCase):
         
         self.test_case('salt_perm_poro', arguments)
   
-    def test_avdonin(self):
+    def avdonin(self):
         """
         **Test the Radial Heat and Mass Transfer Problem**
         
@@ -189,7 +190,7 @@ class fehmTest(unittest.TestCase):
         
         self.test_case('avdonin', arguments)
         
-    def test_boun(self): 
+    def boun(self): 
         """
         **Test the Boundry Functionality**
         
@@ -205,9 +206,9 @@ class fehmTest(unittest.TestCase):
         arguments['times'] = [2.0]
         arguments['variables'] = ['P', 'Hydraulic Head (m)']
 
-        self.test_case('boun_test', arguments) 
+        self.test_case('boun', arguments) 
         
-    def test_cden(self):
+    def cden(self):
         """
         **Test the Concentration Dependent Brine Density Functionality**
         
@@ -221,9 +222,9 @@ class fehmTest(unittest.TestCase):
         arguments = {}
         arguments['variables'] = ['density']
          
-        self.test_case('cden_test') 
+        self.test_case('cden') 
         
-    def test_doe(self):
+    def doe(self):
         """
         **Test the DOE Code Comparison Project, Problem 5, Case A**
         
@@ -243,7 +244,7 @@ class fehmTest(unittest.TestCase):
         
         self.test_case('doe', arguments)
         
-    def test_head(self):
+    def head(self):
         """
         **Test Head Pressure Problem**
         
@@ -260,7 +261,7 @@ class fehmTest(unittest.TestCase):
         
         self.test_case('head', arguments)
                     
-    def test_ramey(self):
+    def ramey(self):
         """
         **Test Temperature in a Wellbore Problem**
         
@@ -279,7 +280,7 @@ class fehmTest(unittest.TestCase):
         
         self.test_case('ramey', arguments)
    
-    def test_theis(self):
+    def theis(self):
         """
         **Test Pressure Transient Analysis Problem**
         
@@ -296,7 +297,7 @@ class fehmTest(unittest.TestCase):
         
         self.test_case('theis', arguments)
         
-    def test_dryout(self):
+    def dryout(self):
         """
         **Test Dry-Out of a Partially Saturated Medium**
         
@@ -312,7 +313,7 @@ class fehmTest(unittest.TestCase):
         
         self.test_case('dryout')
         
-    def test_multi_solute(self):
+    def multi_solute(self):
         """
         **Test Multi-Solute Transport with Chemical Reaction**
         
@@ -325,7 +326,7 @@ class fehmTest(unittest.TestCase):
         
         self.test_case('multi_solute')
         
-    def test_sorption(self):
+    def sorption(self):
         """
         **Test One Dimensional Reactive Solute Transport**
         
@@ -338,7 +339,7 @@ class fehmTest(unittest.TestCase):
         
         self.test_case('sorption')
         
-    def test_baro_vel(self):
+    def baro_vel(self):
         """
         **Test Pore-Scale Velocity in a Homogeneous Media**
         
@@ -357,7 +358,7 @@ class fehmTest(unittest.TestCase):
         
         self.test_case('baro_vel', args)
         
-    def test_cellbased(self):
+    def cellbased(self):
         """
         **Test the Cell-Based Particle Tracking Model**
         
@@ -378,7 +379,7 @@ class fehmTest(unittest.TestCase):
         
         self.test_case('cellbased')
         
-    def test_heat_pipe(self):      
+    def heat_pipe(self):      
         """
         **Test the Heat Pipe Problem**
         
@@ -394,7 +395,7 @@ class fehmTest(unittest.TestCase):
         
         self.test_case('heat_pipe')
         
-    def test_toronyi(self):
+    def toronyi(self):
         """
         **Test the Toronyi Two-Phase Problem**
         
@@ -411,7 +412,7 @@ class fehmTest(unittest.TestCase):
         self.test_case('toronyi', args)
         
         
-    def test_colloid_filtration(self):
+    def colloid_filtration(self):
         '''
         Test Colloid Filtration
         
@@ -424,7 +425,7 @@ class fehmTest(unittest.TestCase):
         
         self.test_case('colloid_filtration')
         
-    def test_mptr(self):
+    def mptr(self):
         '''
         Test Multi-Species Particle Tracking
         
@@ -437,7 +438,7 @@ class fehmTest(unittest.TestCase):
         
         self.test_case('mptr_test')
 
-    def test_heatflux_1DConvection(self):
+    def heatflux_1DConvection(self):
         '''
         Test heat flux output for a 1D convection only case
 
@@ -505,18 +506,23 @@ class fehmTest(unittest.TestCase):
             #Test the new files generated with each subcase.
             for subcase in subcases:
                 parameters['subcase'] = subcase
+                # CD into run directory
+                output_dir = subcase+'_output'
+                if os.path.exists( output_dir ): shutil.rmtree(output_dir)
+                os.mkdir( output_dir )
+                os.chdir( output_dir )
                 filetypes = ['*.avs','*.csv','*.his','*.out','*.trc','*.ptrk']
                 for filetype in filetypes:
                     parameters['filetype'] = filetype
                     #Check to make sure there are files of this type.
-                    if len(glob.glob('compare/'+'*'+subcase+filetype)) > 0: 
+                    if len(glob.glob('../compare/'+'*'+subcase+filetype)) > 0: 
                         test_method = \
                           self._test_template(filetype, subcase, parameters)
                         test_method()
+                os.chdir( '..' )
                                         
         finally:
             #Allows other tests to be performed after exception.
-            cleanup([x for x in glob.glob('*.*') if '.py' not in x])
             os.chdir(self.maindir)
             
     def _test_template(self, filetype, subcase, parameters={}):
@@ -547,12 +553,12 @@ class fehmTest(unittest.TestCase):
         mxerr = values['maxerr']
         components = values['components']
         test_measure = values['test_measure']
-        
+
         self._run_fehm(subcase)
-        
+       
         def contour_case():      
             #Find the difference between the old and new
-            f_old = fdata.fcontour('compare/*'+subcase+'.'+filetype)
+            f_old = fdata.fcontour('../compare/*'+subcase+'.'+filetype)
             f_new = fdata.fcontour('*'+subcase+'.'+filetype)
             f_dif = fdata.fdiff(f_new, f_old)
                 
@@ -601,7 +607,7 @@ class fehmTest(unittest.TestCase):
                       
         def history_case():
             #Find the difference between the old and new
-            f_old = fdata.fhistory('compare/*'+subcase+filetype) 
+            f_old = fdata.fhistory('../compare/*'+subcase+filetype) 
             f_new = fdata.fhistory('*'+subcase+filetype)
             f_dif = fdata.fdiff(f_new, f_old)
 
@@ -648,7 +654,7 @@ class fehmTest(unittest.TestCase):
                     
         def tracer_case():
             #Find the difference between the old and new
-            f_old = fdata.ftracer('compare/*'+subcase+filetype) 
+            f_old = fdata.ftracer('../compare/*'+subcase+filetype) 
             f_new = fdata.ftracer('*'+subcase+filetype)
             f_dif = fdata.fdiff(f_new, f_old)
             
@@ -696,7 +702,7 @@ class fehmTest(unittest.TestCase):
             
         def output_case():
             #Find difference between old and new file assume 1 file per subcase.
-            old_filename = glob.glob('compare/*'+subcase+filetype)[0]
+            old_filename = glob.glob('../compare/*'+subcase+filetype)[0]
             new_filename = glob.glob('*'+subcase+filetype)[0]
             f_old = fdata.foutput(old_filename)
             f_new = fdata.foutput(new_filename)
@@ -754,7 +760,7 @@ class fehmTest(unittest.TestCase):
         
         def ptrack_case():
             #Find the difference between the old and new
-            f_old = fdata.fptrk('compare/*'+subcase+filetype)
+            f_old = fdata.fptrk('../compare/*'+subcase+filetype)
             f_new = fdata.fptrk('*'+subcase+filetype)  
             f_dif = fdata.fdiff(f_new, f_old)
             
@@ -812,9 +818,9 @@ class fehmTest(unittest.TestCase):
         
         #Find the control file for the test-case or for the subcase. 
         if subcase == '':
-            filesfile = 'input/control/fehmn.files'
+            filesfile = '../input/control/fehmn.files'
         else:
-            filesfile = 'input/control/'+subcase+'.files'
+            filesfile = '../input/control/'+subcase+'.files'
             
         evalstr = exe+' '+filesfile
         
@@ -858,62 +864,58 @@ class fehmTest(unittest.TestCase):
         self.assertTrue(complete, msg+errfile+':\n\n'+errstr)
         os.chdir(curdir)
                      
-def cleanup(files):
+def cleanup():
     """ 
     Utility function to remove files after test
 
-    :param files: list of file names to remove
-    :type files: lst(str) 
     """
-        
-    for g in files:
-        for f in glob.glob(g):
-            if os.path.exists(f): os.remove(f)
+    dirs = glob.glob('*/*_output')
+    for d in dirs: shutil.rmtree( d )
                   
 def suite(mode, test_case, log):
     suite = unittest.TestSuite()
     
     #Default mode is admin for now. Should it be different?
     if mode == 'admin' or mode == 'default':
-        suite.addTest(fehmTest('test_saltvcon', log))
-        suite.addTest(fehmTest('test_dissolution', log))
-        suite.addTest(fehmTest('test_salt_perm_poro', log))
-        suite.addTest(fehmTest('test_avdonin', log))
-        suite.addTest(fehmTest('test_boun', log))
-        suite.addTest(fehmTest('test_cden', log))
-        suite.addTest(fehmTest('test_doe', log))       
-        suite.addTest(fehmTest('test_head', log))
-        suite.addTest(fehmTest('test_ramey', log))
-        suite.addTest(fehmTest('test_theis', log))
-        suite.addTest(fehmTest('test_dryout', log))
-        suite.addTest(fehmTest('test_multi_solute', log))
-        suite.addTest(fehmTest('test_sorption', log))
-        suite.addTest(fehmTest('test_baro_vel', log))
-        suite.addTest(fehmTest('test_cellbased', log))
-        suite.addTest(fehmTest('test_heat_pipe', log))
-        suite.addTest(fehmTest('test_toronyi', log))
-        suite.addTest(fehmTest('test_colloid_filtration', log))
-        suite.addTest(fehmTest('test_mptr', log))
+        suite.addTest(fehmTest('saltvcon', log))
+        suite.addTest(fehmTest('dissolution', log))
+        suite.addTest(fehmTest('salt_perm_poro', log))
+        suite.addTest(fehmTest('avdonin', log))
+        suite.addTest(fehmTest('boun', log))
+        suite.addTest(fehmTest('cden', log))
+        suite.addTest(fehmTest('doe', log))       
+        suite.addTest(fehmTest('head', log))
+        suite.addTest(fehmTest('ramey', log))
+        suite.addTest(fehmTest('theis', log))
+        suite.addTest(fehmTest('dryout', log))
+        suite.addTest(fehmTest('multi_solute', log))
+        suite.addTest(fehmTest('sorption', log))
+        suite.addTest(fehmTest('baro_vel', log))
+        suite.addTest(fehmTest('cellbased', log))
+        suite.addTest(fehmTest('heat_pipe', log))
+        suite.addTest(fehmTest('toronyi', log))
+        suite.addTest(fehmTest('colloid_filtration', log))
+        suite.addTest(fehmTest('mptr', log))
         
         #Works with FEHM V3.2
-        #suite.addTest(fehmTest('test_heatflux_1DConvection', log))
+        #suite.addTest(fehmTest('heatflux_1DConvection', log))
         
         #TODO - Look into why this test takes so long.
-        #suite.addTest(fehmTest('test_evaporation', log))
+        #suite.addTest(fehmTest('evaporation', log))
         
         #TODO - Figure out how to read some other formats.
-        #suite.addTest(fehmTest('test_sptr_btc', log))
-        #suite.addTest(fehmTest('test_sorption', log))
-        #suite.addTest(fehmTest('test_particle_capture', log))
-        #suite.addTest(fehmTest('test_mptr', log))
-        #suite.addTest(fehmTest('test_lost_part', log))
-        #suite.addTest(fehmTest('test_chain', log))
-        #suite.addTest(fehmTest('test_co2test', log))
-        #suite.addTest(fehmTest('test_convection', log))
-        #suite.addTest(fehmTest('test_dpdp_rich', log))
-        #suite.addTest(fehmTest('test_erosion', log))
-        #suite.addTest(fehmTest('test_gdpm', log))
-        #suite.addTest(fehmTest('test_forward', log))
+        #suite.addTest(fehmTest('sptr_btc', log))
+        #suite.addTest(fehmTest('sorption', log))
+        #suite.addTest(fehmTest('particle_capture', log))
+        #suite.addTest(fehmTest('mptr', log))
+        #suite.addTest(fehmTest('lost_part', log))
+        #suite.addTest(fehmTest('chain', log))
+        #suite.addTest(fehmTest('co2test', log))
+        #suite.addTest(fehmTest('convection', log))
+        #suite.addTest(fehmTest('dpdp_rich', log))
+        #suite.addTest(fehmTest('erosion', log))
+        #suite.addTest(fehmTest('gdpm', log))
+        #suite.addTest(fehmTest('forward', log))
     
     elif mode == 'developer':
         #This mode will be a reduced set that runs faster.
@@ -944,10 +946,10 @@ if __name__ == '__main__':
     group.add_argument('-d', '--dev', help=h, action=a)
     h = 'Run a single test-case.'
     group.add_argument('-s', '--solo', help=h, action=a)
-    
     h = "Create a fail statistics file 'fail_log.txt'"
     parser.add_argument('-l', '--log', help=h, action=a)
-    
+    h = "Clean up fehm output files"
+    parser.add_argument( '--clean', help=h, action=a)
     #Positional Arguments
     h = 'Path to the FEHM executable.'
     parser.add_argument('exe', help=h)
@@ -958,6 +960,10 @@ if __name__ == '__main__':
     
     exe = os.path.abspath(args['exe'])
     
+    if args['clean']:
+        cleanup()
+        sys.exit(0)
+
     #Determine the mode.    
     if args['solo']:
         #Make sure that the test-case was specified, otherwise show help.

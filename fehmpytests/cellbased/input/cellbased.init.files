@@ -1,9 +1,9 @@
-input/flow_fieldN.dat
-input/oned24.geom
-input/flow_fieldN.dat
-output/flow_fieldN.out
+../input/flow_fieldN.dat
+../input/oned24.geom
+../input/flow_fieldN.dat
+flow_fieldN.out
 
-output/flow_fieldN.ini
+flow_fieldN.ini
 
 
 
