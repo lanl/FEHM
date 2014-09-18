@@ -1,0 +1,12 @@
+input: ../input/static-multi1.dat
+outp: static-multi1.out
+gridf: ../input/1-by-300.grid
+rsti: ../input/static.ini
+root: static-multi1
+stor: ../input/1-by-300.gridb.stor
+co2in: ../input/co2_interp_table.txt
+
+none
+
+
+

@@ -29,7 +29,7 @@ pres
           
 trac  
 file
-input/trac2.macro
+../input/trac2.macro
 end trac
 cden multi
 # co2 option in cden makes co2 solubility and water density a function of trac tds. 

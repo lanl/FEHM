@@ -1,6 +1,0 @@
-input: input/prob_well_boun3.dat 
-grid: input/mdat_3d_21_21_16.grid
-outp: prob_well_boun3.out
-root: prob_well_boun3
-
-none
