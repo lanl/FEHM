@@ -25,7 +25,7 @@ from contextlib import contextmanager
 import shutil
 
 try:
-    sys.path.insert(0,'../pyfehm')
+    sys.path.insert(0,os.path.join('..','pyfehm'))
     import fdata
 except ImportError as err:
     print 'ERROR: Unable to import pyfehm fpost module'
@@ -489,10 +489,10 @@ class fehmTest(unittest.TestCase):
         os.chdir(name)
         
         #Search for fehmn control files and extract subcases.
-        filenames = glob.glob('input/control/*.files')
+        filenames = glob.glob(os.path.join('input','control','*.files'))
         subcases  = []
         for filename in filenames:
-            subcase = re.sub('input/control/', '', filename)
+            subcase = re.sub(os.path.join('input','control',''), '', filename)
             subcase = re.sub('.files', '', subcase)
             
             #File named 'fehmn.files' to be used for tests with single case.
@@ -515,7 +515,7 @@ class fehmTest(unittest.TestCase):
                 for filetype in filetypes:
                     parameters['filetype'] = filetype
                     #Check to make sure there are files of this type.
-                    if len(glob.glob('../compare/'+'*'+subcase+filetype)) > 0: 
+                    if len(glob.glob(os.path.join('..','compare','')+'*'+subcase+filetype)) > 0: 
                         test_method = \
                           self._test_template(filetype, subcase, parameters)
                         test_method()
@@ -558,7 +558,7 @@ class fehmTest(unittest.TestCase):
        
         def contour_case():      
             #Find the difference between the old and new
-            f_old = fdata.fcontour('../compare/*'+subcase+'.'+filetype)
+            f_old = fdata.fcontour(os.path.join('..','compare','*')+subcase+'.'+filetype)
             f_new = fdata.fcontour('*'+subcase+'.'+filetype)
             f_dif = fdata.fdiff(f_new, f_old)
                 
@@ -607,7 +607,7 @@ class fehmTest(unittest.TestCase):
                       
         def history_case():
             #Find the difference between the old and new
-            f_old = fdata.fhistory('../compare/*'+subcase+filetype) 
+            f_old = fdata.fhistory(os.path.join('..','compare','*')+subcase+filetype) 
             f_new = fdata.fhistory('*'+subcase+filetype)
             f_dif = fdata.fdiff(f_new, f_old)
 
@@ -654,7 +654,7 @@ class fehmTest(unittest.TestCase):
                     
         def tracer_case():
             #Find the difference between the old and new
-            f_old = fdata.ftracer('../compare/*'+subcase+filetype) 
+            f_old = fdata.ftracer(os.path.join('..','compare','*')+subcase+filetype) 
             f_new = fdata.ftracer('*'+subcase+filetype)
             f_dif = fdata.fdiff(f_new, f_old)
             
@@ -702,7 +702,7 @@ class fehmTest(unittest.TestCase):
             
         def output_case():
             #Find difference between old and new file assume 1 file per subcase.
-            old_filename = glob.glob('../compare/*'+subcase+filetype)[0]
+            old_filename = glob.glob(os.path.join('..','compare','*')+subcase+filetype)[0]
             new_filename = glob.glob('*'+subcase+filetype)[0]
             f_old = fdata.foutput(old_filename)
             f_new = fdata.foutput(new_filename)
@@ -760,7 +760,7 @@ class fehmTest(unittest.TestCase):
         
         def ptrack_case():
             #Find the difference between the old and new
-            f_old = fdata.fptrk('../compare/*'+subcase+filetype)
+            f_old = fdata.fptrk(os.path.join('..','compare','*')+subcase+filetype)
             f_new = fdata.fptrk('*'+subcase+filetype)  
             f_dif = fdata.fdiff(f_new, f_old)
             
@@ -818,9 +818,9 @@ class fehmTest(unittest.TestCase):
         
         #Find the control file for the test-case or for the subcase. 
         if subcase == '':
-            filesfile = '../input/control/fehmn.files'
+            filesfile = os.path.join('..','input','control','fehmn.files')
         else:
-            filesfile = '../input/control/'+subcase+'.files'
+            filesfile = os.path.join('..','input','control',subcase+'.files')
             
         evalstr = exe+' '+filesfile
         
@@ -869,7 +869,7 @@ def cleanup():
     Utility function to remove files after test
 
     """
-    dirs = glob.glob('*/*_output')
+    dirs = glob.glob(os.path.join('*','*_output'))
     for d in dirs: shutil.rmtree( d )
                   
 def suite(mode, test_case, log):
