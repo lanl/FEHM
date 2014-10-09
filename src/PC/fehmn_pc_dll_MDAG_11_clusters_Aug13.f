@@ -502,7 +502,7 @@ c     run of fehm. It is initialized to 0 in comai
       
       integer open_file, ifail
 
-      logical used
+      logical used, die
       real*8 tims_save, day_saverip, in3save
       real*8 deneht, denht, eskd, enthp, flemax, flmax, prav, 
      *     pravg, tajj, tas, teinfl, tinfl, tmav, tmavg, tyming
@@ -1545,6 +1545,10 @@ c- - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - Jump Back to
 	      end if   
 c- - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - Jump Back to GS
 
+c EHK check for kill file
+        inquire(file='kill.file',exist=die)
+        if(die) goto 170
+
          end do    ! l loop  
 
 c ******************* end major time step loop ****************
@@ -1589,6 +1593,16 @@ c     gaz 1-6-2002
 c     printout submodel boundary conditions if necessary
 c     
          if(isubbc.ne.0) call submodel_bc(2)
+
+      if(die) then
+         if (iout .ne. 0) then
+         write(iout, '(a40)') 'Kill file present; simulation terminated'
+         endif
+         if (iptty .gt. 0) then
+         write(iptty, '(a40)')'Kill file present; simulation terminated'
+         endif
+      endif
+
         
          if (iout .ne. 0) write(iout, 6040)  days, l
          if (iptty .gt. 0)  write(iptty, 6040)  days, l
