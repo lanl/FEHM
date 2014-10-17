@@ -1,0 +1,174 @@
+.. _fpost-chapter:
+
+fpost: FEHM output file manipulation
+====================================
+
+Processing simulation output data is as important as the generation of the data itself. PyFEHM contains a range of 
+basic plotting tools to visualise FEHM output, all based on the matplotlib python library.
+
+FEHM can output both time history data for specified variables at specified nodes () and contour data for specified
+variables at specified times. PyFEHM can read in any output data format, e.g., *surfer, tecplot*\ , so the user is not 
+required to output in a specific format (although *surfer* format is likely to be the least buggy).
+
+
+Contour output
+--------------
+	
+Data are read from a list of FEHM output files corresponding to a particular time during a simulation.
+Depending on input specifications in :attr:`.fdata.cont`, for each node, x, y, z data, pressure,
+temperature, permeability information is available.
+
+Setting the target filename using wildcards will cause PyFEHM to read in multiple input files for 
+different times. This format will accommodate FEHM's distinction of scalar, vector and concentration output, e.g.,
+information from run.0001_con_node.dat and run.0001_sca_node.data will be read into a single object.
+
+This format also supports material property files, generally denoted with 'mat_node' in the title. This information,
+when parsed, is made available through the :attr:`~fcontour.material` attribute.
+	
+.. autoclass:: fpost.fcontour
+
+Attributes
+^^^^^^^^^^
+
+.. autoattribute:: fpost.fcontour.times
+.. autoattribute:: fpost.fcontour.variables
+.. autoattribute:: fpost.fcontour.user_variables
+.. autoattribute:: fpost.fcontour.material
+.. autoattribute:: fpost.fcontour.format
+.. autoattribute:: fpost.fcontour.filename
+
+Grid attributes
+^^^^^^^^^^^^^^^
+
+.. autoattribute:: fpost.fcontour.x
+.. autoattribute:: fpost.fcontour.y
+.. autoattribute:: fpost.fcontour.z
+.. autoattribute:: fpost.fcontour.xmin
+.. autoattribute:: fpost.fcontour.xmax
+.. autoattribute:: fpost.fcontour.ymin
+.. autoattribute:: fpost.fcontour.ymax
+.. autoattribute:: fpost.fcontour.zmin
+.. autoattribute:: fpost.fcontour.zmax
+
+Methods
+^^^^^^^
+
+.. automethod:: fpost.fcontour.read
+.. automethod:: fpost.fcontour.node
+.. automethod:: fpost.fcontour.new_variable
+.. automethod:: fpost.fcontour.paraview
+.. autoattribute:: fpost.fcontour.what
+
+Examples
+^^^^^^^^
+
+Slice plots
+^^^^^^^^^^^
+
+.. automethod:: fpost.fcontour.slice
+.. automethod:: fpost.fcontour.slice_plot
+.. automethod:: fpost.fcontour.cutaway_plot
+.. automethod:: fpost.fcontour.slice_plot_line
+
+Profile plots
+^^^^^^^^^^^^^
+
+.. automethod:: fpost.fcontour.profile
+.. automethod:: fpost.fcontour.profile_plot
+
+History output
+--------------
+
+Data are read from a list of FEHM output files corresponding to a particular variable during a simulation.
+Depending on input specifications in :attr:`.fdata.hist`, for each requested node, time series data is available.
+
+Setting the target filename using wildcards will cause PyFEHM to read in multiple input files for 
+different times.
+
+.. autoclass:: fpost.fhistory
+
+Zone fluxes
+^^^^^^^^^^^
+
+Zone flux information is parsed using the :class:`~.fpost.fzoneflux` class, which is a derived class of 
+:class:`~fpost.fhistory`. Where identical, methods and attributes are shown only for :class:`~.fpost.fhistory`.
+
+.. autoclass:: fpost.fzoneflux
+
+Tracers
+^^^^^^^
+
+Tracer information is parsed using the :class:`~.fpost.ftracer` class, which is a derived class of 
+:class:`~fpost.fhistory`. Where identical, methods and attributes are shown only for :class:`~.fpost.fhistory`.
+
+.. autoclass:: fpost.ftracer
+
+Particle tracking
+^^^^^^^^^^^^^^^^^
+
+Particle tracking information is parsed using the :class:`~.fpost.fptrk` class, which is a derived class of 
+:class:`~fpost.fhistory`. Where identical, methods and attributes are shown only for :class:`~.fpost.fhistory`.
+
+.. autoclass:: fpost.fptrk
+
+Attributes
+^^^^^^^^^^
+
+.. autoattribute:: fpost.fhistory.times
+.. autoattribute:: fpost.fhistory.variables
+.. autoattribute:: fpost.fhistory.nodes
+.. autoattribute:: fpost.fzoneflux.zones
+.. autoattribute:: fpost.fhistory.format
+.. autoattribute:: fpost.fhistory.filename
+
+Methods
+^^^^^^^
+
+.. automethod:: fpost.fhistory.read
+
+Time series plots
+^^^^^^^^^^^^^^^^^
+
+.. automethod:: fpost.fhistory.time_plot
+
+Node fluxes
+^^^^^^^^^^^
+
+Inter node flux information is parsed using the :class:`~.fpost.fnodeflux` class. Time plotting functionality is not 
+currently available for this class.
+
+.. autoclass:: fpost.fnodeflux
+
+Attributes
+^^^^^^^^^^
+
+.. autoattribute:: fpost.fnodeflux.times
+.. autoattribute:: fpost.fnodeflux.nodepairs
+.. autoattribute:: fpost.fnodeflux.filename
+
+Methods
+^^^^^^^
+
+.. automethod:: fpost.fnodeflux.read
+
+Multi document pdf
+------------------
+
+.. autoclass:: fpost.multi_pdf
+
+Attributes
+^^^^^^^^^^
+
+.. autoattribute:: fpost.multi_pdf.save
+.. autoattribute:: fpost.multi_pdf.files
+.. autoattribute:: fpost.multi_pdf.combineString
+
+Methods
+^^^^^^^
+
+.. automethod:: fpost.multi_pdf.add
+.. automethod:: fpost.multi_pdf.insert
+.. automethod:: fpost.multi_pdf.make
+
+Examples
+^^^^^^^^

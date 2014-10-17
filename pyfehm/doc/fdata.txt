@@ -1,0 +1,1256 @@
+.. _fdata-chapter:
+
+fdata: FEHM input file manipulation
+===================================
+
+This module contains classes and methods for the reading, writing, construction
+and manipulation of FEHM input files. 
+
+An FEHM input file corresponds in PyFEHM to a collection of zones (:class:`.fzone`), macros (:class:`.fmacro`),
+boundary conditions (:class:`.fboun`), initial conditions (:class:`.fincon`) and other objects. These are all linked together,
+along with an FEHM grid object (:class:`.fgrid`), to the central :class:`.fdata` structure. Within this framework, zones 
+are linked to macros, nodes are linked to zones and initial conditions, etc. The user is permitted to, say, choose
+a node and establish which zones and macros it is linked to.
+
+For the purposes of this manual, the variable ``dat`` will be assumed
+to refer to a previously defined :class:`.fdata` object.
+
+Zones
+-----
+
+Zone object, a tool for defining sets of nodes to which specific properties can be assigned via various macros.
+(see macro FEHM user manual macro **ZONE** or **ZONN**). For the purposes of this manual, the variable ``zn`` will
+be assumed to refer to a previously defined :class:`.fzone` object.
+
+There are several ways to define a zone in FEHM. The default definition (here, assigned :attr:`.fzone.type` ``= 'rect'``) 
+is that of a box, edges aligned	along the coordinate axes, that contains all nodes desired to be in that zone. Alternative 
+definitions include listing	those nodes to be included in the zone (:attr:`~.fzone.type` ``= 'nnum'``) or the coordinates of 
+those nodes (:attr:`~.fzone.type` ``= 'list'``).
+
+Zones are created and associated with an :class:`.fdata` object using :meth:`.fdata.add`. All zones added to the :class:`.fdata` 
+object appear in :attr:`.fdata.zonelist` and :attr:`.fdata.zone` attributes. Zones in :attr:`.fdata.zone` are accessed by either zone index or zone
+name, e.g., :attr:`.fdata.zone`\ ``['xmin']`` or  :attr:`.fdata.zone`\ ``[12]``.
+
+.. autoclass:: fdata.fzone
+
+Attributes
+^^^^^^^^^^
+
+.. autoattribute:: fdata.fzone.index
+.. autoattribute:: fdata.fzone.type
+.. autoattribute:: fdata.fzone.name
+.. autoattribute:: fdata.fzone.node
+.. autoattribute:: fdata.fzone.nodelist
+.. autoattribute:: fdata.fzone.file
+
+Material attributes
+^^^^^^^^^^^^^^^^^^^
+
+In assigning these attributes, macros corresponding to the zone object will be automatically created. For example,
+assigning a value to the :attr:`~.fzone.permeability` attribute will create the corresponding permeability macro.
+
+.. autoattribute:: fdata.fzone.permeability
+.. autoattribute:: fdata.fzone.conductivity
+.. autoattribute:: fdata.fzone.density
+.. autoattribute:: fdata.fzone.specific_heat
+.. autoattribute:: fdata.fzone.porosity
+.. autoattribute:: fdata.fzone.youngs_modulus
+.. autoattribute:: fdata.fzone.poissons_ratio
+.. autoattribute:: fdata.fzone.thermal_expansion
+.. autoattribute:: fdata.fzone.pressure_coupling
+.. autoattribute:: fdata.fzone.Pi
+.. autoattribute:: fdata.fzone.Ti
+.. autoattribute:: fdata.fzone.Si
+   
+Methods
+^^^^^^^
+   
+.. automethod:: fdata.fzone.rect
+.. automethod:: fdata.fzone.fix_temperature
+.. automethod:: fdata.fzone.fix_pressure
+.. automethod:: fdata.fzone.fix_displacement
+.. automethod:: fdata.fzone.fix_stress
+.. automethod:: fdata.fzone.roller
+.. automethod:: fdata.fzone.free_surface
+.. automethod:: fdata.fzone.plot
+.. automethod:: fdata.fzone.topo
+.. autoattribute:: fdata.fzone.what
+   
+Examples
+^^^^^^^^   
+	
+1. Create a rectangular zone that encompasses all nodes within a horizontal reservoir. Bounding box limits
+are used as inputs for :meth:`.rect`.
+
+  ``zn =`` :class:`.fzone`\ ``(`` :attr:`~.fzone.type` ``='rect',`` :attr:`~.fzone.index` ``= 5,`` :attr:`~.fzone.name` ``= 'res')``
+  
+  ``zn.``\ :meth:`rect <.fzone.rect>`\ ``([0.1,0.1,2200.],[5000.1,5000.1,2400.])``
+  
+  ``dat.``\ :meth:`add <.fdata.add>`\ ``(zn)``
+
+2. Create a zone named *injectors* with index 10 and comprising two previously identified nodes. The zone information will be written out to the
+auxiliary file *zones.macro*. The zone is created and added to the ``dat`` in a single step.
+
+  ``nd1 = geo.``\ :meth:`node_nearest_point <fgrid.fgrid.node_nearest_point>`\ ``([100,200,-1500])``
+  
+  ``nd2 = geo.``\ :meth:`node_nearest_point <fgrid.fgrid.node_nearest_point>`\ ``([-500,400,-1500])``
+  
+  ``dat.``\ :meth:`add <.fdata.add>`\ ``(``\ :class:`.fzone`\ ``(``\ :attr:`~.fzone.index`\ ``=10,`` :attr:`~.fzone.type`\ ``='nnum',`` :attr:`~.fzone.name`\ ``='injectors',`` :attr:`~.fzone.nodelist`\ ``=[nd1.index, nd2],`` :attr:`~.fzone.file`\ ``='zones.macro'))``
+
+3. For the zone named ``ZMAX``, fix its temperature to 90degC.
+
+  ``dat.``\ :attr:`~.fdata.zone`\ ``['ZMAX'].``\ :meth:`fix_temperature<.fzone.fix_temperature>`\ ``(T=90.)``  
+  
+4. Assign anisotropic permeability to the zone ``caprock``
+
+  ``dat.``\ :attr:`~.fdata.zone`\ ``['caprock'].``\ :attr:`~.fzone.permeability`\ ``=[1.e-19,1.e-19,1.e-21]``
+  
+5. Assign PyFEHM defined zone ``XMIN`` as a roller boundary condition (zero displacement in x-direction)
+
+  ``dat.``\ :attr:`~.fdata.zone`\ ``['XMIN'].``\ :meth:`roller<.fzone.roller>`\ ``()``  
+Macros
+------
+
+The macro object, this is how the majority of FEHM's text inputs are defined.
+	
+A macro is a way of telling FEHM to do something specific. It may be as simple as assigning a standard permeability value to 
+every node in the grid. It may be as specific as assigning a stress boundary condition to one edge of the model, a source or sink
+to one or many nodes, or elastic and rock properties to a particular zone.
+
+The attribute :attr:`~.fmacro.type` is set when a new macro is created. Macro names in PyFEHM and FEHM are identical. Thus, to generate a macro
+object for permeability properties, one supplies the command :class:`.fmacro`\ ``('perm')``.
+
+Macros are applied to a specific spatial domain. This may be the entire model, a previously defined zone, or a set of nodes.
+This spatial assignment occurs is defined in :attr:`.fmacro.zone`.
+
+The macro must be supplied with several pieces of information, informing its operation. E.g., the perm macro requires permeabilities,
+the rock macro requires density, porosity and specific heat, and the grad macro requires information about an initial gradient in some
+variable. These properties are set in :attr:`.fmacro.param`, a dictionary with keys corresponding to the required pieces of information.
+	
+.. autoclass:: fdata.fmacro
+
+Attributes
+^^^^^^^^^^
+
+.. autoattribute:: fdata.fmacro.type
+.. autoattribute:: fdata.fmacro.zone
+.. autoattribute:: fdata.fmacro.param
+.. autoattribute:: fdata.fmacro.subtype
+.. autoattribute:: fdata.fmacro.file
+
+Methods
+^^^^^^^
+
+.. autoattribute:: fdata.fmacro.what
+
+Macro parameter lists
+^^^^^^^^^^^^^^^^^^^^^
+
+The table below shows the parameter names available to be set for each macro. Parameters are accessed/set via the :attr:`~.fmacro.param` attribute, e.g., 
+to set the *density* property for a **ROCK** macro write 
+
+  ``mcr =`` :class:`.fmacro`\ ``('rock')`` 
+  
+  ``mcr.``\ :attr:`~.fmacro.param`\ ``['density']=2500``
+
+Warnings will be printed if a parameter is not set when the FEHM data file is written.
+
+.. _fdata_table1: Table of macro parameters
+
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  | Macro         | Parameters (Units)        | FEHM variable     | Notes                                                                   |
+  +===============+===========================+===================+=========================================================================+
+  |  *pres*       | pressure (*MPa*)          | PHRD              |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | temperature  (*degC*)     | TIND              |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | saturation                | IEOSD             |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |  *perm*       | kx (*m^2, log10(m^2)*)    | PNXD              |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | ky                        | PNYD              |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | kz                        | PNZD              |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |  *cond*       | cond_x (*W/m/K*)          | THXD              |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | cond_y                    | THYD              |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | cond_z                    | THZD              |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |  *flow*       | rate (*kg/s, MPa*)        | SKD               | Fixed rate or pressure depending on AIPED.                              |                                      
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | energy (*MJ/kg, degC*)    | EFLOW             | >0 = enthalpy, <0 = temperature.                                        |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | impedance                 | AIPED             | Determine generator type.                                               |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |  *rock*       | density (*kg/m^3*)        | DENRD             |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | specific_heat (*J/kg/K*)  | CPRD              |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | porosity                  | PSD               | Set negative to remove node from simulation.                            |                                    
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |  *grad*       | reference_coord (*m*)     | CORDG             |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | direction                 | IDRG              | 1,2,3 = x,y,z                                                           |         
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | variable                  | IGRADF            | 1,2,3,9 = P,T,S,P_co2 / 4,5,6,10 = fixed boun P,T,S,P_co2               |                                                   
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | reference_value (*unit*)  | VAR0              |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | gradient (*unit/m*)       | GRAD1             |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |  *hflx*       | heat_flow (*MW*)          | QFLUX             |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | multiplier                | QFLXM             |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |  *biot*       | thermal_expansion (*/K*)  | ALPHA             |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | pressure_coupling         | PP_FAC            |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |  *elastic*    | youngs_modulus (*MPa*)    | ELASIC_MOD        |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | poissons_ratio            | POISSON           |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |  *co2frac*    | water_rich_sat            | FW                |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | co2_rich_sat              | FL                | Set non-zero at co2 injectors.                                          |                            
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | co2_mass_frac             | YC                |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | init_salt_conc (*ppm*)    | CSALT             |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | override_flag             | INICO2FLG         |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |  *co2flow*    | rate (*kg/s, MPa*)        | SKTMP             |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | energy (*MJ/kg, degC*)    | ESKTMP            |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | impedance                 | AIPED             | Similar operation to *flow*.                                            |                       
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | bc_flag                   | IFLG_FLOWMAC      |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |  *co2diff*    | diffusion                 | DIFF              |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | tortuosity                | TORTCO2           |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |  *co2pres*    | pressure (*MPa*)          | PHICO2            |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | temperature (*degC*)      | TCO2              |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | phase                     | ICES              |                                                                         |
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  | *stressboun*  | value (*m, MPa, MPa/m*)   | BOUNVAL           | Fixed displacement, force or stress gradient.                           |                                      
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | direction                 | KQ                | 1,2,3 = x,y,z displacement, -1,-2,-3 = x,y,z force.                     |                                                
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | sdepth (*m*)              | SDEPTH            | Only used for ``subtype='lithograd'``.                                  |                                
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | gdepth (*m*)              | GDEPTH            | Only used for ``subtype='lithograd'``.                                  |                                                                                                  
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  | *bodyforce*   | fx (*MN, m/s^2*)          | FX                | Body force in x-direction (acceleration if ``subtype='acceleration'``)  |                                      
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | fy (*MN, m/s^2*)          | FY                | Body force in y-direction.                                              |                                                
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  |               | fz (*MN, m/s^2*)          | FZ                | Body force in z-direction.                                              |                                
+  +---------------+---------------------------+-------------------+-------------------------------------------------------------------------+
+  
+Examples
+^^^^^^^^   
+
+1. An initial conditions macro, **PRES**, is created, and assigned to the pre-existing zone 10. The macro is assigned parameters, found by looking up *pres* in the table above, and added to ``dat``.
+
+  ``mcr=``\ :class:`.fmacro`\ ``('pres')``
+  
+  ``mcr.``\ :attr:`~.fmacro.zone`\ ``=dat.`` :attr:`~.fdata.zone`\ ``[10]``
+  
+  ``mcr.``\ :attr:`~.fmacro.param`\ ``['pressure'] = 1.``
+  
+  ``mcr.``\ :attr:`~.fmacro.param`\ ``['temperature'] = 80.``
+  
+  ``mcr.``\ :attr:`~.fmacro.param`\ ``['saturation'] = 1.``
+  
+  ``dat.``\ :meth:`add <.fdata.add>`\ ``(mcr)``
+
+2. A rock properties macro, **ROCK**, is created, assigned zone 20 and properties, and added to ``dat``.
+
+  ``mcr=``\ :class:`.fmacro`\ ``('rock',`` :attr:`~.fmacro.zone`\ ``=20,`` :attr:`~.fmacro.param`\ ``=(('density',2500), ('porosity',0.1), ('specific_heat',800)))``
+  
+  ``dat.``\ :meth:`add <.fdata.add>`\ ``(mcr)``
+  
+3. A mass source macro, **FLOW**, is created, assigned to the `injection` zone, assigned properties, and added to ``dat`` in a single command.
+
+  ``dat.``\ :meth:`add <.fdata.add>`\ ``(``\ :class:`.fmacro`\ ``('flow',`` :attr:`~.fmacro.zone`\ ``='injection',`` :attr:`~.fmacro.param`\ ``=(('rate',-2), ('energy',-50), ('impedance',100))))``
+
+4. Creation of a lithograd stress boundary condition, **STRESSBOUN**.
+
+  ``mcr=``\ :class:`.fmacro`\ ``('stressboun',`` :attr:`~.fmacro.zone`\ ``='xmin',`` :attr:`~.fmacro.subtype`\ ``='lithograd')``
+  
+  ``mcr.``\ :attr:`~.fmacro.param`\ ``['sdepth'] = 0.``
+  
+  ``mcr.``\ :attr:`~.fmacro.param`\ ``['gdepth'] = 0.``
+  
+  ``mcr.``\ :attr:`~.fmacro.param`\ ``['direction'] = 1``
+  
+  ``mcr.``\ :attr:`~.fmacro.param`\ ``['value'] = 0.03``
+  
+5. Specifying body forces corresponding to moon-strength gravitational acceleration.
+
+  ``mcr=``\ :class:`.fmacro`\ ``('bodyforce',`` :attr:`~.fmacro.subtype`\ ``='acceleration')``
+  
+  ``mcr.``\ :attr:`~.fmacro.param`\ ``['fx'] = 0.``
+  
+  ``mcr.``\ :attr:`~.fmacro.param`\ ``['fy'] = 0.``
+  
+  ``mcr.``\ :attr:`~.fmacro.param`\ ``['fz'] = -1.62``
+  
+Models
+------
+
+The model object, this is how the some of FEHM's text inputs are defined.
+
+Models are similar to macros in function but are more flexible in their definition of physical behaviour. For example,
+the definition of thermal conductivity through the COND macro is rather narrow; constant values are supplied. However, by
+invoking the VCON macro, the user can choose between multiple models for thermal conductivity behaviour. The user can specify a model
+index - say 2, for square root variation of thermal conductivity with liquid saturation - and then pass the necessary
+parameters for the model.
+
+Additional models exist to define relative permeability in terms of saturation (RLP), porosity in terms of fluid pressure (PPOR), or 
+permeability in terms of stress (PERMMODEL).
+
+.. autoclass:: fdata.fmodel
+
+Attributes
+^^^^^^^^^^
+
+.. autoattribute:: fdata.fmodel.type
+.. autoattribute:: fdata.fmodel.zonelist
+.. autoattribute:: fdata.fmodel.param
+.. autoattribute:: fdata.fmodel.index
+.. autoattribute:: fdata.fmodel.file
+
+Available models
+^^^^^^^^^^^^^^^^
+
+Currently, models are available for thermal conductivity, permeability, porosity and relative permeability. Information
+about the various models and their parameters is available through the :attr:`.fdata.help` attribute.
+
+Examples
+^^^^^^^^
+
+1. Adding a model in which thermal conductivity depends linearly upon temperature.
+
+  ``vcon=``\ :class:`.fmodel`\ ``(``\ :attr:`~.fmodel.type`\ ``='vcon',``\ :attr:`~.fmodel.index`\ ``=1)``
+  
+  ``vcon.``\ :attr:`~.fmodel.zonelist`\ ``=dat.``\ :attr:`~.fdata.zone`\ ``['salt']``
+  
+  ``vcon.``\ :attr:`~.fmodel.param`\ ``['T_ref']=30.``
+  
+  ``vcon.``\ :attr:`~.fmodel.param`\ ``['cond_ref']=2.``
+  
+  ``vcon.``\ :attr:`~.fmodel.param`\ ``['dcond_dT']=0.2``
+  
+  ``dat.``\ :meth:`add <.fdata.add>`\ ``(bc)``
+  
+2. Creation of a relative permeability model number 2, **RLP**, for the entire model (default when zone is not specified). See appendix for model-specific *rlp* parameter names.
+
+  ``rlp=``\ :class:`.fmodel`\ ``('rlp',index = 2,`` :attr:`~.fmodel.param`\ ``=(('resid_liq_sat',0.2), ('resid_vap_sat',0.), ('cap_pres_zero_sat',1.e4), ('sat_zero_cap_pres',1.))``
+  
+3. Accessing help on all permeability models.
+
+  ``dat.help.permmodel()``
+  
+4. Accessing help on variable porosity model -1.
+
+  ``dat.help.pormodel(-1)``
+
+Boundary conditions
+-------------------
+
+Boundary conditions are applied to zones, and involve fixing some variable according to supplied time-series data.
+In contrast to other macros, one boundary condition may be applied to multiple zones.
+
+The :class:`.fboun` object is supplied a vector of times, corresponding to values of one or more variables. This defines
+the time evolution of the variable, with step-changes (:attr:`.fboun.type`\ ``='ti'``) or linear interpolation 
+(:attr:`~.fboun.type`\ ``='ti_linear'``) between elements in :attr:`.fboun.times`.
+
+The :attr:`.fboun.variable` attribute comprises a list of variable vectors. Each variable vector first contains the 
+FEHM boun variable keyword followed by the vector of values corresponding to :attr:`.fboun.times`. For example, a fixed
+temperature sequence would be supplied :attr:`~.fboun.variable`\ ``= [['t',100,80,90],]`` (note the nesting of the lists).
+   
+.. autoclass:: fdata.fboun
+
+Attributes
+^^^^^^^^^^
+
+.. autoattribute:: fdata.fboun.type
+.. autoattribute:: fdata.fboun.zone
+.. autoattribute:: fdata.fboun.variable
+.. autoattribute:: fdata.fboun.times
+.. autoattribute:: fdata.fboun.n_times
+
+Methods
+^^^^^^^
+
+.. autoattribute:: fdata.fboun.what
+
+Examples
+^^^^^^^^
+
+1. Create a boundary condition for a fixed temperature sequence and add it to ``dat``.
+
+  ``bc=``\ :class:`.fboun`\ ``(``\ :attr:`~.fboun.type`\ ``='ti')``
+  
+  ``bc.``\ :attr:`~.fboun.zone`\ ``=dat.``\ :attr:`~.fdata.zone`\ ``['base']``
+  
+  ``bc.``\ :attr:`~.fboun.times`\ ``=[0,10,100,1000]``
+  
+  ``bc.``\ :attr:`~.fboun.variable`\ ``= [['t',20,30,50,80]]``
+  
+  ``dat.``\ :meth:`add <.fdata.add>`\ ``(bc)``
+
+2. Create a boundary condition for both temperature and pressure. Use linear interpolation between times.
+
+  ``bc=``\ :class:`.fboun`\ ``(``\ :attr:`~.fboun.type`\ ``='ti_linear',`` :attr:`~.fboun.zone`\ ``=2,`` :attr:`~.fboun.times`\ ``=[0,10,20],`` :attr:`~.fboun.variable`\ ``=[['t',100,80,100], ['pw',15,10,15]])``
+
+History output
+--------------
+
+History output object, makes request for history data to be output (see macro **HIST**).
+	
+This data type outputs specified variables (e.g., temperature, permeability) for particular nodes and zones
+at specified times (one file = one variable). The data can be output in several formats (all of which are readable by
+PyFEHM) and at specified times.
+
+Output requests for specific nodes and zones is supplied through the **NODE** and **FLXZ** macros. PyFEHM writes
+takes care of these macros within the scope of the :class:`.fhist` object.
+	
+.. autoclass:: fdata.fhist
+
+Attributes
+^^^^^^^^^^
+
+.. autoattribute:: fdata.fhist.format
+.. autoattribute:: fdata.fhist.time_interval
+.. autoattribute:: fdata.fhist.timestep_interval
+.. autoattribute:: fdata.fhist.variables
+.. autoattribute:: fdata.fhist.node
+.. autoattribute:: fdata.fhist.zone
+.. autoattribute:: fdata.fhist.zoneflux
+
+.. autoattribute:: fdata.fhist.nodelist
+.. autoattribute:: fdata.fhist.zonelist
+
+Methods
+^^^^^^^
+
+.. autoattribute:: fdata.fhist.options
+.. autoattribute:: fdata.fhist.what
+
+Examples
+^^^^^^^^
+
+1. Request temperature, pressure and flow history output for specific nodes at every time step.
+
+  ``dat.``\ :attr:`~.fdata.hist`\ ``.``\ :attr:`~.fhist.variables`\ ``.append(['temperature','pressure','flow'])``
+  
+  ``dat.``\ :attr:`~.fdata.hist`\ ``.``\ :attr:`~.fhist.timestep_interval`\ ``=1``
+  
+  ``dat.``\ :attr:`~.fdata.hist`\ ``.``\ :attr:`~.fhist.nodelist`\ ``.append([10, 15, 20])``
+  
+  ``nd = dat.``\ :attr:`~.fdata.grid`\ ``.``\ :meth:`node_nearest_point <.fgrid.node_nearest_point>`\ ``([200,300,400])``
+  
+  ``dat.``\ :attr:`~.fdata.hist`\ ``.``\ :attr:`~.fhist.nodelist`\ ``.append(nd)``
+
+2. Request CO2 and water source/sink history output for specific zones every 10 days.
+
+  ``dat.``\ :attr:`~.fdata.hist`\ ``.``\ :attr:`~.fhist.variables`\ ``.append(['cflz','zfl'])``
+  
+  ``dat.``\ :attr:`~.fdata.hist`\ ``.``\ :attr:`~.fhist.time_interval`\ ``=10``
+  
+  ``dat.``\ :attr:`~.fdata.hist`\ ``.``\ :attr:`~.fhist.zoneflux`\ ``.append(10)``
+  
+  ``dat.``\ :attr:`~.fdata.hist`\ ``.``\ :attr:`~.fhist.nodelist`\ ``.append(dat.``\ :attr:`~.fdata.zone`\ ``['injection'])``
+
+Contour ouput
+-------------
+
+.. autoclass:: fdata.fcont
+
+Attributes
+^^^^^^^^^^
+   
+.. autoattribute:: fdata.fcont.format
+.. autoattribute:: fdata.fcont.time_interval
+.. autoattribute:: fdata.fcont.timestep_interval
+.. autoattribute:: fdata.fcont.variables
+.. autoattribute:: fdata.fcont.time_flag
+.. autoattribute:: fdata.fcont.zones
+
+Methods
+^^^^^^^
+
+.. autoattribute:: fdata.fcont.options
+.. autoattribute:: fdata.fcont.what
+
+Examples
+^^^^^^^^
+
+1. Request contour data to be output every 10 time steps, every 100 days, in surfer format.
+
+  ``dat.``\ :attr:`~.fdata.cont`\ ``.``\ :attr:`~.fcont.timestep_interval`\ ``=10``
+  
+  ``dat.``\ :attr:`~.fdata.cont`\ ``.``\ :attr:`~.fcont.time_interval`\ ``=100``
+  
+  ``dat.``\ :attr:`~.fdata.cont`\ ``.``\ :attr:`~.fcont.format`\ ``='surf'``
+  
+  ``dat.``\ :attr:`~.fdata.cont`\ ``.``\ :attr:`~.fcont.variables`\ ``.append(['temperature','permeability','displacement','co2'])``
+  
+  ``dat.``\ :attr:`~.fdata.cont`\ ``.``\ :attr:`~.fcont.time_flag`\ ``=True``
+  
+2. The user can force contour output to be printed at specific times by setting the :attr: `.fdata.output_times` attribute to a vector of times
+
+  ``dat.``\ :attr:`~.fdata.output_times`\ ``=powspace(1.e1,1.e4,15,2.)``
+
+Data files
+----------
+The :class:`.fdata` class is the central structure for collating and organising all information
+about a simulation. Grid information, zone definitions, boundary conditions and other macros 
+are collected here. An :class:`.fdata` object is automatically created and populated
+when an existing input file is parsed using :meth:`.fdata.read`. Alternatively,
+an empty :class:`.fdata` object can be created and populated with an :class:`.fgrid` object, 
+some :class:`.fzone`, :class:`.fmacro` and other objects to create a new simulation.
+
+Just as each FEHM input file is associated with a grid file, each PyFEHM :class:`.fdata` object must be 
+associated with an :class:`.fgrid` object. Failure to specify a grid file may lead to problems specifying other macros.
+
+FEHM simulations can be initialised within the PyFEHM environment by writing out the *fehmn.files* control file and 
+supplying a command line path to an FEHM executable. Information contained in the control file is accessed via
+the :attr:`~.fdata.files` attribute. The control file is automatically written out when invoking :meth:`.fdata.run`.
+
+PyFEHM also allows for simulation restarts from initial condition files dumped by FEHM, referred to here as *incon* files. An incon
+file is associated with the :attr:`~.fdata.incon` attribute and read in by :meth:`.fincon.read`. The
+user is permitted to read in incon files, make changes within PyFEHM, and write out a new incon file for a future 
+simulation.
+
+PyFEHM supports the use of FEHM's stress and carbon dioxide modules via the :attr:`~.fdata.strs` and 
+:attr:`.carb` attributes, respectively.
+
+.. autoclass:: fdata.fdata
+
+.. autoattribute:: fdata.fdata.filename
+.. autoattribute:: fdata.fdata.gridfilename
+.. autoattribute:: fdata.fdata.inconfilename
+
+Attributes: daughter structures
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoattribute:: fdata.fdata.grid
+.. autoattribute:: fdata.fdata.cont
+.. autoattribute:: fdata.fdata.hist
+.. autoattribute:: fdata.fdata.incon
+.. autoattribute:: fdata.fdata.files
+.. autoattribute:: fdata.fdata.strs
+.. autoattribute:: fdata.fdata.carb
+.. autoattribute:: fdata.fdata.trac
+.. autoattribute:: fdata.fdata.bounlist
+.. autoattribute:: fdata.fdata.zone
+.. autoattribute:: fdata.fdata.zonelist
+.. autoattribute:: fdata.fdata.help
+
+Attributes: macro lists
+^^^^^^^^^^^^^^^^^^^^^^^
+
+An FEHM simulation may contain multiple instances of the same macro, which allows assignment of differing material
+properties between regions, multiple regions of inflow and outflow via **FLOW** and **BOUN**, etc. Each set of macros
+is collected and made accessible via a list and a dictionary, denoted by ``fdata.``\ *macro_namelist* and  
+``fdata.``\ *macro_name* respectively. The list contains macros in which they were added to the :class:`.fdata` object 
+or read from an input file. The dictionary is indexed by the zone number of name associated with each macro.
+
+For example, to loop through all macros of the **PERM** type, one would use :attr:`.fdata.permlist`
+
+  ``for perm in dat.``\ :attr:`~.fdata.permlist`\ ``: perm.``\ :attr:`~.fmacro.param`\ ``['kx'] = 1.e-16``
+  
+To access a specific **ROCK** macro assigned to zone 20, use the ``fdata.``\ **rock** dictionary
+
+  ``dat.``\ :attr:`~.fdata.rock`\ ``[20].``\ :attr:`~.fmacro.param`\ ``['porosity'] = -1``
+  
+To access **FLOW** generators assigned to the previously defined 'injection' zone, use the :attr:`.fdata.flow` dictionary
+
+  ``dat.``\ :attr:`~.fdata.flow`\ ``['injection'].``\ :attr:`~.fmacro.param`\ ``['impedance'] = 100``
+  
+For reference, the available macro lists and dictionaries are given below.
+
+.. autoattribute:: fdata.fdata.perm
+.. autoattribute:: fdata.fdata.permlist
+
+.. autoattribute:: fdata.fdata.pres
+.. autoattribute:: fdata.fdata.preslist
+
+.. autoattribute:: fdata.fdata.rock
+.. autoattribute:: fdata.fdata.rocklist
+
+.. autoattribute:: fdata.fdata.cond
+.. autoattribute:: fdata.fdata.condlist
+
+.. autoattribute:: fdata.fdata.grad
+.. autoattribute:: fdata.fdata.gradlist
+
+.. autoattribute:: fdata.fdata.flow
+.. autoattribute:: fdata.fdata.flowlist
+
+.. autoattribute:: fdata.fdata.hflx
+.. autoattribute:: fdata.fdata.hflxlist
+
+.. autoattribute:: fdata.fdata.biot
+.. autoattribute:: fdata.fdata.biotlist
+
+.. autoattribute:: fdata.fdata.elastic
+.. autoattribute:: fdata.fdata.elasticlist
+
+.. autoattribute:: fdata.fdata.co2frac
+.. autoattribute:: fdata.fdata.co2fraclist
+
+.. autoattribute:: fdata.fdata.co2flow
+.. autoattribute:: fdata.fdata.co2flowlist
+
+.. autoattribute:: fdata.fdata.co2pres
+.. autoattribute:: fdata.fdata.co2preslist
+
+.. autoattribute:: fdata.fdata.co2diff
+.. autoattribute:: fdata.fdata.co2difflist
+
+.. autoattribute:: fdata.fdata.stressboun
+.. autoattribute:: fdata.fdata.stressbounlist
+
+.. autoattribute:: fdata.fdata.permmodel
+.. autoattribute:: fdata.fdata.permmodellist
+
+.. autoattribute:: fdata.fdata.plasticmodel
+.. autoattribute:: fdata.fdata.plasticmodellist
+
+.. autoattribute:: fdata.fdata.rlp
+.. autoattribute:: fdata.fdata.rlplist
+
+.. autoattribute:: fdata.fdata.rlpm
+.. autoattribute:: fdata.fdata.rlpmlist
+
+.. autoattribute:: fdata.fdata.tpor
+.. autoattribute:: fdata.fdata.tporlist
+
+.. autoattribute:: fdata.fdata.vcon
+.. autoattribute:: fdata.fdata.vconlist
+
+.. autoattribute:: fdata.fdata.ppor
+.. autoattribute:: fdata.fdata.pporlist
+
+Attributes: parameter dictionaries
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+FEHM provides the user with control over a variety of time stepping and solver parameters. In PyFEHM, these parameters are accessible via
+four dictionaries, which are automatically generated and populated with defaults when a new :class:`.fdata` object is created.
+A table of parameter names and default values is given with each of the four dictionaries below.
+
+.. autoattribute:: fdata.fdata.time
+
+  +----------------------------------------------+---------------------------+---------------------------+
+  | PyFEHM parameter                             | FEHM equivalent           | Default value             |
+  +==============================================+===========================+===========================+
+  | initial_timestep_DAY                         | DAY                       | 1 (*days*)                |  
+  +----------------------------------------------+---------------------------+---------------------------+
+  | max_time_TIMS                                | TIMS                      | 365 (*days*)              | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | max_timestep_NSTEP                           | NSTEP                     | 200                       | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | print_interval_IPRTOUT                       | IPRTOUT                   | 1                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | initial_year_YEAR                            | YEAR                      | None                      | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | initial_month_MONTH                          | MONTH                     | None                      |  
+  +----------------------------------------------+---------------------------+---------------------------+
+  | initial_day_INITTIME                         | INITTIME                  | None                      | 
+  +----------------------------------------------+---------------------------+---------------------------+
+
+.. autoattribute:: fdata.fdata.ctrl
+
+  +----------------------------------------------+---------------------------+---------------------------+
+  | PyFEHM parameter                             | FEHM equivalent           | Default value             |
+  +==============================================+===========================+===========================+
+  | max_newton_iterations_MAXIT                  | MAXIT                     | 10                        |  
+  +----------------------------------------------+---------------------------+---------------------------+
+  | newton_cycle_tolerance_EPM                   | EPM                       | 1e-5                      | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | number_orthogonalizations_NORTH              | NORTH                     | 8                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | max_solver_iterations_MAXSOLVE               | MAXSOLVE                  | 24                        | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | acceleration_method_ACCM                     | ACCM                      | 'gmre'                    | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | JA                                           | JA                        | 1                         |  
+  +----------------------------------------------+---------------------------+---------------------------+
+  | JB                                           | JB                        | 0                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | JC                                           | JC                        | 0                         |  
+  +----------------------------------------------+---------------------------+---------------------------+
+  | order_gauss_elim_NAR                         | NAR                       | 2                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | implicitness_factor_AAW                      | AAW                       | 1                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | gravity_direction_AGRAV                      | AGRAV                     | 3                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | upstream_weighting_UPWGT                     | UPWGT                     | 1.0                       | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | max_multiply_iterations_IAMM                 | IAMM                      | 7                         |  
+  +----------------------------------------------+---------------------------+---------------------------+
+  | timestep_multiplier_AIAA                     | AIAA                      | 1.5                       | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | min_timestep_DAYMIN                          | DAYMIN                    | 1e-5 (*days*)             |  
+  +----------------------------------------------+---------------------------+---------------------------+
+  | max_timestep_DAYMAX                          | DAYMAX                    | 30 (*days*)               | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | geometry_ICNL                                | ICNL                      | 0                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | stor_file_LDA                                | LDA                       | 0                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+
+.. autoattribute:: fdata.fdata.iter
+
+  +----------------------------------------------+---------------------------+---------------------------+
+  | PyFEHM parameter                             | FEHM equivalent           | Default value             |
+  +==============================================+===========================+===========================+
+  | linear_converge_NRmult_G1                    | G1                        | 1e-5                      |  
+  +----------------------------------------------+---------------------------+---------------------------+
+  | quadratic_converge_NRmult_G2                 | G2                        | 1e-5                      | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | stop_criteria_NRmult_G3                      | G3                        | 1e-3                      | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | machine_tolerance_TMCH                       | TMCH                      | -1e-5                     | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | overrelaxation_factor_OVERF                  | OVERF                     | 1.1                       | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | reduced_dof_IRDOF                            | IRDOF                     | 0                         |  
+  +----------------------------------------------+---------------------------+---------------------------+
+  | reordering_param_ISLORD                      | ISLORD                    | 0                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | IRDOF_param_IBACK                            | IBACK                     | 0                         |  
+  +----------------------------------------------+---------------------------+---------------------------+
+  | number_SOR_iterations_ICOUPL                 | ICOUPL                    | 0                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | max_machine_time_RNMAX                       | RNMAX                     | 3600                      | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  
+.. autoattribute:: fdata.fdata.sol
+
+  +----------------------------------------------+---------------------------+---------------------------+
+  | PyFEHM parameter                             | FEHM equivalent           | Default value             |
+  +==============================================+===========================+===========================+
+  | coupling_NTT                                 | NTT                       | 1                         |  
+  +----------------------------------------------+---------------------------+---------------------------+
+  | element_integration_INTG                     | INTG                      | -1                        | 
+  +----------------------------------------------+---------------------------+---------------------------+
+
+Attributes: time stepping shortcuts
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Assigning final simulation time, maximum number of time steps, etc., via the dictionaries in :attr:`~.fdata.ctrl`
+and :attr:`~.fdata.time` involves cumbersome lookup of parameter names and then assignment. Therefore, some 
+shortcut attributes are made available to bypass this process
+
+.. autoattribute:: fdata.fdata.ti
+.. autoattribute:: fdata.fdata.tf
+.. autoattribute:: fdata.fdata.dti
+.. autoattribute:: fdata.fdata.dtmin
+.. autoattribute:: fdata.fdata.dtmax
+.. autoattribute:: fdata.fdata.dtn
+.. autoattribute:: fdata.fdata.dtx
+.. autoattribute:: fdata.fdata.output_times
+
+For example, writing
+
+``dat.``\ :attr:`~.fdata.tf`\ ``=365.25*10.``
+
+``dat.``\ :attr:`~.fdata.dti`\ ``=1.``
+
+``dat.``\ :attr:`~.fdata.dtn`\ ``=500``
+
+``dat.``\ :attr:`~.fdata.dtmax`\ ``=365.25``
+
+will request the simulation to run for 10 years, with an initial time step of 1 day, a maximum time step of 1 year
+and to stop if it reaches 500 time steps.
+
+The attribute  :attr:`~.fdata.output_times` can be used to request output data at specific times during the simulation.
+Use of this attribute is incompatible with the :meth:`change_timestepping <.fdata.change_timestepping>` method.
+  
+Attributes: flags
+^^^^^^^^^^^^^^^^^
+
+.. autoattribute:: fdata.fdata.work_dir
+.. autoattribute:: fdata.fdata.verbose
+.. autoattribute:: fdata.fdata.sticky_zones
+.. autoattribute:: fdata.fdata.nobr
+.. autoattribute:: fdata.fdata.nfinv
+
+Methods
+^^^^^^^
+
+.. automethod:: fdata.fdata.read
+.. automethod:: fdata.fdata.write
+.. automethod:: fdata.fdata.run
+.. automethod:: fdata.fdata.paraview
+.. automethod:: fdata.fdata.picklable
+.. automethod:: fdata.fdata.write_vtk
+.. automethod:: fdata.fdata.add
+.. automethod:: fdata.fdata.delete
+.. automethod:: fdata.fdata.change_timestepping
+.. automethod:: fdata.fdata.new_zone
+.. automethod:: fdata.fdata.temperature_gradient
+
+.. autoattribute:: fdata.fdata.what
+.. automethod:: fdata.fdata.print_ctrl
+.. automethod:: fdata.fdata.print_iter
+.. automethod:: fdata.fdata.print_time
+
+Examples
+^^^^^^^^
+
+Examples given here are limited to the usage of :class:`.fdata` methods. More in depth explanations of FEHM simulation
+within the PyFEHM framework is given in the :ref:`tutorial <ftutorial-chapter>` section of this guide.
+
+1. Read an FEHM input file into PyFEHM.
+
+  ``dat=``\ :class:`.fdata`\ ``(``\ :attr:`~.fdata.filename`\ ``='myInput.dat',`` :attr:`~.fdata.gridfilename`\ ``='myGrid.inp')``
+  
+2. Read in an FEHM input file with initial conditions.
+
+  ``dat=``\ :class:`.fdata`\ ``('myInput.dat', 'myGrid.inp', 'myIncon.ini')``
+  
+3. Write out FEHM input deck.
+
+  ``dat.``\ :meth:`write <.fdata.write>`\ ``('myInput2.dat')``
+  
+4. Delete a previously defined flow macro, assigned to the zone 'injection, from the input file.
+
+  ``dat.``\ :meth:`delete <.fdata.delete>`\ ``(dat.``\ :attr:`.fdata.flow`\ ``['injection'])``
+  
+5. Run an FEHM simulation through PyFEHM.
+
+  ``dat.``\ :meth:`run <.fdata.run>`\ ``(input='myInput.dat', grid='myGrid.inp', exe='C:\\path\\to\\FEHM\\source', files = ['hist', 'check', 'outp'])``
+  
+6. Create a new zone called ``reservoir`` and assign it permeability and elastic properties.
+
+  ``dat.``\ :attr:`~.fdata.zone`\ ``['zmax'].``\ :meth:`new_zone<.fdata.new_zone>`\ ``(index=10, name='reservoir', rect=[[-0.1,-0.1,800.], [10000.1,10000.1,900.]], permeability=1.e-14, youngs_modulus=2.5e4)``  
+  
+
+FEHM control files
+------------------
+
+Information written to the *fehmn.files* control file is collated and modified within this object.
+
+The control file can be written independently using :meth:`.files.write`, but in general
+should be written automatically when a PyFEHM simulation is run using :meth:`.fdata.run`.
+
+Some attributes of :class:`.files` will be written automatically when certain actions are taken within PyFEHM. For example, reading a new grid
+using :attr:`.fdata.grid`\ ``.``\ :meth:`read <.fgrid.read>`\ ``('myGrid.inp')`` will cause :class:`.fdata`\ ``.``\ :attr:`.files.grid`\ ``='myGrid.inp'``.
+
+.. autoclass:: fdata.files
+
+Attributes
+^^^^^^^^^^
+
+.. autoattribute:: fdata.files.input
+.. autoattribute:: fdata.files.grid
+.. autoattribute:: fdata.files.incon
+.. autoattribute:: fdata.files.root
+.. autoattribute:: fdata.files.rsto
+.. autoattribute:: fdata.files.outp
+.. autoattribute:: fdata.files.check
+.. autoattribute:: fdata.files.co2in
+.. autoattribute:: fdata.files.hist
+.. autoattribute:: fdata.files.stor
+.. autoattribute:: fdata.files.exe
+
+Methods
+^^^^^^^
+
+.. automethod:: fdata.files.write
+   
+Initial conditions/simulation restart
+-------------------------------------
+
+Initial conditions, or restart, files can be parsed, modified and rewritten in PyFEHM. 
+
+Reading of incon files occurs during model initialisation, e.g., :class:`.fdata`\ ``('myInput.dat','myGrid.inp', 'myIncon.ini')``, 
+or later by invoking :meth:`.fincon.read`.
+
+If changes are made to any of the restart variables, care should be taken to rewrite in the incon file using 
+:meth:`.fincon.write` before running a simulation.
+
+Tools are available for user modification of restart files. At present, these include the construction of critically-stressed
+lithostatic stress gradients using :meth:`.fincon.stressgrad` and :meth:`.fincon.critical_stress`.
+   
+.. autoclass:: fdata.fincon
+
+Attributes: general
+^^^^^^^^^^^^^^^^^^^
+
+.. autoattribute:: fdata.fincon.filename
+.. autoattribute:: fdata.fincon.source
+.. autoattribute:: fdata.fincon.time
+
+Attributes: variables
+^^^^^^^^^^^^^^^^^^^^^
+
+When an incon file is parsed in PyFEHM, that information is made available through variable list attributes.
+Changes can be made to these variables and a new incon file written out using the :meth:`~.fincon.write`
+method. For obvious reasons, some variables are only available if the relevant modules are being used, e.g., 
+:attr:`.fincon.disp_x` returns an empty list unless the FEHM stress module is being used.
+
+Note that, because python indexing begins at 0, the variable associated with a node is accessed at the list position
+one less than the node index, e.g., the pressure at node 100 is accessed via :attr:`.fincon.P`\ ``[99]``.
+
+.. autoattribute:: fdata.fincon.P
+.. autoattribute:: fdata.fincon.T
+.. autoattribute:: fdata.fincon.S
+.. autoattribute:: fdata.fincon.S_co2l
+.. autoattribute:: fdata.fincon.S_co2g
+.. autoattribute:: fdata.fincon.co2aq
+.. autoattribute:: fdata.fincon.eos
+.. autoattribute:: fdata.fincon.co2_eos
+.. autoattribute:: fdata.fincon.co2_eos
+
+.. autoattribute:: fdata.fincon.disp_x
+.. autoattribute:: fdata.fincon.disp_y
+.. autoattribute:: fdata.fincon.disp_z
+.. autoattribute:: fdata.fincon.strs_xx
+.. autoattribute:: fdata.fincon.strs_yy
+.. autoattribute:: fdata.fincon.strs_zz
+.. autoattribute:: fdata.fincon.strs_xy
+.. autoattribute:: fdata.fincon.strs_xz
+.. autoattribute:: fdata.fincon.strs_yz
+
+Methods
+^^^^^^^
+
+.. automethod:: fdata.fincon.read
+.. automethod:: fdata.fincon.write
+.. automethod:: fdata.fincon.stressgrad
+.. automethod:: fdata.fincon.critical_stress
+
+Examples
+^^^^^^^^
+
+1. Read in an incon file, increase all temperatures by 10degC and write out the new incon file.
+
+  ``dat.``\ :attr:`~.fdata.incon`\ ``.``\ :meth:`read <.fincon.read>`\ ``('myIncon.ini')``
+  
+  ``for i in len(range(dat.``\ :attr:`~.fdata.incon`\ ``.``\ :attr:`~.fincon.T`\ ``)): dat.``\ :attr:`~.fdata.incon`\ ``.``\ :attr:`~.fincon.T`\ ``[i] += 10``
+  
+  ``dat.``\ :attr:`~.fdata.incon`\ ``.``\ :meth:`write <.fincon.write>`\ ``('myNewIncon.ini')``
+
+2. Read in an incon file and create vertical gradients in the stress field.
+
+  ``dat.``\ :attr:`~.fdata.incon`\ ``.``\ :meth:`read <.fincon.read>`\ ``('noStress.ini')``
+  
+  ``dat.``\ :attr:`~.fdata.incon`\ ``.``\ :meth:`stressgrad <.fincon.stressgrad>`\ ``(zgrad=0.02, xgrad = [0.015,-100], ygrad = [0.018, -100])``
+  
+  ``dat.``\ :attr:`~.fdata.incon`\ ``.``\ :meth:`write <.fincon.write>`\ ``('withStress.ini')``
+
+3. Read in an incon file and create a critical stress state. 
+
+  ``dat.``\ :attr:`~.fdata.incon`\ ``.``\ :meth:`read <.fincon.read>`\ ``('noStress.ini')``
+  
+  ``dat.``\ :attr:`~.fdata.incon`\ ``.``\ :meth:`critical_stress <.fincon.critical_stress>`\ ``(regime=1, horiz_stress = 'x', mu = 0.8, cohesion = 1, proximity = 0.5, overburden = 10)``
+  
+  ``dat.``\ :attr:`~.fdata.incon`\ ``.``\ :meth:`write <.fincon.write>`\ ``('withStress.ini')``
+
+Relative permeability
+---------------------
+   
+Relative permeability models in FEHM can be defined through either the **RLP** or **RLPM** macro. In PyFEHM, **RLP** macros
+are defined via the ordinary :class:`.fmodel`\ ``('rlp')`` object, whereas **RLPM** is defined within the specialised
+:class:`.frlpm` class detailed here.
+
+For each phase present in the model, the user defines a relperm model. The user can additionally define capillary pressure
+models for phase pairs. The following phases can have relative permeability and capillary pressure models defined: 
+*water, air, co2_liquid, co2_gas, vapor.* 
+
+Parameters for the available relative permeability models are given in the table below.
+
+  +----------------------------------------------+---------------------------+---------------------------+
+  | Relative permeability model                  | Parameter name            | Default                   |
+  +==============================================+===========================+===========================+
+  | *constant*                                   | None                      | N/A                       |  
+  +----------------------------------------------+---------------------------+---------------------------+
+  | *linear*                                     | minimum_saturation        | 0                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  |                                              | maximum_saturation        | 1                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | *exponential*                                | minimum_saturation        | 0                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  |                                              | maximum_saturation        | 1                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  |                                              | exponent                  | 1                         |  
+  +----------------------------------------------+---------------------------+---------------------------+
+  |                                              | maximum_relperm           | 1                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | *corey*                                      | minimum_saturation        | 0                         |  
+  +----------------------------------------------+---------------------------+---------------------------+
+  |                                              | maximum_saturation        | 1                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | *brooks-corey*                               | minimum_saturation        | 0                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  |                                              | maximum_saturation        | 1                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  |                                              | exponent                  | 1                         |  
+  +----------------------------------------------+---------------------------+---------------------------+
+  | *vg*                                         | maximum_saturation        | 0                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  |                                              | maximum_saturation        | 1                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  |                                              | air_entry_head            | 1                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  |                                              | exponent                  | 1                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+
+Parameters for the available capillary pressure models are given in the table below.
+
+  +----------------------------------------------+---------------------------+---------------------------+
+  | Capillary pressure model                     | Parameter name            | Default                   |
+  +==============================================+===========================+===========================+
+  | *linear_cap*                                 | cap_at_zero_sat           | None                      | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  |                                              | sat_at_zero_cap           | None                      | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | *brooks-corey_cap*                           | minimum_saturation        | 0                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  |                                              | maximum_saturation        | 1                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  |                                              | exponent                  | 1                         |  
+  +----------------------------------------------+---------------------------+---------------------------+
+  |                                              | capillary_entry_presure   | 0.01                      | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  |                                              | low_saturation_fitting    | None                      |  
+  +----------------------------------------------+---------------------------+---------------------------+
+  |                                              | cutoff_saturation         | None                      | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  | *vg_cap*                                     | minimum_saturation        | 0                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  |                                              | maximum_saturation        | 1                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  |                                              | air_entry_head            | 1                         |  
+  +----------------------------------------------+---------------------------+---------------------------+
+  |                                              | exponent                  | 1                         | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  |                                              | low_saturation_fitting    | None                      | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  |                                              | cutoff_saturation         | None                      | 
+  +----------------------------------------------+---------------------------+---------------------------+
+  
+.. autoclass:: fdata.frlpm
+
+Attributes
+^^^^^^^^^^
+
+.. autoattribute:: fdata.frlpm.group
+.. autoattribute:: fdata.frlpm.zone
+.. autoattribute:: fdata.frlpm.relperm
+.. autoattribute:: fdata.frlpm.capillary
+
+Methods
+^^^^^^^
+
+.. automethod:: fdata.frlpm.add_relperm
+.. automethod:: fdata.frlpm.add_capillary
+.. automethod:: fdata.frlpm.delete
+
+Examples
+^^^^^^^^
+
+In the following example, a relative permeability and capillary pressure model is added for a water/co2 mixture.
+
+  ``rlpm=``\ :class:`.frlpm`\ ``(``\ :attr:`~.frlpm.group`\ ``=1,``\ :attr:`~.frlpm.zone`\ ``=dat.``\ :attr:`~.fdata.zone`\ ``[0])``
+  
+  ``rlpm.``\ :meth:`add_relperm <.frlpm.add_relperm>` ``('water','exponential',[0.2,1.,3.1,1.])``
+  
+  ``rlpm.``\ :meth:`add_relperm <.frlpm.add_relperm>` ``('co2_liquid','exponential',[0.2,1.,3.1,0.8])``
+  
+  ``rlpm.``\ :meth:`add_capillary <.frlpm.add_capillary>` ``(('water','co2_liquid'),'vg_cap',[0,0.87,.0015,3.5,7,0.])``
+  
+  ``dat.``\ :meth:`add <.fdata.add>` ``(rlpm)``
+
+Stress module
+-------------
+
+FEHM contains an additional module that allows for coupled thermo-hydro-mechanical modelling. In PyFEHM, the stress
+module is invoked via the :class:`.fstrs` class.  
+
+For a well formed coupled flow-stress problem, the user will need to specify elastic material properties via 
+:class:`.fmacro`\ ``('elastic')`` and some fixed displacement stress boundary conditions to prevent the model block 
+from flying off into space (:class:`.fmacro`\ ``('stressboun')``).
+
+Additional complexity can be included, e.g.: 
+
+1. gravitational bodyforces (:attr:`.fstrs.bodyforce`)
+
+2. stress-permeability models (:class:`.fmodel`\ ``('permmodel')``)
+
+3. thermal and poroelastic coupling between flow and stress (:class:`.fmacro`\ ``('biot')``) 
+
+4. stress restarts and critical stress states (:meth:`.fincon.critical_stress`)
+
+The stress module is *off* by default when a new data file is created. It is turned on via the ``fdata.strs.``\ **on**\ ``()`` method.
+
+.. autoclass:: fdata.fstrs
+
+Attributes
+^^^^^^^^^^
+
+.. autoattribute:: fdata.fstrs.param
+.. autoattribute:: fdata.fstrs.bodyforce
+.. autoattribute:: fdata.fstrs.initcalc
+.. autoattribute:: fdata.fstrs.fem
+.. autoattribute:: fdata.fstrs.tolerance
+.. autoattribute:: fdata.fstrs.excess_she
+
+Methods
+^^^^^^^
+
+.. automethod:: fdata.fstrs.on
+.. automethod:: fdata.fstrs.off
+
+Examples
+^^^^^^^^
+
+Switch on the stress module, turn off bodyforce calculations (important if doing a restart from a simulation that previously contained gravity).
+
+  ``dat.``\ :attr:`~.fdata.strs`\ ``.``\ :meth:`~.fstrs.on`
+  
+  ``dat.``\ :attr:`~.fdata.strs`\ ``.``\ :attr:`~.fstrs.bodyforce`\ ``=False``
+  
+Add some elastic material properties and a stress boundary condition.
+
+  ``dat.``\ :meth:`add <.fdata.add>` ``(``\ :class:`.fmacro`\ ``('elastic',`` :attr:`~.fmacro.param`\ ``=(('youngs_modulus',1e4), ('poissons_ratio',0.25))))``
+  
+  ``dat.``\ :meth:`add <.fdata.add>` ``(``\ :class:`.fmacro`\ ``('stressboun',`` :attr:`~.fmacro.zone`\ ``='xmin',`` :attr:`~.fmacro.subtype`\ ``='fixed',`` :attr:`~.fmacro.param`\ ``=(('direction',1),('value',0))))``
+
+Carbon dioxide module
+---------------------
+
+Mixtures of water and gaseous, liquid and super-critical carbon dioxide are modelled in FEHM using the **CARB** macro. In PyFEHM
+this module is loaded using the :class:`.fcarb` class.
+
+As with water, a CO2 simulation should contain CO2 sinks or sources (:class:`.fmacro`\ ``('co2flow')``) and may 
+include conditions for any CO2 initially present (:class:`.fmacro`\ ``('co2pres')``) and :class:`.fmacro`\ ``('co2frac')``).
+
+When using the CO2 module, a relative permeability model for water/CO2 mixtures should be specified, either via 
+:class:`.fmodel`\ ``('rlp')`` or :class:`.frlpm`.
+
+The CO2 module is *off* by default when a new data file is created. It is turned on via :meth:`.fcarb.on`.
+
+.. autoclass:: fdata.fcarb
+
+Attributes
+^^^^^^^^^^
+
+.. autoattribute:: fdata.fcarb.iprtype
+.. autoattribute:: fdata.fcarb.brine
+
+Methods
+^^^^^^^
+
+.. automethod:: fdata.fcarb.on
+.. automethod:: fdata.fcarb.off
+.. autoattribute:: fdata.fcarb.what
+
+Examples
+^^^^^^^^
+
+Switch on the CO2 module and specify that CO2 dissolution in water should be modelled.
+
+  ``dat.``\ :attr:`~.fdata.carb`\ ``.``\ :meth:`on <.fstrs.on>`\ ``(iprtype = 4)``
+  
+Add a CO2 injection source and assign the injection block to initially have non-zero CO2 fraction. 
+This is important, as relative permeability effects may not permit the source to flow.
+
+  ``dat.``\ :meth:`add <.fdata.add>` ``(``\ :class:`.fmacro`\ ``('co2flow',`` :attr:`~.fmacro.zone`\ ``='injection',`` :attr:`~.fmacro.param`\ ``=(('rate',10), ('energy',-40), ('impedance',1.e-2), ('bc_flag',1))))``
+  
+  ``dat.``\ :meth:`add <.fdata.add>` ``(``\ :class:`.fmacro`\ ``('co2frac',`` :attr:`~.fmacro.zone`\ ``='injection',`` :attr:`~.fmacro.param`\ ``=(('water_rich_sat',0.5), ('co2_rich_sat',0.5), ('co2_mass_frac',0.), ('init_salt_conc',0.), ('override_flag',1))))``
+  
+Species transport module
+------------------------
+
+Support of FEHM's trac macro is currently at 'stupid' level. The user supplies a list of zones required by the 
+macro and a file path to an auxiliary text file which contains the macro definition verbatim.
+
+.. autoclass:: fdata.ftrac
+
+ftrac attributes
+^^^^^^^^^^^^^^^^
+
+.. autoattribute:: fdata.ftrac.zonelist
+.. autoattribute:: fdata.ftrac.file
+.. .. autoattribute:: fdata.ftrac.ldsp
+.. .. autoattribute:: fdata.ftrac.transport_porosity
+.. .. autoattribute:: fdata.ftrac.param
+.. .. autoattribute:: fdata.ftrac.common_model
+.. .. autoattribute:: fdata.ftrac.common_modellist
+.. 
+.. ftrac methods
+.. ^^^^^^^^^^^^^
+.. 
+.. .. automethod:: fdata.ftrac.on
+.. .. automethod:: fdata.ftrac.off
+.. .. automethod:: fdata.ftrac.add_species
+.. .. automethod:: fdata.ftrac.add_common_model
+.. 
+.. .. autoclass:: fdata.fspecies
+.. 
+.. fspecies attributes
+.. ^^^^^^^^^^^^^^^^^^^
+.. 
+.. .. autoattribute:: fdata.fspecies.phase
+.. .. autoattribute:: fdata.fspecies.adsorption_model
+.. .. autoattribute:: fdata.fspecies.adsorption
+.. .. autoattribute:: fdata.fspecies.diffusion_model
+.. .. autoattribute:: fdata.fspecies.diffusion
+.. .. autoattribute:: fdata.fspecies.dispersion
+.. .. autoattribute:: fdata.fspecies.density_modifier
+.. .. autoattribute:: fdata.fspecies.tracer_concentrationlist
+.. .. autoattribute:: fdata.fspecies.tracer_generatorlist
+.. 
+.. fspecies methods
+.. ^^^^^^^^^^^^^^^^
+.. 
+.. .. automethod:: fdata.fspecies.add_tracer_concentration
+.. .. automethod:: fdata.fspecies.delete_tracer_concentration
+.. .. automethod:: fdata.fspecies.add_tracer_concentration
+.. .. automethod:: fdata.fspecies.delete_tracer_concentration
+  
+FEHM screen output
+------------------
+
+FEHM prints output information to the screen and to an output '*.outp' file. These output files can be parsed for information
+using :class:`.foutput` objects. Optional information such as FEHM input and grid file paths may be required.
+
+.. autoclass:: fdata.foutput
+
+Methods
+^^^^^^^
+
+.. autoattribute:: fdata.foutput.what
+
+foutput attributes
+^^^^^^^^^^^^^^^^^^
+
+.. autoattribute:: fdata.foutput.node
+.. autoattribute:: fdata.foutput.times
+.. autoattribute:: fdata.foutput.variables
+.. autoattribute:: fdata.foutput.components
+.. autoattribute:: fdata.foutput.filename
+
+Examples
+^^^^^^^^
+
+Read an FEHM output file
+
+  ``out=foutput('fehm.outp',input='fehmn.dat',grid='fehmn.grid')``

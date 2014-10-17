@@ -1,0 +1,5 @@
+ftemp: PyFEHM template models
+=============================
+
+.. autoclass:: ftemp.wellbore_model
+   :members:

@@ -1,0 +1,109 @@
+Introduction
+============
+
+Python is an open-source, object-oriented scripting language with extensive functionality, a large, active 
+development community and loads of online resources for troubleshooting. PyFEHM is a set of classes and 
+methods to enable use of FEHM and auxiliary tasks within the Python scripting environment. Briefly, PyFEHM functionality includes
+
+1. Unstructured/structure grid parsing, structured grid generation and manipulation (see Chapter :ref:`2 <fgrid-chapter>`).
+
+2. FEHM input file construction. Support for many macros, restart files, stress and carbon dioxide modules
+   (see Chapter :ref:`3 <fdata-chapter>`).
+
+3. Post-processing of output (see Chapter :ref:`4 <fpost-chapter>`), including visualisation in Paraview.
+
+4. Scripting tools that supports Python's built-in multi-processing capabilities for batch simulations.
+
+Introductory :ref:`tutorials <ftutorial-chapter>` to PyFEHM are also provided.
+
+Installation
+------------
+
+Python 
+^^^^^^
+
+PyFEHM is supported on Python 2.6 and 2.7, but NOT 3.x. Instructions for downloading and installing Python can be
+found at www.python.org
+
+PyFEHM requires the following Python modules to be installed: NumPy, SciPy, Matplotlib. For windows users, 32- and 64-bit installers (for several
+Python versions) of these modules can be obtained from http://www.lfd.uci.edu/~gohlke/pythonlibs/
+
+PyFEHM
+^^^^^^
+
+A download link for the latest release version of PyFEHM_ can be found at `pyfehm.lanl.gov`__
+
+.. _PyFEHM: pyfehm.lanl.gov
+
+__ PyFEHM_
+
+To install, download and extract the zip file, and run the setup script at the command line: 
+
+``python setup.py install``
+
+FEHM
+^^^^
+
+The purpose of PyFEHM is construction of input and grid files for running FEHM simulations. Therefore, if the user does
+not have a copy of FEHM, their experience with PyFEHM is likely to be short and unsatisfactory.
+
+Downloading PyFEHM does not provide the user with an FEHM executable. FEHM_ is free, but controlled, software and must
+be obtained by registering as a user at `fehm.lanl.gov`__ 
+
+.. _FEHM: https://fehm.lanl.gov/
+
+__ FEHM_
+
+Paraview
+^^^^^^^^
+
+Paraview is a parallel, open-source visualisation software. PyFEHM supports a bridge with Paraview; information about the grid,
+model, and output data can be automatically exported and viewed in this program.
+
+Instructions for downloading and installing Paraview_ can be found at `www.paraview.org`__ 
+
+.. _Paraview: www.paraview.org
+
+__ Paraview_
+
+After installation, make sure to include the path to paraview.exe in you PATH environment variable. This will ensure
+PyFEHM can find Paraview and make full use of its capabilities.
+
+LaGriT
+^^^^^^
+
+LaGriT is a mesh generation package, developed at Los Alamos, with a variety of tools for creating and modifying tetrahedral
+meshes. PyFEHM requires an executable of LaGriT to perform some specialised tasks. For more information on obtaining a LaGriT_ 
+executable, visit `lagrit.lanl.gov`__ 
+
+.. _LaGriT: https://lagrit.lanl.gov/
+
+__ LaGriT_
+
+Using PyFEHM
+------------
+
+PyFEHM consists of several Python modules. To access their functionality, the user must include the following line at the 
+top of any Python script
+
+``from fdata import*``
+
+A configuration file, pyfehmrc, can be used to customise your installation of PyFEHM. For instance, default paths to FEHM or Paraview
+can be defined in the config file to avoid having to write these out in scripts. Other default behaviour in PyFEHM can also 
+be modified by making changes to the config file.
+
+A sample configuration file, pyfehmrc_example, is included with the PyFEHM download. Copy this file to the 
+site-packages folder in your Python installation, rename it to 'pyfehmrc' or '.pyfehmrc', and modify according to the 
+instructions inside.
+
+Using this manual
+-----------------
+
+This manual comprises sections for each of the important PyFEHM modules: :ref:`fgrid <fgrid-chapter>`, 
+:ref:`fdata <fdata-chapter>`, :ref:`fpost <fpost-chapter>`, and :ref:`fvars <fvars-chapter>`. In these, the important
+classes and their methods are documented, and example usage provided.
+
+One way to get acquainted with PyFEHM is to work through the :ref:`tutorials <ftutorial-chapter>` provided. These provide an
+introduction to the basic workflow of creating, running and visualising an FEHM simulation. They also document some of the more
+specialised capabilities of PyFEHM.
+
