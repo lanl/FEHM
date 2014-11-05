@@ -406,7 +406,6 @@ iofile.o: comai.o comuserc.o comxi.o
 load_omr_flux_array.o: comai.o combi.o comci.o comdi.o comdti.o comflow.o
 load_omr_flux_array.o: comsk.o comsptr.o davidi.o
 loadpcnsk.o: comai.o combi.o comdi.o comdti.o compart.o
-lookupvars.o: trxnvars.o
 massflow.o: comai.o combi.o comci.o comdi.o comdti.o comflow.o compart.o
 massflow.o: davidi.o
 material_stiffness.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
@@ -474,7 +473,7 @@ rdcon.o: comflow.o comki.o compart.o comrxni.o davidi.o trxnvars.o
 rddpdp.o: comai.o combi.o comdti.o comhi.o comki.o
 rdthick.o: comai.o combi.o comdi.o comdti.o comhi.o comki.o
 rdtr.o: comai.o combi.o comchem.o comci.o comco2.o comcouple.o comdi.o comdti.o
-rdtr.o: comflow.o compart.o comrxni.o lookupvars.o trxnvars.o
+rdtr.o: comflow.o compart.o comrxni.o trxnvars.o
 react.o: comai.o combi.o comchem.o comci.o comcouple.o comdi.o comdti.o comei.o
 react.o: comfi.o comgi.o comrxni.o davidi.o
 read_avs_io.o: avsio.o comai.o combi.o comco2.o comdi.o comdti.o comflow.o
