@@ -68,7 +68,6 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 	use comcouple
 	use comrxni
 	use comco2
-	use lookupvars
 	use trxnvars
 
 	implicit none
@@ -848,7 +847,6 @@ subroutine rdtr ! The main input reader
       	use comflow
       	use compart
       	use comrxni
-	use lookupvars
 	use trxnvars
 
 	implicit none
