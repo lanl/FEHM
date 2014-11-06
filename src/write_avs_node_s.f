@@ -239,7 +239,7 @@ c     RJP 1/12/07 added following
       implicit none
 
       integer maxscalar
-      parameter (maxscalar = 37)
+      parameter (maxscalar = 32)
       integer neq,nscalar,lu,ifdual,icall,open_file,offset,iriver2
       integer i,j,iolp,iovp,nout,iz,iendz,il,idz, i1, i2, index, iaxy, k
       integer size_head, size_pcp, istart, iend, ic1, ic2, length, nadd
@@ -652,14 +652,6 @@ c     saturations are never zeroed out, report what is in array
                   ic2 = ic1 + len_trim(vstring)
                   string(ic1:ic2) = vstring
                   ic1 = ic2 + 1
-                  write(vstring,112) dls(1:k), sdum
-                  ic2 = ic1 + len_trim(vstring)
-                  string(ic1:ic2) = vstring
-                  ic1 = ic2 + 1
-                  write(vstring,112) dls(1:k), sdum
-                  ic2 = ic1 + len_trim(vstring)
-                  string(ic1:ic2) = vstring
-                  ic1 = ic2 + 1
                   write(vstring,115) dls(1:k), int(sdum)
                   ic2 = ic1 + len_trim(vstring)
                   string(ic1:ic2) = vstring
@@ -685,16 +677,6 @@ c     saturations are never zeroed out, report what is in array
                   ic2 = ic1 + len_trim(vstring)
                   string(ic1:ic2) = vstring
                   ic1 = ic2 + 1                 
-                                ! Liquid co2 density
-                  write(vstring,112) dls(1:k), co2_prop(i)
-                  ic2 = ic1 + len_trim(vstring)
-                  string(ic1:ic2) = vstring
-                  ic1 = ic2 + 1
-                                ! Gaseous co2 density
-                  write(vstring,112) dls(1:k), co2_prop(9*neq_primary+i)
-                  ic2 = ic1 + len_trim(vstring)
-                  string(ic1:ic2) = vstring
-                  ic1 = ic2 + 1
                                 ! Phase state of co2
                   write(vstring,115) dls(1:k), ices(i)
                   ic2 = ic1 + len_trim(vstring)

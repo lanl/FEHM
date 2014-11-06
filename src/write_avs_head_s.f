@@ -63,7 +63,7 @@ C************************************************************************
       implicit none
 
       integer maxscalar
-      parameter (maxscalar = 37)
+      parameter (maxscalar = 35)
       integer neq,nscalar,lu,ifdual
       integer i,j,iolp,iovp,nout,icall,idz,iriver2,iocord_temp
       integer size_head, size_pcp, istart, iend, ic1, ic2, length
@@ -112,12 +112,11 @@ C************************************************************************
      &     units(33) /'(MPa)'/,           
      &     units(34) /'(MPa)'/,
      &     units(35) /'(MPa)'/,
-     &     units(36) /'(no dim)'/,     
-     &     units(37) /'(MPa)'/,
-     &     units(38) /'(MPa)'/,
-     &     units(39) /'(deg)'/,
-     &     units(40) /'(kg/m**3)'/,
-     &     units(41) /'(kg/m**3)'/
+     &     units(36) /'(no dim)'/     
+     &     units(37) /'(MPa)'/
+     &     units(38) /'(MPa)'/
+     &     units(39) /'(deg)'/
+
 
 C     BEGIN
       size_head = size(head)
@@ -198,8 +197,6 @@ c     Header is only written to the first tecplot file
      &     'Super-Critical/Liquid CO2 Saturation'
       title(23) = trim(dual_char) // 'Gaseous CO2 Saturation'
       title(24) = trim(dual_char) // 'Dissolved CO2 Mass Fraction'
-      title(40) = trim(dual_char) // 'CO2 Liquid Density (kg/m**3)'
-      title(41) = trim(dual_char) // 'CO2 Gas Density (kg/m**3)'
       title(25) = trim(dual_char) // 'CO2 Phase State'
       title(26) = 'X displacement (m)'
       title(27) = 'Y displacement (m)'
@@ -269,8 +266,6 @@ c     Write Z coordinate
             write(lu,200) trim(title(22)), trim(units(22)) 
             write(lu,200) trim(title(23)), trim(units(23)) 
             write(lu,200) trim(title(24)), trim(units(24)) 
-            write(lu,200) trim(title(40)), trim(units(40)) 
-            write(lu,200) trim(title(41)), trim(units(41)) 
             write(lu,200) trim(title(25)), trim(units(25)) 
          end if
          if (iohead .eq. 1 .and. size_head .ne. 1) then
@@ -429,14 +424,6 @@ c     Write Z coordinate
             length = len_trim(tstring)
             ic2 = ic2 + length
             write(tstring,formstring) trim(title(24))
-            tstring2 = tstring2(ic1:ic2) // tstring
-            length = len_trim(tstring)
-            ic2 = ic2 + length
-            write(tstring,formstring) trim(title(40))
-            tstring2 = tstring2(ic1:ic2) // tstring
-            length = len_trim(tstring)
-            ic2 = ic2 + length
-            write(tstring,formstring) trim(title(41))
             tstring2 = tstring2(ic1:ic2) // tstring
             length = len_trim(tstring)
             ic2 = ic2 + length
