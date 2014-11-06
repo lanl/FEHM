@@ -108,7 +108,7 @@ class fehmTest(unittest.TestCase):
         
         arguments = {}
         arguments['components'] = ['water']
-        arguments['variables']  = ['Kx']
+        arguments['variables']  = ['Kx','dens','P','sat','T']
         arguments['test_measure'] = 'perc_difference' 
         
         #test_case() does not actually display this custom error message yet.
