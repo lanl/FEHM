@@ -59,13 +59,13 @@ rock
 #7
 #  1 0 0   4.866e-9 4.637 1.e-3  0.20
 #
-#flxo 
-#5
-#1 2 
-#2 3
-#3 4
-#4 5
-#5 6
+flxo 
+5
+1 2 
+2 3
+3 4
+4 5
+5 6
 # - - - - - - - - - - - - - - - - 
 time
 1.e-4  200.    1    01  1995  5  0.0 
@@ -112,19 +112,19 @@ hflx
  6 6 1 120.   1.e6
 
 #- - - - - - - - - - - - -
-#cont
-#avsx  100  10000.
-#temp
-#sat
-#porosity
-#perm
-#mat
-#conc
-#pres
-#vap  
-#density
-#liquid
-#end
+cont
+tec  100  10000.
+temp
+sat
+porosity
+perm
+mat
+conc
+pres
+vap  
+density
+liquid
+end
 #cden now in moles 226/7.5 = *****************************************
 cden
 1

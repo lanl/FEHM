@@ -1,8 +1,11 @@
 root:  crushed
 input: ../input/crushed.dat
 outpu: crushed.out
+rsto: crushed.fin
 grida: ../input/1dgrid.grid
 stori: ../input/1dgrid.stor
+error: crushed.err
+check: crushed.chk
 
 none
 
