@@ -333,7 +333,7 @@ C     the length of each component.
      >     +iotemperature+iosaturation+iohead+ioporosity
      >     +iosource+(ioliquid+iovapor)*iodensity
      >     +iopermeability*3+iozid+(ioliquid+iovapor)*ioflx
-     >     +iocapillary+ioco2*5+iodisp*3+iostress+iostrain
+     >     +iocapillary+ioco2*7+iodisp*3+iostress+iostrain
       if (nscalar .ne. 0) then
          nscalar_dual   = nscalar * iodual + nscalar * iogdkm + 
      &        iocord_temp
