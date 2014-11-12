@@ -425,8 +425,8 @@ c     that is closest to the river/well node
          allocate (dum1(maxlay))
          allocate (iriver_out_node(maxiriver+neq))
          allocate (iriver_first_node(maxiriver+neq))
-         coor_dum = coor_riv
-c         coor_dum(1:npoint_riv,1:3) = coor_riv(1:npoint_riv,1:3)
+c         coor_dum = coor_riv
+         coor_dum(1:npoint_riv,1:3) = coor_riv(1:npoint_riv,1:3)
          npoint_riv_old = npoint_riv
          ic = 0
 c     RJP 11/30/07 added following
@@ -578,8 +578,8 @@ c     enddo
          coor_dum(1:npoint_riv,1:3) = coor_riv(1:npoint_riv,1:3)
          deallocate (coor_riv)
          allocate (coor_riv(npoint_riv,3))
-	 coor_riv = coor_dum
-c         coor_riv(1:npoint_riv,1:3) = coor_dum(1:npoint_riv,1:3)
+c	 coor_riv = coor_dum
+         coor_riv(1:npoint_riv,1:3) = coor_dum(1:npoint_riv,1:3)
          do j= 1,3
             do i = 1,neq_primary
                coor_dum(i,j) = cord(i,j)
