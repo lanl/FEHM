@@ -95,9 +95,11 @@ class fehmTest(unittest.TestCase):
             *Bechtold et al. (2004) Backfilling and sealing of underground*
             *respositories for radioactive waste in salt 
             *(BAMBUS II project), EUR 20621, ISBN 92-894-7767-9*
+
             
         ``kx = (k_{t-300}/kx_asse)*(300/T)^1.14`` if kx is less then 1.e-6, set 
-        to 1.e-6.
+        to 1.e-6. If porosity is greater than 0.4, it is truncated as 0.4 since 
+        the Kx relationship is only valid within this range.
 
         The excel spreadsheet /information/saltvcon.xlsx contains the
         associated calculations. 
@@ -436,7 +438,7 @@ class fehmTest(unittest.TestCase):
         .. Updated: July 2014 by Mark Lange
         '''
         
-        self.test_case('mptr_test')
+        self.test_case('mptr')
 
     def heatflux_1DConvection(self):
         '''
