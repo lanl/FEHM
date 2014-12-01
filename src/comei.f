@@ -188,4 +188,26 @@
       real*8, allocatable ::  ss(:)
       real*8, allocatable ::  y(:)
 
+!     ***** active-passive variables *****
+
+      real*8, allocatable ::  a_active(:) 
+      real*8, allocatable ::  phi_base(:) 
+      real*8, allocatable ::  t_base(:) 
+      real*8, allocatable ::  phi_base_grad(:)  
+      real*8, allocatable ::  t_base_grad(:) 
+      real*8, allocatable ::  time_phi_base(:) 
+      real*8, allocatable ::  time_t_base(:) 
+      real*8, allocatable ::  bp_base(:)
+      integer, allocatable ::  nelm_active(:) 
+      integer, allocatable ::  node_active(:) 
+      integer, allocatable ::  ncount(:) 
+      integer, allocatable ::  nmat_active(:)
+      integer, allocatable ::  nrhs_active(:)
+      integer n_active, av_stop, av_write
+      integer iav_chkp,iav_chkt,iav_chkbp,ij_change
+      integer iacfile
+      real*8  day_tol
+      real*8 p_act_tol, t_act_tol, h_act_tol, bp_act_tol, resid_tol
+      parameter(day_tol = 1.d-12)
+
       end module comei

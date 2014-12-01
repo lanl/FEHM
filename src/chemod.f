@@ -442,7 +442,7 @@ c====================================================================
             tkeq(i)=10**tkeq(i)
 	elseif (temp_model(i) .eq. 't') then
 		tkeq(i) = heq(i, 1) + heq(i, 2) * t(in) + heq(i, 3) / t(in)
-	2		+ heq(i, 4) * log10(t(in)) + heq(i, 5) / t(in) ** 2
+     2		+ heq(i, 4) * log10(t(in)) + heq(i, 5) / t(in) ** 2
 		tkeq(i) = 10 ** tkeq(i)
          else
             tkeq(i)=ckeq(i)*exp((heq(i,1)/gas_const*

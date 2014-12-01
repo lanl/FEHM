@@ -293,7 +293,9 @@ c impes-like flow terms
       real*8 xs, dxsw, dxsg, denwfw, denwfg, s1, s2, ds1dw, ds1dg
 c new variables
       real*8 enx,denxp,denxe,denxyc,denxya, vis_tol, xtol
-      real*8 pvap_h2o,pvap_co2,pcl0,roc0,drow_vp,denv_vapt
+c gaz debug 011014 roc0 now in comai
+c      real*8 pvap_h2o,pvap_co2,pcl0,roc0,drow_vp,denv_vapt
+      real*8 pvap_h2o,pvap_co2,pcl0,drow_vp,denv_vapt
       real*8 dxwat_vap,drov_co2p
       real*8 dxco2p,env_h2o,env_co2,denv_co2p,denv_co2t
       real*8 drov_co2w,drov_co2yc,drov_co2ya

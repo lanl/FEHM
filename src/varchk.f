@@ -456,6 +456,7 @@ c      parameter(ich_max = 2)
       integer ifl
       integer ndummy,k
 c
+c
 c ich_m1 and ich_m2 are in comai but are adjusted here
 c these are maybe best for geothermal systems
       ich_m1 = 10
@@ -591,6 +592,9 @@ c
 c
 c     determine phase state for water and noncondensible
 c
+c gaz debug 082714
+c gaz debug added saltctr calls 091414
+                  continue
                   do i=1,neq
                      ij=i+ndummy
                      pl=phi(ij)
@@ -614,8 +618,13 @@ c
 c
 c     liquid only state
 c
-                        tl=t(ij)
+                      if(isalt.eq.0) then
+                       tl=t(ij)
                        pboil=psatl(tl,pcp(ij),dpcef(ij),dtsatp,dpsats,0)
+                      else
+                       call saltctr(1,ij,dpsatt,dpsats)
+                       pboil = pl - pci(ij)
+                      endif
 c     change to 2-phase
                         if(x.le.pboil/phase_mult) then
                            ieosdc=2
@@ -633,11 +642,16 @@ c     change to liquid only conditions
                            ieosdc=1
 c     tl=t(ij)*eosml
 c     t(ij)=tl
+                          if(isalt.eq.0) then
                            pci(ij)=pl-psatl(tl,pcp(ij),dpcef(ij),
      2                          dpsatt,dpsats,0)
+                          else
+c  pci calculated inside saltctr
+                           call saltctr(1,ij,dpsatt,dpsats)
+                          endif
 c     pci(ij)=max(pl-pboil,0.0d00)
-                           s(ij)=1.0
-                        endif
+                          s(ij)=1.0
+                        endif 
 c     change to gas only
                         if(sl.le.0.0) then
                            ieosdc=3
@@ -647,11 +661,19 @@ c     change to gas only
                      endif
 c 
                      if(ieosd.eq.3.or.ieosdc.eq.3) then
+c                     if(ieosd.eq.3) then
 c
 c     gas conditions
 c
 c                 pvapor=psatl(to(ij),pcp(ij),dpcef(ij),dpsatt,dpsats,0)
-                      pvapor=psatl(tl,pcp(ij),dpcef(ij),dpsatt,dpsats,0)
+c                     if(isalt.eq.0) then
+c                      pvapor=psatl(tl,pcp(ij),dpcef(ij),dpsatt,dpsats,0)
+c                     else
+c                      call saltctr(1,ij,dpsatt,dpsats)
+c                      pvapor=pl-pci(ij)
+c                     endif
+c gaz debug 091514
+                    pvapor=psatl(tl,pcp(ij),dpcef(ij),dpsatt,dpsats,0)
 c     check vapor pressure against saturated vapor pressure
 c     change if lower
                         if(x.ge.pvapor) then
@@ -674,9 +696,9 @@ c
                         strd    =stepl
                         ieos_ch(ij) = ieos_ch(ij) +1
                         
-                        if (ieos_ch(ij).gt.3) 
-     &                       write (iout,233) 
-     &                       ij, ieos_ch(ij), (cord(ij,k),k=1,3)
+c                        if (ieos_ch(ij).gt.3) 
+c     &                       write (iout,233) 
+c     &                       ij, ieos_ch(ij), (cord(ij,k),k=1,3)
                      endif
                      ieos(ij)=ieosdc
                   enddo    
@@ -759,7 +781,7 @@ c gaz 10-18-2001
                enddo    
             else if(ico2.gt.0) then
 c
-c     water and noncondensible
+c     NR corrections for water and noncondensible
 c
 c     strd is passed through common
                nr1=nrhs(1)

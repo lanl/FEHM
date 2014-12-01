@@ -417,6 +417,7 @@
       integer             maxsolve, iflux_ts, inobr, isubbc, isubm
       integer             bin_flag, app_flag, ldna, iflxn, pres_flag
       integer             ishisp, ishist, ishishd, ishiss, ishisf
+      integer             ishisfa
       integer             ishise, ishishm, ishisg, ishisfz, ishiswt 
       integer             time_flag, nhist, glob_flag, icont, istea_pest
       integer             icoef_replace
@@ -449,8 +450,13 @@ c GAZ 11/02/08
 c GAZ 061513
       integer             ich_pebi
 c GAZ 072513      
-      integer             isalt,ivaprsalt,isalt_pnx,isalt_ps
-
+      integer             isalt,ivaprsalt,isalt_pnx,isalt_ps,isalt_read
+      integer             isalt_write
+      integer             iactive
+c GAZ 011014
+c GAZ 012214
+      integer             iden_vis, ideng_vis, iphase3
+      integer             itype_air,itype_meth,itype_co2
       real*8              pchng, schng 
       
       integer :: irun = 0
@@ -473,6 +479,8 @@ c GAZ 072513
       real*8              day_save_ss, fdum_last, aiaa_save, daymax_save
 c gaz 11-06-2007
       real*8              rho1grav,h_to_p
+c gaz 01-06-2014
+      real*8              roc0, visc_gas
       real*4              vernum
 c gaz 11-29-2009   
       real*8              p_stop,t_stop,s_stop,pa_stop,s2_stop
@@ -489,6 +497,7 @@ c gaz 090113
       character*11        jdate, flux_flag
       character*30        verno
       character*80        wdd, wdd1
+      character*70        salt_read_file, salt_write_file
 
       integer nmacros
       parameter( nmacros = 60 )

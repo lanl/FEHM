@@ -421,10 +421,10 @@ C***********************************************************************
 c symmetry check on = 1, off = 0      
       parameter (ic_sym = 0)
       parameter (very_small= 1.d-30)
-c gaz debug 080813
-
-c      call saltctr(-10,0,0.0d00)
-
+c gaz debug
+c
+      fac_nop = wellim(1)
+      fac_nop = anl(1)
 c
 c     Calculate rho1grav
 c      rho1grav = crl(1,1)*(9.81d-6)
@@ -763,7 +763,7 @@ c
             else
                allocate(a_axy(ldna))
             end if
-
+            
 c s kelkar 3 July 2014, for calculating heat flow vectors
             if(flag_heat_out) then
                if (idpdp .ne. 0) then
@@ -780,8 +780,8 @@ c s kelkar 3 July 2014, for calculating heat flow vectors
                   e_adv_nodal = 0
                   e_cond_nodal = 0
                end if
-            endif
-
+            endif            
+          
             if (irdof .ne. 13) then
                if (idpdp .ne. 0) then
                   allocate(a_vxy(2*ldna+neq))
@@ -804,14 +804,14 @@ c s kelkar 3 July 2014, for calculating heat flow vectors
          else
             allocate(a_axy(1),a_vxy(1),a_wvxy(1))
             if (idoff .eq. -1 .and. flag_heat_out) then
-               allocate(e_axy_adv(l))
-               allocate(e_axy_cond(ldna))
-               allocate(e_adv_nodal(1,3))
-               allocate(e_cond_nodal(neq,3))
-               e_axy_adv = 0
-               e_axy_cond = 0
-               e_adv_nodal = 0
-               e_cond_nodal = 0
+	        allocate(e_axy_adv(l))
+	        allocate(e_axy_cond(ldna))
+	        allocate(e_adv_nodal(1,3))
+	        allocate(e_cond_nodal(neq,3))
+	        e_axy_adv = 0
+	        e_axy_cond = 0
+	        e_adv_nodal = 0
+	        e_cond_nodal = 0
             end if
          end if
       end if
@@ -822,10 +822,11 @@ c s kelkar 3 July 2014, for calculating heat flow vectors
 c new placement of peint
       if (i_init.ne.0) call peint
       if (iread .gt. 0) call diskread
+      if(isalt.ne.0) call saltctr(20,0,0.0d00,0.0d00)
       close (1010)
 
 c added new feature -- set initial time if requested in time macro
-      if (irsttime.ne.0) days=rsttime
+       if (irsttime.ne.0) days=rsttime
 c gaz 092111 have moved  above
 c      if (iread .le. 0 .and. (tin0 .gt. 0.0 .or. tin1.gt.0.0))
 c    &     call peint
@@ -1290,13 +1291,23 @@ c         if (to (i) .le. zero_t)   to (i) = tin0
          iconv = iconv_tmp
       end if
 c initialize pressures and temperatures
-      if(ipini.eq.0.or.iread.eq.0) then      
+      if(ipini.eq.0.and.istrs.ne.0) then      
+         phini = pho
+         psini = ps
+         tini = to 
+      else if(iread.eq.0) then      
          phini = pho
          psini = ps
          tini = to           
       else
-c phini and tini have be read in from disk, just set pressure
-         psini = ps
+c gaz debug 110314 do nothing except for cases above
+c if requested psini read from salt restart
+c phini and tini have be read in from disk, just set porosity 
+c gaz debug 110314 psini remains equal to input file values
+c except for salt restart file which reads in psini
+c         psini = ps
+         phini = pho
+         tini = to         
       endif
 c initialize porosity model -5 if necessary
       if(iporos.ne.0) call porosi(5)
@@ -1512,6 +1523,9 @@ c
 !      if(contim.ge.0) then
          call contr (-1)
          call contr ( 1)
+c gaz debug 021114
+c output map of active nodes
+         call active_nodes_ctr(3)
 !      else
 !         call contr_days (-1)
 !         call contr_days ( 1)

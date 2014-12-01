@@ -86,9 +86,9 @@
       save form1_string, form2_string, formh_string
       save formp_string, formcs_string
 
-      ishisnode = ishisp + ishist + ishishd + ishiss + ishisf + ishise
-     &     + ishisef + ishisd + ishisv + ishishm + ishiswt + ishisc
-     &     + ishiswc + ishiscm + ishiscmf + ishiscmd + ishiscsl 
+      ishisnode = ishisp + ishist + ishishd + ishiss + ishisf + ishisfa 
+     &     + ishise+ ishisef + ishisd + ishisv + ishishm + ishiswt 
+     &     + ishisc + ishiswc + ishiscm + ishiscmf + ishiscmd + ishiscsl 
      &     + ishiscsg + ishisdisx + ishisdisy + ishisdisz
      &     + ishisstr + ishisstrx + ishisstry + ishisstrz
       if (m .eq. 0 .and. node_azones .eq. 0) then
@@ -331,6 +331,20 @@ c            write(ishis, '(a4)')  '    '
             ic2 = len_trim(info_string) + 1
             title_string = 'Water_content'
             call plot_header(ishiswc, m, form1_string)
+         end if
+         if (ishisfa .ne. 0 ) then
+! Ouput flow in kg/s
+            info_string = info_string(ic1:ic2) // 'floa '
+            ic2 = len_trim(info_string) + 1
+            title_string = 'Floa (kg/s)'
+            call plot_header(ishisfa, m, form1_string)
+            if (.not. allocated(dumv)) then
+               if (m .gt. 0) then
+                  allocate (dumv(m))
+               else
+                  allocate (dumv(1))
+               end if
+            end if
          end if
          if (ishisf .ne. 0 ) then
 ! Ouput flow in kg/s
@@ -895,7 +909,7 @@ c**** write number of plot nodes, node numbers and coordinates ****
             mi = nskw(i)
             if (mi .gt. neq*2) then
                mi = mi - neq*2
-            else if (mi .gt. neq) then
+            else if (mi .gt. neq) then 
                mi = mi - neq
             end if
             write(ishis, 6020) nskw(i), corz(mi,1), corz(mi,2),
@@ -1199,6 +1213,28 @@ c water only problem
          end do
          write(ishiswc, form1_string) ptime, (dumv(i), i= 1, m)
          call flush(ishiswc)
+      end if
+      if (ishisfa .ne. 0 ) then
+! Output gas flow in kg/s
+         do i = 1, m
+           if(ico2.lt.0) then
+c isothermal case
+            if (abs(qh(nskw(i))).lt.1.d-20) then
+               dumv(i) = 0.0
+            else
+               dumv(i)=qh(nskw(i))
+            endif
+           else if(ico2.gt.0) then
+c non isothermal case
+            if (abs(qc(nskw(i))).lt.1.d-20) then
+               dumv(i) = 0.0
+            else
+               dumv(i)=qc(nskw(i))
+            endif
+           endif
+         end do
+         write(ishisfa, form1_string) ptime, (dumv(i), i= 1, m)
+         call flush(ishisfa)
       end if
       if (ishisf .ne. 0 ) then
 ! Output flow in kg/s

@@ -222,7 +222,7 @@ c--------------------------------------------------------------------
       parameter(p0=0.1)
       parameter(t0=273.15)
       parameter(t_min=10.0,t_max=350.0)
-      parameter(dvas_denom_min = 1.d-6)
+      parameter(dvas_denom_min = 1.d-15)
 
       if(iadif.ne.0.and.tort.ge.0.0.and.tort.le.1.0) then
          do i=1,n
@@ -399,7 +399,11 @@ c-------------------------------------------------------
         do i=1,n
 
            temp=(1-s(i))*ps(i)
-           tort2 = temp**2.3333/(ps(i)**2)
+           if(ps(i).GT.0) then
+            tort2 = temp**2.3333/(ps(i)**2)
+           else
+            tort2 = 0.0
+           end if
 c
 c  New stuff   PHS took out density from rat
 c              now no derivatives wrt density! 
@@ -441,7 +445,7 @@ c          if(iatty.NE.0) write(iatty,*) 'dvacalc dva=',dva(i),tort2,dva0
               ddvae(i)=dva0d*dratt+dva0e*rat
               ddvac(i)=dva0d*dratc+dva0c*rat
            else
-              ddvae(i)=-tort*ps(i)*dva0*rat
+              ddvae(i)=-tort2*ps(i)*dva0*rat
               ddvac(i)=0.0
               ddvap(i)=dva0d*dratp
            endif
@@ -450,12 +454,14 @@ c          if(iatty.NE.0) write(iatty,*) 'dvacalc dva=',dva(i),tort2,dva0
       endif     !   (tort.EQ.333)
 
 c - - - - - - - - 7/17/13  PHS  Load dva/(air content) into dvas - - - - - 
+c gaz debug 090314
       if(irdof.ne.13) then
        do i = 1,n
-         s_dva_term = min(1.0,1.0-s(i))
-         s_dva_term = max(0.0,s_dva_term)
-         dvas_denom = max(ps(i)*s_dva_term,dvas_denom_min)
-         dvas(i) = dva(i)/dvas_denom
+         if((s(i).LT.1).AND.(ps(i).GT.0)) then
+          dvas(i) = dva(i)/(ps(i)*(1-s(i))+dvas_denom_min)
+         else
+          dvas(i) = 0.0
+         end if 
        end do
       endif
       return

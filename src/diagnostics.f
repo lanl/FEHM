@@ -117,9 +117,10 @@ C***********************************************************************
       real*8  bpmin_min, bpmax_max
       parameter(s_upper=1.0000,s_lower=0.0000)
       parameter(bpmin_min=-1.e10, bpmax_max=1.e10)
+      save ibp,ibp1,ibp2,ibp3,ibp4,ibp5,ibp6
+      save bpmax,bp1max,bp2max,bp3max,bp4max,bp5max,bp6max
+      if(.not.allocated(bp)) return
       if(iflg.eq.0) then
-c check for input inconsistencies
-c gaz 5-25-2002
          if(ihead.ne.0) then
             if(igrav.eq.0) then
                if (iout .ne. 0) write(iout, 100) 
@@ -135,26 +136,10 @@ c gaz 5-25-2002
  200        format ('>>>> dimension (icnl) not set to 3 for FDM: ',
      &           'stopping <<<<')
          endif
-
-      else if(iflg.eq.1) then
-c     print out worst residuals  
-         if(iad.le.abs(maxit)) then
-            if (ntty.eq.2 ) then
-               if (iout .ne. 0) write(iout, 300) 
-            endif
-            if (iptty.ne.0 ) write(iptty, 300) 
- 300        format(20x,'Largest Residuals')
-         else
-            if (iout .ne. 0) then 
-               write(iout, *) '   '
-               write(iout, 400) l
-            end if
-            if (iptty .ne. 0) then
-               write(iptty, *) '   '
-               write(iptty, 400) l
-            endif
-         endif
- 400     format ('#### largest N-R corrections, timestep ',i8, ' ####')
+      else if(iflg.eq.-1) then
+c
+c     find largerst residuals  
+c
          if(idof.eq.1 .or. idof_co2.eq.1) then
             ibp=0
             ibp1=0
@@ -170,14 +155,7 @@ c     print out worst residuals
                   ibp=i
                endif
             enddo
-            if (iptty .ne. 0) then
-               write(iptty,900) 'EQ1',bp(ibp1+nrhs(1)),ibp1,
-     $              cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
-            endif
-            if (ntty .eq. 2) then
-               if (iout .ne. 0) write(iout,900) 'EQ1',bp(ibp1+nrhs(1)),
-     $              ibp1,cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
-            endif
+
          else if(idof.eq.2 .or. idof_co2.eq.2) then
             ibp=0
             ibp1=1
@@ -203,20 +181,7 @@ c     print out worst residuals
                   ibp=i
                endif
             enddo
-            if (iptty .ne. 0) then
-               write(iptty,900) 'EQ1',bp1max,ibp1,cord(ibp1,1)
-     $              ,cord(ibp1,2),cord(ibp1,3)
-               write(iptty,900) 'EQ2',bp2max,ibp2,cord(ibp2,1)
-     $              ,cord(ibp2,2),cord(ibp2,3)
-            endif
-            if (ntty .eq. 2) then
-               if (iout .ne. 0) then
-                  write(iout,900) 'EQ1',bp1max,ibp1,cord(ibp1,1)
-     $                 ,cord(ibp1,2),cord(ibp1,3)
-                  write(iout,900) 'EQ2',bp2max,ibp2,cord(ibp2,1)
-     $                 ,cord(ibp2,2),cord(ibp2,3)
-               endif
-            end if
+
          else if(idof.eq.3 .or. idof_co2.eq.3) then
             ibp=0
             ibp1=0
@@ -261,24 +226,8 @@ c     print out worst residuals
               write(ierr,*)"Nans for all residuals: stopping"   
               stop
             endif         
-            if (iptty .ne. 0) then
-               write(iptty,900) 'EQ1',bp(ibp1+nrhs(1)),ibp1,cord(ibp1,1)
-     $              ,cord(ibp1,2),cord(ibp1,3)
-               write(iptty,900) 'EQ2',bp(ibp2+nrhs(2)),ibp2,cord(ibp2,1)
-     $              ,cord(ibp2,2),cord(ibp2,3)
-               write(iptty,900) 'EQ3',bp(ibp3+nrhs(3)),ibp3,cord(ibp3,1)
-     $              ,cord(ibp3,2),cord(ibp3,3)
-            endif
-            if (ntty .eq. 2) then
-               if (iout .ne. 0) then
-                  write(iout,900) 'EQ1',bp(ibp1+nrhs(1)),ibp1,
-     $                 cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
-                  write(iout,900) 'EQ2',bp(ibp2+nrhs(2)),ibp2,
-     $                 cord(ibp2,1),cord(ibp2,2),cord(ibp2,3)
-                  write(iout,900) 'EQ3',bp(ibp3+nrhs(3)),ibp3,
-     $                 cord(ibp3,1),cord(ibp3,2),cord(ibp3,3)
-               end if
-            endif
+
+
          else if(idof.eq.4 .or. idof_co2.eq.4) then
             ibp=0
             ibp1=0
@@ -333,28 +282,8 @@ c
                   ibp=i
                endif
             enddo
-            if (iptty .ne. 0) then
-               write(iptty,900) 'EQ1',bp(ibp1+nrhs(1)),ibp1,cord(ibp1,1)
-     $              ,cord(ibp1,2),cord(ibp1,3)
-               write(iptty,900) 'EQ2',bp(ibp2+nrhs(2)),ibp2,cord(ibp2,1)
-     $              ,cord(ibp2,2),cord(ibp2,3)
-               write(iptty,900) 'EQ3',bp(ibp3+nrhs(3)),ibp3,cord(ibp3,1)
-     $              ,cord(ibp3,2),cord(ibp3,3)
-               write(iptty,900) 'EQ4',bp(ibp4+nrhs(4)),ibp4,cord(ibp4,1)
-     $              ,cord(ibp4,2),cord(ibp4,3)
-            endif
-            if (ntty .eq. 2) then
-               if (iout .ne. 0) then
-                  write(iout,900) 'EQ1',bp(ibp1+nrhs(1)),ibp1,
-     $                 cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
-                  write(iout,900) 'EQ2',bp(ibp2+nrhs(2)),ibp2,
-     $                 cord(ibp2,1),cord(ibp2,2),cord(ibp2,3)
-                  write(iout,900) 'EQ3',bp(ibp3+nrhs(3)),ibp3,
-     $                 cord(ibp3,1),cord(ibp3,2),cord(ibp3,3)
-                  write(iout,900) 'EQ4',bp(ibp4+nrhs(4)),ibp4,
-     $                 cord(ibp4,1),cord(ibp4,2),cord(ibp4,3)
-               end if
-            endif
+
+
          else if(idof.eq.6 .or. idof_co2.eq.6) then
             ibp=0 
             ibp1=0
@@ -433,33 +362,138 @@ c
                   ibp=i
                endif
             enddo
+
+          
+         endif
+
+
+      else if(iflg.eq.1) then
+c     print out worst residuals  
+         if(iad.le.abs(maxit)) then
+            if (ntty .eq. 2) then
+               if (iout .ne. 0) write(iout, 300) 
+            endif
+            if (iptty.ne.0 ) write(iptty, 300) 
+ 300        format(20x,'Largest Residuals')
+         else
+            if (iout .ne. 0) then 
+               write(iout, *) '   '
+               write(iout, 400) l
+            end if
             if (iptty .ne. 0) then
-               write(iptty,900) 'EQ1',bp(ibp1+nrhs(1)),ibp1,cord(ibp1,1)
+               write(iptty, *) '   '
+               write(iptty, 400) l
+            endif
+         endif
+ 400     format ('#### largest N-R corrections, timestep ',i8, ' ####')
+         if(idof.eq.1 .or. idof_co2.eq.1) then
+ 
+            if (iptty .ne. 0) then
+               write(iptty,900) 'EQ1',bp1max,ibp1,
+     $              cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
+            endif
+            if (ntty .eq. 2) then
+               if (iout .ne. 0) write(iout,900) 'EQ1',bp1max,
+     $              ibp1,cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
+            endif
+         else if(idof.eq.2 .or. idof_co2.eq.2) then
+
+            if (iptty .ne. 0) then
+               write(iptty,900) 'EQ1',bp1max,ibp1,cord(ibp1,1)
      $              ,cord(ibp1,2),cord(ibp1,3)
-               write(iptty,900) 'EQ2',bp(ibp2+nrhs(2)),ibp2,cord(ibp2,1)
+               write(iptty,900) 'EQ2',bp2max,ibp2,cord(ibp2,1)
      $              ,cord(ibp2,2),cord(ibp2,3)
-               write(iptty,900) 'EQ3',bp(ibp3+nrhs(3)),ibp3,cord(ibp3,1)
+            endif
+            if (ntty .eq. 2) then
+               if (iout .ne. 0) then
+                  write(iout,900) 'EQ1',bp1max,ibp1,cord(ibp1,1)
+     $                 ,cord(ibp1,2),cord(ibp1,3)
+                  write(iout,900) 'EQ2',bp2max,ibp2,cord(ibp2,1)
+     $                 ,cord(ibp2,2),cord(ibp2,3)
+               endif
+            end if
+         else if(idof.eq.3 .or. idof_co2.eq.3) then
+
+            if (ibp.eq.0.and.ibp1.eq.0.and.ibp2.eq.0.and.
+     &          ibp3.eq.0) then
+             if (iptty .ne. 0) 
+     &        write(iptty,*)"Nans for all residuals: stopping"
+             if (ntty .ne. 0) 
+     &        write(ntty,*)"Nans for all residuals: stopping"  
+              write(ierr,*)"Nans for all residuals: stopping"   
+              stop
+            endif         
+            if (iptty .ne. 0) then
+               write(iptty,900) 'EQ1',bp1max,ibp1,cord(ibp1,1)
+     $              ,cord(ibp1,2),cord(ibp1,3)
+               write(iptty,900) 'EQ2',bp2max,ibp2,cord(ibp2,1)
+     $              ,cord(ibp2,2),cord(ibp2,3)
+               write(iptty,900) 'EQ3',bp3max,ibp3,cord(ibp3,1)
      $              ,cord(ibp3,2),cord(ibp3,3)
-               write(iptty,900) 'EQ4',bp(ibp4+nrhs(4)),ibp4,cord(ibp4,1)
+            endif
+            if (ntty .eq. 2) then
+               if (iout .ne. 0) then
+                  write(iout,900) 'EQ1',bp1max,ibp1,
+     $                 cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
+                  write(iout,900) 'EQ2',bp2max,ibp2,
+     $                 cord(ibp2,1),cord(ibp2,2),cord(ibp2,3)
+                  write(iout,900) 'EQ3',bp3max,ibp3,
+     $                 cord(ibp3,1),cord(ibp3,2),cord(ibp3,3)
+               end if
+            endif
+         else if(idof.eq.4 .or. idof_co2.eq.4) then
+
+            if (iptty .ne. 0) then
+               write(iptty,900) 'EQ1',bp1max,ibp1,cord(ibp1,1)
+     $              ,cord(ibp1,2),cord(ibp1,3)
+               write(iptty,900) 'EQ2',bp2max,ibp2,cord(ibp2,1)
+     $              ,cord(ibp2,2),cord(ibp2,3)
+               write(iptty,900) 'EQ3',bp3max,ibp3,cord(ibp3,1)
+     $              ,cord(ibp3,2),cord(ibp3,3)
+               write(iptty,900) 'EQ4',bp4max,ibp4,cord(ibp4,1)
      $              ,cord(ibp4,2),cord(ibp4,3)
-               write(iptty,900) 'EQ5',bp(ibp5+nrhs(5)),ibp5,cord(ibp5,1)
+            endif
+            if (ntty .eq. 2) then
+               if (iout .ne. 0) then
+                  write(iout,900) 'EQ1',bp1max,ibp1,
+     $                 cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
+                  write(iout,900) 'EQ2',bp2max,ibp2,
+     $                 cord(ibp2,1),cord(ibp2,2),cord(ibp2,3)
+                  write(iout,900) 'EQ3',bp3max,ibp3,
+     $                 cord(ibp3,1),cord(ibp3,2),cord(ibp3,3)
+                  write(iout,900) 'EQ4',bp4max,ibp4,
+     $                 cord(ibp4,1),cord(ibp4,2),cord(ibp4,3)
+               end if
+            endif
+         else if(idof.eq.6 .or. idof_co2.eq.6) then
+
+            if (iptty .ne. 0) then
+               write(iptty,900) 'EQ1',bp1max,ibp1,cord(ibp1,1)
+     $              ,cord(ibp1,2),cord(ibp1,3)
+               write(iptty,900) 'EQ2',bp2max,ibp2,cord(ibp2,1)
+     $              ,cord(ibp2,2),cord(ibp2,3)
+               write(iptty,900) 'EQ3',bp3max,ibp3,cord(ibp3,1)
+     $              ,cord(ibp3,2),cord(ibp3,3)
+               write(iptty,900) 'EQ4',bp4max,ibp4,cord(ibp4,1)
+     $              ,cord(ibp4,2),cord(ibp4,3)
+               write(iptty,900) 'EQ5',bp5max,ibp5,cord(ibp5,1)
      $              ,cord(ibp5,2),cord(ibp5,3)
-               write(iptty,900) 'EQ6',bp(ibp6+nrhs(4)),ibp6,cord(ibp6,1)
+               write(iptty,900) 'EQ6',bp6max,ibp6,cord(ibp6,1)
      $              ,cord(ibp6,2),cord(ibp6,3)
             endif
             if (ntty .eq. 2) then
                if (iout .ne. 0) then
-                  write(iout,900) 'EQ1',bp(ibp1+nrhs(1)),ibp1,
+                  write(iout,900) 'EQ1',bp1max,ibp1,
      $                 cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
-                  write(iout,900) 'EQ2',bp(ibp2+nrhs(2)),ibp2,
+                  write(iout,900) 'EQ2',bp2max,ibp2,
      $                 cord(ibp2,1),cord(ibp2,2),cord(ibp2,3)
-                  write(iout,900) 'EQ3',bp(ibp3+nrhs(3)),ibp3,
+                  write(iout,900) 'EQ3',bp3max,ibp3,
      $                 cord(ibp3,1),cord(ibp3,2),cord(ibp3,3)
-                  write(iout,900) 'EQ4',bp(ibp4+nrhs(4)),ibp4,
+                  write(iout,900) 'EQ4',bp4max,ibp4,
      $                 cord(ibp4,1),cord(ibp4,2),cord(ibp4,3)
-                  write(iout,900) 'EQ5',bp(ibp5+nrhs(5)),ibp5,
+                  write(iout,900) 'EQ5',bp5max,ibp5,
      $                 cord(ibp5,1),cord(ibp5,2),cord(ibp5,3)
-                  write(iout,900) 'EQ6',bp(ibp6+nrhs(4)),ibp6,
+                  write(iout,900) 'EQ6',bp6max,ibp6,
      $                 cord(ibp6,1),cord(ibp6,2),cord(ibp6,3)
                endif
             end if

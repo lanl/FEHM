@@ -293,11 +293,12 @@ C**********************************************************************
       real*8 qdis,qwdis,qadis,dqws,dqas,dqwp,dqap,por,sflux,permsd
       real*8 pflowd,perml,dpls,dpas,perma,roc,drocs,rol,drolp
       real*8 rcomd,drols,dena,ddenp,ddens,ddenap,ddenas,dql,dqv
-      real*8 pcl0,roc0,wimped,airmobile, rcomd_napl
+      real*8 pcl0,wimped,airmobile, rcomd_napl
 	real*8 area, uperm, watterm, airterm, pdifa, pdifw
 	real*8 qwmax, wat_ex, dwat_exs, prop_ratio
       parameter(pcl0 = 0.101325)
-      parameter(roc0 = 1.292864)
+c gaz debug roc0 now in comai
+c      parameter(roc0 = 1.292864)
       parameter(airmobile = 10.0)
 	integer iadka 
 	parameter(iadka=20) 
@@ -326,7 +327,7 @@ c     get capillary pressures
 
 c     dependent variables vap p and sl
 c     misc. constants
-      tempc=273.0/(t(1)+273.0)
+      tempc=(273.0)/(t(1)+273.0)
       drocp0=roc0*tempc/pcl0
       rolref=crl(1,1)
       xvisl=crl(2,1)

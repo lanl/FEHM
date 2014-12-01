@@ -1,5 +1,8 @@
-      subroutine write_avs_node_con(icall,an,anv,npt,neq,nspeci,
+      subroutine write_avs_node_con(icall,npt,neq,nspeci,
      .     lu, ifdual)
+c gaz debug 110914
+c      subroutine write_avs_node_con(icall,an,anv,npt,neq,nspeci,
+c     .     lu, ifdual)
 !***********************************************************************
 !  Copyright, 1993, 2004,  The  Regents of the University of California.
 !  This program was prepared by the Regents of the University of 
@@ -170,7 +173,9 @@ C***********************************************************************
      &     ns_in, verno, wdd, neq_primary, ivf, ifdm_elem
       use combi, only : corz, izonef, nelm
       use comchem
-      use comdi, only : nsurf, izone_surf, izone_surf_nodes, icns
+      use comdi, only : nsurf, izone_surf, izone_surf_nodes, icns,
+     &     an, anv
+
       use compart, only : ptrak, pout
       use comrxni
       use comdti
@@ -179,12 +184,12 @@ C***********************************************************************
       integer add_dual, maxcon, iz, idz, iendz, il, open_file
       integer neq,nspeci,lu,ifdual,icall,length,i1,i2
       integer icord1, icord2, icord3, iaq, ivap, isolid
-      integer npt(*)
+      integer npt(*), ip1, ip2
       integer, allocatable ::  nelm2(:)
       parameter (maxcon = 100)
-      real*8 an(n0,nspeci)
-      real*8 anv(n0,nspeci)
-      real*8 antmp(n0,nspeci)
+      real*8, allocatable :: an_dum(:,:)
+      real*8, allocatable :: anv_dum(:,:)
+      real*8, allocatable :: antmp(:,:)
       character*60, allocatable :: title(:)
       character*14 tailstring
       character*8 dual_char
@@ -200,6 +205,7 @@ C***********************************************************************
       integer irxn_title
       real*8 complex_conc
       real*8 minc, maxc
+c gaz debug
       parameter (minc = 1.0d-20, maxc = 1.0d+20)
 
       save tecstring, sharestring
@@ -208,6 +214,14 @@ C***********************************************************************
      &     cordname(2) / 'Y (m)' /,
      &     cordname(3) / 'Z (m)' /  
 
+      allocate(an_dum(n0,nspeci))
+      allocate(anv_dum(n0,nspeci))
+      allocate(antmp(n0,nspeci))
+      do i = 1, nspeci
+       ip1 = (i-1)*n0 + 1
+       ip2 = ip1 + n0
+       an_dum(1:n0,i) = an(ip1:ip2)
+      enddo
       iocord_temp = iocord
       if(ifdual .eq. 0)then
          istep = 0
@@ -339,6 +353,7 @@ C***********************************************************************
             write(lu,*)'Subroutine only able to handle up to', maxcon,
      &           'tracers'
             write(lu,*)'--------------------------------------------'
+            deallocate(anv_dum,an_dum,antmp)
             return
          endif
 
@@ -379,7 +394,7 @@ c---------------------------------------
          iaq = 0
          ivap = 0
          isolid = 0
-         antmp = an
+         antmp = an_dum
          do i = 1, nspeci
             select case (icns(i))
             case (1, 2, -2)
@@ -393,7 +408,7 @@ c---------------------------------------
                      cpntnam(iaq) = tmpname
                   end if
                   do k = 1, n0
-                     antmp(k+add_dual,i) = anv(k+add_dual,i)
+                     antmp(k+add_dual,i) = anv_dum(k+add_dual,i)
                   end do
                end if
                title(j) = trim(dual_char)//trim(cpntnam(iaq))
@@ -722,19 +737,19 @@ c=================================================
                do i = 1,ncpntprt
                   ic = cpntprt(i)
                   j=j+1
-                  write_array(j)=an(in+add_dual,pcpnt(ic))
+                  write_array(j)=an_dum(in+add_dual,pcpnt(ic))
                enddo
                do i = 1,nimmprt
                   im = immprt(i)
                   j=j+1
                   write_array(j)=min(1.0d+40,
-     2                 max(1.0d-90,an(in+add_dual,pimm(im))))
+     2                 max(1.0d-90,an_dum(in+add_dual,pimm(im))))
                enddo
                do i = 1,nvapprt
                   iv = vapprt(i)
                   j=j+1            
                   write_array(j)=min(1.0d+40,
-     2                 max(1.0d-90,an(in+add_dual,pvap(iv))))
+     2                 max(1.0d-90,an_dum(in+add_dual,pvap(iv))))
                enddo
                if(ncplx.ne.0)then
                   do i = 1,ncpntprt
@@ -902,5 +917,6 @@ C     Zid no coordinates
 C     Coordinates and zid
  335  format("(1x, i10.10, ", i3, "('", a, "', g16.9), '", a, "', i4,",
      &     i3, "('", a, "', g16.9))")
+      deallocate(anv_dum,an_dum,antmp)
       return
       end

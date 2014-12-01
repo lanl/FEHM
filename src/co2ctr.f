@@ -407,7 +407,7 @@ c code written by g zyvoloski feb 1980
       integer ngas_flag2
       logical ngas_flag
       character*90 wdum
-      parameter (tol_p = 1.d-3)
+      parameter (tol_p = 1.d-6)
       save ngas_flag, ngas_flag2
       
 c     set tbnd for pco2 change(see about line 580)
@@ -423,7 +423,7 @@ c
 c check macro line for more information
 c
           backspace inpt
-            ngas_flag = 0
+            ngas_flag2 = 0
             read(inpt,'(a90)') wdum 
             do i = 5,80
              if(wdum(i:i+5).eq.'normal') ngas_flag2 = 0
@@ -473,7 +473,7 @@ c
             call initdata2(inpt,ischk, n0, narrays, itype,
      &           default, macroread(2), macro, igroup, ireturn,
      2           r8_1=pci(1:n0))
-
+c pci () = -666 equal reset water vapor pressure
             do i = 1, n0
                if (pci(1) .eq. -666) then
                   ngas_flag = .true.
@@ -516,7 +516,11 @@ c
          elseif(iflg.eq.6) then
 c     
 c     check for temperature input and ncondensible pressure
-c     
+c  
+c gaz 110314
+c     leave subroutine if iread.ne.0 (variables will be consistent)
+c
+         if(iread.ne.0) return   
             do i=1,n
                pcid=pci(i)
                if(pcid. eq. -999. .or. pcid .eq. -666.) then
@@ -591,6 +595,11 @@ c     &                    i8)
                      istflag = -1
                      goto 9000
  140                 format ('ngas pressure lt 0.')
+                  else if(ngas_flag) then 
+                     pv= psatl(t(i),pcp(i),dpcef(i),dpsatt,dpsats,0)
+                     pho(i)= pv+ pcid   
+                     phi(i) = pho(i)
+                     to(i)=psatl(pv,pcp(i),dpcef(i),dtsatp,dpsats,1)
                   else
                      pv=pho(i)-pcid
                      to(i)=psatl(pv,pcp(i),dpcef(i),dtsatp,dpsats,1)
@@ -612,7 +621,7 @@ c     specified ngas pressure rules over temperature
                      goto 9000
                   endif
                   if(ieos(i).eq.2) then
-                     if (ngas_flag2.eq.0.and..not.ngas_flag) then
+                     if (.not.ngas_flag) then
                         to(i)=psatl(pv,pcp(i),dpcef(i),dtsatp,dpsats,1)
                      end if
                      if (iout .ne. 0) write(iout,*)

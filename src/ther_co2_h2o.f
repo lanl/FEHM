@@ -132,6 +132,7 @@ c
       fracwmin=0.1     
       vis_tol = 1.d-12
       dtin=1.0/dtot
+      mi = l
 
 c     ****************************************************************
       if(iflg.eq.0) then
@@ -1227,7 +1228,12 @@ c     gaz 2-19-04 added gas relative perms
                qhco2(mi)=0.
                skco2(mi)=0.0
                permsd=wellco2(mi)
-               pldif=pl-pflowco2(mi)
+c
+c gaz debug 110713
+c pflowco2 should equal pflow
+c               pldif=pl-pflowco2(mi)
+c
+               pldif=pl-pflow(mi)
                if((kq.eq.-4)) then
                   permsd1=permsd
                   dprmp=0.d0
@@ -1270,7 +1276,6 @@ c     gaz 2-19-04 added gas relative perms
      &                       visw*visw)
                         dprmp2=permsd*rll*xco2*(drolp/visl-rol*dvislp/
      &                       visl*visl)
-
                         dprmt1=permsd*rlw*yco2*(drowt/visw-row*dviswt/
      &                       visw*visw)
                         dprmt2=permsd*rlw*yco2*(drowt/visw-row*dviswt/
@@ -1312,7 +1317,7 @@ c     gaz 2-19-04 added gas relative perms
                      dprmya=0.0
 
 				   permsd1=permsd11+permsd12+permsd13
-			   	   dprmp=dprmp1+dprmp2+dprmp3
+            dprmp=dprmp1+dprmp2+dprmp3
 				   dprmt=dprmt1+dprmt2+dprmt3
 				   dprmw=dprmw1+dprmw2+dprmw3
 
@@ -1347,8 +1352,6 @@ c gaz 09-02-2010
                   dprmyc = 0.d0
                   dprmya = 0.d0
                endif
-
-
 
                qdis=permsd1*pldif
                skco2(mi)=qdis

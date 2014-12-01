@@ -70,7 +70,7 @@
       real*8 qdis,qwdis,qadis,dqws,dqas,dqwp,dqap,por,sflux,permsd
       real*8 pflowd,area,uperm,roc,drocs,rol,drolp,dporpl
       real*8 rcomd,drols,dena,ddenp,ddens,ddenap,ddenas,dql,dqv
-      real*8 pcl0,roc0
+      real*8 pcl0, rolref_b
       real*8 tl_last,viln,vild,vil,tref
       real*8 viln1,viln2,viln3,vild1,vild2,vild3
       real*8 vla0,vlpa1,vlpa2,vlpa3,vlta1,vlta2,vlta3,vlpta,vlp2ta
@@ -78,10 +78,13 @@
       real*8 vlb0,vlpb1,vlpb2,vlpb3,vltb1,vltb2,vltb3,vlptb,vlp2tb
       real*8 vlpt2b
       real*8 x,x2,x3,tl,tl2,tl3,tlx,tl2x,tlx2
+c cden_correction is a real function
+      real*8 cden_correction
       integer i_mem_rlp
       save i_mem_rlp
       parameter(pcl0 = 0.101325)
-      parameter(roc0 = 1.292864)
+c gaz debug 011114 roc0 now on comai
+c      parameter(roc0 = 1.292864)
      
 c     calculate variable porosity if enabled
 c      if(iporos.ne.0) call porosi(1)
@@ -90,16 +93,17 @@ c     dependent variables vap p and sl
 c     
 c     misc. constants
       tref = crl(6,1)
-      tempc=273.0/(tref+273.0)
+      tempc=(273.0)/(tref+273.0)
       drocp0=roc0*tempc/pcl0
       rolref=crl(1,1)
       xvisl=crl(2,1)
       comw=crl(3,1)
       pref=crl(4,1)
       xvisv=crl(5,1)
-      rcomd=comw*rolref
+
 c
 c     liquid viscosity
+c
 c     numerator coefficients
 c     
       dtin=1.0/dtot
@@ -109,7 +113,21 @@ c
 c called  for  every grid block
 C         mi=mid+ndummy
          mi=mid
-         ieosd=2          
+         ieosd=2    
+       if(cden)then
+        rolref_b= rolref+cden_correction(mi)
+       else if(iden_vis.gt.0) then
+c spatially variable density and viscosity
+        rolref_b = den_spatial(mi)
+        xvisl = vis_spatial(mi)
+        if(comp_spatial(mi).gt.0.0) then
+          comw = comp_spatial(mi)
+        endif
+       else
+        rolref_b= rolref
+       endif
+       rcomd=comw*rolref_b
+      
 c     
          pl=phi(mi)
          sl=s(mi)
@@ -147,7 +165,8 @@ c added the derivative of porosity wrt pressure
          roc=drocp0*pl
          drocs=0.0
 c     water density
-          rol=rolref*(1.0+comw*(pl-pref))
+
+          rol=rolref_b*(1.0+comw*(pl-pref))
           drolp=rcomd
           drols=0.0
 c     accumulation terms

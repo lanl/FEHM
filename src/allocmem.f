@@ -553,7 +553,7 @@ c***  allocate memory to all arrays in combi ***
 c     ***** COMMON Block fbc *****
       allocate(sx1(n0))
 c      if(compute_flow) allocate(sxs(nq,6))
-c     ***** COMMON Block fbs *****
+c     ***** COMMON Block fbs *****men
       allocate(cord(n0,3))
       allocate(dp(6))
       allocate(dr(8))
@@ -592,7 +592,6 @@ c     ***** COMMON Block chem_name *****
       else
          allocate(ndconv(1))
       end if
-
 c     ***** COMMON Block rxn_switch
       if(rxn_flag.ne.0)then
 c     ***** COMMON Block idntrxn *****
@@ -647,6 +646,12 @@ c     ***** COMMON Block temperature ****
          allocate(temp_model(101:ncplx+100))
          allocate(temp_model_kin(numrxn))
          allocate(tcoeff(numrxn,3))
+      endif
+      if (isalt.ne.0) then
+       	   if(.not.allocated(ps_delta_rxn))
+     &         allocate(ps_delta_rxn(n0),ps_delta_rxn_s(n0))
+        ps_delta_rxn = 0.0d0 
+        ps_delta_rxn_s = 0.0d0  
       endif
 c***  allocate memory to all arrays in comci ***
 c      call storage_derivatives(0)

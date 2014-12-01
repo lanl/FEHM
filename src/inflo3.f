@@ -168,12 +168,18 @@ c set air  pressure, set water saturation
                esk(i) = esktmp(i)
                wellim(i) = aiped(i)
                ka(i) = -12
-            else if (katmp(i).eq.-13) then 
+            else if (katmp(i).eq.-13.or.katmp(i).eq.-14.or.
+     &               katmp(i).eq.-15.or.katmp(i).eq.-17) then 
 c set air  pressure, set water saturation
                pflow(i) = sktmp(i) 
                esk(i) = esktmp(i)
                wellim(i) = aiped(i)
-               ka(i) = -13                                            
+               ka(i) = katmp(i)   
+             else if (katmp(i).eq.-16) then 
+c set air  flow, set water flow
+               sk(i) = sktmp(i) 
+               esk(i) = esktmp(i)
+               ka(i) = -16                                        
             else if (katmp(i).eq.-8) then
 c set ponding condition
                pflow(i) = sktmp(i)

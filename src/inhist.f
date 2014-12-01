@@ -84,6 +84,7 @@
       ishishd = 0
       ishiss = 0
       ishisf = 0
+      ishisfa = 0
       ishise = 0
       ishisef = 0
       ishisd = 0
@@ -495,6 +496,25 @@
                if (iout .ne. 0) write(iout, 6010)
                if (iptty .ne. 0) write(iptty, 6010)
             end if 
+         case ('fla', 'FLA')
+! Output flow in kg/s
+! Not available for water and water vapor (ico2=0)
+          if(ico2.ne.0) then
+            fname =  root(1:iroot) // '_floa' // hissfx
+            ishisfa = ishis + 137
+            open (unit=ishisfa, file=fname, form='formatted')
+            select case (form_flag)
+            case (0)
+               write(ishisfa, 6000) verno, jdate, jtime, trim(wdd)
+            case (1)
+               write(ishisfa, 6005) verno, jdate, jtime
+            end select
+          else
+           if(iout.ne.0) write (iout,*) 
+     &      '>>>> not output for gas src/sink <<<<'
+           if(iptty.ne.0) write (iptty,*) 
+     &      '>>>> not output for gas src/sink <<<<'         
+          endif 
          case ('kgs ', 'KGS ', 'flo', 'FLO')
 ! Output flow in kg/s
             fname =  root(1:iroot) // '_flow' // hissfx

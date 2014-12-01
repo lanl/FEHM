@@ -347,13 +347,17 @@ c 23-Feb-12 Default value for thermal conductivity models
       neigh  = 0
       if(irun.eq.1) nemx   = 0
       nflx   = 0
-      nflxz   = 0
+c gaz 013014 nflxz = 0 moved to scanin (where it can change)
+c      nflxz   = 0
       if(irun.eq.1) ni     = 0
       nhist  = 1
       nicg   = 1
       nsave  = 0
       nstep  = 0
       ntty   = 0
+c zero iden_vis and ideng_vis
+      iden_vis = 0
+      ideng_vis = 0
       bin_flag = 0
       app_flag = 0
       flux_flag = 'no fluxes  '
@@ -654,7 +658,8 @@ c gaz 040606 to hopefully correct usage
          temp_model = ' '
          temp_model_kin = ' '
          tcoeff = 0
-	   ps_delta_rxn = 0
+	   ps_delta_rxn = 0.0d0
+         mw_mineral = 0.0d0
 
       endif
          

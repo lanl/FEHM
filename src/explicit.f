@@ -100,6 +100,8 @@ c
          tolerance=1.d-10
       endif
       neqp1=neq+1
+c
+c only implemented for 2 dof problems
 c       bp1max=0.0
 c       bp2max=0.0
 c

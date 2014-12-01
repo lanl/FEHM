@@ -10,6 +10,9 @@ WaterProps.o: comai.o comdi.o
 accum_derivative.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 accum_derivative.o: comgi.o comii.o comrxni.o comsplitts.o davidi.o
 accum_term.o: comai.o comci.o comdi.o comdti.o comii.o davidi.o
+active_nodes_ctr.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o
+active_nodes_ctr.o: comfi.o comflow.o comgi.o comii.o comji.o comki.o comxi.o
+active_nodes_ctr.o: davidi.o
 add_gdpm.o: comai.o combi.o comdi.o comdti.o
 air_combine.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 air_combine.o: comhi.o comii.o commeth.o davidi.o
@@ -123,6 +126,7 @@ datchk.o: davidi.o
 dated.o: comai.o
 daycrl.o: comai.o combi.o comci.o comdi.o comdti.o comgi.o compart.o
 daycrl.o: comsplitts.o davidi.o
+den_vis_spatial.o: comai.o combi.o comci.o comdi.o comdti.o comii.o comki.o
 diagnostics.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comgi.o
 diagnostics.o: davidi.o
 directional_search.o: comai.o comsk.o comsptr.o

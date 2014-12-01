@@ -323,8 +323,9 @@ c
       real*8  dclosp, delpsb, permsb, dsigt, sy, alength, tmpPor
       real*8  den_w0, comp_w0,hmid,hmin,hmax,por_ll, pwv
       real*8  pnx_new, dum1
+      real*8  days_last
       parameter(den_w0=997.808d00,comp_w0=5.687D-4,por_ll=1.d-8)
-      save yama1, yama2
+      save yama1, yama2, days_last
 
 c
       if ( iporos .ne. 0 )  then
@@ -575,9 +576,16 @@ c               this option was added by ZL for temperature-dependent porosity
 
             else if ( iporos .eq. 6 ) then
                 if( nspeci .le. 0 ) then
-                   write(*,*) ""
-                   write(*,*) "Chemistry required for ppor model 6"
-                   write(*,*) ""
+                if(iout.ne.0) then
+                   write(iout,*) ""
+                   write(iout,*) "Chemistry required for ppor model 6"
+                   write(iout,*) ""
+                endif
+                if(iptty.ne.0) then
+                   write(iptty,*) ""
+                   write(iptty,*) "Chemistry required for ppor model 6"
+                   write(iptty,*) ""
+                endif
                stop
             endif
 c           DRH: updates based on ps_delta_rxn for salt
@@ -602,9 +610,16 @@ c      pp. 199-228.
 c      k = 4.866e-9*ps^4.637
 c      valid up to porosity = 0.3
             if( nspeci .le. 0 ) then
-                   write(*,*) ""
-                   write(*,*) "Chemistry required for ppor model 7"
-                   write(*,*) ""
+                if(iout.ne.0) then
+                   write(iout,*) ""
+                   write(iout,*) "Chemistry required for ppor model 7"
+                   write(iout,*) ""
+                endif
+                if(iptty.ne.0) then
+                   write(iptty,*) ""
+                   write(iptty,*) "Chemistry required for ppor model 7"
+                   write(iptty,*) ""
+                endif
                stop
             endif
 c           DRH: updates based on ps_delta_rxn for salt
@@ -883,18 +898,31 @@ c      Initialization below for (iz .eq. 3)
 c      PHS 8/5/13  Adding check if negative porosity = 0.0
 c                  Also removed zeroing out of ps_delta_rxn, done in csolve now.
 c
-c gaz 090113 added por_salt_min and averaging            
+c       PHS 1/20/14  adding check for cut time step days_last. subtract off previous 
+c gaz 090113 added por_salt_min and averaging  
+               psdelta = 0.0
+               psvol = 0.0
                do   jji=1,n
                 if( porTemp1(jji) .gt. 0. ) then
-
-c                   ps_trac(jji) = ps_trac(jji) + ps_delta_rxn(jji) 
-                    ps(jji) =  ps(jji) + ps_delta_rxn(jji)
-                    if(ps(jji).LT.por_salt_min) ps(jji) = por_salt_min
-                    pso = ps(jji)
+                
+                    if(days.LT.days_last) then
+                        ps_delta_rxn(jji) =
+     &                      ps_delta_rxn(jji) - ps_delta_rxn_s(jji)
+                    end if  
+c                    
+                 pso = ps(jji)
+c                 
+                 ps(jji) =  ps(jji) + ps_delta_rxn(jji)
+                 if(ps(jji).LT.por_salt_min) ps(jji) = por_salt_min
+c                 Calculate total change in porosity and volume of
+c                 ppor 7 model nodes
 c
+                  pso = ps(jji)
+c                  
+                  psdelta = psdelta + (ps(jji) - psini(jji))*volume(jji)
+                  psvol = psvol + volume(jji)
 c                calculate permeabilitiy for new porosity
 c
-                    dum1 = pnx(jji)
                     if(pso>=porTemp3(jji).and.pso<=porTemp4(jji)) then
                      pnx_new = porTemp1(jji)
      1                   *ps(jji)**porTemp2(jji)*1.e6
@@ -907,15 +935,14 @@ c                    Set to lower limit
                      pnx_new = porTemp1(jji)
      1                   *porTemp3(jji)**porTemp2(jji)*1.e6
                     endif
-c                    pnx(jji) = (pnx_new + dum1)*0.5
-c                    pny(jji) = pnx(jji)
-c                    pnz(jji) = pnx(jji)
+c
                      pnx(jji) = pnx_new
                      pny(jji) = pnx(jji)
-                    pnz(jji) = pnx(jji)            
+                     pnz(jji) = pnx(jji)            
                 endif
                end   do
  666    format(4G12.6)
+               days_last = days
            endif
 c
 c
@@ -953,12 +980,52 @@ c
 
 c   - - - - PHS 7/17/13 added output to screen and out file for model 7 SALT
                else if  ( iporos .eq. 7 ) then
-c
-c gaz 090113 moved salt output to saltctr
-c
-                call saltctr(7,0,0.0d00)
 
-               else if ( iporos .ne. -4.AND.iporos .ne.7 )  then
+                  if (iout .ne. 0) write(iout,6015)
+                  if (iatty .ne. 0) write(iatty,6015)
+
+                  if (iout .ne. 0) write(iout,6016)
+                  if (iatty .ne. 0) write(iatty,6016)
+
+                  do   i=1,m
+
+                     md     =  nskw(i)
+                     permsb =  pnx(md)*1.0e-6
+                     pwv    =  phi(md) - pci(md)
+
+                     if (iout .ne. 0)     
+     &                  write(iout,6017) md,permsb,ps(md),thx(md)*1e6,
+     &                     pwv,dvas(md),ps_delta_rxn_s(md)
+
+                     if (iatty .ne. 0)
+     &                  write(iatty,6017) md,permsb,ps(md),thx(md)*1e6,
+     &                     pwv,dvas(md),ps_delta_rxn_s(md)
+
+                  end  do
+                 write(iout,*) 'Total change in volume: ', psdelta,
+     &                 ' m'
+                 write(iout,*) 'Percent change in total volume: ',
+     &                 psdelta/psvol*100, ' %'
+                 write(iout,*) 'Total Volume involved in ppor  ',
+     &               psvol
+                 write(iatty,*) 'Total change in volume: ', psdelta,
+     &                 ' m'
+                 write(iatty,*) 'Percent change in total volume: ',
+     &                 psdelta/psvol*100, ' %'
+                 write(iatty,*) 'Total Volume involved in ppor  ',
+     &               psvol
+
+
+
+ 6015        format(' - - - - - - - - - - - - - - - - - - - - - - - - ',
+     &       '- - - - - - - - - - - - - - - - -')
+ 6016             format(1x,'  Node', 5x, 'perm (m2)', 6x,
+     &                 'porosity', 7x, 'Kx W/(m K)', 5x,'Pwv (MPa)',
+     &                6x, 'D*wv (m2/s)',2x,' ps_delta_rxn')
+ 6017             format(1x,i7,6(3x,g12.5))
+
+
+              else if ( iporos .ne. -4.AND.iporos .ne.7 )  then
 c
 ****   GZ gangi model   ****
 c
@@ -1202,7 +1269,7 @@ c              If model 7, initialize perms
                 pnz(jji) = pnx(jji)
                else if(pso > porTemp4(jji)) then
 c                    Set to upper limit
-c  gaz debug 082713
+c  gaz debug 082713 (line longer than 72-OK sometimes?)
 c
                 pnx(jji) = 
      &          porTemp1(jji)*porTemp4(jji)**porTemp2(jji)*1.e6

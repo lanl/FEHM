@@ -1322,7 +1322,7 @@ c mixture of water and air,co2
       real*8 dvisvt
       real*8 dvvpc
       real*8 pcl0
-      real*8 roc0
+c      real*8 roc0
       real*8 drocpc
       real*8 roc
       real*8 rocmol
@@ -1735,7 +1735,7 @@ c
         if(isalt.ne.0) then
 c DRH 12/03/12
 c gaz 070813 call added saltctr
-            call saltctr(1,mi,dpsatt)
+            call saltctr(1,mi,dpsatt,dpsats)
             pcl = pci(mi)
             pv=pl-pcl
             dpct=-dpsatt

@@ -356,6 +356,9 @@
 !D4                                     node
 !D4   phini           REAL*8   fdd2   Initial pressure at each node 
 !D4   psini           REAL*8   fdd2   Initial porosity at each node 
+!D4   psdelta         REAL*8   fdd2   Total change in porosity
+!D4   psvol           REAL*8   fdd2   Volume of nodes with ppor model
+!D4                                     that allows porosity change
 !D4   tini            REAL*8   fdd2   Initial temperature at each node 
 !D4
 !D4   porTemp1--4     REAL*8   fdd2   Parameters used to define the temperature
@@ -476,6 +479,9 @@ c KCL 5-2-11, for DeltaPoros subroutine
       real*8, allocatable ::  pnzi(:)
 c gaz 090113
       real*8, allocatable ::  pnx_old(:)
+      real*8, allocatable ::  pnx_save(:)
+      real*8, allocatable ::  pny_save(:)
+      real*8, allocatable ::  pnz_save(:)
       real*8, allocatable ::  anxy(:) 
       real*8, allocatable ::  anxz(:) 
       real*8, allocatable ::  anyz(:) 
@@ -635,9 +641,11 @@ c gaz 090113
 !     ****   TENMA   ****
       real*8, allocatable ::  phini(:) 
       real*8, allocatable ::  psini(:) 
+      real*8 psdelta, psvol 
       real*8, allocatable ::  tini(:) 
 c gaz 090113 array for last TS porosity
       real*8, allocatable ::  ps_old(:)
+      real*8, allocatable ::  ps_save(:)
  
 !     ***** pointers in COMMON Block fice *****
       real*8, allocatable ::  sii(:) 

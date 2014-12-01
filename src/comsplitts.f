@@ -112,11 +112,12 @@
 !PS
 !**********************************************************************
 
-      integer isplitts 
+      integer isplitts, ivf_sv, ipr_tets
       real*8 dtot_split, dtot_next, explicit_factor
+      logical sv_hex_tet 
 
 !     ***** Variables in COMMON Block splitts_pointers *****
       real*8, allocatable :: bp_last(:)
 
-      end module comsplitts
+      end module comsplitts 
 

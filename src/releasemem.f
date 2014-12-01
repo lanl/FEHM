@@ -379,6 +379,8 @@ c bhl_12/8/05
       if(allocated(denh)) deallocate(denh)
       if(allocated(denj)) deallocate(denj)
       if(allocated(thx)) deallocate(thx)
+c gaz debug 112114      
+c      if(allocated(dvas)) deallocate(dvas)
       if(allocated(thy)) deallocate(thy)
       if(allocated(thz)) deallocate(thz)
       if(allocated(qflux)) deallocate(qflux)

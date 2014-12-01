@@ -294,9 +294,6 @@
       real*8, pointer ::   dtpa(:) 
       real*8, pointer ::   dtpae(:) 
       real*8, pointer ::   dva(:) 
-c spc 9-10-2013
-      real*8, pointer ::   dvas(:) 
-c spc 9-10-2013
       real*8, pointer ::   enlf(:) 
       real*8, pointer ::   enva(:)
       real*8, pointer ::   envf(:)
@@ -315,6 +312,7 @@ c spc 9-10-2013
       real*8, pointer :: drvpf(:)
 
 ! Not using shared space
+      real*8, pointer ::   dvas(:)
       real*8, allocatable ::   denci(:)
       real*8, allocatable ::   rolf(:) 
       real*8, allocatable ::   rovf(:) 
@@ -327,5 +325,10 @@ c spc 9-10-2013
 ! allocatable storage for saved LU factors
       real*8, allocatable :: bsave(:)
       real*8, allocatable :: pivsave(:)
+      real*8,  allocatable ::   den_spatial(:)
+      real*8,  allocatable ::   vis_spatial(:)
+      real*8,  allocatable ::   comp_spatial(:)
+      real*8,  allocatable ::   deng_spatial(:)
+      real*8,  allocatable ::   visg_spatial(:)
 
       end module comci

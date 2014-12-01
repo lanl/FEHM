@@ -133,6 +133,10 @@ c     zero out arrays
       do id=1,neq
          call geneq3(id)
       enddo
+c
+c simplify a matrix if activated
+c
+      call active_nodes_ctr(5)
 
 c     call md_modes to complete equations for multiply defined nodes
 c     
@@ -178,6 +182,13 @@ c     if ((tmch*0.01).gt.tollr) tollr=tmch*0.01
          allocate(dum(neq*1*4))
          if (igauss .gt. 1) then
             call solve_new(neq,a,b,bp,nmat,nb,nrhs,nelm,nop,north
+     *           ,tollr,irb,iirb,npvt,gmres,dum,piv
+     *           ,h,c,ss,g,y,iter,iback,1,iptty,maxor,accm)
+           else if (igauss .eq. -1) then
+c in the active nodes call the equations are renumbered and the 
+c jacobean matrix simplified (call active_nodes_ctr(5)) the connectivity
+c for a and its incomplete factorization is in nop
+            call solve_new(neq,a,b,bp,nb,nb,nrhs,nop,nop,north
      *           ,tollr,irb,iirb,npvt,gmres,dum,piv
      *           ,h,c,ss,g,y,iter,iback,1,iptty,maxor,accm)
            else

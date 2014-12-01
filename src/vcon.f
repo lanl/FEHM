@@ -249,6 +249,7 @@ C**********************************************************************
       
       integer iz,ndummy,i,ivcnd,mid,mi,it,itp
       real*8 vc1,vc2,vc3,vc4, vc5, vc6, vc7, vc8, vc12,sqrsat, tmpPor
+      real*8 tmpS, tmpT, thm_sat, thm_dry, thm_solid
       logical null1
 
 
@@ -264,12 +265,17 @@ c read in data
                backspace inpt
 
                i=i+1
-               if(ivcnd .le.  3) then
+               if(ivcnd .eq.  1) then
+                  read(inpt,*) ivcon(i),vc1f(i)
+               elseif(ivcnd .eq. 2 .or. ivcnd .eq.  3) then
                   read(inpt,*) ivcon(i),vc1f(i),vc2f(i),vc3f(i)
                else if(ivcnd .eq. 4) then
 c                 for crushed salt
                   read(inpt,*) ivcon(i),vc1f(i),vc2f(i),vc3f(i),
      &                         vc4f(i),vc5f(i),vc6f(i), vc7f(i),vc8f(i)
+               else if(ivcnd .eq. 5) then
+c                 for unsaturated case
+                  read(inpt,*) ivcon(i),vc1f(i),vc2f(i),vc3f(i) 
                endif
             else
                if(i.eq.0) ivcond=0
@@ -281,7 +287,7 @@ c     read in nodal capillary type
 
             narrays = 1
             itype(1) = 4
-            default(1) = 1
+            default(1) = 0
             macro = "vcon"
             igroup = 2
             
@@ -297,8 +303,16 @@ c     load nodal thermal conductivities
             do mid=1,neq
                mi=mid+ndummy
                it=ivcn(mi)
-               itp=ivcon(it)
-               if(itp.eq.1) then
+
+               if(it.ne.0) then
+               	itp=ivcon(it)
+               	if(itp.eq.1) then
+c     constant thermal conductivity (similar to cond macro)
+                thx(mi) = vc1f(it)*1e-6
+                thy(mi) = thx(mi)
+                thz(mi) = thx(mi)
+
+               	elseif(itp.eq.2) then
 
 c     linear variation with temperature
 c     vc1f=reference temperature,vc2f=reference conductivity
@@ -310,7 +324,7 @@ c     NOTE:no derivatives,used explicity
                   thx(mi)=(vc3*(t(mi)-vc1) +vc2)*1.e-6
                   thy(mi)=thx(mi)
                   thz(mi)=thx(mi)
-               else if(itp.eq.2) then
+               	else if(itp.eq.2) then
 
 c     square root variation with saturation
 c     vc1f=conductivity at stauration=1
@@ -324,7 +338,7 @@ c     NOTE:no derivatives,used explicity
                   thy(mi)=thx(mi)
                   thz(mi)=thx(mi)
 
-               else if(itp.eq.3) then
+               	else if(itp.eq.3) then
 
 c     Thermal conductivity for intact salt (Munson et al, 1990)
 c     lambda_salt (T) = lambda_300*(300 K/T)^gamma
@@ -341,7 +355,7 @@ c     NOTE:no derivatives,used explicity
                   thy(mi)=thx(mi)
                   thz(mi)=thx(mi)
 
-               else if(itp.eq.4) then
+               	else if(itp.eq.4) then
 
 c     Thermal conductivity for crushed salt (Bechthold et al, 2004)
 c     lambda_salt (T) = lambda_300*(300 K/T)^gamma
@@ -360,19 +374,50 @@ c     NOTE:no derivatives,used explicity
                   vc6=vc6f(it) 
                   vc7=vc7f(it) 
                   tmpPor=ps(mi)
+c				  DRH 1/3/2013: Relationship is only valid up to 0.4
+c				  conductivity held constant at porosities above 0.4
+                  if(tmpPor.gt.0.4) tmpPor = 0.4
                   tmpPor = vc2*(vc3*tmpPor**4 +vc4*tmpPor**3 
      &                 +vc5*tmpPor**2+vc6*tmpPor + vc7)
                   vc8=vc8f(it)
-                  thx(mi)=tmpPor*(vc1/(t(mi)+273.15))**vc8*1.e-6
+                  thx(mi)=(1e-6*tmpPor)*(vc1/(t(mi)+273.15))**vc8
                   if(thx(mi) < 0.0) thx(mi) =1.0e-12
                   thy(mi)=thx(mi)
                   thz(mi)=thx(mi)
 
+               	else if(itp.eq.5) then
+
+c     Thermal conductivity for unsaturated rock salt (Bechthold et al, 2004)
+c     Input parameters for this option are:
+c           thermal condcutivity of gas (or air), vc1f
+c           thermal condcutivity of liquid (or water), vc2f
+c           thermal condcutivity of solid (or grain), vc3f
+c           T is temperature in Kelvin
+c     NOTE:no derivatives,used explicity
+                  vc1=vc1f(it) 
+                  vc2=vc2f(it) 
+                  vc3=vc3f(it) 
+                  tmpPor=ps(mi)
+                  tmpS=s(mi)
+                  tmpT=t(mi) + 273.15      ! tempT in K
+
+                  thm_solid = vc3 -1.83e-2*tmpT + 2.86E-5*tmpT**2 
+     &                        - 1.51e-8*tmpT**3
+                  thm_dry = thm_solid**(1.0-tmpPor) * vc1**tmpPor
+                  thm_sat = thm_solid**(1.0-tmpPor) * vc2**tmpPor
+                  thx(mi) =  thm_dry**(1.-tmpS) * thm_sat**tmpS * 1.e-6
+
+                  if(thx(mi) < 0.0) thx(mi) =1.0e-12
+                  thy(mi)=thx(mi)
+                  thz(mi)=thx(mi)
+
+               	endif
                endif
             enddo
 
          end if
       end if
+     
 
       return
       end

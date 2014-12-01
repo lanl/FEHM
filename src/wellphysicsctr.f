@@ -130,7 +130,8 @@ c
 c     return if no (non-darcy) well physics  
 c   
       pcl0 = 0.101325 
-      roc0 = 1.292864
+c gaz debug roc0 now in comai
+c      roc0 = 1.292864
       if(nwellphy.eq.0) return
       agrav = abs(grav)
       if(iflg.eq.0) then
@@ -474,7 +475,7 @@ c
 c     misc. constants  (like at the top of thrair.f)
 c     
                tref = crl(6,1)
-               tempc=273.0/(tref+273.0)
+               tempc=(273.0)/(tref+273.0)
                drocp0=roc0*tempc/pcl0
                xvisl0=crl(2,1)
                xvisl = xvisl0          

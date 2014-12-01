@@ -1,4 +1,4 @@
-      subroutine saltctr(iflg,ndummy,dum_salt)
+      subroutine saltctr(iflg,ndummy,dum_salt,dum_salt1)
 !***********************************************************************
 ! Copyright 2011 Los Alamos National Security, LLC  All rights reserved
 ! Unless otherwise indicated,  this information has been authored by an
@@ -76,17 +76,20 @@
       real*8 dtps,dum1,dum2,dum3,dum4,dum5,dum6,dum7,dum8
       real*8 pwv, permsb
       real*8 strd_co2,strd1
-      real*8 eostol,ps_tol
+      real*8 eostol
       real*8 eosmg
       real*8 eosml
       real*8 deltc, delpc, tem(9)
-      real*8 dum_salt
+      real*8 dum_salt,dum_salt1
+      real*8 psatl0,delp,ddelt,ddels
       character*80 input_msg, dummy_line
       character*32 cmsg(4), cdum
       character*5 cden_type
-      parameter(deltc=31.1d0,delpc=3.78d0, ps_tol = 1.d-03)
-      
-      real*8 amaxflx, dums1,tolw, zero_e
+      parameter(deltc=31.1d0,delpc=3.78d0)
+      real*8 ps_min, ps_max, s_min_salt 
+      parameter(ps_min = 1.d-05 ,ps_max = 0.9999, s_min_salt = 1.e-4)
+      real*8 amaxflx, dums1, tolw, zero_e, days_tol
+      parameter(days_tol = 1.d-12)
 
       real*8 pcrit, tcrit,dumb
       real*8 psatd, tl1,tl2,dtps1,dtps2,dpsatt
@@ -111,18 +114,18 @@ c
       parameter(tolw=1.d-90, zero_e=1.e-10)
       parameter(mwc=44.d0,mww=18.d0)
       parameter(imped_ex_0 = 3)
-      parameter(por_salt_min_0=1.0d-8)
+      parameter(por_salt_min_0 = 0.0d00)
       integer  open_file, myfile_salt
       
       logical it_is_open
    
       save myfile_salt
 c gaz debug 090113
-      i = l
+
       if(isalt.eq.0) return  
 
        if(nr_stop.eq.0) then
-        strd_salt=0.7d0
+        strd_salt=0.95d0
        else
         strd_salt = strd_iter
        endif
@@ -143,6 +146,8 @@ c
             ps_old = 0.0d00
             pnx_old = 0.0d00
             por_salt_min = por_salt_min_0
+            isalt_read = 0
+            isalt_write = 0
 
             macro = 'salt'
 c     
@@ -168,12 +173,18 @@ c
       if(.not.allocated(vc1f)) then
        totvnum = 20
        allocate(vc1f(totvnum),vc2f(totvnum),vc3f(totvnum),vc4f(totvnum),
-     &    vc5f(totvnum),vc6f(totvnum),vc7f(totvnum),vc8f(totvnum))   
+     &    vc5f(totvnum),vc6f(totvnum),vc7f(totvnum),vc8f(totvnum)) 
       else
        totvnum = 20
        deallocate(vc1f,vc2f,vc3f,vc4f,vc5f,vc6f,vc7f,vc8f)  
        allocate(vc1f(totvnum),vc2f(totvnum),vc3f(totvnum),vc4f(totvnum),
      &    vc5f(totvnum),vc6f(totvnum),vc7f(totvnum),vc8f(totvnum))  
+      endif
+      if(.not.allocated(ivcon)) then
+        allocate(ivcon(totvnum))
+      else
+        deallocate(ivcon)
+        allocate(ivcon(totvnum))
       endif
              ivcond = 1 
              call vcon (0, 0)
@@ -211,7 +222,7 @@ c write out warning for non-salt tort
               write(ierr,9022) tort
               if(iout.ne.0) write(iout,9022) tort
               if(iptty.ne.0) write(iptty,9022) tort
-9022    format('warning: adif model ',f7.2,' used in salt simulation')
+9022    format('warning: adif value ',f7.2,' used in salt simulation')
              endif   
             elseif (macro1.eq.'saltvapr') then
 c manage vapor pressure lowering with salt 
@@ -239,6 +250,7 @@ c                and capillary pressure vapor pressure lowering
      &         ivaprsalt.eq.7) ivapl = 1 
               if(ivaprsalt.eq.2.or.ivaprsalt.eq.3.or.
      &          ivaprsalt.eq.6.or.ivaprsalt.eq.7) then
+                ivapl = 1
 c check for errors (need tracer for salt)
                if(iccen.eq.0) then
                 write(ierr,902) 
@@ -293,6 +305,21 @@ c new form cden FEHM ver 3.2
  1005    format ('No solute transport, cden macro ignored')
  1006    format ('ispcden > nspeci, cden macro ignored')
 
+
+            else if(macro1.eq.'saltfile') then
+c
+c manage restart for salt 
+c
+201         read(inpt,'(a80)') wdd1(1:80)
+            if(wdd1(1:20).eq.'                    ') go to 100
+            if(wdd1(1:1+4).eq.'read') then
+             salt_read_file = wdd1(6:75)
+             isalt_read = 1
+            else if(wdd1(1:1+5).eq.'write') then
+             salt_write_file = wdd1(7:76)
+             isalt_write = 1
+            endif
+            go to 201
 
             else if(macro1.eq.'saltnum ') then
 c
@@ -368,7 +395,8 @@ c
       mi = ndummy
       tl = t(mi)
       pl = phi(mi)
-      if(ieos(mi).eq.2) then
+c gaz debug 091514 adjusted sparrow so that pvapor is calculated for phase states 
+      if(ieos(mi).ne.-10) then
          if(ivaprsalt .le. 3) then
     
 
@@ -442,8 +470,8 @@ c gaz debug 080613 note removed derivative above 300 C (function is constant)
             endif
 
 c           Calculate vapor pressure using eq. 6 from Sparrow 2003, see ref above
-              pv = af + bf*tltemp + cf*tltemp**2. + df*tltemp**3. +
-     &                      ef*tltemp**4.
+              pv = af + bf*tltemp + cf*tltemp**2 + df*tltemp**3 +
+     &                      ef*tltemp**4
 
 c           write(iout,*) 'temp pvap an(mi) xf',tltemp, pv,an(mi), xf
 c           write(iout,*) 'af bf cf df ef', af,bf,cf,df,ef
@@ -454,10 +482,30 @@ c           Calculate gas pressure
 
              dpsatt = bf + 2.0*cf*tltemp +  3.0*df*tltemp**2 +
      &                4.0*ef*tltemp**3
-
-			     pcl = pl - pv
-             pci(mi) = pcl
-             dum_salt = dpsatt
+c
+c gaz debug 082714 (get derivative like phil)
+c gaz debug 090514 (get derivative like phil-now back to gaz formulation)
+c in FEHM_SRC_SALT_2C.exe
+c             dumf = psatl(tl,pcp(mi),dpcef(mi),dpsatt,dpsats,0)
+c			     pcl = pl - pv
+c             pci(mi) = pcl
+c             dum_salt = dpsatt
+c             dum_salt1 = dpsats
+c
+c gaz 090914 modified for sparrow
+c get vapor pressure lowering
+c
+            if(ivapl.gt.0) then
+               psatl0=pv
+               call vaporl(tl,pcp(mi),dpcef(mi),ivapl,delp,ddelt,ddels)
+               pv=psatl0*delp
+               dpsatt=dpsatt*delp+psatl0*ddelt
+               dpsats=psatl0*ddels
+            endif
+            pcl = pl - pv
+            pci(mi) = pcl
+            dum_salt = dpsatt
+            dum_salt1 = dpsats
 
 c DRH 12/03/12 end.
          else if(ivaprsalt .ge. 4) then
@@ -478,17 +526,6 @@ c   mineral reaction porosity change (called from csolve)
 c
 c calculate porosity change due to mineral reactions
          ps_delta_rxn = 0.
-c DRH and PHS 12/4/12  So Close.  Just needed (1-porosity) 
-c PHS and DHR 7/31/13  Changed to expression:
-c      delta por = delta(mol/kg rock)*rock density(kg rock/m3 rock)*
-c           *(1-porosity) (m3 rock/m3 tot)
-c             *molecular weight(kg salt/mol)/ salt grain density (kg salt/m3 salt)
-c      = delat m3 salt /m3 total.
-c
-c PHS 8/1/13  Also added call to porosi and reset an to anlo to maintain
-c             constant mol/kg of salt.
-c PHS 8/2/13  Added a throttle to stop the porosity loss below 1e-3 when porosity   
-c             is decreasing (ps_delta_rxn -VE)
 
          do im = 1, nimm
             nsp = pimm(im)
@@ -497,32 +534,48 @@ c             is decreasing (ps_delta_rxn -VE)
             if(mw_mineral(im).ne.0)then
                do i = 1, n0
                   ja = i + npn
-                  ps_delta_rxn(i) = -((an(ja)-anlo(ja))*denr(i)* 
-     &                 (1-ps(i))*mw_mineral(im)/rho_mineral(im))
-
-                  if(ps_delta_rxn(i).GT.0) then
-                    an(ja) = anlo(ja)
-                  else  
-                    if(ps(i).GT.ps_tol) an(ja) = anlo(ja)
-                    if(ps(i).LE.ps_tol) ps_delta_rxn(i) = 0.0
-                 end if       
-
+                 ps_delta_rxn(i) = (rc(ja)*dtotc*mw_mineral(im)
+     &                                 /rho_mineral(im))/sx1(i)
+                  an(ja) = anlo(ja)
+                  
+                 if(ps(i).LE.ps_min) ps_delta_rxn(i) = 0.0
+                 if(ps(i).GT.ps_max) ps_delta_rxn(i) = 0.0
+                 if(s(i).LT.s_min_salt) ps_delta_rxn(i) = 0.0
                enddo
             endif
+c gaz debug 091214 moved porosi call into loop - might be it!
+c
 
+            call porosi(1)
+c
             ps_delta_rxn_s = ps_delta_rxn
-         enddo
+         enddo         
+
+       continue
+         else if(iflg.eq.5) then
+c
+c save porosity and permeability after flow simulation timestep  (before transport,for restart)
+c
+          if(.not.allocated(ps_save)) allocate(ps_save(n))
+          if(.not.allocated(pnx_save)) allocate(pnx_save(n))
+          if(.not.allocated(pny_save)) allocate(pny_save(n))
+          if(.not.allocated(pnz_save)) allocate(pnz_save(n))
+          ps_save(1:n) = ps(1:n)
+          pnx_save(1:n) = pnx(1:n)
+          pny_save(1:n) = pny(1:n)
+          pnz_save(1:n) = pnz(1:n)
+         else if(iflg.eq.3) then
 c
 c save porosity after flow simulation timestep
 c
-         ps_old(1:n0) = ps(1:n0)
-         pnx_old(1:n0) = pnx(1:n0)
-	
-            call porosi(1)
+         ps_old(1:n) = ps(1:n)
+         pnx_old(1:n) = pnx(1:n)
 c
+         else if(iflg.eq.4) then
 c average porosity and permeability
 c new porosity is available after tracer run
 c should be called after tracer run is completed
+c if not enabled, default is newest variable is used
 c
        if(isalt_pnx.ne.0) then          
           do i = 1, neq
@@ -545,18 +598,6 @@ c
            ps(i)  = ps_old(i)*(1.0d0-poravg_salt) + ps_new*poravg_salt
           enddo
        endif
-       continue
-         else if(iflg.eq.3) then
-c
-c save porosity after flow simulation timestep
-c
-c
-         else if(iflg.eq.4) then
-c
-c average porosity and permeability
-c new porosity is available after tracer run
-c should be called after tracer run is completed
-c
 
          else if(iflg.eq.-10) then   
 c          
@@ -664,10 +705,6 @@ c
         write(*,*) 'stopping in saltctr'
         stop
 c
-
-         else if(iflg.eq.5) then
-
-         elseif(iflg.eq.6) then
                
          elseif(iflg.eq.7) then  
 c
@@ -703,6 +740,7 @@ c
                            end if
                         permsb =  pnx(md)*1.0e-6
                         pwv    =  phi(md) - pci(md)
+                     
 
                       if (iout .ne. 0)     
      &                  write(iout,6017) md,permsb,ps(md),thx(md)*1.e6,
@@ -712,6 +750,14 @@ c
      &                  write(iatty,6017) md,permsb,ps(md),thx(md)*1.e6,
      &                     pwv,dvas(md),ps_delta_rxn_s(md)
                      enddo
+                     write(iout,*) 'Total change in volume: ', psdelta,
+     &                     ' m'
+                     write(iout,*) 'Percent change in total volume: ', 
+     &                     psdelta/psvol*100, ' %'
+                     write(iatty,*) 'Total change in volume: ', psdelta,
+     &                     ' m'
+                     write(iatty,*) 'Percent change in total volume: ', 
+     &                     psdelta/psvol*100, ' %'
                   enddo
 
  600           format(2x,'Matrix Level = ',i1)
@@ -777,13 +823,77 @@ c     reset variables
            ps_old(1:n0) = ps(1:n0)     
             
          elseif(iflg.eq.-20) then
-
+c    open files for salt reading and writing
+          if(isalt_read.ne.0) then
+           isalt_read = open_file(salt_read_file, 'unknown')
+           open(unit=isalt_read,file=salt_read_file, status='unknown')
+          endif
+          if(isalt_write.ne.0) then
+           isalt_write = open_file(salt_write_file,'unknown')
+           open(unit=isalt_write,file=salt_write_file, status='unknown')
+          endif
          elseif(iflg.eq.20) then
-
-         elseif(iflg.eq.22) then
-
-
+c    read restart files for salt
+c
+c check for compatibility with diskread 
+c
+          if(isalt_read.ne.0.and.iread.eq.0) then
+           if(iout.ne.0) write(iout,*) 'warning: reading from saltctr:'
+     &         ,' porsity and perm file with no primary restart file'
+           if(iptty.ne.0) write(iptty,*)'warning: reading from saltctr:'
+     &         ,' porsity and perm file with no primary restart file'
+          else if(isalt_read.eq.0.and.iread.ne.0) then
+           if(iout.ne.0) write(iout,*)
+     &         'warning: reading from primary restart file for salt' 
+     &        ,' problem but not reading porsity and perm file for salt'
+           if(iptty.ne.0) write(iptty,*)
+     &         'warning: reading from primary restart file for salt' 
+     &        ,' problem but not reading porsity and perm file for salt'
+          endif
+          if(isalt_read.ne.0) then
+           read(isalt_read,*)
+           read(isalt_read,'(a4,f20.6)') cdum(1:4), dummyreal
+           if(abs(dummyreal-days).gt.days_tol) then
+            if(iout.ne.0) 
+     &      write(iout,*) 'warning: days read in salctr does '
+     &               ,'not match days read for diskread'
+     &               ,'using days read from diskread'
+            if(iptty.ne.0) 
+     &      write(iptty,*) 'warning: days read in salctr does '
+     &               ,'not match days read for diskread'
+     &               ,'using days read from diskread'
+           endif
+           read(isalt_read,*)
+           read(isalt_read,650) psini
+           read(isalt_read,*)
+           read(isalt_read,650) ps
+           read(isalt_read,*)
+           do i = 1,n
+            read(isalt_read,*) pnx(i),pny(i),pnz(i)
+            pnx(i) = pnx(i)*1.d06
+            pny(i) = pny(i)*1.d06
+            pnz(i) = pnz(i)*1.d06
+           enddo
+          endif
          elseif(iflg.eq.21) then
+c    write restart files for salt
+          if(isalt_write.ne.0) then
+           write(isalt_write,649) 
+           write(isalt_write,'(a4,1x,1p,g14.7)')'days', days
+           write(isalt_write,'(a5)') 'psini'
+           write(isalt_write,650) psini
+           write(isalt_write,'(a4)') 'ps  '
+           write(isalt_write,650) ps_save
+           write(isalt_write,'(a22)') 'perm x, perm y, perm z'
+           do i = 1,n
+            write(isalt_write,650) 
+     &       pnx_save(i)*1.d-6,pny_save(i)*1.d-6,pnz_save(i)*1.d-6
+           enddo
+           deallocate(ps_save,pnx_save,pny_save,pnz_save)
+649       format('restart for salt module: porosity and permeability')
+650       format(3(1x,g20.10))
+          endif
+         elseif(iflg.eq.22) then
             
 c     write surfer or tecplot contour files
             

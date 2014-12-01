@@ -334,7 +334,7 @@ c
       real*8 qdis,qwdis,qadis,dqws,dqas,dqwp,dqap,por,sflux,permsd
       real*8 pflowd,area,uperm,roc,drocs,rol,drolp,dporpl
       real*8 rcomd,drols,dena,ddenp,ddens,ddenap,ddenas,dql,dqv
-      real*8 pcl0,roc0,xvisl0,pdiff,plow,watfrac,dwfracp
+      real*8 pcl0,xvisl0,pdiff,plow,watfrac,dwfracp
       real*8 airterm,watterm,pdifa,pdifw
       real*8 tl_last,viln,vild,vil,tref
       real*8 viln1,viln2,viln3,vild1,vild2,vild3
@@ -352,7 +352,7 @@ c
       integer iadka        
       save i_mem_rlp
       parameter(pcl0 = 0.101325)
-      parameter(roc0 = 1.292864)
+c      parameter(roc0 = 1.292864)
       parameter(rlpmin = 0.01)
       parameter(qwmax_fac = 1.)
 
@@ -367,6 +367,7 @@ c
       real*8, allocatable :: drvfs0(:)
 c gaz debug  050712    
       mi = l
+      mi = cord(1,1)
       if(irdof.ne.13) then
          if(abs(iexrlp).ne.0.and.i_mem_rlp.eq.0) then
             i_mem_rlp=1
@@ -412,16 +413,16 @@ c
 c     
 c     dependent variables vap p and sl
 c     
-c     misc. constants
+c     misc. constants (roc is at t = 0 C
       tref = crl(6,1)
-      tempc=273.0/(tref+273.0)
+      tempc=(273.0)/(tref+273.0)
       drocp0=roc0*tempc/pcl0
       rolref=crl(1,1)
       xvisl0=crl(2,1)
       comw=crl(3,1)
       pref=crl(4,1)
-      xvisv=crl(5,1)
-      rcomd=comw*rolref
+      xvisv=visc_gas
+c      rcomd=comw*rolref
 
       seep_facv = roc0/xvisv
 c     
@@ -495,14 +496,33 @@ c
          else
             xvisl=xvisl0
          endif
-c manage brines wrt density         
+c manage liquid phase density and viscosity    
        if(cden)then
         rolref_b= rolref+cden_correction(mi)
+       else if(iden_vis.gt.0) then
+c spatially variable density and viscosity
+        rolref_b = den_spatial(mi)
+        xvisl = vis_spatial(mi)
+        xvisl0 = xvisl
+        if(comp_spatial(mi).gt.0.0) then
+          comw = comp_spatial(mi)
+        endif
        else
         rolref_b= rolref
        endif
+       rcomd=comw*rolref_b
        rolf(mi) = rolref_b
+c manage gas phase density and viscosity 
+       if(ideng_vis.gt.0) then
+c spatially variable density and viscosity
+        roc0 = deng_spatial(mi)
+        drocp0=roc0*tempc/pcl0
+        xvisv = visg_spatial(mi)
+       endif
+c
+c
        seep_facl = rolref_b/xvisl0
+
 c     
          if(irdof.ne.13) then
 c     water relative perm
@@ -809,9 +829,75 @@ c     ===specified saturation (air source)
                dqas = -permsd
                qwdis = 0.0
                dqws = 0.0d00
-               dqwp = 0.0d00            
+               dqwp = 0.0d00  
+         else if(kq.eq.-14.and.ifree.eq.0) then
+c     ===specified saturation (air source), outflow only
+               permsd=abs(wellim(mi))
+               if(sl-sflux.ge.0.0d0) permsd = 0.0d0
+               sflux = esk(mi)             
+               qadis =-permsd*(sl-sflux)
+               dqap = 0.0
+               dqas = -permsd
+               qwdis = 0.0
+               dqws = 0.0d00
+               dqwp = 0.0d00    
+         else if(kq.eq.-15.and.ifree.eq.0) then
+c     ===specified saturation (air source), outflow only
+c     ===specified pressure (water source), outflow and inflow
+c     ++++ assumes no capillary pressure
+               permsd=abs(wellim(mi))
+               sflux = esk(mi) 
+               if(sl-sflux.le.0.0d0) then            
+                qadis =-permsd*(sl-sflux)
+                dqap = 0.0
+                dqas = -permsd
+               else
+                qadis = 0.0
+                dqap = 0.0
+                dqas = 0.0
+               endif
+               pflowd = pflow(mi) 
+               qwdis = permsd*(pl-pflowd)
+               dqws = 0.0
+               dqwp = permsd 
+         else if(kq.eq.-16.and.ifree.eq.0) then
+c     ===specified air source
+c     ===specified water source
+c     ++++ assumes no capillary pressure
+          
+                qadis =esk(mi)
+                dqap = 0.0
+                dqas = 0.0
+                qwdis = sk(mi)
+                dqws = 0.0
+                dqwp = 0.0 
+         else if(kq.eq.-17.and.ifree.eq.0) then
+c     ===specified saturation (air source), outflow only
+c     ===specified pressure (water source), outflow only
+c     ++++ assumes no capillary pressure
+               permsd=abs(wellim(mi))
+               sflux = esk(mi) 
+               if(sl-sflux.le.0.0d0) then            
+                qadis =-permsd*(sl-sflux)
+                dqap = 0.0
+                dqas = -permsd
+               else
+                qadis = 0.0
+                dqap = 0.0
+                dqas = 0.0
+               endif
+               pflowd = pflow(mi) 
+               if(pl-pflowd.ge.0.0) then
+                qwdis = permsd*(pl-pflowd)
+                dqws = 0.0
+                dqwp = permsd  
+               else
+                qwdis = 0.0
+                dqws = 0.0
+                dqwp = 0.0 
+               endif                           
          else if(kq.eq.-11.or.kq.eq.-12) then
-c     ===x dir geralized head BC
+c     ===x dir generalized head BC
 c     ===wellim calculated in area_flow_bc
                permsd=abs(wellim(mi))
                pflowd=pflow(mi) 

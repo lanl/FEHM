@@ -127,6 +127,7 @@ C***********************************************************************
       integer dummyint, m2lev
       integer izone, inode, inneq, iconn, indexa_axy
       integer addnode, idummy, i1, i2, is_ch, is_ch_t
+      integer isalt_save
       real*8 sumfout, sumsink, sumsource, sumboun 
       logical matrix_node
       character*20 message_ts
@@ -430,10 +431,15 @@ c**** call varible porosity output ****
 c     
                if (iporos.ne.0) then
                  call porosi (2)
-                 call saltctr(8,0,0.0d00)
+                 call saltctr(8,0,0.0d00,0.0d00)
                elseif(isalt. ne.0) then
-                call saltctr(7,0,0.0d00)
-                call saltctr(8,0,0.0d00)
+                call saltctr(7,0,0.0d00,0.0d00)
+                call saltctr(8,0,0.0d00,0.0d00)
+               elseif(cden) then
+                isalt_save = isalt
+                 isalt = 1
+                 call saltctr(8,0,0.0d00,0.0d00)
+                isalt = isalt_save
                endif
       
 c     

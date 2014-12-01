@@ -456,7 +456,7 @@ C***********************************************************************
       use comdti
       use comei
       use comevap, only : evaporation_flag
-      use comfi, only : qtc, qtotc
+      use comfi, only : qtc, qtotc, pci, pcio
       use comflow, only : a_axy
       use compart
       use comriv
@@ -502,7 +502,7 @@ c     run of fehm. It is initialized to 0 in comai
       character*80 filename
       integer open_file, ifail
 
-      logical used,die
+      logical used, die
       real*8 tims_save, day_saverip, in3save
       real*8 deneht, denht, eskd, enthp, flemax, flmax, prav, 
      *     pravg, tajj, tas, teinfl, tinfl, tmav, tmavg, tyming
@@ -524,10 +524,11 @@ c*** water table rise modification
       integer is_ch
       integer :: is_ch_t = 0
       integer :: out_flag = 0
+      integer ntty_save
 
       save flowflag, ichk, tassem, tasii, tscounter,
      &     contr_riptot, tims_save, day_saverip, in3save,
-     &     water_table_old
+     &     water_table_old, ntty_save
 
 c zvd 09-Sep-2011 change size of in array to be consistent with iofile
 c modification for GoldSim 
@@ -690,6 +691,8 @@ c**** call to set up area coefficients for md nodes
          call md_nodes(6,0,0)
 c**** call data checking routine ****
          call datchk
+c**** initial active base variables if necessarhy
+         call active_nodes_ctr(-1) 
 c gaz 050809 moved to startup
 c calculate initial stress field and displacements
 c 
@@ -800,7 +803,7 @@ c ************** major time step loop ***************************
 c
 c     counter that keeps accumulating when rip is the time step driver
 c     Or in a conventional simulation with heat and mass solution
-c
+c           gaz debug 082714
             tscounter = tscounter + 1
 c       Don't use input value of initial time step anymore
 c         if(abs(tscounter).eq.1.and.in(3).ne.0.) then
@@ -920,7 +923,7 @@ c**** form equations, calculate corrections. ****
 c**** decrease time step if necessary             ****
 c**** mlz.ne.0 means thermo variable is out of bounds ****
          
-               if (mlz .ne. 0)  then
+               if (mlz .eq. -1)  then
                   irestart_ts = 1
                   if (mlz .eq. -1)  then
                      if (iout .ne. 0) write(iout, 6020)  l, iad, day
@@ -944,6 +947,7 @@ c                  endif
                      call resetv (neq)
                      call resetv (neq + neq)
 c	          Check for submodel BCs
+c gaz debug 102314 see "if(l.eq.1) call paractr(5)" above
                      if(l.eq.1) call paractr(5)
                   end if
                   if (idpdp .ne. 0)  then
@@ -955,16 +959,21 @@ c	          Check for submodel BCs
                   call dual (1)
                   daynew = day
                   iad = abs(maxit) + 1
-                  call diagnostics(1)     
+                  ntty_save = ntty
+                  ntty = 2
+                  call diagnostics(-1)
+                  call diagnostics(1)  
+                  ntty =   ntty_save 
                   go  to  100
                end if
           
 c
-               if (mlz .ne. 0)  then
+               if (mlz .ge. 1)  then
                   if (iout .ne. 0) write(iout, 6021)
                   if (iptty .gt. 0)  write(iptty, 6021)
  6021             format(/, 1x, 'timestep = ', i6, ' timestep ',
-     *                 'restarted because of balance errors')
+     &                 'restarted because of balance errors',
+     &                 ' or variable out of bounds')
                   days = days - day
                   call resetv (0)
                   if(icontr.ne.0) then
@@ -984,7 +993,11 @@ c
                   call dual (1)
                   daynew = day
                   iad = abs(maxit) + 1
+                  ntty_save = ntty
+                  ntty = 2
+                  call diagnostics(-1)
                   call diagnostics(1)
+                  ntty = ntty_save
 c
                   go  to  100
                end if
@@ -1006,7 +1019,7 @@ c**** solve for heat and mass transfer solution ****
      *                 'run : restart = ', a, ' ****')
 c Make sure fin file is written if we are stopping
                   if (isave .ne. 0) call diskwrite
-
+                  if(isalt.ne.0) call saltctr(21,0,0.0d00,0.0d00)
                   go  to  170
                
                end if
@@ -1203,7 +1216,11 @@ c            call diagnostics(2)
 
 c end if block for heat and mass transfer solution
             endif
-
+c
+c find max residuals for flow (H +M) solution
+c
+            call diagnostics(-1)
+c            
 c**** calculate velocities ****
             if(compute_flow .or. iccen .eq. 1) call veloc
 
@@ -1212,10 +1229,24 @@ c**** obtain concentration solution ****
             if(in(3).eq.0) then
                in(3) = irun + .0001
             end if
-         
+c save permeability and porosity if this can change with chemical transport     
+c now just for salt
+c gaz debug 091414 average 
+c
+c  save old ps and pnx
+c
+            if(isalt.ne.0) call saltctr(3,0,0.0d00,0.0d00) 
+c            
             call concen (1,tscounter)
-            in(3) = in3save
-         
+c
+c average and updates new porosities and perms if necessary
+c
+            if(isalt.ne.0) call saltctr(4,0,0.0d00,0.0d00) 
+c save new ps and perms for restart file
+            if(isalt.ne.0) call saltctr(5,0,0.0d00,0.0d00) 
+c
+            in(3) = in3save 
+        
 c compute kg out of system this time step
             qtoti = qtot - qtoti
 c compute MJ out of system this time step
@@ -1327,22 +1358,26 @@ c**** call contour plot ****
                call contr (1)
                call contr (-1)
                call river_ctr(6)
+               call active_nodes_ctr(4)
 !               else
 !                  call contr_days (1)
 !                  call contr_days (-1)
-!               endif
+!               endif 
                if (allocated(itc) .and. nicg .gt. 1) then
                   if (itc(nicg-1).gt.0) then
 !                 call disk (1)
                      if (isave .ne. 0) call diskwrite
+                     if(isalt.ne.0) call saltctr(21,0,0.0d00,0.0d00)
                      if (iflxn .eq. 1) call flxn
                   endif
                else
 !              call disk (1)
                   if (isave .ne. 0) call diskwrite
+                  if(isalt.ne.0) call saltctr(21,0,0.0d00,0.0d00)
                   if (iflxn .eq. 1) call flxn
                end if
                call pest(1)
+                if(isalt.ne.0) call saltctr(6,0,0.0d00,0.0d00)              
                if (ifinsh .ne. 0)  ex = .TRUE.
                if (dayscn .ge. abs(contim)) dayscn = 0.
 
@@ -1364,6 +1399,7 @@ c standard simulation finish
                call contr (1)
                call contr (-1)
                call river_ctr(6)
+               call active_nodes_ctr(4) 
 c finished the steady state simulation, now doing transient
                days = 0.0
                istea_pest = 0
@@ -1372,7 +1408,6 @@ c finished the steady state simulation, now doing transient
                call flow_boundary_conditions(4)
                go to 999
             endif
-
 c EHK check for kill file
         inquire(file='kill.file',exist=die)
         if(die) goto 170
@@ -1429,20 +1464,12 @@ c     contim_rip days
             call contr (1)
             call contr (-1)
             call river_ctr(6)
+            call active_nodes_ctr(4)
 !         else
 !            call contr_days (1)
 !            call contr_days (-1)
 !         endif
          end if
-
-      if(die) then
-         if (iout .ne. 0) then
-         write(iout, '(a40)') 'Kill file present; simulation terminated'
-         endif
-         if (iptty .gt. 0) then
-         write(iptty, '(a40)')'Kill file present; simulation terminated'
-         endif
-      endif
 
          if (iout .ne. 0) write(iout, 6040)  days, l
          if (iptty .gt. 0)  write(iptty, 6040)  days, l
@@ -1471,11 +1498,13 @@ c Move call to disk_write and contr after call to stress_uncoupled
                      if (itc(nicg-1).gt.0) then
 !                    call disk (nsave)
                         if (isave .ne. 0) call diskwrite
+                        if(isalt.ne.0) call saltctr(21,0,0.0d00,0.0d00)
                         if (iflxn .eq. 1) call flxn
                      endif
                   else
 !                 call disk (nsave)
                      if (isave .ne. 0) call diskwrite
+                     if(isalt.ne.0) call saltctr(21,0,0.0d00,0.0d00)
                      if (iflxn .eq. 1) call flxn
                   end if
 !               if(contim.ge.0) then
@@ -1485,7 +1514,8 @@ c contr was called in stress_uncoupled above
                      call contr (1)
                      call contr (-1)
                   end if
-                  call river_ctr(6)               
+                  call river_ctr(6)    
+                  call active_nodes_ctr(4)           
 !               else
 !                  call contr_days (1)
 !                  call contr_days (-1)
@@ -1561,7 +1591,18 @@ c     array for rip simulations
 
 c RJP 04/10/07 this is for co2 properties table look-up
          call interpolation_arrays_deallocate()
-
+c
+c gaz 031314 split hexes into tets
+c
+      if (sv_hex_tet.and.ns.eq.8) then
+       rewind incoor
+       call incoord
+       ivf_sv = ivf
+       ivf = -1
+       call split(0)
+       ivf = ivf_sv
+      endif
+c
 c     no more method = 4
 c     elseif(method.eq.4) then
 

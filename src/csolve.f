@@ -677,6 +677,8 @@ c**** set time step for tracer solution , call solution            ****c
       integer :: idebug = 0
       logical :: time2print, istop_flag
       parameter(toldil = 1.d-20)
+      real*8 ps_min, ps_max, s_min_salt 
+      parameter(ps_min = 1.d-05 ,ps_max = 0.9999, s_min_salt = 1.e-4)
       save daytr, iprttrc, icfin, last_step, last_time
 c seh
 c set velocities here instead of in coneq1
@@ -1292,7 +1294,8 @@ c----------------- phs 9/26/2001 - added (1-s(i)) correction
       nts=0
 c following causes output whenever a transport time step is initiated
 c      iprttrc = nprttrc-1
-**** Begin Loop through time                         
+**** Begin Loop through time   
+                      
  1000 continue
 c     Add counter for printout of trc output BAR 11-18-98
       iprttrc = iprttrc + 1
@@ -1341,7 +1344,7 @@ c
                      endif
                      if (iout .ne. 0) write(iout,400) id,t1sk(i)
  400                 format(1x,/,'tracer injection started for node ',
-     2                    i7,' at days=',g12.6)
+     2                    i7,' at days=',g14.6)
                      icfin=1
                      if (t1sk(i).ne.0.) then
                         t1sk(i)=-t1sk(i)
@@ -1361,7 +1364,7 @@ c
                      if (iout .ne. 0) write(iout,401) i,t2sk(i)
                      istop_flag = .true.
  401                 format(1x,/,'tracer injection stopped for node ',
-     2                    i7,' at days=',g12.6)
+     2                    i7,' at days=',g14.6)
                      icfin=1
                      t2sk(i)=-t2sk(i)
                   endif
@@ -1439,9 +1442,42 @@ c     Add counter for total SIA iterations
          reset_tracer = .FALSE.
 
 c check for porosity changes if salt simulation
-         call saltctr(2,0,0.0d00)
+         if(isalt.EQ.1) then
+           call saltctr(2,0,0.0d00,0.0d00)
+         else
+c check for porosity changes for non salt simulation
+          if(allocated(ps_delta_rxn)) then
+           ps_delta_rxn = 0.0d0
+          endif
 
-      end if
+         do im = 1, nimm
+            nsp = pimm(im)
+            npn = npt(nsp)
+
+            if(mw_mineral(im).ne.0)then
+               do i = 1, n0
+                  ja = i + npn
+                 ps_delta_rxn(i) = rc(ja)*dtotc*mw_mineral(im)
+     &                                 /rho_mineral(im)
+
+                 ps_delta_rxn(i) = ps_delta_rxn(i)/sx1(i)
+                 an(ja) = anlo(ja)
+ 
+                 if(ps(i).LE.ps_min) ps_delta_rxn(i) = 0.0
+                 if(ps(i).GT.ps_max) ps_delta_rxn(i) = 0.0
+                 if(s(i).LT.s_min_salt) ps_delta_rxn(i) = 0.0
+
+               enddo
+            endif                   
+            
+            call porosi(1)
+
+            ps_delta_rxn_s = ps_delta_rxn
+
+
+         enddo
+        end if ! isalt.NE.1
+      end if  ! convergence check
  3011 format ('*****************************************************')
 
       if( .not. reset_tracer ) then
@@ -1456,7 +1492,9 @@ c check for porosity changes if salt simulation
             write(iptty, 3011) 
             write(iptty, *)
          end if
-
+c gaz debug 073114
+         vdum = anl(1)
+         vdum = anv(1)
 c
 c     Compute mass balance terms
 c

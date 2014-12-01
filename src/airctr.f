@@ -390,6 +390,7 @@ c
       real*8 hmax, hmin, hmid
       real*8 cden_correction
       character*80 form_string
+      character*80 dum_air
       real*8 pref_1_2,pref_2_1,s_1_2
 c      parameter (pchng = 0.005,schng = 0.005)
 c      gaz pchng and schng in comai 103009
@@ -400,15 +401,51 @@ C     ? ico2d not passed in, not initialized
       ico2d = 0
 c     return if no air present 
       if(ico2.lt.0) then
-c     iflg is used to tell if call is for initialization
          if(iflg.eq.0) then
+c      read data and initialization
             qtc=0.0
             qtotc=0.0
             amc=0.0
 c     
 c     read in reference pressure and temperature
-c     
-            read(inpt,*) tref,pref
+c
+            itype_air = 0
+            itype_meth = 0
+            itype_co2 = 0
+            read(inpt,'(a80)')  dum_air    
+            read(dum_air,*) tref,pref
+            do i = 1, 77
+             if(dum_air(i:i+3).eq.'meth'.or.
+     &        dum_air(i:i+3).eq.'METH') then
+              itype_meth = 1
+              go to 1000
+             else if(dum_air(i:i+2).eq.'co2'.or.
+     &        dum_air(i:i+2).eq.'CO2') then
+              itype_co2 = 1
+              go to 1000
+             endif
+            enddo
+            itype_air = 1
+1000    continue
+c    density(kg/m**3) and viscosity(Pa-sec) are referenced for NIST 
+c     at 1.0 Mpa and 0 C for the perfect gas equation
+        if(itype_meth.eq.1) then
+c methane props at 0.1 Mpa and 0 C
+         roc0 = 0.7081d0
+         visc_gas = 1.037e-5
+        else if(itype_co2.eq.1) then
+c co2 props at 0.1 Mpa and 0 C
+         roc0 = 1.951d0
+         visc_gas = 1.371e-05
+        else if(itype_air.eq.1) then
+c air props at 0.1 Mpa and 0 C
+         roc0 = 1.292864d0
+         visc_gas = 1.758e-05
+        else
+         roc0 = 1.292864d0
+         visc_gas = 1.758e-05
+        endif
+
 c     
 c     set max and min values of p and t
 c     
@@ -483,7 +520,7 @@ c     subtract initial density calculation (added back in thrair.f)
             crl(2,1)=1.0/(dil(1)/rolf(1))
             crl(3,1)=dmpf(1)/rolf(1)
             crl(4,1)=pref
-            crl(5,1)=182.e-07
+            crl(5,1)=visc_gas
             crl(6,1)=tref
             if(ico2d.eq.-1) then
                crl(7,1)=1.0

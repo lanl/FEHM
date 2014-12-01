@@ -876,8 +876,9 @@ c  PHS 4/27/2000   added altc and days to the pass to write_avs_node_con
 C zvd 12/20/2002 pass in ntp array [sometimes only dimensioned (1)]
 C zvd 10/23/2007 remove altc, days from call, they are in comai
 c               call write_avs_node_con(an,anv,iovapor,npt(2),neq
-               call write_avs_node_con(icall,an,anv,npt,neq_primary,
-     .              nspeci,lu,ifdual)
+c gaz 111414
+               call write_avs_node_con(icall,npt,neq_primary,
+     &              nspeci,lu,ifdual)
 
             endif
             
@@ -888,9 +889,9 @@ C No binary option
                else
 
 c  PHS 4/27/2000   added altc and days to the pass to write_avs_node_con
-
-                  call write_avs_node_con(icall,an,anv,npt,
-     .                 neq_tmp,nspeci,lu,ifdual)
+c gaz 111414
+               call write_avs_node_con(icall,npt,neq_primary,
+     &              nspeci,lu,ifdual)
                endif
                
             endif

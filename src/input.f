@@ -481,6 +481,7 @@ C***********************************************************************
       use comdi
       use comdti
       use comevap, only : evaporation_flag
+      use comflow, only: flag_heat_out
       use compart
       use comriv
       use comrxni
@@ -490,9 +491,6 @@ C***********************************************************************
       use comwt
       use davidi
 	use trxnvars
-
-        use comflow, only: flag_heat_out
-
       implicit none
 
       integer i, izone, inode
@@ -516,8 +514,8 @@ C***********************************************************************
       cmsg = ''
       macro = ''
       last_macro = ''
-
-      flag_heat_out = .false.
+      
+      flag_heat_out = .false.      
 
       read (inptorig, '(a80)') wdd
 
@@ -616,7 +614,7 @@ c**** water table simple
          call wtsictr (0)
 
       else if (macro(1:4) .eq. 'grad') then
-c**** input af inital and boundary conditions with gradients ****
+c**** input of inital and boundary conditions with spatial gradients ****
          igrad = 1
          call gradctr (0)
 
@@ -637,8 +635,7 @@ c**** alternate element input, read in incoord subroutine ****
       else if (macro .eq. 'salt') then
 c***  DRH 1/2/2013 salt problem
       isalt = 1
-      call saltctr(0,0,0.0d00)
-
+      call saltctr(0,0,0.0d00,0.0d00)
       else if (macro .eq. 'head') then
 c**** input in terms of head, not pressures   ****
 c bous macro enabled
@@ -829,8 +826,13 @@ c**** element node data, read in incoord subroutine  ****
 c**** forms simple water eos and/or changes the eos set number ****
          iieosd =  0
          call sther (iieosd)
+      else if (macro .eq. 'den ') then
+c**** spatially variable (constant in time) water density and viscosity ****
+         iden_vis=1
+         ideng_vis=1
+         call den_vis_spatial(0)
       else if (macro .eq. 'subs') then
-c**** forms simple water eos and/or changes the eos set number ****
+c**** simple subsidence ****
          i_subsid = 1
          call subsidence (0)
 
@@ -880,8 +882,8 @@ c****  finite element calculations
       else if (macro .eq. 'flow') then
 c**** read in sources and sinks - original node ****
          call inflow
-
       else if (macro .eq. 'flwt') then
+c**** read in sources and sinks - additive (?) ****
          call inflow_wt
 
       else if (macro .eq. 'flo2') then
@@ -939,11 +941,10 @@ c**** output source/sink node fluxes ****
 c**** calculate intermode fluxes ****
          ivelo = 1
          call flxo(0)
-
       else if (macro .eq. 'fhot') then
 c s kelkar 3 July 2014, for calculating heat flow vectors
          flag_heat_out = .true.
-
+         
       else if (macro .eq. 'cflx') then
 c**** calculate concentration flux ****
          backspace (inpt)
@@ -1036,9 +1037,14 @@ c**** read in Generalized dual porosity information
          call ingdpm
          
       else  if (macro .eq. 'enri') then
-
+c enrich elements 
          call enrich_ctr(0)
+      else if (macro .eq. 'svte') then
+c output tet grid for inputted hex grid
+         ipr_tets = 1
+         sv_hex_tet = .true.
       else  if (macro .eq. 'bcfa') then
+c*** set far field boundary conditions
          ibcfar = 1
          call bc_far_ctr(0) 
                  
@@ -1283,6 +1289,10 @@ c     pinmass, ...
                  
               end do
            end do
+      else if (macro .eq. 'nact') then
+c **** compute with active variables
+       iactive = 1
+       call active_nodes_ctr(0)
 
       else if (macro .eq. 'ngas' .or. macro .eq. 'co2i') then
 c**** noncondensible gas ****
@@ -1612,7 +1622,8 @@ c**** check if air macro called if head macro called
 
  210  continue
       call steady(-1,0.,0.)
-
+c**** open files for salt module read and write
+      if(isalt.ne.0) call saltctr(-20,0,0.0d00,0.0d00)
       if(.not.allocated(time_ieos)) then
          allocate (time_ieos(n0))
          time_ieos = 0.0d0
@@ -1620,7 +1631,7 @@ c**** check if air macro called if head macro called
 c  
 c  calculate water vapor partial pressures for co2 problem
 c  (un comment out below for new co2-h2o gaz version)
-c      if(icarb.ne.0) call ther_co2_h2o(10,0)
+      if(icarb.ne.0) call ther_co2_h2o(10,0)
 
       if (.not. mptr_call) close (inpt)
 

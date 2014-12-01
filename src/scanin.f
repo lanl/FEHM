@@ -360,6 +360,7 @@ c**** read startup parameters ****
       iflxc = 0 
       iflux_ts = 0
       istrs = 0
+      isalt = 0
       iread_rcoll = 0           
       total_colloids = 0
       total_daughters = 0
@@ -388,6 +389,7 @@ c**** read startup parameters ****
       ipermstr8 = 0
       ipermstr11 = 0
       ipermstr31 = 0
+      iactive = 0
 
 c zvd 17-Aug-09 move boun flag initializations here
       iqa=0
@@ -416,6 +418,9 @@ c new initial value stuff 12/3/98 GAZ
       iwght = 1
       isty = 0
       icoef_neg = 0
+      nflxz = 0
+      sv_hex_tet = .false.
+      ipr_tets = 0
 c zvd 17-Aug-09 move boun flag initializations here
 
       if(allocated(izone_free_nodes)) izone_free_nodes = 0
@@ -898,7 +903,9 @@ c bous automatically enabled
       else if (macro  .eq.  'wtsi')  then
 c need to know if simplified water table is invoked
          ifree = 1
-
+      else if (macro .eq. 'salt') then
+c     DRH 1/2/2013: need to know if modeling salt
+         isalt = 1
       else if (macro  .eq.  'coor')  then
 c**** We need to know number of nodes if coor is in inpt ****
          call start_macro(inpt, locunitnum, macro)
@@ -2381,7 +2388,9 @@ c                     open(unit=97,file='debug_permmodel_91.dat')
          stop
       endif
 
-      if (iccen.eq.1 .and. rxn_flag .eq. 0) then
+c gaz added 112014    
+      
+       if (iccen.eq.1 .and. rxn_flag .eq. 0) then
 c     Check that no solid species are used without reaction
          if (nimm .ne. 0) then
             write(ierr,*) 'ERROR: Can not using solid species in trac',
@@ -2394,8 +2403,8 @@ c     Check that no solid species are used without reaction
             end if
             stop
         end if
-      end if
-
+      end if 
+      
       return
 
  50   write (ierr, 55) 'STOP'

@@ -452,8 +452,8 @@ c         time_ieos(i) = 0.0d0
                 write(iptty, 9016) ps_delta_rxn(i)
             endif
             if(isalt.ne.0) then
-             call saltctr(7,0,0.0d00)
-             call saltctr(8,0,0.0d00)
+             call saltctr(7,0,0.0d00,0.0d00)
+             call saltctr(8,0,0.0d00,0.0d00)
             endif
          endif
       endif

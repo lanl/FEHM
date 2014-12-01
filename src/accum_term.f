@@ -75,10 +75,11 @@ C      real*8 pflowd,perml,dpls,dpas,perma,roc,drocs,rol,drolp,dporpl
 C      real*8 rcomd,drols,dena,ddenp,ddens,ddenap,ddenas,dql,dqv
       real*8 rcomd,dena
 C      real*8 pcl0,roc0,wimped,airmobile,conwa,conaw
-      real*8 pcl0,roc0
+c      real*8 pcl0,roc0
+      real*8 pcl0
       real*8 cden_correction, cden_cor
       parameter(pcl0 = 0.101325)
-      parameter(roc0 = 1.292864)
+c      parameter(roc0 = 1.292864)
 C      parameter(airmobile = 10.0)
 C      integer i_mem_rlp
 C      save i_mem_rlp
@@ -88,7 +89,7 @@ c
 c     dependent variables vap p and sl
 c     
 c     misc. constants
-      tempc=273.0/(t(1)+273.0)
+      tempc=(273.0)/(t(1)+273.0)
       drocp0=roc0*tempc/pcl0
       rolref=crl(1,1)
       xvisl=crl(2,1)
