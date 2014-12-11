@@ -221,6 +221,7 @@ c gaz debug
        ip1 = (i-1)*n0 + 1
        ip2 = ip1 + n0
        an_dum(1:n0,i) = an(ip1:ip2)
+       anv_dum(1:n0,i) = anv(ip1:ip2)
       enddo
       iocord_temp = iocord
       if(ifdual .eq. 0)then
