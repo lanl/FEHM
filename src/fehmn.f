@@ -1471,6 +1471,15 @@ c     contim_rip days
 !         endif
          end if
 
+      if(die) then
+         if (iout .ne. 0) then
+         write(iout, '(a40)') 'Kill file present; simulation terminated'
+         endif
+         if (iptty .gt. 0) then
+         write(iptty, '(a40)')'Kill file present; simulation terminated'
+         endif
+      endif
+
          if (iout .ne. 0) write(iout, 6040)  days, l
          if (iptty .gt. 0)  write(iptty, 6040)  days, l
  6040    format(//, 1x, 'simulation ended: days ', 1pg30.23, 
