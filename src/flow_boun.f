@@ -501,7 +501,7 @@ c
          else if(ico2.gt.0) then
 c     
 c     air and water(liquid and vapor) and heat
-c     
+c     non condensible gas
 c     
 c     check for consistency
 c     
@@ -906,7 +906,7 @@ C
      &                       imodel)
                      endif
                   endif
-                  if(iqa.ne.0) then
+                  if(iqa.ne.0.or.ixa.ne.0) then
                      if(sourcea_type(imodel).gt.0) then
                         qa(i)=sourcea(abs(time_type(imodel)),imodel)
                      endif
