@@ -379,7 +379,7 @@ CPS END co2ctr
 CPS 
 C**********************************************************************
 c
-c subroutine to control c02 simulation
+c subroutine to control noncondensible gas simulation
 c
 c code written by g zyvoloski feb 1980
 
@@ -403,15 +403,24 @@ c code written by g zyvoloski feb 1980
       real*8 hum,alp,beta,sr,smax,qtcd,dencht,tol_p
       real(8) :: qtotci = 0.
       integer mlev1,mlev2,mdd,md
-      real*8 rqd,qcd,psatl,qcmax
+      real*8 rqd,qcd,psatl,qcmax       
+      real*8 sat_bc, tol_sat_bc
       integer ngas_flag2
       logical ngas_flag
+      character*80 dumstring
+      integer msg(20)
+      integer nwds
+      real*8 xmsg(20)
+      integer imsg(20)
+      character*32 cmsg(20)
+      logical :: old_input = .false.
       character*90 wdum
       parameter (tol_p = 1.d-6)
-      save ngas_flag, ngas_flag2
-      
+      parameter (tol_sat_bc = 1.d-10)
+      real*8, allocatable :: aiped(:)      
 c     set tbnd for pco2 change(see about line 580)
       parameter(tbnd = -1.0)
+      save ngas_flag, ngas_flag2
 c     
 c     return if no noncondensible present
 c     
@@ -422,7 +431,7 @@ c     iflg is used to tell if call is for initialization
 c
 c check macro line for more information
 c
-          backspace inpt
+            backspace inpt
             ngas_flag2 = 0
             read(inpt,'(a90)') wdum 
             do i = 5,80
@@ -461,6 +470,10 @@ c     dont call co2ctr if ico2d=0
                
                ico2=3              
             endif
+c
+c allocate impedance array for noncondensible gas
+c
+            allocate (wellima(n0))
 c     
 c     read in initial ncon pressure
 c     
@@ -472,7 +485,7 @@ c
             
             call initdata2(inpt,ischk, n0, narrays, itype,
      &           default, macroread(2), macro, igroup, ireturn,
-     2           r8_1=pci(1:n0))
+     &           r8_1=pci(1:n0))
 c pci () = -666 equal reset water vapor pressure
             do i = 1, n0
                if (pci(1) .eq. -666) then
@@ -480,38 +493,160 @@ c pci () = -666 equal reset water vapor pressure
                   exit
                end if
             end do
+
+c     Check to verify if new input is being used for group 3
+            read (inpt, '(a80)') dumstring
+            backspace inpt
+            call parse_string2(dumstring,imsg,msg,xmsg,cmsg,nwds)
+            if (nwds .gt. 0 .and. nwds .lt. 5) then
+               old_input = .true.
+               write (ierr, 14)
+               if (iout .ne. 0) write (iout, 14)
+               if (iptty .ne. 0) write(iptty, 14)
+            end if
+ 14         format ('**** Warning: Old style ngas input being used, ',
+     &          'macro input should be updated ****')
+ 
+            allocate (pflowa(n0))
+
+            if (old_input) then
 c     
 c     read in specified pressure for  noncon gas
 c     
-            igroup = 3
+               igroup = 3
 c     
 c     Other values are the same as above
 c     
             
-            call initdata2(inpt,ischk, n0, narrays, itype,
-     &           default, macroread(2), macro, igroup, ireturn,
-     2           r8_1=eskc(1:n0))
+               call initdata2(inpt,ischk, n0, narrays, itype,
+     &              default, macroread(2), macro, igroup, ireturn,
+     2              r8_1=eskc(1:n0))
+
+               do i = 1, n0
+                  if (eskc(i) .le. 0.) then
+c     Specified noncondnesible gas pressure
+                     pflowa(i) = abs (eskc(i))
+                     eskc(i) = 0.
+                  else
+c     Specified relative humidity
+                     pflowa(i) = 0.0
+                  end if
+               end do
+            else
+c     
+c     read in fixed humidity for noncon gas(positive value)
+c     read in fixed saturation for noncon gas(negative value-saturation is fixed to absolute read-in value)
+c   
+               default(1) = 1.d50
+               default(2) = 1.d50
+               narrays = 2
+               itype(1) = 8
+               itype(2) = 8 
+               igroup = 3
+c     
+c     Other values are the same as above
+c     
+            
+               call initdata2(inpt,ischk, n0, narrays, itype,
+     &              default, macroread(2), macro, igroup, ireturn,
+     &              r8_1=eskc(1:n0),r8_2=pflowa(1:n0))
+
+               do i = 1,n0
+                  if(eskc(i).eq.default(1)) then
+                     eskc(i) = 0.0
+                  endif
+                  if(pflowa(i).eq.default(2)) then
+                     pflowa(i) = 0.0
+                  endif
+               enddo
+
+            end if
+c     Check to verify if new input is being used for group 4
+            if (.not. old_input) then
+               read (inpt, '(a80)') dumstring
+               backspace inpt
+               call parse_string2(dumstring,imsg,msg,xmsg,cmsg,nwds)
+               if (nwds .gt. 0 .and. nwds .lt. 5) then
+                  old_input = .true.
+                  write (ierr, 14)
+                  if (iout .ne. 0) write (iout, 14)
+                  if (iptty .ne. 0) write(iptty, 14)
+               end if
+            end if
+c gaz debug  120814 
+            allocate (aiped(n0))
+
+            if (old_input) then
 c     
 c     read in source strength for noncon gas(kg/s)
 c     
-            default(1) = 1.d50
-            igroup = 4
+               default(1) = 1.d50
+               narrays = 1
+               igroup = 4
 c     
 c     Other values are the same as above
 c     
             
-            call initdata2(inpt,ischk, n0, narrays, itype,
-     &           default, macroread(2), macro, igroup, ireturn,
-     2           r8_1=dqpc(1:n0))
+               call initdata2(inpt,ischk, n0, narrays, itype,
+     &              default, macroread(2), macro, igroup, ireturn,
+     2              r8_1=dqpc(1:n0))
+
+c
+               do i=1,n0
+                  if(dqpc(i).eq.default(1)) then
+                     dqpc(i)=0.0
+                  elseif(dqpc(i).eq.0.0) then
+                     dqpc(i)=1.d-30
+                  endif
+               enddo
+c     The impedance, by default is set to 0.
+               qng = dqpc
+               aiped = 0.
+
+            else
+c     
+c     read in source strength for noncon gas(kg/s)
+c     
+               default(1) = 0.0
+               default(2) = 0.0
+               narrays = 2
+               itype(1) = 8
+               itype(2) = 8
+c
+               igroup = 4
+c     
+c     Other values are the same as above
+c  
+c         
+               call initdata2(inpt,ischk, n0, narrays, itype,
+     &              default, macroread(2), macro, igroup, ireturn,
+     &              r8_1=qng(1:n0),r8_2=aiped(1:n0))
+
+            end if
+
             macroread(2) = .TRUE.
 c
+            allocate (xairfl(n0))   
             do i=1,n0
-               if(dqpc(i).eq.default(1)) then
-                  dqpc(i)=0.0
-               elseif(dqpc(i).eq.0.0) then
-                  dqpc(i)=1.d-30
+               if(qng(i).eq.default(1)) then
+                  qng (i)=0.0
+               elseif(qng(i).eq.0.0) then
+                  qng(i)=1.d-30
+               endif
+               if(aiped(i).eq.default(2)) then
+                  wellima(i)=0.0
+                  xairfl(i) = 0.0
+               elseif(aiped(i).eq.0.0) then
+                  wellima(i)=0.0
+                  xairfl(i) = 0.0
+               else
+                  xairfl(i) = qng(i)
+                  qng(i) = 0.0
+                  wellima(i) = aiped(i)*1.d06
                endif
             enddo
+            
+           deallocate (aiped)
             
          elseif(iflg.eq.6) then
 c     
@@ -605,44 +740,13 @@ c     &                    i8)
                      to(i)=psatl(pv,pcp(i),dpcef(i),dtsatp,dpsats,1)
                   end if
                endif
-               if(eskc(i).lt.0.0) then
-c     specified ngas pressure rules over temperature
-                  pci(i)=-eskc(i)
-                  pv=pho(i)-pci(i)
-                  if(pci(i).lt.tbnd) then
-                     write(ierr, 110)
-                     if (iout .ne. 0) write(iout, 110)
-                     if (iptty .ne. 0) write(iptty, 110)
-                     tdumm=psatl(pho(i),pcp(i),dpcef(i),dtsatp,dpsats,1)
-                     write(ierr, 120) tdumm
-                     if (iout .ne. 0) write(iout, 120) tdumm
-                     if (iptty .ne. 0) write(iptty, 120) tdumm
-                     istflag = -1
-                     goto 9000
-                  endif
-                  if(ieos(i).eq.2) then
-                     if (.not.ngas_flag) then
-                        to(i)=psatl(pv,pcp(i),dpcef(i),dtsatp,dpsats,1)
-                     end if
-                     if (iout .ne. 0) write(iout,*)
-     &                    'initial temp changed, node = ', i,
-     &                    ' temp = ', to(i)    
-                     if (iptty .gt. 0) then
-                        write(iptty,*)
-     &                       'initial temp changed, node = ', i,
-     &                       ' temp = ', to(i)          
-                     endif
-                  endif
-               endif
-               if(dqpc(i).eq.0.0.and.ka(i).eq.0) then
-                  ka(i)=1
-               endif
+
                tini(i)= to(i)
                t(i)=to(i)
             enddo
          elseif(iflg.eq.1) then
 c     
-c     figure out humidity condition
+c     figure out humidity condition (VG cap pressure models only)
 c     
             do i=1,n
                if(eskc(i).gt.0.0) then
@@ -689,9 +793,12 @@ c     use matrix values for neq+1 to 2*neq nodes
 c WARNING : not yet implemented for icap
                   endif
                   if(s(i).gt.0.0.and.s(i).lt.1.0) then
+                    if(eskc(i).gt.0.0) then
                      pflow(i)=-s(i)
                      ka(i)=-1
                      eskc(i)=0.0
+                     wellim(i) = sx1(i)*1.d06*1.d-6
+                    endif
                   else
                      eskc(i)=0.0
                      if (iout .ne. 0) write(iout,*) 
@@ -699,8 +806,39 @@ c WARNING : not yet implemented for icap
                      if (iptty .ne. 0) write(iptty,*) 
      &                    'humidity not set at node = ',i
                   endif
-               endif                      
+  
+               else if(eskc(i).lt.0.0) then
+c specified saturation 
+                sat_bc = abs(eskc(i))  
+                if(sat_bc.gt.1.0) then
+                     if (iout .ne. 0) write(iout,*) 
+     &                    'sat bc = ',sat_bc,
+     &                    'sat_bc set to 1 at node = ',i
+                     if (iptty .ne. 0) write(iptty,*) 
+     &                    'sat bc = ',sat_bc,
+     &                    'sat_bc set to 1 at node = ',i
+                  sat_bc = 1.0
+                endif
+                if(sat_bc.lt.tol_sat_bc) then
+                     if (iout .ne. 0) write(iout,*) 
+     &                    'sat bc = ',sat_bc,
+     &                    'sat_bc set to 0 at node = ',i
+                     if (iptty .ne. 0) write(iptty,*) 
+     &                    'sat bc = ',sat_bc,
+     &                    'sat_bc set to 0 at node = ',i
+                  sat_bc = tol_sat_bc
+                endif
+                 pflow(i)=-sat_bc
+                 ka(i)=-1
+                 s(i) = sat_bc
+                 so(i) = sat_bc
+                 eskc(i)=0.0
+                 wellim(i) = sx1(i)*1.d06    
+              endif             
             enddo
+        elseif(iflg.eq.-1) then
+c gaz 122314 added another iflag (-1) to split funcionality
+c called from startup 
             do mi=1,n
                denpch(mi)=denpci(mi)*dtot
                amc=amc+denpch(mi)*volume(mi)
@@ -773,17 +911,19 @@ c                 if(rqd.ne.0) qcd=qc(md)/rqd
 c gaz 5-3-2001 need to output air source/sink
                   qcd=qc(md)
                   if (iout .ne. 0) write(iout,804)
-     &                 mdd,pci(md),pcp(md),phi(md)-pcp(md),qcd,bpd
+     &                 mdd,pci(md),pcp(md),phi(md)-pcp(md),qcd,
+     &                 bpd, ieos(md)
                   if (iatty .ne. 0) write(iatty,804)
-     &                 mdd,pci(md),pcp(md),phi(md)-pcp(md),qcd,bpd
+     &                 mdd,pci(md),pcp(md),phi(md)-pcp(md),qcd,
+     &                 bpd, ieos(md)
                enddo
  803           format(/, 20x, 'Nodal Information (Gas)', /, 8x, 
      &              'Partial P', 3x, 'Capillary', 3x, 'Liquid', 6x, 
      &              'Gas source/sink', /, 3x, 'Node', 1x, 'Gas (MPa)', 
      &              3x, 'Pres (MPa)', 2x, 'Pres (MPa)', 5x, '(kg/s)', 
-     &              7x, 'Residual')
+     &              7x, 'Residual','    State ')
  804           format(i7, 1x, g11.4, 1x, g11.4, 1x, g11.4, 1x,
-     &              g11.4, 5x, g11.4)
+     &              g11.4, 5x, g11.4, 1x, i5)
 c     calculate global mass and energy flows
                if (iout .ne. 0) then
                   write(iout,689) qtc,difc
