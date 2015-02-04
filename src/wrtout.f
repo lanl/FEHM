@@ -232,6 +232,12 @@ c     zero out enthalpy for air water system
          if(iatty.gt.0) then
             write(iatty,*) 'Number of partially filled cells ', ifree1
          endif
+         if(ntty.eq.2) then
+            write(iout,*) 'Number of restarted time steps ', nrestart_ts
+         endif
+         if(iatty.gt.0) then
+            write(iatty,*)'Number of restarted time steps ', nrestart_ts
+         endif
 c     insert diagnostics code here
          if (ihf.eq.ihs .and. compute_flow) then
             call diagnostics(1)
