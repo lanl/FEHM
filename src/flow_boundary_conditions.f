@@ -129,7 +129,7 @@ c
          fac_sec_days = 1./86400.
          fac_min_days = 1./1440.
          fac_year_days = 365.25
-         if(iqa.ne.0) then
+         if(iqa.ne.0.or.ixa.ne.0) then
             if (.not. allocated (qa)) allocate(qa(n0))                  
             if (.not. allocated (sourcea)) 
      .           allocate(sourcea(maxtimes,maxmodel))   
@@ -589,7 +589,8 @@ c pure water/heat
                enddo
             end if
          else if(ico2.gt.0) then
-c air/water/heat
+c gaz debug
+c air/water/heat (ngas)
             call flow_boun(3
      &           ,n,ico2,idof
      &           ,days0,days,day,daynew,sx1
@@ -619,6 +620,7 @@ c air/water/heat
                            pflow(i)=phini(i)
                         endif
                         if(wellim(i).eq.0.0) wellim(i)=sx1(i)*1.d06
+                        ka(i)=-1
                      endif
                   endif
                endif
@@ -627,7 +629,7 @@ c air/water/heat
                if(idum(i).ne.0) then
                   if(isatb.ne.0.0) then
                      if(satb(i).gt.0.0) then
-                        pflow(i)=-satb(i)
+                        pflow(i)=-satb(i) 
                         ka(i)=-1
                         if(wellim(i).eq.0.0) wellim(i)=sx1(i)*1.d06
                      else if(satb(i).lt.0.0) then
@@ -642,7 +644,7 @@ c air/water/heat
                if(idum(i).ne.0) then
                   if(ipresa.ne.0.0) then
                      if(presa(i).ne.0.0) then
-                        eskc(i)=-presa(i)
+                        pflowa(i)=-presa(i)
                         if(wellim(i).eq.0.0) wellim(i)=sx1(i)*1.d06
                      endif
                   endif
@@ -714,6 +716,24 @@ c air/water/heat
                      if(qw(i).ne.0.0) then
                         sk(i)=qw(i)
                         ka(i)=1
+                     endif
+                  endif
+               endif
+            enddo
+            do i=1,n
+               if(idum(i).ne.0) then
+                  if(iqa.ne.0) then
+                     if(qa(i).ne.0.0) then
+                        qng(i)=qa(i)
+                     endif
+                  endif
+               endif
+            enddo
+            do i=1,n
+               if(idum(i).ne.0) then
+                  if(ixa.ne.0) then
+                     if(qa(i).ne.0.0) then
+                        xairfl(i)=qa(i)
                      endif
                   endif
                endif
