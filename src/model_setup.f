@@ -14,7 +14,7 @@ C***********************************************************************
 CD1 
 CD1 PURPOSE
 CD1 
-CD1 To read in parameters for boundary models.  
+CD1 To read in parameters for time-dependent boundary models.  
 CD1
 C***********************************************************************
 CD2
@@ -208,6 +208,15 @@ c     new initial value input here 12/3/98 GAZ
          drainar_type(imod)=-1
          do i=1,ntimes
             drainar(i,imod)= drainar(i,imod)+tol_boun
+         enddo
+         if(isubmod.le.1) go to 30
+      else if(key(1:3).eq.'fxa') then
+c gaz I think I can use array sourcea because air flowrate
+c and air fraction cannot both be set for the same node
+         read(inpt,*) (sourcea(i,imod),i=1,ntimes)
+         sourcea_type(imod)=1
+         do i=1,ntimes
+            sourcea(i,imod)= sourcea(i,imod)+tol_boun
          enddo
          if(isubmod.le.1) go to 30
       else if(key(1:2).eq.'sa') then
