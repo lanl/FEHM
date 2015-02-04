@@ -27,6 +27,9 @@ CD2
 CD2 NOV 1993     Z. Dash        22      Add prolog
 CD2             G. Zyvoloski   N/A     Initial implementation
 CD2
+CD2  NOV 2014 G. Zyvoloski changed dqpc (gas source term ) to qng (q (n gas) ) for readability
+CD2  Changed this everywhere in the code
+CD2
 CD2 $Log:   /pvcs.config/fehm90/src/thrmwc.f_a  $
 !D2
 !D2    Rev 2.5   06 Jan 2004 10:44:20   pvcs
@@ -1370,7 +1373,7 @@ c      real*8 roc0
       real*8 por
       real*8 vol
       real*8 pldif
-      real*8 permsd
+      real*8 permsd, permsda
       real*8 eskd
       real*8 eqdum
       real*8 denc
@@ -1418,11 +1421,16 @@ c      real*8 roc0
       real*8 dvfp
       real*8 xtol
       real*8 flow_tol
-      real*8 fimped 
+c      real*8 fimped 
       real*8 p_energy
       real*8 cden_correction, cden_cor
       real*8 spec1, fracc,ms,xf,af,bf,cf,df,ef,dumf,tltemp
-      real*8 pv_tol
+      real*8 pv_tol, satdif
+c gaz debug 121714
+      real*8 dum_gaz
+      real*8 xair, pflowa_tol
+      integer kang
+      parameter (kang = 1, pflowa_tol= 1.e-12)
 c
 c     rol  -  density liquid
 c     ros  -  density steam
@@ -2486,13 +2494,17 @@ c
 c
 c ********** source term code start *****************
 c
-      if(eskc(mi).lt.0.0) then
-c this condition says that if the partial pressure of air
-c is specified, then you cannot specify the air flow
+      dum_gaz=fdum 
+      dum_gaz = l
+
        qc(mi)=0.0
-      endif
+       dqc(mi)=0.0
+       deqc(mi) = 0.0
+       dcqc(mi) = 0.0
 c
+c identify water source term
       qdis=sk(mi)
+      pldif = 0.0
 c      
 c calculate capillary pressure terms
 c no capp pres terms because liquid evaluated at total pressure
@@ -2505,19 +2517,27 @@ c
 c pflow >= 0 , specified pressure
 c pflow <  0 , specified saturation
          if(pflow(mi) .lt. 0.) then
-            fimped=wellim(mi)
+            permsd=wellim(mi)
+c gaz debug 121314
+             permsda = permsd*1000.
             if(ieosd.eq.2) then
-               qdis = fimped*(sl+pflow(mi))
+               qdis = permsd*(sl+pflow(mi))
                sk(mi)=qdis  
-               dqt(mi)=fimped
+               dqt(mi)=permsd
+c gaz debug 121314
+               if(pflowa(mi).gt.pflowa_tol) then
+                qc(mi) = permsda*(phi(mi)-pflowa(mi))
+                dqc(mi) = permsda
+               endif
             else 
-               qdis = fimped*(sl+pflow(mi))
+c no derivative wrt s since s is not a variable
+               qdis = permsd*(sl+pflow(mi))
                sk(mi)=qdis  
             endif
-            qc(mi)=0.
-            dqc(mi)=0.
-c dqpc should be set in co2ctr and input
-         else
+c            qc(mi)=0.
+c            dqc(mi)=0.
+c dqpc (now qng) should be set in co2ctr and input
+         else if(abs(wellim(mi)).ne.0.0) then
             pldif=pl-pflow(mi)
             permsd=wellim(mi)
 c kq=-2 means inflow not allowed
@@ -2525,6 +2545,16 @@ c kq=-2 means inflow not allowed
             qdis=permsd*(pldif)
             sk(mi)=qdis
             dq(mi)=permsd
+c gaz debug 122814
+c check for air fraction 
+           if(xairfl(mi).gt.0.0.and.qdis.lt.0.0) then
+            xair = xairfl(mi)
+            sk(mi) = (1.0-xair)*qdis
+            qc(mi) = xair*qdis
+            dqc(mi) = dq(mi)*xair
+            dq(mi) = dq(mi)*(1.0-xair)
+            qdis = sk(mi)
+           endif
          endif
       end if
 c
@@ -2532,22 +2562,7 @@ c calculate source term for air
 c
       hprod=0.0
       cprod=0.0
-      eskcd=eskc(mi)
-      if(eskcd.lt.0.0) then
-c specified air pressure gives source term
-c humidity condition in saturation source above see co2ctr.f
-c for air equation
-        fimped=max(sx1(mi)*1.e06,wellim(mi))
-        pbounc=-eskcd
-        qc(mi)=qc(mi)+fimped*(pcl-pbounc)
-        if(ieosd.eq.2) then
-         dqc(mi)=fimped+dqc(mi)
-         deqc(mi)=fimped*dpsats
-         dcqc(mi)=fimped*(-dpsatt)
-        else
-         dcqc(mi)=fimped
-        endif
-      endif
+
 c
 c       derivatives of sink terms
 c
@@ -2574,20 +2589,23 @@ c
 c
 c organize source terms and derivatives
 c
-c dqpc(mi) is the specified air flow
-        if(qdis.gt.0.0.and.abs(dqpc(mi)).lt.flow_tol) then
+c qng(mi) is the specified air flow
+        if(qdis.gt.0.0.and.abs(qng(mi)).lt.flow_tol) then
 c flow out of reservoir
           if(ieosd.eq.2) then
             hprod=sig*env+(1.0-sig)*enl
             dhprdp=dsigp*env+sig*dhvp-dsigp*enl+(1.0-sig)*dhlp
             dhprdc=dsigpc*env+sig*dhvpc-dsigpc*enl+(1.0-sig)*dhlpc
             dhprde=dsige*env+sig*dhvt-dsige*enl+(1.0-sig)*dhlt 
-            if(eskc(mi).ge.0.0) then
+c            if(eskc(mi).ge.0.0) then
+            if(ka(mi).lt.0) then
+c this is the humidity condition and specified pressure
               cprod=sig*xnv+(1.0-sig)*xnl
               dcprdp=dsigp*xnv+sig*dxnvp-dsigp*xnl+(1.0-sig)*dxnlp
               dcprdc=dsigpc*xnv+sig*dxnvpc-dsigpc*xnl+(1.0-sig)*dxnlpc
               dcprde=dsige*xnv+sig*dxnvt-dsige*xnl+(1.0-sig)*dxnlt
-            else                     
+            else   
+c this is for specified water flow only            
               cprod=0.0
               dcprdp=0.0                                           
               dcprdc=0.0
@@ -2598,7 +2616,9 @@ c flow out of reservoir
             dhprdp=dhlp
             dhprdc=dhlpc
             dhprde=dhlt
-            if(eskc(mi).ge.0.0) then
+c gaz debug 120814
+c            if(eskc(mi).gt.0.0) then
+             if(ka(mi).lt.0) then
               cprod=xnl
               dcprdp=dxnlp
               dcprdc=dxnlpc
@@ -2606,7 +2626,7 @@ c flow out of reservoir
             else                     
               cprod=0.0
               dcprdp=0.0                                           
-              dcprdc=0.0
+              dcprdc=0.0 
               dcprde=0.0
             endif                    
           else if(ieosd.eq.3) then
@@ -2614,7 +2634,9 @@ c flow out of reservoir
             dhprdp=dhvp
             dhprdc=dhvpc
             dhprde=dhvt
-            if(eskc(mi).ge.0.0) then
+c gaz debug 120814
+c            if(eskc(mi).ge.0.0) then
+            if(ka(mi).lt.0) then
               cprod=xnv
               dcprdp=dxnvp
               dcprdc=dxnvpc
@@ -2630,13 +2652,39 @@ c flow out of reservoir
           dqh(mi)=dhprdp*qdis+hprod*dq(mi)
           deqh(mi)=dhprde*qdis+hprod*dqt(mi)
           dcqh(mi)=dhprdc*qdis 
-          if(eskc(mi).ge.0.0) then
-            qc(mi)=cprod*qdis
-            dqc(mi)=dcprdp*qdis+cprod*dq(mi) 
-            deqc(mi)=dcprde*qdis+cprod*dqt(mi)
-            dcqc(mi)=dcprdc*qdis
-          endif
-        else if(qdis.gt.0.0.and.abs(dqpc(mi)).ge.flow_tol) then
+c gaz debug 120814
+c            if(eskc(mi).ge.0.0) then
+c gaz debug 121114 (Big change)
+c water fraction in outlet stream
+c            qdis=permsd*(pldif)
+           if(pflow(mi).gt.0.0) then
+c specified pressure
+            sk(mi) = (1.0-cprod)*permsd*pldif
+            dq(mi) = (1.0-cprod)*permsd - permsd*pldif*dcprdp
+            dqt(mi) = - permsd*pldif*dcprde
+            dqpc(mi) = - permsd*pldif*dcprdc
+            qc(mi)=qc(mi) + cprod*permsd*pldif 
+            dqc(mi)= dqc(mi)+cprod*permsd + permsd*pldif*dcprdp 
+            deqc(mi)= deqc(mi)+ permsd*pldif*dcprde 
+            dcqc(mi)= dcqc(mi)+ permsd*pldif*dcprdc
+           else if(pflow(mi).lt.0.0) then
+c specified saturation: qdis = fimped*(sl+pflow(mi))
+            satdif = (sl+pflow(mi))
+            sk(mi) = (1.0-cprod)*permsd*satdif
+            dq(mi) =  - permsd*satdif*dcprdp
+            dqt(mi) = (1.0-cprod)*permsd - permsd*satdif*dcprde
+            dqpc(mi) = - permsd*satdif*dcprdc 
+            if(qc(mi).ge.0.0) then
+             qc(mi)=qc(mi) + cprod*permsd*satdif
+             dqc(mi)= dqc(mi)+ permsd*satdif*dcprdp 
+             deqc(mi)= deqc(mi)+ permsd*satdif*dcprde 
+             dcqc(mi)= dcqc(mi)+ permsd*satdif*dcprdc
+            else 
+             deqc(mi) = 0.0
+             dcqc(mi) = 0.0
+           endif
+           endif
+        else if(qdis.gt.0.0.and.abs(qng(mi)).ge.flow_tol) then
 c variable pressure(outflow)
 c no specified air pressure
 c specified air flow
@@ -2661,26 +2709,27 @@ c specified air flow
           deqh(mi)=dhprde*qdis+hprod*dqt(mi) 
           dcqh(mi)=dhprdc*qdis
 c 5-4-2001 air can now be in or out
-          qc(mi) = dqpc(mi)
+c constant and no derivatives
+          qc(mi) = qng(mi)
           dqc(mi)=0.0
           deqc(mi)=0.0
           dcqc(mi)=0.0
-        else if(qdis.le.0.0.and.abs(dqpc(mi)).lt.flow_tol) then
+        else if(qdis.le.0.0.and.abs(qng(mi)).lt.flow_tol) then
 c variable flow (pressure dependent)
 c specified air pressure allowed(already accounted for)
 c water flow into reservoir
           qh(mi)=qdis*eflow(mi)
           dqh(mi)=dq(mi)*eflow(mi)
-        else if(qdis.le.0.0.and.abs(dqpc(mi)).ge.flow_tol) then
+        else if(qdis.le.0.0.and.abs(qng(mi)).ge.flow_tol) then
 c variable flow (pressure dependent)
 c specified air flow allowed(already accounted for)
 c water flow into reservoir
           qh(mi)=qdis*eflow(mi)
           dqh(mi)=dq(mi)*eflow(mi)
-          qc(mi)=dqpc(mi)    
+          qc(mi)=qng(mi)    
           dqc(mi)=0.0
-          deqc(mi)=0.0
-          dcqc(mi)=0.0
+          deqc(mi)=0.0     
+          dcqc(mi)=0.0 
         endif      
 c
 c ********** source term code end *****************
