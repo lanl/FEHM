@@ -458,6 +458,8 @@ c GAZ 012214
       integer             iden_vis, ideng_vis, iphase3
       integer             itype_air,itype_meth,itype_co2
       real*8              pchng, schng 
+c gaz 121314
+      integer              nrestart_ts
       
       integer :: irun = 0
 
