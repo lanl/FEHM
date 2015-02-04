@@ -417,15 +417,18 @@ C**********************************************************************
       real*8 phase_mult
       real*8 phase_sat 
       real*8 satml 
+      real*8 xdiff_tol
       parameter(psatmn=0.0001)
       parameter(eosmg=1.0001)
-      parameter(eosml=0.99)
+c      parameter(eosml=0.99)
+      parameter(eosml=0.95)
       parameter(eostol=0.0001)
 c      parameter(stepl=0.95)
       parameter(pcimin=0.0)
       parameter(phase_mult=1.00)
       parameter(phase_sat=1.0d-9)
-      parameter(satml=1.0d-4)
+      parameter(satml=1.0d-2)
+      parameter(xdiff_tol=1.0d-4)
 c ich_max should be odd or even but don't know which
 c      parameter(ich_max = 2)
       real*8 psatl
@@ -595,6 +598,8 @@ c
 c gaz debug 082714
 c gaz debug added saltctr calls 091414
                   continue
+                  i = l
+                  i = fdum
                   do i=1,neq
                      ij=i+ndummy
                      pl=phi(ij)
@@ -626,18 +631,20 @@ c
                        pboil = pl - pci(ij)
                       endif
 c     change to 2-phase
-                        if(x.le.pboil/phase_mult) then
+                        if(x.le.pboil/phase_mult.
+     &                     and.days.ge.time_ieos(ij)) then
                            ieosdc=2
+                           strd = 1.
                            pci(ij)=max(pl-pboil,0.0d00)
                            s(ij)=eosml
-c     
+                           time_ieos(ij) = days + time_ch
                         endif
                      endif
 c 
                      if(ieosd.eq.2) then
 c
 c     2-phase conditions
-                        if(sl.ge.1.) then
+                        if(sl.ge.1.and.days.ge.time_ieos(ij)) then 
 c     change to liquid only conditions
                            ieosdc=1
 c     tl=t(ij)*eosml
@@ -651,49 +658,56 @@ c  pci calculated inside saltctr
                           endif
 c     pci(ij)=max(pl-pboil,0.0d00)
                           s(ij)=1.0
+                          strd = stepl
+                          time_ieos(ij) = days + time_ch
                         endif 
 c     change to gas only
-                        if(sl.le.0.0) then
+                        if(sl.le.0.0.and.days.ge.time_ieos(ij)) then
+                           ieosdc=3 
+                           s(ij)=0.0
+                           strd = stepl
+                           time_ieos(ij) = days + time_ch
+                        endif
+c gaz debug 120714
+                        if(x.lt.-xdiff_tol.and.sl.le.0.0.
+     &                     and.days.ge.time_ieos(ij)) then
                            ieosdc=3
                            s(ij)=0.0
-                           strd    =stepl
+                           phi(ij) = pcl
+                           strd = stepl
+                           time_ieos(ij) = days + time_ch
                         endif
                      endif
 c 
-                     if(ieosd.eq.3.or.ieosdc.eq.3) then
-c                     if(ieosd.eq.3) then
-c
-c     gas conditions
-c
-c                 pvapor=psatl(to(ij),pcp(ij),dpcef(ij),dpsatt,dpsats,0)
-c                     if(isalt.eq.0) then
-c                      pvapor=psatl(tl,pcp(ij),dpcef(ij),dpsatt,dpsats,0)
-c                     else
-c                      call saltctr(1,ij,dpsatt,dpsats)
-c                      pvapor=pl-pci(ij)
-c                     endif
+c                     if(ieosd.eq.3.or.ieosdc.eq.3) then
+c gaz debug 120814
+                     if(ieosd.eq.3) then
+
 c gaz debug 091514
+c gaz debug 120714    
+               
                     pvapor=psatl(tl,pcp(ij),dpcef(ij),dpsatt,dpsats,0)
 c     check vapor pressure against saturated vapor pressure
 c     change if lower
-                        if(x.ge.pvapor) then
-                           s(ij)=0.0   
+                       if(x.ge.pvapor.and.days.ge.time_ieos(ij)) then 
+                           s(ij)=satml  
                            if(ieosd.eq.3) then
                               s(ij)= satml
                            endif
-                           ieosdc=2
-                           pci(ij)=max(pl-pvapor,pcimin)
-                           strd    =stepl
-                        endif
+                           time_ieos(ij) = days + time_ch
+                           strd = stepl
+                           ieosdc = 2
+                       endif
                      endif
 c     
 c
 c     remember if danl eos change occured
 c     tally eos numbers
-c
+c 
                      if(ieosd.ne.ieosdc) then
-
-                        strd    =stepl
+c gaz debug 120814
+c                        strd    =stepl
+c                        if(ieosdc.eq.2) strd = 1.
                         ieos_ch(ij) = ieos_ch(ij) +1
                         
 c                        if (ieos_ch(ij).gt.3) 
@@ -751,7 +765,7 @@ c              call icectrco2(-3,ndummy)
             end if
 c     
 c
-c      n-r corrections
+c      NR corrections
 c
          else
             if(ico2.eq.0) then
@@ -810,6 +824,14 @@ c  GAZ 5/1/98
                      pci(i)=pci(i)-bp(i3)*strd
                   endif
 c big change gaz 11/26/96
+c gaz debug 120714 (phi correction)
+                  if(ieosd.ne.2) then
+c                   if(phi(i).lt.pci(i)) phi(i) = pci(i)
+c gaz debug 011415 try different approach pci correction
+c gaz debug 011415 this worked well (so far)
+c
+                   if(phi(i).lt.pci(i)) pci(i) = phi(i)
+                  endif
                   pci(i)=max(0.0d00,pci(i))
                   s(i)=min(1.d00,max(0.0d00,s(i)))
                enddo      
