@@ -797,6 +797,10 @@ c
 
 c     Call evaporation routine if this is an evaporation problem
          if (evaporation_flag) call evaporation(1)
+c
+c set counter for restarted timesteps to zer0
+c
+         nrestart_ts = 0
 
 c ************** major time step loop ***************************
          do l = 1, nstep
@@ -964,13 +968,17 @@ c	          Check for submodel BCs
                   call diagnostics(-1)
                   call diagnostics(1)  
                   ntty =   ntty_save 
+c
+c count restarted timestep
+c
+                  nrestart_ts = nrestart_ts + 1
                   go  to  100
                end if
           
 c
                if (mlz .ge. 1)  then
-                  if (iout .ne. 0) write(iout, 6021)
-                  if (iptty .gt. 0)  write(iptty, 6021)
+                  if (iout .ne. 0) write(iout, 6021) l
+                  if (iptty .gt. 0)  write(iptty, 6021) l
  6021             format(/, 1x, 'timestep = ', i6, ' timestep ',
      &                 'restarted because of balance errors',
      &                 ' or variable out of bounds')
@@ -999,6 +1007,9 @@ c
                   call diagnostics(1)
                   ntty = ntty_save
 c
+c count restarted timestep
+c
+                  nrestart_ts = nrestart_ts + 1
                   go  to  100
                end if
          
