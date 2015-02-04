@@ -469,6 +469,8 @@ c KCL 5-2-11, for DeltaPoros subroutine
       real*8, allocatable ::  head(:) 
       real*8, allocatable ::  pcp(:)
       real*8, allocatable ::  pflow(:) 
+      real*8, allocatable ::  pflowa(:)
+      real*8, allocatable ::  xairfl(:)
       real*8, allocatable ::  phi(:) 
       real*8, allocatable ::  pho(:)
       real*8, allocatable ::  pnx(:) 
@@ -508,6 +510,7 @@ c gaz 090113
       real*8, allocatable ::  vf(:) 
       real*8, allocatable ::  volume(:) 
       real*8, allocatable ::  wellim(:) 
+      real*8, allocatable ::  wellima(:) 
       real*8, allocatable ::  thic(:) 
       real*8, allocatable ::  strgan(:) 
       real*8, allocatable ::  alphae(:) 
@@ -697,7 +700,7 @@ c gaz 090113 array for last TS porosity
       integer, allocatable ::  pressurea_ini_type(:)
       integer, allocatable ::  temperature_ini_type(:)
 
-      integer iqa,iqw,iqenth,isatb,ienth,itempb,ipresa,ipresw
+      integer iqa,ixa,iqw,iqenth,isatb,ienth,itempb,ipresa,ipresw
       integer imped,its,imod,isubmod,iqf,icm,isf,ifd,iqco2
       integer isatb_ini,ipresa_ini,ipresw_ini,itempb_ini
       integer isteady, istdy, isty, iwght, lchange
