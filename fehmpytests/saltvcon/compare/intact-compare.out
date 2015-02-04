@@ -1,4 +1,4 @@
-FEHM V3.2.0lin 14-11-12 QA:NA    11/13/2014    16:11:26
+FEHM V3.2.0lin 15-01-20 QA:NA    01/20/2015    15:43:28
 
 Copyright  2014.   Los Alamos National Security, LLC.  This material was
 produced under U.S. Government contract DE-AC52-06NA25396 for Los Alamos
@@ -24,18 +24,18 @@ completed before LANS will provide access to the identified Software.
 
  File purpose - Variable - Unit number - File name
 
-    control       - iocntl -  1 - ../input/control/intact.files                                                                       
-    input         - inpt   - 11 - ../input/intact.dat                                                                                 
-    geometry      - incoor - 12 - ../input/1dgrid.grid                                                                                
-    zone          - inzone - 11 - ../input/intact.dat                                                                                 
-    output        - iout   - 14 - intact.out                                                                                          
+    control       - iocntl -  1 - fehmn.files                                                                                         
+    input         - inpt   - 11 - input/intact.dat                                                                                    
+    geometry      - incoor - 12 - input/1dgrid.grid                                                                                   
+    zone          - inzone - 11 - input/intact.dat                                                                                    
+    output        - iout   - 14 - output/intact.out                                                                                   
     initial state - iread  -  0 - not using                                                                                           
     final state   - isave  -  0 - not using                                                                                           
     time history  - ishis  -  0 - not using                                                                                           
     time his.(tr) - istrc  -  0 - not using                                                                                           
     contour plot  - iscon  -  0 - not using                                                                                           
     con plot (dp) - iscon1 -  0 - not using                                                                                           
-    fe coef stor  - isstor - 21 - ../input/1dgrid.stor                                                                                
+    fe coef stor  - isstor - 21 - input/1dgrid.stor                                                                                   
     input check   - ischk  -  0 - not using                                                                                           
  Value provided to subroutine user: not using
 
@@ -55,6 +55,7 @@ warning: adif value  333.00 used in salt simulation
  **** input title : perm **** inpt =  11 ****
  **** input title : rlp  **** inpt =  11 ****
  **** input title : rock **** inpt =  11 ****
+ **** input title : flxo **** inpt =  11 ****
  **** input title : time **** inpt =  11 ****
  **** input title : ctrl **** inpt =  11 ****
  **** input title : iter **** inpt =  11 ****
@@ -68,7 +69,7 @@ total pressure reset to h2o vapor pressure at initial temperature if h2o vapor p
  **** input title : rxn  **** inpt =  11 ****
  **** input title : stop **** inpt =  11 ****
  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- Coefficients read from file ../input/1dgrid.stor
+ Coefficients read from file input/1dgrid.stor
  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
  storage for geometric coefficients         17 in common(nr)         17
@@ -89,138 +90,588 @@ total pressure reset to h2o vapor pressure at initial temperature if h2o vapor p
 
 
  tracer started at days = 0.0
+
+ timestep =      1 iterations =   16 timestep size =      0.1000E-03
+    
+#### largest N-R corrections, timestep        1 ####
+ EQ1 R=  0.1382E-02 node=      2 x=0.2000E-01 y= 0.000     z= 0.000    
+ EQ2 R=  0.5290E-02 node=      3 x=0.4000E-01 y= 0.000     z= 0.000    
+ EQ3 R=   3.648     node=      3 x=0.4000E-01 y= 0.000     z= 0.000    
 *********************************************************************
  Time Step         1
 
                     Timing Information
            Years              Days         Step Size (Days)
-     0.273785079E-06     0.100000000E-03    0.100000000E-03
- Cpu Sec for Time Step =  0.1000E-02 Current Total =    0.1000E-02
+     0.547570157E-07     0.200000000E-04    0.200000000E-04
+ Cpu Sec for Time Step =   0.000     Current Total =     0.000    
 
                     Equation Performance
- Number of N-R Iterations:          6
+ Number of N-R Iterations:          7
  Avg # of Linear Equation Solver Iterations:   2.0
  Number of Active Nodes:         6.
- Total Number of Iterations, N-R:          6 , Solver:         12
- Phase Changes This Time Step:        1 Total           1
+ Total Number of Iterations, N-R:         23 , Solver:         46
+ Phase Changes This Time Step:        0 Total           0
  Number of partially filled cells            0
+ Number of restarted time steps            1
                     Largest Residuals
- EQ1 R=  0.1189E-03 node=      6 x=0.1000     y= 0.000     z= 0.000    
- EQ2 R=  0.3938E-03 node=      5 x=0.8000E-01 y= 0.000     z= 0.000    
- EQ3 R=  0.1320E-08 node=      6 x=0.1000     y= 0.000     z= 0.000    
+ EQ1 R=  0.7145E-14 node=      3 x=0.4000E-01 y= 0.000     z= 0.000    
+ EQ2 R=  0.4178E-13 node=      3 x=0.4000E-01 y= 0.000     z= 0.000    
+ EQ3 R=  0.1185E-10 node=      4 x=0.6000E-01 y= 0.000     z= 0.000    
 
                     Nodal Information (Water)
                                                   source/sink  E source/sink
    Node   P (MPa)    E (MJ)    L sat     Temp (C)    (kg/s)       (MJ/s)
-      1   0.1002      0.00     0.100       20.000    0.000       0.5336E-02
-      2   0.1018      0.00     0.115       40.000    0.000      -0.8043E-05
-      3   0.1018      0.00     0.124       60.000    0.000       0.1743E-02
-      4   0.1018      0.00     0.127       80.000    0.000       0.5100E-02
-      5   0.1018      0.00     0.132      100.000    0.000       0.3203    
-      6   0.1211      0.00      0.00      120.000    0.000      -0.3144    
+      1   0.1016      0.00     0.100       20.000    0.000       0.5379E-02
+      2   0.1534      0.00     0.120       40.159    0.000        0.000    
+      3   0.1544      0.00     0.154       63.956    0.000        0.000    
+      4   0.1558      0.00     0.160      108.767    0.000        0.000    
+      5   0.1754      0.00     0.829E-01  116.114    0.000        0.000    
+      6   0.1987      0.00     0.203E-01  120.000    0.000      -0.6090    
  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Node     perm (m2)      porosity       Kx W/(m K)     Pwv (MPa)      D*wv (m2/s)   ps_delta_rxn
-       1    0.25892E-17    0.10000E-01     5.5441        0.20470E-02    0.42630E-05   -0.52532E-08
-       2    0.11225E-12    0.10000         5.1423        0.75638E-02    0.97816E-05    0.37351E-06
-       3    0.27929E-11    0.30000         4.7918        0.20158E-01    0.15433E-04    0.51965E-06
-       4    0.27929E-11    0.50000         4.4837        0.47280E-01    0.20188E-04    0.64857E-06
-       5    0.27929E-11    0.70000         4.2108        0.10113        0.24605E-04    0.77761E-06
-       6    0.27929E-11    0.90000         3.9675        0.12112        0.34362E-04     0.0000    
- Total change in volume:   4.63341125912612696E-008  m
- Percent change in total volume:   4.63341125912612728E-005  %
+       1    0.25892E-17    0.10000E-01     5.5441        0.20470E-02    0.42708E-05   -0.11861E-08
+       2    0.11225E-12    0.10000         5.1423        0.76293E-02    0.10598E-04    0.17424E-07
+       3    0.27929E-11    0.30000         4.7918        0.24052E-01    0.17788E-04    0.26731E-07
+       4    0.27929E-11    0.50000         4.4837        0.13733        0.23618E-04    0.40580E-07
+       5    0.27929E-11    0.70000         4.2108        0.17533        0.26310E-04    0.34189E-07
+       6    0.27929E-11    0.90000         3.9675        0.19865        0.15024E-04    0.50503E-08
+ Total change in volume:   2.41711645953754397E-009  m
+ Percent change in total volume:   2.41711645953754384E-006  %
  Total Volume involved in ppor    0.10000000000000001     
  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Node     density (kg/m3)
       1      1183.2    
       2      1177.5    
-      3      1168.6    
-      4      1157.3    
-      5      1143.8    
-      6      0.0000    
+      3      1166.6    
+      4      1137.3    
+      5      1131.6    
+      6      1128.4    
 
                     Nodal Information (Gas)
         Partial P   Capillary   Liquid      Gas source/sink
-   Node Gas (MPa)   Pres (MPa)  Pres (MPa)     (kg/s)       Residual
-      1  0.9812E-01  0.1350     -0.3483E-01  0.1000E-29       0.000    
-      2  0.9422E-01  0.1327     -0.3089E-01  0.1000E-29       0.000    
-      3  0.8163E-01  0.1314     -0.2964E-01  0.1000E-29       0.000    
-      4  0.5451E-01  0.1310     -0.2923E-01  0.1000E-29       0.000    
-      5  0.6688E-03  0.1302     -0.2844E-01  0.1000E-29       0.000    
-      6  0.1677E-05  0.1500     -0.2888E-01  0.1000E-29       0.000    
+   Node Gas (MPa)   Pres (MPa)  Pres (MPa)     (kg/s)       Residual    State 
+      1  0.9959E-01  0.1350     -0.3335E-01   0.000           0.000         2
+      2  0.1458      0.1321      0.2138E-01   0.000           0.000         2
+      3  0.1303      0.1269      0.2743E-01   0.000           0.000         2
+      4  0.1843E-01  0.1260      0.2980E-01   0.000           0.000         2
+      5  0.2559E-04  0.1376      0.3779E-01   0.000           0.000         2
+      6  0.7004E-05  0.1470      0.5171E-01   0.000           0.000         2
 
-net gas discharge     0.51840E-28 con error gas      0.0000    
+net gas discharge      0.0000     con error gas      0.0000    
 
 this time step discharges : ,gas
       0.000E+00 kg 
 
 cumulative discharges : ,gas
-      5.184E-29 kg 
+      0.000E+00 kg 
+
+                    Internode Fluxes
+ Node1  Node2           X,Y,Z Vapor Flux(kg/sec)          X,Y,Z Liquid Flux (kg/sec)
+                   1         5   (call number,number of pairs)
+     1      2 -.104661E-05 -.000000E+00 -.000000E+00 -.305652E-05 -.000000E+00 -.000000E+00
+     2      3 -.650779E-03 -.000000E+00 -.000000E+00 -.266152E-01 -.000000E+00 -.000000E+00
+     3      4 -.110947E-01 -.000000E+00 -.000000E+00 -.234642E+00 -.000000E+00 -.000000E+00
+     4      5 -.195049E+00 -.000000E+00 -.000000E+00 -.436405E+00 -.000000E+00 -.000000E+00
+     5      6 -.275641E+00 -.000000E+00 -.000000E+00 -.192239E+00 -.000000E+00 -.000000E+00
+ Node1            X,Y,Z      Coordinates  Node2          X,Y,Z        Coordinates
+                   1         5   (call number,number of pairs)
+     1        0.0        0.0        0.0      2        0.0        0.0        0.0
+     2        0.0        0.0        0.0      3        0.0        0.0        0.0
+     3        0.0        0.0        0.0      4        0.1        0.0        0.0
+     4        0.1        0.0        0.0      5        0.1        0.0        0.0
+     5        0.1        0.0        0.0      6        0.1        0.0        0.0
 
                     Global Mass & Energy Balances
  Total mass in system at this time:            0.474265E+01 kg
- Total mass of steam in system at this time:   0.166854E-01 kg
- Total enthalpy in system at this time:        0.828827E+01 MJ
+ Total mass of steam in system at this time:   0.302545E-01 kg
+ Total enthalpy in system at this time:        0.948744E+01 MJ
 
  Water discharge this time step:   0.000000E+00 kg (0.000000E+00 kg/s)
  Water input this time step:       0.000000E+00 kg (0.000000E+00 kg/s)
  Total water discharge:            0.000000E+00 kg (0.000000E+00 kg/s)
  Total water input:                0.000000E+00 kg (0.000000E+00 kg/s)
 
- Enthalpy discharge this time step:  0.287296E+01 MJ (0.332519E+00 MJ/s)
- Enthalpy input this time step:      0.271685E+01 MJ (0.314450E+00 MJ/s)
- Total enthalpy discharge:           0.287296E+01 MJ (0.332519E+00 MJ/s)
- Total enthalpy input:               0.271685E+01 MJ (0.314450E+00 MJ/s)
+ Enthalpy discharge this time step:  0.929465E-02 MJ (0.537885E-02 MJ/s)
+ Enthalpy input this time step:      0.105236E+01 MJ (0.609004E+00 MJ/s)
+ Total enthalpy discharge:           0.929465E-02 MJ (0.537885E-02 MJ/s)
+ Total enthalpy input:               0.105236E+01 MJ (0.609004E+00 MJ/s)
 
  Net kg water discharge (total out-total in):   0.000000E+00
- Net MJ energy discharge (total out-total in):   0.156113E+00
- Conservation Errors:   0.000000E+00 (mass),   0.253229E-06 (energy)
+ Net MJ energy discharge (total out-total in):  -0.104306E+01
+ Conservation Errors:   0.000000E+00 (mass),  -0.180428E-08 (energy)
 
                    *************************
- Solute information at time =   0.100000E-03 days
- Average step size =   0.100000E-03    Iter =     0
+ Solute information at time =   0.200000E-04 days
+ Average step size =   0.200000E-04    Iter =     0
 
                     Nodal Information (Tracer)
  Solute output information, species number     1
                                                  src/sink     sinkint      equation
     Node      an          anl          anv         mol/s                   residual
-       1   6.1564       6.1564       0.0000       0.0000       0.0000      0.10383E-14
-       2   5.1917       5.1917       0.0000       0.0000       0.0000      0.93051E-15
-       3   4.8738       4.8738       0.0000       0.0000       0.0000      0.10954E-14
-       4   4.6077       4.6077       0.0000       0.0000       0.0000     -0.11356E-14
-       5   4.3416       4.3416       0.0000       0.0000       0.0000      0.90579E-15
-       6   59399.       59399.       0.0000       0.0000       0.0000      0.38131E-10
+       1   6.1583       6.1583       0.0000       0.0000       0.0000     -0.29297E-15
+       2   5.9948       5.9948       0.0000       0.0000       0.0000      0.94740E-16
+       3   6.0006       6.0006       0.0000       0.0000       0.0000     -0.77541E-15
+       4   6.1389       6.1389       0.0000       0.0000       0.0000      0.56382E-15
+       5   6.3042       6.3042       0.0000       0.0000       0.0000     -0.54874E-15
+       6   6.7912       6.7912       0.0000       0.0000       0.0000      0.73248E-15
 
    initial mass =                      0.290914E+02 mol
-   current mass =                      0.216229E+02 mol
+   current mass =                      0.290915E+02 mol
    total injected mass =               0.000000E+00 mol (0.000000E+00 mol/s)
    total produced mass =               0.000000E+00 mol (0.000000E+00 mol/s)
-   total mass produced by reaction =  -0.746851E+01 mol
-   net mass balance =                  0.710543E-14 mol
+   total mass produced by reaction =   0.937824E-04 mol
+   net mass balance =                  0.299913E-14 mol
 
                     Nodal Information (Tracer)
  Solute output information, species number     2
                                                  src/sink     sinkint      equation
     Node      an          anl          anv         mol/s                   residual
-       1   17.241       17.241       0.0000       0.0000       0.0000      0.10383E-14
-       2   17.241       17.241       0.0000       0.0000       0.0000      0.93051E-15
-       3   17.241       17.241       0.0000       0.0000       0.0000      0.10954E-14
-       4   17.241       17.241       0.0000       0.0000       0.0000     -0.11356E-14
-       5   17.241       17.241       0.0000       0.0000       0.0000      0.90579E-15
-       6   17.241       17.241       0.0000       0.0000       0.0000      0.38131E-10
+       1   17.241       17.241       0.0000       0.0000       0.0000     -0.29297E-15
+       2   17.241       17.241       0.0000       0.0000       0.0000      0.94740E-16
+       3   17.241       17.241       0.0000       0.0000       0.0000     -0.77541E-15
+       4   17.241       17.241       0.0000       0.0000       0.0000      0.56382E-15
+       5   17.241       17.241       0.0000       0.0000       0.0000     -0.54874E-15
+       6   17.241       17.241       0.0000       0.0000       0.0000      0.73248E-15
 
    initial mass =                      0.373276E+04 mol
    current mass =                      0.373276E+04 mol
    total injected mass =               0.000000E+00 mol (0.000000E+00 mol/s)
    total produced mass =               0.000000E+00 mol (0.000000E+00 mol/s)
-   total mass produced by reaction =   0.746851E+01 mol
-   net mass balance =                 -0.746851E+01 mol
+   total mass produced by reaction =  -0.937824E-04 mol
+   net mass balance =                  0.937824E-04 mol
+*********************************************************************
+ Time Step         2
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+     0.136892539E-06     0.500000000E-04    0.300000000E-04
+ Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+
+                    Equation Performance
+ Number of N-R Iterations:         10
+ Avg # of Linear Equation Solver Iterations:   2.0
+ Number of Active Nodes:         6.
+ Total Number of Iterations, N-R:         33 , Solver:         66
+ Phase Changes This Time Step:        0 Total           0
+ Number of partially filled cells            0
+ Number of restarted time steps            1
+                    Largest Residuals
+ EQ1 R=  0.4997E-08 node=      6 x=0.1000     y= 0.000     z= 0.000    
+ EQ2 R=  0.3736E-07 node=      6 x=0.1000     y= 0.000     z= 0.000    
+ EQ3 R=  0.1262E-05 node=      3 x=0.4000E-01 y= 0.000     z= 0.000    
+
+                    Nodal Information (Water)
+                                                  source/sink  E source/sink
+   Node   P (MPa)    E (MJ)    L sat     Temp (C)    (kg/s)       (MJ/s)
+      1   0.1058      0.00     0.100       20.000    0.000       0.5454E-02
+      2   0.1809      0.00     0.140       40.447    0.000        0.000    
+      3   0.1811      0.00     0.162       69.991    0.000        0.000    
+      4   0.1842      0.00     0.142      117.314    0.000        0.000    
+      5   0.1914      0.00     0.862E-01  118.828    0.000        0.000    
+      6   0.1987      0.00     0.254E-01  120.000    0.000      -0.1894    
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   Node     perm (m2)      porosity       Kx W/(m K)     Pwv (MPa)      D*wv (m2/s)   ps_delta_rxn
+       1    0.25892E-17    0.10000E-01     5.5441        0.20470E-02    0.42018E-05   -0.23331E-09
+       2    0.11225E-12    0.10000         5.1393        0.77489E-02    0.65777E-05    0.14256E-07
+       3    0.27929E-11    0.30000         4.7278        0.31240E-01    0.96851E-05    0.22757E-07
+       4    0.27929E-11    0.50000         4.1008        0.18228        0.13577E-04    0.21263E-07
+       5    0.27929E-11    0.70000         4.0127        0.19137        0.17582E-04    0.12433E-07
+       6    0.27929E-11    0.90000         3.9675        0.19865        0.20077E-04    0.36379E-08
+ Total change in volume:   7.03341419086914252E-009  m
+ Percent change in total volume:   7.03341419086914250E-006  %
+ Total Volume involved in ppor    0.10000000000000001     
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   Node     density (kg/m3)
+      1      1183.2    
+      2      1172.4    
+      3      1158.5    
+      4      1130.0    
+      5      1133.7    
+      6      1147.4    
+
+                    Nodal Information (Gas)
+        Partial P   Capillary   Liquid      Gas source/sink
+   Node Gas (MPa)   Pres (MPa)  Pres (MPa)     (kg/s)       Residual    State 
+      1  0.1037      0.1350     -0.2922E-01   0.000           0.000         2
+      2  0.1731      0.1290      0.5187E-01   0.000           0.000         2
+      3  0.1499      0.1256      0.5547E-01   0.000           0.000         2
+      4  0.1927E-02  0.1286      0.5557E-01   0.000           0.000         2
+      5  0.2045E-05  0.1371      0.5430E-01   0.000           0.000         2
+      6  0.3040E-06  0.1462      0.5246E-01   0.000           0.000         2
+
+net gas discharge      0.0000     con error gas      0.0000    
+
+this time step discharges : ,gas
+      0.000E+00 kg 
+
+cumulative discharges : ,gas
+      0.000E+00 kg 
+
+                    Internode Fluxes
+ Node1  Node2           X,Y,Z Vapor Flux(kg/sec)          X,Y,Z Liquid Flux (kg/sec)
+                   1         5   (call number,number of pairs)
+     1      2 -.174451E-05 -.000000E+00 -.000000E+00 -.531235E-05 -.000000E+00 -.000000E+00
+     2      3 -.199758E-03 -.000000E+00 -.000000E+00 -.181081E-01 -.000000E+00 -.000000E+00
+     3      4 -.300311E-01 -.000000E+00 -.000000E+00 -.888940E-02 -.000000E+00 -.000000E+00
+     4      5 -.765824E-01 -.000000E+00 -.000000E+00 0.119702E+00 0.000000E+00 0.000000E+00
+     5      6 -.856532E-01 -.000000E+00 -.000000E+00 0.107285E+00 0.000000E+00 0.000000E+00
+ Node1            X,Y,Z      Coordinates  Node2          X,Y,Z        Coordinates
+                   1         5   (call number,number of pairs)
+     1        0.0        0.0        0.0      2        0.0        0.0        0.0
+     2        0.0        0.0        0.0      3        0.0        0.0        0.0
+     3        0.0        0.0        0.0      4        0.1        0.0        0.0
+     4        0.1        0.0        0.0      5        0.1        0.0        0.0
+     5        0.1        0.0        0.0      6        0.1        0.0        0.0
+
+                    Global Mass & Energy Balances
+ Total mass in system at this time:            0.474265E+01 kg
+ Total mass of steam in system at this time:   0.336645E-01 kg
+ Total enthalpy in system at this time:        0.996425E+01 MJ
+
+ Water discharge this time step:   0.000000E+00 kg (0.000000E+00 kg/s)
+ Water input this time step:       0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water discharge:            0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water input:                0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Enthalpy discharge this time step:  0.141375E-01 MJ (0.545428E-02 MJ/s)
+ Enthalpy input this time step:      0.490941E+00 MJ (0.189406E+00 MJ/s)
+ Total enthalpy discharge:           0.234321E-01 MJ (0.542411E-02 MJ/s)
+ Total enthalpy input:               0.154330E+01 MJ (0.357245E+00 MJ/s)
+
+ Net kg water discharge (total out-total in):   0.000000E+00
+ Net MJ energy discharge (total out-total in):  -0.151987E+01
+ Conservation Errors:   0.000000E+00 (mass),   0.106061E-07 (energy)
+
+                   *************************
+ Solute information at time =   0.500000E-04 days
+ Average step size =   0.150000E-04    Iter =     0
+
+                    Nodal Information (Tracer)
+ Solute output information, species number     1
+                                                 src/sink     sinkint      equation
+    Node      an          anl          anv         mol/s                   residual
+       1   6.1484       6.1484       0.0000       0.0000       0.0000      0.38715E-16
+       2   5.8409       5.8409       0.0000       0.0000       0.0000     -0.85369E-16
+       3   5.7693       5.7693       0.0000       0.0000       0.0000     -0.32515E-15
+       4   6.1876       6.1876       0.0000       0.0000       0.0000     -0.23199E-15
+       5   6.4739       6.4739       0.0000       0.0000       0.0000      0.19244E-15
+       6   6.7569       6.7569       0.0000       0.0000       0.0000      0.66219E-16
+
+   initial mass =                      0.290914E+02 mol
+   current mass =                      0.290917E+02 mol
+   total injected mass =               0.000000E+00 mol (0.000000E+00 mol/s)
+   total produced mass =               0.000000E+00 mol (0.000000E+00 mol/s)
+   total mass produced by reaction =   0.272891E-03 mol
+   net mass balance =                  0.292301E-14 mol
+
+                    Nodal Information (Tracer)
+ Solute output information, species number     2
+                                                 src/sink     sinkint      equation
+    Node      an          anl          anv         mol/s                   residual
+       1   17.241       17.241       0.0000       0.0000       0.0000      0.38715E-16
+       2   17.241       17.241       0.0000       0.0000       0.0000     -0.85369E-16
+       3   17.241       17.241       0.0000       0.0000       0.0000     -0.32515E-15
+       4   17.241       17.241       0.0000       0.0000       0.0000     -0.23199E-15
+       5   17.241       17.241       0.0000       0.0000       0.0000      0.19244E-15
+       6   17.241       17.241       0.0000       0.0000       0.0000      0.66219E-16
+
+   initial mass =                      0.373276E+04 mol
+   current mass =                      0.373276E+04 mol
+   total injected mass =               0.000000E+00 mol (0.000000E+00 mol/s)
+   total produced mass =               0.000000E+00 mol (0.000000E+00 mol/s)
+   total mass produced by reaction =  -0.272891E-03 mol
+   net mass balance =                  0.272891E-03 mol
+*********************************************************************
+ Time Step         3
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+     0.260095825E-06     0.950000000E-04    0.450000000E-04
+ Cpu Sec for Time Step =   0.000     Current Total =    0.1000E-02
+
+                    Equation Performance
+ Number of N-R Iterations:          3
+ Avg # of Linear Equation Solver Iterations:   2.0
+ Number of Active Nodes:         6.
+ Total Number of Iterations, N-R:         36 , Solver:         72
+ Phase Changes This Time Step:        0 Total           0
+ Number of partially filled cells            0
+ Number of restarted time steps            1
+                    Largest Residuals
+ EQ1 R=  0.1206E-08 node=      3 x=0.4000E-01 y= 0.000     z= 0.000    
+ EQ2 R=  0.9690E-08 node=      3 x=0.4000E-01 y= 0.000     z= 0.000    
+ EQ3 R=  0.3932E-05 node=      3 x=0.4000E-01 y= 0.000     z= 0.000    
+
+                    Nodal Information (Water)
+                                                  source/sink  E source/sink
+   Node   P (MPa)    E (MJ)    L sat     Temp (C)    (kg/s)       (MJ/s)
+      1   0.1124      0.00     0.100       20.000    0.000       0.5543E-02
+      2   0.1897      0.00     0.142       40.791    0.000        0.000    
+      3   0.1897      0.00     0.143       76.425    0.000        0.000    
+      4   0.1919      0.00     0.123      118.887    0.000        0.000    
+      5   0.1953      0.00     0.895E-01  119.466    0.000        0.000    
+      6   0.1987      0.00     0.546E-01  120.000    0.000      -0.8431E-01
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   Node     perm (m2)      porosity       Kx W/(m K)     Pwv (MPa)      D*wv (m2/s)   ps_delta_rxn
+       1    0.25892E-17    0.10000E-01     5.5441        0.20470E-02    0.40372E-05    0.42132E-09
+       2    0.11225E-12    0.10000         5.1339        0.78936E-02    0.51806E-05    0.26593E-07
+       3    0.27929E-11    0.30000         4.6331        0.40885E-01    0.80540E-05    0.44284E-07
+       4    0.27929E-11    0.50000         3.9986        0.19173        0.12530E-04    0.44975E-07
+       5    0.27929E-11    0.70000         3.9810        0.19531        0.16180E-04    0.30023E-07
+       6    0.27929E-11    0.90000         3.9675        0.19865        0.20342E-04    0.12223E-07
+ Total change in volume:   1.41790416218791348E-008  m
+ Percent change in total volume:   1.41790416218791332E-005  %
+ Total Volume involved in ppor    0.10000000000000001     
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   Node     density (kg/m3)
+      1      1182.9    
+      2      1167.7    
+      3      1147.7    
+      4      1130.2    
+      5      1138.3    
+      6      1146.4    
+
+                    Nodal Information (Gas)
+        Partial P   Capillary   Liquid      Gas source/sink
+   Node Gas (MPa)   Pres (MPa)  Pres (MPa)     (kg/s)       Residual    State 
+      1  0.1104      0.1349     -0.2254E-01   0.000           0.000         2
+      2  0.1818      0.1286      0.6102E-01   0.000           0.000         2
+      3  0.1488      0.1285      0.6124E-01   0.000           0.000         2
+      4  0.1921E-03  0.1316      0.6030E-01   0.000           0.000         2
+      5  0.2151E-06  0.1366      0.5874E-01   0.000           0.000         2
+      6  0.1895E-07  0.1418      0.5685E-01   0.000           0.000         2
+
+net gas discharge      0.0000     con error gas      0.0000    
+
+this time step discharges : ,gas
+      0.000E+00 kg 
+
+cumulative discharges : ,gas
+      0.000E+00 kg 
+
+                    Internode Fluxes
+ Node1  Node2           X,Y,Z Vapor Flux(kg/sec)          X,Y,Z Liquid Flux (kg/sec)
+                   1         5   (call number,number of pairs)
+     1      2 -.187381E-05 -.000000E+00 -.000000E+00 -.557719E-05 -.000000E+00 -.000000E+00
+     2      3 -.482484E-04 -.000000E+00 -.000000E+00 -.102711E-02 -.000000E+00 -.000000E+00
+     3      4 -.226986E-01 -.000000E+00 -.000000E+00 0.580079E-01 0.000000E+00 0.000000E+00
+     4      5 -.366706E-01 -.000000E+00 -.000000E+00 0.129367E+00 0.000000E+00 0.000000E+00
+     5      6 -.381840E-01 -.000000E+00 -.000000E+00 0.115660E+00 0.000000E+00 0.000000E+00
+ Node1            X,Y,Z      Coordinates  Node2          X,Y,Z        Coordinates
+                   1         5   (call number,number of pairs)
+     1        0.0        0.0        0.0      2        0.0        0.0        0.0
+     2        0.0        0.0        0.0      3        0.0        0.0        0.0
+     3        0.0        0.0        0.0      4        0.1        0.0        0.0
+     4        0.1        0.0        0.0      5        0.1        0.0        0.0
+     5        0.1        0.0        0.0      6        0.1        0.0        0.0
+
+                    Global Mass & Energy Balances
+ Total mass in system at this time:            0.474265E+01 kg
+ Total mass of steam in system at this time:   0.345462E-01 kg
+ Total enthalpy in system at this time:        0.102705E+02 MJ
+
+ Water discharge this time step:   0.000000E+00 kg (0.000000E+00 kg/s)
+ Water input this time step:       0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water discharge:            0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water input:                0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Enthalpy discharge this time step:  0.215511E-01 MJ (0.554298E-02 MJ/s)
+ Enthalpy input this time step:      0.327816E+00 MJ (0.843147E-01 MJ/s)
+ Total enthalpy discharge:           0.449833E-01 MJ (0.548042E-02 MJ/s)
+ Total enthalpy input:               0.187111E+01 MJ (0.227962E+00 MJ/s)
+
+ Net kg water discharge (total out-total in):   0.000000E+00
+ Net MJ energy discharge (total out-total in):  -0.182613E+01
+ Conservation Errors:   0.000000E+00 (mass),   0.192476E-07 (energy)
+
+                   *************************
+ Solute information at time =   0.950000E-04 days
+ Average step size =   0.150000E-04    Iter =     0
+
+                    Nodal Information (Tracer)
+ Solute output information, species number     1
+                                                 src/sink     sinkint      equation
+    Node      an          anl          anv         mol/s                   residual
+       1   6.1358       6.1358       0.0000       0.0000       0.0000      0.60709E-15
+       2   5.8499       5.8499       0.0000       0.0000       0.0000     -0.41601E-16
+       3   5.7960       5.7960       0.0000       0.0000       0.0000      0.40759E-15
+       4   6.1284       6.1284       0.0000       0.0000       0.0000     -0.65022E-15
+       5   6.3764       6.3764       0.0000       0.0000       0.0000      0.10272E-14
+       6   6.6707       6.6707       0.0000       0.0000       0.0000     -0.12189E-14
+
+   initial mass =                      0.290914E+02 mol
+   current mass =                      0.290919E+02 mol
+   total injected mass =               0.000000E+00 mol (0.000000E+00 mol/s)
+   total produced mass =               0.000000E+00 mol (0.000000E+00 mol/s)
+   total mass produced by reaction =   0.550137E-03 mol
+   net mass balance =                 -0.106512E-14 mol
+
+                    Nodal Information (Tracer)
+ Solute output information, species number     2
+                                                 src/sink     sinkint      equation
+    Node      an          anl          anv         mol/s                   residual
+       1   17.241       17.241       0.0000       0.0000       0.0000      0.60709E-15
+       2   17.241       17.241       0.0000       0.0000       0.0000     -0.41601E-16
+       3   17.241       17.241       0.0000       0.0000       0.0000      0.40759E-15
+       4   17.241       17.241       0.0000       0.0000       0.0000     -0.65022E-15
+       5   17.241       17.241       0.0000       0.0000       0.0000      0.10272E-14
+       6   17.241       17.241       0.0000       0.0000       0.0000     -0.12189E-14
+
+   initial mass =                      0.373276E+04 mol
+   current mass =                      0.373276E+04 mol
+   total injected mass =               0.000000E+00 mol (0.000000E+00 mol/s)
+   total produced mass =               0.000000E+00 mol (0.000000E+00 mol/s)
+   total mass produced by reaction =  -0.550137E-03 mol
+   net mass balance =                  0.550137E-03 mol
+*********************************************************************
+ Time Step         4
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+     0.273785079E-06     0.100000000E-03    0.500000000E-05
+ Cpu Sec for Time Step =   0.000     Current Total =    0.1000E-02
+
+                    Equation Performance
+ Number of N-R Iterations:          2
+ Avg # of Linear Equation Solver Iterations:   2.0
+ Number of Active Nodes:         6.
+ Total Number of Iterations, N-R:         38 , Solver:         76
+ Phase Changes This Time Step:        0 Total           0
+ Number of partially filled cells            0
+ Number of restarted time steps            1
+                    Largest Residuals
+ EQ1 R=  0.9006E-09 node=      3 x=0.4000E-01 y= 0.000     z= 0.000    
+ EQ2 R=  0.2009E-08 node=      2 x=0.2000E-01 y= 0.000     z= 0.000    
+ EQ3 R=  0.4323E-06 node=      3 x=0.4000E-01 y= 0.000     z= 0.000    
+
+                    Nodal Information (Water)
+                                                  source/sink  E source/sink
+   Node   P (MPa)    E (MJ)    L sat     Temp (C)    (kg/s)       (MJ/s)
+      1   0.1131      0.00     0.100       20.000    0.000       0.5549E-02
+      2   0.1905      0.00     0.142       40.828    0.000        0.000    
+      3   0.1905      0.00     0.141       77.094    0.000        0.000    
+      4   0.1926      0.00     0.121      119.005    0.000        0.000    
+      5   0.1956      0.00     0.902E-01  119.517    0.000        0.000    
+      6   0.1987      0.00     0.580E-01  120.000    0.000      -0.7595E-01
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   Node     perm (m2)      porosity       Kx W/(m K)     Pwv (MPa)      D*wv (m2/s)   ps_delta_rxn
+       1    0.25892E-17    0.10000E-01     5.5441        0.20470E-02    0.37957E-05    0.13480E-09
+       2    0.11225E-12    0.10000         5.1275        0.79093E-02    0.49054E-05    0.70200E-08
+       3    0.27929E-11    0.30000         4.5360        0.42021E-01    0.85432E-05    0.10948E-07
+       4    0.27929E-11    0.50000         3.9803        0.19245        0.13048E-04    0.11170E-07
+       5    0.27929E-11    0.70000         3.9736        0.19563        0.15718E-04    0.83182E-08
+       6    0.27929E-11    0.90000         3.9675        0.19865        0.18443E-04    0.56587E-08
+ Total change in volume:   1.49861046686190783E-008  m
+ Percent change in total volume:   1.49861046686190769E-005  %
+ Total Volume involved in ppor    0.10000000000000001     
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   Node     density (kg/m3)
+      1      1182.5    
+      2      1167.9    
+      3      1148.1    
+      4      1128.3    
+      5      1135.3    
+      6      1143.8    
+
+                    Nodal Information (Gas)
+        Partial P   Capillary   Liquid      Gas source/sink
+   Node Gas (MPa)   Pres (MPa)  Pres (MPa)     (kg/s)       Residual    State 
+      1  0.1111      0.1349     -0.2178E-01   0.000           0.000         2
+      2  0.1826      0.1287      0.6182E-01   0.000           0.000         2
+      3  0.1485      0.1289      0.6167E-01   0.000           0.000         2
+      4  0.1029E-03  0.1319      0.6068E-01   0.000           0.000         2
+      5  0.1142E-06  0.1365      0.5915E-01   0.000           0.000         2
+      6  0.7430E-08  0.1413      0.5735E-01   0.000           0.000         2
+
+net gas discharge      0.0000     con error gas      0.0000    
+
+this time step discharges : ,gas
+      0.000E+00 kg 
+
+cumulative discharges : ,gas
+      0.000E+00 kg 
+
+                    Internode Fluxes
+ Node1  Node2           X,Y,Z Vapor Flux(kg/sec)          X,Y,Z Liquid Flux (kg/sec)
+                   1         5   (call number,number of pairs)
+     1      2 -.188348E-05 -.000000E+00 -.000000E+00 -.558103E-05 -.000000E+00 -.000000E+00
+     2      3 -.439337E-04 -.000000E+00 -.000000E+00 0.432347E-03 0.000000E+00 0.000000E+00
+     3      4 -.209813E-01 -.000000E+00 -.000000E+00 0.610896E-01 0.000000E+00 0.000000E+00
+     4      5 -.332952E-01 -.000000E+00 -.000000E+00 0.124074E+00 0.000000E+00 0.000000E+00
+     5      6 -.344100E-01 -.000000E+00 -.000000E+00 0.110873E+00 0.000000E+00 0.000000E+00
+ Node1            X,Y,Z      Coordinates  Node2          X,Y,Z        Coordinates
+                   1         5   (call number,number of pairs)
+     1        0.0        0.0        0.0      2        0.0        0.0        0.0
+     2        0.0        0.0        0.0      3        0.0        0.0        0.0
+     3        0.0        0.0        0.0      4        0.1        0.0        0.0
+     4        0.1        0.0        0.0      5        0.1        0.0        0.0
+     5        0.1        0.0        0.0      6        0.1        0.0        0.0
+
+                    Global Mass & Energy Balances
+ Total mass in system at this time:            0.474265E+01 kg
+ Total mass of steam in system at this time:   0.346154E-01 kg
+ Total enthalpy in system at this time:        0.103009E+02 MJ
+
+ Water discharge this time step:   0.000000E+00 kg (0.000000E+00 kg/s)
+ Water input this time step:       0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water discharge:            0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water input:                0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Enthalpy discharge this time step:  0.239726E-02 MJ (0.554921E-02 MJ/s)
+ Enthalpy input this time step:      0.328103E-01 MJ (0.759498E-01 MJ/s)
+ Total enthalpy discharge:           0.473805E-01 MJ (0.548386E-02 MJ/s)
+ Total enthalpy input:               0.190393E+01 MJ (0.220362E+00 MJ/s)
+
+ Net kg water discharge (total out-total in):   0.000000E+00
+ Net MJ energy discharge (total out-total in):  -0.185654E+01
+ Conservation Errors:   0.000000E+00 (mass),   0.207469E-07 (energy)
+
+                   *************************
+ Solute information at time =   0.100000E-03 days
+ Average step size =   0.500000E-05    Iter =     0
+
+                    Nodal Information (Tracer)
+ Solute output information, species number     1
+                                                 src/sink     sinkint      equation
+    Node      an          anl          anv         mol/s                   residual
+       1   6.1345       6.1345       0.0000       0.0000       0.0000     -0.23693E-15
+       2   5.8489       5.8489       0.0000       0.0000       0.0000     -0.19174E-15
+       3   5.8417       5.8417       0.0000       0.0000       0.0000      0.39928E-15
+       4   6.1705       6.1705       0.0000       0.0000       0.0000      0.22109E-15
+       5   6.3512       6.3512       0.0000       0.0000       0.0000     -0.32662E-15
+       6   6.5200       6.5200       0.0000       0.0000       0.0000      0.31962E-15
+
+   initial mass =                      0.290914E+02 mol
+   current mass =                      0.290920E+02 mol
+   total injected mass =               0.000000E+00 mol (0.000000E+00 mol/s)
+   total produced mass =               0.000000E+00 mol (0.000000E+00 mol/s)
+   total mass produced by reaction =   0.581450E-03 mol
+   net mass balance =                  0.578617E-14 mol
+
+                    Nodal Information (Tracer)
+ Solute output information, species number     2
+                                                 src/sink     sinkint      equation
+    Node      an          anl          anv         mol/s                   residual
+       1   17.241       17.241       0.0000       0.0000       0.0000     -0.23693E-15
+       2   17.241       17.241       0.0000       0.0000       0.0000     -0.19174E-15
+       3   17.241       17.241       0.0000       0.0000       0.0000      0.39928E-15
+       4   17.241       17.241       0.0000       0.0000       0.0000      0.22109E-15
+       5   17.241       17.241       0.0000       0.0000       0.0000     -0.32662E-15
+       6   17.241       17.241       0.0000       0.0000       0.0000      0.31962E-15
+
+   initial mass =                      0.373276E+04 mol
+   current mass =                      0.373276E+04 mol
+   total injected mass =               0.000000E+00 mol (0.000000E+00 mol/s)
+   total produced mass =               0.000000E+00 mol (0.000000E+00 mol/s)
+   total mass produced by reaction =  -0.581450E-03 mol
+   net mass balance =                  0.581450E-03 mol
 
 
- simulation ended: days  1.00000000000000004792170E-04 timesteps     1
+ simulation ended: days  1.00000000000000004792170E-04 timesteps     4
 
 
- total N-R iterations =          6
- total solver iterations =         12
+ total N-R iterations =         38
+ total solver iterations =         76
 
 
  total code time(timesteps) =      0.002000
@@ -230,7 +681,7 @@ cumulative discharges : ,gas
  **** This program for                                        ****
  ****   Finite Element Heat and Mass Transfer in porous media ****
  ****---------------------------------------------------------****
- ****               Version  : FEHM V3.2.0lin 14-11-12 QA:NA  ****
- ****               End Date : 11/13/2014                     ****
- ****                   Time : 16:11:26                       ****
+ ****               Version  : FEHM V3.2.0lin 15-01-20 QA:NA  ****
+ ****               End Date : 01/20/2015                     ****
+ ****                   Time : 15:43:29                       ****
  ****---------------------------------------------------------****
