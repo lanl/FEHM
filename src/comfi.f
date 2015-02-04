@@ -254,7 +254,8 @@
       real*8, allocatable ::  pci(:) 
       real*8, allocatable ::  pcio(:)
       real*8, allocatable ::  qc(:) 
-      real*8, allocatable ::  dqpc(:) 
+      real*8, allocatable ::  qng(:)
+      real*8, allocatable ::  dqpc(:)  
       real*8, allocatable ::  sici(:) 
       real*8, allocatable ::  flux_ts(:) 
 
