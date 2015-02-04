@@ -894,7 +894,7 @@ c     ***** COMMON Block co2 *****
       allocate(dcvf(n4),dec(n4),delcf(n4),denpch(n4))
       allocate(denpci(n4),denpcj(n4),deqc(n4),devcf(n4))
       allocate(dglc(n4),dgvc(n4),dilc(n4),divc(n4))
-      allocate(dmc(n4),dqc(n4),dtpac(n4),dqpc(n4))
+      allocate(dmc(n4),dqc(n4),dtpac(n4),dqpc(n4),qng(n4))
       allocate(eskc(n4))
       allocate(sici(n4))
 c***  allocate memory to all arrays in comgi ***
