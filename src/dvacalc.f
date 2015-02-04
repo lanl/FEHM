@@ -216,6 +216,8 @@ c--------------------------------------------------------------------
       real*8 dva0,theta,p0,t0,rat,dratp,dratt,dva0d,dva0p,dva0c,dva0e
       real*8 t_min, t_max, atort, dratc, temp, temp2, diffcoeff
       real*8 tort2, dvas_denom_min, dvas_denom, s_dva_term
+      real*8,  allocatable :: dva_save(:)
+      real*8 dpsatt,dpsats,pv,dum_dva, psatl
       integer i
       parameter(dva0=2.23e-5)
       parameter(theta=1.810)
@@ -223,6 +225,8 @@ c--------------------------------------------------------------------
       parameter(t0=273.15)
       parameter(t_min=10.0,t_max=350.0)
       parameter(dvas_denom_min = 1.d-15)
+      save dva_save
+      if(.not.allocated(dva_save)) allocate (dva_save(n))
 
       if(iadif.ne.0.and.tort.ge.0.0.and.tort.le.1.0) then
          do i=1,n
@@ -269,8 +273,8 @@ c
                ddvae(i)=dva0d*dratt+dva0e*rat
                ddvac(i)=dva0d*dratc+dva0c*rat
             else
-               ddvae(i)=-tort*ps(i)*dva0*rat
-               ddvac(i)=0.0
+               ddvac(i)=-tort*ps(i)*dva0*rat
+               ddvae(i)=0.0
                ddvap(i)=dva0d*dratp
             endif
          enddo
@@ -373,8 +377,8 @@ c
                   ddvae(i)=dva0d*dratt+dva0e*rat
                   ddvac(i)=dva0d*dratc+dva0c*rat
                else
-                  ddvae(i)=-tort2*ps(i)*dva0*rat
-                  ddvac(i)=0.0
+                  ddvac(i)=-tort2*ps(i)*dva0*rat
+                  ddvae(i)=0.0
                   ddvap(i)=dva0d*dratp
                endif
 
@@ -419,12 +423,14 @@ c     dratc=-rat/phi(i)
               rat=(p0/phi(i))*((t_min+t0)/t0)**theta
               dratp=-rat/phi(i)
               dratt=0.0
-              dratc=-rat/phi(i)
+c     dratc=-rat/phi(i)
+              dratc = 0.0
            else if(t(i).gt.t_max) then
               rat=(p0/phi(i))*((t_max+t0)/t0)**theta
               dratp=-rat/phi(i)
               dratt=0.0
-              dratc=-rat/phi(i)
+c              dratc=-rat/phi(i)
+              dratc = 0.0
            endif
 c
            dva0d=tort2*ps(i)*(1.0-s(i))*dva0
@@ -437,18 +443,36 @@ c
            dva0p=0.0
            dva0c=0.0
            dva0e=0.0
-           dva(i)=dva0d*rat
+         if(iad.eq.0) then
+c explicit update
+           dva(i)=dva0d*rat 
+           dva_save(i) = dva(i)
 c           dvas(i) = dva(i)/(temp)
 c          if(iatty.NE.0) write(iatty,*) 'dvacalc dva=',dva(i),tort2,dva0
+
            if(ieos(i).ne.2) then
               ddvap(i)=dva0d*dratp+dva0p*rat
               ddvae(i)=dva0d*dratt+dva0e*rat
               ddvac(i)=dva0d*dratc+dva0c*rat
            else
-              ddvae(i)=-tort2*ps(i)*dva0*rat
-              ddvac(i)=0.0
-              ddvap(i)=dva0d*dratp
+c              if(isalt.ne.0) then
+c               call saltctr(1,i,dpsatt,dpsats)
+c              else
+c               pv = psatl(t(i),0.0d0,dum_dva,dpsatt,dpsats,0)
+c              endif
+c using dpsatt = 1./dtsatp (dps/dts = 1/(dts/dps)
+c gaz debug 012015 the ddvac and ddvae seem reversed but it works
+c              ddvac(i)=-tort2*ps(i)*dva0*rat
+cc              ddvae(i)=dva0d*(dratt)
+c              ddvap(i)=dva0d*(dratp + dratt/dpsatt)
+c              ddvap(i)=dva0d*(dratp )
            endif
+              ddvae(i)=0.0
+              ddvac(i)=0.0
+              ddvap(i)=0.0
+          else
+          dva(i) = dva_save(i)
+          endif
         enddo      ! (i = 1,n)
 
       endif     !   (tort.EQ.333)
