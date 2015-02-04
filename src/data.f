@@ -847,6 +847,7 @@ c zero out include comfi
       denpci=0
       denpcj=0
       deqc=0
+      dqpc=0
       devcf=0
       dglc=0
       dgvc=0
