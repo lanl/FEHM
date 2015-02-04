@@ -148,7 +148,7 @@ c
          write(iatty,*)
         endif 
           write(ierr,*) '>> insufficient NR closure (macro nrst)  <<' 
-        stop      
+            
        endif
             
       else if(iflg.eq.1) then
