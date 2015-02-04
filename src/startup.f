@@ -1485,9 +1485,11 @@ c**** calculate initial mass and energy for component system ****
          aener = ame
          asteam = astmo
       end if
-
+c
 c**** initialize noncondensible and ice arrays if applicable ****
       call co2ctr (1)
+c added call 122314 split funcionality
+      call co2ctr (-1)
       dtotdm = dtot
       if (icgts .gt. 0)  then
          do nicg = 1, icgts
