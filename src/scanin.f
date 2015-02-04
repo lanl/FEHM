@@ -393,6 +393,7 @@ c**** read startup parameters ****
 
 c zvd 17-Aug-09 move boun flag initializations here
       iqa=0
+      ixa = 0
       iqw=0
       iqf=0
       iqenth=0
@@ -780,6 +781,8 @@ c            backspace locunitnum
             icm=1
          else if(wdd1(1:2).eq.'sa') then
             iqa=1
+         else if(wdd1(1:3).eq.'fxa') then
+            ixa=1
          else if(wdd1(1:3).eq.'swf') then
             iqf=1
          else if(wdd1(1:2).eq.'sw') then
