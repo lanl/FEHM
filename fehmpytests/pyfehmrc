@@ -51,7 +51,7 @@
 	paraview_path			&	/scratch/er/dharp/source/ParaView-4.1.0-RC1-Linux-64bit/bin/paraview
 #	lagrit_path				&	c:\\users\\264485\\python\\pyfehm\\lagrit_win.exe
 #	files 					&	[outp,hist,check]
-	co2_interp_path 		& 	/scratch/er/dharp/projects/co2/co2_interp_table.txt
+	co2_interp_path 		& 	/n/swdev/FEHM_dev/FEHM_V3.2open/co2_interp_table.txt
 	
 # fdata booleans
 #	associate 				& 	True		# associate macro, zone information with nodes
