@@ -71,7 +71,8 @@
       character*400 glob_string
       character*80 title_string, formh_string 
       character*80 form1_string, form2_string, formp_string
-      character*110 formz_string
+!      character*110 formz_string
+      character*120 formz_string
       character*500 info_string
       character*90 :: formf_string
       character*28 vt_string
