@@ -2,7 +2,7 @@
 !***********************************************************************
 ! Copyright 2011 Los Alamos National Security, LLC  All rights reserved
 ! Unless otherwise indicated,  this information has been authored by an
-! employee or employees of the Los Alamos National Security, LLC (LANS),
+! employee or employees of the Los Alamos National Security, LLC (LANS),   
 ! operator of the  Los  Alamos National  Laboratory  under Contract  No.
 ! DE-AC52-06NA25396  with  the U. S. Department  of  Energy.  The  U. S.
 ! Government   has   rights  to  use,  reproduce,  and  distribute  this
@@ -609,6 +609,19 @@ c     set phase of water to 1 (liquid)
                   ieoso(i)  = ieos(i)
                enddo
             end if
+c
+c   set water BC (constant pressure) in CO2 BC set
+c
+c          go to 1599
+               do i=1,n0
+                  if(kaco2(i).lt.0.and.ka(i).eq.0) then
+                   ka(i) = -1 
+                   wellim(i) = 1.e-13
+                   pflow(i) = pflowco2(i)
+                  endif
+               enddo
+c1599     continue
+c
          else if(iflg.eq.-1) then
 c     
 c     determine phase state for water solid-liquid-gas system
@@ -1293,7 +1306,7 @@ c     CO2
      &              2x, 'W source/sink',2x,'E source/sink',/,
      &              3x,'Node',1x,'P(MPa)',4x,'Tco2(C)',3x,'Water',
      &              5x,'Diss CO2',3x,'State',5x,'(kg/s)',9x,'(MJ/s)')
- 801           format(i7, 1x, g9.4, 1x, g9.3, 1x, g9.3, 3x, g9.3, 2x,
+ 801           format(i7, 1x, g10.4, 1x, g9.3, 1x, g9.3, 3x, g9.3, 2x,
      &              i1, 5x, g11.3, 4x, g11.3)
  802           format(/, 20x, 'Nodal Information (CO2)', /, 21x,
      &              'Volume  Fraction', 6x, 'CO2', 4x, 
