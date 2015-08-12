@@ -3,6 +3,7 @@ Test-Case Descriptions
 
 .. automethod:: fehmpytests.fehmTest.avdonin
 .. automethod:: fehmpytests.fehmTest.baro_vel
+.. automethod:: fehmpytests.fehmTest.bodyforce
 .. automethod:: fehmpytests.fehmTest.boun
 .. automethod:: fehmpytests.fehmTest.cden
 .. automethod:: fehmpytests.fehmTest.cellbased
