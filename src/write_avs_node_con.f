@@ -206,7 +206,8 @@ C***********************************************************************
       real*8 complex_conc
       real*8 minc, maxc
 c gaz debug
-      parameter (minc = 1.0d-20, maxc = 1.0d+20)
+c     parameter (minc = 1.0d-20, maxc = 1.0d+20)
+      parameter (minc = 1.0d-90, maxc = 1.0d+20)
 
       save tecstring, sharestring
 

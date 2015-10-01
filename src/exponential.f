@@ -28,7 +28,9 @@ c     return:  r and its derivatives (dr1,dr2)
       star=(s-p1)/(p2-p1)
       r= star**p3
       dr = p3*star**(p3-1.0)/(p2-p1)
-      if((s-p1).eq.0.d0) dr=0.d0
+c     if((s-p1).eq.0.d0) dr=0.d0
+      if((s-p1).le.0.d0) dr=0.d0
+      if((s-p1).le.0.d0) r=0.d0
       
       end subroutine exponential
 
