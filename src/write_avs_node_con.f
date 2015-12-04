@@ -220,7 +220,7 @@ c     parameter (minc = 1.0d-20, maxc = 1.0d+20)
       allocate(antmp(n0,nspeci))
       do i = 1, nspeci
        ip1 = (i-1)*n0 + 1
-       ip2 = ip1 + n0
+       ip2 = ip1 + n0 -1
        an_dum(1:n0,i) = an(ip1:ip2)
        anv_dum(1:n0,i) = anv(ip1:ip2)
       enddo
@@ -614,17 +614,31 @@ c=======================================================
      2        write(lu,'(i3, 100(1x, i1))')itotal2,(t1(i),i=1,itotal2)
 
 
+c------CHU 12/02/2015  change so when rxn on, anv output correctly in con files
          do i = 1,ncpntprt
             ic = cpntprt(i)
             irxn_title = irxn_title + 1
-            if (altc(1:3) .eq. 'avs' .and. altc(4:4) .ne. 'x') then
-               title(irxn_title) = trim(dual_char)//trim(cpntnam(ic))
-               write(lu,190) trim(title(irxn_title))
-            else
+            if (icns(i) .eq. -2) then
+              do j=1, nspeci
+                   do k = 1, n0
+                      an_dum(k+add_dual,j) = anv_dum(k+add_dual,j)
+                   end do
+              end do
                title(irxn_title)= trim(dual_char)
+     &              //trim(cpntnam(ic))//' (Moles/kg Vapor)'
+
+            else
+
+            	if (altc(1:3) .eq. 'avs' .and. altc(4:4) .ne. 'x') then
+               		title(irxn_title) = trim(dual_char)//trim(cpntnam(ic))
+               		write(lu,190) trim(title(irxn_title))
+            	else
+               		title(irxn_title)= trim(dual_char)
      &              //trim(cpntnam(ic))//' (Moles/kg H20)'
+            	end if
             end if
          enddo
+c------CHU 12/02/2015  change so when rxn on, anv output correctly in con files
 
          do i = 1,nimmprt
             im = immprt(i)
