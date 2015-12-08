@@ -1,0 +1,18 @@
+input: ../input/2phase_rlp.dat
+outpu: 2phase_rlp.out
+rsto:  2phase_rlp.fin
+hist:  2phase_rlp.his
+root:  2phase_rlp
+nopf:  ../input/richards.nop
+
+none
+0
+
+
+
+
+
+
+
+
+

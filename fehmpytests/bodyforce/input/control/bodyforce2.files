@@ -1,0 +1,9 @@
+input: ../input/bodyforce2.dat
+grida: ../input/grid.grid
+rsto: 
+outp: bodyforce2.out
+check: 
+hist: 
+root:bodyforce2
+
+all

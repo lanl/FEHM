@@ -1,0 +1,18 @@
+input: ../input/rich_rlp.dat
+outpu: rich_rlp.out
+rsto:  rich_rlp.fin
+hist:  rich_rlp.his
+root:  rich_rlp
+nopf:  ../input/richards.nop
+
+none
+0
+
+
+
+
+
+
+
+
+
