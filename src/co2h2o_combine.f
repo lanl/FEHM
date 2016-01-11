@@ -231,8 +231,12 @@ c
 c     bp(nrhs(2)+1:nrhs(3)) = bp(nrhs(2)+1:nrhs(3)) +
 c     &                         bp(nrhs(4)+1:nrhs(5)) 
 c     RJP 01/08/08 changed following
-            bp(nrhs(2)+1:nrhs(3)) = bp(nrhs(2)+1:nrhs(3))+
-     &           bp(nrhs(4)+1:nrhs(5))
+c     RJP 01/06/16 changed the following to avoid stack overflow for large problems
+            do i = nrhs(2)+1, nrhs(3)
+                bp(i) = bp(i)+bp(i+2*nrhs(2))
+            enddo
+c            bp(nrhs(2)+1:nrhs(3)) = bp(nrhs(2)+1:nrhs(3))+
+c     &           bp(nrhs(4)+1:nrhs(5))
 
 c     
 c     zero out residual that has been combined so it does not interfere
@@ -351,8 +355,14 @@ c            a(nmat(8)+1:nmat(9))   = a(nmat(8)+1:nmat(9))
 c     &           + a(nmat(18)+1:nmat(19))
 c     combine for thermal equilibrium
 c     
-            bp(nrhs(2)+1:nrhs(3))  = bp(nrhs(2)+1:nrhs(3))   
-     &           + bp(nrhs(4)+1:nrhs(5))
+
+c            bp(nrhs(2)+1:nrhs(3))  = bp(nrhs(2)+1:nrhs(3))   
+c     &           + bp(nrhs(4)+1:nrhs(5))
+c     RJP 01/06/16 Changed the following to avoid stack overflow crashes for large problems
+
+            do i = nrhs(2)+1, nrhs(3)
+                bp(i) = bp(i)+bp(i+2*nrhs(2))
+            enddo
 
 		  do i = nmat(4)+1, nmat(5)
 			a(i) = a(i+2*nmat(2))

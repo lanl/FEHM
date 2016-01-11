@@ -16,6 +16,7 @@ Test-Case Descriptions
 .. automethod:: fehmpytests.fehmTest.mptr
 .. automethod:: fehmpytests.fehmTest.multi_solute
 .. automethod:: fehmpytests.fehmTest.ramey
+.. automethod:: fehmpytests.fehmTest.richards
 .. automethod:: fehmpytests.fehmTest.salt_perm_poro
 .. automethod:: fehmpytests.fehmTest.saltvcon
 .. automethod:: fehmpytests.fehmTest.sorption
