@@ -206,6 +206,7 @@ flow_boun.o: comai.o combi.o comci.o comdi.o comdti.o comsplitts.o comwt.o
 flow_boundary_conditions.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o
 flow_boundary_conditions.o: comei.o comfi.o comii.o comki.o comxi.o davidi.o
 flow_flux_perm_residual.o: comai.o combi.o comci.o comdi.o comfem.o comsi.o
+flow_humidity_bc.o: comai.o combi.o comdti.o comii.o
 flux_net.o: comai.o combi.o comci.o comdi.o comflow.o comgi.o comji.o davidi.o
 flxn.o: comai.o combi.o comflow.o davidi.o
 flxo.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o comfi.o

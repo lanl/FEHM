@@ -399,28 +399,28 @@ c code written by g zyvoloski feb 1980
       implicit none
 
       real*8 bpd,tbnd,pcid,pv,dtsatp,dpsats,dpsatt,tdumm
-      integer iflg,ico2d,i,istflag,mi,it
-      real*8 hum,alp,beta,sr,smax,qtcd,dencht,tol_p
-      real(8) :: qtotci = 0.
-      integer mlev1,mlev2,mdd,md
-      real*8 rqd,qcd,psatl,qcmax       
-      real*8 sat_bc, tol_sat_bc
-      integer ngas_flag2
-      logical ngas_flag
-      character*80 dumstring
-      integer msg(20)
-      integer nwds
-      real*8 xmsg(20)
-      integer imsg(20)
-      character*32 cmsg(20)
-      logical :: old_input = .false.
-      character*90 wdum
-      parameter (tol_p = 1.d-6)
-      parameter (tol_sat_bc = 1.d-10)
-      real*8, allocatable :: aiped(:)      
+       integer iflg,ico2d,i,istflag,mi,it
+       real*8 hum,alp,beta,sr,smax,qtcd,dencht,tol_p
+       real(8) :: qtotci = 0.
+       integer mlev1,mlev2,mdd,md
+       real*8 rqd,qcd,psatl,qcmax       
+       real*8 sat_bc, tol_sat_bc
+       integer ngas_flag2
+       logical ngas_flag
+       character*80 dumstring
+       integer msg(20)
+       integer nwds
+       real*8 xmsg(20)
+       integer imsg(20)
+       character*32 cmsg(20)
+       logical :: old_input = .false.
+       character*90 wdum
+       parameter (tol_p = 1.d-6)
+       parameter (tol_sat_bc = 1.d-10)
+       real*8, allocatable :: aiped(:)      
 c     set tbnd for pco2 change(see about line 580)
-      parameter(tbnd = -1.0)
-      save ngas_flag, ngas_flag2
+       parameter(tbnd = -1.0)
+       save ngas_flag, ngas_flag2
 c     
 c     return if no noncondensible present
 c     
@@ -431,7 +431,7 @@ c     iflg is used to tell if call is for initialization
 c
 c check macro line for more information
 c
-            backspace inpt
+          backspace inpt
             ngas_flag2 = 0
             read(inpt,'(a90)') wdum 
             do i = 5,80
@@ -518,9 +518,9 @@ c
 c     Other values are the same as above
 c     
             
-               call initdata2(inpt,ischk, n0, narrays, itype,
-     &              default, macroread(2), macro, igroup, ireturn,
-     2              r8_1=eskc(1:n0))
+            call initdata2(inpt,ischk, n0, narrays, itype,
+     &           default, macroread(2), macro, igroup, ireturn,
+     &              r8_1=eskc(1:n0))
 
                do i = 1, n0
                   if (eskc(i) .le. 0.) then
@@ -536,9 +536,9 @@ c     Specified relative humidity
 c     
 c     read in fixed humidity for noncon gas(positive value)
 c     read in fixed saturation for noncon gas(negative value-saturation is fixed to absolute read-in value)
-c   
-               default(1) = 1.d50
-               default(2) = 1.d50
+c
+            default(1) = 1.d50
+            default(2) = 1.d50
                narrays = 2
                itype(1) = 8
                itype(2) = 8 
@@ -647,7 +647,7 @@ c
             enddo
             
            deallocate (aiped)
-            
+ 
          elseif(iflg.eq.6) then
 c     
 c     check for temperature input and ncondensible pressure
@@ -675,10 +675,11 @@ c
                    pv = 0.0
                    pci(i)=pho(i)-pv
                   else
-                    pv= psatl(-pcid,pcp(i),dpcef(i),dpsatt,dpsats,0)
+                    pv= psatl(-pcid,pcp(i),dpcef(i),dpsatt,dpsats,0,
+     &                        an(i))
                     if (ngas_flag2.eq.1) then
                      tdumm=psatl(pho(i)-tol_p,pcp(i),dpcef(i),dtsatp,
-     &               dpsats,1)
+     &               dpsats,1,an(i))
                      pv = pho(i)
                      pci(i)=tol_p
                      to(i) = tdumm
@@ -696,7 +697,8 @@ c
                      write(ierr, 110)
                      if (iout .ne. 0) write(iout, 110)
                      if (iptty .ne. 0) write(iptty, 110)
-                     tdumm=psatl(pho(i),pcp(i),dpcef(i),dtsatp,dpsats,1)
+                     tdumm=psatl(pho(i),pcp(i),dpcef(i),dtsatp,dpsats,
+     &                      1,an(i))
                      write(ierr, 120) tdumm
                      if (iout .ne. 0) write(iout, 120) tdumm
                      if (iptty .ne. 0) write(iptty, 120) tdumm
@@ -717,7 +719,8 @@ c================================================================
 c                     write(ierr, 130) i
 c                     if (iout .ne. 0) write(iout, 130) i
 c                     if (iptty .ne. 0) write(iptty, 130) i
-	               pv= psatl(t(i),pcp(i),dpcef(i),dpsatt,dpsats,0)
+	               pv= psatl(t(i),pcp(i),dpcef(i),dpsatt,dpsats,
+     &                            0,an(i))
 	               pci(i) = pho(i) - pv
 c                     istflag = -1
 c                     goto 9000
@@ -731,13 +734,16 @@ c     &                    i8)
                      goto 9000
  140                 format ('ngas pressure lt 0.')
                   else if(ngas_flag) then 
-                     pv= psatl(t(i),pcp(i),dpcef(i),dpsatt,dpsats,0)
+                     pv= psatl(t(i),pcp(i),dpcef(i),dpsatt,dpsats,
+     &                         0,an(i))
                      pho(i)= pv+ pcid   
                      phi(i) = pho(i)
-                     to(i)=psatl(pv,pcp(i),dpcef(i),dtsatp,dpsats,1)
+                     to(i)=psatl(pv,pcp(i),dpcef(i),dtsatp,dpsats,
+     &                         1,an(i))
                   else
                      pv=pho(i)-pcid
-                     to(i)=psatl(pv,pcp(i),dpcef(i),dtsatp,dpsats,1)
+                     to(i)=psatl(pv,pcp(i),dpcef(i),dtsatp,dpsats,
+     &                          1,an(i))
                   end if
                endif
 
@@ -797,7 +803,7 @@ c WARNING : not yet implemented for icap
                      pflow(i)=-s(i)
                      ka(i)=-1
                      eskc(i)=0.0
-                     wellim(i) = sx1(i)*1.d06*1.d-6
+                     wellim(i) = sx1(i)*1.e-6
                     endif
                   else
                      eskc(i)=0.0
@@ -809,6 +815,16 @@ c WARNING : not yet implemented for icap
   
                else if(eskc(i).lt.0.0) then
 c specified saturation 
+                if(eskc(i).eq. -888) then
+                 sat_bc = 888
+                     if (iout .ne. 0) write(iout,*) 
+     &                    'humidity BC disabled at node = ',i
+                     if (iptty .ne. 0) write(iptty,*) 
+     &                    'humidity BC disabled at node = ',i
+                 pflow(i)=-sat_bc
+                 sat_bc = 0.0
+                 go to 112
+                endif
                 sat_bc = abs(eskc(i))  
                 if(sat_bc.gt.1.0) then
                      if (iout .ne. 0) write(iout,*) 
@@ -818,6 +834,7 @@ c specified saturation
      &                    'sat bc = ',sat_bc,
      &                    'sat_bc set to 1 at node = ',i
                   sat_bc = 1.0
+                  pflow(i)=-sat_bc
                 endif
                 if(sat_bc.lt.tol_sat_bc) then
                      if (iout .ne. 0) write(iout,*) 
@@ -827,13 +844,18 @@ c specified saturation
      &                    'sat bc = ',sat_bc,
      &                    'sat_bc set to 0 at node = ',i
                   sat_bc = tol_sat_bc
+                  pflow(i)=-sat_bc
                 endif
-                 pflow(i)=-sat_bc
+112              continue
                  ka(i)=-1
-                 s(i) = sat_bc
-                 so(i) = sat_bc
                  eskc(i)=0.0
-                 wellim(i) = sx1(i)*1.d06    
+c gaz debug 121315
+c                 pflow(i) = -sat_bc  (commented out 010416)
+c                 s(i) = sat_bc
+c                 so(i) = sat_bc
+c gaz debug 081715
+c                wellim(i) = sx1(i)*1.e06    
+                 wellim(i) = sx1(i)*1.e3
               endif             
             enddo
         elseif(iflg.eq.-1) then
@@ -850,8 +872,8 @@ c called from startup
                pci(i)=pcio(i)
             enddo
          elseif(iflg.eq.3) then
-            qtotci=qtotc
             acner=0.0
+            qtotci = qtotc
             do i=1,n
                qtc=qtc+qc(i)*dtotdm
                if(qc(i).gt.0.0) then
@@ -928,23 +950,25 @@ c     calculate global mass and energy flows
                if (iout .ne. 0) then
                   write(iout,689) qtc,difc
                   write(iout,691)
-                  write(iout,699) qtotci
+                  write(iout,699) qtotc-qtotci
                   write(iout,690)
                   write(iout,699) qtotc
                end if
                if(iatty.gt.0) then
                   write(iatty,689) qtc,difc
                   write(iatty,691)
-                  write(iatty,699) qtotci
+                  write(iatty,699) qtotc-qtotci
                   write(iatty,690)
                   write(iatty,699) qtotc
                endif
+
  689           format(/,
-     &              'net gas discharge ',g15.5,' con error gas ',g15.5)
- 691           format(/,'this time step discharges : ,gas')
+     &              'net gas discharge ',g15.5,' balance error gas ',
+     &               g15.5)
+ 691           format(/,'this time step discharges : gas')
  699           format(1x,1pe14.3,' kg ',1pe14.3,
      &              ' mj ',1pe14.3,' mw ')
- 690           format(/,'cumulative discharges : ,gas')
+ 690           format(/,'cumulative discharges : gas')
             endif
          endif
       endif

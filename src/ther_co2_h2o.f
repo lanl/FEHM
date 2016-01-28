@@ -191,7 +191,8 @@ c
 c     RJP 02/09/07. All the thermodynamic properties are now calculated 
 c     here and stored in arrays for later.	 
 c     
-
+c     con_prop are user-defined properties read in as consts in icectrco2.f
+c
          if(ico2prop_flg.eq.1) then
             rosc=con_prop(1)
             droscp=con_prop(2)

@@ -1654,7 +1654,7 @@ c                  end if
                   pho(ii+nx)=phi(ii+ny)
                   if (irdof .ne. 13 .or. ifree .ne. 0) then
                      pcio(ii+nx)=pci(ii+ny)
-                     if(s(ii+ny).le.0.0) then
+                     if(s(ii+ny).le.tolw) then
                         ieos(i)=3
                         so(ii+nx)=0.0 
                      else if(s(ii+ny).ge.1.0) then

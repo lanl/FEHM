@@ -679,6 +679,9 @@ c gaz 090113 array for last TS porosity
       integer, allocatable ::  sourceco2_type(:)
       integer, allocatable ::  seepfac_type(:)
       integer, allocatable ::  drainar_type(:)
+      integer, allocatable ::  humid_type(:)
+      integer, allocatable ::  phumid_type(:)
+      integer, allocatable ::  thumid_type(:)
       integer, allocatable ::  saturation_type(:)
       integer, allocatable ::  pressurew_type(:)
       integer, allocatable ::  pressurea_type(:)
@@ -703,6 +706,7 @@ c gaz 090113 array for last TS porosity
       integer iqa,ixa,iqw,iqenth,isatb,ienth,itempb,ipresa,ipresw
       integer imped,its,imod,isubmod,iqf,icm,isf,ifd,iqco2
       integer isatb_ini,ipresa_ini,ipresw_ini,itempb_ini
+      integer iha,ipha,itha
       integer isteady, istdy, isty, iwght, lchange
       integer ixperm,iyperm,izperm
       real*8 fac_sec_days, fac_min_days, fac_year_days
@@ -716,8 +720,18 @@ c gaz 090113 array for last TS porosity
       real*8, allocatable ::  tempb(:) 
       real*8, allocatable ::  presa(:) 
       real*8, allocatable ::  presw(:) 
+      real*8, allocatable ::  huma(:) 
+      real*8, allocatable ::  phuma(:) 
+      real*8, allocatable ::  thuma(:) 
+      real*8, allocatable ::  xnva(:) 
+      real*8, allocatable ::  entha(:) 
       real*8, allocatable ::  sp(:) 
-      real*8, allocatable ::  drain(:) 
+      real*8, allocatable ::  drain(:)
+
+      real*8, allocatable ::  humida(:) 
+      real*8, allocatable ::  phumida(:)
+      real*8, allocatable ::  thumida(:)
+      real*8, allocatable ::  enth_humid(:)  
 
       real*8, allocatable ::  satb_ini(:) 
       real*8, allocatable ::  presw_ini(:) 
@@ -740,6 +754,11 @@ c gaz 090113 array for last TS porosity
       real*8, allocatable :: enthalpy(:,:)
       real*8, allocatable :: timestep(:,:)
       real*8, allocatable :: temperature(:,:)
+c gaz 123115
+      real*8, allocatable ::  humid(:,:) 
+      real*8, allocatable ::  phumid(:,:)
+      real*8, allocatable ::  thumid(:,:)
+       
       real*8, allocatable :: permx(:,:)
       real*8, allocatable :: permy(:,:)
       real*8, allocatable :: permz(:,:)
@@ -903,5 +922,7 @@ c some simple thermo
       integer,  allocatable :: icon_area2(:)
 c gaz 090113 
       real*8 por_salt_min
+      real*8 pressure_std,temperature_std
+      parameter(pressure_std = 0.1,temperature_std = 20.0)
       
       end module comdi

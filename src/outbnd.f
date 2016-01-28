@@ -436,7 +436,7 @@ c         time_ieos(i) = 0.0d0
      &           cord(ii,3)
             write(iout, 9012) pl, tl, sl
             if(ico2.gt.0  .and. icarb .eq. 0) write(iout, 9013) pci(i)
-            write(iout, 9015) ps(i)
+            write(iout, 9015) ps(i),pnx(i),ieos(i), iad
             if (rxn_flag.ne.0)then
                 write(iout, 9016) ps_delta_rxn(i)
             endif
@@ -447,7 +447,7 @@ c         time_ieos(i) = 0.0d0
      &           cord(ii,3)
             write(iptty, 9012) pl, tl, sl
             if(ico2.gt.0 .and. icarb .eq. 0) write(iptty, 9013) pci(i)
-            write(iptty, 9015) ps(i)
+            write(iptty, 9015) ps(i),pnx(i)*1.d-6,ieos(i),iad
             if (rxn_flag.ne.0)then
                 write(iptty, 9016) ps_delta_rxn(i)
             endif
@@ -463,7 +463,8 @@ c         time_ieos(i) = 0.0d0
      &     ' x = ', g12.4, ' y = ', g12.4, ' z = ', g12.4)
  9012 format (' p = ', g16.9, ' t =', g16.9, ' s = ', g16.9)
  9013 format (' pci = ', g16.9)
- 9015 format (' porosity = ',g16.9)
+ 9015 format (1p,' porosity = ',g16.8,' permx ',g16.8,
+     & ' phase state ',i4, ' iter ', i4)
  9016 format (' ps_delta_rxn = ',g16.9)
       return
       end

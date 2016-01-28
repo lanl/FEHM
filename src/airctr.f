@@ -392,6 +392,9 @@ c
       character*80 form_string
       character*80 dum_air
       real*8 pref_1_2,pref_2_1,s_1_2
+      real*8 t_low
+      integer i_t_bad 
+      parameter(t_low = 5.)
 c      parameter (pchng = 0.005,schng = 0.005)
 c      gaz pchng and schng in comai 103009
       save tref,pref
@@ -982,6 +985,28 @@ c     do i=1,n_wt_cols
  4004       format(1x,6(g16.9,', '),i8,', ',i8)
  4005       format(1x,6(g16.9,1x),2(i8,1x))
  4006       format(1x,'all nodes are dry ', i8, 1x, 2(g16.9, 1x))
+         else if (iflg.eq.13) then
+c check for bad temperatures
+           i_t_bad = 0
+           do i = 1,n
+            if(to(i).lt.t_low) then
+             i_t_bad = i_t_bad + 1
+             write(ierr,*) 'node ', i, ' T changed from ',to(i),' to ',
+     &                     tref
+             to(i) = tref
+             t(i) = tref
+            endif
+           enddo
+           if(i_t_bad.gt.0) then
+            if(iptty.ne.0) write(iptty,*)'************************'
+            if(iout.ne.0) write(iout,*)'************************'
+            if(iptty.ne.0) write(iptty,*) i_t_bad,' temps are too low ',
+     &                    '(set to Tref) - see error file'
+            if(iout.ne.0) write(iout,*) i_t_bad,' temps are too low',
+     &                    '(set to Tref) - see error file'
+            if(iptty.ne.0) write(iptty,*)'************************'
+            if(iout.ne.0) write(iout,*)'************************'
+           endif
          else if (iflg.eq.14) then
 c     write wt output for contours
             if (altc(1:4) .eq. 'avsx') then

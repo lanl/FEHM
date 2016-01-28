@@ -475,7 +475,6 @@ C***********************************************************************
       use property_interpolate
 c     added combi and comflow to get izonef and a_axy arrays
 c     in subroutine computefluxvalues
-
       implicit none
 
 c     These are PC attributes used as compiler directives. They
@@ -525,6 +524,10 @@ c*** water table rise modification
       integer :: is_ch_t = 0
       integer :: out_flag = 0
       integer ntty_save
+c
+c gaz debug 121415 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+c
+      real*8 rel_hum,qin,qin_ng,qin_h2o,qin_enth,enth_avg,pl_dum
 
       save flowflag, ichk, tassem, tasii, tscounter,
      &     contr_riptot, tims_save, day_saverip, in3save,
@@ -927,13 +930,18 @@ c**** form equations, calculate corrections. ****
 c**** decrease time step if necessary             ****
 c**** mlz.ne.0 means thermo variable is out of bounds ****
          
-               if (mlz .eq. -1)  then
+               if (mlz .le. -1)  then
                   irestart_ts = 1
                   if (mlz .eq. -1)  then
                      if (iout .ne. 0) write(iout, 6020)  l, iad, day
                      if (iptty .gt. 0)  write(iptty, 6020)  l, iad, day
  6020                format(/, 1x, 'timestep = ', i6, ' iterations = ', 
      *                    i4, ' timestep size = ', g15.4)
+                  else if(mlz.eq.-2) then
+                     if (iout .ne. 0) write(iout, *) 
+     &                  'restart -  normalization failed'
+                     if (iptty .ne. 0) write(iptty, *) 
+     &                  'restart -  normalization failed'
                   end if
                   days = days - day
 c	          Check for submodel BCs
@@ -972,7 +980,7 @@ c
 c count restarted timestep
 c
                   nrestart_ts = nrestart_ts + 1
-                  go  to  100
+                   go  to  100
                end if
           
 c
@@ -1082,7 +1090,13 @@ c
 c  calculate phase change information
 c
                is_ch = 0
+               nphase_liq = 0
+               nphase_2 = 0
+               nphase_gas = 0
                do i=1,n
+                  if(ieos(i).eq.1) nphase_liq = nphase_liq + 1
+                  if(ieos(i).eq.2) nphase_2 = nphase_2 + 1
+                  if(ieos(i).eq.3) nphase_gas = nphase_gas + 1
                   if (irdof .ne. 13 .or. ifree .ne. 0) then
                      if(s(i).lt.1.0.and.so(i).ge.1.0) then
                         is_ch=is_ch +1
@@ -1096,6 +1110,18 @@ c
                   endif
                enddo
                is_ch_t = is_ch_t + is_ch
+               if(l.ne.1) then
+                dnphase_liq = nphase_liq - nphase_liq_0
+                dnphase_2 = nphase_2 - nphase_2_0
+                dnphase_gas = nphase_gas - nphase_gas_0
+               else
+                dnphase_liq = 0
+                dnphase_2 = 0
+                dnphase_gas = 0
+               endif
+               nphase_liq_0 = nphase_liq
+               nphase_2_0 = nphase_2
+               nphase_gas_0 = nphase_gas
 c
 c call thermo because the solver is overwriting the deni and denei arrays
 c    

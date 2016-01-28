@@ -1074,7 +1074,7 @@ c     indepedent of fluid state
       else if(iflg.eq.13) then
 c     water-CO2 production factor 
 c     for liquid water
-c     indepedent of fluid state 
+c     independent of fluid state 
          if(var3.gt.fracw_min) then
             prop = (1.0-var3)/var3             
             der1 = 0.0        

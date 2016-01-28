@@ -491,8 +491,15 @@ c     Water (co2 or oil problem)
                   sw = fw(mi)
                case(2, 5)
 c     Air or Vapor (water)
+c bug: when dryout occurs the vg model does not work)
+c gaz fix 011916 This needs checking (VG models)
+                 if(rlp_type(it, iphase).ne.6.and.
+     &              rlp_type(it, iphase).ne.7) then      
                   sw = 1.0 - s(mi)
-               case (3, 7)
+                 else
+                  sw = s(mi)
+                 endif
+                case (3, 7)
 c     Liquid or super-critical CO2 or oil
                   sw = fl(mi)
                case (4, 8)

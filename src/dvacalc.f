@@ -215,7 +215,7 @@ c--------------------------------------------------------------------
 
       real*8 dva0,theta,p0,t0,rat,dratp,dratt,dva0d,dva0p,dva0c,dva0e
       real*8 t_min, t_max, atort, dratc, temp, temp2, diffcoeff
-      real*8 tort2, dvas_denom_min, dvas_denom, s_dva_term
+      real*8 tort2, dvas_denom_min, dvas_denom, s_dva_term, dva_tiny
       real*8,  allocatable :: dva_save(:)
       real*8 dpsatt,dpsats,pv,dum_dva, psatl
       integer i
@@ -224,7 +224,7 @@ c--------------------------------------------------------------------
       parameter(p0=0.1)
       parameter(t0=273.15)
       parameter(t_min=10.0,t_max=350.0)
-      parameter(dvas_denom_min = 1.d-15)
+      parameter(dvas_denom_min = 1.d-18, dva_tiny = 1.d-18)
       save dva_save
       if(.not.allocated(dva_save)) allocate (dva_save(n))
 
@@ -267,7 +267,7 @@ c
             dva0p=0.0
             dva0c=0.0
             dva0e=0.0
-            dva(i)=dva0d*rat
+            dva(i)=dva0d*rat + dva_tiny
             if(ieos(i).ne.2) then
                ddvap(i)=dva0d*dratp+dva0p*rat
                ddvae(i)=dva0d*dratt+dva0e*rat
@@ -309,7 +309,7 @@ c
             atort=abs(tort)
             dva0d = atort*dva0
 
-            dva(i)=dva0d*rat
+            dva(i)=dva0d*rat + dva_tiny
             ddvap(i)=dva0d*dratp
             ddvae(i)=dva0d*dratt
             ddvac(i)=0.0
@@ -331,14 +331,14 @@ c-------------------------------------------------------
 
             select case (mflagv(1,1))
             case (0)            ! Constant diffusion
-               dva(i) =diffcoeff * temp
+               dva(i) =diffcoeff * temp + dva_tiny
                ddvae(i)= -ps(i)*diffcoeff
             case (1)            ! Millington Quirk
                temp2 = temp**2.3333333
-               dva(i) =diffcoeff*temp*temp2/(ps(i)**2)
+               dva(i) =diffcoeff*temp*temp2/(ps(i)**2) + dva_tiny
                ddvae(i)= -3.33*diffcoeff*temp2/ps(i)
             case (2)            ! alternate Millington-Quirk
-               dva(i) =diffcoeff*temp*temp/(ps(i)**0.6666)
+               dva(i) =diffcoeff*temp*temp/(ps(i)**0.6666) + dva_tiny
                ddvae(i)= -2*diffcoeff*temp*(ps(i)**0.3333)
             case (3)            ! using old adif form 
                if(tort.GT.666.) tort2 = tort - 666.
@@ -371,7 +371,7 @@ c
                dva0p=0.0
                dva0c=0.0
                dva0e=0.0
-               dva(i)=dva0d*rat
+               dva(i)=dva0d*rat + dva_tiny
                if(ieos(i).ne.2) then
                   ddvap(i)=dva0d*dratp+dva0p*rat
                   ddvae(i)=dva0d*dratt+dva0e*rat
@@ -445,7 +445,7 @@ c
            dva0e=0.0
          if(iad.eq.0) then
 c explicit update
-           dva(i)=dva0d*rat 
+           dva(i)=dva0d*rat + dva_tiny
            dva_save(i) = dva(i)
 c           dvas(i) = dva(i)/(temp)
 c          if(iatty.NE.0) write(iatty,*) 'dvacalc dva=',dva(i),tort2,dva0
@@ -471,7 +471,7 @@ c              ddvap(i)=dva0d*(dratp )
               ddvac(i)=0.0
               ddvap(i)=0.0
           else
-          dva(i) = dva_save(i)
+          dva(i) = dva_save(i) 
           endif
         enddo      ! (i = 1,n)
 

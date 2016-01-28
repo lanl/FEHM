@@ -732,6 +732,11 @@ c     ***** COMMON Block fdd *****
       allocate(denr(n0))
       allocate(denh(n0))
       allocate(denj(n0))
+c gaz 090515
+      allocate(deni_ch(n0))
+      allocate(denei_ch(n0))
+      allocate(denpci_ch(n0))
+      allocate(ieos_bal(n0))
       if(ico2.ge.0.or.ice.ne.0) then
 c gaz 10-19-2001
          allocate(thx(n0))

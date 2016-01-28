@@ -394,6 +394,9 @@ c**** read startup parameters ****
 c zvd 17-Aug-09 move boun flag initializations here
       iqa=0
       ixa = 0
+      iha = 0
+      ipha = 0
+      itha = 0
       iqw=0
       iqf=0
       iqenth=0
@@ -777,6 +780,12 @@ c            backspace locunitnum
             else
                maxtimes=max(maxtimes,idumm)
             end if
+         else if(wdd1(1:2).eq.'hu') then
+            iha=1 
+         else if(wdd1(1:2).eq.'ph') then
+            ipha=1 
+         else if(wdd1(1:2).eq.'th') then
+            itha=1 
          else if(wdd1(1:3).eq.'chm') then
             icm=1
          else if(wdd1(1:2).eq.'sa') then
@@ -833,7 +842,7 @@ c            backspace locunitnum
             itempb_ini=1
          else if(wdd1(1:2).eq.'ts') then
             its=1
-         else if(wdd1(1:1).eq.'t') then
+         else if(wdd1(1:2).eq.'t ') then
             itempb=1
          else if(wdd1(1:2).eq.'hd') then
             itempb=1
@@ -841,6 +850,12 @@ c            backspace locunitnum
             itempb=1
          else if(wdd1(1:1).eq.'h') then
             isatb=1
+         else if(wdd1(1:2).eq.'hu') then
+            iha=1 
+         else if(wdd1(1:2).eq.'ph') then
+            ipha=1 
+         else if(wdd1(1:2).eq.'th') then
+            itha=1 
          else if(wdd1(1:4).eq.'wgtp') then
             iwght=2
          else if(wdd1(1:4).eq.'wgtu') then

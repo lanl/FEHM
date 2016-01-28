@@ -483,6 +483,8 @@ c
          
       if (nspeci .ne. 0) then
          n7 = nspeci * n0
+      else if(ico2.ge.0) then
+         n7 = n0
       else
          n7 = 1
       end if

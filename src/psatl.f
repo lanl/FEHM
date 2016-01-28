@@ -1,4 +1,5 @@
-          real*8 function psatl(tl,pcaps,dpcaps,dpsatt,dpsats,isatf)
+          real*8 function psatl(tl,pcaps,dpcaps,dpsatt,dpsats,
+     &                          isatf,salt_con)
 !***********************************************************************
 !  Copyright, 2004,  The  Regents  of the  University of California.
 !  This program was prepared by the Regents of the University of 
@@ -288,6 +289,7 @@ C***********************************************************************
       real*8 tl,pcaps,dpcaps,dpsatt,dpsats
       real*8 x,x2,x3,x4,pfun,pfunn,pfund,dpst,dptsn,dpstd,psatl0,delp
       real*8 ddelt,ddels,tfun,tfunn,tfund,pfun0,resid,drlp
+      real*8 salt_con,pv_sc,dsct,dscc
 
       psatl=0.0
       dpsatt=0.0
@@ -318,7 +320,15 @@ c check for limiting values
             dpsatt=dpst
             dpsats=0.0
 c
-c get vapor pressure lowering
+c get vapor pressure lowering (salt concentration)
+c 
+             if(isalt.ne.0.and.ivaprsalt.gt.1) then 
+              call vaporl_salt(tl,salt_con,pv_sc,dsct,dscc)
+              psatl = psatl + pv_sc
+              dpsatt= dpsatt + dsct 
+             endif
+c
+c get vapor pressure lowering (capillary pressure)
 c
             if(ivapl.gt.0) then
                psatl0=psatl
@@ -393,3 +403,4 @@ c failed to converge
 
       return
       end
+

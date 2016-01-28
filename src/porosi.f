@@ -586,7 +586,7 @@ c               this option was added by ZL for temperature-dependent porosity
                    write(iptty,*) "Chemistry required for ppor model 6"
                    write(iptty,*) ""
                 endif
-               stop
+c               stop
             endif
 c           DRH: updates based on ps_delta_rxn for salt
                narrays    =   1
@@ -620,7 +620,7 @@ c      valid up to porosity = 0.3
                    write(iptty,*) "Chemistry required for ppor model 7"
                    write(iptty,*) ""
                 endif
-               stop
+c               stop
             endif
 c           DRH: updates based on ps_delta_rxn for salt
                narrays    =   4

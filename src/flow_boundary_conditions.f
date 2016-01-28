@@ -88,6 +88,7 @@ c
       integer, allocatable :: idum(:)
  
       real*8 days0,qair,qwat
+      real*8 t_hum,p_hum
 C       real*8 sdum,pdum,denhdum,denehdum
       real*8 denhold,denehold,diffmass,diffener
 c
@@ -240,6 +241,38 @@ c
             presa = 0.0d00
             pressurea = 0.0d00
             pressurea_type = 0
+         endif
+         if(iha.ne.0) then
+            if (.not. allocated (huma)) allocate(huma(n0))
+            if (.not. allocated (xnva)) allocate(xnva(n0))
+            if (.not. allocated (entha)) allocate(entha(n0))
+            if (.not. allocated (humid)) 
+     .           allocate(humid(maxtimes,maxmodel))   
+            if (.not. allocated (humid_type)) 
+     .           allocate(humid_type(maxmodel))   
+            huma = 0.0d00
+            humid = 0.0d00
+            humid_type = 0
+         endif
+         if(ipha.ne.0) then
+            if (.not. allocated (phuma)) allocate(phuma(n0))
+            if (.not. allocated (phumid)) 
+     .           allocate(phumid(maxtimes,maxmodel))   
+            if (.not. allocated (phumid_type)) 
+     .           allocate(phumid_type(maxmodel))   
+            phuma = 0.0d00
+            phumid = 0.0d00
+            phumid_type = 0
+         endif
+         if(itha.ne.0) then
+            if (.not. allocated (thuma)) allocate(thuma(n0))
+            if (.not. allocated (thumid)) 
+     .           allocate(thumid(maxtimes,maxmodel))   
+            if (.not. allocated (thumid_type)) 
+     .           allocate(thumid_type(maxmodel))   
+            thuma = 0.0d00
+            thumid = 0.0d00
+            thumid_type = 0
          endif
          if(ipresw.ne.0) then
             if (.not. allocated (presw)) allocate(presw(n0))
@@ -738,6 +771,29 @@ c air/water/heat (ngas)
                   endif
                endif
             enddo
+c gaz debug 122515  
+            do i=1,n
+               if(idum(i).ne.0) then
+                   if(qa(i).ne.0.0) then
+                    if(itha.ne.0) then
+                     t_hum = thuma(i) 
+                    else
+                     t_hum = temperature_std
+                    endif
+                    if(ipha.ne.0) then
+                     p_hum = phuma(i) 
+                    else
+                     p_hum = pressure_std
+                    endif
+                    if(iha.ne.0) then
+c flow humidity has less calls now
+                       call flow_humidity_bc(1,t_hum,p_hum,huma(i),
+     &                       xnva(i),entha(i))                        
+                   endif
+                  endif
+               endif
+            enddo
+     
 c       else if (ico2 .lt. 0) then
 c 04/06/2005 MH
  	 else if (ico2 .lt. 0 .and. ice .ne. 2) then
@@ -809,8 +865,17 @@ c zero pres indicated by -9999999.0
                         else
                            wellim(i)=-abs(wellim(i))
                         endif
-c           esk(i)=1.0    
-                        ka(i)=-3
+c gaz changed 012416
+c check elevation of seepage face
+                        if(sp(i).eq.-9999999.0) then
+                          esk(i) = 0.0
+                        else if(cord(i,igrav).gt.abs(sp(i))) then
+                          esk(i)=0 
+                        else
+                          esk(i)=1
+                        endif  
+c only allowing mid cell averaging (p = 0.1 Mpa)
+                        ka(i)=-4
                      endif
                   endif
                endif
@@ -854,7 +919,10 @@ c GAZ(4-8-2001)            satb(i)=1.e-6
                            endif
                         endif
                         ka(i)=-1
+c gaz 012316
+                        esk(i) = 1.0
                         if(wellim(i).eq.0.0) wellim(i)=sx1(i)*1.d06
+c        
                      endif
                   endif
                endif

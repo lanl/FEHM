@@ -487,7 +487,8 @@ c                 ieosdc=-1 gaz 10-17-2001 do nothing
 c
 c     liquid only state
 c
-                  tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,1)
+                  tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,
+     &                        1,an(ij))
 c     change to 2-phase
                   if(tl.ge.tboil*phase_mult) then
                      ieosdc=2
@@ -503,13 +504,13 @@ c
 c     change to liquid only conditions
                      ieosdc=1
                      t(ij)=psatl(pl,pcp(ij),dpcef(ij),
-     2                    dtsatp,dpsats,1)*eosml
+     2                    dtsatp,dpsats,1,an(ij))*eosml
                      s(ij)=1.0
                   elseif(s(ij).le.0.0) then
 c     change to gas only
                      ieosdc=3
                      t(ij)=psatl(pl,pcp(ij),dpcef(ij),
-     2                    dtsatp,dpsats,1)*eosmg
+     2                    dtsatp,dpsats,1,an(ij))*eosmg
                      s(ij)=0.0
                   endif
 c     
@@ -517,7 +518,8 @@ c
 c
 c     gas conditions
 c     
-                  tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,1)
+                  tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,
+     &                        1,an(ij))
                   if(tl.le.tboil/phase_mult) then
 c     change to 2-phase
                      s(ij)=satml         
@@ -564,7 +566,8 @@ c
 c     liquid only state
 c
                   tl=t(ij)
-                  pboil=psatl(tl,pcp(ij),dpcef(ij),dtsatp,dpsats,0)
+                  pboil=psatl(tl,pcp(ij),dpcef(ij),dtsatp,dpsats,
+     &                        0,an(ij))
 c     change to 2-phase
                   if(x.le.pboil/phase_mult) then
                      ieosdc=2
@@ -583,7 +586,7 @@ c     change to liquid only conditions
 c                    tl=t(ij)*eosml
 c                    t(ij)=tl
                      pci(ij)=pl-psatl(tl,pcp(ij),dpcef(ij),
-     2                    dpsatt,dpsats,0)
+     2                    dpsatt,dpsats,0,an(ij))
 c                    pci(ij)=max(pl-pboil,0.0d00)
                      s(ij)=1.0
                   endif
@@ -600,7 +603,8 @@ c
 c     gas conditions
 c
 c                 pvapor=psatl(to(ij),pcp(ij),dpcef(ij),dpsatt,dpsats,0)
-                  pvapor=psatl(tl,pcp(ij),dpcef(ij),dpsatt,dpsats,0)
+                  pvapor=psatl(tl,pcp(ij),dpcef(ij),dpsatt,dpsats,
+     &                         0,an(ij))
 c     check vapor pressure against saturated vapor pressure
 c     change if lower
                   if(x.ge.pvapor) then

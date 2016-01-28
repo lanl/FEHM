@@ -773,11 +773,14 @@ c     liquid only can form
                      icedc=1
                      fg(ij) = 0.d0
                      fl(ij)=1.d0-fg(ij)-fw(ij)
-                     tco2(ij)=tliquid*eosml
+c                     tco2(ij)=tliquid*eosml
                   else if(sl.le.0.0) then
 c     gas only can form
+c  gaz debug 040115 
                      icedc=3
-                     tco2(ij)=tliquid*eosmg
+                     fl(ij) = 0.d0
+                     fg(ij) = 1. - fw(ij)
+c                     tco2(ij)=tliquid*eosmg
                   endif
                   t(ij)=tco2(ij)
                elseif(iced.eq.1) then
@@ -791,9 +794,10 @@ c     liquid only conditions
      &                          tliquid,dumc,duma)
                            if(fw(ij).lt.1.d0) then
                               icedc=2
-                              fl(ij)=fl(ij)*0.9d0
+                              fl(ij)=fl(ij)*0.99d0
                               fg(ij)=1.d0-fl(ij)-fw(ij)
-                              tco2(ij)=tliquid
+c gaz debug 040115
+c                              tco2(ij)=tliquid
                            else
                               fl(ij) = 0.d0
                               fg(ij)=1.d0-fl(ij)-fw(ij)

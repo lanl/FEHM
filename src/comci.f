@@ -331,4 +331,10 @@
       real*8,  allocatable ::   deng_spatial(:)
       real*8,  allocatable ::   visg_spatial(:)
 
+c gaz debug 090511
+      real*8, allocatable  ::   denei_ch(:) 
+      real*8, allocatable  ::   deni_ch(:) 
+      real*8, allocatable  ::   denpci_ch(:) 
+      integer, allocatable  ::   ieos_bal(:) 
+
       end module comci

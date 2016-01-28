@@ -272,6 +272,7 @@ c
 c     
       logical checkpa,checkpw,checke,checks,checkt,checkqa,checkqw
       character key_word*4,timchar*9
+
       zmax=-1000
       sf = 1.0d0
       v11norm = 0.0d0
@@ -331,6 +332,9 @@ c     gaz 9-18-00
                   if(izperm.ne.0) permz(i,imod)= permz(i-1,imod)
                   if(icm.ne.0) 
      &                 node_ch_model(i,imod)=node_ch_model(i-1,imod)
+                  if(iha.ne.0) humid(i,imod)=humid(i-1,imod)
+                  if(ipha.ne.0) phumid(i,imod)=phumid(i-1,imod)
+                  if(itha.ne.0) thumid(i,imod)=thumid(i-1,imod)
                enddo
                ntimes=ntimes+1
                if(iqa.ne.0) sourcea(1,imod)=0.0
@@ -351,6 +355,9 @@ c     gaz 9-18-00
                if(iyperm.ne.0) permy(1,imod)= 0.
                if(izperm.ne.0) permz(1,imod)= 0.
                if(icm.ne.0) node_ch_model(i,imod)=0   
+                  if(iha.ne.0) humid(i,imod)= 0.0
+                  if(ipha.ne.0) phumid(i,imod)= 0.0
+                  if(itha.ne.0) thumid(i,imod)= 0.0
             endif
             if(time_type(imod).gt.0) then
                if(iqa.ne.0) sourcea(ntimes,imod)=sourcea(1,imod)
@@ -382,6 +389,9 @@ c     gaz 9-18-00
                if(izperm.ne.0) permz(ntimes,imod)=permz(1,imod) 
                if(icm.ne.0) 
      &              node_ch_model(ntimes,imod)=node_ch_model(1,imod)
+                  if(iha.ne.0) humid(ntimes,imod)=humid(1,imod)
+                  if(ipha.ne.0) phumid(ntimes,imod)=phumid(1,imod)
+                  if(itha.ne.0) thumid(ntimes,imod)=thumid(1,imod)
             endif
             if(timestep(1,imod).le.0.0) then
                timestep(1,imod)=day
@@ -909,6 +919,23 @@ C
                   if(iqa.ne.0.or.ixa.ne.0) then
                      if(sourcea_type(imodel).gt.0) then
                         qa(i)=sourcea(abs(time_type(imodel)),imodel)
+                     endif
+                  endif
+                  if(iha.ne.0) then
+                     if(humid_type(imodel).gt.0) then
+                        huma(i)=humid(abs(time_type(imodel)),imodel)
+                        phuma(i) = pressure_std
+                        thuma(i) = temperature_std
+                     endif
+                  endif
+                  if(ipha.ne.0) then
+                     if(phumid_type(imodel).gt.0) then
+                        phuma(i)=phumid(abs(time_type(imodel)),imodel)
+                     endif
+                  endif
+                  if(itha.ne.0) then
+                     if(thumid_type(imodel).gt.0) then
+                        thuma(i)=thumid(abs(time_type(imodel)),imodel)
                      endif
                   endif
                   if(iqenth.ne.0) then

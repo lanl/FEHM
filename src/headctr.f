@@ -247,6 +247,24 @@ c
                endif
             enddo
 	 endif
+      else if(iflg.eq.7) then
+c
+c adjust head boundary so that it is consistent with height
+c
+              do mi=1,n
+               if(mi.gt.neq2) then
+                  mid=mi-neq2
+               elseif(mi.gt.neq) then
+                  mid=mi-neq
+               else
+                  mid=mi
+               endif
+               if(iseth.eq.1) then
+                  cord_val = 0.0
+               else
+                  cord_val = cord(mid,igrav) 
+               endif
+              enddo
       endif
 c     
       return

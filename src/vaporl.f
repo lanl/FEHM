@@ -202,3 +202,57 @@ c     calculate vapor pressure lowering
       
       return
       end
+      subroutine vaporl_salt(tl0,salt_con,pv_sc,dsct,dscc)
+c
+c correction for vapor pressure lowering from salt
+c this function uses parameters fitted using PEST
+c and data from Sparrow.
+c
+c tl-temperature(C)
+c salt_con- salt concentration (moles)
+c water vapor pressure correction (Mpa)
+c
+       implicit none
+       real*8 ms,xf,xm
+       real*8 pvwn,pvwn1,pvwn2
+       real*8 pvwd,pvwd1,pvwd2
+       real*8 pvw0,salt_corr
+       real*8 dla0,dlta1,dlta2,dlpa1,dlpa2,bcoef1
+       real*8 dlb0,dlpb1,dlpb2,dltb1,dltb2
+       real*8 salt_con,tl,tl0,tl_norm,dpvwn2t,dpvwd2t
+       real*8 pv_sc,dsct,dscc
+       parameter (tl_norm = 360.0d00)
+
+       dla0  =     2.119971900000000 
+       dlpa1 =     3.000000000000000 
+       dlpa2 =     0.738870490000000 
+       dlta1 =     0.000000000000000 
+       dlta2 =     1.000000000000000 
+       dlb0  =     1.236252800000000 
+       dlpb1 =     0.000000000000000 
+       dlpb2 =     1.000000000000000 
+       dltb1 =    -0.972846800000000 
+       dltb2 =     2.377151700000000 
+       bcoef1 =   -1.739785000000000 
+
+          tl = tl0/tl_norm
+          ms = salt_con*58.55 / 1000.
+          xf = ms / ( ms + 1.0 ) 
+          xm = xf 
+          pvwn1=dla0
+          pvwn2=dlta1*tl**dlta2
+          pvwn=pvwn1+pvwn2
+          pvwd1=dlb0+dlpb1*xm**dlpb2
+          pvwd2=dltb1*tl**dltb2
+          pvwd=pvwd1+pvwd2
+          pvw0=pvwn/pvwd
+          
+          pv_sc = -dlpa1*xm**dlpa2*(pvw0+bcoef1)
+          dpvwn2t = dlta1*dlta2*tl**(dlta2-1.)
+          dpvwd2t = dltb1*dltb2*tl**(dltb2-1.)
+          dsct =-((dpvwn2t/pvwd - (pvwn/pvwd2**2)*dpvwd2t)*(1./tl_norm))
+c tracer is explicitly updated (derivative wrt c = 0)
+          dscc = 0.0
+
+       return
+       end

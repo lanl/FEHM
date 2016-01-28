@@ -211,6 +211,7 @@ c     new initial value input here 12/3/98 GAZ
          enddo
          if(isubmod.le.1) go to 30
       else if(key(1:3).eq.'fxa') then
+c fxa is air mass fraction of inflow
 c gaz I think I can use array sourcea because air flowrate
 c and air fraction cannot both be set for the same node
          read(inpt,*) (sourcea(i,imod),i=1,ntimes)
@@ -333,6 +334,18 @@ c and air fraction cannot both be set for the same node
             endif
          enddo
          temperature_type(imod)=1
+         if(isubmod.le.1) go to 30
+      else if(key(1:2).eq.'hu') then
+         read(inpt,*) (humid(i,imod),i=1,ntimes)
+         humid_type(imod)=1
+         if(isubmod.le.1) go to 30
+      else if(key(1:2).eq.'ph') then
+         read(inpt,*) (phumid(i,imod),i=1,ntimes)
+         phumid_type(imod)=1
+         if(isubmod.le.1) go to 30
+      else if(key(1:2).eq.'th') then
+         read(inpt,*) (thumid(i,imod),i=1,ntimes)
+         thumid_type(imod)=1
          if(isubmod.le.1) go to 30
       else if(key(1:1).eq.'h') then
          read(inpt,*) (saturation(i,imod),i=1,ntimes)

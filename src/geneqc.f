@@ -1100,7 +1100,8 @@ c s kelkar 3 July 2014, for calculating heat flow vectors
       bp(iz+nrhs(3))=bp(iz+nrhs(3))+sx1d*denpci(i)+qc(i)
       a(jmia+nmat(1))=a(jmia+nmat(1))+sx1d*dmpf(i)+dq(i)
       a(jmia+nmat(2))=a(jmia+nmat(2))+sx1d*dmef(i)+dqt(i) + dskzt1
-      a(jmia+nmat(3))=a(jmia+nmat(3))+sx1d*dmc(i) + dskzt2
+c gaz debug 121104 now have a derivative wrt air pressure;see thrmwc
+      a(jmia+nmat(3))=a(jmia+nmat(3))+sx1d*dmc(i) +dqpc(i) + dskzt2
       a(jmia+nmat(4))=a(jmia+nmat(4))+sx1d*depf(i)+dqh(i)
       a(jmia+nmat(5))=a(jmia+nmat(5))+sx1d*deef(i)+deqh(i) + dqhzt1
       a(jmia+nmat(6))=a(jmia+nmat(6))+sx1d*dec(i)+dcqh(i) + dqhzt2

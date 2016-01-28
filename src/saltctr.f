@@ -1,4 +1,4 @@
-      subroutine saltctr(iflg,ndummy,dum_salt,dum_salt1)
+       subroutine saltctr(iflg,ndummy,dum_salt,dum_salt1)
 !***********************************************************************
 ! Copyright 2011 Los Alamos National Security, LLC  All rights reserved
 ! Unless otherwise indicated,  this information has been authored by an
@@ -205,14 +205,26 @@ c        parameters for temperature-dependent porosity
             allocate(porTemp1(n8),porTemp2(n8),porTemp3(n8),
      &        porTemp4(n8))
            endif
-             call porosi(0)    
+c 
 c write out warning  for non-salt iporos
-             if(iporos.ne.6.or.iporos.ne.7) then
+c 
+              call porosi(0)   
+c 
+             if(iporos.ne.6.and.iporos.ne.7) then
               write(ierr,901) iporos
               if(iout.ne.0) write(iout,901) iporos
               if(iptty.ne.0) write(iptty,901) iporos
 901    format('warning:porosity model ',i3,' used in salt simulation')
-             endif   
+             else if(iporos.eq.6.or.iporos.eq.7) then
+              if(nspeci.eq.0) then
+               if(iout.ne.0) write(iout,9011) iporos
+               if(iptty.ne.0) write(iptty,9011) iporos
+9011   format('warning: salt porosity model ',i3,
+     &       ' used in salt simulation with trac. Disabled ppor')
+               iporos = 0
+              endif
+             endif 
+
             elseif (macro1.eq.'saltadif') then
 c**** air-water vapor diffusion with salt (adif = 333 or 666)****
              iadif = 1
@@ -230,37 +242,37 @@ c Sparrow (2003) Desalination
 c Sparrow has no capillary vapor pressure lowering
 c ivaprsalt-vapor pressure lowering model
 c ivaprsalt = 0, standard (traditional FEHM h2o vapor pressure fit)
-c                no lowering (even with capillary pressury)
-c ivaprsalt = 1, Sparrow vapor pressure model with no salt
-c ivaprsalt = 2, Sparrow vapor pressure model with with salt
-c ivaprsalt = 3, Sparrow vapor pressure model with with salt
-c                and capillary pressure vapor pressure lowering (not operational)
-c ivaprsalt = 4, traditional FEHM vapor pressure model without 
-c                 capillary pressure vapor pressure lowering (no salt)
-c ivaprsalt = 5, traditional FEHM vapor pressure model with 
-c                 capillary pressure vapor pressure lowering (no salt
-c ivaprsalt = 6, traditional FEHM pressure model with with salt
-c                and NO capillary pressure vapor pressure lowering
-c ivaprsalt = 7, traditional FEHM pressure model with with salt
-c                and capillary pressure vapor pressure lowering
-
+c                no lowering (even with capillary pressure)
+c ivaprsalt = 1 FEHM psat model with with capillary vapor pres lowering (fitted functi on)
+c
+c ivaprsalt = 2, FEHM psat model with with salt vapor pres lowering (fitted function)
+c                 
+c ivaprsalt = 3, FEHM psat model with with salt vapor pres lowering (fitted function)
+c                 and capillary vapor pressure lowering
               ivapl = 0
               read(inpt,*) ivaprsalt
-              if(ivaprsalt.eq.3.or.ivaprsalt.eq.5.or.
-     &         ivaprsalt.eq.7) ivapl = 1 
-              if(ivaprsalt.eq.2.or.ivaprsalt.eq.3.or.
-     &          ivaprsalt.eq.6.or.ivaprsalt.eq.7) then
-                ivapl = 1
+              if(ivaprsalt.eq.1) ivapl = 1
+c check for invalid ivaprsalt
+              if(ivaprsalt.lt.0.and.ivaprsalt.gt.3) then
+                write(ierr,905) 
+                if(iout.ne.0) write(iout,905)
+                if(iptty.ne.0) write(iptty,905)
+905      format('salt vapor pressure model number must be between 0-2',
+     &          /,'ivaprsalt = 0, no vapor pressure lowering',
+     &          /,'ivaprsalt = 1, capillary vapor pressure lowering',
+     &          /,'ivaprsalt = 2, salt vapor pressure lowering',
+     &          /,'ivaprsalt = 3, salt and capillary vapor pressure',
+     &          ' lowering')
+               stop
+              endif
 c check for errors (need tracer for salt)
-               if(iccen.eq.0) then
+               if(ivaprsalt.gt.1.and.nspeci.eq.0) then
                 write(ierr,902) 
                 if(iout.ne.0) write(iout,902)
                 if(iptty.ne.0) write(iptty,902)
-902      format('vapor pressure model needs salt tracer:stopping')
-               stop       
+902      format(' vapor pressure model needs salt tracer:stopping',/)
+               stop    
                endif
-              endif
-
             else if(macro1.eq.'saltden ') then              
 c     
 c manage salt density  
@@ -442,7 +454,7 @@ c        1         2         3         4         5         6        7 2       8
      &          * xf**3 - 1.986 * xf**4) * 1.e-6
 		ef = ( 1.2370 - 0.7530 * xf + 0.1448 * xf**2 - 6.9640
      &          * xf**3 + 14.61 * xf**4) * 1.e-9
-			else if(tl.gt.150.and.tl.le.300.0) then
+			else if(tl.gt.150.) then
 		af = (-3.2480 + 7.0810 * xf - 49.930 * xf**2 + 219.60
      &          * xf**3 - 308.5 * xf**4)
 		bf = ( 0.0610 - 0.1185 * xf + 0.7916 * xf**2 - 3.4740
@@ -458,6 +470,7 @@ c
 c           Truncate function at 300C  and dump a statement to the screen
             if(tl.gt.300) then
                 tltemp = 300.
+                tl = tltemp
 c gaz debug 080613 note removed derivative above 300 C (function is constant)
                 dpsatt = 0.0
                 dpsats = 0.0
@@ -752,12 +765,14 @@ c
                      enddo
                      write(iout,*) 'Total change in volume: ', psdelta,
      &                     ' m'
-                     write(iout,*) 'Percent change in total volume: ', 
-     &                     psdelta/psvol*100, ' %'
                      write(iatty,*) 'Total change in volume: ', psdelta,
      &                     ' m'
+                    if(psvol.gt.1.e-30) then
+                     write(iout,*) 'Percent change in total volume: ', 
+     &                     psdelta/psvol*100, ' %'
                      write(iatty,*) 'Percent change in total volume: ', 
      &                     psdelta/psvol*100, ' %'
+                    endif
                   enddo
 
  600           format(2x,'Matrix Level = ',i1)

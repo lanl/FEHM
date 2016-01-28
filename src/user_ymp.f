@@ -108,7 +108,7 @@ C***********************************************************************
       real*8, allocatable :: cons(:,:)
       real*8, allocatable :: cord_add(:,:)
       real*8, allocatable :: times(:)
-      real*8 tdum
+      real*8 tdum,cstar,c1star,c2star,astar,bstar
       real*8 delx, delx1, delx2, dely, dely1, dely2
       real*8 dumx, dumy, dis, dis2, dis_min, discal, discal2
       real*8 x0, x01, x02, xa1, y0, y01, y02, ya1, xx, yy, zz 
@@ -122,6 +122,14 @@ C***********************************************************************
       real*8 total_recharge, total_recharge_in, total_recharge1
       real*8 total_recharge2, tol, fluxd, vol, frac, shut_time
       real*8 rzw, sww, scc
+      real*8 t1, t0, avap1, avap2, ms, xf, and, dand , dela 
+      real*8 pvwn,pvwn1,pvwn2,pvwn3, pvwd,pvwd1,pvwd2,pvwd3
+      real*8 pvw,pvw0, bcoef1,bcoef2
+      real*8 dla0, dlpa1, dlpa2, dlpa3, dlta1, dlta2, dlta3
+      real*8 dlpta, dlpt2a, dlp2ta
+      real*8 dlb0, dlpb1, dlpb2, dlpb3, dltb1, dltb2, dltb3
+      real*8 dlptb, dlpt2b, dlp2tb
+      real*8 tl,tl2,tl3,xm,xm2,xm3,tlxm,tl2xm,tlxm2
       integer iuser1,iuser2,icount
       integer i_outer_elem,ie_1,ie_2,ie_3,ie_4,ie_5,ie_6,ie_7,ie_8
       integer i_edge, nei_old, neq_add, i_new, i_elem_new, kk, ns_old
@@ -133,6 +141,7 @@ C***********************************************************************
       real*8, allocatable :: sk_save1(:)
       real*8, allocatable :: sk_save2(:)
       real*8, allocatable :: temp1(:), temp2(:,:)
+      real*8, allocatable :: ptemp1(:),ptemp2(:),ptemp12(:)
       real*8, allocatable :: water(:)
       real*8, allocatable :: x_wt(:),y_wt(:)
       character*80 dum_user
@@ -1438,5 +1447,316 @@ c read permeability from daniil and out in permeability file
       enddo 
        write(97,*) 'volume total ', sum_volj
       stop
+      case(-901)
+       if(l.eq.1) then
+        isalt = 1
+        open(unit = 98,file='pres_vap.dat',status='unknown')  
+        open(unit = 99,file='pres_vap.out',status='unknown')  
+        read(98,'(a80)') wdd(1:80)
+        read(98,*) iii
+c        read(98,*) t1, t0, avap1, avap2
+        write (99,'(a80)') wdd(1:80)
+        write (99,*) iii
+        allocate(temp1(iii),ptemp1(iii),ptemp2(iii))
+        allocate(ptemp12(iii))
+        if(allocated(an)) deallocate(an)
+        allocate(an(iii))
+        deallocate(phi)
+        allocate(phi(iii))
+        deallocate(pcp)
+        allocate(pcp(iii))
+        pcp = 0.
+        deallocate(pci)
+        allocate(pci(iii))
+        deallocate(t)
+        allocate(t(iii))
+        deallocate(ieos)
+        allocate(ieos(iii))
+        ieos = 3
+        deallocate(dpcef)
+        allocate(dpcef(iii))
+         read(98,*) (temp1(i), i = 1,iii)
+
+c loop on an
+         dela = 0.1
+         dand = 2.  
+         and = -dand 
+         do j = 1, 11
+          and = and + dand
+          an = and
+                     
+          ms = an(1) * 58.55 / 1000.
+          xf = ms / ( ms + 1.0 ) 
+          write(99,*)    
+          write(99,*) 'conc',  an(1), ms, xf  
+         do i = 1, iii
+          phi(i) = 1.0
+          t(i) = temp1(i)
+          ivaprsalt = 2
+          call saltctr(1,i,tdum,tdum) 
+          ptemp1(i) = phi(i) - pci(i)
+          ivaprsalt = 2
+          an(i) = an(i)+dela
+          call saltctr(1,i,tdum,tdum) 
+          ptemp2(i) = phi(i) - pci(i)
+
+          write(99,984) t(i), ptemp1(i),(ptemp2(i)-ptemp1(i))/dela
+          go to 371
+          tdum = (t(i)-t0+1.e-10)/(t1-t0)
+c          ptemp12(i) = an(i)*avap2*exp(avap1*tdum)
+c          ptemp12(i) = an(i)*(avap1*tdum**4 + avap2)
+c simple inverse t model
+           cstar = 5
+           c1star = 1./(1.+cstar)
+           c2star = 1./cstar
+           astar = (avap1-avap2)/(c2star-c1star)
+           bstar = avap1-astar*c2star
+           ms = an(i) * 58.55 / 1000.
+	     xf = ms / ( ms + 1.0 )
+           ptemp12(i) = 
+     &      xf**0.95*(astar*(1./(1.-tdum**3+cstar)) + bstar)
+c
+          write(99,984) 
+     &    t(i), ptemp1(i), ptemp2(i), xf, ptemp2(i)-ptemp12(i),
+     &    ptemp1(i)-ptemp2(i)+ptemp12(i),ptemp12(i)
+984       format(7(1x,f15.5))     
+371      continue
+         enddo
+         enddo
+         close (98) 
+         close (99)         
+         stop
+       endif
+      case(-910)
+c
+c vap_press fit
+c
+      if(l.eq.1) then
+c
+        open(unit = 98,file='pres_vap3.dat',status='unknown')  
+        open(unit = 99,file='pres_vap2.out',status='unknown')  
+c
+      read(98,'(a80)') wdd(1:80)
+      read(98,*) t1
+      read(98,'(a80)') wdd(1:80)
+      read(98,*) iii
+c read temperature data
+      allocate(temp1(iii),ptemp1(iii),ptemp2(iii),ptemp12(iii))
+      deallocate(an)
+      allocate(an(iii))
+      read(98,*) (temp1(i), i = 1,iii)
+      read(98,'(a80)') wdd(1:80)
+      read(98,'(a80)') wdd(1:80)
+      read(98,'(a80)') wdd(1:80)
+      read(98,*) dla0, dlpa1, dlpa2, dlpa3, dlta1, dlta2, dlta3,
+     &   dlpta, dlpt2a, dlp2ta
+      read(98,*) dlb0, dlpb1, dlpb2, dlpb3, dltb1, dltb2, dltb3,
+     &   dlptb, dlpt2b, dlp2tb
+      read(98,*) bcoef1
+
+c     loop on tracer
+         dela = 0.1
+         dand = 2.  
+         and = -dand 
+         do j = 1, 11
+          and = and + dand    
+          an = and         
+          ms = and*58.55 / 1000.
+          xf = ms / ( ms + 1.0 ) 
+          xm = xf 
+          xm2 = xm*xm
+          xm3 = xm2*xm
+          write(99,786) and,ms,xf
+786       format('concentration = ',5(1x,g15.10))
+787       format(3(1x,g20.10)) 
+c     loop on temperture
+         isalt = 1
+         do i = 1, iii   
+          tdum = temp1(i)
+          t(i) = tdum
+          ivaprsalt = 2
+          call saltctr(1,i,tdum,tdum) 
+          ptemp1(i) = phi(i) - pci(i)
+c get sat pressure
+          ivaprsalt = 4
+          call saltctr(1,i,tdum,tdum) 
+          ptemp2(i) = phi(i) - pci(i)
+          tl = tdum/t1
+          tl2 = tl*tl 
+          tl3 = tl2*tl
+          tlxm = tl*xm
+          tl2xm = tl2*xm
+          tlxm2 = tl*xm2
+          pvwn1=dla0+dlpa1*xm+dlpa2*xm2+dlpa3*xm3
+          pvwn2=dlta1*tl+dlta2*tl2+dlta3*tl3
+          pvwn3=dlpta*tlxm+dlpt2a*tl2xm+dlp2ta*tlxm2
+          pvwn=pvwn1+pvwn2+pvwn3
+          pvwd1=dlb0+dlpb1*xm+dlpb2*xm2+dlpb3*xm3
+          pvwd2=dltb1*tl+dltb2*tl2+dltb3*tl3
+          pvwd3=dlptb*tlxm+dlpt2b*tl2xm+dlp2tb*tlxm2
+          pvwd=pvwd1+pvwd2+pvwd3
+c          pvw0=pvwn/pvwd
+c
+c power law
+c
+          
+
+          ptemp12(i) = pvw0*(xm**bcoef1)
+        enddo
+         write(99, 787) (temp1(k),ptemp2(k)-ptemp12(k),
+     &      ptemp1(k), k = 1,iii)
+         write(99,*)
+        enddo
+        close(98)
+        close(99)
+        stop
+      endif
+      case(-911)
+c
+c vap_press fit
+c
+      if(l.eq.1) then
+c
+        open(unit = 98,file='pres_vap.dat',status='unknown')  
+        open(unit = 99,file='pres_vap.out',status='unknown')  
+c
+      read(98,'(a80)') wdd(1:80)
+      read(98,*) iii
+c read temperature data
+      allocate(temp1(iii),ptemp1(iii),ptemp2(iii),ptemp12(iii))
+      deallocate(an)
+      allocate(an(iii))
+      read(98,*) (temp1(i), i = 1,iii)
+      read(98,'(a80)') wdd(1:80)
+      read(98,'(a80)') wdd(1:80)
+      read(98,'(a80)') wdd(1:80)
+      read(98,*) t1,cstar,avap1,avap2
+      read(98,*) bcoef1,bcoef2
+
+c     loop on tracer
+         dela = 0.1
+         dand = 2.  
+         and = -dand 
+         do j = 1, 11
+          and = and + dand    
+          an = and         
+          ms = and*58.55 / 1000.
+          xf = ms / ( ms + 1.0 ) 
+          xm = xf 
+          xm2 = xm*xm
+          xm3 = xm2*xm
+          write(99,786) and,ms,xf
+c786       format('concentration = ',5(1x,g15.10))
+c787       format(2(1x,g20.10)) 
+c     loop on temperture
+         isalt = 1
+         do i = 1, iii   
+          tl = temp1(i)
+          t(i) = tl
+          ivaprsalt = 2
+          call saltctr(1,i,tdum,tdum) 
+          ptemp1(i) = phi(i) - pci(i)
+c get sat pressure
+          ivaprsalt = 4
+          call saltctr(1,i,tdum,tdum) 
+          ptemp2(i) = phi(i) - pci(i)
+           tdum = tl/t1
+           c1star = 1./(1.+cstar)
+           c2star = 1./cstar
+           astar = (avap1-avap2)/(c2star-c1star)
+           bstar = avap1-astar*c2star
+ 
+           pvw = 
+     &      xm**bcoef1*(astar*(1./(1.-tdum**bcoef2+cstar)) + bstar)
+
+          ptemp12(i) = pvw
+        enddo
+         write(99, 787) (temp1(k),ptemp2(k)-ptemp12(k),
+     &      ptemp1(k), k = 1,iii)
+         write(99,*)
+        enddo
+        close(98)
+        close(99)
+        stop
+      endif
+      case(-912)
+c
+c vap_press fit
+c
+      if(l.eq.1) then
+c
+        open(unit = 98,file='pres_vap3.dat',status='unknown')  
+        open(unit = 99,file='pres_vap3.out',status='unknown')  
+c
+      read(98,'(a80)') wdd(1:80)
+      read(98,*) t1
+      read(98,'(a80)') wdd(1:80)
+      read(98,*) iii
+c read temperature data
+      allocate(temp1(iii),ptemp1(iii),ptemp2(iii),ptemp12(iii))
+      deallocate(an)
+      allocate(an(iii))
+      read(98,*) (temp1(i), i = 1,iii)
+      read(98,'(a80)') wdd(1:80)
+      read(98,'(a80)') wdd(1:80)
+      read(98,'(a80)') wdd(1:80)
+      read(98,*) dla0, dlpa1, dlpa2, dlpa3, dlta1, dlta2, dlta3,
+     &   dlpta, dlpt2a, dlp2ta
+      read(98,*) dlb0, dlpb1, dlpb2, dlpb3, dltb1, dltb2, dltb3,
+     &   dlptb, dlpt2b, dlp2tb
+      read(98,*) bcoef1
+
+c     loop on tracer
+         dela = 0.1
+         dand = 2.  
+         and = -dand 
+         do j = 1, 11
+          and = and + dand    
+          an = and         
+          ms = and*58.55 / 1000.
+          xf = ms / ( ms + 1.0 ) 
+          xm = xf 
+          xm2 = xm*xm
+          xm3 = xm2*xm
+          write(99,786) and,ms,xf
+c786       format('concentration = ',5(1x,g15.10))
+c787       format(3(1x,g20.10)) 
+c     loop on temperture
+         isalt = 1
+         do i = 1, iii   
+          tdum = temp1(i)
+          t(i) = tdum
+          tl = tdum/t1
+          ivaprsalt = 2
+          call saltctr(1,i,tdum,tdum) 
+          ptemp1(i) = phi(i) - pci(i)
+c get sat pressure
+          ivaprsalt = 4
+          call saltctr(1,i,tdum,tdum) 
+          ptemp2(i) = phi(i) - pci(i)
+c          pvwn1=dla0+dlpa1*xm**dlpa2
+          pvwn1=dla0
+          pvwn2=dlta1*tl**dlta2
+          pvwn3=0.0
+          pvwn=pvwn1+pvwn2+pvwn3
+          pvwd1=dlb0+dlpb1*xm**dlpb2
+          pvwd2=dltb1*tl**dltb2
+          pvwd3=0.0
+          pvwd=pvwd1+pvwd2+pvwd3
+          pvw0=pvwn/pvwd 
+c
+c power law
+c
+          
+          ptemp12(i) = dlpa1*xm**dlpa2*(pvw0+bcoef1)
+        enddo
+         write(99, 787) (temp1(k),ptemp2(k)-ptemp12(k),
+     &      ptemp1(k), k = 1,iii)
+         write(99,*)
+        enddo
+        close(98)
+        close(99)
+        stop
+      endif
       end select
       end

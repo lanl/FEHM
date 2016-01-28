@@ -460,7 +460,11 @@ c GAZ 012214
       real*8              pchng, schng 
 c gaz 121314
       integer              nrestart_ts
-      
+c gaz 081415
+      integer              mlz_save   
+      integer              nphase_liq, nphase_2, nphase_gas 
+      integer              nphase_liq_0, nphase_2_0, nphase_gas_0   
+      integer              dnphase_liq, dnphase_2, dnphase_gas
       integer :: irun = 0
 
       real*8              aener, aiaa, am0, amass, ame, an0, asteam

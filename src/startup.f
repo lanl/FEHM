@@ -1361,6 +1361,8 @@ c bookeeping for air-water or methane
 c get cell lengths for wtsi if necessary
          call airctr(11, 0)
          call airctr(6, 0)
+c check temperature used in isothermal calculations
+         call airctr(13, 0)
       else if(ico2.lt.0.and.ice.ne.0) then
          call icectr(6, 0)
       endif

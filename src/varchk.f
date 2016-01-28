@@ -420,14 +420,18 @@ C**********************************************************************
       real*8 xdiff_tol
       parameter(psatmn=0.0001)
       parameter(eosmg=1.0001)
-c      parameter(eosml=0.99)
-      parameter(eosml=0.95)
+c      parameter(eosml=0.95)
+      parameter(eosml=0.99)
       parameter(eostol=0.0001)
 c      parameter(stepl=0.95)
       parameter(pcimin=0.0)
-      parameter(phase_mult=1.00)
+c      parameter(phase_mult=1.00)
       parameter(phase_sat=1.0d-9)
-      parameter(satml=1.0d-2)
+c gaz debug 092115
+c      parameter(satml=1.0d-4)
+      parameter(satml=1.0d-6)
+      parameter(phase_mult=1.01)
+
       parameter(xdiff_tol=1.0d-4)
 c ich_max should be odd or even but don't know which
 c      parameter(ich_max = 2)
@@ -437,6 +441,7 @@ c      parameter(ich_max = 2)
       real*8 tl
       real*8 sl
       real*8 x
+      real*8 dum
       integer ij
       integer ieosd
       integer ieosdc
@@ -476,6 +481,14 @@ c
       if(nr_stop.ne.0.and.iad.ge.1.and.ifl.eq.1)then
          call nr_stop_ctr(1)
       endif
+c gaz debug 090515  
+c new code to save mass and energy in each block for ngas 
+       if(ico2.gt.0) then    
+         denei_ch = 0.0
+         deni_ch = 0.0
+         denpci_ch = 0.0
+         ieos_bal = 0.0
+       endif
       if(ifl.eq.0) then
 c
 c     evaluate eos status of each node. change status as prescribed
@@ -485,7 +498,7 @@ c     by phase change instructions
          
 c set newton raphson step length to 1.0 at beginning of timestep
          if(iad.eq.0) then
-            strd    =1.0
+            strd =1.0
             ieos_ch = 0
          endif
 cc
@@ -517,7 +530,8 @@ c                 ieosdc=-1 gaz 10-17-2001 do nothing
 c
 c     liquid only state
 c
-                       tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,1)
+                       tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,
+     &                             1,an(ij))
 C*****
 C***** AF 11/15/10
 C*****
@@ -542,9 +556,9 @@ c
 c     change to liquid only conditions
                            ieosdc=1
 c                     t(ij)=psatl(pl,pcp(ij),dpcef(ij),
-c     2                    dtsatp,dpsats,1)*eosml
+c     2                    dtsatp,dpsats,1,an(ij))*eosml
                            t(ij)=psatl(pl,pcp(ij),dpcef(ij),
-     2                          dtsatp,dpsats,1)     
+     2                          dtsatp,dpsats,1,an(ij))     
                            s(ij)=1.0
                            time_ieos(ij) = days + time_ch
                         elseif(s(ij).le.0.0.and.days.ge.time_ieos(ij))
@@ -552,7 +566,7 @@ c     2                    dtsatp,dpsats,1)*eosml
 c     change to gas only
                            ieosdc=3
                            t(ij)=psatl(pl,pcp(ij),dpcef(ij),
-     2                          dtsatp,dpsats,1)*eosmg
+     2                          dtsatp,dpsats,1,an(ij))*eosmg
                            s(ij)=0.0
                            time_ieos(ij) = days + time_ch
                         endif
@@ -561,7 +575,8 @@ c
 c
 c     gas conditions
 c     
-                       tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,1)
+                       tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,
+     &                             1,an(ij))
                         if(tl.le.tboil/phase_mult.
      &                       and.days.ge.time_ieos(ij)) then
 c     change to 2-phase
@@ -585,7 +600,7 @@ c
                      endif
                      ieos(ij)=ieosdc
                   enddo
- 233              format('$$$$$$$  >>>>>> ', 2i8,1p,3g14.4)
+ 233              format('>> phase chng/ts gt 3 >>>> ', 2i8,1p,3g14.4)
           else if(icarb.ne.0) then
             call icectrco2(-1,0)
 c            ieos = 1
@@ -623,13 +638,14 @@ c
 c
 c     liquid only state
 c
-                      if(isalt.eq.0) then
+c                      if(isalt.eq.0) then
                        tl=t(ij)
-                       pboil=psatl(tl,pcp(ij),dpcef(ij),dtsatp,dpsats,0)
-                      else
-                       call saltctr(1,ij,dpsatt,dpsats)
-                       pboil = pl - pci(ij)
-                      endif
+                       pboil=psatl(tl,pcp(ij),dpcef(ij),dtsatp,dpsats,
+     &                             0,an(ij))
+c                      else
+c                       call saltctr(1,ij,dpsatt,dpsats)
+c                       pboil = pl - pci(ij)
+c                      endif
 c     change to 2-phase
                         if(x.le.pboil/phase_mult.
      &                     and.days.ge.time_ieos(ij)) then
@@ -646,34 +662,59 @@ c
 c     2-phase conditions
                         if(sl.ge.1.and.days.ge.time_ieos(ij)) then 
 c     change to liquid only conditions
+                           pboil = psatl(tl,pcp(ij),dpcef(ij),
+     &                          dpsatt,dpsats,0,an(ij))
+c gaz 011116 testing
+c                         if(sl.ge.1.000.and.so(ij).gt.0.95) then
+                         if(sl.ge.1.000) then
                            ieosdc=1
-c     tl=t(ij)*eosml
-c     t(ij)=tl
-                          if(isalt.eq.0) then
-                           pci(ij)=pl-psatl(tl,pcp(ij),dpcef(ij),
-     2                          dpsatt,dpsats,0)
-                          else
-c  pci calculated inside saltctr
-                           call saltctr(1,ij,dpsatt,dpsats)
-                          endif
-c     pci(ij)=max(pl-pboil,0.0d00)
-                          s(ij)=1.0
-                          strd = stepl
-                          time_ieos(ij) = days + time_ch
+                           pci(ij)=pl-pboil
+                           s(ij)=1.0
+                           strd = stepl
+                           time_ieos(ij) = days + time_ch
+c                        else
+c                           s(ij) = 0.999
+                         endif
                         endif 
-c     change to gas only
-                        if(sl.le.0.0.and.days.ge.time_ieos(ij)) then
+c change to gas only
+                        if(sl.le.0.00.and.days.ge.time_ieos(ij))then
+c gaz debug 090515
+                           pboil = psatl(tl,pcp(ij),dpcef(ij),
+     &                          dpsatt,dpsats,0,an(ij))
+c                          if(sl.le.0.0.and.so(ij).lt.0.05) then   
+                          if(sl.le.0.0) then       
+                           denei_ch(ij) = denei(ij)
+                           deni_ch(ij) = deni(ij)
+                           denpci_ch(ij) = denpci(ij)
+                           ieos_bal(ij) = ieos(ij)
+                           dum = so(ij)
                            ieosdc=3 
                            s(ij)=0.0
                            strd = stepl
                            time_ieos(ij) = days + time_ch
+c                          else
+c                           s(ij) = 0.0001
+                          endif
                         endif
 c gaz debug 120714
-                        if(x.lt.-xdiff_tol.and.sl.le.0.0.
-     &                     and.days.ge.time_ieos(ij)) then
+                        if(x.lt.-xdiff_tol.and.sl.le.0.0.and.ieosdc.eq.2
+     &                     .and.days.ge.time_ieos(ij)) then
                            ieosdc=3
                            s(ij)=0.0
                            phi(ij) = pcl
+                           strd = stepl
+                           time_ieos(ij) = days + time_ch
+                        endif
+                        pboil = psatl(tl,pcp(ij),dpcef(ij),
+     &                          dpsatt,dpsats,0,an(ij))
+                        if(x.lt.pboil.and.sl.le.1.e-8.and.ieosdc.
+     &                     eq.2.and.days.ge.time_ieos(ij)) then
+                           ieosdc=3
+                           s(ij)=0.0
+                           t(ij) = 1.0001*tl 
+c                           phi(ij) = pci(ij) + pboil*0.999
+                            pci(ij) = phi(ij) - pboil*0.999
+                            phi(ij) = pci(ij) + pboil
                            strd = stepl
                            time_ieos(ij) = days + time_ch
                         endif
@@ -686,20 +727,24 @@ c gaz debug 120814
 c gaz debug 091514
 c gaz debug 120714    
                
-                    pvapor=psatl(tl,pcp(ij),dpcef(ij),dpsatt,dpsats,0)
+                    pvapor=psatl(tl,pcp(ij),dpcef(ij),dpsatt,dpsats, 
+     &                           0,an(ij))
 c     check vapor pressure against saturated vapor pressure
 c     change if lower
-                       if(x.ge.pvapor.and.days.ge.time_ieos(ij)) then 
+                       if(x.ge.pvapor*phase_mult.and.days.
+     &                    ge.time_ieos(ij)) then 
                            s(ij)=satml  
-                           if(ieosd.eq.3) then
-                              s(ij)= satml
-                           endif
+                           tboil=psatl(x,pcp(ij),dpcef(ij),dtsatp,
+     &                            dpsats,1,an(ij))
+                           t(ij) = 0.5*(tboil+tl)
+c                           if(ieosd.eq.3) then
+c                             s(ij)= satml
+c                           endif
                            time_ieos(ij) = days + time_ch
                            strd = stepl
                            ieosdc = 2
                        endif
                      endif
-c     
 c
 c     remember if danl eos change occured
 c     tally eos numbers
@@ -825,16 +870,17 @@ c  GAZ 5/1/98
                   endif
 c big change gaz 11/26/96
 c gaz debug 120714 (phi correction)
-                  if(ieosd.ne.2) then
+c                  if(ieosd.ne.2.and.phi(i).lt.pci(i)) then
 c                   if(phi(i).lt.pci(i)) phi(i) = pci(i)
 c gaz debug 011415 try different approach pci correction
 c gaz debug 011415 this worked well (so far)
 c
-                   if(phi(i).lt.pci(i)) pci(i) = phi(i)
-                  endif
+c                   pci(i) = phi(i)
+c                   strd = stepl
+c                  endif
                   pci(i)=max(0.0d00,pci(i))
                   s(i)=min(1.d00,max(0.0d00,s(i)))
-               enddo      
+               enddo   
             else if(ico2.lt.0.and.ice.eq.0) then
 c     
 c     make corrections for isothermal air-water mixture

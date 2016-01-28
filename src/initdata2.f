@@ -604,12 +604,15 @@ c     Error checking for irregular input (missing nodes, etc.)
       if(ireturn .eq. -1 .or. ireturn .eq. -2) then
          write (ierr, 9001) iarray, macro, igroup
          if (iptty .ne. 0) write (iptty, 9001) iarray, macro, igroup
+         if (iout .ne. 0) write (iout, 9001) iarray, macro, igroup
          if (ireturn .eq. -1) then
             write (ierr, 9002)
             if (iptty .ne. 0) write (iptty, 9002)
+            if (iout .ne. 0) write (iout, 9002)
          else if ( ireturn .eq. -2 ) then
             write (ierr, 9003) inumber
             if (iptty .ne. 0) write (iptty, 9003) inumber
+            if (iout .ne. 0) write (iout, 9003) inumber
          end if
          stop
       end if

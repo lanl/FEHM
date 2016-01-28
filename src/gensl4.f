@@ -139,14 +139,15 @@ C***********************************************************************
       use comai
       implicit none
       
-      integer ndex(3)
+      integer ndex(3),idiag,j,k
       integer i, id, neqp1, nsizea, nsizea1
       real*8, allocatable :: sto5(:,:)
       real*8, allocatable :: dum(:)
       real*8, allocatable :: dumn(:)
       real*8  facr, fdm, fdum2, tollr, tolls
       parameter(fdm=20.0)
-
+c gaz debug
+      i = l
       neqp1=neq+1
 c     zero out arrays
       do i=1,neq
@@ -198,33 +199,57 @@ c
         if (irdof.ne.0) then
            call air_rdof(0,irdof,0,nelm,nmat,nrhs,a,bp,sx1)
         endif
-c     
-      allocate(dumn(100))
+
+      allocate(dumn(108))
       call normal_dof(neq,a,bp,nelm,nmat,nrhs,nelmdg
      &     ,ndex,3,dumn(1),dumn(37),dumn(73),0,fdum2)
       deallocate(dumn)
 c     
-c     return and stop if singular
-c     
+c     return and adjust timestep if singular
+c    
       if(ndex(1).lt.0 ) then
+         idiag=nelmdg(abs(ndex(1)))-neqp1
          if (iout .ne. 0) then
             write(iout,*) '   '
             write(iout, 100)
-            write(iout,*) '   '
-            write(iout,'(i8,3g12.3)')
-     &           abs(nmatb(1)),(cord(abs(nmatb(1)),i),i=1,3)
+            write(iout,*) 'node = ', abs(ndex(1)), 'coordinates :'
+            write(iout,'(i8,1p,3g18.4)')
+     &           abs(ndex(1)),(cord(abs(ndex(1)),i),i=1,3) 
+            write(iout,*) ' diagonal terms'
+             do j=1,idof
+              write(iout,'(8x,1p,3g18.4)') (a(nmat((j-1)*idof+k)+idiag),
+     &           k = 1, idof)
+             enddo
+            write(iout,*) 'NR iteration = ', iad
+            write(iout,*) ' phase state = ', ieos(abs(ndex(1)))
+             k = abs(ndex(1))
+            write(iout,101) 
+            write(iout,'(8x,1p,4g18.4)') phi(k),pci(k),s(k),t(k)      
          end if
-         if(iptty.gt.0)then
+
+         if (iptty .ne. 0) then
             write(iptty,*) '   '
-            write(iptty, 100) 
-            write(iptty,*) '   '
-            write(iptty,'(i8,3g12.3)') 
-     &           abs(nmatb(1)),(cord(abs(nmatb(1)),i),i=1,3)
+            write(iptty, 100)
+            write(iptty,*) 'node = ', abs(ndex(1)), 'coordinates :'
+            write(iptty,'(i8,1p,3g18.4)')
+     &           abs(ndex(1)),(cord(abs(ndex(1)),i),i=1,3) 
+            write(iptty,*) ' diagonal terms'
+             do j=1,idof
+              write(iptty,'(8x,1p,3g18.4)')(a(nmat((j-1)*idof+k)+idiag),
+     &           k = 1, idof)
+             enddo
+            write(iptty,*) 'NR iteration = ', iad
+            write(iptty,*) ' phase state = ', ieos(abs(ndex(1)))
+             k = abs(ndex(1))
+            write(iptty,101) 
+            write(iptty,'(8x,1p,4g18.4)') phi(k),pci(k),s(k),t(k)
          endif
-         iad=maxit
-         return
+c         iad=abs(maxit)
+         mlz = -2        
+        return
       endif
  100  format ('* singular matrix found during normalization *')
+ 101  format (20x,'water pres',10x,'air pres',10 x,'sat',10x,'temp')
       
       fdum=sqrt(fdum2)
       if(fdum.eq.0.0d00) go to 999

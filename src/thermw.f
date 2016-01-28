@@ -1122,10 +1122,11 @@ C*****AF 11/15/10
 c-----------------------------------------
 c     phs      Lookup table if tableFLAG = 1
 c-----------------------------------------
-c     
-            if(tableFLAG.NE.1) then
+c 
+               if(tableFLAG.NE.1) then    
 c*****
 c     liquid enthalpy
+
                enwn1=ela0+elpa1*x+elpa2*x2+elpa3*x3
                enwn2=elta1*tl+elta2*tl2+elta3*tl3
                enwn3=elpta*tlx+elpt2a*tl2x+elp2ta*tlx2

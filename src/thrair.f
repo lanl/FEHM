@@ -544,7 +544,10 @@ c     cappilary pressure and derivatives
             drlp=0.0d00
             pwl=pl
             dpwlp=1.0d00
-            dpwls=0.0d00      
+            dpwls=0.0d00  
+            xrv = 0.0   
+            drvp = 0.0
+            drv = 0.0 
             if(ifree.ne.0) then
                dsatp=drlxyf(mi)
             else
@@ -722,11 +725,16 @@ c     Seepage face for simpliflied water table
 c     
 c     based on average cell pressure
 c     permsd= qc(mi)/wellim(mi)
-            permsd=abs(wellim(mi))
-            permsdl = permsd*seep_facl
+c            permsd=abs(wellim(mi))
+            if(igrav.eq.2) then
+             permsd = pnx(mi)*sx1(mi)**0.3333
+            elseif(igrav.eq.3) then
+             permsd = max(pnx(mi),pny(mi))*sx1(mi)**0.3333
+            endif
+            permsdl = permsd*seep_facl*esk(mi) 
             plow = 0.5*(head12(mi,2)+head12(mi,1))
-            watterm= permsdl*esk(mi)
-            watfrac = rlxyf(mi)
+            watterm= permsdl
+            watfrac = rlxyf(mi) 
             dwfracp = drlxyf(mi)
             pdifw = pwl-plow
             if(pdifw.ge.0.0d0) then
@@ -736,26 +744,25 @@ c     permsd= qc(mi)/wellim(mi)
             else
 	       qwdis = 0.0
 	       dqws = 0.0
-               dqwp = 0.0
+             dqwp = 0.0
             endif
             
          else if(kq.eq.-5.and.ifree.ne.0) then
 c     Seepage face for simpliflied water table
-c     only flow when cell is full
-c     might need rlxyf here
+c     when cell is just wet
+c     
             permsd=abs(wellim(mi))
             permsdl = permsd*seep_facl
-            watterm= permsdl
+            watterm= permsdl*esk(mi)
             watfrac = max(rlxyf(mi)-rlptol,0.0d00)
-            plow = head12(mi,2)          
+            plow = head12(mi,1)    
+c             plow = 0.1      
             qwdis = watterm*watfrac*(pwl-plow)
-            qwmax = esk(mi)
+c
             dqwp = watterm*drlxyf(mi)*(pwl-plow)+watterm*watfrac
-            if(qwdis.gt.qwmax) then
-               qwdis = qwmax
-               dqwp = 0.0
-            else if(qwdis.lt.0.0d0) then
-               qwdis = 0.
+             if(qwdis.lt.0.0d0) then
+               qwdis = 0.0
+               dqws = 0.0
                dqwp = 0.0
             endif
          else if(kq.eq.-6.and.irdof.ne.13) then

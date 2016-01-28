@@ -178,6 +178,8 @@ c     zero out enthalpy for air water system
             write(iout,77) aminkt
             write(iout,704) itotal,itotals
             write(iout,705) is_ch, is_ch_t
+            write(iout,706) nphase_liq, dnphase_liq, nphase_2, 
+     &            dnphase_2, nphase_gas, dnphase_gas 
          endif
          if (iptty.gt.0) then
             write(iptty,772)
@@ -190,6 +192,8 @@ c     zero out enthalpy for air water system
             write(iptty,77) aminkt
             write(iptty,704) itotal,itotals
             write(iptty,705) is_ch, is_ch_t
+            write(iptty,706) nphase_liq, dnphase_liq, nphase_2, 
+     &            dnphase_2, nphase_gas, dnphase_gas 
          endif
          if(fimp.le.1.0d00) then
             message_ts = '                    '
@@ -226,11 +230,16 @@ c     zero out enthalpy for air water system
  704     format(1x,'Total Number of Iterations, N-R: ',i10,
      &        ' , Solver: ',i10)
  705     format(1x,'Phase Changes This Time Step: ',i8,' Total ',i11)
-         if(ntty.eq.2) then
+ 706     format(1x,'Nodes Liq Phase: ',i8,' change ',i8,/,
+     &   ' Nodes Two Phase: ',i8,' change ',i8,/,' Nodes Gas Phase: ',
+     &     i9,' change ', i8)
+         if(ifree.ne.0) then
+          if(ntty.eq.2) then
             write(iout,*) 'Number of partially filled cells ', ifree1
-         endif
-         if(iatty.gt.0) then
+          endif
+          if(iatty.gt.0) then
             write(iatty,*) 'Number of partially filled cells ', ifree1
+          endif
          endif
          if(ntty.eq.2) then
             write(iout,*) 'Number of restarted time steps ', nrestart_ts
