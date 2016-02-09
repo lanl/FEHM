@@ -340,6 +340,7 @@ c 23-Feb-12 Default value for thermal conductivity models
       icons  = 1000
       istea_pest = 0
       mlz    = 1
+      iaprf = 0
       if(irun.eq.1) n      = 0
       nbnd   = 0
       ncntr  = 10000000

@@ -923,6 +923,10 @@ c
                   psvol = psvol + volume(jji)
 c                calculate permeabilitiy for new porosity
 c
+                   if(iaprf.eq.0) then
+c
+c use Cinar relationship
+c
                     if(pso>=porTemp3(jji).and.pso<=porTemp4(jji)) then
                      pnx_new = porTemp1(jji)
      1                   *ps(jji)**porTemp2(jji)*1.e6
@@ -935,10 +939,13 @@ c                    Set to lower limit
                      pnx_new = porTemp1(jji)
      1                   *porTemp3(jji)**porTemp2(jji)*1.e6
                     endif
-c
                      pnx(jji) = pnx_new
                      pny(jji) = pnx(jji)
-                     pnz(jji) = pnx(jji)            
+                     pnz(jji) = pnx(jji)   
+                   else
+c use Olivella relationship
+                    call perm_olivella(1)
+                   endif         
                 endif
                end   do
  666    format(4G12.6)
@@ -1257,8 +1264,13 @@ c              If model 6, set copy initial perms
                	pnxi = pnx
                	pnyi = pny
                	pnzi = pnz
-c
+
 c              If model 7, initialize perms
+            else if ( iporos .eq. 7.and.iaprf.ne.0) then
+c gaz 020216
+c if model 7 and olivella prem model get initial perms
+              call perm_olivella(1)
+c
             else if ( iporos .eq. 7 ) then
              do   jji=1,n
               if( porTemp1(jji) .gt. 0. ) then

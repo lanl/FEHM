@@ -796,7 +796,7 @@ c flow humidity has less calls now
      
 c       else if (ico2 .lt. 0) then
 c 04/06/2005 MH
- 	 else if (ico2 .lt. 0 .and. ice .ne. 2) then
+ 	 else if (ico2.lt. 0 .and. ice .ne. 2) then
 c 04/06/2005 MH
 c isothermal air/water
             call flow_boun(3
@@ -983,6 +983,7 @@ c     set specified air pres when flowing
                   if(isatb.gt.0.0) then
                      if(satb(i).gt.0.0) then
                         esk(i)=satb(i)
+                        pflow(i) = -888.0
                         if(wellim(i).eq.0.0) wellim(i)=sx1(i)*1.d06
                         ka(i)=-1
                      endif

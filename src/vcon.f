@@ -250,6 +250,8 @@ C**********************************************************************
       integer iz,ndummy,i,ivcnd,mid,mi,it,itp
       real*8 vc1,vc2,vc3,vc4, vc5, vc6, vc7, vc8, vc12,sqrsat, tmpPor
       real*8 tmpS, tmpT, thm_sat, thm_dry, thm_solid
+      real*8 thx_tol
+      parameter (thx_tol=1.0d-12)
       logical null1
 
 
@@ -263,7 +265,13 @@ c read in data
                backspace inpt
                read(inpt,*) ivcnd
                backspace inpt
-
+               if(isalt.ne.0) then
+                if(ivcnd.ne.4.and.ivcnd.ne.5) then
+                 write(ierr,*) 'warning non salt vcon model entered '
+                 if(iout.ne.0) write(iout,*) 
+     &                          'warning non salt vcon model entered '
+                endif
+               endif
                i=i+1
                if(ivcnd .eq.  1) then
                   read(inpt,*) ivcon(i),vc1f(i)
@@ -274,7 +282,7 @@ c                 for crushed salt
                   read(inpt,*) ivcon(i),vc1f(i),vc2f(i),vc3f(i),
      &                         vc4f(i),vc5f(i),vc6f(i), vc7f(i),vc8f(i)
                else if(ivcnd .eq. 5) then
-c                 for unsaturated case
+c                 for unsaturated case(Olivella,2011)
                   read(inpt,*) ivcon(i),vc1f(i),vc2f(i),vc3f(i) 
                endif
             else
@@ -366,6 +374,7 @@ c              lambda_300 (phi) = 1.08*(-270*phi^4 +370*phi^3-136*phi^2+1.5*phi 
 c     If the reference temperature is 300K, in input file, vc1f = 26.85, vc3f =1.14
 C     some other values should be used if the reference temperature is different from 300K
 c     NOTE:no derivatives,used explicity
+
                   vc1=vc1f(it) + 273.15
                   vc2=vc2f(it) 
                   vc3=vc3f(it) 
@@ -381,33 +390,37 @@ c				  conductivity held constant at porosities above 0.4
      &                 +vc5*tmpPor**2+vc6*tmpPor + vc7)
                   vc8=vc8f(it)
                   thx(mi)=(1e-6*tmpPor)*(vc1/(t(mi)+273.15))**vc8
-                  if(thx(mi) < 0.0) thx(mi) =1.0e-12
+                  if(thx(mi).le.thx_tol) thx(mi) = thx_tol
                   thy(mi)=thx(mi)
                   thz(mi)=thx(mi)
-
                	else if(itp.eq.5) then
 
-c     Thermal conductivity for unsaturated rock salt (Bechthold et al, 2004)
+c     Thermal conductivity for unsaturated rock salt (Olivella, 2011)
+c      modified by gaz 1/30/2016
 c     Input parameters for this option are:
-c           thermal condcutivity of gas (or air), vc1f
-c           thermal condcutivity of liquid (or water), vc2f
-c           thermal condcutivity of solid (or grain), vc3f
-c           T is temperature in Kelvin
+c           thermal conductivity of gas (or air), vc1f
+c           thermal conductivity of liquid (or water), vc2f
+c           thermal conductivity of solid (or grain), vc3f
+c           Olivella (2011) values:
+c           air (vc1f) - 0.1 W/m-K
+c           water (vc2f) - 0.6 W/m-K
+c           grain (vc3f) - 5.734 W/m-K
+c           T is temperature in C (GAZ changed to C)
 c     NOTE:no derivatives,used explicity
                   vc1=vc1f(it) 
                   vc2=vc2f(it) 
                   vc3=vc3f(it) 
                   tmpPor=ps(mi)
                   tmpS=s(mi)
-                  tmpT=t(mi) + 273.15      ! tempT in K
+                  tmpT=t(mi)   ! tmpT in C
 
-                  thm_solid = vc3 -1.83e-2*tmpT + 2.86E-5*tmpT**2 
-     &                        - 1.51e-8*tmpT**3
+                  thm_solid = vc3 -1.83d-2*tmpT + 2.86d-5*tmpT**2 
+     &                        - 1.51d-8*tmpT**3
                   thm_dry = thm_solid**(1.0-tmpPor) * vc1**tmpPor
                   thm_sat = thm_solid**(1.0-tmpPor) * vc2**tmpPor
-                  thx(mi) =  thm_dry**(1.-tmpS) * thm_sat**tmpS * 1.e-6
+                  thx(mi) =  thm_dry**(1.-tmpS) * thm_sat**tmpS * 1.d-6
 
-                  if(thx(mi) < 0.0) thx(mi) =1.0e-12
+                  if(thx(mi).le.thx_tol) thx(mi) = thx_tol
                   thy(mi)=thx(mi)
                   thz(mi)=thx(mi)
 

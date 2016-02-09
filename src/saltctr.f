@@ -103,6 +103,8 @@ c salt related local variables
 c
       real*8 spec1,fracc,ms,xf,af,bf,cf,df,ef,dumf,tltemp
       real*8 strd_salt, por_salt_min_0, pnx_new, ps_new
+c prf gaz 13016
+      real*8 prf,dprf4     
       real*8 xmsg(1), mw
       integer cnum,iieosd,inptorig,kk,msg(20),nwds,imsg(20)
       integer ico2d, ico2dc
@@ -148,7 +150,7 @@ c
             por_salt_min = por_salt_min_0
             isalt_read = 0
             isalt_write = 0
-
+            iaprf = 0
             macro = 'salt'
 c     
 c     read in "sub macros" for salt
@@ -236,6 +238,48 @@ c write out warning for non-salt tort
               if(iptty.ne.0) write(iptty,9022) tort
 9022    format('warning: adif value ',f7.2,' used in salt simulation')
              endif   
+            elseif (macro1.eq.'saltkoli') then
+c**** read permeability reduction factor****
+             iaprf = 1
+c     
+c     kof()-intrinsic perm at por0f() (Olivella value = 1.e-12)
+c     bkf()-exponetial factor (Olivella value = 2)
+c     por0f()-intial porosity (Olivella value = 0.30)
+c     k = k0*exp(bk(por-por0)) Olivella,2011,Eq 2.
+c
+            if(.not.allocated(k0f)) allocate(k0f(n0))
+            if(.not.allocated(bkf)) allocate(bkf(n0))
+            if(.not.allocated(por0f)) allocate(por0f(n0))
+            default(1) = 1.d50
+            default(2) = 1.d50
+            default(3) = 1.d50
+               narrays = 3
+               itype(1) = 8
+               itype(2) = 8 
+               itype(3) = 8 
+               igroup = 1
+c     
+c     Other values are the same as above
+c                 
+               call initdata2(inpt,ischk, n0, narrays, itype,
+     &              default, macroread(2), macro, igroup, ireturn,
+     &              r8_1=k0f(1:n0),r8_2=bkf(1:n0),r8_3=por0f(1:n0))
+
+               do i = 1,n0
+                  if(k0f(i).eq.default(1)) then
+                     k0f(i) = 0.0
+                  else
+c adjust perm parameter for correct FEHM units
+                     k0f(i) = k0f(i)*1.d6
+                  endif
+                  if(bkf(i).eq.default(2)) then
+                     bkf(i) = 0.0
+                  endif
+                 if(por0f(i).eq.default(3)) then
+                     por0f(i) = 0.0
+                  endif
+               enddo
+ 
             elseif (macro1.eq.'saltvapr') then
 c manage vapor pressure lowering with salt 
 c Sparrow (2003) Desalination
@@ -344,16 +388,34 @@ c
              do i = 1,70
               if(wdd1(i:i+6).eq.'permavg') then
                read(wdd1(i+7:80),*) permavg_salt
+               if(permavg_salt.lt.0.0) then
+                 permavg_salt = 0.0
+                 write(ierr,*) 'permavg_salt lt 0, setting to 0' 
+               else if(permavg_salt.gt.1.0) then
+                 permavg_salt = 1.0
+                 write(ierr,*) 'permavg_salt gt 1, setting to 1' 
+               endif
                isalt_pnx = 1
                go to 301
               endif
               if(wdd1(i:i+5).eq.'poravg') then
                read(wdd1(i+6:80),*) poravg_salt
+               if(poravg_salt.lt.0.0) then
+                 poravg_salt = 0.0
+                 write(ierr,*) 'poravg_salt lt 0, setting to 0' 
+               else if(poravg_salt.gt.1.0) then
+                 poravg_salt = 1.0
+                 write(ierr,*) 'poravg_salt gt 1, setting to 1' 
+               endif
                isalt_ps = 1
                go to 301
               endif
               if(wdd1(i:i+5).eq.'pormin') then
                read(wdd1(i+6:80),*) por_salt_min
+               if(por_salt_min.lt.0.0) then
+                 por_salt_min = 0.0
+                 write(ierr,*) 'por_salt_min lt 0, setting to 0' 
+               endif
                go to 301
               endif
              enddo
@@ -603,7 +665,7 @@ c
           enddo
         endif
 c
-c average new and old permeabilities
+c average new and old porosities
 c   
        if(isalt_ps.ne.0) then          
           do i = 1, neq
@@ -928,4 +990,30 @@ c     write surfer or tecplot contour files
          endif
       
       return
+      end
+      subroutine perm_olivella(iflg)
+c 
+c calculate new perm with Olivella intrinsic perm
+c     data read in saltctr:
+c     kof()-intrinsic perm at por0f()
+c     bkf()-exponetial factor
+c     por0f()-intial porosity
+c     output:
+c     k = k0*exp(bk(por-por0)) Olivella,2011,Eq 2.
+c
+      use comai
+      use comdi
+      implicit none
+      integer iflg, i
+         if(iflg.eq.1) then
+           do i = 1,neq  
+c if k0f(i) the in-place perms will be used
+             if(k0f(i).ne.0.0) then          
+               pnx(i) = k0f(i)*exp(bkf(i)*(ps(i)-por0f(i)))
+               pny(i) = pnx(i)
+               pnz(i) = pnx(i)
+             endif
+           enddo
+         endif
+       return
       end

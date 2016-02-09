@@ -1371,7 +1371,8 @@ c check temperature used in isothermal calculations
          call icectrco2(6,0)
       endif
 
-c change porosity and permeability if necessary if Gangi model is used
+c change porosity and permeability if necessary to
+c establish initial values
       if(iporos.ne.0) call porosi(3)
 
 c**** determine initial coefficients for thermo fits ****

@@ -466,6 +466,8 @@ c gaz 081415
       integer              nphase_liq_0, nphase_2_0, nphase_gas_0   
       integer              dnphase_liq, dnphase_2, dnphase_gas
       integer :: irun = 0
+c gaz 013116
+      integer              iaprf
 
       real*8              aener, aiaa, am0, amass, ame, an0, asteam
       real*8              astmo, aw, awc, awt, ay, ayc, contim, day

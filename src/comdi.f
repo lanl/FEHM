@@ -606,6 +606,9 @@ c gaz 090113
       real*8, allocatable ::  vc6f(:) 
       real*8, allocatable ::  vc7f(:) 
       real*8, allocatable ::  vc8f(:) 
+      real*8, allocatable ::  k0f(:) 
+      real*8, allocatable ::  bkf(:) 
+      real*8, allocatable ::  por0f(:) 
 
 !     ***** pointers in COMMON Block fdd1i *****
       integer, allocatable :: iadd(:) 
