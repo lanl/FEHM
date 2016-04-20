@@ -439,7 +439,11 @@ c            write(isave, 6002)  (max(to(mi),tolw),   mi=1,n )
                      write (isave, '(a11)') flux_flag
                      write (isave, *) numflux
                      write(isave, 6002) (a_axy(i), i = 1,numflux)
-                     write(isave, 6002) (a_vxy(i), i = 1,numflux)
+                     if(jswitch.eq.0) then
+                      write(isave, 6002) (a_vxy(i), i = 1,numflux)
+                     else
+                      write(isave, 6002) (0.0d0, i = 1,numflux)
+                     endif
                   else
                      flux_flag = 'liquid flux'
                      write (isave, '(a11)') flux_flag
@@ -460,7 +464,11 @@ c            write(isave, 6002)  (max(to(mi),tolw),   mi=1,n )
                   if (irdof .ne. 13) then
                      write (isave, '(a11)') flux_flag
                      write (isave, *) numflux
-                     write(isave, 6002) (a_vxy(i), i = 1,numflux)
+                     if(jswitch.eq.0) then
+                      write(isave, 6002) (a_vxy(i), i = 1,numflux)
+                     else
+                      write(isave, 6002) (0.0d0, i = 1,numflux)
+                     endif
                   else
                      flux_flag = 'no fluxes  '
                      write (isave, '(a11)') flux_flag
@@ -621,7 +629,11 @@ c            write(isave)  (max(to(mi),tolw),   mi=1,n )
                      write (isave) flux_flag
                      write (isave) numflux
                      write (isave) (a_axy(i), i = 1,numflux)
-                     write (isave) (a_vxy(i), i = 1,numflux)
+                     if(jswitch.eq.0) then
+                      write (isave) (a_vxy(i), i = 1,numflux)
+                     else
+                      write (isave) (0.0d0, i = 1,numflux)
+                     endif
                   else
                      flux_flag = 'liquid flux'
                      write (isave) flux_flag
@@ -640,7 +652,11 @@ c            write(isave)  (max(to(mi),tolw),   mi=1,n )
                   if (irdof .ne. 13) then
                      write (isave) flux_flag
                      write (isave) numflux
-                     write (isave) (a_vxy(i), i = 1,numflux)
+                     if(jswitch.eq.0) then
+                      write (isave) (a_vxy(i), i = 1,numflux)
+                     else
+                      write (isave) (0.0d0, i = 1,numflux)
+                     endif
                   else
                      flux_flag = 'no fluxes  '
                      write (isave, '(a11)') flux_flag
