@@ -894,7 +894,11 @@ c Initial pressures and temps
             case ('all')
                read(iread, *, end = 100) numflux
                read(iread, 6002) (a_axy(i), i = 1,numflux)
-               read(iread, 6002) (a_vxy(i), i = 1,numflux)
+               if(jswitch.eq.0) then
+                read(iread, 6002) (a_vxy(i), i = 1,numflux)
+               else
+                read(iread, 6002) (dum1, i = 1,numflux)
+               endif
                read_flux(2) = .TRUE.
             case ('liq')
                read(iread, *, end = 100) numflux
@@ -910,7 +914,11 @@ c Initial pressures and temps
                read_flux(2) = .TRUE.
             case ('vap')
                read(iread, *, end = 100) numflux
-               read(iread, 6002) (a_vxy(i), i = 1,numflux)
+               if(jswitch.eq.0) then
+                read(iread, 6002) (a_vxy(i), i = 1,numflux)
+               else
+                read(iread, 6002) (dum1, i = 1,numflux)
+               endif
                read_flux(2) = .TRUE.
             case default
                backspace iread
@@ -1436,7 +1444,13 @@ c Initial pressures and temps
             if (flux_flag(1:3) .eq. 'all' .or. flux_flag(1:3) .eq. 
      &           'liq') read(iread) (a_axy(i), i = 1,numflux)
             if (flux_flag(1:3) .eq. 'all' .or. flux_flag(1:3) .eq. 
-     &           'vap') read(iread) (a_vxy(i), i = 1,numflux)
+     &           'vap') then
+               if(jswitch.eq.0) then
+                read(iread) (a_vxy(i), i = 1,numflux)
+               else
+                read(iread) (dum1, i = 1,numflux)
+               endif
+            endif
             if (flux_flag(1:3) .eq. 'all' .or. flux_flag(1:3) .eq. 
      &           'liq' .or. flux_flag(1:3) .eq. 'vap')
      &           read_flux(2) = .TRUE.
