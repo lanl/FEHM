@@ -15,6 +15,8 @@
 CD1
 CD1
 CD1  This subroutine changes variable in air-water problems
+CD1  PC version uses dool loop instead of F90 because os stack overflow 
+CD1  large problems
 CD1
 C***********************************************************************
 CD2
@@ -140,9 +142,19 @@ c
 c     
 c     condense arrays (first block is OK)
 c     
-            a(nmat(2)+1:nmat(3)) = a(nmat(3)+1:nmat(4))
-            a(nmat(3)+1:nmat(4)) = a(nmat(9-joff)+1:nmat(10-joff))
-            a(nmat(4)+1:nmat(5)) = a(nmat(11-joff)+1:nmat(12-joff))
+c            a(nmat(2)+1:nmat(3)) = a(nmat(3)+1:nmat(4))
+c            a(nmat(3)+1:nmat(4)) = a(nmat(9-joff)+1:nmat(10-joff))
+c            a(nmat(4)+1:nmat(5)) = a(nmat(11-joff)+1:nmat(12-joff))
+c gaz 040416 PC stack overflow correction
+             do i = 1, nmat(2)
+               a(nmat(2) + i) = a(nmat(3) + i)
+             enddo
+             do i = 1,nmat(2)
+               a(nmat(3) + i) = a(nmat(9-joff) + i)
+             enddo
+             do i = 1,nmat(2)
+               a(nmat(4) + i) = a(nmat(11-joff) + i)
+             enddo
 c     
 c     arrange residual arrays
 c     
