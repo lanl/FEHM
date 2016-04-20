@@ -645,9 +645,10 @@ c     rol = rolref*(1.0+comw*(pl-pref))
             dqas=0.
             dqap=0.
             if(qwdis.lt.0.0) then
-               qwdis=-qwdis
-               dqws=-dqws
-               dqwp=-dqwp
+c gaz debug 040316
+               qwdis=0.0
+               dqws=0.0
+               dqwp=0.0
             endif
       else if(kq.eq.-24) then
 c     same as -23 except  xrl = s and drl = 1    
