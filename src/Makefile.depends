@@ -545,9 +545,9 @@ sptr_save.o: comai.o comdi.o comsk.o comsptr.o comxi.o
 ss_trans.o: comai.o combi.o comchem.o comci.o comco2.o comcouple.o comdi.o
 ss_trans.o: comdti.o comfi.o comgi.o compart.o comrxni.o davidi.o
 start_macro.o: comai.o
-startup.o: comai.o combi.o comci.o comco2.o comcouple.o comdi.o comdti.o
-startup.o: comei.o comfi.o comflow.o comgi.o comii.o commeth.o compart.o
-startup.o: comrlp.o comsi.o comsptr.o comwt.o comzone.o davidi.o
+startup.o: avsio.o comai.o combi.o comci.o comco2.o comcouple.o comdi.o
+startup.o: comdti.o comei.o comfi.o comflow.o comgi.o comii.o commeth.o
+startup.o: compart.o comrlp.o comsi.o comsptr.o comwt.o comzone.o davidi.o
 steady.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comsplitts.o
 steady.o: comsteady.o davidi.o
 sther.o: comai.o comdi.o comdti.o comii.o comtable.o
