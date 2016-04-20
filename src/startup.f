@@ -393,6 +393,7 @@ C***********************************************************************
       use comrlp, only : ishisrlp
       use comsi, only : idof_stress
       use comsptr, only : sptrak
+      use avsio, only : iovapor
       use comwt
       use comzone
       use davidi
@@ -434,6 +435,16 @@ c**** if allocated and not a variable porosity problem
       if (iporos .ne. -4) then
          if (allocated(nskw3)) deallocate(nskw3)
       endif
+c
+c gaz 032916 turn off vapor flux output for richards equation
+c same for avs
+c restart uses 0.0 for vapor (in case restart is 2-phase)
+c
+       if(jswitch.ne.0) then
+        vflux_flag = .false.
+c gaz debug 041416 (affects avs output)
+c        iovapor = 0
+       endif
 
 c**** calculate number of neighbors and connected elements ****
       allocate(idum1(n0),idum2(n0))
