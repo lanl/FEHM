@@ -23,6 +23,7 @@ from subprocess import call
 from subprocess import PIPE
 from contextlib import contextmanager
 import shutil
+from tpl_write import tpl_write
 
 try:
     sys.path.insert(0,os.path.join('..','pyfehm'))
@@ -77,6 +78,72 @@ class fehmTest(unittest.TestCase):
     
     # TESTS ######################################################### 
         
+    def rad_decay(self):
+        """
+        **Test radioactive decay option in rxn macro**
+
+        The simulation is a batch reactor without flow and comparison is
+        made to the Bateman equation. Decay of 135I->135Xe->135Cs is modeled.
+        The test ensures that FEHM matches the bateman equation within 10% 
+        relative error for all concentrations greater than 1e-6 moles/kg vapor.
+
+        H. Bateman. "Solution of a System of Differential Equations Occurring in the 
+            Theory of Radio-active Transformations," Proc. Cambridge Phil. Soc. IS, 
+            423 (1910) https://archive.org/details/cbarchive_122715_solutionofasystemofdifferentia1843
+        """
+
+        # Change to test directory
+        os.chdir('rad_decay')
+        # Import python Bateman equation module
+        sys.path.append('.')
+        from bateman import bateman
+
+        # Create parameter dictionary with half lives and initial concentations for I, Xe and Cs
+        pars = {'thalf_I': 0.00075, 
+                'thalf_Xe': 0.001043379,
+                'C0_I': 3.48e-4,
+                'C0_Xe': 1e-30,
+                'C0_Cs': 1e-30} 
+
+        # Create simulation run directory
+        output_dir = '_output'
+        if os.path.exists( output_dir ): shutil.rmtree(output_dir)
+        os.mkdir( output_dir )
+        os.chdir(output_dir)
+
+        # Write simulation input file using parameter dictionary
+        tpl_write(pars,'../input/run.tpl','run.dat')
+        # Run fehm
+        self._run_fehm('')
+
+        # Collect results
+        CI_fehm = np.genfromtxt('run_135iodine.dat',skip_header=4)
+        CXe_fehm = np.genfromtxt('run_135xenon.dat',skip_header=4)
+        CCs_fehm = np.genfromtxt('run_135cesium.dat',skip_header=4)
+        times = CI_fehm[:,0]/365.
+
+        # Run bateman equation
+        thalf = np.array([pars['thalf_I'], pars['thalf_Xe'], 1.])
+        lmbda = np.log(2)/thalf
+        lmbda[2] = 0
+        C0 = np.array([pars['C0_I'], pars['C0_Xe'], pars['C0_Cs']])
+
+        CI_b = bateman(times,[C0[0]],[lmbda[0]])
+        CXe_b = bateman(times,C0[0:2],lmbda[0:2])
+        CCs_b = bateman(times,C0,lmbda)
+        
+        for t,f,b in np.column_stack([CI_fehm, CI_b]):
+            if b > 1e-6:
+                self.assertTrue(abs(f-b)/f<0.1, "Concentration mismatch for Iodine at time %g, FEHM: %g, Bateman: %f"%(t,f,b))
+
+        for t,f,b in np.column_stack([CXe_fehm, CXe_b]):
+            if b > 1e-6:
+                self.assertTrue(abs(f-b)/f<0.1, "Concentration mismatch for Xenon at time %g, FEHM: %g, Bateman: %f"%(t,f,b))
+
+        for t,f,b in np.column_stack([CCs_fehm, CCs_b]):
+            if b > 1e-6:
+                self.assertTrue(abs(f-b)/f<0.1, "Concentration mismatch for Cesium at time %g, FEHM: %g, Bateman: %f"%(t,f,b))
+
     def saltvcon(self):
         """
         **Test the Salt Variable Conductivity Macro**

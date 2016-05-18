@@ -1,0 +1,13 @@
+root:  run
+input: run.dat
+grida: ../input/grid.inp 
+storo: grid.stor 
+error: run.err
+check: run.chk
+hist:  run.his
+nopf:  nop.temp
+outp:  run.out
+
+none
+0
+
