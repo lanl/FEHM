@@ -90,6 +90,9 @@ class fehmTest(unittest.TestCase):
         H. Bateman. "Solution of a System of Differential Equations Occurring in the 
             Theory of Radio-active Transformations," Proc. Cambridge Phil. Soc. IS, 
             423 (1910) https://archive.org/details/cbarchive_122715_solutionofasystemofdifferentia1843
+
+        .. Authors: Dylan Harp, Michelle Bourret
+        .. Updated May 2016 by Dylan Harp 
         """
 
         # Change to test directory
@@ -1002,6 +1005,7 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('mptr', log))
         suite.addTest(fehmTest('bodyforce', log))
         suite.addTest(fehmTest('richards', log))
+        suite.addTest(fehmTest('rad_decay', log))
         
         #Works with FEHM V3.2
         #suite.addTest(fehmTest('heatflux_1DConvection', log))
