@@ -774,6 +774,7 @@ c air/water/heat (ngas)
 c gaz debug 122515  
             do i=1,n
                if(idum(i).ne.0) then
+                if(ixa.ne.0.or.iqa.ne.0) then
                    if(qa(i).ne.0.0) then
                     if(itha.ne.0) then
                      t_hum = thuma(i) 
@@ -791,6 +792,7 @@ c flow humidity has less calls now
      &                       xnva(i),entha(i))                        
                    endif
                   endif
+                endif
                endif
             enddo
      
