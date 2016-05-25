@@ -258,6 +258,10 @@ c parameters for anisotropy
       real*8,  allocatable ::   axyx_ani(:)
       real*8,  allocatable ::   axyy_ani(:)
       real*8,  allocatable ::   axyz_ani(:)   
+
+c parameters for gravity correction
+c gaz 051616
+      real*8, allocatable ::  grav_wgt(:)
       
 
       end module comji
