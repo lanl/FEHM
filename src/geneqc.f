@@ -291,6 +291,8 @@ c     endif
             endif
  68      continue
  58   continue
+c gaz 051616 
+      allocate(grav_wgt(iq))
 c
 c 3-d geometry
 c
@@ -427,13 +429,17 @@ c gaz 10-18-2001 (set condition to unattainable value)
 c
 c liquid phase calculations
 c
+c gaz 051616
+c initialize grav_wgt
+      grav_wgt = 0.5d0
       do 60 jm=1,iq
          kb=it8(jm)
          kz=kb-icd
          neighc=it9(jm)
          pxyi=t1(neighc)
          sx4d=t6(neighc)
-         axyd=pxyi+0.5*sx4d*(rolf(i)+rolf(kb))
+         if(rolf(i).le.0.0.or.rolf(kb).le.0.0) grav_wgt(jm) = 1.0d0
+         axyd=pxyi+grav_wgt(jm)*sx4d*(rolf(i)+rolf(kb))
      *        *(cord(kz,igrav)-cord(iz,igrav))
          t8(neighc)=axyd
  60   continue
@@ -494,14 +500,18 @@ c
             dclckb=dclcf(kb)
             dilkb=dil(kb)
 c
-            dlpi=-pxy+0.5*sx4d*dglp(i)*(cord(kz,igrav)-cord(iz,igrav))
-            dlpkb=pxy+0.5*sx4d*dglp(kb)*(cord(kz,igrav)-cord(iz,igrav))
-            dlei=pxy*dpvti+0.5*sx4d*dgle(i)*(cord(kz,igrav)-
-     &           cord(iz,igrav))
-            dlekb=-pxy*dpcef(kb)+0.5*sx4d*dgle(kb)
+            dlpi=-pxy+grav_wgt(jm)*sx4d*dglp(i)*
+     &           (cord(kz,igrav)-cord(iz,igrav))
+            dlpkb=pxy+grav_wgt(jm)*sx4d*dglp(kb)*
+     &            (cord(kz,igrav)-cord(iz,igrav))
+            dlei=pxy*dpvti+grav_wgt(jm)*sx4d*dgle(i)*
+     &           (cord(kz,igrav)-cord(iz,igrav))
+            dlekb=-pxy*dpcef(kb)+grav_wgt(jm)*sx4d*dgle(kb)
      &           *(cord(kz,igrav)-cord(iz,igrav))
-            dlci=0.5*sx4d*dglc(i)*(cord(kz,igrav)-cord(iz,igrav))
-            dlckb=0.5*sx4d*dglc(kb)*(cord(kz,igrav)-cord(iz,igrav))
+            dlci=grav_wgt(jm)*sx4d*dglc(i)*
+     &           (cord(kz,igrav)-cord(iz,igrav))
+            dlckb=grav_wgt(jm)*sx4d*dglc(kb)*
+     &            (cord(kz,igrav)-cord(iz,igrav))
 c
             aexyf=(fid*dilkb*enlkb+fid1*dili*enli)
             axyf=(fid*dilkb*(1.0-cnlkb)+fid1*dili*(1.0-cnli))
@@ -586,13 +596,17 @@ c
 c
 c vapour phase calculations
 c
+c gaz 051616
+c initialize grav_wgt
+      grav_wgt = 0.5d0
       do 63 jm=1,iq
          kb=it8(jm)
          kz=kb-icd
          neighc=it9(jm)
          pxyh=t2(neighc)
          sx4h=t7(neighc)
-         vxyd=pxyh+0.5*sx4h*(rovf(i)+rovf(kb))
+         if(rovf(i).le.0.0.or.rovf(kb).le.0.0) grav_wgt(jm) = 1.0d0
+         vxyd=pxyh+grav_wgt(jm)*sx4h*(rovf(i)+rovf(kb))
      &        *(cord(kz,igrav)-cord(iz,igrav))
          t8(neighc)=vxyd
  63   continue
@@ -654,13 +668,18 @@ c
             dcvckb=dcvcf(kb)
             divkb=div(kb)
 c
-            dvpi=-pvxy+0.5*sx4h*dgvp(i)*(cord(kz,igrav)-cord(iz,igrav))
-            dvpkb=pvxy+0.5*sx4h*dgvp(kb)*(cord(kz,igrav)-cord(iz,igrav))
-            dvei=0.5*sx4h*dgve(i)*(cord(kz,igrav)-cord(iz,igrav))
-            dvekb=0.5*sx4h*dgve(kb)
+            dvpi=-pvxy+grav_wgt(jm)*sx4h*dgvp(i)*
+     &           (cord(kz,igrav)-cord(iz,igrav))
+            dvpkb=pvxy+grav_wgt(jm)*sx4h*dgvp(kb)*
+     &            (cord(kz,igrav)-cord(iz,igrav))
+            dvei=grav_wgt(jm)*sx4h*dgve(i)*
+     &           (cord(kz,igrav)-cord(iz,igrav))
+            dvekb=grav_wgt(jm)*sx4h*dgve(kb)
      &           *(cord(kz,igrav)-cord(iz,igrav))
-            dvci=0.5*sx4h*dgvc(i)*(cord(kz,igrav)-cord(iz,igrav))
-            dvckb=0.5*sx4h*dgvc(kb)*(cord(kz,igrav)-cord(iz,igrav))
+            dvci=grav_wgt(jm)*sx4h*dgvc(i)*
+     &           (cord(kz,igrav)-cord(iz,igrav))
+            dvckb=grav_wgt(jm)*sx4h*dgvc(kb)*
+     &            (cord(kz,igrav)-cord(iz,igrav))
 c
             vexyf=(fid*divkb*envkb+fid1*divi*envi)
             vxyf=(fid*divkb*(1.0-cnvkb)+fid1*divi*(1.0-cnvi))
@@ -1041,7 +1060,7 @@ c
          heatc=t5(neighc)
       
 c s kelkar 3 July 2014, for calculating heat flow vectors
-      heatt = +heatc*(t(kb)-ti)
+      heatt = heatc*(t(kb)-ti)
       if(flag_heat_out) then
          e_axy_cond(iau+nmatavw)=+heatt
          e_axy_cond(ial+nmatavw)=-heatt
@@ -1108,5 +1127,9 @@ c gaz debug 121104 now have a derivative wrt air pressure;see thrmwc
       a(jmia+nmat(7))=a(jmia+nmat(7))+sx1d*dcp(i)+dqc(i)
       a(jmia+nmat(8))=a(jmia+nmat(8))+sx1d*dce(i)+deqc(i)
       a(jmia+nmat(9))=a(jmia+nmat(9))+sx1d*dcc(i)+dcqc(i)
+
+c gaz 051616
+      deallocate(grav_wgt)
+
       return
       end
