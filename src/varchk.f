@@ -429,12 +429,12 @@ c      parameter(phase_mult=1.00)
       parameter(phase_sat=1.0d-9)
 c gaz debug 092115
 c      parameter(satml=1.0d-4)
-      parameter(satml=1.0d-6)
-      parameter(phase_mult=1.01)
-
       parameter(xdiff_tol=1.0d-4)
+c      parameter(satml=1.0d-6)
+c      parameter(phase_mult=1.01)
 c ich_max should be odd or even but don't know which
 c      parameter(ich_max = 2)
+
       real*8 psatl
       integer i
       real*8 pl
@@ -467,6 +467,20 @@ c
 c
 c ich_m1 and ich_m2 are in comai but are adjusted here
 c these are maybe best for geothermal systems
+c
+c gaz debug 051516
+      if (ico2.eq.0) then
+       satml=1.0d-2
+       phase_mult=1.01
+      else
+c      satml=1.0d-6 to 1.0d-7 about the same
+c      satml=1.0d-4   #bad
+c      satml=1.0d-2   #bad
+        satml=1.0d-7
+c       phase_mult=1.01
+c       phase_mult=1.001 #bad
+        phase_mult=1.15
+      endif
       ich_m1 = 10
       ich_m2 = 10
       ich_max = 6      
@@ -474,7 +488,11 @@ c
 c determine variable set
 c
       if(nr_stop.eq.0) then
-         stepl = 0.95
+         if(ico2.eq.0) then
+          stepl = 0.99
+         else
+          stepl = 0.95
+         endif
       else
          stepl = strd_iter
       endif
@@ -595,7 +613,7 @@ c
                         strd    =stepl
                         ieos_ch(ij) = ieos_ch(ij) +1
                         if (ieos_ch(ij).gt.3) 
-     &                       write (iout,233) 
+     &                       write (ierr,233) 
      &                       ij, ieos_ch(ij), (cord(ij,k),k=1,3)
                      endif
                      ieos(ij)=ieosdc
