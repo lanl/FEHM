@@ -221,8 +221,15 @@ c
        real*8 dlb0,dlpb1,dlpb2,dltb1,dltb2
        real*8 salt_con,tl,tl0,tl_norm,dpvwn2t,dpvwd2t
        real*8 pv_sc,dsct,dscc
+       
+c
+       integer itest
+c       
+c test code       
+c
+       parameter (itest = 1)
        parameter (tl_norm = 360.0d00)
-
+      if(itest.eq.0) then
        dla0  =     2.119971900000000 
        dlpa1 =     3.000000000000000 
        dlpa2 =     0.738870490000000 
@@ -253,6 +260,82 @@ c
           dsct =-((dpvwn2t/pvwd - (pvwn/pvwd2**2)*dpvwd2t)*(1./tl_norm))
 c tracer is explicitly updated (derivative wrt c = 0)
           dscc = 0.0
-
+      else
+c gaz debugging  060316
+       call sparrow_pv(tl0,salt_con,pv_sc,dsct,dscc)   
+c pv_sc is the full vapor pressure, not just the salt correction
+c dsct is the d/dt of the full function
+c dscc= 0          
+      endif    
        return
        end
+      subroutine sparrow_pv(tl,salt_con,pv,dpsatt,dscc)
+c sparrow fit 
+c gaz 060316
+      implicit none
+      real*8 tl,salt_con,pv_sc,dsct,dscc,pv,dpsatt,dpsats
+c
+c salt related local variables
+c
+      real*8 spec1,fracc,ms,xf,af,bf,cf,df,ef,dumf,tltemp
+      
+         ms = salt_con * 58.55 / 1000.
+	   xf = ms / ( ms + 1.0 )
+
+		
+			if(tl.ge.0.0.and.tl.le.150) then
+		af = ( 0.9083 - 0.5690 * xf + 0.1945 * xf**2 - 3.7360
+     & 		    * xf**3 + 2.820 * xf**4) * 1.e-3
+		bf = (-0.0669 + 0.0582 * xf - 0.1668 * xf**2 + 0.6761
+     &          * xf**3 - 2.091 * xf**4) * 1.e-3
+		cf = ( 7.5410 - 5.1430 * xf + 6.4820 * xf**2 - 52.620
+     &          * xf**3 + 115.7 * xf**4) * 1.e-6
+		df = (-0.0922 + 0.0649 * xf - 0.1313 * xf**2 + 0.8024
+     &          * xf**3 - 1.986 * xf**4) * 1.e-6
+		ef = ( 1.2370 - 0.7530 * xf + 0.1448 * xf**2 - 6.9640
+     &          * xf**3 + 14.61 * xf**4) * 1.e-9
+			else if(tl.gt.150.) then
+		af = (-3.2480 + 7.0810 * xf - 49.930 * xf**2 + 219.60
+     &          * xf**3 - 308.5 * xf**4)
+		bf = ( 0.0610 - 0.1185 * xf + 0.7916 * xf**2 - 3.4740
+     &          * xf**3 + 4.882 * xf**4)
+		cf = (-0.4109 + 0.6789 * xf - 4.1550 * xf**2 + 18.340
+     &          * xf**3 - 25.89 * xf**4) * 1.e-3
+		df = ( 1.1300 - 1.4320 * xf + 7.1690 * xf**2 - 33.170
+     &          * xf**3 + 47.45 * xf**4) * 1.e-6
+				ef = 0.0
+			endif
+c
+
+c           Truncate function at 300C  and dump a statement to the screen
+            if(tl.gt.300) then
+                tltemp = 300.
+                tl = tltemp
+c gaz debug 080613 note removed derivative above 300 C (function is constant)
+                dpsatt = 0.0
+                dpsats = 0.0
+c                write(ierr,903) tltemp,tl
+c                if(iout.ne.0) write(iout,903) tltemp,tl
+c                if(iptty.ne.0) write(iptty,903) tltemp,tl
+903       format('Exceeded temp range ',f10.3,' for salt  T= ',f10.3)
+            else
+                tltemp = tl
+            endif
+
+c           Calculate vapor pressure using eq. 6 from Sparrow 2003, see ref above
+              pv = af + bf*tltemp + cf*tltemp**2 + df*tltemp**3 +
+     &                      ef*tltemp**4
+
+c           write(iout,*) 'temp pvap an(mi) xf',tltemp, pv,an(mi), xf
+c           write(iout,*) 'af bf cf df ef', af,bf,cf,df,ef
+
+c        1         2         3         4         5         6        7         8  
+
+c           Calculate gas pressure
+
+             dpsatt = bf + 2.0*cf*tltemp +  3.0*df*tltemp**2 +
+     &                4.0*ef*tltemp**3
+             dscc = 0.
+c
+      return 
+      end
