@@ -300,8 +300,8 @@ c ev3 is the reference value for vapor density,initialized(1.) in main.s
 c sat pressure as function of sat temp
       if(isatf.le.0) then
 c check for limiting values
-         if(tl.lt.10.) then
-            psatl=0.00123
+         if(tl.lt.5.) then
+            psatl=0.000752
          else if(tl.gt.340.0) then
             psatl=14.5941
          elseif(ipsat.eq.0) then
@@ -324,8 +324,12 @@ c get vapor pressure lowering (salt concentration)
 c 
              if(isalt.ne.0.and.ivaprsalt.gt.1) then 
               call vaporl_salt(tl,salt_con,pv_sc,dsct,dscc)
-              psatl = psatl + pv_sc
-              dpsatt= dpsatt + dsct 
+c              psatl = psatl + pv_sc
+c              dpsatt= dpsatt + dsct 
+c   gaz debug 060316 (embedded sparrow)
+c
+              psatl = pv_sc
+              dpsatt= dsct
              endif
 c
 c get vapor pressure lowering (capillary pressure)
