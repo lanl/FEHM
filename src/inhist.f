@@ -544,7 +544,8 @@ c            end if
          case ('efl', 'EFL', 'mjs', 'MJS')
 ! Output enthalpy flow in MJ/s
             fname =  root(1:iroot) // '_eflow' // hissfx
-            ishise = ishis + 150
+c           ishise = ishis + 150
+            ishise = ishis + 155
             open (unit=ishisef, file=fname, form='formatted')
             select case (form_flag)
             case (0)
