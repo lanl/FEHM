@@ -957,27 +957,34 @@ c
                if(qdis.le.0.) then
                   eskd=eflow(mi)
                   qh(mi)=qdis*eflow(mi)
-				if((kaco2(mi).ne.2).and.(kaco2(mi).ne.3)) then
-                  dqh(mi)=eskd*dq(mi)
-                  deqh(mi)=eskd*dqt(mi)
-                  dqhw(mi)=eskd*dqw(mi)
-                  dqhyc(mi)=eskd*dqyc(mi)
-                  dqhya(mi)=eskd*dqya(mi)
-                  if(iprtype.ge.4) then
-                     if(ico2dis(mi).eq.0) then
-                        dqhw(mi)=dqhyc(mi)
-                     else
-                        if(icesd.eq.2) then
-                           dqh(mi)=dqh(mi)+dqhyc(mi)*dmol(mi)
-     &                          +dqhyc(mi)*dmol(mi+neq)
+                  if((kaco2(mi).ne.2).and.(kaco2(mi).ne.3)) then
+                     dqh(mi)=eskd*dq(mi)
+                     deqh(mi)=eskd*dqt(mi)
+                     dqhw(mi)=eskd*dqw(mi)
+                     dqhyc(mi)=eskd*dqyc(mi)
+                     dqhya(mi)=eskd*dqya(mi)
+                     if(iprtype.ge.4) then
+                        if(ico2dis(mi).eq.0) then
+                           dqhw(mi)=dqhyc(mi)
                         else
-                           dqh(mi)=dqh(mi)+dqhyc(mi)*dmol(mi)
-                           deqh(mi)=deqh(mi)+dqhyc(mi)*dmol(mi+neq)
+                           if(icesd.eq.2) then
+                              dqh(mi)=dqh(mi)+dqhyc(mi)*dmol(mi)
+     &                          +dqhyc(mi)*dmol(mi+neq)
+                           else
+                              dqh(mi)=dqh(mi)+dqhyc(mi)*dmol(mi)
+                              deqh(mi)=deqh(mi)+dqhyc(mi)*dmol(mi+neq)
+                           endif
                         endif
                      endif
                   endif
+               else
+                  qh(mi) = qdis*enw
+                  dqh(mi) = qdis*denwp
+                  deqh(mi) = qdis*denwt
+                  dqhw(mi) = 0.d0
+                  dqhyc(mi) = 0.d0
+                  dqhya(mi) = 0.d0
                endif
-            endif
             endif
 c     
 c     add intercomponent heat flux
