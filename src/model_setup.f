@@ -286,6 +286,13 @@ c and air fraction cannot both be set for the same node
          enddo
          sourceco2_type(imod)=-1
          if(isubmod.le.1) go to 30
+      else if(key(1:4).eq.'tco2') then
+         read(inpt,*) (esourceco2(i,imod),i=1,ntimes)
+         do i=1,ntimes
+            esourceco2(i,imod)= esourceco2(i,imod)+tol_boun
+         enddo
+         esourceco2_type(imod)=-1
+         if(isubmod.le.1) go to 30
       else if(key(1:2).eq.'s ') then
          read(inpt,*) (saturation(i,imod),i=1,ntimes)
          saturation_type(imod)=1

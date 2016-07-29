@@ -910,6 +910,12 @@ C
      &                       imodel)
                      endif
                   endif
+                  if(itempb2.ne.0) then
+                     if(esourceco2_type(imodel).gt.0) then
+                        eco2b(i)=esourceco2(abs(time_type(imodel)),
+     &                       imodel)
+                     endif
+                  endif
                   if(iqf.ne.0) then
                      if(sourcef_type(imodel).gt.0) then
                         qw(i)=qw0(i)*sourcef(abs(time_type(imodel)),
@@ -1140,6 +1146,12 @@ C     End Volume/distance weighted cases
                   if(iqco2.ne.0) then
                      if(sourceco2_type(imodel).lt.0) then
                         qco2b(i)=sourceco2(abs(time_type(imodel)),
+     &                       imodel)*vfac
+                     endif
+                  endif
+                  if(itempb2.ne.0) then
+                     if(esourceco2_type(imodel).lt.0) then
+                        eco2b(i)=esourceco2(abs(time_type(imodel)),
      &                       imodel)*vfac
                      endif
                   endif

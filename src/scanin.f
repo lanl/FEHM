@@ -840,6 +840,8 @@ c            backspace locunitnum
             isty=1
          else if(wdd1(1:3).eq.'tmi') then
             itempb_ini=1
+         else if(wdd1(1:2).eq.'tc') then
+            itempb2=1
          else if(wdd1(1:2).eq.'ts') then
             its=1
          else if(wdd1(1:2).eq.'t ') then

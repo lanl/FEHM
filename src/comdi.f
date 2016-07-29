@@ -680,6 +680,7 @@ c gaz 090113 array for last TS porosity
       integer, allocatable ::  sourcef_type(:)
       integer, allocatable ::  sourcee_type(:)
       integer, allocatable ::  sourceco2_type(:)
+      integer, allocatable ::  esourceco2_type(:)
       integer, allocatable ::  seepfac_type(:)
       integer, allocatable ::  drainar_type(:)
       integer, allocatable ::  humid_type(:)
@@ -706,8 +707,8 @@ c gaz 090113 array for last TS porosity
       integer, allocatable ::  pressurea_ini_type(:)
       integer, allocatable ::  temperature_ini_type(:)
 
-      integer iqa,ixa,iqw,iqenth,isatb,ienth,itempb,ipresa,ipresw
-      integer imped,its,imod,isubmod,iqf,icm,isf,ifd,iqco2
+      integer iqa,ixa,iqw,iqenth,isatb,ienth,itempb,itempb2,ipresa
+      integer imped,its,imod,isubmod,iqf,icm,isf,ifd,iqco2,ipresw
       integer isatb_ini,ipresa_ini,ipresw_ini,itempb_ini
       integer iha,ipha,itha
       integer isteady, istdy, isty, iwght, lchange
@@ -717,6 +718,7 @@ c gaz 090113 array for last TS porosity
       real*8, allocatable ::  qw(:) 
       real*8, allocatable ::  qw0(:) 
       real*8, allocatable ::  qco2b(:) 
+      real*8, allocatable ::  eco2b(:)
       real*8, allocatable ::  qenth(:) 
       real*8, allocatable ::  satb(:) 
       real*8, allocatable ::  enth(:) 
@@ -748,6 +750,7 @@ c gaz 090113 array for last TS porosity
       real*8, allocatable :: sourcef(:,:)
       real*8, allocatable :: sourcee(:,:)
       real*8, allocatable :: sourceco2(:,:)
+      real*8, allocatable :: esourceco2(:,:)
       real*8, allocatable :: seepfac(:,:)
       real*8, allocatable :: drainar(:,:)
       real*8, allocatable :: saturation(:,:)

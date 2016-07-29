@@ -72,7 +72,7 @@ c
       use comai
       use combi
       use comci
-      use comco2, only : icarb, skco2, kaco2
+      use comco2, only : icarb, skco2, kaco2, eskco2
       use comdi
       use comei
       use comfi
@@ -231,6 +231,16 @@ c
             tempb = 0.0d00
             temperature = 0.0d00
             temperature_type = 0
+         endif
+         if(itempb2.ne.0) then
+            if (.not. allocated (eco2b)) allocate(eco2b(n0))
+            if (.not. allocated (esourceco2))
+     .           allocate(esourceco2(maxtimes,maxmodel))
+            if (.not. allocated (esourceco2_type))
+     .           allocate(esourceco2_type(maxmodel))
+            eco2b = 0.0d00
+            esourceco2 = 0.0d00
+            esourceco2_type = 0
          endif
          if(ipresa.ne.0) then
             if (.not. allocated (presa)) allocate(presa(n0))
@@ -618,6 +628,11 @@ c pure water/heat
                            kaco2(i)=1
                         endif
                      endif
+                     if(itempb2.ne.0) then
+                      if(eco2b(i).ne.0.d0) then
+                          eskco2(i) =eco2b(i)
+                      endif
+                    endif
                   endif
                enddo
             end if
