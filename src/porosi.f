@@ -942,9 +942,10 @@ c                    Set to lower limit
                      pnx(jji) = pnx_new
                      pny(jji) = pnx(jji)
                      pnz(jji) = pnx(jji)   
-                   else
+                    else
 c use Olivella relationship
-                    call perm_olivella(1)
+c added another call to evaluate a single gridblock value
+                    call perm_olivella(2,jji)
                    endif         
                 endif
                end   do
@@ -1269,7 +1270,7 @@ c              If model 7, initialize perms
             else if ( iporos .eq. 7.and.iaprf.ne.0) then
 c gaz 020216
 c if model 7 and olivella prem model get initial perms
-              call perm_olivella(1)
+              call perm_olivella(1,0)
 c
             else if ( iporos .eq. 7 ) then
              do   jji=1,n
