@@ -609,7 +609,7 @@ c calculate porosity change due to mineral reactions
             if(mw_mineral(im).ne.0)then
                do i = 1, n0
                   ja = i + npn
-                 ps_delta_rxn(i) = (rc(ja)*dtotc*mw_mineral(im)
+                  ps_delta_rxn(i) = (rc(ja)*dtotc*mw_mineral(im)
      &                                 /rho_mineral(im))/sx1(i)
                   an(ja) = anlo(ja)
                   
@@ -991,7 +991,7 @@ c     write surfer or tecplot contour files
       
       return
       end
-      subroutine perm_olivella(iflg)
+      subroutine perm_olivella(iflg,ii)
 c 
 c calculate new perm with Olivella intrinsic perm
 c     data read in saltctr:
@@ -1004,16 +1004,22 @@ c
       use comai
       use comdi
       implicit none
-      integer iflg, i
+      integer iflg, i, ii
          if(iflg.eq.1) then
            do i = 1,neq  
 c if k0f(i) the in-place perms will be used
-             if(k0f(i).ne.0.0) then          
+             if(k0f(i).ne.0.0) then                  
                pnx(i) = k0f(i)*exp(bkf(i)*(ps(i)-por0f(i)))
                pny(i) = pnx(i)
                pnz(i) = pnx(i)
              endif
-           enddo
+            enddo           
+        elseif(iflg.eq.2) then
+             if(k0f(ii).ne.0.0) then                  
+               pnx(ii) = k0f(ii)*exp(bkf(ii)*(ps(ii)-por0f(ii)))
+               pny(ii) = pnx(ii)
+               pnz(ii) = pnx(ii)
+             endif
          endif
        return
       end
