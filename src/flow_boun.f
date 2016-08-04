@@ -928,6 +928,13 @@ C
                      endif
                   endif
                   if(iha.ne.0) then
+                     if(humid_type(imodel).lt.0) then
+                        huma(i)=-humid(abs(time_type(imodel)),imodel)
+                        phuma(i) = pressure_std
+                        thuma(i) = temperature_std
+                     endif
+                  endif
+                  if(iha.ne.0) then
                      if(humid_type(imodel).gt.0) then
                         huma(i)=humid(abs(time_type(imodel)),imodel)
                         phuma(i) = pressure_std
