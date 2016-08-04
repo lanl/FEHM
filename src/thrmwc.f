@@ -1431,10 +1431,17 @@ c gaz debug 121714
       real*8 xair, pflowa_tol
       real*8 sk_hum, dqt_hum, sk_air, dq_air, sk_h2o
       real*8 qng_old,eh_air,qng_mod
-      real*8 diff_w,diff_e,diff_a,permd_air_mult
+      real*8 diff_w,diff_e,diff_a,permd_air_mult, permd_hum_mult
+      real*8 dsk_hump,dsk_humpc,dsk_humt,psatld,pdiff,huma_fixed
+c gaz 062916      
+      real*8 psatl_100, dpsatt_100, dhumidp, dhumidpc, dhumidt
+      real*8 dsk_hums, dsk_airp, dsk_h2op, deh_airp
+      real*8  sk_humf, dsk_humfp, dsk_humfpc, dsk_humft
+      real*8  sk_airhf, dsk_airhfp, huma_tol
+      real*8 pv_hum, t_hum, p_hum   
       integer kang, ipv_tol
-      parameter (kang = 1, pflowa_tol= 1.e-12)
-      parameter (permd_air_mult = 1.d-2)
+      parameter (kang = 1, pflowa_tol= 1.d-12, huma_tol = 1.d-12)
+      parameter (permd_air_mult = 1.d-2, permd_hum_mult = 1.d03)
 c
 c     rol  -  density liquid
 c     ros  -  density steam
@@ -1758,9 +1765,14 @@ c         else
             pv=pl-pcl
             pci(mi)=pcl
             dpct=-dpsatt
-c         end if
+      else if(ieosd.eq.3) then
+c calculate water vapor pressure at 100 % humidity
+c needed for rel perm calc
+            psatl_100 = psatl(tl,pcp(mi),dpcef(mi),dpsatt_100,dpsats,
+     &                   0,an(mi))
+ 
       endif
-c
+c 
 c calculate vapor pressure
 c
 c GAZ 5/8/97
@@ -1773,6 +1785,17 @@ c     if(ieosd.ne.1) then
        xv= pv
        ipv_tol = 0
       endif
+      if(ieosd.eq.3) then          
+       humida(mi) = xv/max(psatl_100,1.d-15)
+       dhumidp = 1./max(psatl_100,1.d-15)
+       dhumidpc = -dhumidp
+       dhumidt = (-xv/max(psatl_100,1.d-15)**2)*dpsatt_100
+      else 
+       humida(mi) = 1.  
+       dhumidp = 0.0
+       dhumidpc = 0.0
+       dhumidt = 0.0       
+      endif    
       xv2=xv*xv
       xv3=xv2*xv
 c     endif
@@ -2515,10 +2538,10 @@ c
 c
 c ********** source term code start *****************
 c
-c gaz debug terms
+c gaz debug terms (so intel debugger recognizes fdum and l from use module)
       dum_gaz=fdum 
       dum_gaz = l
-
+c
        qc(mi)=0.0
        dqc(mi)=0.0
        deqc(mi) = 0.0
@@ -2529,8 +2552,9 @@ c identify water source term
 c specified water source/sink
        qdis=sk(mi)
       else
-c calculated water source/sink
+c calculated water source/sink (via specified pressure or saturation or humidity)
        qdis = 0.0
+       qh(mi) = 0.0
        sk(mi) = 0.0
       endif
       pldif = 0.0
@@ -2545,66 +2569,48 @@ c
       sk_air = 0.0
       sk_h2o = 0.0
       if(kq.lt.0 .and. compute_flow) then
-         qdis = 0.0
-         qh(mi)=0.0
-         sk(mi)=0.0
 c pflow >= 0 , specified pressure
 c pflow <  0 , specified saturation (sometimes resulting from humidity )
          if(pflow(mi) .lt. 0.) then 
             permsd=wellim(mi)
-c gaz debug 121314
             if(ieosd.eq.2) then
 c gaz debug 081815 only allow outflow
 c basically for two phase conditions, saturation is managed (fixed BC) with water flow
 c pressure is managed (fixed BC) with airflow
-c -888 
+c -888 disables humidity:dqt is d/ds for 2 phase, d/dt for 1 phase
               if(sl+pflow(mi).gt.0.0.and.pflow(mi).ne.-888.) then
                satdif = sl+pflow(mi)
-               sk_hum = permsd*(sl+pflow(mi))
-               dqt_hum=permsd
-c gaz debug temp 082215
-c               sk_hum = 0.0
-c               dqt_hum = 0.0
+               sk_hum = permsd*(satdif)
+               dsk_hums = permsd
+               dsk_humpc = 0.0
+               dsk_humt = 0.0
               else
                sk_hum = 0.0
-               dqt_hum = 0.0
+               dsk_hums = 0.0
+               dsk_humpc = 0.0
+               dsk_humt = 0.0               
               endif
-c gaz debug 121314
 c gaz debug 081815
-               if(pflowa(mi).gt.pflowa_tol) then
+c only outflow              
+              if(pflowa(mi).gt.pflowa_tol) then
                 if(phi(mi)-pflowa(mi).gt.0.0) then
                  permsda = permsd*permd_air_mult
                  sk_air =   permsda*(phi(mi)-pflowa(mi))
-                 dq_air=  permsda
+                 dsk_airp=  permsda
                 else
 c do nothing      
                  sk_air = 0.0
-                 dq_air = 0.0          
+                 dsk_airp = 0.0          
                 endif
-               endif
+              endif
             else if(ieosd.eq.3) then
-c no derivative wrt s since s is not a variable
-c gaz debug 082215 no saturation but still gas phase
-c               qdis = permsd*(sl+pflow(mi))
-c               sk(mi)=qdis 
-                 sk_hum = 0.0
-                 dqt_hum = 0.0 
-               if(pflowa(mi).gt.pflowa_tol) then
-                if(phi(mi)-pflowa(mi).gt.0.0) then
-                 permsda = permsd*permd_air_mult
-                 sk_air =   permsda*(phi(mi)-pflowa(mi))
-                 dq_air=  permsda
-                else
-c do nothing      
-                 sk_air = 0.0
-                 dq_air = 0.0          
-                endif
-               endif               
+c do nothing here
             endif
 c            qc(mi)=0.
 c            dqc(mi)=0.
 c dqpc (now qng) should be set in co2ctr and input
          else if(abs(wellim(mi)).ne.0.0) then
+c now for positive pflow()             
             pldif=pl-pflow(mi)
             permsd=wellim(mi)
 c kq=-2 means inflow not allowed
@@ -2614,6 +2620,9 @@ c kq=-2 means inflow not allowed
             dq(mi)=permsd
 c gaz debug 122814
 c check for air fraction of water source sk();(only for inflow)
+c if we assume dry air, then we could calculate humidity   
+c xairfl splits a water  inflow source (including fixed pressure) into 
+c a water and air source (avialable from ngas or boun input)            
            if(xairfl(mi).gt.0.0.and.qdis.lt.0.0) then
             xair = xairfl(mi)
             sk(mi) = (1.0-xair)*qdis
@@ -2621,6 +2630,8 @@ c check for air fraction of water source sk();(only for inflow)
             dqc(mi) = dq(mi)*xair
             dq(mi) = dq(mi)*(1.0-xair)
             qdis = sk(mi)
+c gaz debug 070416: could add enthalpy here  with call to flow_humidity_bc(2...
+c need to add conditional 2 for enthalpy calc (no d/dp,d/dy etc)            
            endif
          endif
       end if
@@ -2633,23 +2644,40 @@ c xnva() and entha() have been caluculated in flow_hmuidity_bc
 c not perfect because of dissolved air in water is assumed to be zero
 c
 c can't use huma and xairfl at same node
-c note; we assume if 
-c
-       if(xairfl(mi).gt.0.0.and.qdis.lt.0.0) then
-        qng_old = qc(mi)
-       else
+c note; we assume air inflow for this section to 
+c be humidified air
+c by evaluating qng we omit the qc(mi) calculated above
         qng_old = qng(mi)
-       endif
-       if(allocated(huma)) then
+        dq_air = 0.0
+c check if pflowa exists and  inflow exists
+        if(pflowa(mi).gt.pflowa_tol) then
+            if(phi(mi)-pflowa(mi).lt.0.0) then
+                 permsd=abs(wellim(mi))
+                 permsda = permsd*permd_air_mult
+                 qng_old = permsda*(phi(mi)-pflowa(mi))
+                 dq_air =  permsda
+             else        
+                 permsd=abs(wellim(mi))
+                 permsda = permsd*permd_air_mult
+                 sk_air = permsda*(phi(mi)-pflowa(mi))
+                 dq_air = permsda
+                 dsk_airp =  permsda  
+                 qng_old = 0.0
+             endif
+        endif
+       if(iha.ne.0) then
        if(huma(mi).gt.0.0) then
-        if(qng(mi).lt.0.0) then
-         qng_old = qng(mi) 
+c only for inflow of gas phase           
+        if(qng_old.lt.0.0) then
 c water flow in rate sk()
 c air flow in is sk_air
+c entha() is correct mixture enthalpy
          sk_h2o = (1.0-xnva(mi))*qng_old
+         dsk_h2op = (1.0-xnva(mi))*dq_air
          sk_air = xnva(mi)*qng_old
+         dsk_airp = xnva(mi)*dq_air
          eh_air = entha(mi)*qng_old
-         qh(mi) = qh(mi)+eh_air
+         deh_airp = entha(mi)*dq_air
          qng_old = 0.0
         endif
       endif
@@ -2657,8 +2685,41 @@ c air flow in is sk_air
 c
 c end section on air inflow with specified humidity
 c
+c gaz 070516
+c start section on specified humidity (inflow only and outflow)
+c water flows in or out
+c       
 c
-c calculate source term for air
+              t_hum = 0.0
+              p_hum = 0.0
+              huma_fixed = 0.0
+              if(iha.ne.0) then
+               if(huma(mi).lt.0) then
+                 huma_fixed = abs(huma(mi))                         
+                 permsd=abs(wellim(mi))*permd_hum_mult
+                 t_hum = thuma(mi)
+                 p_hum = phuma(mi) 
+                 pv_hum = psatl(t_hum,pcp(mi),dpcef(mi),dpsatt_100,
+     &                   dpsats,0,an(mi))
+                 pdiff = p_hum-pci(mi)
+                 sk_humf = permsd*(pdiff-huma_fixed*pv_hum)  
+                 dsk_humfp = 0.0
+                 dsk_humfpc = -permsd
+                 dsk_humft = 0.0
+                if(p_hum.gt.pflowa_tol) then
+                 permsda = permsd*permd_air_mult
+                 sk_airhf = permsda*(phi(mi)-p_hum)
+                 dsk_airhfp =  permsda 
+                else
+                 sk_airhf = 0.0
+                 dsk_airhfp = 0.0
+                endif                
+               endif
+              endif   
+555           continue 
+
+c
+c end section on air inflow with specified humidity
 c
       hprod=0.0
       cprod=0.0
@@ -2836,20 +2897,21 @@ c derivatives zero out before, may ne non zero (xairfl(mi))
 c          dqc(mi)=0.0
 c          deqc(mi)=0.0     
 c          dcqc(mi)=0.0 
-        endif     
+         endif     
 c
 c now add humidity terms (outflow)
 c 
 c specified saturation just acts on water in liquid phase
+c and only outflow
 c need energy term here
 c
         if(sk_hum.gt.0.0) then
          sk(mi) = sk(mi) + sk_hum
-         dqt(mi) = dqt(mi) + dqt_hum
+         dqt(mi) = dqt(mi) + dsk_hums
          qh(mi) = qh(mi) + sk_hum*enl
          dqh(mi) = dqh(mi) + dhlp*sk_hum 
-         deqh(mi)=deqh(mi) + enl*dqt_hum 
-         dcqh(mi)=dcqh(mi) + dhlpc*sk_hum        
+         deqh(mi)=deqh(mi) + enl*dsk_hums
+         dcqh(mi)=dcqh(mi) + dhlpc*sk_hum   
         endif 
 c air and water leave in the gas phase (outflow)
 c need energy term here
@@ -2865,22 +2927,51 @@ c need energy term here
          dcqh(mi)=dcqh(mi) + dhvpc*sk_air      
         elseif (sk_air.lt.0.0) then
 c air and water enter in the gas phase (inflow)
+c includes specified humidity in inflow            
 c need energy term here
 c no derivatives  because inflow
          sk(mi) = sk(mi) + sk_h2o
+         dq(mi) = dq(mi) + dsk_h2op
          qc(mi) = qc(mi) + sk_air
-         qh(mi) = qh(mi) + eh_air
-        endif
+         dqc(mi) = dqc(mi) + dsk_airp
+         qh(mi) = qh(mi)+ eh_air
+         dqh(mi) = dqh(mi) + deh_airp
+       endif
+c
+c section on fixed relative humidity
+c temperature should be constrained via hflux below
+c
+         if(huma_fixed.gt.huma_tol) then
+          if(sk_humf.lt.0) then
+             sk(mi) = sk(mi) + sk_humf
+             dq(mi) = dq(mi) + dsk_humfp
+             dqpc(mi) = dqpc(mi) + dsk_humfpc
+             dqt(mi) = dqt(mi) + dsk_humft
+             qc(mi) = qc(mi) + sk_airhf
+             dqc(mi) = dqc(mi) + dsk_airhfp    
+          else
+             sk(mi) = sk(mi) + sk_humf
+             dqpc(mi) = dqpc(mi) + dsk_humfpc  
+             qc(mi) = qc(mi) + sk_airhf
+             dqc(mi) = dqc(mi) + dsk_airhfp  
+          endif
+         endif
+c
 c
 c
 c ********** fluid source term code end *****************
 c
 c add heat source term
 c
-      if(qflux(mi).ne.0.0) then
+      if(qflux(mi).ne.0.0.or.t_hum.ne.0.0) then
       if(qflxm(mi).gt.0.0) then
-       htc=qflxm(mi)
-       tbound=qflux(mi)
+       tbound = qflux(mi)
+       htc = qflxm(mi)
+      elseif(t_hum.gt.0.0) then
+       tbound = t_hum
+       htc = abs(wellim(mi))
+      endif
+      if(htc.gt.0.0) then
        hflux=htc*(tl-tbound)
        if(ieosd.ne.2) then
         dhflxp=0.0
