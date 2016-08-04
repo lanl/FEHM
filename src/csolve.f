@@ -666,7 +666,7 @@ c**** set time step for tracer solution , call solution            ****c
       real*8 cord1z,cord2z,newx,newy,newz,dispzavw,dispyavw,dispxavw
       real*8 newdiff, concadiff, satr, ptime
       real*8 :: last_time = 0.
-      integer sia_iter
+      integer sia_iter, sia_iter_tot_old
       integer :: sia_iter_tot = 0
       integer isolute
       integer ic
@@ -682,6 +682,8 @@ c**** set time step for tracer solution , call solution            ****c
       save daytr, iprttrc, icfin, last_step, last_time
 c seh
 c set velocities here instead of in coneq1
+c gaz 071016
+      sia_iter_tot_old = iaddt(1)
       if (daytr .le. 0) daytr = daycmm
       if (ianpe.ne.0) then
          continue
@@ -1428,7 +1430,7 @@ c     Add counter for total SIA iterations
  3040    format ('Newton-Raphson iteration limit exceeded in ',
      2        'speciation subroutine.')
       else
-*** convergence
+c*** convergence
          if(iprttrc.ge.abs(nprttrc).or.icfin.le.0) then
             if (nprttrc .gt. 0) then
                if (iout .ne. 0 .and. idebug .eq. 1) 
@@ -1481,7 +1483,7 @@ c check for porosity changes for non salt simulation
  3011 format ('*****************************************************')
 
       if( .not. reset_tracer ) then
-         tajj = tyming(caz) - tajj
+         tajj = tyming(caz) - tajj            
          if(iptty .ne. 0) then
             write(iptty, *)
             write(iptty, 3011) 
@@ -1609,13 +1611,16 @@ c     iprttrc = 0
          end if
          nts=nts+1
       end if
+c gaz 071016 iadd does not seem to be used, put sia info in iadd for printout
+      iadd(1) = sia_iter_tot
+      iaddt(1) = sia_iter_tot_old+sia_iter_tot  
       if( .not. reset_tracer ) then
          if(icfin.le.0) then
             dtotc=dtotdm/nts
             go to 4000
          endif
          if(sia_iter.le.iaccmx) daytr = daytr * daycm
-         if(daytr.gt.daycmx) daytr = daycmx
+         if(daytr.gt.daycmx) daytr = daycmx          
       end if
       go to 1000
  4000 continue
