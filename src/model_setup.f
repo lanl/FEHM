@@ -342,9 +342,14 @@ c and air fraction cannot both be set for the same node
          enddo
          temperature_type(imod)=1
          if(isubmod.le.1) go to 30
-      else if(key(1:2).eq.'hu') then
+c gaz new 061816
+      else if(key(1:3).eq.'huf') then
          read(inpt,*) (humid(i,imod),i=1,ntimes)
          humid_type(imod)=1
+         if(isubmod.le.1) go to 30
+      else if(key(1:2).eq.'hu') then
+         read(inpt,*) (humid(i,imod),i=1,ntimes)
+         humid_type(imod)=-1
          if(isubmod.le.1) go to 30
       else if(key(1:2).eq.'ph') then
          read(inpt,*) (phumid(i,imod),i=1,ntimes)
