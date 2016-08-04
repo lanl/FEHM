@@ -282,9 +282,13 @@ C**********************************************************************
       implicit none
 
       integer idp,idq,i,mdd,md,iz,sehi,sehindex, jjj, kkk, lll
+      integer nts_trac
       real*8 rcd,rcdss,rcc,srmim,cbal,sehratein,sehrateout
-
-c**** write out output to appropriate device ****
+      
+c recalculate tracer timesteps
+      nts_trac = dtotdm/dtotc
+      
+c**** write out output to appropriate device ****  
       dtotc  =  dtotc/86400.0
 
 c**** print output for each tracer ****
@@ -298,11 +302,11 @@ c         if( iz .eq. 0 ) then
          if (iout .ne. 0) then
             write(iout,31) 
             write(iout,6050) days
-            write(iout  ,6001)  dtotc , iadd(1)
+            write(iout  ,6001)  nts_trac, dtotc ,  iadd(1), iaddt(1)
          end if
  31      format(/,19x,'*************************')
          if ( iatty .gt. 0 )  then
-            write(iatty  ,6001)  dtotc , iadd(1)
+            write(iatty  ,6001)  nts_trac, dtotc ,  iadd(1), iaddt(1)
          endif
 c         end if
          do nsp=1,nspeci
@@ -446,7 +450,8 @@ c            if( iz .eq. 0 ) then
       return
  6000 format(/,1x,'Solute output information, species number ',i5)
  778  format(1x,'Solute output information, species number ',i5)
- 6001 format(1x,'Average step size = ',e14.6,4x,'Iter = ',i5)
+ 6001 format(1x,'Num of solute timesteps ', i6,' Avg tstep = ',
+     & 1p,g13.6,' SAI Iter = ',i6,' Tot SAI iter ', i8)
  6010 format(4x,'Node',5x,'an',9x,'anl',7x,'anv',
      *     8x,'mol/s',5x,'residual')
  6012 format(4x,'Node',5x,'an',9x,'anl',7x,'anv',7x,'scl',7x,'scv',
@@ -462,11 +467,11 @@ c6011 format(1x,i5,1x,g10.3,1x,g10.3,1x,g10.3,1x,f9.2,1x,g10.3,1x,g10.3)
  6020 format(3x,'initial mass =',20x,e14.6,' mol',/,3x,
      &     'current mass = ',19x,e14.6,' mol',/,3x,
      &     'total injected mass = ',12x,e14.6,' mol (',
-     &     e12.6,' mol/s)',/,3x,
+     &     e13.6,' mol/s)',/,3x,
      &     'total produced mass = ',12x,e14.6,' mol (',
-     &     e12.6,' mol/s)',/,3x,'total ',
+     &     e13.6,' mol/s)',/,3x,'total ',
      &     'mass produced by reaction = ',e14.6,' mol',/,3x,'net mass ',
      &     'balance = ',15x,e14.6,' mol')
- 6050 format(1x,'Solute information at time = ',e14.6,' days')
+ 6050 format(1x,'Solute information at time = ',1p,g14.6,' days')
       end
 
