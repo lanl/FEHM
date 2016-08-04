@@ -780,6 +780,8 @@ c            backspace locunitnum
             else
                maxtimes=max(maxtimes,idumm)
             end if
+         else if(wdd1(1:3).eq.'huf') then
+            iha=1 
          else if(wdd1(1:2).eq.'hu') then
             iha=1 
          else if(wdd1(1:2).eq.'ph') then
