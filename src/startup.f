@@ -1316,7 +1316,7 @@ c if requested psini read from salt restart
 c phini and tini have be read in from disk, just set porosity 
 c gaz debug 110314 psini remains equal to input file values
 c except for salt restart file which reads in psini
-c         psini = ps
+         if(isalt.eq.0)  psini = ps
          phini = pho
          tini = to         
       endif

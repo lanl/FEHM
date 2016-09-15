@@ -642,7 +642,7 @@ c Use values from input
                case ('poro')
                   if (read_por(1)) then
 c gaz debug 110314 set psini to input file values
-                     psini = ps
+c                    psini = ps
                      read (iread, *) ( ps(mi), mi = 1,ncount )
                      read_por(2) = .TRUE.
                   else
@@ -1213,7 +1213,7 @@ c Use values from input
                case ('poro')
                   if (read_por(1)) then
 c gaz debug 110314 set initial porosity to input file values
-                     psini = ps
+c                    psini = ps
                      read (iread) ( ps(mi), mi = 1,ncount )
                      read_por(2) = .TRUE.
                   else
