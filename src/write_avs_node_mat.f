@@ -572,7 +572,7 @@ c------------------------------------------------------------------------------
             read(il,*) i
             if (i .ne. neq_primary) backspace il
 c for river or wells, "geoname" will only have neq_primary nodes 
-            if(iriver.ne.2) then
+            if(iriver.ne.2.and.gdkm_flag.ne.1) then
               neq_read = neq
             else
               neq_read = neq_primary
