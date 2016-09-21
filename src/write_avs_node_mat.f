@@ -155,7 +155,7 @@ C***********************************************************************
 
       integer i, j, lu, ifdual, maxtitle, mout, length, ic1, ic2
       integer il, open_file, nelm(ns_in), iocord_temp
-      integer icord1, icord2, icord3, neq_read, istart, iend
+      integer icord1, icord2, icord3, neq_read, neq_write, istart, iend
       parameter(maxtitle = 22)
       character*3 dls
       character*5 char_type, dual_char
@@ -440,21 +440,28 @@ c------------------------------------------------------------------------------
             end if
             write (lu, '("VARIABLES = ", a)') print_title(1:length)
             if (iogeo .eq. 1) then
+               if(iriver.ne.2.and.gdkm_flag.ne.1) then
+                 neq_write = neq
+               else
+                 neq_write = neq_primary
+               endif                   
                select case (ns_in)
                case (5,6,8)
-                  write (temp_string, 135) neq, nei_in, 'FEBRICK'
+                  write (temp_string, 135) neq_write, nei_in, 'FEBRICK'
                case (4)
                   if (icnl .eq. 0) then
-                     write (temp_string, 135) neq, nei_in, 
+                     write (temp_string, 135) neq_write, nei_in, 
      &                    'FETETRAHEDRON'
                   else
-                     write (temp_string, 135) neq, nei_in, 
+                     write (temp_string, 135) neq_write, nei_in, 
      &                    'FEQUADRILATERAL'
                   end if
                case (3)
-                  write (temp_string, 135) neq, nei_in, 'FETRIANGLE'
+                  write (temp_string, 135) neq_write, nei_in, 
+     &                    'FETRIANGLE'
                case (2)
-                  write (temp_string, 135) neq, nei_in, 'FELINESEG'
+                  write (temp_string, 135) neq_write, nei_in, 
+     &                    'FELINESEG'
                case (0)
 ! fdm grid
                   write (temp_string, '(a)') ''
