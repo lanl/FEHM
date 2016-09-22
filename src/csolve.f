@@ -1560,7 +1560,7 @@ c
             end if
          else            
             if (ifinsh .ne. 2 .and. ptime .lt. (last_time + histime)
-     &           .and. l .lt. (last_step + nhist)
+     &           .and. l .lt. (last_step)
      &           .and. iprttrc .lt. nprttrc) then
                time2print = .FALSE.
             else
