@@ -109,7 +109,12 @@ c check is user wants to read macro data from alternative data file
             macroname2 = 'airw'
          else if (macro .eq. 'ngas' .or. macro .eq. 'co2i') then
             macroname1 = 'ngas'
-            macroname2 = 'co2i'
+         else if (macro .eq. 'zone') then
+            macroname1 = 'zone'
+            macroname2 = 'zonn'
+         else if (macro .eq. 'zonn') then
+            macroname1 = 'zonn'
+            macroname2 = 'zone'
          else
             macroname1 = macro
             macroname2 = macro
