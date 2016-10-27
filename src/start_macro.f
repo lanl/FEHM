@@ -74,18 +74,18 @@ C**********************************************************************
 
       integer inputnum, locunitnum
       character*4 lockeyword, macro, macroname1, macroname2
-      character*100 locfilename
+      character*200 locfilename
       logical ex
 c check is user wants to read macro data from alternative data file
 
       read(inputnum,'(a4)') lockeyword
       if (lockeyword(1:4) .eq. 'file') then
 
-         read(inputnum, '(a100)', err = 10) locfilename
+         read(inputnum, '(a200)', err = 10) locfilename
          
-         if (iout .ne. 0) write(iout, 100) macro, locfilename      
-         if (iptty .gt. 0) write(iptty, 100) macro, locfilename
- 100     format (1x, a4, ' read from optional input file: ', a100)
+         if (iout .ne. 0) write(iout, 200) macro, locfilename      
+         if (iptty .gt. 0) write(iptty, 200) macro, locfilename
+ 100     format (1x, a4, ' read from optional input file: ', a200)
 
 * Make sure file exists
          inquire (file = locfilename, exist = ex)
