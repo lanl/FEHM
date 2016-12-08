@@ -979,8 +979,8 @@ c
                   endif
                else
                   qh(mi) = qdis*enw
-                  dqh(mi) = qdis*denwp
-                  deqh(mi) = qdis*denwt
+                  dqh(mi) = qdis*denwp + enw*dq(mi)
+                  deqh(mi) = qdis*denwt + enw*dqt(mi)
                   dqhw(mi) = 0.d0
                   dqhyc(mi) = 0.d0
                   dqhya(mi) = 0.d0
