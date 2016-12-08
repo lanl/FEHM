@@ -1,4 +1,4 @@
-module trxnvars ! combine original trxnvars and lookupvars
+module trxnvars !  Basic variables shared among trxn's subroutines
 !***********************************************************************
 ! Copyright 2012. Los Alamos National Security, LLC.  This material was
 ! produced under U.S. Government contract DE-AC52-06NA25396 for Los
@@ -19,10 +19,9 @@ module trxnvars ! combine original trxnvars and lookupvars
 ! identified Software.
 !***********************************************************************
 
-! Basic variables shared among trxn's subroutines
-	integer NAME_MAX, SPEC_MAX, LINE_MAX		! Parameters for the maximum space to allocate for different fields.  Probably should get rid of them
+        use comchem, only : NAME_MAX
+	integer SPEC_MAX, LINE_MAX		! Parameters for the maximum space to allocate for different fields.  Probably should get rid of them
 	character*4 aSPEC_MAX, aNAME_MAX
-	parameter ( NAME_MAX = 40 )
 	parameter ( SPEC_MAX = 100 )
 	parameter ( LINE_MAX = 200 )
 	parameter ( aSPEC_MAX = '100' )	
