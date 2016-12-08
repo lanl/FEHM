@@ -278,6 +278,7 @@ C**********************************************************************
       use comgi
       use comrxni, only : scl, scv
       use comxi
+      use comchem, only: species
 
       implicit none
 
@@ -312,16 +313,16 @@ c         end if
          do nsp=1,nspeci
             npn=npt(nsp)
             if (iz.ne.1) then
-               if (iout .ne. 0) write(iout,6000) nsp
+               if (iout .ne. 0) write(iout,6000) species(nsp)
                if (iatty.gt.0) then
-                  write(iatty,6000) nsp 
+                  write(iatty,6000) species(nsp) 
                end if
             else if( iz. eq. 1 ) then
 c If there are nodes to output
                if (m .gt. 0) then
                   if (iout .ne. 0) then
                      write(iout,777) 
-                     write(iout,778) nsp
+                     write(iout,778) species(nsp)
 c     write(iout,6010)
                      if (iadsfl(nsp,itrc(nskw(1))).ne.0.or.
      &                    iadsfv(nsp,itrc(nskw(1))).ne.0) then
@@ -334,7 +335,7 @@ c     write(iout,6010)
                   end if
                   if ( iatty .gt. 0 )  then
                      write(iatty,777)
-                     write(iatty,6000) nsp
+                     write(iatty,6000) species(nsp)
 c     write(iatty,6010)
                      if (iadsfl(nsp,itrc(nskw(1))).ne.0.or.
      &                    iadsfv(nsp,itrc(nskw(1))).ne.0) then 
@@ -434,7 +435,7 @@ c            if( iz .eq. 0 ) then
                enddo
                
                if (iout .ne. 0) then
-                  if (m .eq. 0) write (iout, 6000) nsp
+                  if (m .eq. 0) write (iout, 6000) species(nsp)
                   write(iout,6020)  cm0(nsp),cm(nsp),abs(qcin(nsp)),
      &                 sehratein,qcout(nsp),sehrateout,-qcrxn(nsp),cbal
                end if
@@ -448,8 +449,8 @@ c            if( iz .eq. 0 ) then
       endif
 
       return
- 6000 format(/,1x,'Solute output information, species number ',i5)
- 778  format(1x,'Solute output information, species number ',i5)
+ 6000 format(/,1x,'Solute output information, species number ',a15)
+ 778  format(1x,'Solute output information, species number ',a15)
  6001 format(1x,'Num of solute timesteps ', i6,' Avg tstep = ',
      & 1p,g13.6,' SAI Iter = ',i6,' Tot SAI iter ', i8)
  6010 format(4x,'Node',5x,'an',9x,'anl',7x,'anv',
