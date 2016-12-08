@@ -557,7 +557,9 @@ c     SPC
 	logical opend
 
       save mfile, mole_input
-
+ 	  do i=1,nspeci
+	  if(species(i).eq.' ') write(species(i),'(i2)') i
+	  end do
       ctol = 1.d-06
       iret = 0
       if(iz.eq.0) then
@@ -909,7 +911,7 @@ c     check to see if the maximum saturation is specified for Henry's
                end if
             end if
             if (cden_flag .eq. 2) then
-               if (cpntnam(icpnt) .eq. cden_spnam) cden_sp = nsp
+               if (cpntnam(icpnt) .eq. cden_spnam) ispcden = nsp
             end if
          elseif(icns(nsp).eq.0)then
             iimm = iimm + 1
@@ -1380,6 +1382,12 @@ C     PS ENDLOOP through each species
 C     PS ENDIF the data are to be read in on this pass
       elseif(trxn_flag .eq. 1) then
          call rdtr
+                  do npn=1,nspeci
+                  do ij = 1, n0
+                     anlo((npn-1)*n0+ij)=an((npn-1)*n0+ij)
+                  end do
+                  end do
+
 	if (molein) mole_input = .true.
       else
          write(ierr, *) 'Internal error differentiating trac/trxn.'
@@ -2048,5 +2056,4 @@ c     call plotc1(0,0)
          end if
          stop
       end if
-
       end
