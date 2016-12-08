@@ -268,9 +268,10 @@
 
       integer maxspc
       parameter (maxspc = 40)
+      parameter (name_max = 40)
 
 !C ***** Variables in COMMON Block chemnum *****
-      integer ncpnt
+      integer ncpnt, ph_species 
 
       integer ncplx
 
@@ -295,6 +296,7 @@
 
 !C ***** Pointers in COMMON Block idntrxn *****
       integer, allocatable :: naqsp(:) 
+      real*8, allocatable :: ps_delta_rxn_s(:)
 
       integer, allocatable :: nimsp(:)
 
@@ -363,6 +365,7 @@
       character*20, allocatable :: immnam(:)
 
       character*20, allocatable :: vapnam(:)
+      character(NAME_MAX), allocatable :: species(:)
 
 !C ***** Variables in COMMON Block rxnpara *****
 
@@ -418,10 +421,7 @@
 
       real*8, allocatable :: mw_mineral(:), rho_mineral(:)
 
-	real*8, allocatable :: ps_rxn(:,:), ps_delta_rxn(:)
-c spc 9-10-2013
-	real*8, allocatable :: ps_delta_rxn_s(:)
-c spc 9-10-2013
+      real*8, allocatable :: ps_rxn(:,:), ps_delta_rxn(:)
 
       real*8, allocatable :: pdstic(:,:)
 
