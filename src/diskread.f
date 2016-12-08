@@ -245,7 +245,9 @@ c      real*8 pl, tl, dum1, dumb, dumc(9)
       if (iout .ne. 0) write (iout, 10) trim(nmfil(6))
       if (iptty .ne. 0) write (iptty, 10) trim(nmfil(6))
  10   format ('Reading initial condition data from file ', a)
-
+c the first block of code defines what variables are eligible for reading
+c the second block of code does the read
+c now we handle the case where there was not a 'read' keyword followed by a list of variables to read
       if (.not. allocated(rstr)) then
          allocate(rstr(1))
          rstr(1) = 'all'
@@ -255,16 +257,23 @@ c      real*8 pl, tl, dum1, dumb, dumc(9)
       do i = 1, rstr_num
          select case (rstr(i))
          case ('all')
+c handle the default case here
+c always read pressure and porosity
+               read_pres(1) = .TRUE.
+               pres_read = .TRUE.
+               read_por(1) = .TRUE.
+c read other variables depending on the physics
             if (icarb .eq. 1) then 
                read_co2(1) = .TRUE.
             else
                if (ico2 .ge. 0) read_temp(1) = .TRUE.
-               read_pres(1) = .TRUE.
-               pres_read = .TRUE.
+            endif
+c              read_pres(1) = .TRUE.
+c              pres_read = .TRUE.
                if (irdof .ne. 13) read_sat(1)  = .TRUE.
                if (ico2 .gt. 0) read_gasp(1) = .TRUE.
-               if (iporos .ne. 0) read_por(1) = .TRUE.
-            end if
+c              if (iporos .ne. 0) read_por(1) = .TRUE.
+c           end if
             if (iccen .ne. 0) read_trac(1) = .TRUE.
             if (ptrak) read_ptrk(1) = .TRUE.
             if (istrs .eq. 1) then
@@ -281,6 +290,7 @@ c      real*8 pl, tl, dum1, dumb, dumc(9)
                   read_stryz(1) = .TRUE.
                end if
             end if
+c handle the case where there was a 'read' keyword followed by specific variables
          case ('temp')
             read_temp(1) = .TRUE.
          case ('pres')
@@ -1724,7 +1734,25 @@ c**** save initial pressures and temps to restart file ****
             read(iread, END=3000)  ( phini (mi) , mi=1,ncount )
          endif
       endif     
+c*** EK overwrite initial dissolved CO2 concentrations with tracer output
+        if(icarb.eq.1) then
+        do i=1,ncount
+        if(inico2flg(i).eq.2) then
+          if(.not.read_trac(1)) then
+           write(ierr,*) 'no tracer data in restart file'
+           write(ierr,*) 'incompatable with co2frac inico2flg=2'
+                                stop
+          endif
+          if(carbon_tracer.eq.0) then
+           write(ierr,*) 'component H2CO3 required for carbon coupling'
+                                stop
+          endif
 
+ 666            format(3i10,e10.3)
+                yc(i)=anl((carbon_tracer-1)*ncount+i)*44E-3
+        endif
+        end do
+        endif
  1000 format (1x, 'Tracer data found in restart file for non-trac',
      &     ' problem, data will not be used')
  1001 format (1x, 'Particle tracking data found in restart file for',
