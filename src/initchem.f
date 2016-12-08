@@ -66,11 +66,37 @@ C**********************************************************************
       use comchem
       use comdi
       use comdti
+
+	use comco2, only: icarb, carbon_tracer
+
       implicit none
 
 c local variables
       integer ic,in,idh,mi,mi2,im
       real*8 newimm
+
+
+
+		carbon_tracer=0
+      if(icarb.eq.1.and.co2_couple.eq.1)then
+
+c loop over aqueus components
+
+                 do ic = 1,ncpnt
+
+		          if (cpntnam(ic).eq.'C'.or.cpntnam(ic).eq.'H2CO3')then
+
+					carbon_tracer=ic
+
+					exit
+
+				  endif
+
+				end do
+
+	endif
+
+
 c
 c.....Set the initial guesses for the speciation of aqueous 
 c.....component concentrations.
