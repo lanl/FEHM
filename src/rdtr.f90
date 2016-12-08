@@ -31,10 +31,12 @@ subroutine readline ! Reads a line of input, strips off comments and whitespace,
 
 	use comai
 	use trxnvars
+	use comdi, only:nspeci
 
 	implicit none
 
 	read(inpt, '(a200)', end=2101, err=2102) line
+!	write(*,*) 'inreadline ', line
 	if (index(line, '#') .ne. 0) then
 		line = line(1:index(line, '#') - 1)
 	endif
@@ -68,11 +70,12 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 	use comcouple
 	use comrxni
 	use comco2
+!	use lookupvars
 	use trxnvars
 
 	implicit none
 
-	character*20, dimension(100) :: array, array3, species, masters, states, groupspecs
+	character*20, dimension(100) :: array, array3,  masters, states, groupspecs
 	character*20, dimension(100, 100) :: array2
 	integer, dimension(100) :: iarray
 	character*20 keyword, null, e, f
@@ -84,10 +87,10 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 	! trxninit's jobs:
 	! Set tpor_flag true or false
 	! Read or calculate nspeci, ncpnt, nimm, nvap, isorp, numd, and numsorp
-
 	debug = .false.
 	debug_stop = .false.
 	tpor_flag = .false.
+	strong=.false.
 	blocknum = 0
 	flookup = .false.
 	fctrl = .false.
@@ -170,6 +173,10 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 					if (debug) write(iptty, '(a)') 'Reactions enabled for this simulation.'
 				elseif (array(i) .eq. 'stop') then
 					debug_stop = .true.
+				elseif(array(i).eq.'strong') then
+					if(icarb.eq.1) then
+					strong=.true.  ! want to modify this to search for calcite
+					endif
 				elseif (array(i) .eq. 'co2_couple') then
 					if (icarb .eq. 1) then
 						if (debug) write(iptty, '(a)') &
@@ -525,15 +532,27 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 			states = '*'
 			array3 = '*'
 			do
-1105				call readline
+1105			call readline
+				if(len_trim(line).eq.0) exit
+				nspeci=nspeci+1
+				goto 1105
+			end do	
+			do i=1,nspeci+1
+					backspace inpt
+				end do
+                                if(.not.allocated(species)) allocate (species(nspeci))
+				nspeci=0
+			do
+
+ 1117 				call readline
 				if (len_trim(line) .eq. 0) exit
-				nspeci = nspeci + 1
+				nspeci=nspeci+1
 				read(line, *, end=1102, err=1600) states(nspeci), species(nspeci), masters(nspeci)
 1102				do i = 1, nlocomp
 					if (locomp(i, 2) .eq. species(nspeci)) then
 						species(nspeci) = '*'
 						nspeci = nspeci - 1
-						goto 1105
+						goto 1117
 					endif	
 				enddo
 				if (states(nspeci)(1:1) .eq. 's') then
@@ -551,6 +570,7 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 				!	ncplx = ncplx + 1
 				!endif
 			enddo
+	
 		elseif (keyword .eq. 'assign') then
 			if (debug) write(iptty, '(a)') 'Prereading assign.'
 			blocknum = blocknum + 1
@@ -560,6 +580,7 @@ subroutine trxninit ! Called by scanin.f to preset some basic variables.
 				if (array(i) .eq. 'tpor') then
 					tpor_flag = .true.
 					exit
+
 				!elseif (array(i) .eq. 'rxn') then
 				!	rxn_flag = 1
 				!	exit
@@ -847,6 +868,7 @@ subroutine rdtr ! The main input reader
       	use comflow
       	use compart
       	use comrxni
+!	use lookupvars
 	use trxnvars
 
 	implicit none
@@ -879,7 +901,6 @@ subroutine rdtr ! The main input reader
 	character(NAME_MAX), allocatable :: vtnames(:), vtspecies(:)	! Vapor species names and component species.
 	real*8, allocatable :: vtgrid(:, :)				! vtgrid(i, j) is vapor type i and species j.
 	integer nvt, nvtspecies						! Number of vapor types and vapor species.
-	character(NAME_MAX), allocatable :: species(:)			! The list of species according to spec
 	character(NAME_MAX), allocatable :: masters(:)			! Master species for each component in species(:)
 	real*8, allocatable :: guesses(:)				! Concentration guesses for each component in species(:)
 	character, allocatable :: states(:)				! The state of each species
@@ -909,7 +930,6 @@ subroutine rdtr ! The main input reader
 !	integer, allocatable :: ggroups(:)				! List of groups
 !	integer, allocatable :: ngroupdefs(:)				! The number of times each component is specified in group.  Should be 1 for every component.
 	integer nprint							! Number of printable species
-	character(NAME_MAX), allocatable :: printspecies(:)		! List of species to print
 	integer nstoichcomponents, nstoichspecies			! Number of components and species in stoich
 	integer ncomplexes						! Number of complexes
 	character(NAME_MAX), allocatable :: complexes(:)		! List of complex names
@@ -925,6 +945,8 @@ subroutine rdtr ! The main input reader
 	logical logten, cequi						! Whether cplx values are log 10 values, whether we are using equi for our constants
 	integer necomplexes, neqtemps					! The number of species according to equi, and the maximum number of equilibrium temperatures in equi
 	character(NAME_MAX), allocatable :: ecomplexes(:)		! Species according to equi
+	character(NAME_MAX), allocatable :: printspecies(:)		! List of species to print
+
 	real*8, allocatable :: eqtemps(:, :), eqconsts(:, :)		! Temperatures and constants for equilibrium constants in equi.  eqtemps(i, j) is species i and temperature j
 	integer nrxns							! Number of reactions
 	integer, allocatable :: rxntypes(:)				! Type of each reaction
@@ -1014,7 +1036,7 @@ subroutine rdtr ! The main input reader
 	iskip = 0
 	rsdmax = 1e-9
 	strac_max = 0.99
-	co2_couple = 0
+!	co2_couple = 0
 	logten = .false.
 	cequi = .false.
 	molein = .false.
@@ -1087,7 +1109,7 @@ subroutine rdtr ! The main input reader
 		goto 269
 	endif
 	if (debug) then
-		write(iptty, '(i3, a19)', advance='no') numzones, ' available zones:  '
+		write(iptty, '(i3, a19)', advance='no') numzones, ' available zones (zonenames):  '
 		do i = 1, numzones
 			write(iptty, '(a)', advance='no') trim(zonenames(i))
 			write(iptty, '(a)', advance='no') ' '
@@ -1115,6 +1137,7 @@ subroutine rdtr ! The main input reader
 		if (len_trim(line) .eq. 0) goto 2000
 		! a line beginning with a keyword, in which case different modes are entered depending on the keyword:
 		read(line, *, err=667) keyword
+		
 		! Header information
 		if (keyword .eq. 'ctrl') then
 			if (debug) write(iptty, '(a)') 'Reading control information...' ! Already taken care of by trxninit
@@ -1240,7 +1263,7 @@ subroutine rdtr ! The main input reader
 			if (fcomp) then
 				write(ierr, '(a)') 'Warning:  comp has already been specified.  '// &
 					'The new values will overwrite the old ones.'
-				deallocate(species)
+!				deallocate(species)
 				deallocate(states)
 				deallocate(masters)
 				deallocate(guesses)
@@ -1266,7 +1289,7 @@ subroutine rdtr ! The main input reader
 				linen = linen - 1
 			enddo
 			if (flookup) nspecies = nspecies + nlocomp
-			allocate(species(nspecies))
+!			allocate(species(nspecies))
 			allocate(states(nspecies))
 			allocate(masters(nspecies))
 			allocate(guesses(nspecies))
@@ -1290,6 +1313,7 @@ subroutine rdtr ! The main input reader
 				if (array(1)(1:6) .eq. 'master') then
 					if (array(2)(1:5) .eq. 'guess') then
 						read(line, *, err=167, end=167) states(i), species(i), masters(i), e
+						if(states(i).eq.'a'.and.species(i)(1:1).eq.'H') ph_species=i
 						if (e .eq. '*') then
 							guesses(i) = 1e-9
 						else
@@ -1431,6 +1455,7 @@ subroutine rdtr ! The main input reader
 				allocate(cdenspecs(ncdenspecs))
 				allocate(molweights(ncdenspecs))
 			endif
+			
 			do i = 1, ncdenspecs
 328				call readline
 				cdenspecs(i) = '*'
@@ -2490,6 +2515,7 @@ subroutine rdtr ! The main input reader
 			if (debug) write(iptty, '(a, i3, a)') 'Read ', ncomplexes, ' complexes.'
 			goto 2000
 262			write(ierr, '(a)') "Error:  Bad reaction format in cplx."
+			write(ierr,*) 'Make sure there are ',6+3*(a-1),' words in this line'
 			goto 666
 263			write(ierr, '(a)') "Error:  Bad parameter after equation in cplx."
 			goto 666
@@ -3214,14 +3240,14 @@ subroutine rdtr ! The main input reader
 						elseif (e(1:5) .eq. 'sarea') then
 							read(f, *, err=184) xcoef(nrxns)
 						elseif (e(1:3) .eq. 'mol') then
-							if (rxntypes(i) .eq. 7) then
+							if (rxntypes(nrxns) .eq. 7) then
 								write(ierr, '(a)') 'Error:  Molecular weight only '// &
 									'available for reaction type 8.'
 								goto 666
 							endif
 							read(f, *, err=184) porchange(nrxns, 1)
 						elseif (e(1:4) .eq. 'dens') then
-							if (rxntypes(i) .eq. 7) then
+							if (rxntypes(nrxns) .eq. 7) then
 								write(ierr, '(a)') 'Error:  Mineral density only '// &
 									'available for reaction type 8.'
 								goto 666
@@ -3303,12 +3329,18 @@ subroutine rdtr ! The main input reader
 			enddo
 			allocate(zones(max(numzones, nzones) + 1))
 			allocate(zonegrid(max(numzones, nzones) + 1, SPEC_MAX))
+			
 			zones = '*'
 			zonegrid = '*'
 			do i = 1, nzones
 				call readline
 				read(line, *, end=144, err=144) zones(i), (zonegrid(i, j), j = 1, nzonespecs)
 			enddo
+			
+			
+			
+			
+			
 			goto 143
 144			write(ierr, '(a)') 'Error reading zone data.'
 			goto 666
@@ -3515,52 +3547,31 @@ subroutine rdtr ! The main input reader
 	endif
 	! Check zone names, set up zone number resolution, and assign default properties to extra zones.
 	zoneresolv = 0
-	do i = 1, numzones
-		do j = 1, nzones
-			if (zonenames(i) .eq. zones(j)) then
-				zoneresolv(zonenums(i)) = j
+! first check that every zone in the assign macro was predefined, if not, report warning
+	do i = 1, nzones   ! this the number of zones defined in the assign macro
+		do j = 1, numzones  ! this is the number of zones defined before trxn macro
+			if (zonenames(j) .eq. zones(i)) then  ! zonenames are predefined, zones are defined in assign macro
+				zoneresolv(zonenums(j)) = i
 				goto 259
 			endif
-		enddo
-		do k = 1, n0 ! Laziness:  perform the check for every node ever defined, but only print a message for zones currently in use.
-			if (izonef(k) .eq. zonenums(i)) then
-				write(ierr, '(a)') 'Warning:  Zone "'//trim(zonenames(i))//'" in zone macro not '// &
-					'included in assign block.  Default values will be used for the nodes in this zone.'
-				exit
-			endif
-		enddo
-		nzones = nzones + 1
-		read(zonenames(i), *, err=602) zones(nzones)
-		zonegrid(nzones, zinit) = '*'
-		zonegrid(nzones, zboun) = '*'
-		zonegrid(nzones, zrock) = '*'
-		zonegrid(nzones, zdisp) = '*'
-		zonegrid(nzones, zsorp) = '*'
-		zonegrid(nzones, ztpor) = '0.32'
-		zonegrid(nzones, ztime) = '*'
-		zonegrid(nzones, zopt) = '*'
-		zoneresolv(zonenums(i)) = nzones
-259		continue
-	enddo
-	! Add an extra zone with default properties for all nodes that are not in a zone.
-	do i = 1, n0
-		if (izonef(i) .eq. 0) then
-			write(ierr, '(a)') 'Warning:  The current model contains nodes that are not assigned to '// &
-				'any zone.  Default properties will be assigned to these nodes.'
-			exit
-		endif
-	enddo
-	zones(nzones + 1) = '*'
-	zonegrid(nzones + 1, zinit) = '*'
-	zonegrid(nzones + 1, zboun) = '*'
-	zonegrid(nzones + 1, zrock) = '*'
-	zonegrid(nzones + 1, zdisp) = '*'
-	zonegrid(nzones + 1, zsorp) = '*'
-	zonegrid(nzones + 1, ztpor) = '0.32'
-	zonegrid(nzones + 1, ztime) = '*'
-	zonegrid(nzones + 1, zopt) = '*'
-	zoneresolv(0) = nzones + 1
+		end do
+		write(ierr, '(a)') 'Warning:  Zone "'//trim(zones(i))//'" in assign macro not '// &
+					'included defined as a zone before trxn call'
+ 259 end do
+! now check that every node was assigned something in the assign block
+		do k=1,n0
+			do i=1,nzones
+				if(zonenames(izonef(k)).eq.zones(i)) goto 2164
+			end do
+		write(ierr, *) 'Error:  Node ', k ,' belongs to ',izonef(k),'**',trim(zonenames(izonef(k))),' ,not present in assign macro'
+# this logic expects zones to be named 1,2,3,4 		
+		write(ierr,*) (zones(i),i=1,nzones)
+		goto 666   
+! would be good to assign this node default values and move on		
+2164		end do
+				
 	! Ensure that for each name given in zone, there is a matching name in the appropriate section.
+	
 	do i = 1, nzonespecs
 		if (zonespecs(i) .eq. 'water') then
 			do j = 1, nzones
@@ -3743,6 +3754,7 @@ subroutine rdtr ! The main input reader
 169			continue
 		enddo
 	endif
+	
 	if (frock) then
 		do i = 1, nrtspecies
 			do j = 1, nspecies
@@ -3817,21 +3829,22 @@ subroutine rdtr ! The main input reader
 	endif
 	! Ensure that everything in print is a component or master species.
 	if (fprint) then
-		do i = 1, nprint
+		do i = 1, nprint  ! at this point nprint is == 1
 			if (printspecies(i) .eq. 'all') then
 				nprint = nspecies + nmasters + ncomplexes
+! print total component, free ion, 
 				deallocate(printspecies)
 				allocate(printspecies(nprint))
 				do j = 1, nspecies
-					printspecies(j) = species(j)
+					printspecies(j) = species(j)  ! for each component
 				enddo
 				do j = 1, ncomplexes
-					printspecies(nspecies + j) = complexes(j)
+					printspecies(nspecies + j) = complexes(j)  ! each complex
 				enddo
 				k = 1
 				do j = 1, nspecies
 					if (masters(j) .ne. '*') then
-						printspecies(nspecies + ncomplexes + k) = masters(j)
+						printspecies(nspecies + ncomplexes + k) = masters(j)  ! each free ion
 						k = k + 1
 					endif
 				enddo
@@ -3851,8 +3864,12 @@ subroutine rdtr ! The main input reader
 200			continue
 		enddo
 202		continue
+		do j=1,nprint
+		if(debug) write(*,*) printspecies(j), 'is going to print'
+		end do
 	else
 		nprint = nspecies + nmasters + ncomplexes
+		write(*,*) '3866: ',nspecies,nmasters,ncomplexes
 		allocate(printspecies(nprint))
 		do j = 1, nspecies
 			printspecies(j) = species(j)
@@ -4560,6 +4577,7 @@ subroutine rdtr ! The main input reader
 						an((i - 1) * n0 + j) = rtgrid(d, a)
 					endif
 				endif
+!				stop
 				cnsk(k) = 0	! Solids can't flow!
 				t1sk(k) = 0
 				t2sk(k) = 0
@@ -4713,16 +4731,18 @@ subroutine rdtr ! The main input reader
 						goto 666
 					endif
 					do k = 1, ncpnt
-						if (cdenspecs(i) .eq. cpntnam(k)) then
+!						if (trim(cdenspecs(i)) .eq. trim(cpntnam(k))) then
+						if (trim(cdenspecs(i)) .eq. trim(species(k))) then
+
 							mw_speci(k) = molweights(i)
-							exit
+							goto 273
 						endif
 					enddo
-					goto 273
+					write(ierr, '(a)') 'Error:  Master species "'//trim(cdenspecs(i))//'" in cden not found in comp.'
+					write(ierr,*) ncpnt,(cpntnam(k),k=1,ncpnt)
+					goto 666
 				endif
 			enddo
-			write(ierr, '(a)') 'Error:  Master species "'//trim(cdenspecs(i))//'" in cden not found in comp.'
-			goto 666
 	273		continue
 		enddo
 	endif
@@ -4757,10 +4777,12 @@ subroutine rdtr ! The main input reader
 	nvapprt = 0
 	ncplxprt = 0
 	cplxprt = 0
+! nspecies is number of components
 	do i = 1, nspecies
 		if ((states(i) .eq. 'a') .or. (states(i) .eq. 'h') .or. (states(i) .eq. 'i')) then
 			ncpnt = ncpnt + 1
 			cpntnam(ncpnt) = species(i)
+            if (cpntnam(ncpnt) .eq. cden_spnam) ispcden = i
 			pcpnt(ncpnt) = i
 			if (rxn_flag .eq. 1) then
 				cpntgs(ncpnt) = guesses(i)
@@ -5692,7 +5714,7 @@ subroutine rdtr ! The main input reader
 	if (allocated(solmodels)) deallocate(solmodels)
 	if (allocated(sorpnames)) deallocate(sorpnames)
 	if (allocated(sorpspecs)) deallocate(sorpspecs)
-	if (allocated(species)) deallocate(species)
+!	if (allocated(species)) deallocate(species)
 	if (allocated(spnam)) deallocate(spnam)
 	if (allocated(states)) deallocate(states)
 	if (allocated(stoichiometries)) deallocate(stoichiometries)
