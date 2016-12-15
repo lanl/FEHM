@@ -2,7 +2,7 @@
 ../input/fehmn.grid 
 ../input/fehmn.zone
 fehm_TSPA_base2.out
-..input/gt10wtrise.ini
+../input/gt10wtrise.ini
 
 
 
