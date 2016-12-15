@@ -71,7 +71,7 @@ cntlin.o: comai.o comtable.o comxi.o
 cntlio.o: comai.o comxi.o
 co2_array.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 co2_array.o: comhi.o commeth.o davidi.o
-co2_fugacity.o:  ${SRCDIR}params_eosco2.h
+co2_fugacity.o: ${SRCDIR}params_eosco2.h
 co2_properties.o: comai.o comco2.o comdi.o comrxni.o interpolate.o
 co2ctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 co2ctr.o: comhi.o comii.o comki.o comxi.o davidi.o
@@ -93,7 +93,7 @@ compute_permfactor_vonMises.o: comai.o combi.o comdi.o comfem.o comsi.o
 compute_strains.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 compute_strains.o: comflow.o comgi.o comji.o comsi.o davidi.o
 concadiff.o: comai.o
-concen.o: comai.o combi.o comci.o comdi.o comdti.o comgi.o compart.o
+concen.o: comai.o combi.o comci.o comdi.o comdti.o comgi.o compart.o comrxni.o
 coneq1.o: comai.o combi.o comci.o comco2.o comcouple.o comdi.o comdti.o comei.o
 coneq1.o: comfi.o comflow.o comgi.o comji.o comrxni.o comxi.o davidi.o
 coneq1_ani.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o
@@ -381,7 +381,7 @@ inhist.o: comai.o combi.o comco2.o comdi.o comrlp.o comsi.o comwt.o comxi.o
 inhist.o: comzone.o davidi.o
 inhstz.o: comai.o combi.o comdti.o comzone.o
 inhyco.o: comai.o comdi.o comdti.o comki.o
-initchem.o: comchem.o comdi.o comdti.o comrxni.o
+initchem.o: comchem.o comco2.o comdi.o comdti.o comrxni.o
 initdata2.o: comai.o combi.o comdti.o
 initfc.o: comai.o combi.o comdi.o comdti.o comki.o
 inmentat.o: comai.o combi.o comdti.o
@@ -633,6 +633,7 @@ time_delay.o: comai.o compfrac.o
 tracout.o: comai.o comchem.o comdi.o comxi.o
 tree_search.o: combi.o comsk.o comsptr.o
 tree_search_porosity.o: comdi.o comsk.o
+trxnvars.o: comchem.o
 update_permfactors.o: comai.o combi.o comfem.o comsi.o
 user_ymp.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o comfi.o
 user_ymp.o: comflow.o comhi.o comii.o compart.o
@@ -679,7 +680,7 @@ write_avs_node_v.o: avsio.o comai.o combi.o comdi.o
 write_copyright.o: comai.o
 write_rlp_hyd.o: comai.o commeth.o
 writeio.o: comai.o comxi.o
-wrtcon.o: comai.o combi.o comdi.o comdti.o comgi.o comrxni.o comxi.o
+wrtcon.o: comai.o combi.o comchem.o comdi.o comdti.o comgi.o comrxni.o comxi.o
 wrtout.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o comfi.o
 wrtout.o: comflow.o comgi.o comii.o comwt.o comxi.o davidi.o
 wrtptrk.o: comai.o combi.o comdi.o comdti.o comgi.o compart.o comsk.o comxi.o
