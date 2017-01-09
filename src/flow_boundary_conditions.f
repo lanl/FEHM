@@ -91,6 +91,7 @@ c
       real*8 t_hum,p_hum
 C       real*8 sdum,pdum,denhdum,denehdum
       real*8 denhold,denehold,diffmass,diffener
+      real*8 qa_temp, pf_temp
 c
       if(iboun.eq.0) return
 c
@@ -690,9 +691,9 @@ c air/water/heat (ngas)
             enddo
             do i=1,n
                if(idum(i).ne.0) then
-                  if(ipresa.ne.0.0) then
+                  if(ipresa.ne.0) then
                      if(presa(i).ne.0.0) then
-                        pflowa(i)=-presa(i)
+                        pflowa(i)=presa(i)
                         if(wellim(i).eq.0.0) wellim(i)=sx1(i)*1.d06
                      endif
                   endif
@@ -789,23 +790,30 @@ c air/water/heat (ngas)
 c gaz debug 122515  
             do i=1,n
                if(idum(i).ne.0) then
-                if(ixa.ne.0.or.iqa.ne.0) then
-                   if(qa(i).ne.0.0) then
-                    if(itha.ne.0) then
+                if(iqa.ne.0) then
+                  qa_temp = qa(i)
+                else
+                  qa_temp = 0.0
+                endif
+                if(ipresa.ne.0) then
+                  pf_temp = pflowa(i)
+                else
+                  pf_temp = 0.0
+                endif
+                if(ixa.ne.0.or.iqa.ne.0.or.ipresa.ne.0.or.iha.ne.0) then
+                   if(qa_temp.ne.0.0.or.pf_temp.ne.0.0.or.iha.ne.0) then
                      t_hum = thuma(i) 
-                    else
-                     t_hum = temperature_std
-                    endif
-                    if(ipha.ne.0) then
                      p_hum = phuma(i) 
-                    else
-                     p_hum = pressure_std
-                    endif
-                    if(iha.ne.0) then
+                    if(iha.ne.0.and.huma(i).gt.0.0) then
 c flow humidity has less calls now
                        call flow_humidity_bc(1,t_hum,p_hum,huma(i),
-     &                       xnva(i),entha(i))                        
-                   endif
+     &                       xnva(i),entha(i)) 
+                    else if(abs(huma(i)).gt.0.0) then
+c
+c fixed humidity may need impedance factor (aiped)
+c
+                        if(wellim(i).eq.0.0) wellim(i)=sx1(i)*1.d06
+                    endif
                   endif
                 endif
                endif
@@ -834,8 +842,13 @@ c zero pres indicated by -9999999.0
                            pflow(i)=phini(i)
                         endif
                         if(wellim(i).eq.0.0) wellim(i)=sx1(i)*1.d06
-                        if(satb(i).eq.1.0) esk(i)=1.0
-                        if(satb(i).eq.0.0) esk(i)=-1.000
+                        if(satb(i).ge.1.0) then
+                          esk(i)=1.0
+                        else if(satb(i).le.0.0) then                     
+                         esk(i)=-1.000
+                        else
+                         esk(i)=satb(i)
+                        endif
                         ka(i)=-1
                      endif
                   endif
@@ -843,7 +856,7 @@ c zero pres indicated by -9999999.0
             enddo
             do i=1,n
                if(idum(i).ne.0) then
-                  if(ipresw.ne.0.0) then
+                  if(ipresw.ne.0) then
                      if(presw(i).ne.0.0) then
 c zero pres indicated by -9999999.0
                         if(presw(i).eq.-9999999.0) then
@@ -1000,7 +1013,8 @@ c     set specified air pres when flowing
                   if(isatb.gt.0.0) then
                      if(satb(i).gt.0.0) then
                         esk(i)=satb(i)
-                        pflow(i) = -888.0
+c gaz 010217 like ka = -9                     
+                        if(ipresa.eq.0) pflow(i) = -888.0
                         if(wellim(i).eq.0.0) wellim(i)=sx1(i)*1.d06
                         ka(i)=-1
                      endif
