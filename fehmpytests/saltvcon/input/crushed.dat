@@ -152,10 +152,10 @@ rxn
 1
 1
 ** IDCPNT(IC),CPNTNAM(IC),IFXCONC(IC),CPNTPRT(IC) (comp,name,cond.; NCPNT rows)
-    1     A[aq]    0      0    1.e-9
+    1     1    0      0    1.e-9
 ** IDCPLX(IX), CPLXNAM(IX),CPLXPRT(IX) (ID # and name of complex, NCPLX rows)
 ** IDIMM(IM), IMMNAM(IM),IMMPRT(IM)(ID # and name of immobile spec, NIMM rows)
-    1  A[s]    0
+    1  2    0
 ** IDVAP(IV), VAPNAM(IM),VAPPRT(IV) (ID # and name of vapor species, NVAP rows)
 ** skip nodes? **
 0   -1
