@@ -83,8 +83,8 @@ c check is user wants to read macro data from alternative data file
 
          read(inputnum, '(a200)', err = 10) locfilename
          
-         if (iout .ne. 0) write(iout, 200) macro, locfilename      
-         if (iptty .gt. 0) write(iptty, 200) macro, locfilename
+         if (iout .ne. 0) write(iout, 100) macro, locfilename      
+         if (iptty .gt. 0) write(iptty, 100) macro, locfilename
  100     format (1x, a4, ' read from optional input file: ', a200)
 
 * Make sure file exists
@@ -93,7 +93,7 @@ c check is user wants to read macro data from alternative data file
             write (ierr, 200) locfilename
             if (iptty .gt. 0) write (iptty, 200) locfilename
             goto 30
- 200        format ('ERROR nonexistant file', a100)
+ 200        format ('ERROR nonexistant file', a200)
          end if
 
          open(iocntl, file = locfilename, err = 20)
