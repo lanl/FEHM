@@ -100,6 +100,7 @@
 !PS
 !***********************************************************************
 
+                logical strong
       real*8, allocatable ::  denco2i(:)
       real*8, allocatable ::  denco2h(:)
       real*8, allocatable ::  deneco2i(:)
@@ -175,6 +176,7 @@ c      real*8, allocatable ::  deqxc(:)
       real*8, allocatable ::  dqhyc(:)
 c      real*8, allocatable ::  dqhxc(:)
 
+
       real*8, allocatable :: rl_l(:)
       real*8, allocatable :: drl_lw(:)
       real*8, allocatable :: drl_lg(:)
@@ -249,6 +251,7 @@ c      real*8, allocatable :: yoa(:)
 
 	real*8, allocatable :: strd_arr(:)
 
+      real*8, allocatable :: rate(:)
       real*8  amco20,aeco20,amco2,aeco2
       real*8  qco2_in,qeco2_in,balco2,baleco2
       real*8  qco2,qeco2,qco2ts,qeco2ts
@@ -262,7 +265,7 @@ c     real*8  aihyd
       real*8  phi_vap_lmt
       parameter (phi_vap_lmt = 1.d-5)
 
-      integer idof_co2,ibrine, iprtype, ico2sol, icarb
+      integer idof_co2,ibrine, iprtype, ico2sol, icarb, carbon_tracer
       integer ico2diff_flg, ico2prop_flg, iwatdis
 c impes-like flow terms  
       integer imped_ex    
@@ -293,8 +296,6 @@ c impes-like flow terms
       real*8 xs, dxsw, dxsg, denwfw, denwfg, s1, s2, ds1dw, ds1dg
 c new variables
       real*8 enx,denxp,denxe,denxyc,denxya, vis_tol, xtol
-c gaz debug 011014 roc0 now in comai
-c      real*8 pvap_h2o,pvap_co2,pcl0,roc0,drow_vp,denv_vapt
       real*8 pvap_h2o,pvap_co2,pcl0,drow_vp,denv_vapt
       real*8 dxwat_vap,drov_co2p
       real*8 dxco2p,env_h2o,env_co2,denv_co2p,denv_co2t

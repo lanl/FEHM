@@ -1249,6 +1249,8 @@ c check for file keyword, and read past filename if present
             backspace locunitnum
          endif
          read (locunitnum, *) nspeci
+          if(.not.allocated(species)) allocate (species(nspeci))
+          species=' '
          trac_flag=1
          read(locunitnum,'(a4)') dumstring
          if (dumstring(1:4).eq.'ldsp') then

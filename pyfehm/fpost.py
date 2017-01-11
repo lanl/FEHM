@@ -240,6 +240,7 @@ if True: 					# output variable dictionaries defined in here, indented for code 
 	('co2mt','mass_co2'),
 	('co2sg','saturation_co2g'),
 	('co2sl','saturation_co2l'),
+	('head','head'),
 	])
 	
 	flxz_water_names = [

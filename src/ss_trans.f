@@ -278,7 +278,7 @@ C**********************************************************************
       use comdti
       use comai
       use comchem, only: ncpnt,cpntnam,co2_couple,pcpnt
-      use comco2,only: yc,icarb,wat_prop
+      use comco2,only: yc,icarb,wat_prop,carbon_tracer,rate
       use compart
       use davidi
       implicit none
@@ -290,12 +290,12 @@ C**********************************************************************
       real*8 srmimv
       real*8 conc_subst
       real*8 drc_subst
-      real*8 fac
+      real*8 fac,crit
       real*8 rc_ss
       real*8 drc_ss
       real*8 h_const
       real*8 dvap_conc
-      real*8 disco2_flow
+      real*8 disco2_flow, mass_rock
       mi=i+npn
       mim = mi - npn
       rcss(mi) = 0.
@@ -484,34 +484,26 @@ c   ENDIF
 c
          end if
 c CO2 FLOW SOLUTION COUPLING          
-               if(icarb.eq.1.and.co2_couple.eq.1)then
-c loop over aqueus components
-c                 do ic = 1,ncpnt
-c	              mi = in+(pcpnt(ic)-1)*n0
+               if(carbon_tracer.eq.nsp)then
 c check that we want couple co2 flow solubility to the trac macro
-		          if (cpntnam(nsp).eq.'H2CO3')then
 c convert mass fraction to moles/kg water 
 c this was original (Hari)
-	                  disco2_flow = (yc(i)/(1-yc(i)))/0.044 
-c assume density of pure water = 1000.  this should be made more general 
-c       disco2_flow = yc(i)*wat_prop(i)/0.044/1000.
-c        disco2_flow = yc(i)/.044
-	         if(disco2_flow.gt.1.e-5.and.disco2_flow.gt.anl(mi)) then
+                  disco2_flow = (yc(i)/(1-yc(i)))/0.044 
+			  
+c	         if(disco2_flow.gt.1.e-5.and.disco2_flow.gt.anl(mi)) then
+ 	          if(disco2_flow.gt.1.e-5) then	  
+
                   if (irdof .ne. 13 .or. ifree .ne. 0) then
                      fac=(sx1(mim)*ps_trac(mim)*s(mim)*denr(mim))/dtotc
                   else
                      fac=(sx1(mim)*ps_trac(mim)*denr(mim))/dtotc
                   end if	                  
                           fac=fac*max(1,month)*1e6
-c              disco2_flow=1e-3
-c        rcss(mi) = rcss(mi) + fac*(anl(mi) - (disco2_flow+anl(mi)) ) 
-c        rc_ss = rc_ss + fac* (anl(mi) - (disco2_flow+anl(mi)) )
 
         rcss(mi) = rcss(mi) + fac*(anl(mi) - (disco2_flow) ) 
        rc_ss = rc_ss + fac* (anl(mi) - (disco2_flow) )
 
                   drc_ss = fac             
-                         endif
 c                end do
                 endif
                 endif                     

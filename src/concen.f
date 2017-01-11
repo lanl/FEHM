@@ -296,6 +296,7 @@ c
       use compart
       use comdti
       use comai
+	use comrxni, only : cden_flag
       implicit none
       
       integer iz, hmon, lstep, i , i2
@@ -342,7 +343,7 @@ c hmon is 1 if heat and mass solution is active
          else if ( iz .eq. 5 )  then
             call  contrc
          else if ( iz .eq. 6 )  then
-          if(cden) then
+          if(cden.and.cden_flag.eq.0) then
            do i = 1,neq
             i2 = i + (ispcden - 1)*n0
             anl(i2) = anlo(i2)

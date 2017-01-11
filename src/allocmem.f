@@ -582,7 +582,7 @@ c     ***** COMMON Block fbs *****men
 c     ***** COMMON Block place *****
       allocate(pcpnt(ncpnt),pimm(nimm),pvap(nvap))
 c     ***** COMMON Block print_flag *****
-      allocate(cpntprt(ncpnt),cplxprt(101:ncplx+100))
+      allocate(cpntprt(ncpnt+nimm),cplxprt(101:ncplx+100))
       allocate(immprt(nimm),vapprt(nvap))
 c     ***** COMMON Block chem_name *****
       allocate(cpntnam(ncpnt),cplxnam(101:ncplx+100))

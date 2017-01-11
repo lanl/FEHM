@@ -194,7 +194,7 @@ C**********************************************************************
       use comai
       use combi
       use comchem
-      use comco2, only : icarb
+      use comco2, only : icarb,carbon_tracer
       use comcouple
       use comdi
       use comdti
@@ -259,6 +259,16 @@ c Identification numbers and names of components
       do ic=1,ncpnt
          read(inpt,*) junk,cpntnam(ic),ifxconc(ic),cpntprt(ic),
      2        cpntgs(ic)
+     	species(ic)=cpntnam(ic)
+ 	 if(cpntnam(ic).eq.'H2CO3') then
+ 		carbon_tracer=ic
+           if (iout .ne. 0) write(iout,*) 'coupling with species# ',ic
+           if (iptty .ne. 0) write(iptty,*) 'coupling with species# ',ic
+ 	 endif
+ 	if(cpntnam(ic).eq.'H'.or.cpntnam(ic).eq.'H+') then
+ 		ph_species=ic
+ 	endif
+
       enddo
       
 c Identification numbers and names of complexes
@@ -271,6 +281,7 @@ c Identification numbers and names of immobile species
       read(inpt,*)
       do im=1,nimm
          read(inpt,*) junk,immnam(im),immprt(im)
+         species(ncpnt+im)=immnam(im)
       enddo
 c Identification numbers and names of vapor species
       read(inpt,*)
