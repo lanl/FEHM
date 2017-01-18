@@ -1142,7 +1142,7 @@ c     call EOS routines water
          elseif(iflg.eq.-4) then
 c     first ckeck for temperature-specified source terms
 c     need to comment out call in main routine for water if meth is activated
-            if(iad.eq.0) then
+c           if(iad.eq.0) then
 c     only for first iteration
                do ii=1,neq
                   ij=ii+ndummy
@@ -1223,7 +1223,7 @@ c     calculate phase-change pressure and dp/dt
                      endif
                   endif
                enddo
-            endif                
+c           endif                
          elseif(iflg.eq.4) then
 c     call equation generation and load jacobian array
             
