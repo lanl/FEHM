@@ -2963,6 +2963,8 @@ c ********** fluid source term code end *****************
 c
 c add heat source term
 c
+         
+      htc = 0.0
       if(qflux(mi).ne.0.0.or.t_hum.ne.0.0) then
       if(qflxm(mi).gt.0.0) then
        tbound = qflux(mi)
@@ -2971,6 +2973,7 @@ c
        tbound = t_hum
        htc = abs(wellim(mi))
       endif
+      
       if(htc.gt.0.0) then
        hflux=htc*(tl-tbound)
        if(ieosd.ne.2) then
