@@ -1965,7 +1965,7 @@ CPS   IF species is Henrys
 
 cHari 3/26/08
  
-         if (abs(icns(irxn)).eq.2) then
+         if (abs(icns(par)).eq.2) then
            stemp = min(strac_max,s(in))               
            h_correct = ( anv(mi)*rovf(in)*(1-stemp) 
      2                  +anl(mi)*rolf(in)*(stemp) )
