@@ -22,14 +22,15 @@
 	implicit none
 
 	real*8 s,r1,r2,r,dr,d
-	r=0;dr=0.
+! r1 is smin; r2 is smax
+	r=0.;dr=0.
 	if(s.ge.r1) then
 	   r=1.0
 	   dr=0.
-	   if(s.lt.r2) then
+	   if(s.le.r2) then
 	      d=r2-r1
 	      r=(s-r1)/d
-	      dr=1/d
+	      dr=1.0/d
 	   endif
 	endif
 
