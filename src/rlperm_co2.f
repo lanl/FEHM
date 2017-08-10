@@ -207,7 +207,7 @@ c sl2 is maximum liquid saturation
                tol_l=0.
                tol_u=1.
 c rel perm calculations for water and single-phase CO2
-               call vgrlps(iflg, sw, s_star, alpha, beta, sl1, sl2, rp5,
+               call vgrlps(iflg, sw, sl1,sl2, rp3, rp5,
      2              rp6, rl,drls, rv, drvs )
                prop1=rl
                dprop11=drls
@@ -254,6 +254,9 @@ c these are flexible
                smcut=rp5;sucut=1.0-rp6
                call vgcap_ek	( sw, slr, smr,alpha, beta,smcut, 
      2              sucut,hp, dhp)
+      
+     
+     
                prop1=hp
                dprop11=dhp
                dprop12=0.d0
@@ -452,7 +455,7 @@ c     dprop31 = -rp10*((sg-rp8)**(rp10-1))/((1-rp8)**rp10)
                      endif
                   endif
 c     modify prop2 using the default 3-phase formulation in Eclipse
-                  if(irpd.eq.17) then
+                 if(irpd.eq.17) then
                      prop2 = sl
                      dprop21 = -1.d0
                      dprop22 = -1.d0
@@ -463,6 +466,9 @@ c     modify prop2 using the default 3-phase formulation in Eclipse
                   endif
                endif
             endif
+*** end of model 18 or not ****************
+
+
          else
 c     capillary pressures
 c     rp11 exponent for co2(g/l/sc)-water capillary pressures
