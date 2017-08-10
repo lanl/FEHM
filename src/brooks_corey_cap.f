@@ -19,21 +19,17 @@
 !D1 calculate Brooks-Corey capillary pressure
 ! 2-phase 
 ! input:  s is wetting phase saturation
-!         p1 is residual wetting phase saturation!        
-!         p2 is max wetting phase saturation (only used for cap calc.)
-!         cut1,cut2 are cutoff parameters (only used for cap calc.)
+!         p1 is residual wetting phase saturation        
+!         p2 is max wetting phase saturation 
+!         cut1,cut2 are cutoff parameters 
 !  cut2 is saturation value; if s > cut2; brooks-corey, otherwise, linear
 !  cut1 is only used for s < cut2 calculations
 !  cp at s=0 will be cut1*cp(at s=cut2)
 !
-!         cmax = entry pressure (only used for cap calc.)
+!         cmax = entry pressure 
 !         lambda (Li and Horne, 2006) 
-! output: prop1 is rel perm (wetting phase saturation)
-!		dprop11 is dr/ds
-!		dprop12 is dr/ds(gas)
-!	    prop2 is rel perm (non-wetting phase saturation)
-!		dprop21 is dr/ds
-!		dprop22 is dr/ds(gas)
+! output: prop1 is cap pressure
+!		dprop11 is dcp/ds
 !***********************************************************************
 
 c      use comdi
@@ -88,12 +84,15 @@ c     linear fit from saturation curve
 c     a multiple of value of
             fac_use=max(cut1,fac_min)
             hmax=hcut*cut1
+c           write(45,*) 'fac_use',hcut,cut1
          else
 c     linear fit from saturation curve
             ds=1.d0/(lambda-p1)
             dhp=cmax*(-1.d0/lambda)*
      $           smcutm**((-lambda-1.d0)/lambda)*ds
             hmax=hcut-dhp*smcutm
+c           write(45,*) 'linear fit',ds,dhp,hmax
+            
          endif
          prop1=hmax
          dprop11=0.d0
