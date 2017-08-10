@@ -22,12 +22,12 @@
       
       use comai, only : form_flag, idpdp, ierr, neq, nrlp, wdd
       use comrlp, only : ishisrlp, rlpnew, delta_sat, num_sat, sat_out,
-     &     rlp_type, rlp_fparam
+     &     rlp_type2, rlp_fparam,max_rp,max_cp,cap_param
       use comci, only : rlf, rvf
       use comdi, only : ieos, irlp, pcp, s, icap, irlpt
 
       implicit none
-      integer i, j, ndummy, neqtemp
+      integer i, j, ndummy, neqtemp,mm
       integer, allocatable :: ieostemp(:)
       integer, allocatable :: irlptemp(:)
       integer, allocatable :: icaptemp(:)
@@ -35,10 +35,9 @@
       real*8, allocatable  :: pcptemp(:)
       real*8, allocatable  :: rlftemp(:)
       real*8, allocatable  :: rvftemp(:)
-      logical :: vg_model = .false.
+      logical :: frac_model = .false.
       character*100 form_string, title_string
-      
-      neqtemp = neq
+      neqtemp = neq      
       if (idpdp .ne. 0) then
          allocate (stemp(2*neq), ieostemp(2*neq), irlptemp(2*neq))
          allocate (pcptemp(2*neq), rlftemp(2*neq), rvftemp(2*neq))
@@ -77,6 +76,7 @@
          end if
       end do
       
+c form_flag = 1 tecplot; 2 csv or sur      
       title_string = "Relative permeability and " //
      &     "Capillary pressure"
       if (form_flag .eq. 1) then
@@ -98,7 +98,7 @@ c tecplot style
       end if
          
       do j = 1, nrlp
-	write(ishisrlp,'(a8,1x,i6)')  'Model ',j
+	 	 if (form_flag .ne. 1) write(ishisrlp,'(a8,1x,i6)')  'Model ',j
          do i = 1, neq
             irlp(i) = j
             icap(i) = j
@@ -111,42 +111,43 @@ c tecplot style
             write (ishisrlp, 240) j
          else if (form_flag .eq. 2) then
          else
-         end if              
+         end if  
+c calculate relperms and cap pressure for each saturation value                     
          if (rlpnew) then
             call rlp_cap(0)
-            if (rlp_type(j,1) .eq. 6 .or. rlp_type(j,1) .eq. 7) then
-               if (rlp_fparam(j, 7) .ne. 0.) vg_model = .true.
-            end if
-            if (idpdp .ne. 0 .and. vg_model) call rlp_cap(neq)
+c          ! its a vg model with fractures
+            if (idpdp .ne. 0 .and. rlp_fparam(j, 1) .ge. 0.) 
+     &         frac_model = .true.  
+            if (frac_model) call rlp_cap(neq)
          else
             call rlperm(0,1)
             call cappr(1,0)
             if (abs(irlpt(j)) .eq. 4 .or. irlpt(j) .eq. 6 .or. 
      &           irlpt(j) .eq.7) then
 c     This is a Van Genuchten fracture model
-               vg_model = .true.
+               frac_model = .true.
             end if
-            if (idpdp .ne. 0 .and. vg_model) then
+            if (idpdp .ne. 0 .and. frac_model) then
                call rlperm(neq,1)
                call cappr(1,neq)
             end if 
          end if
+c output values         
+! fracture   
+		if(frac_model) write (ishisrlp,*) 'Fracture nodes:'      
          do i = 1, neq
             write (ishisrlp, '(4(g16.9, 1x))') s(i), rlf(i), rvf(i),
      &           pcp(i)
          end do
-         if (idpdp .ne. 0 .and. vg_model) then
-            if (form_flag .eq. 1) then
-               write (ishisrlp, 245) j
-            else if (form_flag .eq. 2) then
-            else
-            end if              
+! Matrix         
+        if (frac_model) then
+		write (ishisrlp,*) 'Matrix nodes:'
+
             do i = neq + 1, 2*neq
                write (ishisrlp, '(4(g16.9, 1x))') s(i), rlf(i), rvf(i),
      &              pcp(i)
             end do
-            vg_model = .false.
-         end if
+        end if
       end do
 
       s = stemp
@@ -161,10 +162,8 @@ c     This is a Van Genuchten fracture model
       deallocate (stemp, ieostemp, irlptemp,  icaptemp,  
      &     pcptemp, rlftemp, rvftemp)
       close (ishisrlp)
-
  230  format ("text X=", f4.1, " Y=", f4.1, " AN=center T=", '"',
      &     a, '"')
  240  format ('zone t = "model ', i4, '"')
  245  format ('zone t = "model ', i4, ' matrix"')
-
       end subroutine check_rlp
