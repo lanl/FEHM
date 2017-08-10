@@ -19,32 +19,42 @@
 !D1 and derivatives.
 !D1
 !***********************************************************************
+! input:  it (model # in rlpm), k (phase couple), sw (wetting phase saturation), itbl: which table in input deck
+! iparam (which parameter in table.  two phase:  1&2 are relperms, 3 is cap.  three phase:  1,2,3 are rel perms, 4 is cap
+! cp (result), dpcp (derivative of result)
+!
+
+!       call rlp_cap_table (it,k,ss, itbl, irf, rl_w, drl_ww)
+ 
 
       use comrlp
       implicit none
 
-      integer i, itbl, i1, i2, iparam
+      integer i, itbl, i1, i2, iparam,it,k
       real*8 sw, cp, dpcp
-
-      i1 = tblindx(itbl , 1)
-      i2 = tblindx(itbl , 2)
+!		itbl=rlp_pos(it,k)
+      i1 = tblindx(itbl , 1)   ! first line of table
+      i2 = tblindx(itbl , 2)   ! last line of table
 
       do i = i1, i2 - 1
          if (sw .le. rlp_table(i, 1) .and. i .eq. i1) then
             cp = rlp_table(i1, iparam)
             dpcp = 0.
+
             return
          else if (sw .ge. rlp_table(i + 1, 1) .and. i + 1 .eq. i2) then
             cp = rlp_table(i2, iparam)
             dpcp = 0.
+
             return
          else if (sw .ge. rlp_table(i, 1) .and. 
      &           sw .lt. rlp_table(i + 1, 1)) then
             dpcp = (rlp_table(i + 1, iparam) - rlp_table(i, iparam)) /
      &           (rlp_table(i + 1, 1) - rlp_table(i, 1))
             cp = rlp_table(i, iparam) + dpcp * (sw - rlp_table(i, 1))
+
             return
          end if
       end do
-
+		write(*,'(2(i3,1x,e10.3))') itbl,sw,iparam,cp
       end subroutine rlp_cap_table
