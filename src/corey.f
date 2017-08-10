@@ -24,6 +24,7 @@
 c     this is the formulation in Gaz's original rlperm.f (geothermal)
 c     and in the models and methods document
 c     and in Preuss(2002)
+c     rp1 and rp2 are both residual saturations
 
       rl = 0.0
       rv = 0.0
