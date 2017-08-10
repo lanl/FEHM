@@ -1,4 +1,4 @@
-      subroutine exponential(s,p1,p2,p3,r,dr)
+      subroutine exponential(s,p1,p2,p3,p4,r,dr,rn,drn)
 !***********************************************************************
 ! Copyright 2009 Los Alamos National Security, LLC  All rights reserved
 ! Unless otherwise indicated,  this information has been authored by an 
@@ -17,20 +17,35 @@
 !D1
 !D1 Exponential relative permeability and capillary pressure model.
 !D1
-!***********************************************************************c     input:  s saturation
-c         p1 residual sat
-c         p2 max sat
-c         p3 = exponent
-c     return:  r and its derivatives (dr1,dr2)
+!***********************************************************************
+c     input:  s saturation of wetting phase
+c     p1 residual sat of wetting phase
+c     p2 max sat of wetting phase
+c     p3 = exponent
+c     p4 = multiplier
+c     return:  r (wetting phase), rn (non-wetting phase), and derivatives 
+c     with respect to wetting phase 
        
       implicit none
-      real*8 s,p1,p2,p3,r,dr,star
-      star=(s-p1)/(p2-p1)
-      r= star**p3
-      dr = p3*star**(p3-1.0)/(p2-p1)
-c     if((s-p1).eq.0.d0) dr=0.d0
-      if((s-p1).le.0.d0) dr=0.d0
-      if((s-p1).le.0.d0) r=0.d0
+      real*8 s,p1,p2,p3,r,dr,star,p4,rn,drn
+      r=0;dr=0
+      if(s.ge.p1.and.s.le.p2) then
+         star=(s-p1)/(p2-p1)
+         r= p4*star**p3
+         dr = p4*p3*star**(p3-1.0)/(p2-p1)
+	 rn=p4*(1.-star)**p3
+         drn= -1.*p4*p3*(1.-star)**(p3-1.0)/(p2-p1)
+      elseif (s.gt.p2) then
+         r=1.
+         dr=0
+         rn=0.
+         drn=0.
+      elseif (s.lt.p1) then
+         r=0
+         dr=0
+         rn=1.
+         drn=0.
+      endif
       
       end subroutine exponential
 
