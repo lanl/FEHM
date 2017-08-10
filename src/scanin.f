@@ -302,7 +302,8 @@ C***********************************************************************
       use comdti
       use compart
       use comriv
-      use comrlp, only : rlpnew, ntable, ntblines
+      use comrlp, only: rlpnew, ntable, ntblines,nphases,rlp_phase,
+     +	rlp_group
       use comrxni
       use comsi
       use comsk
@@ -342,11 +343,14 @@ C***********************************************************************
       integer, allocatable :: itemporary(:)
       integer idum1, idum2, ilines, i
       integer icount, tprp_num
-      integer jjj, isimnum, realization_num
+      integer jjj, isimnum, realization_num,maxrp
       logical nulldum, found_end
 
       real*8 rflag
-
+        maxrp = 30
+        if(.not.allocated (rlp_phase)) then
+         allocate (rlp_phase(20, maxrp),rlp_group(20))
+        endif
 c**** read startup parameters ****
       rewind inpt
       iccen = 0
@@ -676,6 +680,12 @@ c    temma add 2005/11/07
                read(locunitnum,*) idumm,(adumm,ja=1,12)
             elseif(idumm.eq.17) then
                read(locunitnum,*) idumm,(adumm,ja=1,14)
+        nphases(nrlp)=3
+        rlp_phase(nrlp,1)=20
+        rlp_phase(nrlp,2)=21
+        rlp_phase(nrlp,3)=22
+        rlp_group(nrlp)=nrlp
+
             elseif(idumm.eq.18) then
                 read(locunitnum,*) idumm,(adumm,ja=1,14)
             elseif(idumm.eq.19) then
@@ -744,19 +754,18 @@ c Don't count header lines (header lines should start with a character)
                      if (msg(1) .ne. 3) ntblines = ntblines + 1
                   end do
  24               close (idum)
-               else
+               else                 
                   backspace (locunitnum)
                   do
                      read (locunitnum, '(a80)') dumstring
                      if (null_new(dumstring) .or.  dumstring(1:3) .eq. 
      &                    'end' .or. dumstring(1:3) .eq. 'END') exit
-                     ntblines = ntblines + 1
+                     ntblines = ntblines + 1                   
                   end do
                end if
             end if
          end do
          call done_macro(locunitnum)
-
       else if (macro.eq.'boun') then
 c     find number of boun models 
 c     
@@ -846,7 +855,7 @@ c            backspace locunitnum
             itempb2=1
          else if(wdd1(1:2).eq.'ts') then
             its=1
-         else if(wdd1(1:2).eq.'t ') then
+         else if(wdd1(1:2).eq.'t') then
             itempb=1
          else if(wdd1(1:2).eq.'hd') then
             itempb=1
@@ -2428,7 +2437,7 @@ c     Check that no solid species are used without reaction
             stop
         end if
       end if 
-      
+
       return
 
  50   write (ierr, 55) 'STOP'
