@@ -1,4 +1,4 @@
-      subroutine brooks_corey_rlp3(sw, sl, rp1, rp3, rp7, prop2,
+      subroutine brooks_corey_rlp3(sw, sl, rp1, rp7, rp3, prop2,
      &     dprop21, dprop22, prop3, dprop31, dprop32)
 !***********************************************************************
 ! Copyright 2009 Los Alamos National Security, LLC  All rights reserved
