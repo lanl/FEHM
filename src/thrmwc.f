@@ -1523,6 +1523,7 @@ c
 c      call cappr(1,ndummy)
       if (.not. rlpnew) call cappr(1,ndummy)
 c
+		if(rlpnew) call rlp_cap(ndummy)
 
        do 100 mid=1,neq
          mi=mid+ndummy
