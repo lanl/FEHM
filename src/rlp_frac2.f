@@ -1,4 +1,4 @@
-      subroutine rlp_frac2(iflg,i,sl,star,rl,drls,rv,drvs,rp24)
+      subroutine rlp_frac2(iflg,i,sl,rl,drls,rv,drvs,rp24)
 !***********************************************************************
 !  Copyright, 2004,  The  Regents  of the  University of California.
 !  This program was prepared by the Regents of the University of 
