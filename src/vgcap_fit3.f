@@ -1,5 +1,23 @@
       subroutine vgcap_fit3(iflg,slr,slm,slcut,smcut,fac,alpha
      &                     ,alamda,c1,c2,c3,c4,hmin)
+!*************************************************************************
+! Copyright  2015.   Los Alamos National Security, LLC.  This material was
+! produced under U.S. Government contract DE-AC52-06NA25396 for Los Alamos
+! National  Laboratory  (LANL),  which is operated by  Los Alamos National
+! Security, LLC  for the U. S. Department of Energy.  The U. S. Government
+! has rights to use, reproduce, and distribute this software.  Neither the
+! U. S. Government nor Los Alamos National Security, LLC or persons acting
+! on their behalf,  make any warranty,  express or implied, or assumes any
+! liability for the accuracy, completeness, or usefulness of the software,
+! any information pertaining to the software,  or  represents that its use
+! would not infringe privately owned rights.
+
+! The  software  being licensed  may  be Export Controlled.  It may not be
+! distributed  or  used by individuals  or entities prohibited from having
+! access to the software package, pursuant to United States export control
+! laws and regulations. An export control review and determination must be
+! completed before LANS will provide access to the identified Software.
+!*************************************************************************
 
       implicit none
 
@@ -8,7 +26,7 @@
       real*8 hmax,hmin,hcut,smcut,alpi,ds,dhp,slope
       real*8 fac,fac_min,fac_use,hcut2,smcut2,ancut
       parameter(fac_min=2.0,ncut = 1)
-
+		c1=0.;c2=0.;c3=0.;c4=0.
       if(iflg.eq.0) then
        if(fac.eq.0.0) then
 c zero slope, zero curvature at sl=0
@@ -36,6 +54,7 @@ c with hmax=fac*hcut
        		slope=-(hmax-hcut)/slcut
        		c3=slope
        		c4=hmax
+
        else 
 c linear fit from slcut to sl=0.0
 c with hmax: linear extension of slope at slcut
