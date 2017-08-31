@@ -1,4 +1,22 @@
       subroutine inrlp
+!*************************************************************************
+! Copyright  2015.   Los Alamos National Security, LLC.  This material was
+! produced under U.S. Government contract DE-AC52-06NA25396 for Los Alamos
+! National  Laboratory  (LANL),  which is operated by  Los Alamos National
+! Security, LLC  for the U. S. Department of Energy.  The U. S. Government
+! has rights to use, reproduce, and distribute this software.  Neither the
+! U. S. Government nor Los Alamos National Security, LLC or persons acting
+! on their behalf,  make any warranty,  express or implied, or assumes any
+! liability for the accuracy, completeness, or usefulness of the software,
+! any information pertaining to the software,  or  represents that its use
+! would not infringe privately owned rights.
+
+! The  software  being licensed  may  be Export Controlled.  It may not be
+! distributed  or  used by individuals  or entities prohibited from having
+! access to the software package, pursuant to United States export control
+! laws and regulations. An export control review and determination must be
+! completed before LANS will provide access to the identified Software.
+!*************************************************************************
 !
       use comai
       use comco2, only : icarb
@@ -16,10 +34,11 @@
       integer i, it, j, j2, jt, k, k2, maxphase, maxcpl, ndx, nparams,mm
       integer table_unit, open_file, cn, tblnum, ip, ip2, couple,mi,ir,kf
       integer nwds, imsg(20), msg(20),ij,kl,water,ic,ictype(3),nrlp_phases
+      integer flag
       integer, allocatable :: irlptmp(:)
       real*8, allocatable :: xfptmp(:), yfptmp(:), zfptmp(:)
       real*8 xmsg(20),su_cut,smcutf,slcut,hmin,alamdam,alpha,alpham,alamda
-      real*8 scutm, smcut,smax,alambda,amladam,beta,fac,facf,smcutm
+      real*8 scutm, smcut,smax,alambda,amladam,beta,fac,facf,smcutm,d1
       parameter(scutm = 1.d-03, maxphase = 30, maxcpl = 30)
       parameter(hmin = 1.d-8)
       parameter(su_cut = 0.99d00)
@@ -151,16 +170,16 @@
             cycle
 !     now we are inside the group, and the choices are rlp, table, or cap   
 !*****************TABLE ***********************************************      
-         case ('table', 'TABLE')
+         case ('table', 'TABLE')  ! expecting 'table table_index phase_couple'
             j=j+1   ! always increment rlp number
             k2=k2+1  ! always increment cap number
-            if (nwds .lt. 3) write(ierr, 60) 2, cmsg(2), rlp_group(i)  ! expect at least table# phase_couple
+            if (nwds .lt. 2) write(ierr, 60) 1, cmsg(2), rlp_group(i)  ! expect at least phase_couple
 			nparams=4            
             tblnum = imsg(2) ! first param is table index  ; not sure this is used    
-            if(nwds==6) then   ! older style input
+            if(nwds==6) then   ! older style input; ignore all parameters except last (phase couple)
             couple=ic(cmsg(6), ictype)
 			else
-            couple=ic(cmsg(3), ictype)  ! couple will be >20; ictype will include each phase            
+            couple=ic(cmsg(2), ictype)  ! couple will be >20; ictype will include each phase            
             endif
 !     increment table index            
             it = it + 1
@@ -214,8 +233,7 @@
 !     Input is terminated with a blank line or 'end' or end-of-file)
                if (null_new(chdum) .or. chdum(1:3) .eq. 'end') exit
                ndx = ndx + 1
-               read (chdum, *) (rlp_table(ndx,cn), cn = 1, nparams)
-!               write(*,'(6e10.3)') (rlp_table(ndx,cn), cn = 1, nparams)
+               read (chdum, *) (rlp_table(ndx,cn), cn = 1, nparams)  ! read 4 parameters on each line
 !     Capillary pressure is put into position 5
                 rlp_table(ndx,5) = rlp_table(ndx,nparams)
             end do
@@ -225,8 +243,9 @@
             cmsg(2) = 'tabular'
 !     End of case 'tabular'
          case ('rlp', 'RLP')
+         write(*,*) 'blah 228 ',cmsg(3)
          if(cmsg(3).ne.'same') then
-  
+  		 write(*,*) 'not same'
 !     **************** REL PERMS ******************************
 ! increment rlp index           
             nrlp_phases = nrlp_phases+1
@@ -359,6 +378,7 @@
                stop
             end select
 		 else
+		 	write(*,*) 'about to err'
 		 	write(ierr,20) 'option "same" is obselete and is ignored'
 		 endif
             
@@ -432,7 +452,8 @@
             		allocate (vg1(nrlp,22),vg2(nrlp,22),vg3(nrlp,22),vg4(nrlp,22))
             		allocate (cp1(nrlp,22),cp2(nrlp,22))
          		end if
-                  call vgcap_fit3(0,cap_param(i, k + 1),cap_param(i, k + 2),slcut,smcutm,fac,  &
+         			flag=0
+                  call vgcap_fit3(flag,cap_param(i, k + 1),cap_param(i, k + 2),slcut,smcutm,fac,  &
                       alpha,alamda,vg1(i,k2),vg2(i,k2),vg3(i,k2),vg4(i,k2)  &
                       ,hmin)
                      
@@ -440,8 +461,9 @@
                cap_param(i, k + 6) = smcutm
 !     get fit at saturated end(star=su_cut)
                slcut = su_cut*(cap_param(i, k + 2)-cap_param(i, k + 1)) + cap_param(i, k + 1)
-               call vgcap_fit3(4,cap_param(i, k + 1),cap_param(i, k + 2),slcut,su_cut ,fac,alpha  &
-                   ,alamda, 0.0d0, 0.0d0, cp1(i,k2),cp2(i,k2),hmin)
+               flag=4;d1=0.
+               call vgcap_fit3(flag,cap_param(i, k + 1),cap_param(i, k + 2),slcut,su_cut ,fac,alpha  &
+                   ,alamda, d1,d1, cp1(i,k2),cp2(i,k2),hmin)
                read (inpt, '(a80)') chdum
                if (null1(chdum) .or. chdum(1:3) .eq. 'end' .or.    &
                 chdum(1:3) .eq. 'END') exit
@@ -486,8 +508,11 @@
                   cap_fparam(i, k + 6) = smcutf
 !     get fit at saturated end(star=su_cut)
                   slcut = su_cut*(cap_fparam(i, k + 2)-cap_fparam(i, k + 1)) + cap_fparam(i, k + 1)
-                  call vgcap_fit3(4,cap_param(i, k + 1),cap_param(i, k + 2),slcut,su_cut,fac   &
-                       ,alpha,alamda,0.0d0,0.0d0,cp1f(i,k2),cp2f(i,k2),hmin)
+!                 call vgcap_fit3(4,cap_param(i, k + 1),cap_param(i, k + 2),slcut,su_cut,fac   &
+!                      ,alpha,alamda,0.0d0,0.0d0,cp1f(i,k2),cp2f(i,k2),hmin)
+                flag=4;d1=0.
+                  call vgcap_fit3(flag,cap_param(i, k + 1),cap_param(i, k + 2),slcut,su_cut,fac   &
+                       ,alpha,alamda,d1,d1,cp1f(i,k2),cp2f(i,k2),hmin)
  
                  else
                   backspace inpt
