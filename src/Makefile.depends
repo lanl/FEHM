@@ -51,6 +51,7 @@ calculate_cdf.o: comai.o comdti.o comsk.o
 calculate_ret.o: comai.o comdti.o comsk.o
 cappr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 cappr.o: comii.o comki.o comwt.o
+cappr2.o: comai.o comco2.o comdi.o comrlp.o
 cappr_hyd.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 cappr_hyd.o: comii.o comki.o commeth.o
 cascade_sat.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
@@ -60,7 +61,7 @@ cell_time.o: comdti.o comflow.o
 cfluxz.o: comai.o combi.o comchem.o comci.o comdi.o comdti.o comflow.o
 cfluxz.o: compart.o comxi.o davidi.o
 check_rlp.o: comai.o comci.o comdi.o comrlp.o
-check_rlp_carb.o: comai.o comci.o comco2.o comdi.o comdti.o comrlp.o
+check_rlp_carb.o: comai.o comci.o comco2.o comcomp.o comdi.o comdti.o comrlp.o
 chemod.o: comai.o combi.o comchem.o comci.o comco2.o comdi.o comdti.o comrxni.o
 chemod.o: davidi.o
 cliffnodes.o: comai.o comsk.o comsptr.o
@@ -446,6 +447,7 @@ pest.o: comgi.o comji.o comxi.o davidi.o
 phase_balance_ctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 phase_balance_ctr.o: comflow.o comgi.o comii.o comji.o comki.o comrxni.o
 phase_balance_ctr.o: comxi.o davidi.o
+phase_name.o: comco2.o comrlp.o
 plasticctr.o: comai.o comsi.o
 plot.o: comai.o combi.o comco2.o comdi.o comdti.o comfi.o comii.o comwt.o
 plot.o: davidi.o
@@ -656,6 +658,7 @@ velocity_derivatives.o: comsptr.o
 velocity_derivatives_lsq.o: comai.o combi.o comci.o comdi.o comflow.o comsk.o
 velocity_derivatives_lsq.o: comsptr.o
 vfcal.o: comai.o combi.o comdi.o comdti.o
+vg.o: comai.o comco2.o comdi.o comrlp.o
 vg_regions.o: comai.o comdi.o comdti.o
 vgcap_fit2.o: comai.o comrlp.o
 vgcap_inv_calc.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
