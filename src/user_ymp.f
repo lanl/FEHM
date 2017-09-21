@@ -354,9 +354,14 @@ c RJP added for turning off CO2 injection wells
             close (incf)
             readflag = 1
          end if	
-         if(days.ge.shut_time*365.25) then
+         if(days.ge.shut_time*365.25.and.readflag.eq.1) then
+          readflag = 2
+          write(*,*) '*************WEllS SHUT IN***********************'
+          write(iout,*) '*************WEllS SHUT IN********************'
             do i = 1, neq
-               if(kaco2(i).eq.-4) then
+               if(kaco2(i).le.-1) then
+                  wellco2(i) = 0.d0
+               elseif(kaco2(i).eq.-4) then
                   wellco2(i) = 0.d0
                elseif(skco2(i).lt.0.d0) then
                   skco2(i) = 0
