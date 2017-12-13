@@ -1,0 +1,6 @@
+*.o
+*.mod
+debug/*
+build/*
+src/dated.f
+*.pyc
