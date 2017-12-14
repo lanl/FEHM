@@ -1,5 +1,5 @@
 ## FEHM: Finite Element Heat and Mass Transfer Code ##
-###LA-CC-2012-083 Export control on source code###
+### LA-CC-2012-083 Export control on source code ###
 
 This repository is limited to FEHM team collaborators with a LANLS approved and signed Contributor Agreement.
 This Version 3.3 from October 2017 has been moved from a mercurial repository on https//fehm.lanl.gov which will be closed.
