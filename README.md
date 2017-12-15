@@ -24,10 +24,10 @@ This will download the FEHM Git repo to your current directory.
 Run the command
 
 ```
-git add file1 file2 … fileN
+git add file1 file2 ... fileN
 ```
  
-to add any files you have changed. You can also just run git add  if you want to add every changed file.
+to add any files you have changed. You can also just run `git add .` if you want to add every changed file.
  
 3. Now, run
  
@@ -42,14 +42,14 @@ Untracked files are everything else – think of *.o files, or some test data ou
 Tracked files can be:
 * Unmodified (you haven’t made any changes to it, relative to the last commit)
 * Modified (you have edited the file since the last commit)
-* Staged (the file has been committed and is ready to be pushed)
+* Staged (the file has been added and is ready to be committed and then pushed)
  
-You can make an untracked file become tracked by using git add on it.
+You can make an untracked file become tracked by using `git add` on it.
  
-4. After verifying (with git status) that all the files you want to be pushed are properly staged, commit them using
+4. After verifying (with `git status`) that all the files you want to be pushed are properly staged, commit them using
 
 ```
-git commit -m “My first Git commit!”
+git commit -m "My first Git commit!"
 ```
  
 Then, push the files onto the GitHub repo with
