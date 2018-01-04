@@ -62,11 +62,16 @@ git push origin master
  
 ```
 git pull origin master
+git push origin master
 ```
-This can be done at any step.
 
 
+See Versions and Notes under the Releases tab this repository.
 
+The Most recent distributed release is FEHM V3.3.1 (December 2017) which is the version cloned for this repository. The FEHM software is a continuation of QA work performed for the Yucca Mountain Project (YMP) under Software Configuration Control Request (SCCR) (Software Tracking Numbers STN: 10086-2.21-00 August 2003, V2.22, STN 10086-2.22-01, V2.23, STN 10086-2.23-00, V2.24-01, STN 10086-2.24-01, and V2.25, STN 10086-2.25-00). 
+The QA for these codes started under YMP QA and continue under under LANL EES-16 Software QA Policy and Proceedures as outlined in: "EES-16-13-003.SoftwareProcedure.pdf" 
+
+Before distribution of FEHM software, tests are executed and verified as acceptable on LANL computers with operating systems Linux, Mac OSX, and WINDOWS. The overall validation effort for the FEHM software consists of a suite of directories and scripts that test the model whenever possible, against known analytical solutions of the same problem. The test suite was developed under YMP QA for FEHM RD.10086-RD-2.21-00 and is available for download.
 
 FEHM Code source is export controlled with the following Copyright:
 
