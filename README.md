@@ -1,8 +1,8 @@
 ## FEHM: Finite Element Heat and Mass Transfer Code ##
 ### LA-CC-2012-083 Export control on source code ###
 
-This repository is limited to FEHM team collaborators with a LANLS approved and signed Contributor Agreement.
-This Version 3.3 from October 2017 has been moved from a mercurial repository on https//fehm.lanl.gov which will be closed.
+This repository is limited to FEHM team and collaborators with a LANL approved and signed Contributor Agreement.
+This Version 3.3.1 from October 2017 has been moved from a mercurial repository on https//fehm.lanl.gov which will be closed.
 
 The following are reminders for FEHM code developers using this repository.
 
@@ -44,7 +44,10 @@ Tracked files can be:
 * Modified (you have edited the file since the last commit)
 * Staged (the file has been added and is ready to be committed and then pushed)
  
-You can make an untracked file become tracked by using `git add` on it.
+Untracked files become tracked by using
+```
+git add filename
+```
  
 4. After verifying (with `git status`) that all the files you want to be pushed are properly staged, commit them using
 
