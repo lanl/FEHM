@@ -1,7 +1,16 @@
 ## FEHM: Finite Element Heat and Mass Transfer Code ##
-### LA-CC-2012-083 Export control on source code ###
+### No. C13153 LA-CC-2012-083 Open Source ###
 
-This repository is limited to FEHM team and collaborators with a LANL approved and signed Contributor Agreement.
+The numerical background of the FEHM computer code can be traced to the early 1970s when it was used to simulate geothermal and hot dry rock reservoirs. The primary use over a number of years was to assist in the understanding of flow fields and mass transport in the saturated and unsaturated zones below the potential Yucca Mountain repository. Today FEHM is used to simulate groundwater and contaminant flow and transport in deep and shallow, fractured and un-fractured porous media throughout the US DOE complex. FEHM has proved to be a valuable asset on a variety of projects of national interest including Environmental Remediation of the Nevada Test Site, the LANL Groundwater Protection Program, geologic CO2 sequestration, Enhanced Geothermal Energy (EGS) programs, Oil and Gas production, Nuclear Waste Isolation, and Arctic Permafrost. Subsurface physics has ranged from single fluid/single phase fluid flow when simulating basin scale groundwater aquifers to complex multifluid/ multi-phase fluid flow that includes phase change with boiling and condensing in applications such as unsaturated zone surrounding nuclear waste storage facility or leakage of CO2/brine through faults or wellbores. The numerical method used in FEHM is the control volume method (CV) for fluid flow and heat transfer equations which allows FEHM to exactly enforce energy/mass conservation; while an option is available to use the finite element (FE) method for displacement equations to obtain more accurate stress calculations. In addition to these standard methods, an option to use FE for flow is available, as well as a simple Finite Difference scheme. Visit web pages at [fehm.lanl.gov](http://fehm.lanl.gov)
+
+## License ##
+
+FEHM is distributed as as open-source software under a BSD 3-Clause License. See [Copyright License](LICENSE.md)
+
+## Developers ##
+
+External Collaborators must sign a Contribution Agreement. [Contribution Agreement for External Collaborators](CONTRIBUTING.md)
+
 This Version 3.3.1 from October 2017 has been moved from a mercurial repository on https//fehm.lanl.gov which will be closed.
 
 The following are reminders for FEHM code developers using this repository.
@@ -68,6 +77,8 @@ git pull origin master
 git push origin master
 ```
 
+## FEHM Release Versions ##
+
 
 See Versions and Notes under the Releases tab this repository.
 
@@ -76,10 +87,3 @@ The QA for these codes started under YMP QA and continue under under LANL EES-16
 
 Before distribution of FEHM software, tests are executed and verified as acceptable on LANL computers with operating systems Linux, Mac OSX, and WINDOWS. The overall validation effort for the FEHM software consists of a suite of directories and scripts that test the model whenever possible, against known analytical solutions of the same problem. The test suite was developed under YMP QA for FEHM RD.10086-RD-2.21-00 and is available for download.
 
-FEHM Code source is export controlled with the following Copyright:
-
-**Copyright 2013. Los Alamos National Security, LLC for FEHM LA-CC-2012-083.** This material was produced under U.S. Government contract DE-AC52-06NA25396 for Los Alamos National Laboratory (LANL), which is operated by Los Alamos National Security, LLC for the U.S. Department of Energy. The U.S. Government has rights to use, reproduce, and distribute this software. Neither the U.S. Government nor Los Alamos National Security, LLC or persons acting on their behalf, make any warranty, express or implied, or assumes any liability for the accuracy, completeness, or usefulness of the software, any information pertaining to the software, or represents that its use would not infringe privately owned rights.  
-
-The licensed software, FEHM, may be Export Controlled. It may not be distributed or used by individuals or entities prohibited from having access to the software package, pursuant to United States export control laws and regulations. An export control review and determination must be completed before LANS will provide access to the identified Software. 
-
-*Distribution of FEHM source code is limited to FEHM team collaborators with a LANS approved and signed Contributor Agreement. Contact Terry Miller tamiller@lanl.gov or an FEHM team member for more information.*
