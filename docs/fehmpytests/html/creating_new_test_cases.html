@@ -1,0 +1,244 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Creating New Test-Cases &#8212; Fehmpytests 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Test-Case Descriptions" href="test_case_desc.html" />
+    <link rel="prev" title="Testing FEHM" href="testing_fehm.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="test_case_desc.html" title="Test-Case Descriptions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="testing_fehm.html" title="Testing FEHM"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Fehmpytests 1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="creating-new-test-cases">
+<h1>Creating New Test-Cases<a class="headerlink" href="#creating-new-test-cases" title="Permalink to this headline">¶</a></h1>
+<p>A developer can add new test-cases to the suite. There are two steps
+to adding new test-cases:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Create the test-case folder.</li>
+<li>Add the test method.</li>
+</ol>
+</div></blockquote>
+<div class="section" id="create-the-test-case-folder">
+<h2>Create the Test-Case Folder<a class="headerlink" href="#create-the-test-case-folder" title="Permalink to this headline">¶</a></h2>
+<p>This is the folder structure of a test-case:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">test</span><span class="o">-</span><span class="n">case</span><span class="p">]</span>
+    <span class="o">|</span>
+    <span class="o">|</span><span class="n">_</span><span class="p">[</span><span class="nb">input</span><span class="p">]</span>
+    <span class="o">|</span>   <span class="o">|</span>
+    <span class="o">|</span>   <span class="o">|</span><span class="n">_</span><span class="p">[</span><span class="n">control</span><span class="p">]</span>
+    <span class="o">|</span>
+    <span class="o">|</span><span class="n">_</span><span class="p">[</span><span class="n">compare</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>All input files needed to run the FEHM functionality of the test-case go inside
+the input folder. All control files go inside the control folder. All compare
+files (contour, history, and output) that are known to be correct go inside the
+compare folder.</p>
+<p>To set up a new test-case folder:</p>
+<ol class="arabic simple">
+<li>Go into the folder <em>fehmpytests</em>.</li>
+<li>Create a folder <em>&lt;test-case&gt;</em> where <em>&lt;test-case&gt;</em> is the name of the new
+case.</li>
+<li>Inside <em>&lt;test-case&gt;</em>, create two folders called <em>input</em> and <em>compare</em>.</li>
+<li>Inside the <em>input</em> folder, create a folder called <em>control</em>.</li>
+<li>In the <em>control</em> folder, place all control files.</li>
+<li>If there is only one control file, rename it to <strong>fehmn.files</strong>.</li>
+<li>If there are more than one control file, rename each file to
+<strong>&lt;subcase&gt;.files</strong> where <strong>&lt;subcase&gt;</strong> is the name of the subcase.</li>
+<li>In the <em>input</em> folder, place all input files needed for the FEHM run.</li>
+<li>In the <em>compare</em> folder, place all comparison files known to be correct.</li>
+</ol>
+</div>
+<div class="section" id="add-the-test-method">
+<h2>Add the Test Method<a class="headerlink" href="#add-the-test-method" title="Permalink to this headline">¶</a></h2>
+<p>To add the test method:</p>
+<ol class="arabic">
+<li><p class="first">Open <strong>fehmpytests.py</strong>.</p>
+</li>
+<li><p class="first">Inside the class ‘Tests’, write a method <em>test_&lt;name&gt;</em> where <em>&lt;name&gt;</em> is
+the name of the test-case. Here is an example for the <em>avdonin</em> test method:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Tests</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+
+    <span class="o">...</span>
+
+    <span class="c1">#This is the new test method for avdonin.</span>
+    <span class="k">def</span> <span class="nf">test_avdonin</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="o">...</span>
+
+    <span class="o">...</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Inside this test method, call</p>
+<p><code class="docutils literal notranslate"><span class="pre">self.test_case('&lt;test-case&gt;')</span></code></p>
+<p>where <em>&lt;test-case&gt;</em> is the name of the folder you created for the new
+test-case. Click <code class="xref py py-meth docutils literal notranslate"><span class="pre">fehmpytests.fehmTest.test_case()</span></code> for details on the
+general test case method. Here is an example for the test method for
+<strong>avdonin</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Tests</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+
+    <span class="o">...</span>
+
+    <span class="k">def</span> <span class="nf">test_avdonin</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1">#Add this line to call the general test case for avdonin.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_case</span><span class="p">(</span><span class="s1">&#39;avdonin&#39;</span><span class="p">)</span>
+
+    <span class="o">...</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Inside the class <em>Suite</em>, under the condition <em>all</em>, add the following line:</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">suite.addTest(Tests('&lt;method-name&gt;'))</span></code></p>
+</div></blockquote>
+<p>where <em>&lt;method-name&gt;</em> is the name of the test method you just defined. Here
+is an example for adding the <strong>avdonin</strong> test to the test-suite:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">suite</span><span class="p">(</span><span class="n">case</span><span class="p">,</span> <span class="n">test_case</span><span class="p">):</span>
+    <span class="n">suite</span> <span class="o">=</span> <span class="n">unittest</span><span class="o">.</span><span class="n">TestSuite</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">case</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+        <span class="n">suite</span><span class="o">.</span><span class="n">addTest</span><span class="p">(</span><span class="n">Tests</span><span class="p">(</span><span class="s1">&#39;test_saltvcon&#39;</span><span class="p">))</span>
+        <span class="n">suite</span><span class="o">.</span><span class="n">addTest</span><span class="p">(</span><span class="n">Tests</span><span class="p">(</span><span class="s1">&#39;test_dissolution&#39;</span><span class="p">))</span>
+        <span class="n">suite</span><span class="o">.</span><span class="n">addTest</span><span class="p">(</span><span class="n">Tests</span><span class="p">(</span><span class="s1">&#39;test_salt_perm_poro&#39;</span><span class="p">))</span>
+
+        <span class="c1">#This is how the avdonin test is added to the test-suite.</span>
+        <span class="n">suite</span><span class="o">.</span><span class="n">addTest</span><span class="p">(</span><span class="n">Tests</span><span class="p">(</span><span class="s1">&#39;test_avdonin&#39;</span><span class="p">))</span>
+
+        <span class="o">...</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>Running fehmpytests will now include the new test-case.</p>
+</div>
+<div class="section" id="customizing-a-test-case">
+<h2>Customizing a Test-Case<a class="headerlink" href="#customizing-a-test-case" title="Permalink to this headline">¶</a></h2>
+<p>By default, <em>test_case()</em> will check for a maximum difference less than 1.e-4
+on all attributes of the FEHM simulation. Passing a dictionary into
+<em>test_case()</em> as the second argument allows a developer to specify how these
+tests are performed. The following keywords are recognized by test_case():</p>
+<blockquote>
+<div><ul class="simple">
+<li>‘variables’:    list</li>
+<li>‘nodes’:        list</li>
+<li>‘components’:   list</li>
+<li>‘maxerr’:       float</li>
+<li>‘test_measure’: string</li>
+</ul>
+</div></blockquote>
+<p>The following is an example for specifying the components, variables, and format
+for the <strong>saltvcon</strong> test:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#Pass a dictionary into test_case() with keywords specifed.</span>
+<span class="k">def</span> <span class="nf">test_saltvcon</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">arguments</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;components&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;water&#39;</span><span class="p">]</span>
+    <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;variables&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Kx&#39;</span><span class="p">]</span>
+    <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;relative&#39;</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">test_case</span><span class="p">(</span><span class="s1">&#39;saltvcon&#39;</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="documentation-on-test-case-method">
+<h2>Documentation on test_case() Method<a class="headerlink" href="#documentation-on-test-case-method" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Creating New Test-Cases</a><ul>
+<li><a class="reference internal" href="#create-the-test-case-folder">Create the Test-Case Folder</a></li>
+<li><a class="reference internal" href="#add-the-test-method">Add the Test Method</a></li>
+<li><a class="reference internal" href="#customizing-a-test-case">Customizing a Test-Case</a></li>
+<li><a class="reference internal" href="#documentation-on-test-case-method">Documentation on test_case() Method</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="testing_fehm.html"
+                        title="previous chapter">Testing FEHM</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="test_case_desc.html"
+                        title="next chapter">Test-Case Descriptions</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/creating_new_test_cases.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="test_case_desc.html" title="Test-Case Descriptions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="testing_fehm.html" title="Testing FEHM"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Fehmpytests 1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014, Mark Lange, Dylan Harp, Shaoping Chu.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.4.
+    </div>
+  </body>
+</html>
