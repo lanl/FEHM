@@ -1,11 +1,14 @@
-###
-# tec_to_vtk.jl                                                                  
-# this script converts tecplot formatted fehm cont files into the vtk format for reading into paraview #
-# Cont files must be output in the tecplot format only                                                 #
-# to run, call this script in the folder where the fehmn.files is stored                               #   
-# the script uses fehmn.files to point to the grid and other outfiles needed for node locations        #
-# command to run: julia path/to/directory/tec_to_vtk.jl                                                # 
 #===============================================================================
+tec_to_vtk.jl
+
+This script converts tecplot formatted fehm cont files into the vtk format for
+reading into paraview. Cont files must be output in the tecplot format only.
+To run, call this script in the folder where the fehmn.files is stored.
+The script uses fehmn.files to point to the grid and other outfiles needed for
+node locations.
+
+Command to run: julia path/to/directory/tec_to_vtk.jl        
+================================================================================
 
 USAGE:
 
