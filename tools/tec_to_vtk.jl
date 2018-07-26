@@ -15,7 +15,7 @@ USAGE:
     --sca_diff			Sca file to subtract to create delta variables
     --sca_gdkm_diff		GDKM sca file to subtract to create delta variables
     --var_diff			Variables to create delta variables for
-    --output_dir, -o	Folder to create and place vtu2 files
+    --output_dir, -o		Folder to create and place vtu2 files
     --mesh_file, -m		Mesh file location
     --run_name, -r		Run name: prefix for visualization file names
 
