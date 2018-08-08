@@ -236,7 +236,10 @@ c     &     neq_primary, rho1grav, ifdm_elem, i_subsid, igrav
 c     RJP 1/12/07 added following
       use comco2
       use comriv, only : npoint_riv, nnelm_riv, nelm_riv
+      use silo
       implicit none
+      
+      include "silo.inc"
 
       integer maxscalar
       parameter (maxscalar = 37)
@@ -255,8 +258,6 @@ c     RJP 1/12/07 added following
       character*43 tstring
       character*5 char_type
       character*3 dls
-
-      save tecstring, tecstring_riv
 C     BEGIN
       size_head = size(head)
       size_pcp = size(pcp)
@@ -266,7 +267,6 @@ C     calculation done in avs_io()
       ioVP = iovapor*iopressure
 
 C     ERROR checking:
-      
       if(nscalar .gt. maxscalar)then
          write(lu,*)'--------------------------------------------'
          write(lu,*)'ERROR: WRITE_AVS_NODE_S'
@@ -941,8 +941,7 @@ c     might need help in the
 
          call flush(lu)
          if (altc(1:3) .eq. 'sur') close (lu)
-      enddo
-      
+      enddo 
       if (icall .eq. 1 .and. altc(1:3) .eq. 'tec' .and. iogeo .eq. 1)
      &     then
 c     Read the element connectivity and write to tec file
@@ -989,7 +988,12 @@ c first generate elements
       end if        
       if (altc(1:3) .ne. 'sur') close (lu)
       iocord = iocord_tmp
-
+      
+      if (altc(1:4) .eq. 'silo') then
+      	  	print *, timec_string
+      		call write_silo_s(icall, neq, nscalar, ifdual, iriver2)
+      endif 
+      
  100  format(i10.10)
  105  format(a, i10.10)
  110  format(a, g16.9)

@@ -1342,7 +1342,7 @@ c     found match
                do ie = ipiv+1, i2
                   kb = ncon(ie)  
                   isx = isx+1
-                  istrw(ie-neqp1) = isx
+                  istrw(ie - neqp1) = isx
                enddo
             else
 c     other member of group

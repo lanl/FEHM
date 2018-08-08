@@ -18,7 +18,7 @@
 # Edit FC,LIBRARY,FFLAGS for your environment and compiler 
 #***********************************************************************
 
-SRCDIR = /scratch/ymp/zvd/FEHM_V3.00open/src/
+SRCDIR = ../src/
 WORKDIR = ./
 INCDIR = ./
 OBJDIR = ./

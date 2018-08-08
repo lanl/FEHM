@@ -765,7 +765,7 @@ c**** contour plot information ****
          backspace inpt
          if(altc .eq. 'ptrn' .or. altc .eq. 'ment' .or. altc .eq. 'fehm'
      &        .or. altc .eq. 'free' .or. altc(1:3) .eq. 'avs' .or. 
-     &        altc(1:3) .eq. 'sur' .or. altc(1:3) .eq. 'tec') then
+     &        altc(1:3) .eq. 'sur' .or. altc(1:3) .eq. 'tec' .or. altc(1:4) .eq. 'silo') then
             read(inpt, '(a)') input_msg
             call parse_string(input_msg,imsg,msg,xmsg,cmsg,nwds)
             altc = cmsg(1)
@@ -780,7 +780,7 @@ c**** contour plot information ****
             endif
 888         continue
             if (altc(1:3) .eq. 'avs' .or. altc(1:3) .eq. 'sur'
-     &           .or. altc(1:3) .eq. 'tec') then
+     &           .or. altc(1:3) .eq. 'tec' .or. altc(1:4) .eq. 'silo') then
                call read_avs_io(inpt)
             end if
          else

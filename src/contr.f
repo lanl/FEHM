@@ -384,7 +384,7 @@ c
          iohead=0
       endif
       if (altc(1:3) .eq. 'avs' .or. altc(1:3) .eq. 'sur'.or. 
-     &     altc(1:3) .eq. 'tec') then
+     &     altc(1:3) .eq. 'tec' .or. altc(1:4) .eq. 'silo') then
 c use avs form
          if (inj .eq. 0) then
             inquire (file = nmfil(10), exist = ex)
