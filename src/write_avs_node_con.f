@@ -346,6 +346,11 @@ c     parameter (minc = 1.0d-20, maxc = 1.0d+20)
          end if
       end if
 
+      ! SILO call
+      if (altc(1:4) .eq. 'silo') then
+      		call write_silo_c(anv_dum, an_dum, icall, npt, neq, nspeci, ifdual)
+      endif 
+      
       if(rxn_flag.eq.0)then
          if(nspeci .gt. maxcon)then
             write(lu,*)'--------------------------------------------'
@@ -903,6 +908,7 @@ c first generate elements
       end if      
       if (altc(1:3) .ne. 'sur') close (lu)
       iocord = iocord_temp
+            
 
 c 94   format('ZONE T = "Simulation time ',1p,g16.9,' days"', a)
  94   format('ZONE T = ', a, a, a, a)

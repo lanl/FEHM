@@ -989,8 +989,8 @@ c first generate elements
       if (altc(1:3) .ne. 'sur') close (lu)
       iocord = iocord_tmp
       
+      ! SILO call
       if (altc(1:4) .eq. 'silo') then
-      	  	print *, timec_string
       		call write_silo_s(icall, neq, nscalar, ifdual, iriver2)
       endif 
       
