@@ -1,19 +1,20 @@
 ## FEHM: Finite Element Heat and Mass Transfer Code ##
-###  LA-CC-2012-083 Open Source No. C13022 ###
+**LANL Software: LA-CC-2012-083  No. C13022**
+**LANL Documents: LA-UR-12-24493**
 
 The numerical background of the FEHM computer code can be traced to the early 1970s when it was used to simulate geothermal and hot dry rock reservoirs. The primary use over a number of years was to assist in the understanding of flow fields and mass transport in the saturated and unsaturated zones below the potential Yucca Mountain repository. Today FEHM is used to simulate groundwater and contaminant flow and transport in deep and shallow, fractured and un-fractured porous media throughout the US DOE complex. FEHM has proved to be a valuable asset on a variety of projects of national interest including Environmental Remediation of the Nevada Test Site, the LANL Groundwater Protection Program, geologic CO2 sequestration, Enhanced Geothermal Energy (EGS) programs, Oil and Gas production, Nuclear Waste Isolation, and Arctic Permafrost. Subsurface physics has ranged from single fluid/single phase fluid flow when simulating basin scale groundwater aquifers to complex multifluid/ multi-phase fluid flow that includes phase change with boiling and condensing in applications such as unsaturated zone surrounding nuclear waste storage facility or leakage of CO2/brine through faults or wellbores. The numerical method used in FEHM is the control volume method (CV) for fluid flow and heat transfer equations which allows FEHM to exactly enforce energy/mass conservation; while an option is available to use the finite element (FE) method for displacement equations to obtain more accurate stress calculations. In addition to these standard methods, an option to use FE for flow is available, as well as a simple Finite Difference scheme.
 
-[FEHM Home](http://fehm.lanl.gov) • [FehmPyTests](http://lanl.github.io/FEHM/fehmpytests/html/index.html)
+[FEHM Home at fehm.lanl.gov](https://fehm.lanl.gov) • [Fehmpytests](http://lanl.github.io/FEHM/fehmpytests/html/index.html)
+
 
 ## License ##
 
 FEHM is distributed as as open-source software under a BSD 3-Clause License. See [Copyright License](LICENSE.md)
 
+
 ## Developers ##
 
 External Collaborators must sign a Contribution Agreement. [Contribution Agreement for External Collaborators](CONTRIBUTING.md)
-
-This Version 3.3.1 from October 2017 has been moved from a mercurial repository on https//fehm.lanl.gov which will be closed.
 
 The following are reminders for FEHM code developers using this repository.
 
@@ -78,6 +79,11 @@ git push origin master
 git pull origin master
 git push origin master
 ```
+
+## BUILD FEHM ##
+
+Build FEHM. See src and Makefile in that directory.
+
 
 ## FEHM Release Versions ##
 

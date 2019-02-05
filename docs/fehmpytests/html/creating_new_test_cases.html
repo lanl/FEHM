@@ -9,10 +9,13 @@
     <title>Creating New Test-Cases &#8212; Fehmpytests 1.0 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Test-Case Descriptions" href="test_case_desc.html" />
@@ -103,7 +106,7 @@ the name of the test-case. Here is an example for the <em>avdonin</em> test meth
 <li><p class="first">Inside this test method, call</p>
 <p><code class="docutils literal notranslate"><span class="pre">self.test_case('&lt;test-case&gt;')</span></code></p>
 <p>where <em>&lt;test-case&gt;</em> is the name of the folder you created for the new
-test-case. Click <code class="xref py py-meth docutils literal notranslate"><span class="pre">fehmpytests.fehmTest.test_case()</span></code> for details on the
+test-case. Click <a class="reference internal" href="#fehmpytests.fehmTest.test_case" title="fehmpytests.fehmTest.test_case"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fehmpytests.fehmTest.test_case()</span></code></a> for details on the
 general test case method. Here is an example for the test method for
 <strong>avdonin</strong>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Tests</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
@@ -172,6 +175,42 @@ for the <strong>saltvcon</strong> test:</p>
 </div>
 <div class="section" id="documentation-on-test-case-method">
 <h2>Documentation on test_case() Method<a class="headerlink" href="#documentation-on-test-case-method" title="Permalink to this headline">¶</a></h2>
+<dl class="method">
+<dt id="fehmpytests.fehmTest.test_case">
+<code class="descclassname">fehmTest.</code><code class="descname">test_case</code><span class="sig-paren">(</span><em>name</em>, <em>parameters={}</em><span class="sig-paren">)</span><a class="headerlink" href="#fehmpytests.fehmTest.test_case" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs a test on a FEHM simulation and raises an AssertError if it 
+fails the test.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>str</em>) – The name of the test-case folder.</li>
+<li><strong>parameters</strong> (<em>dict</em>) – <p>Attribute values that override default values.
+Key Value Choices</p>
+<blockquote>
+<div>’variables’: list[str, str, …]
+‘times’: list[float, float, …]
+‘nodes’: list[int, int, …]
+‘components’: list[str, str, …]
+‘maxerr’: float
+‘test_measure’: str - ‘max_difference’ or<blockquote>
+<div>’rms_difference’ or
+‘perc_difference’</div></blockquote>
+</div></blockquote>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The folder ‘name’ in fehmpytests must exist with correct structure.
+If parameters are not passed into this method, all simulated attributes 
+will be checked for a relative difference of less than 1.e-4.</p>
+<p>Authors: Mark Lange
+Updated: June 2014 by Mark Lange</p>
+</dd></dl>
+
 </div>
 </div>
 
@@ -181,15 +220,13 @@ for the <strong>saltvcon</strong> test:</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Creating New Test-Cases</a><ul>
-<li><a class="reference internal" href="#create-the-test-case-folder">Create the Test-Case Folder</a></li>
-<li><a class="reference internal" href="#add-the-test-method">Add the Test Method</a></li>
-<li><a class="reference internal" href="#customizing-a-test-case">Customizing a Test-Case</a></li>
-<li><a class="reference internal" href="#documentation-on-test-case-method">Documentation on test_case() Method</a></li>
-</ul>
-</li>
+<h3><a href="index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing_fehm.html">Testing FEHM</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Creating New Test-Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="test_case_desc.html">Test-Case Descriptions</a></li>
 </ul>
 
   <h4>Previous topic</h4>
@@ -238,7 +275,7 @@ for the <strong>saltvcon</strong> test:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014, Mark Lange, Dylan Harp, Shaoping Chu.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.0.
     </div>
   </body>
 </html>
