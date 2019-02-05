@@ -1,9 +1,9 @@
       module silo
 	
 c(SILO)	Must dynamically allocate these to fucntion for complex geometry(more than 1 type of polyhedron)
-	    use comdti, only : n0
-	    
-			
+		use comdti, only : n0
+		
+		
 		character*50 :: silo_meshtype = ''
 		character (len=90) :: silofile
 		integer silo_dbfile, silo_ierr, silo_err, ndims, nnodes
@@ -18,15 +18,19 @@ c(SILO)	Must dynamically allocate these to fucntion for complex geometry(more th
 		
 		integer, allocatable :: silo_cv(:)
 		
-
+		
 		character(:), allocatable :: silo_conname
 		character(:), allocatable :: silo_gdkmname
 		character(:), allocatable :: silo_unit
-      	integer silo_varname_len
-      	integer silo_unit_len
-      	      
-      	
-      	
+		integer silo_varname_len
+		integer silo_unit_len
+			  
+		real*8, dimension(:), allocatable :: silo_pres, silo_flx, silo_hdum, silo_co2_pgas, silo_du,
+     &	silo_dv, silo_dw, silo_sdum, silo_vflx, silo_fw,
+     &	silo_fl, silo_fg, silo_yc, silo_co2_prop, silo_ices,
+     &	silo_vpres, silo_wvpres 	      	     						
+		
+		
    	contains
      	
    		!Function to write variables to the silo mesh

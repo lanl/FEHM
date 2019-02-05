@@ -201,10 +201,22 @@
 			icv = 1
 			do i = 1, nei_in
 				read (il,*) ic1,ic2,char_type,(nelm(j), j=1,ns_in)
-				do kk = 1, ns_in
-					silo_cv(icv) = nelm(kk)
-					icv = icv + 1
-				end do
+				if(char_type(1:3) .eq. 'tet') then
+					do kk = 1, 4						
+						silo_cv(icv) = nelm(kk)
+						icv = icv + 1					
+					end do
+				else if(char_type(1:3) .eq. 'tri') then
+					do kk = 1, 3						
+						silo_cv(icv) = nelm(kk)
+						icv = icv + 1					
+					end do
+				else
+					do kk = 1, ns_in						
+						silo_cv(icv) = nelm(kk)
+						icv = icv + 1					
+					end do
+				end if
 			end do
 			close (il)
 		end if
@@ -333,12 +345,12 @@
       integer, allocatable :: nelm2(:)
       real*8 hdum, sdum, px, py, pz, flxdum
       real*8 pdum, tdum, rolconv, dumconv, dumconv1
-  
-   
-	  real*8 silo_pres(n0), silo_flx(n0), silo_hdum(n0), silo_co2_pgas(n0), silo_du(n0),
+      allocate( silo_pres(n0), silo_flx(n0), silo_hdum(n0), silo_co2_pgas(n0), silo_du(n0),
      &	silo_dv(n0), silo_dw(n0), silo_sdum(n0), silo_vflx(n0), silo_fw(n0),
      &	silo_fl(n0), silo_fg(n0), silo_yc(n0), silo_co2_prop(n0), silo_ices(n0),
-     &	silo_vpres(n0), silo_wvpres(n0)
+     &	silo_vpres(n0), silo_wvpres(n0) )
+   
+
 
 
      
@@ -640,6 +652,10 @@
 			call silo_put_unstruc2("Volume_Strain", "none", vol_strain)
 		end if
 
+		deallocate( silo_pres, silo_flx, silo_hdum, silo_co2_pgas, silo_du,
+     &	silo_dv, silo_dw, silo_sdum, silo_vflx, silo_fw,
+     &	silo_fl, silo_fg, silo_yc, silo_co2_prop, silo_ices,
+     &	silo_vpres, silo_wvpres )
      	! Clear silo variables, close file, and increase the cycle for next time input
      	silo_ierr = dbfreeoptlist(optlistid)
 
@@ -691,12 +707,12 @@
 		integer irxn_title
 		real*8 complex_conc
 		real*8 minc, maxc
-		real*8 silo_anv(n0,nspeci)
-		real*8 silo_anl(n0,nspeci)
-		real*8 silo_anr(n0,nspeci)
-		character*10 silo_str_i
-		
+		character*10 silo_str_i		
 		parameter (minc = 1.0d-90, maxc = 1.0d+20)
+		real*8 silo_anv(n0, nspeci), silo_anl(n0, nspeci), silo_anr(n0, nspeci)
+		
+
+		
 		
      	call create_silo('con')		
 		
