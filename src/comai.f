@@ -390,6 +390,7 @@
 !PS None
 !PS
 !***********************************************************************
+      integer             rank,rank_size   ! for MPI Running
 
       integer             iab, iac, iaccmx, iad, iad_up, iadif, iamm 
       integer             iamx, iatty, icapp, iccen, ice, icf, icgts 

@@ -181,10 +181,10 @@ explicit.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
 explicit.o: comgi.o comji.o davidi.o
 fd_calc_heat.o: comai.o combi.o comci.o comdi.o comdti.o comji.o comki.o
 fd_calc_heat.o: davidi.o
-fehmn.o: comai.o combi.o comci.o comco2.o comcomp.o comdi.o comdti.o comei.o
-fehmn.o: comevap.o comfem.o comfi.o comflow.o compart.o comriv.o comrtd.o
-fehmn.o: comrxni.o comsi.o comsk.o comsplitts.o comsptr.o comuserc.o comwt.o
-fehmn.o: comxi.o davidi.o interpolate.o
+fehmn.o: comai.o combi.o comci.o comco2.o comcomp.o comdi.o comdti.o comei.o petsc_initialize.o petsc_finalize.o
+fehmn.o: comevap.o comfem.o comfi.o comflow.o compart.o comriv.o comrtd.o petsc_initialize.o petsc_finalize.o
+fehmn.o: comrxni.o comsi.o comsk.o comsplitts.o comsptr.o comuserc.o comwt.o petsc_initialize.o petsc_finalize.o
+fehmn.o: comxi.o davidi.o interpolate.o petsc_initialize.o petsc_finalize.o
 fem_DruckerPrager_stiffness.o: comai.o comfem.o comsi.o
 fem_DruckerPrager_stress_update.o: comai.o comdi.o comfem.o comsi.o
 fem_elastic_stiffness.o: comai.o comfem.o comsi.o
@@ -306,8 +306,8 @@ gensdp3.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 gensdp3.o: comhi.o davidi.o
 gensdp_switch.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 gensdp_switch.o: comgi.o comhi.o davidi.o
-gensl1.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o comfi.o
-gensl1.o: comflow.o comgi.o comhi.o comriv.o davidi.o
+gensl1.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o comfi.o petsc_package.o petsc_initialize.o petsc_finalize.o
+gensl1.o: comflow.o comgi.o comhi.o comriv.o davidi.o petsc_package.o petsc_initialize.o petsc_finalize.o
 gensl2.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o comfi.o
 gensl2.o: comflow.o comgi.o comhi.o comji.o comriv.o comsplitts.o comwellphys.o
 gensl2.o: comwt.o davidi.o
@@ -444,6 +444,7 @@ peint.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comii.o comtable.o
 permfac_nodal_out.o: comai.o combi.o comfem.o
 pest.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
 pest.o: comgi.o comji.o comxi.o davidi.o
+petsc_package.o : petsc_initialize.o comai.o
 phase_balance_ctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 phase_balance_ctr.o: comflow.o comgi.o comii.o comji.o comki.o comrxni.o
 phase_balance_ctr.o: comxi.o davidi.o

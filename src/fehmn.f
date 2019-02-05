@@ -473,6 +473,10 @@ C***********************************************************************
       use comfem, only : edgeNum1, NodeElems, ifem, flag_element_perm
       use comfem, only : fem_strain, conv_strain, conv_pstrain  
       use property_interpolate
+
+      use petsc_initialize_package
+      use petsc_finalize_package
+
 c     added combi and comflow to get izonef and a_axy arrays
 c     in subroutine computefluxvalues
       implicit none
@@ -514,7 +518,7 @@ c*** water table rise modification
       real*8 prop,dpropt,dpropp,p_energy
 c*** water table rise modification
       logical it_is_open, intfile_ex
-      integer im, ja, mi, i
+      integer im, ja, mi
       integer :: ichk = 0, tscounter = 0, flowflag = 0
       integer number_of_outbuffers, jpr
       integer :: n_input_arguments = 0
@@ -805,6 +809,18 @@ c set counter for restarted timesteps to zer0
 c
          nrestart_ts = 0
 
+
+! -----------------------------------------------------------
+!                  Initialize / Allocate PETSc memory
+! -----------------------------------------------------------
+
+            neq = neq + 0
+
+            call petsc_initialize
+
+! -----------------------------------------------------------
+
+
 c ************** major time step loop ***************************
          do l = 1, nstep
 c
@@ -829,6 +845,7 @@ cHari 3/1/07
 c*** water table rise modification
             if (ripfehm .ne. 0) water_table_old = in(7)
 c*** adjust timestep size
+
             call timcrl
 
 c
@@ -1343,10 +1360,19 @@ c**** call output routine ****
 c retrieve flow residuals
                if(istrs_coupl.gt.0.or.istrs_coupl.eq.-3) then
                   call stressctr(18,0) 
-               endif            
-               call wrtout(tassem,tas,dabs(tinfl),dabs(teinfl),
-     &              dabs(inflow_thstime),dabs(inen_thstime),
-     &              is_ch,is_ch_t)
+               endif
+
+
+!               print *, "The rank is ", rank
+
+               if (rank == 0) then    ! only print out once 
+            
+                  call wrtout(tassem,tas,dabs(tinfl),dabs(teinfl),
+     &                 dabs(inflow_thstime),dabs(inen_thstime),
+     &                 is_ch,is_ch_t)
+
+               end if 
+
                if(istrs_coupl.gt.0.or.istrs_coupl.eq.-3) then
 c output  displacements and stresses 
                   call stressctr(11,0) 
@@ -1445,12 +1471,26 @@ c finished the steady state simulation, now doing transient
                call flow_boundary_conditions(4)
                go to 999
             endif
+
+
 c EHK check for kill file
         inquire(file='kill.file',exist=die)
         if(die) goto 170
-         end do
+
+        end do      ! End major time step loop 
 
 c ******************* end major time step loop ****************
+
+
+! -----------------------------------------------------------
+!               Finalize / Deallocate PETSc memory
+! -----------------------------------------------------------
+
+       call petsc_finalize
+
+! -----------------------------------------------------------
+
+
 
 c**** write solution to plot tapes ****
 
@@ -1517,11 +1557,17 @@ c     contim_rip days
          endif
       endif
 
+
+      ! only print out once for MPI run
+      if (rank == 0) then
+
          if (iout .ne. 0) write(iout, 6040)  days, l
          if (iptty .gt. 0)  write(iptty, 6040)  days, l
  6040    format(//, 1x, 'simulation ended: days ', 1pg30.23, 
      *        ' timesteps ', i5)
-      
+     
+      end if 
+ 
 c
 c calculate final stress field and displacements
 c output contour information
@@ -1596,19 +1642,26 @@ c     Change it back
 
          days = -days
 
-         if (iout .ne. 0) write(iout, 6041) itotal,itotals
-         if (iptty .gt. 0) write(iptty, 6041)  itotal,itotals
+         ! only print out once for MPI run
+         if (rank == 0) then  
+
+              if (iout .ne. 0) write(iout, 6041) itotal,itotals
+              if (iptty .gt. 0) write(iptty, 6041)  itotal,itotals
  6041    format(//, 1x, 'total N-R iterations = ', i10
      &        ,/,1x, 'total solver iterations = ', i10)
 
-         if (iout .ne. 0) write(iout, 6042) tyming(caz) - tasii 
-         if (iptty .gt. 0) write(iptty, 6042) tyming(caz) - tasii
+              if (iout .ne. 0) write(iout, 6042) tyming(caz) - tasii 
+              if (iptty .gt. 0) write(iptty, 6042) tyming(caz) - tasii
  6042    format(//, 1x, 'total code time(timesteps) = ', f13.6)
 
-         call dated (jdate, jtime)
+              call dated (jdate, jtime)
 
-         if (iout .ne. 0) write(iout, 6052)  verno, jdate, jtime
-         if (iptty .gt. 0) write(iptty, 6052)  verno, jdate, jtime
+              if (iout .ne. 0) write(iout, 6052)  verno, jdate, jtime
+              if (iptty .gt. 0) write(iptty, 6052)  verno, jdate, jtime
+
+         end if 
+
+
          if (ripfehm .eq. 0) then
             close (inpt)
             if (iout .ne. 0) close (iout)

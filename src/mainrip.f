@@ -164,6 +164,11 @@ C***********************************************************************
 c	PC Version
 C      use dfport
 C      use ifport
+
+      use MPI
+      use comai
+      use petsc_initialize_package, only : ierr_3
+
       implicit none
 
       interface
@@ -180,13 +185,23 @@ C!DEC$ ATTRIBUTES reference :: out
       integer return_flag
       integer method, state
       real(8) in(4), out(3)
-      integer nsim, irun
+      integer nsim
       character(100) pre_string, post_string
       logical file_exists
 
 c     temporary variables for testing
       real*8 oldtime
       integer its, nts, i, tindex
+
+! ----------------------------------------- for PETSC_solver 
+      integer :: ierr_1
+
+      call MPI_INIT(ierr_1)
+
+      call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr_1)
+      call MPI_Comm_size(MPI_COMM_WORLD,rank_size,ierr_1)
+
+! ------------------------------------------
 
 c zvd 09-Sep-2011 change size of in array to be consistent with iofile
 c modification for GoldSim 
@@ -224,6 +239,12 @@ c	UNIX Version
             call system(post_string)
          end if
       end do
+
+
+! -----------------------------------------------------------
+ 
+      call MPI_Finalize(ierr_1)          ! for MPI running
+! -----------------------------------------------------------
 
 
 c	UNIX Version

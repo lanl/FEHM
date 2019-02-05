@@ -124,6 +124,10 @@ C***********************************************************************
       use comai
       use comriv
       use comcouple
+      use petsc_package              ! petsc solver
+!      use petsc_initialize_package
+!      use petsc_finalize_package
+
       implicit none
 
       integer ndex(2)
@@ -295,9 +299,15 @@ c
          allocate(dum(neq*8))
          if(gdpm_flag.eq.0) then
             if (igauss .gt. 1) then
-               call solve_new(neq,a,b,bp,nmat,nb,nrhs,nelm,nop,
-     &              north,tollr,irb,iirb,npvt,gmres,dum,piv,
-     &              h,c,ss,g,y,iter,iback,2,iptty,maxor,accm)
+
+!               call solve_new(neq,a,b,bp,nmat,nb,nrhs,nelm,nop,
+!     &              north,tollr,irb,iirb,npvt,gmres,dum,piv,
+!     &              h,c,ss,g,y,iter,iback,2,iptty,maxor,accm)
+!
+
+               call petsc_solver(a,bp,nmat,nrhs,nelm,tollr)       ! petsc solver
+
+
             else
                call solve_new(neq,a,b,bp,nmat,nmat,nrhs,nelm,nelm,
      &              north,tollr,irb,iirb,npvt,gmres,dum,piv,
