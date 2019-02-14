@@ -145,7 +145,7 @@ C ---  Removed coupling with gas diffusion in ADIF case
       integer jm, jmi, jmia, jml, kb, kz
       integer neighc, neqp1, nmatavw
       integer imd,iwd
-      real*8 reduction_factor
+      real*8 reduction_factor, reduction_factor_t
       real*8  acxy, acxyf
       real*8  aexy, aexyf, alxi, alxkb, alyi, alykb, alzi, alzkb
       real*8  avxi, avyi, avzi, axi, axkb, axy, axyd, axyf
@@ -187,6 +187,8 @@ C ---  Removed coupling with gas diffusion in ADIF case
       real*8  mpv_airi,mpv_airkb,mpv_wvi,mpv_wvkb,delmpv_air,delmpv_wv 
 
       real*8 heatt
+      
+      integer kb_pri, i_dir_gdkm
 
       parameter(dis_tol=1.d-12)
 
@@ -233,6 +235,17 @@ c
       devci=devcf(i)
       dilci=dilc(i)
       divci=divc(i)
+c gaz 020217      
+c determine direction of model (define for both materials) in geneg2 and other geneq etc 
+      if(gdkm_flag.eq.1) then
+       if(i.le.neq_primary) then
+        i_dir_gdkm = gdkm_dir(igdpm(i))
+       else 
+        i_dir_gdkm = gdkm_dir(igdpm(i-neq_primary))
+       endif
+      else
+        i_dir_gdkm = -1
+      endif      
 c
 c form constants for i>neq
 c
@@ -310,6 +323,7 @@ c
             alykb=aykb
             alzkb=azkb
             reduction_factor = red_factor(istrw_itfc(it11(jm)))
+            reduction_factor_t = reduction_factor
             perml(1)=2.*alxkb*alxi/(alxkb+alxi)
             perml(2)=2.*alykb*alyi/(alykb+alyi)
             perml(3)=2.*alzkb*alzi/(alzkb+alzi)
@@ -327,23 +341,55 @@ c           pxy=sx2c*perml(1)+sx3c*perml(2)+sxzc*perml(3)
             dely2=(cord(kz,2)-cord(iz,2))**2
             delz2=(cord(kz,3)-cord(iz,3))**2
             dis2=delx2+dely2+delz2
-            if(dis2.gt.dis_tol.and.iwd.gt.0) then
+            if(i_dir_gdkm.ge.0.and.reduction_factor.gt.2) then
+               kb_pri = reduction_factor -2
+               reduction_factor = 1.0 
+c gaz 051416 harmonic weighting in coordinate directions               
+               if(i_dir_gdkm.eq.1) then
+                 pxy = sx2c*perml(1)
+               else if(i_dir_gdkm.eq.2) then
+                 pxy = sx2c*perml(2)  
+               else if(i_dir_gdkm.eq.3) then
+                 pxy = sx2c*perml(3)
+               else if(dis2.gt.dis_tol) then
+                pxy=sx2c*dis2/(delx2/perml(1)+
+     &              dely2/perml(2)+delz2/perml(3))
+               endif                                    
+            elseif(dis2.gt.dis_tol.and.iwd.gt.0) then
                pxy=sx2c*dis2/(delx2/perml(1)+
      &              dely2/perml(2)+delz2/perml(3))
             else
                pxy=sx2c*sx_mult*max(perml(1),perml(2),perml(3))
             endif
+            if(reduction_factor.gt.2.) reduction_factor = 1.0
             pxy = pxy*reduction_factor
             pxyi=pxy*(phikb-phii)
             pxyh=pxy*(pvikb-pvii)
-            if(dis2.gt.dis_tol.and.iwd.gt.0) then
-               sx3c=sx2c*dis2/
-     &              (delx2/sx2t+dely2/sx3t+
-     &              delz2/sxzt)
+             if(i_dir_gdkm.ge.0.and.reduction_factor_t.gt.2) then
+               kb_pri = reduction_factor_t -2
+               reduction_factor_t = 1.0 
+               if(i_dir_gdkm.eq.1) then
+                 sx3c = sx2c*sx2t
+               else if(i_dir_gdkm.eq.2) then
+                 sx3c = sx2c*sx3t 
+               else if(i_dir_gdkm.eq.3) then
+                 sx3c = sx2c*sxzt
+               else if(dis2.gt.dis_tol) then
+                sx3c=sx2c*dis2/
+     &          (delx2/sx2t+dely2/sx3t+
+     &           delz2/sxzt)
+               endif                                    
+            elseif(dis2.gt.dis_tol.and.iwd.gt.0) then
+              sx3c=sx2c*dis2/
+     &          (delx2/sx2t+dely2/sx3t+
+     &           delz2/sxzt)
             else
                sx3c=sx2c*sx_mult*max(sx2t,sx3t,sxzt)
-               sx2c = sx2c*sx_mult
             endif
+            if(reduction_factor_t.gt.2) reduction_factor_t = 1.0
+            sx3c = reduction_factor_t*sx3c
+c gaz 080118 added reduction factor to sx2c for air-water vapor diffusion       
+            sx2c = reduction_factor_t*sx2c
             t1(neighc)=pxyi
             t2(neighc)=pxyh
             t3(neighc)=pxy
@@ -369,6 +415,7 @@ c
             alxkb=axkb
             alykb=aykb
             reduction_factor = red_factor(istrw_itfc(it11(jm)))
+            reduction_factor_t = reduction_factor
             perml(1)=2.*alxkb*alxi/(alxkb+alxi)
             perml(2)=2.*alykb*alyi/(alykb+alyi)
             radkb=0.5*(radi+cord(kz,3))
@@ -384,22 +431,47 @@ c           pxy=sx2c*perml(1)+sx3c*perml(2)
             dely2=(cord(kz,2)-cord(iz,2))**2
             dis2=delx2+dely2
             dis2=delx2+dely2
-            if(dis2.gt.dis_tol.and.iwd.gt.0) then
+            if(i_dir_gdkm.ge.0.and.reduction_factor.gt.2) then
+               kb_pri = reduction_factor -2
+               reduction_factor = 1.0 
+               if(i_dir_gdkm.eq.1) then
+                 pxy = sx2c*perml(1)
+               else if(i_dir_gdkm.eq.2) then
+                 pxy = sx2c*perml(2)
+               else if(dis2.gt.dis_tol) then
+                pxy=sx2c*dis2/(delx2/perml(1)+
+     &              dely2/perml(2))
+               endif                                
+            elseif(dis2.gt.dis_tol.and.iwd.gt.0) then
                pxy=sx2c*dis2/(delx2/perml(1)+
      &              dely2/perml(2))
             else
                pxy=sx2c*sx_mult*max(perml(1),perml(2))
             endif
+            if(reduction_factor.gt.2) reduction_factor = 1.0
             pxy = pxy*reduction_factor
             pxyi=pxy*(phikb-phii)
             pxyh=pxy*(pvikb-pvii)
-            if(dis2.gt.dis_tol.and.iwd.gt.0) then
-               sx3c=sx2c*dis2/
-     &              (delx2/sx2t+dely2/sx3t)
+            if(i_dir_gdkm.ge.0.and.reduction_factor_t.gt.2) then
+               kb_pri = reduction_factor_t -2
+               reduction_factor_t = 1.0 
+               if(i_dir_gdkm.eq.1) then
+                 sx3c = sx2c*sx2t
+               else if(i_dir_gdkm.eq.2) then
+                 sx3c = sx2c*sx3t  
+               else if(dis2.gt.dis_tol) then
+                 sx3c=sx2c*dis2/
+     &          (delx2/sx2t+dely2/sx3t)
+               endif                                    
+            elseif(dis2.gt.dis_tol.and.iwd.gt.0) then
+              sx3c=sx2c*dis2/
+     &          (delx2/sx2t+dely2/sx3t)
             else
                sx3c=sx2c*sx_mult*max(sx2t,sx3t)
-               sx2c=sx2c*sx_mult
             endif
+            if(reduction_factor_t.gt.2) reduction_factor_t = 1.
+             sx3c = reduction_factor_t*sx3c
+             sx2c = reduction_factor_t*sx2c
             t1(neighc)=pxyi
             t2(neighc)=pxyh
             t3(neighc)=pxy

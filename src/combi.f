@@ -227,7 +227,21 @@
       integer, allocatable ::  izonefree(:)
       integer, allocatable ::  izonegrad(:)
       integer, allocatable ::  izonesubm(:)
+c gaz 102716 saving zones
+      integer, allocatable ::  izonesave(:)
+      integer, allocatable ::  ncord(:)
+      integer, allocatable ::  ncord_inv(:)
+      integer, allocatable ::  elem_temp(:,:)
+      integer, allocatable ::  izonesavenum(:)
+      character*30, allocatable ::  zonesavenames(:)
+      character*200, allocatable ::  contour_flux_files(:)
+      character*200, allocatable ::  contour_conc_files(:)
+      integer maxsvzone 
+      parameter (maxsvzone = 200)
+      
       integer, allocatable ::  izonef_itfc(:)
+c zone related integers
+      integer izone_save
       integer, allocatable ::  ka(:)
       integer, allocatable ::  nar(:)
       integer, allocatable ::  nelm(:)
@@ -257,6 +271,9 @@
       real*8, allocatable ::   areat_gdpm(:)
       integer, allocatable ::   iconn_gdkm(:,:)
       integer, allocatable ::   nelm_gdkm(:,:)
+c gaz 08102016 
+      real*8, allocatable ::   gdkm_volume_fraction(:)
+      integer, allocatable ::   gdkm_dir(:)
       
       real*8, allocatable ::   sx(:,:)
       real*8, allocatable ::   sx_primary(:,:)
@@ -311,7 +328,7 @@ c arrays for interface reduction
       real*8, allocatable ::   itfcprobsize(:,:)
 
       integer, allocatable ::  nflxc(:)
-
+      integer ik_gdkm_red
 c
 c arrays for use with rate-limited processes (gdpm etc)
 c

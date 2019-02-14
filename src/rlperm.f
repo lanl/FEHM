@@ -460,6 +460,9 @@ c      parameter(su_cut = 0.7d00)
       real*8, allocatable :: xfptmp(:), yfptmp(:), zfptmp(:)
       logical null1,ex
       integer ireg0
+c gaz 100118      
+      integer i1, i2, i3, i4, ic, iunit_rlp, open_file
+      character*80  rlp_temp_file   
       save ireg,ireg0
       if(l.eq.0) ireg0 = 0
       
@@ -470,7 +473,7 @@ c     read in data
 c     check for read from other file
 
          icapp = 0
-         i = 0
+         i = i_rlp
          j = 0
          ex = .false.
          do
@@ -480,7 +483,6 @@ c     check for read from other file
             read(inpt,*) irlpd
             backspace inpt
             i = i+1
-            
             if (irlpd .eq. 1) then
                read(inpt,*) irlpt(i),rp1f(i),rp2f(i),rp3f(i),
      &              rp4f(i),cp1f(i),cp3f(i)
@@ -695,7 +697,8 @@ c     If the permeability was entered as a negative value, use log permeability
 c     ****** end of input loop
          
  20      num_models=max(i,j-1)
-         do i=1,num_models
+c   gaz 100118 reset model numbers 
+         do i=i_rlp+1,num_models
             
             if(irlpt(i).ge.3 .and. irlpt(i)
      &        .le. 9. or. irlpt(i) .eq. -4 ) then
@@ -793,15 +796,12 @@ c    calculate cutoff values for cap pressure
             endif 
             
          enddo                
-c     
 c     return if read data from a file
 c     
          if(ex) return
-         
-c     read in nodal capillary type
-         
-c     read in nodal capillary type
-      
+
+c read in nodal rlp  type
+      if(i_rlp.eq.0) then
          narrays = 1
          itype(1) = 4
          default(1) = 1
@@ -812,9 +812,23 @@ c     read in nodal capillary type
      3        i4_1=irlp(1:n0) )
 
          macroread(7) = .TRUE.
-         
+      else
+         initdata_pad = i_rlp
+         narrays = 1
+         itype(1) = 4
+         default(1) = 1
+         macro = "rlp "
+         igroup = 2
+         call initdata2(inpt, ischk, n0, narrays,
+     2        itype, default, macroread(7), macro, igroup, ireturn,
+     3        i4_1=irlp(1:n0) )          
+          
+        initdata_pad = 0         
+      endif 
+c count models so far
+      i_rlp = num_models  
          do i=1,n0
-            if(irlpt(irlp(i)).le.2) then
+             if(irlpt(irlp(i)).le.2) then
                icap(i)=irlp(i)
             else if(irlpt(irlp(i)).eq.21) then
                icap(i) = 1
@@ -891,6 +905,10 @@ c
             ireg0 = ireg
             mi = i+ndummy
             ieosd = ieos(mi)
+c
+c gaz 112115
+c
+            if(ieosd.eq.4) ieosd =1
             if (rlp_flag .eq. 0) then
                it = 0
             else

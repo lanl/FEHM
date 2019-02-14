@@ -258,12 +258,13 @@ c
                itype(2) = 8 
                itype(3) = 8 
                igroup = 1
+               
 c     
 c     Other values are the same as above
 c                 
                call initdata2(inpt,ischk, n0, narrays, itype,
-     &              default, macroread(2), macro, igroup, ireturn,
-     &              r8_1=k0f(1:n0),r8_2=bkf(1:n0),r8_3=por0f(1:n0))
+     &            default, macroread(23), macro1(1:4), igroup, ireturn,
+     &            r8_1=k0f(1:n0),r8_2=bkf(1:n0),r8_3=por0f(1:n0)) 
 
                do i = 1,n0
                   if(k0f(i).eq.default(1)) then
@@ -279,7 +280,7 @@ c adjust perm parameter for correct FEHM units
                      por0f(i) = 0.0
                   endif
                enddo
- 
+               macroread(23) = .true.
             elseif (macro1.eq.'saltvapr') then
 c manage vapor pressure lowering with salt 
 c Sparrow (2003) Desalination
@@ -825,14 +826,18 @@ c
      &                  write(iatty,6017) md,permsb,ps(md),thx(md)*1.e6,
      &                     pwv,dvas(md),ps_delta_rxn_s(md)
                      enddo
-                     write(iout,*) 'Total change in volume: ', psdelta,
-     &                     ' m'
-                     write(iatty,*) 'Total change in volume: ', psdelta,
-     &                     ' m'
+                     if(iout.ne.0) write(iout,*) 
+     &                'Total change in volume: ', psdelta,' m'
+
+                     if(iatty.ne.0) write(iatty,*) 
+     &                'Total change in volume: ', psdelta,' m'
+
                     if(psvol.gt.1.e-30) then
-                     write(iout,*) 'Percent change in total volume: ', 
+                     if(iout.ne.0) write(iout,*) 
+     &                'Percent change in total volume: ', 
      &                     psdelta/psvol*100, ' %'
-                     write(iatty,*) 'Percent change in total volume: ', 
+                     if(iatty.ne.0) write(iatty,*) 
+     &                'Percent change in total volume: ', 
      &                     psdelta/psvol*100, ' %'
                     endif
                   enddo

@@ -277,13 +277,13 @@ C**********************************************************************
       integer iad_min, iad_mult, i
       real*8 fdum_mult
       parameter (fdum_mult=1.d02,iad_mult= 100)
-c gaz debug
-      i = l
-c
-      itert=0
+
+      itert=0 
       minkt=0
       strd=1.
       iad=0
+      mlz_save= 0
+c gaz 110715
       mlz = 0
       if(g1.lt.0.0) then
 	 iad_min = 0
@@ -498,7 +498,7 @@ c     RJP 04/17/07 changed following
 
       endif
       if(fdum.le.f0.and.iad.ge.iad_min) goto 2000
-      if(mlz.eq.-2) goto 2000
+      if(mlz.lt.0) goto 2000
       iad=iad+1
       itotal=itotal+1
 c     

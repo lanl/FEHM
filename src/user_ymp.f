@@ -104,7 +104,7 @@ C***********************************************************************
       integer, allocatable :: idum_c(:)
       integer, allocatable :: nel_node(:)
       integer, allocatable :: izone_awt(:)
-      integer, allocatable :: elem_temp(:,:)
+c      integer, allocatable :: elem_temp(:,:)
       real*8, allocatable :: cons(:,:)
       real*8, allocatable :: cord_add(:,:)
       real*8, allocatable :: times(:)
@@ -1532,6 +1532,72 @@ c
          close (99)         
          stop
        endif
+      case(-909)   
+c
+c compare temperatures for nts_thermal verification
+c 
+      if(l.eq.1) then   
+        ex = .false.
+        inquire(file = 'temp_test.txt', exist = ex) 
+        if(.not.ex) then
+          if(iout.ne.0) 
+     &      write (iout,*)'file 1 for nts_thermal comp missing'            
+          if(iptty.ne.0) 
+     &      write (iptty,*)'file 1 for nts_thermal comp missing'
+          stop
+        endif
+        open(unit = 98,file='temp_test.txt',status='unknown')  
+        ex = .false.
+        inquire(file = 'temp_test_LANL.txt', exist = ex) 
+        if(.not.ex) then
+          if(iout.ne.0) 
+     &      write (iout,*)'file 2 for nts_thermal comp missing'            
+          if(iptty.ne.0) 
+     &      write (iptty,*)'file 2 for nts_thermal comp missing'
+          stop
+        endif
+        open(unit = 99,file='temp_test_LANL.txt',status='unknown')  
+c
+        allocate(temp1(7))
+        read(98,*) 
+        read(98,*) 
+        read(98,*) 
+        read(98,*) 
+        read(98,*) 
+        read(99,*) 
+        read(99,*) 
+        read(99,*) 
+        read(99,*) 
+        read(99,*) 
+c
+        temp1(4) = 0.0
+        ntimes = 0
+        kb_max = 0
+985     continue        
+        read (98,*, end = 986) i, dumx, temp1(1)
+        read (99,*, end = 986) j, dumx, temp1(2)
+        ntimes = ntimes + 1
+        temp1(3) = abs(temp1(1)-temp1(2))
+        temp1(7) = temp1(7) + temp1(3)
+        if(temp1(3).gt.temp1(4)) then
+            temp1(4) = temp1(3)
+            temp1(5) = temp1(1)
+            temp1(6) = temp1(2)
+            kb_max = i
+        endif
+        go to 985
+986     continue   
+        
+          
+           if(iout.ne.0) write(iout,*) 
+     &        'max temp diff node ',kb_max,' diff = ', temp1(4)
+           if(iptty.ne.0) write(iptty,*) 
+     &       'max temp diff node ',kb_max,' diff = ', temp1(4)            
+           write (iout,*) ntimes,' lines , end of data,stopping'            
+          if(iptty.ne.0) 
+     &      write (iptty,*) ntimes,' lines , end of data,stopping' 
+          stop        
+      endif
       case(-910)
 c
 c vap_press fit

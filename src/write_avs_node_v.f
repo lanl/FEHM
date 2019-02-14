@@ -142,9 +142,11 @@ C***********************************************************************
 
       use avsio
       use comai, only : altc, days, icnl, jdate, jtime, verno, wdd,
-     &     nei_in, ns_in, neq_primary
-      use combi, only : corz, izonef, nelm
+     &     nei_in, ns_in, neq_primary, ns, icflux
+      use combi, only : corz, izonef, nelm, ncord, ncord_inv, elem_temp,
+     & contour_flux_files
       use comdi, only : nsurf, izone_surf, izone_surf_nodes
+      use comriv, only : npoint_riv, nnelm_riv, nelm_riv
       implicit none
       
       integer maxvector
@@ -157,16 +159,32 @@ C***********************************************************************
       character*45 title(3*maxvector), title2(2)
       character*50 fstring
       character*500 tstring
+      
       integer icall, neq, nvector, lu, ifdual, length
       integer i, istep, nout, iz, idz, iendz, j, k, iocord_temp
       integer icord1, icord2, icord3, il, i1, i2, open_file
       integer, allocatable :: nelm2(:)
+c gaz 111616      
+      integer izunit,nin,ii,n_elem,ns_elem,ie, e_mem(8)
+      integer neq_sv, nei_in_sv, icall_sv, istart, iend
+      integer ns_in0, irivp
+      character*500 string
+      logical zone_saved
       real*8  write_array(9)
       real*8  pnxv(neq), pnyv(neq), pnzv(neq)
       real*8  pnxl(neq), pnyl(neq), pnzl(neq)
       character*5 char_type
+c gaz 111616      
+      character*30 zonesavename, char_temp
+      character*6 zonestring 
+      character*200 file_flux
       
       save tec_string
+
+c--------------------------------------------
+c  Shaoping add  10-19-2017
+      zone_saved =.false.
+c-------------------------------------------
 
       if(nvector .gt. maxvector)then
          write(lu,*)'--------------------------------------------'
@@ -381,7 +399,9 @@ c     &           (trim(title(i)), i = iocord + 1, nout), '"'
             tstring = trim(tstring) // '"'
             write(lu, '(a)') trim(tstring)
          end if
-         if (iozone .ne. 0) write(lu,302) trim(timec_string)
+c gaz 112716 : this needs to be moved down
+c with zone and FE info 
+c         if (iozone .ne. 0) write(lu,302) trim(timec_string)
       else if(altc(1:3).eq.'sur') then
 c         write(tstring,400) (trim(title2(i)), i = 1, k),
 c     &        (trim(title(i)), j = 1, nout)
@@ -398,8 +418,75 @@ c     &        (trim(title(i)), j = 1, nout)
 ! Zone loop
          if (iozone .ne. 0) then
             idz = izone_surf(iz)
-         end if
-         if (altc(1:3) .eq. 'tec') then
+c open and read saved zone file if they exist
+            call zone_saved_manage(1,izunit,idz,nin,n_elem,zone_saved)
+c            
+            if(zone_saved) then
+             zonestring = ' '   
+             write(zonestring(1:5),'(i5)') idz
+             neq_sv = neq
+             nei_in_sv = nei_in
+             icall_sv = icall
+             neq = nin
+             nei_in = n_elem
+             icall = 1
+             iogeo = 1 
+             irivp = 0
+c gaz 112716 FE geometry goes here   
+             if (altc(1:3) .eq. 'tec') then
+               string = ''
+               if (icall .eq. 1 .and. iogeo .eq. 1) then
+                  select case (ns_in)
+                  case (5,6,8)
+                     write (string, 135) neq, nei_in, 'FEBRICK'
+                  case (4)
+                     if (icnl .eq. 0) then
+                        write (string, 135) neq, nei_in, 
+     &                       'FETETRAHEDRON'
+                     else
+                        write (string, 135) neq, nei_in, 
+     &                       'FEQUADRILATERAL'
+                     end if
+                  case (3)
+                     write (string, 135) neq, nei_in, 'FETRIANGLE'
+                  case (2)
+                     if(irivp.eq.0) then
+                        write (string, 135) neq, nei_in, 'FELINESEG'
+                        ns_in=ns_in0
+                     else if(irivp.eq.2)then                    
+                        write (string, 135) npoint_riv, npoint_riv-1,
+     &                       'FELINESEG'
+                        ns_in=ns_in0
+                     endif
+                  case (0)
+c     fdm grid
+                     write (string, '(a)') ''
+                  end select                                        
+               endif       
+        
+                  if(irivp.eq.0) then
+c gaz 111516 mods to write zone number                      
+                     if (iogeo .eq. 1) then
+                        tec_string = trim(string)
+                        write (lu, 131) trim(zonestring),  
+     &                       trim(timec_string), trim(tec_string)
+                     else if (iogrid .eq. 1) then
+                        tec_string = trim(string)
+                        write (lu, 130) trim(timec_string), 
+     &                       trim(gridstring), trim(times_string)
+                     else
+                        write (lu, 130) trim(timec_string), 
+     &                       trim(tec_string)
+                     end if
+                  else
+
+                  endif                  
+               
+             endif
+c gaz end  FE geometry  
+            endif
+            endif
+         if (.not.zone_saved.and.altc(1:3) .eq. 'tec') then
             if (iozone .ne. 0) then
                write (lu, 95) idz, trim(tec_string)
             else
@@ -425,10 +512,27 @@ c     &        (trim(title(i)), j = 1, nout)
             call namefile2(icall,lu,ioformat,tailstring,idz)
             write(lu, '(a)') trim(tstring)
          end if
-         do i = 1,neq
-! Node loop
+c gaz 112116         
+c if saved zone exists use 1, nin form
+         if(zone_saved) then
+          istart = 1
+          iend = nin
+         else
+          istart = 1
+          iend = neq
+         endif
+         do ii = istart, iend
+c     Node loop          
+            string = ''
             if (iozone .ne. 0) then
-               if (izone_surf_nodes(i).ne.idz) goto 199
+               if(zone_saved) then
+                i = ncord(ii)
+               else
+                i = ii
+                if (izone_surf_nodes(i).ne.idz) goto 199
+               endif
+            else
+              i = ii
             end if
             if (iocord .ne. 0) then
                k = 1
@@ -497,9 +601,30 @@ c     &        (trim(title(i)), j = 1, nout)
                write (fstring, 110) j
                write(lu, fstring) i, (write_array(k), k = 1, j)
             end if
+ 
  199     enddo 
-      end do
-
+c            
+c add element information here for saved zones and then exit
+c
+          if(zone_saved) then
+            do i = 1, n_elem
+             write(lu,'(9(1x,i7))') 
+     &      (ncord_inv(elem_temp(i,j)),j = 1,ns_in)
+            enddo
+            neq = neq_sv
+            nei_in = nei_in_sv
+            icall = icall_sv
+            deallocate(elem_temp)
+         endif
+      enddo
+      if(zone_saved) then
+       if(.not.allocated(contour_flux_files)) 
+     &     allocate(contour_flux_files(100))
+        icflux = icflux + 1
+        inquire(unit=lu,name = file_flux) 
+        contour_flux_files(icflux) = file_flux
+       return
+      endif
       if (icall .eq. 1 .and. altc(1:3) .eq. 'tec' .and. iogeo .eq. 1)
      &     then
 c     Read the element connectivity and write to tec file
@@ -536,7 +661,11 @@ c 96   format('ZONE T = "Simulation time ',1p,g16.9,' days"', a)
  110  format("(i10.10, ", i1, "(1x, g16.9))")
  120  format("(", i1, "(g16.9, 1x), i10.10, ", i1, "(1x, g16.9))" )
  130  format("(", i1, "(g16.9, 1x), i10.10, 1x, i4,", i1, 
-     &     "(1x, g16.9))") 
+     &     "(1x, g16.9))")
+ 131  format('ZONE ',a,',',' T =', a, a, a, a)       
+ 135  format(', N = ', i8, ', E = ', i8, ', DATAPACKING = POINT',
+     &     ', ZONETYPE = ', a)      
+      
  200  format('nodes at ', g16.9,' days', 9(a))
  210  format("(i10.10, ", i1, "('", a, "',g16.9))") 
  220  format("(i10.10, '", a, "', i4, ", i1, "('", a, "',g16.9))") 

@@ -549,12 +549,14 @@ c     real*8 sxzc
       logical bit
       integer isl
       integer iz4m1
-      integer imd,iwd   
+      integer imd, iwd 
+      integer kb_pri, i_dir_gdkm
 c following variables are associated with the drift flux nodel    
       real*8 mdrifti,dmdriftpi,dmdriftei,mdrift_part
       real*8 mdriftkb,dmdriftpkb,dmdriftekb
       real*8 area_face,dmdrpkb,dmdrekb,dmdrpi,dmdrei
-      
+c gaz debug   
+      alxi = ps(1)
 c changed by avw -- entered here by seh
       neqp1=neq+1
       if(i.gt.neq) then
@@ -597,6 +599,18 @@ c
          swi = 1.0d0
       endif
       ti=t(i)
+c gaz 020217      
+c determine direction of model (define for both materials) in geneg2 and other geneq etc 
+      if(gdkm_flag.eq.1) then
+       if(i.le.neq_primary) then
+        i_dir_gdkm = gdkm_dir(igdpm(i))
+       else 
+        i_dir_gdkm = gdkm_dir(igdpm(i-neq_primary))
+       endif
+      else
+        i_dir_gdkm = -1
+      endif
+    
 c
 c form constants for i>neq
 c
@@ -678,23 +692,27 @@ c
             dely2=(cord(kz,2)-cord(iz,2))**2
             delz2=(cord(kz,3)-cord(iz,3))**2
             dis2=delx2+dely2+delz2
-            if(gdkm_flag.eq.2.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) then
-               pxy = sx2c*alxkb     
-            elseif(gdkm_flag.eq.2.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
-     &       then   
-               pxy = sx2c*alxi    
-            elseif(gdkm_flag.eq.3.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) 
-     &       then   
-               pxy = sx2c*alxi    
-            elseif(gdkm_flag.eq.3.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
-     &       then   
-               pxy = sx2c*alxkb                                        
+            if(i_dir_gdkm.ge.0.and.reduction_factor.gt.2) then
+               kb_pri = reduction_factor -2
+               reduction_factor = 1.0 
+c  gaz 050118 harmonic weighting to match hi res grid               
+               if(i_dir_gdkm.eq.1) then
+                 pxy = sx2c*perml(1)
+               else if(i_dir_gdkm.eq.2) then
+                 pxy = sx2c*perml(2) 
+               else if(i_dir_gdkm.eq.3) then
+                 pxy = sx2c*perml(3)
+               else if(dis2.gt.dis_tol) then
+                pxy=sx2c*dis2/(delx2/perml(1)+
+     &              dely2/perml(2)+delz2/perml(3))
+               endif                                    
             elseif(dis2.gt.dis_tol.and.iwd.gt.0) then
                pxy=sx2c*dis2/(delx2/perml(1)+
      &              dely2/perml(2)+delz2/perml(3))
             else
                pxy=sx2c*sx_mult*max(perml(1),perml(2),perml(3))
             endif
+            if(reduction_factor.gt.2) reduction_factor = 1.0
             pxy = pxy*reduction_factor
             pxyi=pxy*(phikb-phii)
             pxyh=pxy*(pvikb-pvii)
@@ -930,12 +948,9 @@ c face area of CV needed for drift mass flux
          endif
 c     
 c     
-c 2-d geometry
+c 2-d geometry (including radial)
 c
       elseif(icnl.ne.0) then
-         if(i.ge.223) then
-          continue
-         endif
          radi=cord(iz,3)
          do 69 jm=1,iq
             kb=it8(jm)
@@ -961,23 +976,24 @@ c
             delx2=(cord(kz,1)-cord(iz,1))**2
             dely2=(cord(kz,2)-cord(iz,2))**2
             dis2=delx2+dely2
-            if(gdkm_flag.eq.2.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) then
-               pxy = sx2c*alxkb     
-            elseif(gdkm_flag.eq.2.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
-     &       then   
-               pxy = sx2c*alxi    
-            elseif(gdkm_flag.eq.3.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) 
-     &       then   
-               pxy = sx2c*alxi    
-            elseif(gdkm_flag.eq.3.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
-     &       then   
-               pxy = sx2c*alxkb                                        
+            if(i_dir_gdkm.ge.0.and.reduction_factor.gt.2) then
+               kb_pri = reduction_factor -2
+               reduction_factor = 1.0 
+               if(i_dir_gdkm.eq.1) then
+                pxy = sx2c*perml(1)
+               else if(i_dir_gdkm.eq.2) then
+                pxy = sx2c*perml(2)
+               else if(dis2.gt.dis_tol) then 
+                pxy=sx2c*dis2/(delx2/perml(1)+
+     &              dely2/perml(2))
+               endif                                
             elseif(dis2.gt.dis_tol.and.iwd.gt.0) then
                pxy=sx2c*dis2/(delx2/perml(1)+
      &              dely2/perml(2))
             else
                pxy=sx2c*sx_mult*max(perml(1),perml(2))
             endif
+            if(reduction_factor.gt.2) reduction_factor = 1.0
             pxy = pxy*reduction_factor
             pxyi=pxy*(phikb-phii)
             pxyh=pxy*(pvikb-pvii)

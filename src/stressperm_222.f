@@ -30,8 +30,8 @@ c combined tensil and shear stress(2 and 22) model
       real*8 xperm_stry,xperm_strz, yperm_strx,yperm_strz
       real*8 zperm_strx,zperm_stry
       real*8 fac(3,3),fac_E(3)
-      real*8 eigenvec(3,3),alambda(3),rm(3,3)
-      
+c      real*8 eigenvec(3,3),alambda(3),rm(3,3)
+      real*8 rm(3,3)
 c     
 c     calculate components of volume strain
 c     

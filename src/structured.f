@@ -777,7 +777,7 @@ c     write coordinates to a file
          end if
          write (nunit,'(a)') 
      &  'Coordinates & volumes for primary finite difference gridblocks'
-         write(nunit,*) neq_primary
+         write(nunit,*) neq_primary, nx, ny, nz
          do i=1,neq_primary
             write(nunit,'(i9,1x,1p,3(g15.6,1x),g12.4)') 
      &           i,(cord(i,j),j=1,3),sx1(i)

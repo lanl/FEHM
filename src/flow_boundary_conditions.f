@@ -88,7 +88,7 @@ c
       integer, allocatable :: idum(:)
  
       real*8 days0,qair,qwat
-      real*8 t_hum,p_hum
+      real*8 huma_temp, t_hum, p_hum
 C       real*8 sdum,pdum,denhdum,denehdum
       real*8 denhold,denehold,diffmass,diffener
       real*8 qa_temp, pf_temp
@@ -103,6 +103,7 @@ c
 c
          if (.not. allocated (node_model)) allocate(node_model(n0))
          node_model = 0
+
          if (.not. allocated (min_model)) 
      &		allocate(min_model(maxmodel))
           min_model = 0
@@ -131,7 +132,7 @@ c
          fac_sec_days = 1./86400.
          fac_min_days = 1./1440.
          fac_year_days = 365.25
-         if(iqa.ne.0.or.ixa.ne.0) then
+         if(iqa.ne.0) then
             if (.not. allocated (qa)) allocate(qa(n0))                  
             if (.not. allocated (sourcea)) 
      .           allocate(sourcea(maxtimes,maxmodel))   
@@ -141,6 +142,17 @@ c
             sourcea = 0.0d00
             sourcea_type = 0
          endif
+c gaz 111418 add coding for qaxf(air fraction in water flowrate)   
+         if(ixa.ne.0) then
+            if (.not. allocated (qaxf)) allocate(qaxf(n0))                  
+            if (.not. allocated (sourcea)) 
+     .           allocate(sourcea(maxtimes,maxmodel))   
+            if (.not. allocated (sourcea_type)) 
+     .           allocate(sourcea_type(maxmodel))   
+            qaxf = 0.0d00
+            sourcea = 0.0d00
+            sourcea_type = 0
+         endif         
          if(iqf.ne.0) then
             if (.not. allocated (qw)) allocate(qw(n0))                  
             if (.not. allocated (qw0)) allocate(qw0(n0)) 
@@ -194,7 +206,7 @@ c
             sourceco2_type = 0
          endif
          if(iqenth.ne.0) then
-            if (.not. allocated (qenth)) allocate(qenth(n0))
+            if (.not. allocated (qenth)) allocate(qenth(n0))           
             if (.not. allocated (sourcee)) 
      .           allocate(sourcee(maxtimes,maxmodel))   
             if (.not. allocated (sourcee_type)) 
@@ -257,6 +269,8 @@ c
             if (.not. allocated (huma)) allocate(huma(n0))
             if (.not. allocated (xnva)) allocate(xnva(n0))
             if (.not. allocated (entha)) allocate(entha(n0))
+            if (.not. allocated (phuma)) allocate(phuma(n0))
+            if (.not. allocated (thuma)) allocate(thuma(n0))
             if (.not. allocated (humid)) 
      .           allocate(humid(maxtimes,maxmodel))   
             if (.not. allocated (humid_type)) 
@@ -422,9 +436,9 @@ c
          macro = "boun"
          igroup = 1
          call initdata2( inpt, ischk, n0, narrays,
-     2        itype, default, macroread(7), macro, igroup, ireturn,
+     2        itype, default, macroread(24), macro, igroup, ireturn,
      3        i4_1=idum(1:n0) )
-         macroread(7) = .TRUE.
+         macroread(24) = .TRUE.
          do i=1,n0
             if(idum(i).ne.0) then
                node_model(i)=idum(i)+mmodel_old
@@ -480,17 +494,21 @@ c heat conduction
      &           ,inpt,iptty,iout,ierr,l,igrav,ihead)
             do i=1,n
                if(idum(i).ne.0) then
-                  if(iqenth.ne.0) then
-                     if(qenth(i).ne.0.0) then
+c gaz 113018 added "if(iqenth.ne.0) then " to avoid unallocated arrays                   
+                  if(iqenth.ne.0.or.itempb.ne.0) then
+                     if(iqenth.ne.0) then 
+                       if(qenth(i).ne.0.0) then
                         qflux(i)=qenth(i)
                         qflxm(i)= 0.0
-                     endif
-                  else if(itempb.ne.0) then
-                     if(tempb(i).gt.0.0) then
+                       endif
+                     endif 
+                     if(itempb.ne.0) then
+                      if(tempb(i).gt.0.0) then
                         qflux(i)=tempb(i)
                         qflxm(i)= sx1(i)
                         if(wellim(i).ne.0.0) qflxm(i)=wellim(i)
-                     endif
+                      endif
+                     endif 
                   endif
                endif
             enddo
@@ -513,17 +531,21 @@ c pure water/heat
      &           ,inpt,iptty,iout,ierr,l,igrav,ihead)
             do i=1,n
                if(idum(i).ne.0) then
-                  if(iqenth.ne.0) then
-                     if(qenth(i).ne.0.0) then
+                  if(iqenth.ne.0.or.itempb.ne.0) then
+c gaz 113018 added "if(iqenth.ne.0) then " to avoid unallocated arrays                      
+                     if(iqenth.ne.0) then 
+                       if(qenth(i).ne.0.0) then
                         qflux(i)=qenth(i)
                         qflxm(i)= 0.0
-                     endif
-                  else if(itempb.ne.0) then
-                     if(tempb(i).gt.0.0) then
+                       endif
+                     endif 
+                     if(itempb.ne.0) then
+                      if(tempb(i).gt.0.0) then
                         qflux(i)=tempb(i)
                         qflxm(i)= sx1(i)
                         if(wellim(i).ne.0.0) qflxm(i)=wellim(i)
-                     endif
+                      endif
+                     endif 
                   else if(isatb.ne.0) then
                      if(satb(i).gt.0.0) then
                         qflux(i)=satb(i)
@@ -646,18 +668,22 @@ c air/water/heat (ngas)
      &           ,inpt,iptty,iout,ierr,l,igrav,ihead)
             do i=1,n
                if(idum(i).ne.0) then
-                  if(iqenth.ne.0) then
-                     if(qenth(i).ne.0.0) then
+                  if(iqenth.ne.0.or.itempb.ne.0) then
+c gaz 113018 added "if(iqenth.ne.0) then " to avoid unallocated arrays
+                     if(iqenth.ne.0) then 
+                       if(qenth(i).ne.0.0) then
                         qflux(i)=qenth(i)
                         qflxm(i)= 0.0
-                     endif
-                  else if(itempb.ne.0) then
-                     if(tempb(i).gt.0.0) then
+                       endif
+                     endif 
+                     if(itempb.ne.0) then
+                      if(tempb(i).gt.0.0) then
                         qflux(i)=tempb(i)
                         qflxm(i)= sx1(i)
                         if(wellim(i).ne.0.0) qflxm(i)=wellim(i)
-                     endif
-                  endif
+                      endif
+                     endif  
+                  endif                     
                endif
             enddo
             do i=1,n
@@ -781,8 +807,8 @@ c air/water/heat (ngas)
             do i=1,n
                if(idum(i).ne.0) then
                   if(ixa.ne.0) then
-                     if(qa(i).ne.0.0) then
-                        xairfl(i)=qa(i)
+                     if(qaxf(i).ne.0.0) then
+                        xairfl(i)=qaxf(i)
                      endif
                   endif
                endif
@@ -802,13 +828,21 @@ c gaz debug 122515
                 endif
                 if(ixa.ne.0.or.iqa.ne.0.or.ipresa.ne.0.or.iha.ne.0) then
                    if(qa_temp.ne.0.0.or.pf_temp.ne.0.0.or.iha.ne.0) then
-                     t_hum = thuma(i) 
-                     p_hum = phuma(i) 
-                    if(iha.ne.0.and.huma(i).gt.0.0) then
+c gaz debug 82918                       
+c                     t_hum = thuma(i) 
+c                     p_hum = phuma(i) 
+                      if(allocated(huma)) then
+                       huma_temp = huma(i)
+                      else
+                       huma_temp = 0.0d0  
+                      endif
+                    if(iha.ne.0.and.huma_temp.gt.0.0) then
 c flow humidity has less calls now
-                       call flow_humidity_bc(1,t_hum,p_hum,huma(i),
+                     t_hum = thuma(i) 
+                     p_hum = phuma(i)                         
+                       call flow_humidity_bc(1,t_hum,p_hum,huma_temp,
      &                       xnva(i),entha(i)) 
-                    else if(abs(huma(i)).gt.0.0) then
+                    else if(abs(huma_temp).gt.0.0) then
 c
 c fixed humidity may need impedance factor (aiped)
 c

@@ -44,6 +44,8 @@
       integer cnum_stress, ilithgrad, permfile
       
       integer isNonlinear, Nonlin_model_flag, flag_principal
+c gaz 031017    
+      integer isbiotNonLin
       integer flag_excess_shear
 
      
@@ -128,6 +130,9 @@ c k yoshioka 3/2/10 orthotropy
 c.........................................      
       real*8, allocatable ::  bulk(:)
       real*8, allocatable ::  alp(:)
+c gaz 042917 added initial thermal and bulk modulus      
+      real*8, allocatable ::  bulk0(:)
+      real*8, allocatable ::  alp0(:)
       real*8, allocatable ::  du(:) 
       real*8, allocatable ::  dv(:) 
       real*8, allocatable ::  dw(:)
@@ -377,7 +382,30 @@ c s kelkar
       real*8, allocatable ::  xtan_min(:)        
       real*8, allocatable ::  disp0(:,:)
       real*8, allocatable ::  k_strs91(:,:)
-      real*8, allocatable ::  e_temp91(:,:)
+c      real*8, allocatable ::  e_temp91(:,:)
+c gaz 042116
+c      
+      real*8, allocatable ::  e_temp91(:,:,:)
+      real*8, allocatable ::  t_non_ref(:)
+      integer, allocatable ::  i_tab_youngs(:)
+      integer, allocatable ::  iy_tab(:)
+      integer, allocatable ::  istr_non_model(:)
+      integer  max_y_tab, n_young_table, nentries_young_max
+      integer max_non_str, nentries_biot
+      parameter (max_non_str = 100)
+      parameter (max_y_tab = 100,nentries_young_max = 10000)
+c      
+c gaz 042116
+c      
+      real*8, allocatable ::  biot_temp91(:,:,:)
+      real*8, allocatable ::  biot_t_non_ref(:)
+      integer, allocatable ::  i_tab_biot(:)
+      integer, allocatable ::  iy_tab_biot(:)
+      integer, allocatable ::  istr_non_model_biot(:)
+      integer  max_y_tab_b, n_biot_table, nentries_biot_max
+      integer max_non_str_biot
+      parameter (max_non_str_biot = 100)
+      parameter (max_y_tab_b = 100,nentries_biot_max = 10000)      
 
       real*8 knx_stressperm, kny_stressperm,knz_stressperm
 
@@ -414,8 +442,10 @@ c d dempsey, for permmodel_25, save fracture orientations from file
       real*8, allocatable ::  perm_mult3(:)
       real*8 str25_density(1000)
       integer str25_N_obs
-
-
+      
+      
+c gaz 110517    
+      real*8 eigenvec(3,3),alambda(3), eigenvec_deg(3)
 
 
       end module comsi

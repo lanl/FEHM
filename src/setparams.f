@@ -348,6 +348,7 @@ c	gdpm nodes
       gdkm_flag = 0
       iwellp_flag = 0
       nwellphy = 0
+      i_rlp = 0
 
       call scanin
 
@@ -398,6 +399,9 @@ c	gdpm nodes
       end if
 
  4105 continue
+c gaz 0226 first discovery of neq      
+      if(ngdpmnodes.eq.-999) ngdpmnodes = neq
+c      
       if (nei .eq. 0) then
          macro = '    '   
          do while (macro .ne. 'elem' .and. macro .ne. 'fdm ')
@@ -474,13 +478,32 @@ c
          n0 = neq 
         
       endif
-
-      if (iptty .gt. 0) write(iptty, *) 'n0 = ', n0
-      if(ngdpmnodes.ne.0.and.iptty.gt.0)
-     2write(iptty,*) neq_primary,' primary nodes'
-      if(ngdpmnodes.ne.0.and.iptty.gt.0)
-     2write(iptty,*) ngdpmnodes,' gdpm nodes'
+      if(.not.gdkm_new) then
+       if (iptty .gt. 0) write(iptty, *) 'n0 = ', n0
+       if(ngdpmnodes.ne.0.and.iptty.gt.0)
+     &  write(iptty,*) neq_primary,' primary nodes'
+       if(ngdpmnodes.ne.0.and.iptty.gt.0)
+     &  write(iptty,*) ngdpmnodes,' gdpm nodes'
          
+       if (iout .gt. 0) write(iout, *) 'n0 = ', n0
+       if(ngdpmnodes.ne.0.and.iout.gt.0)
+     &  write(iout,*) neq_primary,' primary nodes'
+       if(ngdpmnodes.ne.0.and.iout.gt.0)
+     &  write(iout,*) ngdpmnodes,' gdpm nodes'
+      else
+       if (iptty .gt. 0) write(iptty, *) 'n0 = ', n0
+       if(iptty.gt.0)
+     &  write(iptty,'(t1,i10,1x,a20)') neq_primary,'primary nodes'
+       if(iptty.gt.0)
+     &  write(iptty,'(t12,a)') 
+     &  'number gdkm nodes calculated after gdkm macro'        
+       if (iout .gt. 0) write(iout, *) 'n0 = ', n0
+       if(iout.gt.0)
+     &  write(iout,'(t1,i10,1x,a)') neq_primary,'primary nodes'
+       if(iout.gt.0)
+     &  write(iout,'(t12,a)') 
+     &  'number gdkm nodes calculated after gdkm macro'   
+      endif
       if (nspeci .ne. 0) then
          n7 = nspeci * n0
       else if(ico2.ge.0) then

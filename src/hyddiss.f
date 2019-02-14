@@ -230,17 +230,17 @@ c
          
          
 c     read in nodal capillary type
-         
+c gaz 110518   macroread(7) changed macroread(25)      
          narrays = 1
          itype(1) = 4
          default(1) = 1
          macro = "methdisv "
          igroup = 2
          call initdata2( inpt, ischk, n0, narrays,
-     2        itype, default, macroread(7), macro, igroup, ireturn,
-     3        i4_1=idissp(1:n0) )
+     2      itype, default, macroread(25), macro(1:4), igroup, ireturn,
+     3      i4_1=idissp(1:n0) )
 
-         macroread(7) = .TRUE.
+         macroread(25) = .TRUE.
          
          do i=1,n0
             if(idisst(idissp(i)).lt.1) then

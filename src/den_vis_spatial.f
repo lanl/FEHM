@@ -106,9 +106,9 @@ c**** read den, vis for liquids ****
         default(2) = 0.
         default(3) = 0.
         igroup = 1
-      
+c gaz 110418 cmacroread(12) to macroread(24)      
         call initdata2 (inpt, ischk, n0, narrays, itype, 
-     *     default, macroread(12), macro, igroup, ireturn,
+     *     default, macroread(24), macro, igroup, ireturn,
      *     r8_1=den_spatial(1:n0),r8_2=vis_spatial(1:n0),
      *     r8_3 =comp_spatial(1:n0))
 
@@ -121,7 +121,7 @@ c**** read den, vis for gases ****
         igroup = 1
       
         call initdata2 (inpt, ischk, n0, narrays, itype, 
-     *     default, macroread(12), macro, igroup, ireturn,
+     *     default, macroread(24), macro, igroup, ireturn,
      *     r8_1=deng_spatial(1:n0),r8_2=visg_spatial(1:n0))
 c
 c  check if values are physical

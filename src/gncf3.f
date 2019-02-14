@@ -304,6 +304,7 @@ C***********************************************************************
       
       integer icsh, nele, neu, neumax, nga, nrq, nsl, i, j
       integer ij, indx(4), iq, ir, jz, k, kb, kjz, knum
+      integer ich_pebi_sv
       real*8  aj(neumax,*)
       real*8  cpb(4,4), vpebi(4)
       real*8  a1, a2, a3, a4, a5, a6, a7
@@ -313,12 +314,14 @@ C***********************************************************************
       real*8  cord1, cord2, cord3, detja, dnga, dterm
       real*8  sa11, sa12, sa13, sa21, sa22, sa23, sa31, sa32, sa33
       real*8  vold, vold4, volt, wxnga, wynga, wznga
+      real*8 vol_tol
+      parameter (vol_tol = -1.d-12)
 
       
 c     if icsh=1 calculate jacobian information
 c     
       if ( icsh.eq.1 )  then
-c     
+c  
          if ( nsl.eq.8 )  then
 c     procedure for 8 node brick elements
             call shap3r(nga)
@@ -916,10 +919,29 @@ c     pebi tetrahedrals
             zt(jz)=cord(kb,3)
          enddo
          if(nrq.eq.1) then
+            ich_pebi_sv = ich_pebi
             if(ireord.eq.10) then
                call area_vol_tet(xt,yt,zt,cpb,vpebi)
+c check for all negative volumes
+               if(vpebi(1).lt.vol_tol.and.vpebi(2).lt.vol_tol.and.
+     &            vpebi(3).lt.vol_tol.and.vpebi(4).lt.vol_tol) then
+                  ich_pebi_sv = ich_pebi 
+                  ich_pebi = 1
+c write element number to err file
+              write(ierr,*) 'element ',nele,' has all neg node vols, ',
+     &          'negative rule applied'        
+               endif
             else 
                call pebi3(xt,yt,zt,cpb,vpebi)
+c check for all negative volumes
+               if(vpebi(1).lt.vol_tol.and.vpebi(2).lt.vol_tol.and.
+     &            vpebi(3).lt.vol_tol.and.vpebi(4).lt.vol_tol) then
+                  ich_pebi_sv = ich_pebi 
+                  ich_pebi = 1  
+c write element number to err file
+               write(ierr,*) 'element ',nele,' has all neg node vols, ',
+     &          'negative rule applied'        
+               endif                  
             endif
             if(ich_pebi.ne.0) then
                 do i = 1, 4
@@ -928,7 +950,8 @@ c     pebi tetrahedrals
                    cpb(i,j) = - cpb(i,j)
                   enddo
                 enddo
-            endif  
+            endif
+            ich_pebi = ich_pebi_sv
 c     calculate volumes
             bcoef(neu,1)=vpebi(1)
             bcoef(neu,2)=0.0

@@ -267,7 +267,8 @@ C**** Only want to set specified nodes ?
 
       do i = 1, n0
          if (tmp(i) .ne. default(2)) then
-            if (abs (ieos(i)) .eq. 1) then
+c gaz 110715 added sc phase
+            if (abs (ieos(i)) .eq. 1.or.abs (ieos(i)).eq.4) then
                to(i) =  tmp(i)
 c single phase set saturation for wtsi
                if(pho(i).le.0.) then

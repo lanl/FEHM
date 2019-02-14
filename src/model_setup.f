@@ -214,8 +214,9 @@ c     new initial value input here 12/3/98 GAZ
 c fxa is air mass fraction of inflow
 c gaz I think I can use array sourcea because air flowrate
 c and air fraction cannot both be set for the same node
+c gaz 111418 can exist in different model        
          read(inpt,*) (sourcea(i,imod),i=1,ntimes)
-         sourcea_type(imod)=1
+         sourcea_type(imod)=-1
          do i=1,ntimes
             sourcea(i,imod)= sourcea(i,imod)+tol_boun
          enddo
@@ -377,6 +378,10 @@ c gaz new 061816
          read(inpt,*) (impedance(i,imod),i=1,ntimes)
          impedance_type(imod)=1
          if(isubmod.le.1) go to 30
+      else if(key(1:3).eq.'fen') then
+         read(inpt,*) (enthalpy(i,imod),i=1,ntimes)
+         enthalpy_type(imod)=1
+         if(isubmod.le.1) go to 30         
       else if(key(1:2).eq.'en' .and. key(1:3).ne.'end') then
          read(inpt,*) (enthalpy(i,imod),i=1,ntimes)
          enthalpy_type(imod)=1

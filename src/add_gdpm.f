@@ -86,6 +86,7 @@
       real*8 length_total, coord_primary
       real*8 length_cell, length_pri, length_sec, gdpm_len
       real*8 gdpm_left, gdpm_right
+      real*8 dis_p, dis_s
 
 c     Set actual size of neq
 c     gdpm_flag: if nonzero, determines the geometry of the matrix. 
@@ -441,11 +442,11 @@ c	from connected_node to i is nelm(connected_node+1)
 
 c	The corresponding position of the connection from i to
 c	connected_node is nelm(i)+1
-
          connected_node = nelm(nelm(i)+1)
          istrw(nelm(connected_node+1)-neq-1) = nposition
          istrw(nelm(i)-neq) = nposition
-
+c  identify original gridblock volume         
+         sx1save =sx1(connected_node) +sx1(i)
 c     Compute area/distance term, stor in sx array
 
 
@@ -581,7 +582,7 @@ c    deallocate memory
       implicit none
       real*8 delx_low, delx_high, x_centered
       real*8 r_low, r_high
-
+      real*8 frac_num
       if(gdpm_flag.eq.6.or.gdpm_flag.eq.4) then
 
 c     Linear 1-d column model (based on total area) 
@@ -739,6 +740,10 @@ c     for GDPM connections
 
       implicit none
       real*8 sumr_gdpm, r_high, r_low, delr_gdpm
+      real*8 frac_num, tolf
+      parameter (tolf= 1.d-12)
+      integer int
+      
 
 c     Linear 1-D column model (based on total area)
 
@@ -853,8 +858,85 @@ c     Compute sx, stor in sx(iposition,isox)
          end if
 
 
-c     Physical fracture model (model 11)
+c     Parallel fracture model for gdkm
+      else if(gdkm_flag.eq.1) then
+c     retired :Physical fracture model (model 11)
+c gaz 090816 need to retire this model (replaced by gdkm models
+c 1,2,3, 0
+          if(connected_node.le.neq_primary) then
+            primary_node = connected_node
+            imodel = igdpm(primary_node)
+             if(gdkm_dir(imodel).eq.1) then
+              length_total = dxrg(primary_node)
+             elseif(gdkm_dir(imodel).eq.2) then
+              length_total = dyrg(primary_node)   
+             elseif(gdkm_dir(imodel).eq.3) then 
+              length_total = dzrg(primary_node)
+             else
+c generic fracture model                
+                 if(icnl.eq.0) then
+                  length_total = sx1save**(0.333333)
+                 else
+                  length_total = sx1save**(0.5)
+                 endif
+             endif
+            if(gdkm_dir(imodel).ne.0) then
+             length_pri = vfrac_primary(imodel) 
+             delx_gdpm = gdpm_x(imodel,1)
+c             frac_num = delx_gdpm  gaz 031317
+             frac_num = max(int(length_total/delx_gdpm+tolf),1)
+c A/d for primary-secondary connection is
+c Ax = Volume_total/gridblock_length in x dir (Ax = sx1save/length_total)          
+c Compute sx, stor in sx(iposition,isox) (- sign for FEHM sign convention)
+c 1/2 distance primary volume(dis_p) =   length_pri*length_total/2
+c 1/2 distance secondary volume(dis_s)  =   (1.-length_pri)*length_total/2    
+c assuming sec volume is centered, divide dis_p again by 2 for the center(2*2 = 4)   
+c delx_gdpm = gdpm_x(imodel,1) not used as frac spacing (inputs fracture number)
+            if(frac_num.eq.1.0) then
+             dis_p =   0.25*length_pri*length_total
+             dis_s =  0.5*(1.-length_pri)*length_total              
+            else 
+             dis_p =   0.25*length_pri*length_total
 
+             dis_s =  0.5*(1.-length_pri)*length_total            
+            endif
+c multiply by 2 because centered secondary volume has 2 area faces 
+c multiply by frac_num because of added surface area         
+c this is affected by number of fractures present (length_total/gdpm_x(imodel,1))    
+c gaz 042218 
+             sx(nposition,isox) = -2.*frac_num*(sx1save/length_total)/
+     &                      (dis_p+dis_s)  
+          continue
+          else
+c older generic fracture model - like dpdp
+           sx1gdpm = sx1(primary_node)*(1.-vfrac_primary(imodel)) 
+     &           /vfrac_primary(imodel)
+c           sx1gdpm = sx1(primary_node)/vfrac_primary(imodel)
+c           sx1gdpm = sx1(primary_node)*(vfrac_primary(imodel))
+c     &           /(1.-vfrac_primary(imodel))          
+c            note that length_total and delx_gdpm are the same (gives dpdp result)
+            length_total = gdpm_x(imodel,ngdpm_layers(imodel)) 
+            gdpm_counter = 1
+c  use older model          
+            delx_gdpm = gdpm_x(imodel,1)
+c            delx_gdpm = gdpm_x(imodel,1)/2.0
+c gaz debug 031718  
+c need to use full volume "sx1(primary_node)/vfrac_primary(imodel)" for symmetry            
+c            sx(nposition,isox) = -sx1gdpm/(delx_gdpm*length_total)          
+         sx(nposition,isox) = -(sx1(primary_node)/vfrac_primary(imodel))
+     &       /(delx_gdpm*length_total)
+          endif
+         if(isoy.eq.1) then
+            if(icnl.eq.0) then
+               sx(nposition,isox) = sx(nposition,isox)/3.
+            else
+               sx(nposition,isox) = sx(nposition,isox)/2.
+            end if
+         else
+            sx(nposition,isoy) = 0.
+            sx(nposition,isoz) = 0.
+         end if
+          endif  
       else if(gdpm_flag.eq.11) then
          if(connected_node.le.neq_primary) then
             primary_node = connected_node
@@ -917,7 +999,7 @@ c            sx1gdpm = sx1save*(1.-vfrac_primary(imodel))
      2           -gdpm_x(imodel,gdpm_counter-1)
          end if        
          
-c     Compute sx, stor in sx(iposition,isox)
+c     Compute sx, stor in sx(iposition,isox)         
          sx(nposition,isox) = -sx1gdpm/(delx_gdpm*length_total)
          if(isoy.eq.1) then
             if(icnl.eq.0) then

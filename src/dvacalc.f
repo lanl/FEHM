@@ -216,8 +216,9 @@ c--------------------------------------------------------------------
       real*8 dva0,theta,p0,t0,rat,dratp,dratt,dva0d,dva0p,dva0c,dva0e
       real*8 t_min, t_max, atort, dratc, temp, temp2, diffcoeff
       real*8 tort2, dvas_denom_min, dvas_denom, s_dva_term, dva_tiny
-      real*8,  allocatable :: dva_save(:)
+c      real*8,  allocatable :: dva_save(:)
       real*8 dpsatt,dpsats,pv,dum_dva, psatl
+      real*8 dva_t
       integer i
       parameter(dva0=2.23e-5)
       parameter(theta=1.810)
@@ -225,7 +226,7 @@ c--------------------------------------------------------------------
       parameter(t0=273.15)
       parameter(t_min=10.0,t_max=350.0)
       parameter(dvas_denom_min = 1.d-18, dva_tiny = 1.d-18)
-      save dva_save
+c      save dva_save
       if(.not.allocated(dva_save)) allocate (dva_save(n))
 
       if(iadif.ne.0.and.tort.ge.0.0.and.tort.le.1.0) then
@@ -238,7 +239,12 @@ c
 c  New stuff   PHS took out density from rat
 c              now no derivatives wrt density!
 c              dgvc dgvp dgve go away!
-c
+c gaz 081116
+            if(gdkm_flag.eq.0) then
+             dva_t = dva0
+            else
+             dva_t = dva0*gdkm_volume_fraction(i)   
+            endif    
             if(t(i).ge.t_min.and.t(i).le.t_max) then
                rat=(p0/phi(i))*((t(i)+t0)/t0)**theta
                dratp=-rat/phi(i)
@@ -257,7 +263,8 @@ c     dratc=-rat/phi(i)
                dratc=-rat/phi(i)
             endif
 c
-            dva0d=tort*ps(i)*(1.0-s(i))*dva0
+c            dva0d=tort*ps(i)*(1.0-s(i))*dva0
+            dva0d=tort*ps(i)*(1.0-s(i))*dva_t
 c
 c parts of derivatives  for ieos=2  TotPres, Temp, GasPres
 c                                    P        E      C

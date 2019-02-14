@@ -330,7 +330,8 @@
       real*8,  allocatable ::   comp_spatial(:)
       real*8,  allocatable ::   deng_spatial(:)
       real*8,  allocatable ::   visg_spatial(:)
-
+c gaz 100517
+      real*8,  allocatable :: dva_save(:)     
 c gaz debug 090511
       real*8, allocatable  ::   denei_ch(:) 
       real*8, allocatable  ::   deni_ch(:) 

@@ -37,6 +37,7 @@
       real*8, allocatable  :: rvftemp(:)
       logical :: frac_model = .false.
       character*100 form_string, title_string
+
       neqtemp = neq      
       if (idpdp .ne. 0) then
          allocate (stemp(2*neq), ieostemp(2*neq), irlptemp(2*neq))
@@ -49,13 +50,13 @@
       end if
       ndummy = 0
 
-      stemp = s
-      ieostemp = ieos
-      irlptemp = irlp
-      icaptemp = icap
-      pcptemp = pcp
-      rlftemp = rlf
-      rvftemp = rvf
+      stemp(1:neq)    = s(1:neq)
+      ieostemp(1:neq) = ieos(1:neq)
+      irlptemp(1:neq) = irlp(1:neq)
+      icaptemp(1:neq) = icap(1:neq)
+      pcptemp(1:neq)  = pcp(1:neq)
+      rlftemp(1:neq)  = rlf(1:neq)
+      rvftemp(1:neq)  = rvf(1:neq)
 
       if (num_sat .eq. 0) then
          neq = 1 / delta_sat + 1
@@ -150,14 +151,15 @@ c output values
         end if
       end do
 
-      s = stemp
-      ieos = ieostemp
-      irlp = irlptemp
-      icap = icaptemp
-      pcp = pcptemp
-      rlf = rlftemp 
-      rvf = rvftemp
       neq = neqtemp
+
+      s(1:neq)    = stemp(1:neq)
+      ieos(1:neq) = ieostemp(1:neq)
+      irlp(1:neq) = irlptemp(1:neq)
+      icap(1:neq) = icaptemp(1:neq)
+      pcp(1:neq)  = pcptemp(1:neq)
+      rlf(1:neq)  = rlftemp(1:neq)
+      rvf(1:neq)  = rvftemp(1:neq)
 
       deallocate (stemp, ieostemp, irlptemp,  icaptemp,  
      &     pcptemp, rlftemp, rvftemp)

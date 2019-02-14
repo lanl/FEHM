@@ -21,7 +21,9 @@ c mohr-coulomb failure criteria on the plane of maximum shear
 
       integer jpt,fail_flag,iispmd
       real*8  shear_max,stress_norm
-      real*8 eigenvec(3,3),alambda(3),rm(3,3)
+c gaz 052017      
+c      real*8 eigenvec(3,3),alambda(3),rm(3,3)
+      real*8 rm(3,3)
       real*8 friction,strength
       real*8 fac(3,3),fac_E(3), fac_por
       real*8 porosity_damage_factor
@@ -81,7 +83,9 @@ c  y-prime is along the median principal stress
 
       integer jpt,iispmd,fail_flag
       real*8  shear_max,stress_norm
-      real*8 eigenvec(3,3),alambda(3),rm(3,3)
+c gaz 052017      
+c      real*8 eigenvec(3,3),alambda(3),rm(3,3)
+      real*8 rm(3,3)
       real*8 friction,strength, pi, pp_fac, cossh, sinsh
       real*8 stress_factor_initial, shear_threshold
 
@@ -100,15 +104,23 @@ c  y-prime is along the median principal stress
 
 c find the principal stresses. eigenvec(j=1 to 3,k) contains the x,y,z
 c components of the eigenvector for the k-th eigenvalue.  
+c gaz 052017
       if(incremental_shear_permmodel.eq.1) then
-         call principal_incremental_stress_3D(jpt,alambda,eigenvec
-     &        ,stress_factor_initial)
+c         call principal_incremental_stress_3D(jpt,alambda,eigenvec
+c     &        ,stress_factor_initial)          
+         call principal_incremental_stress_3D(jpt,
+     &        stress_factor_initial)
       else
-         call principal_stress_3D(jpt,alambda,eigenvec)
+c gaz 052017                   
+c         call principal_stress_3D(jpt,alambda,eigenvec)
+                  call principal_stress_3D(jpt)          
       endif
 c max shear stress,and normal stress on this plane (45deg to principal)
-      call max_excess_shear(jpt,friction,strength,alambda,
-     &     pp_fac,stress_factor_initial, eigenvec)
+c gaz 052017      
+c      call max_excess_shear(jpt,friction,strength,alambda,
+c     &     pp_fac,stress_factor_initial, eigenvec)
+      call max_excess_shear(jpt,friction,strength,
+     &     pp_fac,stress_factor_initial)      
       cossh=dcos(shear_angle(jpt))
       sinsh=dsin(shear_angle(jpt))
 c choose z-prime=normal to the failure plane, and 
@@ -219,8 +231,10 @@ c not taking care of the tensor nature of D
       end
 
 c.....................................................................
-      subroutine max_excess_shear(jpt,friction,strength,alambda,
-     &     pp_fac,stress_factor_initial, eigenvec)
+c      subroutine max_excess_shear(jpt,friction,strength,alambda,
+c     &     pp_fac,stress_factor_initial, eigenvec)
+      subroutine max_excess_shear(jpt,friction,strength,
+     &     pp_fac,stress_factor_initial)
 
       use comsi
       use comdi
@@ -228,7 +242,8 @@ c.....................................................................
 
       integer jpt,iispmd
       real*8 shear_max ,stress_norm  
-      real*8 eigenvec(3,3),alambda(3)
+c gaz 052017      
+c      real*8 eigenvec(3,3),alambda(3)
       real*8 friction,strength, pi, pp_fac
       real*8 stress_factor_initial
 
@@ -252,15 +267,19 @@ c minimum value of (shear - friction*normal stress)
       end
 
 c.....................................................................
-
-      subroutine principal_incremental_stress_3D(i,alambda,eigenvec
-     &        ,stress_factor_initial)
+c gaz 052017
+c      subroutine principal_incremental_stress_3D(i,alambda,eigenvec
+c     &        ,stress_factor_initial)
+      subroutine principal_incremental_stress_3D(i,
+     &        stress_factor_initial)      
       use comai
       use comsi
 
       implicit none
       integer i
-      real*8 AMAT(3,3), eigenvec(3,3),alambda(3)
+c gaz 052017      
+c      real*8 AMAT(3,3), eigenvec(3,3),alambda(3)
+      real*8 AMAT(3,3)
       real*8 AI1,AI2,AI3
       real*8 stress_factor_initial
       real*8 str_init_temp(3,3)

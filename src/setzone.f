@@ -1,4 +1,5 @@
-      subroutine setzone(izone, nin, ncord, nsl, xz, yz, zz, irad)
+      subroutine setzone(izone, nin, nsl, xz, yz, zz, irad)
+c            subroutine setzone(izone, nin, ncord, nsl, xz, yz, zz, irad)
 !***********************************************************************
 !  Copyright, 1993, 2004,  The  Regents of the University of California.
 !  This program was prepared by the Regents of the University of 
@@ -326,7 +327,8 @@ C***********************************************************************
       implicit none
 
       logical eleb
-      integer i, ij, in, izone, jz, maxitz, ncord(*), nin, nsl
+c      integer i, ij, in, izone, jz, maxitz, ncord(*), nin, nsl
+      integer i, ij, in, izone, jz, maxitz,nin, nsl
       integer i_warn, irad   
       real*8 a11, a12, a13, a21, a22, a23, a31, a32, a33
       real*8 delx, dely, delz, detja

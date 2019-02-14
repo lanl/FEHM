@@ -734,6 +734,8 @@ C***********************************************************************
       real*8 x56, x58, x67, x78, y1, y2, y3, y12, y13, y14, y15, y23 
       real*8 y34, y37, y45, y46, y56, y58, y67, y78, z1, z2, z3, z12
       real*8 z13, z14, z15, z23, z34, z37, z45, z46, z56, z58, z67, z78 
+c gaz 051017      
+      real*8 vol_tol, vol_tol_chk, vol_chk_default
       integer i, i1, i2, i3, i4, i5, i6, ib, icode, iconn, id
       integer idiff, ie, ied, ig1, ij, ik, in, in1, in2, incon, int
       integer iortho, ipiv, is1, is2, isx, iu, j, je, jj, k, kb, kc, kj
@@ -742,6 +744,7 @@ C***********************************************************************
       integer nj, nsc, nsl, nslu, nt, ncoef, numgb(8)
       integer ii, ipivkb, neq_total, n0_save, ipmax, lcnt, lcnt2
       integer ib_min, ib_max
+      parameter (vol_chk_default = 1.e-4)
 
 c using storage for a matrix
       real*8, allocatable ::  vole(:)
@@ -787,7 +790,7 @@ c
          n0 = neq_primary
       endif
       
-      tol = 1.e-10
+      vol_tol_chk = vol_chk_default
       
 c     determine if orthogonal elements should be fully connected
       iconn = 0
@@ -949,7 +952,8 @@ c     calculate orthogonal volume
                   alen3 = al(x15, y15, z15)
                   vlorth = alen1*alen2*alen3
 c     compare with calculated volume
-                  if(abs(vlorth-volest)/volest.le.tol) then
+                  vol_tol = (abs(vlorth)-abs(volest))/abs(volest)
+                  if(vol_tol.le.vol_tol_chk) then
                      iorth(ie) = 1
                   else
                      iorth(ie) = 0

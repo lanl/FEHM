@@ -177,6 +177,7 @@ C***********************************************************************
 
       use comai
       use comxi
+      use comco2, only : icarb
       implicit none
 
       integer unit
@@ -211,5 +212,5 @@ C***********************************************************************
      *     /,4x, 'fe coef stor  - isstor -', i3, ' - ', a100, 
      *     /,4x, 'input check   - ischk  -', i3, ' - ', a100, 
      *     /,1x, 'Value provided to subroutine user: ', a9, /)
-      
+  
       end

@@ -169,14 +169,18 @@ CPS
 C***********************************************************************
 
       use avsio
-      use comai, only : altc, days, icnl, jdate, jtime, nei_in,
-     &     ns_in, verno, wdd, neq_primary, ivf, ifdm_elem
-      use combi, only : corz, izonef, nelm
+      use comai, only : altc, days, grav, iadif, icnl, ico2, idof, 
+     &     ichead, ihead, nei_in, ns_in, phi_inc, istrs, ivf,
+     &     neq_primary, rho1grav, ifdm_elem, igrav, ns, gdkm_flag,
+     &     verno,jdate,jtime,wdd, icconc 
+      use combi, only : corz, izonef, nelm, ncord, ncord_inv, elem_temp,
+     &     contour_conc_files
       use comchem
       use comdi, only : nsurf, izone_surf, izone_surf_nodes, icns,
      &     an, anv
 
       use compart, only : ptrak, pout
+      use comriv, only : npoint_riv, nnelm_riv, nelm_riv, iriver
       use comrxni
       use comdti
       implicit none
@@ -184,32 +188,70 @@ C***********************************************************************
       integer add_dual, maxcon, iz, idz, iendz, il, open_file
       integer neq,nspeci,lu,ifdual,icall,length,i1,i2
       integer icord1, icord2, icord3, iaq, ivap, isolid
-      integer npt(*), ip1, ip2
+      integer npt(*), ip1, ip2, ic1, ic2
       integer, allocatable ::  nelm2(:)
       parameter (maxcon = 100)
       real*8, allocatable :: an_dum(:,:)
       real*8, allocatable :: anv_dum(:,:)
       real*8, allocatable :: antmp(:,:)
-      character*60, allocatable :: title(:)
+c gaz 062717      
+c      character*60, allocatable :: title(:)
       character*14 tailstring
       character*8 dual_char
-      character*3 dls, snum
-      character*5 char_type
+c gaz 062717      
+c      character*3 dls, snum
+       character*3 snum
+c      character*5 char_type
       character*60 fstring
       character*35 tmpname
       character*30 cordname(3)
-      character*150 :: string = '', tecstring = '', sharestring = ''
+c      character*150 :: string = '', tecstring = '', sharestring = ''
       real*8 write_array(maxcon)
-      integer i, ic, im, in, iv, ix, istep, j, k, n
-      integer t1(maxcon),itotal2,write_total, iocord_temp
+      integer i, ic, im, in, iv, ix, istep, j, k, n, iblanking_value
+      integer t1(maxcon),itotal2,write_total, iocord_temp,ns_in0
+
+      logical zone_saved
+      integer izunit,nin,ii,n_elem,ns_elem,ie, e_mem(8)
+      integer neq_sv, nei_in_sv, icall_sv, neq_p
+      integer i_pri,i_sec,nscalar
+
+c      character*80 title(2*maxscalar+3)
+      character*150 :: tecstring = ''
+      character*150 :: tecstring_riv = ''
+      character*500 string
+      character*20 vstring
+      character*43 tstring
+      character*5 char_type
+      character*3 dls
+      character*30 zonesavename, char_temp
+      character*6 zonestring
+      character*500 sharestring
+      character*6 share_string
+      character*150 :: tec_string = ''
+c      character*45 title(3*maxvector), title2(2)
+      integer maxvector
+      parameter (maxvector = 3)
+      character*60, allocatable :: title(:)
+      parameter(iblanking_value = -9999)
+      real*8 pi
+      parameter (pi=3.1415926535)
+      integer nadd, istart, iend, irivp, iocord_tmp , offset, iriver2
       integer irxn_title
+      integer i_wrt
+
       real*8 complex_conc
       real*8 minc, maxc
-c gaz debug
-c     parameter (minc = 1.0d-20, maxc = 1.0d+20)
+c gaz 072917      
+      character*200 file_flux
+
       parameter (minc = 1.0d-90, maxc = 1.0d+20)
 
-      save tecstring, sharestring
+      save tecstring, sharestring, tecstring_riv
+
+c--------------------------------------------
+c  Shaoping add  10-19-2017
+      zone_saved =.false.
+c-------------------------------------------
 
       data cordname(1) / 'X (m)' /, 
      &     cordname(2) / 'Y (m)' /,
@@ -225,6 +267,64 @@ c     parameter (minc = 1.0d-20, maxc = 1.0d+20)
        anv_dum(1:n0,i) = anv(ip1:ip2)
       enddo
       iocord_temp = iocord
+   
+      irivp = 0
+      iriver2 = iriver
+      
+      iocord_tmp = iocord
+      
+      if (iogdkm .ne. 0 .and. ifdual .ne. 0) then
+c     Output for gdkm nodes
+        if(iogdkmblank.eq.0) then
+         istart = neq_primary + 1
+c gaz 070118         
+c         iend = n0
+         iend = neq
+         offset = 0
+         nadd = 0
+        else
+c gaz 040917 gdkm blanking            
+         istart = 1
+         iend = neq_primary
+         offset = 0
+         nadd = 0            
+        endif
+        irivp = 0 
+         if (icnl .eq. 0) then
+            iocord = 3
+         else
+            iocord = 2
+         end if
+      else if (ifdual .ne. 0)then
+         istart = neq + 1
+         iend = neq * 2
+         nadd = nelm(neq+1)-neq-1
+         offset = neq
+      else 
+         if (iriver2 .ne. 0) then
+c     Output for river/well nodes         
+            istart = neq_primary + 1
+            iend = neq_primary + npoint_riv
+            nadd = 0
+            offset = 0
+            if(iriver2.eq.2) then
+               irivp = 2
+               ns_in0 = ns_in
+               ns_in = 2
+            endif
+         else
+            istart = 1
+            iend = neq_primary
+            nadd = 0
+            offset = 0
+            irivp = 0
+         end if
+      endif
+ 
+      if (icall .eq. 1.and.irivp.eq.0) tecstring = ''
+      if (icall .eq. 1.and.irivp.ne.0) tecstring_riv = ''
+ 
+   
       if(ifdual .eq. 0)then
          istep = 0
          add_dual=0
@@ -232,11 +332,13 @@ c     parameter (minc = 1.0d-20, maxc = 1.0d+20)
          tailstring = '_con_node'
       else
          istep = maxcon
-         add_dual=neq
+c gaz       add_dual=neq   
          if (iodual .eq. 1) then
+            add_dual=neq
             dual_char = 'Dual '
             tailstring = '_con_dual_node'
          else if (iogdkm .eq. 1) then
+            add_dual=0
             dual_char = 'GDKM '
             tailstring = '_con_gdkm_node'
             if (icnl .eq. 0) then
@@ -274,79 +376,229 @@ c     parameter (minc = 1.0d-20, maxc = 1.0d+20)
          iendz = 1
          idz = iozone
       end if
-
-      if (altc(1:4) .eq. 'avsx') then
+c different than scalars 
+       if (altc(1:4) .eq. 'avsx') then
          dls = ' : '
       else if (altc(1:3) .eq. 'sur') then
          dls = ', '
       else
          dls = ' '
-      end if
-      
+      end if     
+c       
+c       
       if (altc(1:3) .ne. 'sur') then
          call namefile2(icall,lu,ioformat,tailstring,0)
 ! file will be opened in zone loop for surfer
       end if
+         icall_sv = icall
+c gaz 062717
+         do iz = 1, iendz
+c     Zone loop 
+c if block 1             
+            if (iozone .ne. 0) then
+               idz = izone_surf(iz) 
+c open and read saved zone file if they exist
+            call zone_saved_manage(1,izunit,idz,nin,n_elem,zone_saved)
+c   gaz 062717         
+            if(zone_saved) then
+             zonestring = ' '   
+             write(zonestring(1:5),'(i5)') idz
+             neq_sv = neq
+             nei_in_sv = nei_in
+             icall_sv = icall
+             neq = nin
+             nei_in = n_elem
+             icall = 1
+             iogeo = 1 
+c             irivp = 0
+c gaz 112716 FE geometry goes here   
+             if (altc(1:3) .eq. 'tec') then
+               string = ''
+               if (icall .eq. 1 .and. iogeo .eq. 1) then
+                  select case (ns_in)
+                  case (5,6,8)
+                     write (string, 135) neq, nei_in, 'FEBRICK'
+                  case (4)
+                     if (icnl .eq. 0) then
+                        write (string, 135) neq, nei_in, 
+     &                       'FETETRAHEDRON'
+                     else
+                        write (string, 135) neq, nei_in, 
+     &                       'FEQUADRILATERAL'
+                     end if
+                  case (3)
+                     write (string, 135) neq, nei_in, 'FETRIANGLE'
+                  case (2)
+                     if(irivp.eq.0) then
+                        write (string, 135) neq, nei_in, 'FELINESEG'
+                        ns_in=ns_in0
+                     else if(irivp.eq.2)then                    
+                        write (string, 135) npoint_riv, npoint_riv-1,
+     &                       'FELINESEG'
+                        ns_in=ns_in0
+                     endif
+                  case (0)
+c     fdm grid
+                     write (string, '(a)') ''
+                  end select                                        
+c               endif       
+        
 
-      if (altc(1:3) .eq. 'tec') then
-         if (icall .eq. 1 .and. iogeo .eq. 1) then
-            iz = 1
-            tecstring = ''
-            select case (ns_in)
-            case (5,6,8)
-               write (tecstring, 135) neq, nei_in, 'FEBRICK'
-            case (4)
-               if (icnl .eq. 0) then
-                  write (tecstring, 135) neq, nei_in, 
-     &                 'FETETRAHEDRON'
-               else
-                  write (tecstring, 135) neq, nei_in, 
-     &                 'FEQUADRILATERAL'
+               endif
+c end copy FETYPE             
+            endif
+c         endif
+c gaz end  FE geometry  
+c  if block 1
+         else if (altc(1:3) .eq. 'tec') then
+               if (icall .gt. 1 .and. iocord .ne. 0) then
+                  string = ''
+                  if (icnl .eq. 0) then
+                     if (iozid .eq. 0) then
+                        write (string, 125) '1-3', iz
+                     else
+                        write (string, 125) '1-3,5', iz
+                     end if
+                  else
+                     if (iozid .eq. 0) then
+                        write (string, 125) '1-2', iz
+                     else
+                        write (string, 125) '1-2, 4', iz
+                     end if
+                  end if
+                  if(irivp.eq.0) then
+                     tecstring = trim(string)
+                  else
+                     tecstring_riv = trim(string)
+                  endif
                end if
-            case (3)
-               write (tecstring, 135) neq, nei_in, 'FETRIANGLE'
-            case (2)
-               write (tecstring, 135) neq, nei_in, 'FELINESEG'
-            case (0)
-! fdm grid
-               write (tecstring, '(a)') ''
-               write (string, '(a)') ''
-            end select
-            if (icnl .eq. 0 .and. ns_in .ne. 0) then
-               if (iozid .eq. 0) then
-                  write (string, 140) '1-3', iz
+               write (lu, 118) trim(timec_string)
+               if(irivp.eq.0) then
+                  write (lu, 120) idz, trim(tecstring)
                else
-                  write (string, 140) '1-3, 5', iz
+                  write (lu, 120) idz, trim(tecstring_riv)
+               endif
+c end id block 1             
+       end if
+      else
+            if (altc(1:3) .eq. 'tec') then
+c gaz 040517 gdkm needs small modification
+               if(gdkm_flag.ne.0) then
+                neq_p = neq_primary
+               else
+                neq_p = neq
+               endif 
+               string = ''
+               if (icall .eq. 1 .and. iogeo .eq. 1) then
+                  select case (ns_in)
+                  case (5,6,8)
+                     write (string, 135) neq_p, nei_in, 'FEBRICK'
+                  case (4)
+                     if (icnl .eq. 0) then
+                        write (string, 135) neq_p, nei_in, 
+     &                       'FETETRAHEDRON'
+                     else
+                        write (string, 135) neq_p, nei_in, 
+     &                       'FEQUADRILATERAL'
+                     end if
+                  case (3)
+                     write (string, 135) neq_p, nei_in, 'FETRIANGLE'
+                  case (2)
+                     if(irivp.eq.0) then
+                        write (string, 135) neq_p, nei_in, 'FELINESEG'
+                        ns_in=ns_in0
+                     else if(irivp.eq.2)then                    
+                        write (string, 135) npoint_riv, npoint_riv-1,
+     &                       'FELINESEG'
+                        ns_in=ns_in0
+                     endif
+                  case (0)
+c     fdm grid
+                     write (string, '(a)') ''
+                  end select
+c not needed below 
+
+c not needed above                  
+                  if (ns_in .eq. 0) then
+                     if (iozid .eq. 0) then
+                        write (string, 125) '1-3', iz
+                     else
+                        write (string, 125) '1-3, 5', iz
+                     end if
+                  else if (icnl .eq. 0) then
+                     if (iozid .eq. 0) then
+                        write (string, 140) '1-3', iz
+                     else
+                        write (string, 140) '1-3, 5', iz
+                     end if
+                  else
+                     if (iozid .eq. 0) then
+                        write (string, 140) '1-2', iz
+                     else
+                        write (string, 140) '1-2, 4', iz
+                     end if
+                  end if
+                  if(irivp.eq.0) then
+                     tecstring = trim(tecstring) // trim(string)
+                     string = ''
+                  else
+                     tecstring_riv = trim(tecstring_riv) // trim(string)
+                     string = ''
+                  endif
+               else if (icall .eq. 1 .and. iocord .ne. 0) then
+c gaz 062518 might need to comment out next line
+c                  write (lu, 130) trim(timec_string)
+                  if (icnl .eq. 0) then
+                     if (iozid .eq. 0) then
+                        write (string, 125) '1-3', iz
+                     else
+                        write (string, 125) '1-3, 5', iz
+                     end if
+                  else
+                     if (iozid .eq. 0) then
+                        write (string, 125) '1-2', iz
+                     else
+                        write (string, 125) '1-2, 4', iz
+                     end if
+                  end if
+                  if(irivp.eq.0) then
+                     tecstring = trim(string)
+                  else
+                     tecstring_riv = trim(string)
+                  endif
+               else if (icall .eq. 1 .and. iozid .ne. 0) then
+                  write (lu, 130) trim(timec_string)
+                  write (string, 125) '2', iz
+                  if(irivp.eq.0) then
+                     tecstring = trim(string)
+                  else
+                     tecstring_riv = trim(string)
+                  endif
+               else
+                  if(irivp.eq.0) then
+                     if (iogeo .eq. 1) then
+                        write (lu, 130) trim(timec_string), 
+     &                       trim(tecstring)
+                     else if (iogrid .eq. 1) then
+                        write (lu, 130) trim(timec_string), 
+     &                       trim(tecstring),
+     &                       trim(gridstring), trim(times_string)
+                     else
+c gaz 063018 should not write
+c                         if(icall.ne.1) write (lu, 130)  
+c     &                       trim(timec_string), trim(tecstring)      
+                     end if   
+                  else
+                     write (lu, 130) trim(timec_string),
+     &                    trim(tecstring_riv), trim(gridstring), 
+     &                    trim(times_string)
+                  endif
                end if
-            else if (icnl .ge. 1 .and. ns_in .ne. 0) then
-               if (iozid .eq. 0) then
-                  write (string, 140) '1-2', iz
-               else
-                  write (string, 140) '1-2, 4', iz
-               end if            
             end if
-         else if (icall .eq. 1 .and. iocord .ne. 0) then
-            if (icnl .eq. 0) then
-               if (iozid .eq. 0) then
-                  string = '1-3'
-               else
-                  string = '1-3, 5'
-               end if
-            else
-               if (iozid .eq. 0) then
-                  string = '1-2'
-               else
-                  string = '1-2, 4'
-               end if
-            end if
-            if (iozone .ne. 0) sharestring = string
-         else if (icall .eq. 1 .and. iozid .ne. 0) then
-            string = '2'
-            if (iozone .ne. 0) sharestring = string
          end if
-      end if
 
-      if(rxn_flag.eq.0)then
+
+        if(rxn_flag.eq.0)then
          if(nspeci .gt. maxcon)then
             write(lu,*)'--------------------------------------------'
             write(lu,*)'ERROR: WRITE_AVS_NODE_CON'
@@ -359,9 +611,6 @@ c     parameter (minc = 1.0d-20, maxc = 1.0d+20)
             return
          endif
 
-         
-c     error
-c     
 
 c     Formatted write to accomodate the different way fortran 90
 c     does unformatted writes (f77 way no longer worked because
@@ -451,31 +700,77 @@ c---------------------------------------
          else if (altc(1:3) .eq. 'avs') then
             write(lu,'(i3, 100(1x, i1))') itotal2,(1,i=1,nspeci+iocord)
             write(lu, '(a)') (trim(title(i)),i=1,itotal2)
+c first write             
          else if (altc(1:3) .eq. 'tec') then
-            if (icall .eq. 1 .or. iogrid .eq. 1) then
+c iz is the increment of the zone loop             
+            if (icall_sv .eq. 1 .or. iogrid .eq. 1) then
+              if(iz.eq.1) then  
                write(lu, 98) verno, jdate, jtime, trim(wdd)
                if (iogrid .eq. 1) write(lu, 100) 
                write (fstring, 99) itotal2
                write(lu, fstring) 'VARIABLES = ', (trim(title(i)), 
      &              i=1,itotal2)
+              endif
             end if
-            if (iozone .ne. 0) write (lu, 97) trim(timec_string)
+              if(iozone.ne.0) then
+                  if(irivp.eq.0) then
+c gaz 111516 mods to write zone number                      
+                     if (iogeo .eq. 1) then
+                        tecstring = trim(string)
+                        write (lu, 131) trim(zonestring),  
+     &                       trim(timec_string), trim(tecstring)
+                     else if (iogrid .eq. 1) then
+                        tecstring = trim(string)
+                        write (lu, 130) trim(timec_string), 
+     &                       trim(gridstring), trim(times_string)
+                     else
+                        write (lu, 130) trim(timec_string), 
+     &                       trim(tecstring)
+                     end if
+                  else
+                     tecstring_riv = trim(string)
+                     write (lu, 130) trim(timec_string),
+     &                    trim(tecstring_riv), trim(gridstring), 
+     &                    trim(times_string)
+                  endif 
+             endif     
          end if
-
-         do iz = 1, iendz
-c     Zone loop
-            if (iozone .ne. 0) then
-               idz = izone_surf(iz)
-            end if
+         if (altc(1:3) .eq. 'sur') then
+            call write_avs_head_s(icall,nscalar,lu,ifdual,idz,iriver2)
+            dls = ', '
+            k = 2
+         else if (altc(1:4) .eq. 'avsx') then
+            dls = ' : '
+            k = 3
+         else
+            dls = ' '
+            k = 1
+         end if               
+      
+c if saved zone exists use 1, nin form
+c start ifblock 1
+         if(zone_saved) then
+          istart = 1
+          iend = nin
+         endif
+c start do loop 1   
+c writes too much here    "tecstring"     
             if (altc(1:3) .eq. 'tec') then
                if (iozone .eq. 0 .or. iogrid .eq. 1) then
-                  write (lu, 94) trim(timec_string), trim(tecstring),
-     &                 trim(gridstring), trim(times_string)
+                  if(icall.eq.1) then
+                   write (lu, 94) trim(timec_string)
+c gaz 070118 this could be the problem                 
+                  else
+                    write (lu, 94) trim(timec_string)
+c                   write (lu, 94) trim(timec_string), trim(tecstring),
+c     &                 trim(gridstring), trim(times_string)                      
+                  endif
                else
                   if (icall .gt. 1 .and. iozone .ne. 0) then
                      write (tecstring, 125) trim(sharestring), iz
+c gaz debug 072717
+                     write (lu, 95) idz, trim(tecstring)
                   end if
-                  write (lu, 95) idz, trim(tecstring)
                end if
                if (icall .eq. 1 .and. iz .eq. iendz) then
                   if (iogeo .eq. 1) then
@@ -516,63 +811,229 @@ c     Zone loop
      &                 nspeci, dls
                else
                   if (icall .eq. 1) then
-                     write (fstring, 105) iocord, nspeci
+                     write (fstring, 106) iocord, nspeci
                   else
                      write (fstring, 333) itotal2, dls
                   end if
                end if
-            end if               
-            
-            do i = 1, neq
-               if (iozone .ne. 0) then
-                  if (izone_surf_nodes(i).ne.idz) goto 199
+            end if             
+         
+         
+         
+         
+         do ii = istart, iend
+c     Node loop          
+            string = ''
+            if (iozone .ne. 0) then
+               if(zone_saved) then
+                i = ncord(ii)
+               else
+                i = ii
+                if (izone_surf_nodes(i).ne.idz) goto 199
+               endif
+            else
+              i = ii
+            end if
+c     Node number will be written first for avs and sur files
+c gaz 040517 this is where gdkm number is changed            
+            if (altc(1:3) .eq. 'avs' .or. altc(1:3) .eq. 'sur') then
+               if (ifdual .eq. 0) then
+c------------------------------------
+c  Shaoping change  10-20-2017
+c                 write(string, 100) i
+                  write(string, 109) i 
+c------------------------------------
+               else if (iogdkm .eq. 1.and.iogdkmblank.ne.0) then
+c------------------------------------
+c  Shaoping change  10-20-2017
+c                 write(string, 100) i
+                  write(string, 109) i 
+c------------------------------------
+               else
+c------------------------------------
+c  Shaoping change  10-20-2017
+c                 write(string, 100) i - neq                 
+                  write(string, 109) i - neq             
+c------------------------------------
                end if
-               if (altc(1:3) .eq. 'tec' .and. iocord .ne. 0) then
+c ic1 positions the column for printout               
+               ic1 = 11
+            else
+               ic1 = 1
+            end if
+            if (iocord .ne. 0) then
+c Only output coordinates that are used
+               if (altc(1:3) .eq. 'tec' .and. icall .ne. 1) then
+c     Coordinates will only be output in the first file for tecplot
+c     (do nothing)
+               else 
+                  select case (icnl)
+                  case (1, 4)
+                     icord1 = 1
+                     icord2 = 2
+                     icord3 = 1
+                  case (2, 5)
+                     icord1 = 1
+                     icord2 = 3
+                     icord3 = 2
+                  case(3, 6)
+                     icord1 = 1
+                     icord2 = 3
+                     icord3 = 1
+                  case default
+                     icord1 = 1
+                     icord2 = 3
+                     icord3 = 1
+                  end select
+                  do j = icord1, icord2, icord3
+                     write(vstring,110) dls(1:k), corz(i - offset,j)
+                     ic2 = ic1 + len_trim(vstring)
+                     string(ic1:ic2) = vstring
+                     ic1 = ic2 + 1
+                  end do
+               end if
+            end if
+c     Node numbers are written after coordinates for tec files
+c start endif *****
+            if (altc(1:3) .eq. 'tec') then
+               if(ifdual.ne.0.and. iogdkm .eq. 1.
+     &                        and. iogdkmblank .eq. 1) then
+c gaz  040817 if blanking use primary grid node number (and blank variable) 
+c gaz identify secondary node variable (i_sec)                   
+                   write(vstring, 105) dls(1:k), i
+                   i_wrt = i
+                   i_pri = i
+                   if(nelm(nelm(i_pri+1)).gt.neq_primary) then
+                    i_sec = nelm(nelm(i_pri+1))
+                    i = i_sec
+                   else  
+c gaz use a blanking value
+                    i_sec = iblanking_value
+                    i = i_sec
+                   endif                   
+               else if (ifdual .eq. 0 .or. iogdkm .eq. 1) then
+                  write(vstring, 105) dls(1:k), i
+                  i_wrt = i
+               else 
+                  write(vstring, 105) dls(1:k), i - neq
+                  i_wrt = i -neq
+               end if
+               ic2 = ic1 + len_trim(vstring)
+               string(ic1:ic2) = vstring
+               ic1 = ic2 + 1
+            end if
+           if (iozid .eq. 1) then
+               if (altc(1:4) .eq. 'avs' .or. altc(1:3) .eq. 'sur'
+     &              .or. icall .eq. 1 .or. iogrid .eq. 1) then
+                  write(vstring, 115) dls(1:k), izonef(i)
+                  ic2 = ic1 + len_trim(vstring)
+                  string(ic1:ic2) = vstring
+                  ic1 = ic2 + 1
+               end if
+            end if
+c end endif *****
+           
+            
+
+         if (altc(1:3) .eq. 'tec' .and. iocord .ne. 0) then
                   if (icall .eq. 1 .and. iozid .eq. 0) then
-                     write(lu, fstring) (corz(i,j), j = icord1, icord2,
-     +                    icord3), i, (min(maxc, max(minc,
+                   if(i.ne.iblanking_value) then
+                    write(lu, fstring) (corz(i_wrt,j), j =icord1,icord2,
+     +                    icord3), i_wrt, (min(maxc, max(minc,
      +                    antmp(i+add_dual,n))), n=1,nspeci)
+                   else
+                    write(lu, fstring) (corz(i_wrt,j), j =icord1,icord2,
+     +                    icord3), i_wrt, (iblanking_value, n=1,nspeci)
+                   endif
                   else if (icall .eq. 1 .and. iozid .eq. 1) then
-                     write(lu, fstring) (corz(i,j), j = icord1, icord2,
-     +                    icord3), i,izonef(i), (min(maxc, 
-     +                    max(minc,antmp(i+add_dual,n))), n=1,nspeci)
-                  else
-                     write(lu, fstring) i, (min(maxc, max(minc,
+                   if(i.ne.iblanking_value) then
+                    write(lu, fstring) (corz(i_wrt,j), j =icord1,icord2,
+     +                    icord3), i_wrt, (min(maxc, max(minc,
      +                    antmp(i+add_dual,n))), n=1,nspeci)
+                   else
+                    write(lu, fstring) (corz(i_wrt,j), j =icord1,icord2,
+     +                    icord3), i_wrt, (iblanking_value, n=1,nspeci) 
+                   endif
+                  else
+                     if(i.ne.iblanking_value) then
+                      write(lu, fstring) i_wrt, (min(maxc, max(minc,
+     +                    antmp(i+add_dual,n))), n=1,nspeci)
+                     else
+                      write(lu, fstring) i_wrt, 
+     +                    (iblanking_value, n=1,nspeci)       
+                     endif
                   end if
+
 
                else if (altc(1:3) .eq. 'tec' .and. iozid .ne. 0) then
                   if (icall .eq. 1 .or. iogrid .eq. 1) then
-                     write(lu, fstring) i, izonef(i), (min(maxc,
+                    if(i.ne.iblanking_value) then
+                     write(lu, fstring) i_wrt, izonef(i), (min(maxc,
      +                    max(minc, antmp(i+add_dual,n))), n=1,nspeci)
+                    else
+                     write(lu, fstring) i_wrt, izonef(i), 
+     +                    (iblanking_value, n=1,nspeci) 
+                    endif
                   else
-                     write(lu, fstring) i, (min(maxc, max(minc,
+                    if(i.ne.iblanking_value) then  
+                     write(lu, fstring) i_wrt, (min(maxc, max(minc,
      +                    antmp(i+add_dual,n))), n=1,nspeci)
+                    else
+                     write(lu, fstring) i_wrt, 
+     +                   (iblanking_value, n=1,nspeci)        
+                    endif
                   end if
                   
                else if (iocord .ne. 0) then
                   if (iozid .eq. 0) then
-                     write(lu, fstring) i, (corz(i,j), j = icord1, 
+                   if(i.ne.iblanking_value) then
+                    write(lu, fstring) i_wrt,(corz(i_wrt,j), j = icord1,
      +                    icord2, icord3), (min(maxc, max(minc,
      +                    antmp(i+add_dual,n))), n=1,nspeci)
+                   else 
+                    write(lu, fstring) i_wrt,(corz(i_wrt,j), j = icord1,
+     +                    icord2, icord3), (iblanking_value, n=1,nspeci)
+                   endif
                   else
-                     write(lu, fstring) i, (corz(i,j), j = icord1,
+                   if(i.ne.iblanking_value) then                      
+                    write(lu, fstring) i_wrt, (corz(i_wrt,j), j =icord1,
      +                    icord2, icord3), izonef(i), (min(maxc, 
      +                    max(minc, antmp(i+add_dual,n))), n=1,nspeci)
+                   else
+                    write(lu, fstring) i_wrt, (corz(i_wrt,j), j =icord1,
+     +                    icord2, icord3), izonef(i), 
+     +                    (iblanking_value, n=1,nspeci)
+                   endif
                   end if
 
                else
+c-------------------------------
+c     Shaoping temporary  fix                  
+                 i_wrt =i
+c----------------------------------------
                   if (iozid .eq. 0) then
-                     write(lu, fstring) i,(min(maxc, max(minc,
+                    if(i.ne.iblanking_value) then  
+                     write(lu, fstring) i_wrt,(min(maxc, max(minc,
      +                    antmp(i+add_dual,n))), n=1,nspeci)
+                    else
+                     write(lu, fstring) i_wrt,
+     +                    (iblanking_value, n=1,nspeci)           
+                    endif
                   else
-                     write(lu, fstring) i, izonef(i), (min(maxc,
-     +                    max(minc, antmp(i+add_dual,n))), n=1,nspeci)
+                    if(i.ne.iblanking_value) then  
+                     write(lu, fstring) i_wrt, izonef(i),
+     +                 (min(maxc, max(minc, antmp(i+add_dual,n))),
+     +                   n=1,nspeci)
+                    else
+                     write(lu, fstring) i_wrt, izonef(i),
+     +                    (iblanking_value, n=1,nspeci)           
+                    endif                     
                   end if
                end if
- 199        enddo
+ 199   enddo
             if (altc(1:3) .eq. 'sur') close (lu)
-         end do
+
+         
          deallocate (title)
 
 c---------------------------------------------------
@@ -580,6 +1041,7 @@ c     PHS 4/28/2000    end of changes for xpress format
 c     PHS 8/10/2000    more changes for xpress below. . .
 c     for when rxn_flag NE zero
 c---------------------------------------------------
+c  middle ifblock 2
       else                      ! IF rxn_flag  NE zero
 
          fstring = ''
@@ -712,15 +1174,29 @@ c=================================================
 c     Write out node info to the  _con file
 c=================================================
 
-         do iz = 1, iendz
-! Zone loop
+c start do loop 1  
+c         istart = 1
+c         iend = 1
+         do ii = istart, iend
+c     Node loop          
+            string = ''
             if (iozone .ne. 0) then
-               idz = izone_surf(iz)
+               if(zone_saved) then
+                i = ncord(ii)
+               else
+                i = ii
+                if (izone_surf_nodes(i).ne.idz) goto 299
+               endif
+            else
+              i = ii
             end if
             if (altc(1:3) .eq. 'tec') then
                if (iozone .eq. 0 .or. iogrid .eq. 1) then
+c gaz writes   every ii should be ii = start  
+                if(ii.eq.istart) then
                   write (lu, 94) trim(timec_string), trim(tecstring),
      &                 trim(gridstring), trim(times_string)
+                endif
                else
                   if (icall .gt. 1 .and. iozone .ne. 0) then
                      write (tecstring, 125) trim(sharestring), iz
@@ -739,10 +1215,13 @@ c=================================================
                write (fstring, 96) itotal2
                write(lu, fstring) (trim(title(i)), i=1,itotal2)
             end if
-            do in = 1,neq
-               if (iozone .ne. 0) then
-                  if (izone_surf_nodes(in).ne.idz) goto 299
-               end if               
+
+c--------------------------------------------
+c  Shaoping add  10-20-2017
+c           do in = 1,neq
+c gaz 063018
+            do in = i,i
+c-------------------------------------------
                j=0
                if (iocord .ne. 0) then
                   do i = icord1, icord2, icord3
@@ -782,8 +1261,10 @@ c=================================================
                   write_array(j)=min(1.0d+40,
      2                 max(1.0d-90,complex_conc))
                enddo
+               
                write_total = j
                fstring = ''
+               
                if (iozid .eq. 0 .and. iocord .eq. 0) then
                   write (fstring, 333) write_total, dls
                else if (iozid .eq. 0 .and. iocord .ne. 0) then
@@ -809,7 +1290,7 @@ c=================================================
      &                    write_total - iocord, dls
                   else
                      if (icall .eq. 1) then
-                        write (fstring, 105) iocord, write_total-iocord
+                        write (fstring, 106) iocord, write_total-iocord
                      else
                         write (fstring, 333) write_total - iocord, dls
                      end if
@@ -856,33 +1337,82 @@ c=================================================
      &                    i=1,write_total)
                   end if
                end if
- 299        enddo
-            if(altc(1:3) .eq. 'sur') close (lu)
-         end do
-         deallocate (title)
+            enddo
+ 299   enddo
+c  end ifblock 2
+          endif
+c end do loop 1
+c          endif
+c end if block 1           
+c            
+c add element information here for saved zones and then exit
+c
+         if(zone_saved) then
+           do i = 1, n_elem
+            write(lu,'(9(1x,i7))') 
+     &        (ncord_inv(elem_temp(i,j)),j = 1,ns_in)
+           enddo
+           neq = neq_sv
+           nei_in = nei_in_sv
+           icall = icall_sv
+           deallocate(elem_temp)
+         endif
+         if (altc(1:3) .eq. 'sur') close (lu)
+      enddo
+      if(zone_saved) then 
+       if(.not.allocated(contour_conc_files)) 
+     &     allocate(contour_conc_files(100))
+        icconc = icconc + 1
+        inquire(unit=lu,name = file_flux) 
+        contour_conc_files(icconc) = file_flux
       endif
-
+c gaz 073017 don't think flush(lu) is needed      
+      call flush(lu)
+      if(zone_saved) return
       if (icall .eq. 1 .and. altc(1:3) .eq. 'tec' .and. iogeo .eq. 1)
      &     then
-! Read the element connectivity and write to tec file
+c     Read the element connectivity and write to tec file
          if (ifdual .eq. 1 .and. iogdkm .eq. 1) then
-c     Do nothing, no connectivity defined
-         else
+c     Do nothing unless blanking used
+          if(iogdkmblank.ne.0) then
+c gaz 040817 attach geometry to gdkm file
             il = open_file(geoname,'old')
-! avsx geometry file has an initial line that starts with neq_primary
-            allocate(nelm2(ns_in))
+c     avsx geometry file has an initial line that starts with neq_primary
+            read(il,*) i
+            if (i .ne. neq_primary) backspace il
+            do i = 1, neq_primary
+               read(il,*)
+            end do
+            allocate (nelm2(ns_in))
+            do i = 1, nei_in
+               read (il,*) i1,i2,char_type,(nelm2(j), j=1,ns_in)
+               write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
+            end do
+            deallocate(nelm2)
+            close (il)              
+          endif
+         else if(irivp.eq.0) then
+            il = open_file(geoname,'old')
+c     avsx geometry file has an initial line that starts with neq_primary
             read(il,*) i
             if (i .ne. neq_primary) backspace il
             do i = 1, neq
                read(il,*)
             end do
+            allocate (nelm2(ns_in))
             do i = 1, nei_in
                read (il,*) i1,i2,char_type,(nelm2(j), j=1,ns_in)
                write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
             end do
             deallocate(nelm2)
             close (il)
-         end if
+         else
+c     river segments (2 node elements)
+            do i = 1,nnelm_riv
+               write(lu,'(2(i8))') nelm_riv(i,1)-neq,
+     &              nelm_riv(i,2)-neq
+           enddo
+         endif
       end if
 c gaz added element output  (hex only) for fdm generated grid   
       if (icall .eq. 1 .and. altc(1:3) .eq. 'tec' .and. ivf .eq. -1
@@ -893,16 +1423,16 @@ c first generate elements
          read(il,*) 
          read(il,*)  ns_in , nei_in
          allocate (nelm2(ns_in))
-         read(il,*) nei_in, ns_in
          do i = 1, nei_in
             read (il,*) i1, (nelm2(j), j=1,ns_in)
             write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
          end do
          deallocate(nelm2)
          close (il)
-      end if      
+         end if   
+
       if (altc(1:3) .ne. 'sur') close (lu)
-      iocord = iocord_temp
+      iocord = iocord_tmp
 
 c 94   format('ZONE T = "Simulation time ',1p,g16.9,' days"', a)
  94   format('ZONE T = ', a, a, a, a)
@@ -913,9 +1443,9 @@ c 97   format('TEXT T = "Simulation time ',1p,g16.9,' days"')
  98   format ('TITLE = "', a30, 1x, a11, 1x, a8, 1x, a, '"')
  99   format ('(a11, ', i3, "('",' "',"', a, '",'"',"'))")
  100  format ('FILETYPE = "SOLUTION"')
+ 109  format ('FILETYPE = "SOLUTION"', i6)
  104  format ('(1x, ', i3, '(g16.9, 1x), i10.10, ', i3, '(1x, g16.9))')
- 105  format ('(1x, ', i3, '(g16.9, 1x), i10.10, 1x, i4, ', i3, 
-     &     '(1x, g16.9))')
+
  125  format(', VARSHARELIST = ([', a,'] = ', i4, ')')
  135  format(', N = ', i8, ', E = ', i8, ', DATAPACKING = POINT',
      &     ', ZONETYPE = ', a)
@@ -933,6 +1463,22 @@ C     Zid no coordinates
 C     Coordinates and zid
  335  format("(1x, i10.10, ", i3, "('", a, "', g16.9), '", a, "', i4,",
      &     i3, "('", a, "', g16.9))")
-      deallocate(anv_dum,an_dum,antmp)
+ 130  format('ZONE T =', a, a, a, a) 
+ 131  format('ZONE ',a,',',' T =', a, a, a, a)     
+ 303  format(', VARSHARELIST = ([', a,'] = ', i4, ')')
+ 304  format('FILETYPE = "SOLUTION"')
+ 305  format(', VARSHARELIST = ([', a,'] = ', i4, '), ',
+     &     'CONNECTIVITYSHAREZONE = 1')   
+ 118  format('TEXT T = ', a)
+ 120  format('ZONE T = "',i4.4, '"', a)     
+ 110  format(a, g16.9)
+ 115  format(a, i4)
+ 106  format ('(1x, ', i3, '(g16.9, 1x), i10.10, 1x, i4, ', i3, 
+     &     '(1x, g16.9))')
+ 105  format(a, i10.10)     
+c      deallocate(anv_dum,an_dum,antmp)
+      if(allocated(anv_dum)) deallocate(anv_dum)
+      if(allocated(an_dum)) deallocate(an_dum)
+      if(allocated(antmp)) deallocate(antmp)
       return
       end

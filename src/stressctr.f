@@ -63,7 +63,7 @@
       
       integer iflg,i,ndummy,md,j,k,isstr_temp, neqp1
       integer i1,i2,jj,kb,kc,iforce,nr1,nr2,ieosd
-      integer il,ilev,mlev, node, inptorig 
+      integer il,ilev,mlev, node, inptorig, num_tab, i_non_strs 
       character*10 macro1, macro2
       real*8 dis_tol,aiter,aminkt
       real*8, allocatable :: stressboun(:)
@@ -139,7 +139,7 @@ c     s kelkar 12/6/09 axisymmetric anisotropy
       integer i91,j91
 c     s kelkar nov 5 2010
       real*8  pi
-      real*8 eigenvec(3,3),alambda(3), eigenvec_deg(3)
+c      real*8 eigenvec(3,3),alambda(3), eigenvec_deg(3)
       real*8 friction, strength, pp_fac
       integer iispmd
       integer ishear
@@ -179,11 +179,11 @@ c     allocate (nvfcl(n0))
          allocate (e1(n0))
          allocate (e2(n0))
          allocate (e3(n0))
-c     s kelkar 4/20/2010
-         allocate (e_ini(1:n0))
-         allocate (dEdt(1:n0))
-         allocate (dNuedt(1:n0))
-         allocate (poisson_ini(1:n0))
+c     s kelkar 4/20/2010   gaz  042916 allocated later
+c         allocate (e_ini(1:n0))
+c         allocate (dEdt(1:n0))
+c         allocate (dNuedt(1:n0))
+c         allocate (poisson_ini(1:n0))
 c     d dempsey 3/11/2014
          allocate (bodyforce_x(n0))
          allocate (bodyforce_y(n0))
@@ -194,6 +194,8 @@ c     for now, arrays are allocated while reading input,lines ~684-700
 c......................................
          allocate (bulk(n0))
          allocate (alp(n0))
+         allocate (bulk0(n0))
+         allocate (alp0(n0))
          allocate (du(n0)) 
          allocate (dv(n0)) 
          allocate (dw(n0))
@@ -303,6 +305,8 @@ c     axisymmetric anisotropy
 c......................................
          bulk = 0.0d0
          alp = 0.0d0
+         alp0 = 0.0d0
+         bulk0 = 0.0d0         
          du = 0.0d0 
          dv = 0.0d0 
          dw = 0.0d0
@@ -353,7 +357,7 @@ c     dvfdv = 0.0d0
          abs_tol_stress = 1.d-10 
 c     Sai: initially set nonlinear flag to zero
          isNonlinear = 0
-         
+         isbiotNonLin = 0
          
 c     
 c     temporary unit number for stress contour
@@ -1238,61 +1242,61 @@ c     multiplier for lithostatic load
      &           itype, default, macroread(8), macro, igroup, ireturn,
      &           r8_1 = elastic_mod(1:n0),r8_2 = poisson(1:n0))
 c     s kelkar 4/20/2010 E and Nue as functions of temperature
-         else if(macro1.eq.'nonlinear') then
+         else if(macro1.eq.'nonlinear '.or.macro1.eq.'elastic no') then
+c
+c  read in  tables or functions and attributes
+c
             isNonlinear = 1
-            read(inpt,*)Nonlin_model_flag
-            if(Nonlin_model_flag.eq.1) then 
-c     this model is nonlinear but isotropic	                   
-               igroup = 1
-               narrays = 4          
-               itype(1) = 8
-               itype(2) = 8
-               itype(3) = 8
-               itype(4) = 8
-               default(1) =0.
-               default(2) = 0.
-               default(3) = 0.
-               default(4) = 0.
-               call initdata2( inpt, ischk, n0, narrays,itype,default,
-     &              macroread(8), macro, igroup,ireturn, 
-     &              r8_1 = e_ini(1:n0), r8_2 = dEdt(1:n0),
-     &              r8_3 = poisson_ini(1:n0), r8_4 = dNuedt(1:n0) )
-               
-               do node=1,n0
-                  elastic_mod(node) = e_ini(node)
-                  poisson(node)=poisson_ini(node)
-               enddo
-            elseif(Nonlin_model_flag.eq.91) then 
-               read(inpt,'(a100)') young_temp_file
-               ifile = open_file( young_temp_file, 'old')
-               read(ifile,'(a)') input_msg
-               backspace (ifile)
-               call parse_string(input_msg, imsg, msg, xmsg, cmsg, nwds)
-               if(nwds.eq.1) then
-                  read(ifile,*)nentries_young 
-               endif
-               do i91=1,1000000
-                  read(ifile,*,end=91913) temp_junk
-               enddo
-               write(iptty,*)'error in stress input. Too many entries'
-               write(iptty,*)' in the E vs Temperature file. STOP'
-               write(ierr,*)'error in stress input. Too many entries'
-               write(ierr,*)' in the E vs Temperature file. STOP'
-               stop
-91913          nentries_young = i91-1
-               rewind (ifile)
-               read(ifile,'(a)') input_msg
-               call parse_string(input_msg, imsg, msg, xmsg, cmsg, nwds)
-               if(nwds.gt.1)  backspace (ifile)
-               allocate (e_temp91(nentries_young,3))
-               e_temp91 = 0.0
-               do i91=1,nentries_young
-                  read(ifile,*)(e_temp91(i91,j91),j91=1,3)
-               enddo
-               close (ifile)
-               call stress_mech_props(0,Nonlin_model_flag,0)
+            allocate(i_tab_youngs(max_y_tab))
+            allocate(iy_tab(n0))
+            iy_tab = 0
+            allocate (e_temp91(nentries_young_max,3,max_y_tab))
+            e_temp91 = 0.0d0
+            allocate(e_ini(max_non_str))
+            allocate(poisson_ini(max_non_str))
+            allocate(t_non_ref(max_non_str))
+            allocate(dEdt(max_non_str))
+            allocate(dNuedt(max_non_str))
+            allocate(istr_non_model(max_non_str))
+            e_ini = 0.0d0
+            poisson_ini = 0.0d0
+            dEdt = 0.0d0
+            t_non_ref = 0.0d0
+            dNuedt = 0.0d0
+            num_tab = 0
+ 211        continue
+            read(inpt,'(a80)') wdd1
+            if(.not. null1(wdd1)) then
+c gaz 042916 need to put on one line 
+               backspace inpt
+               read(inpt,*) i_non_strs
+               backspace inpt
+               num_tab = num_tab + 1
+               istr_non_model(num_tab) = i_non_strs
+              if(i_non_strs.eq.1)then
+               read(inpt,*) i_non_strs,e_ini(num_tab),
+     &          poisson_ini(num_tab),t_non_ref(num_tab),dEdt(num_tab),
+     &          dNuedt(num_tab)                   
+              else
+c  read nonlinear youngs table (function of T)            
+                 call young_temp_table(0,0,num_tab)
+              endif
+               go to 211
             endif
+            go to 210
+c     read in nodal capillary type
+ 210         continue
+c assign tables to nodes
+            narrays = 1
+            itype(1) = 4
+            default(1) = 0
+            macro = "etab"
+            igroup = 2
             
+            call initdata2( inpt, ischk, n0, narrays,
+     &           itype, default, macroread(9), macro, igroup, ireturn,
+     2           i4_1=iy_tab(1:n0) )  
+c         endif       
 c     s kelkar 12/6/09 axisymmetric anisotropy
          else if(macro1.eq.'anisotropy') then
             stress_anisotropy_in = .true.
@@ -1424,7 +1428,7 @@ c
                poisson(i) = nu(modelNumber(i))
             enddo
 c....................................................................
-         else if(macro1(1:4).eq.'biot') then
+         else if(macro1(1:10).eq.'biot      ') then
             igroup = 1
             narrays = 2
             itype(1) = 8
@@ -1434,7 +1438,50 @@ c....................................................................
             
             call initdata2( inpt, ischk, n0, narrays,
      &           itype, default, macroread(8), macro, igroup, ireturn,
-     &           r8_1 = alp(1:n0),r8_2 = bulk(1:n0))
+     &           r8_1 = alp0(1:n0),r8_2 = bulk0(1:n0))            
+c....................................................................
+       else if(macro1(1:10).eq.'nonlinbiot'.or.
+     &         macro1(1:10).eq.'biot nonli') then
+c
+c  read in  tables of biot parameters as function of temperature
+c
+            isbiotNonLin = 1
+            allocate(i_tab_biot(max_y_tab_b))
+            allocate(iy_tab_biot(n0))
+            iy_tab_biot = 0
+            allocate (biot_temp91(nentries_biot_max,3,max_y_tab_b))
+            biot_temp91 = 0.0d0
+            allocate(istr_non_model_biot(max_non_str_biot))
+            num_tab = 0
+ 311        continue
+            read(inpt,'(a80)') wdd1
+            if(.not. null1(wdd1)) then
+c gaz 042916 need to put on one line 
+               backspace inpt
+               read(inpt,*) i_non_strs
+               backspace inpt
+               num_tab = num_tab + 1
+               istr_non_model_biot(num_tab) = i_non_strs
+c  read nonlinear biot table (function of T)            
+                 call biot_temp_table(0,0,num_tab)
+               go to 311
+            endif
+            go to 310
+c     read in nodal capillary type
+ 310         continue
+c assign tables to nodes
+            narrays = 1
+            itype(1) = 4
+            default(1) = 0
+            macro = "etab"
+            igroup = 2
+            
+            call initdata2( inpt, ischk, n0, narrays,
+     &           itype, default, macroread(9), macro, igroup, ireturn,
+     2           i4_1=iy_tab_biot(1:n0) )          
+            
+            
+
          else if(macro1(1:5).eq.'toler') then
             read(inpt,*) tol_stress
 c     
@@ -1525,80 +1572,7 @@ c
 c     linear isotropic or anisotropic (at present plain strain and 3D)
 c     plain stress has different combinations
 c     
-         do i = 1,n0
-c     change from volumetric to linear coef. of thermal expansion
-            alp(i) = alp(i)/3.0
-            if(istrs.ne.2) then
-c     plain strain and 3-D                   
-c     s kelkar 12/6/09 axisymmetric anisotropy
-c     in the notation used in the notes
-c     e1=c11, e2=c12=c21, e3=c66=Gp, e4=c13, and ezz=c33
-c     these goto isotropic limit when Ep=Et and Nue-p=Nue-t
-               if(stress_anisotropy_in) then
-                  young_p= elastic_mod(i)
-                  young_t= elastic_mod_t(i)
-                  pois_p= poisson(i)
-                  pois_t= poisson_t(i)
-                  pois_sq= pois_t*pois_t
-                  fac1= young_p/young_t
-                  fac2= 1.0d0- pois_p -2.0d0*fac1*pois_sq
-                  fac3= fac2*(1.0d0+pois_p)
-                  e1(i)= young_p*(1.0d0-fac1*pois_sq)/fac3
-                  e2(i)= young_p*(pois_p+fac1*pois_sq)/fac3
-                  e3(i)= 0.5d0*young_p/(1.d0+pois_p)
-                  e4(i)= young_p*pois_t/fac2
-                  ezz(i)= young_t*(1.0d0-pois_p)/fac2
-c     for thermal expansion, we input Alpha which is a small number, but
-c     for pore pressure 
-c     we want to be able to input number such that 0<=beta_p<=1 and also
-c     have the temperature and pore pressure terms look similalr in the 
-c     balance equations.Hence the term beta_p/3Hp is saved, not  beta_p
-c     See Keita's notes dated 2/25/2010, Here bulk_mod is
-c     defined as bulk_mod=Hp=(C11+C12+C13)/3 and biot=beta_p/3Hp. Then
-c     Ks=Hp/(1-beta_p)=bulk_mod/(1-3*bulk_mod*biot).
-c     later beta_t calculated from
-c     =1-Ht/Ks where Ht=(2C13+C33)/3
-                  bulk_mod=(e1(i)+e2(i)+e4(i))/3.
-                  if(bulk_mod.gt.bulk_tol) then
-                     bulk(i) = bulk(i)/(3.0*bulk_mod)
-                  else
-                     bulk(i) = bulk_tol
-                  endif
-c..................................................
-               elseif(stress_anisotropy_use) then
-c     calculate the Biot term 
-                  bulk_mod = elastic_mod(i)/(3.
-     &                 *(1.0d0-2.0d0*poisson(i)))
-c     bulk will be biot/(3K)
-                  bulk_mod=(e1(i)+e2(i)+e4(i))/3.
-                  if(bulk_mod.gt.bulk_tol) then
-                     bulk(i) = bulk(i)/(3.0*bulk_mod)
-                  else
-                     bulk(i) = bulk_tol
-                  endif
-               else
-                  e1(i) = elastic_mod(i)*(1.0d0-poisson(i))/
-     &                 (1.d0+poisson(i))/(1.0d0-2.0d0*poisson(i))
-                  e2(i) = e1(i)*poisson(i)/(1.0d0-poisson(i))
-                  e3(i) = e1(i)*(1.0d0-2.0d0*poisson(i))/
-     &                 2.0d0/(1.0d0-poisson(i))
-c     calculate the Biot term 
-                  bulk_mod = elastic_mod(i)/(3.
-     &                 *(1.0d0-2.0d0*poisson(i)))
-c     bulk will be biot/(3K)
-                  if(bulk_mod.gt.bulk_tol) then
-                     bulk(i) = bulk(i)/(3.0*bulk_mod)
-                  else
-                     bulk(i) = bulk_tol
-                  endif
-               endif
-            else
-c     plain strain
-               e1(i) = elastic_mod(i)/(1.d0-poisson(i)*poisson(i))
-               e2(i) = e1(i)*poisson(i)
-               e3(i) = e1(i)*(1.0d0-poisson(i))/2.0d0
-            endif                    
-         enddo
+        call elastic_constants(1) 
          
          macroread(8) = .TRUE. 
          if(iptty.ne.0) then
@@ -1634,7 +1608,27 @@ c     plain strain
          inobr = 1
          ivf = 0
          mlz = 0
-         
+c
+c check that all elastic parameters are defined
+c  
+         j = 0
+         do i = 1, n0
+          if(elastic_mod(i). gt. 0.1) then
+           go to 811
+          elseif (isNonlinear.eq.1) then
+           if(iy_tab(i).ne.0) go to 811
+          else
+           j = j + 1
+          endif
+811      continue
+         enddo   
+        if(j.gt.0) then
+         if(iout.ne.0) write(iout,812) j
+         if(iptty.ne.0) write(iptty,812) j
+         if(iout.ne.0) write(iout,105) 
+         if(iptty.ne.0) write(iptty,105) 
+        endif  
+812     format(' Warning: ',i8,' nodes without elastic params defined')
       else if(iflg.eq.2) then
 c     
 c     sort out applied forces            

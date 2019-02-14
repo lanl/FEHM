@@ -283,28 +283,33 @@ C***********************************************************************
       use comii
       use comdti
       use comai
+      use property_interpolate_1
       implicit none
 
-      integer isatf,k,maxitp
+      integer isatf,k,maxitp,ifail
       real*8 tl,pcaps,dpcaps,dpsatt,dpsats
       real*8 x,x2,x3,x4,pfun,pfunn,pfund,dpst,dptsn,dpstd,psatl0,delp
       real*8 ddelt,ddels,tfun,tfunn,tfund,pfun0,resid,drlp
       real*8 salt_con,pv_sc,dsct,dscc
-
-      psatl=0.0
-      dpsatt=0.0
+      real*8 dtps,dtpsn,dtpsd
+      psatl=0.0d0
+      dpsatt=0.0d0
       if(ice.ne.0) then
          goto 9000
       end if
 c ev3 is the reference value for vapor density,initialized(1.) in main.s
 c sat pressure as function of sat temp
-      if(isatf.le.0) then
+      if(isatf.le.0.and.ipsat.eq.0) then
 c check for limiting values
-         if(tl.lt.5.) then
+        if(iwater_table.ne.1) then
+c gaz debug 112717        
+c         if(tl.lt.10.) then
+c            psatl=0.00123
+         if(tl.lt.5.0) then
             psatl=0.000752
          else if(tl.gt.340.0) then
             psatl=14.5941
-         elseif(ipsat.eq.0) then
+         else
             x=tl
             x2=x*x
             x3=x2*x
@@ -319,6 +324,12 @@ c check for limiting values
             psatl=pfun
             dpsatt=dpst
             dpsats=0.0
+         endif
+        else
+          call get_h2o_sat_pressure(ifail,tl,psatl,dpst)
+            dpsatt=dpst
+            dpsats=0.0         
+        endif
 c
 c get vapor pressure lowering (salt concentration)
 c 
@@ -329,7 +340,7 @@ c              dpsatt= dpsatt + dsct
 c   gaz debug 060316 (embedded sparrow)
 c
               psatl = pv_sc
-              dpsatt= dsct
+              dpsatt= dsct             
              endif
 c
 c get vapor pressure lowering (capillary pressure)
@@ -341,12 +352,13 @@ c
                dpsatt=dpsatt*delp+psatl0*ddelt
                dpsats=psatl0*ddels
             endif
-         end if
+
 c
 c sat temp as function of sat pres
 c
       else
 c here tl=is the pressure
+       if(iwater_table.ne.1) then
          x=tl
          if(x.lt.0.00123) then
             psatl=10.0
@@ -359,8 +371,14 @@ c here tl=is the pressure
             tfunn=tsa0+tspa1*x+tspa2*x2+tspa3*x3+tspa4*x4
             tfund=tsb0+tspb1*x+tspb2*x2+tspb3*x3+tspb4*x4
             tfun=tfunn/tfund
+c calculate derivative wrt p          
+            dtpsn=((tspa1+2.*tspa2*x+3.*tspa3*x2+4.*tspa4*x3)*tfund)-
+     &           (tfunn*(tspb1+2.*tspb2*x+3.*tspb3*x2+4.*tspb4*x3))
+            dtpsd=tfund**2
+            dtps=dtpsn/dtpsd  
+            dpsatt = dtps
 c psatl is the saturation temp
-            x=tfun
+            x=tfun  
 c do this for co2 systems
             if(ico2.gt.0) then
 c this is the initial guess
@@ -402,9 +420,13 @@ c failed to converge
             endif
             psatl=x
          end if
+       else
+c tl is the pressure,psatl = temp
+          call get_h2o_sat_temperature(ifail,tl,psatl,dpsatt)
+            dpsats=0.0    
+        endif
       endif
  9000 continue
-
       return
       end
 

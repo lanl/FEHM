@@ -289,7 +289,7 @@ c**** set zone information ****
             call zone(cnum, inzone)
             goto 105
 
-         else if (macro .eq. 'stop') then
+         else if (macro .eq.'stop'.or.macro .eq.'   ') then
 
             if (iout .ne. 0) write(iout, 6010) macro, 'inzone', inzone
             if (iptty .gt. 0) write(iptty, 6010) macro,  'inzone', 

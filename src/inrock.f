@@ -201,9 +201,9 @@ c**** read thermal conductivity data ****
       itype(1) = 8
       itype(2) = 8
       itype(3) = 8
-      default(1) = 2500.
-      default(2) = 1000.
-      default(3) = 1.0
+      default(1) = 2500.d0
+      default(2) = 1000.d0
+      default(3) = 1.0d0
       igroup = 1
       
       call initdata2 (inpt, ischk, n0, narrays, itype, 

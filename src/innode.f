@@ -397,7 +397,7 @@ c**** read in history by zone output selections ****
 
       subroutine get_nodes (node_array, cnt, m, ierr_flag)
 
-      use comai, only : inpt, ierr, iout, iptty
+      use comai, only : inpt, ierr, iout, iptty, gdkm_flag
       use comdti, only : n0
       use comki, only : macro
       implicit none
@@ -413,7 +413,8 @@ c**** read in coordinates if node_array(i) < 0 and find node number ****
             read (inpt, *) xc, yc, zc
             call near3 (xc, yc, zc, nodew, 0)
             node_array(i) =  nodew
-         else if (node_array(i) .gt. n0) then
+c gaz 022717            
+         else if (node_array(i) .gt. n0. and . gdkm_flag.eq.0) then
             ierr_flag = 2
             write (ierr, 400) macro
             write (ierr, 300) node_array(i), n0

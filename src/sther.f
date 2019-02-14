@@ -268,7 +268,16 @@ c   no other input required
           enddo  
 c  for now start with ieos_aux = 1
           allocate(ieos_aux(n0))
-          ieos_aux = 1                  
+          ieos_aux = 1   
+          else if(wdd1(1:5).eq.'table') then  
+             iwater_table = 1   
+c gaz 110715
+c
+c set very high bounds for table
+c  
+          do i=1,n0
+           iieos(i)=1
+          enddo   
          else
 c classic simplt thermo         
           read(wdd1,*) iieosd,itsat

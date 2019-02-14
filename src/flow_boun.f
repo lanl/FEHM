@@ -249,7 +249,7 @@ c node_ch_model_type - specified model number change
 c
 c node_model - model number for each node
 c
-      use comai, only : boun_out
+      use comai, only : boun_out, neq_primary
       use combi
       use comci
       use comdi
@@ -736,8 +736,6 @@ c
                endif
             enddo
 
-c     calculate uppermost node
-
             do i=1,n
                iimodel=node_model(i)
                if(iimodel.gt.0) then
@@ -922,11 +920,17 @@ C
      &                       imodel)
                      endif
                   endif
-                  if(iqa.ne.0.or.ixa.ne.0) then
+                  if(iqa.ne.0) then
                      if(sourcea_type(imodel).gt.0) then
                         qa(i)=sourcea(abs(time_type(imodel)),imodel)
                      endif
                   endif
+c gaz 111418 need separate arrays for "air fraction of sw" and "sa"  : uses lt.0              
+                  if(ixa.ne.0) then
+                     if(sourcea_type(imodel).lt.0) then
+                        qaxf(i)=sourcea(abs(time_type(imodel)),imodel)
+                     endif
+                  endif                  
                   if(iha.ne.0) then
                      if(humid_type(imodel).lt.0) then
                         huma(i)=-humid(abs(time_type(imodel)),imodel)

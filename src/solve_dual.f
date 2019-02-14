@@ -51,7 +51,7 @@
 !***********************************************************************
 
       implicit none
-      integer idof, neq_primary, neq, maxor, mdof_sol
+      integer idof, neq_primary, neq, maxor, mdof_sol, iarr_size
       real*8 a(*),b(*),bp(*)
       real*8 stor1(*),piv(neq,*)
       real*8 h(maxor,*),c(*),s(*),g(*),y(*), epn, anorm
@@ -96,17 +96,23 @@ c
          na_ratio = na(i)/ncon_size
          na_primary(i) = na_ratio*ncon_primary_size
       enddo
+      iarr_size = ncon_primary_size*idof*idof
       if(.not.allocated(iarr)) then
-         allocate(iarr(ncon_primary_size*idof*idof))
+c         allocate(iarr(ncon_primary_size*idof*idof))
+         allocate(iarr(iarr_size))
          allocate(a_primary(1), adum(1), idum(1))
          call simplify_gdpm(4,neq,neq_primary,ncon
      &        ,idum,ncon_primary,a,adum,a_primary,na
      &        ,na_primary,ngdpm_layers,igdpm,iarr,idof)
+         deallocate(adum)
+         allocate (adum(iarr_size))
       endif
 
 c     call neq by neq solution                     
 
-      call solve_new(neq_primary,a(iarr),b,bp,na_primary,
+c      call solve_new(neq_primary,a(iarr),b,bp,na_primary, gaz 102416
+      adum(1:iarr_size) = a(iarr)
+      call solve_new(neq_primary,adum,b,bp,na_primary,
      &     nb,nrhs,ncon_primary,nop,inorth,
      &     epn,irb,iirb,npvt,stor1,dum,piv,
      &     h,c,s,g,y,iter,iback,idof,iptty,maxor,accm)     

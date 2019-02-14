@@ -421,7 +421,7 @@ C**********************************************************************
       parameter(psatmn=0.0001)
       parameter(eosmg=1.0001)
 c      parameter(eosml=0.95)
-      parameter(eosml=0.99)
+c      parameter(eosml=0.99)
       parameter(eostol=0.0001)
 c      parameter(stepl=0.95)
       parameter(pcimin=0.0)
@@ -429,12 +429,13 @@ c      parameter(phase_mult=1.00)
       parameter(phase_sat=1.0d-9)
 c gaz debug 092115
 c      parameter(satml=1.0d-4)
-      parameter(xdiff_tol=1.0d-4)
 c      parameter(satml=1.0d-6)
 c      parameter(phase_mult=1.01)
+      parameter(xdiff_tol=1.0d-4)
+      real*8 pcrit_h2o, tcrit_h2o
+      parameter(pcrit_h2o=22.00d0, tcrit_h2o=373.95)
 c ich_max should be odd or even but don't know which
 c      parameter(ich_max = 2)
-
       real*8 psatl
       integer i
       real*8 pl
@@ -463,35 +464,38 @@ c      parameter(ich_max = 2)
       integer i3
       integer ifl
       integer ndummy,k
+      real*8 stepl_hm, phase_mult_hm, satml_hm, eosml_hm
+      real*8 stepl_hma, phase_mult_hma, satml_hma, eosml_hma
+      parameter(stepl_hm = 0.95, phase_mult_hm = 1.00001)
+c gaz debug 051516 (optimized for geothermal;satml = 1.0d-2 may be too large)      
+      parameter(satml_hm = 1.0d-2, eosml_hm = 0.9)
+      parameter(stepl_hma = 0.95, phase_mult_hma = 1.05)
+      parameter(satml_hma = 1.0d-7, eosml_hma = 0.99)
 c
 c
 c ich_m1 and ich_m2 are in comai but are adjusted here
 c these are maybe best for geothermal systems
 c
-c gaz debug 051516
-      if (ico2.eq.0) then
-       satml=1.0d-2
-       phase_mult=1.01
+      if(ico2.eq.0) then
+        satml = satml_hm
+        phase_mult = phase_mult_hm
+        eosml = eosml_hm
       else
-c      satml=1.0d-6 to 1.0d-7 about the same
-c      satml=1.0d-4   #bad
-c      satml=1.0d-2   #bad
-        satml=1.0d-7
-c       phase_mult=1.01
-c       phase_mult=1.001 #bad
-        phase_mult=1.15
+        satml = satml_hma
+        phase_mult = phase_mult_hma
+        eosml = eosml_hma
       endif
       ich_m1 = 10
       ich_m2 = 10
-      ich_max = 6      
+      ich_max = 6   
 c
-c determine variable set
+c determine nr correction multiplier
 c
       if(nr_stop.eq.0) then
          if(ico2.eq.0) then
-          stepl = 0.99
+          stepl = stepl_hm
          else
-          stepl = 0.95
+          stepl = stepl_hma
          endif
       else
          stepl = strd_iter
@@ -511,9 +515,7 @@ c new code to save mass and energy in each block for ngas
 c
 c     evaluate eos status of each node. change status as prescribed
 c     by phase change instructions
-         
-         
-         
+            
 c set newton raphson step length to 1.0 at beginning of timestep
          if(iad.eq.0) then
             strd =1.0
@@ -523,12 +525,14 @@ cc
 c
 c new loop to check on degree of freedom 
 c if idof=1, the problem is either heat conduction or saturated only
+c 
 c
          if(idof.ne.1) then
             if(ico2.eq.0) then
 c
 c     determine phase state for pure water
 c
+c gaz 111015 added super crtical phase
                if(icarb.eq.0) then
                   do i=1,neq
                      ij=i+ndummy
@@ -544,23 +548,34 @@ c     check if eos change is necessary
 c
                      if(ps(ij).eq.0.0.or.idof.le.1) then
 c                 ieosdc=-1 gaz 10-17-2001 do nothing
-                     elseif(ieosd.eq.1) then
+                     elseif(ieosd.eq.1) then                    
 c
 c     liquid only state
 c
-                       tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,
+                     tboil = 2000.
+                      if(pl.ge.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+                        ieosdc = 4
+                      else if(pl.lt.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+                        ieosdc = 3 
+                        s(ij) = 0.0
+                      else if(pl.lt.pcrit_h2o) then
+                         tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,
      &                             1,an(ij))
+                      endif
+         
 C*****
 C***** AF 11/15/10
-C*****
-                        if(tableFLAG.EQ.1) tboil = 1201. !  phs 4/27/99
+C****
+                       if(tableFLAG.EQ.1) tboil = 1201. !  phs 4/27/99
 C*****
 c     change to 2-phase
                         if(tl.ge.tboil*phase_mult.
      &                       and.days.ge.time_ieos(ij)) then
                            ieosdc=2
 c     s(ij)=eosml
-                           s(ij)=1.                    
+c gaz debug 121817                           
+c                            s(ij)=0.999    
+                           s(ij) = eosml
                            t(ij)=tboil
                            time_ieos(ij) = days + time_ch
 c     call phase_balance_ctr(1,ij,phi(ij),t(ij),s(ij))
@@ -570,21 +585,28 @@ c
 c
 c     2-phase conditions
 c
+c  gaz 102917 update temperature earlier in iteration                         
+                           t(ij)=psatl(pl,pcp(ij),dpcef(ij),
+     &                          dtsatp,dpsats,1,an(ij))  
+c
+                         
                         if(sl.gt.1..and.days.ge.time_ieos(ij)) then
 c     change to liquid only conditions
                            ieosdc=1
-c                     t(ij)=psatl(pl,pcp(ij),dpcef(ij),
-c     2                    dtsatp,dpsats,1,an(ij))*eosml
-                           t(ij)=psatl(pl,pcp(ij),dpcef(ij),
-     2                          dtsatp,dpsats,1,an(ij))     
+c gaz 102917 calculated above                            
+c                           t(ij)=psatl(pl,pcp(ij),dpcef(ij),
+c     2                          dtsatp,dpsats,1,an(ij))     
                            s(ij)=1.0
                            time_ieos(ij) = days + time_ch
                         elseif(s(ij).le.0.0.and.days.ge.time_ieos(ij))
      &                          then
 c     change to gas only
                            ieosdc=3
-                           t(ij)=psatl(pl,pcp(ij),dpcef(ij),
-     2                          dtsatp,dpsats,1,an(ij))*eosmg
+c                           t(ij)=psatl(pl,pcp(ij),dpcef(ij),
+c     2                          dtsatp,dpsats,1,an(ij))*eosmg
+c gaz debug 121817                           
+c                           t(ij) = t(ij)*eosmg
+                           t(ij) = t(ij)*eosmg
                            s(ij)=0.0
                            time_ieos(ij) = days + time_ch
                         endif
@@ -592,7 +614,14 @@ c
                      elseif(ieosd.eq.3) then
 c
 c     gas conditions
-c     
+c   
+                      if(pl.ge.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+                        ieosdc = 4
+                        s(ij) = 1
+                      else if(pl.ge.pcrit_h2o.and.tl.lt.tcrit_h2o) then
+                        ieosdc = 1
+                        s(ij) = 1.0
+                      endif  
                        tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,
      &                             1,an(ij))
                         if(tl.le.tboil/phase_mult.
@@ -603,12 +632,36 @@ c     change to 2-phase
                            ieosdc=2
                            time_ieos(ij) = days + time_ch
                         endif
+                     elseif(ieosd.eq.4) then
+c
+c     sc conditions 
+c 
+c sufficient  to go to gas or liquid
+                      if(pl.lt.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+                        ieosdc = 3
+                        s(ij) = 0.0
+                      else if(pl.ge.pcrit_h2o.and.tl.lt.tcrit_h2o) then
+                        ieosdc = 1
+                        s(ij) = 1.0
+                      else if(pl.lt.pcrit_h2o.and.tl.lt.tcrit_h2o) then
+                       tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,
+     &                             1,an(ij))
+                       if(tl.ge.tboil) then
+                        ieosdc = 3
+                        s(ij) = 0.0
+                       else
+                        ieosdc = 1
+                        s(ij) = 1.0
+                       endif 
+                     else
+                      ieosdc = 4
                      endif
+                   endif
 c
 c
 c     remember if danl eos change occured
 c     tally eos numbers
-c     
+c                                    
                      if(ieosd.ne.ieosdc) then
                         strd    =stepl
                         ieos_ch(ij) = ieos_ch(ij) +1
@@ -618,7 +671,7 @@ c
                      endif
                      ieos(ij)=ieosdc
                   enddo
- 233              format('>> phase chng/ts gt 3 >>>> ', 2i8,1p,3g14.4)
+ 233              format('$$$$$$$  >>>>>> ', 2i8,1p,3g14.4)
           else if(icarb.ne.0) then
             call icectrco2(-1,0)
 c            ieos = 1
@@ -690,7 +743,7 @@ c                         if(sl.ge.1.000.and.so(ij).gt.0.95) then
                            s(ij)=1.0
                            strd = stepl
                            time_ieos(ij) = days + time_ch
-c                        else
+c                         else
 c                           s(ij) = 0.999
                          endif
                         endif 
@@ -700,7 +753,7 @@ c gaz debug 090515
                            pboil = psatl(tl,pcp(ij),dpcef(ij),
      &                          dpsatt,dpsats,0,an(ij))
 c                          if(sl.le.0.0.and.so(ij).lt.0.05) then   
-                          if(sl.le.0.0) then       
+                          if(sl.le.0.0) then         
                            denei_ch(ij) = denei(ij)
                            deni_ch(ij) = deni(ij)
                            denpci_ch(ij) = denpci(ij)
@@ -842,6 +895,8 @@ c           strd is passed through common
                   i1=i+nr1
                   i2=i+nr2
                   ieosd=ieos(i)
+c gaz 112115
+                  if(ieosd.eq.4) ieosd = 1
                   if(ps(i).eq.0.0.or.ieosd.eq.0) then
 c gaz 10-18-2001
                      t(i)=t(i)-bp(i2)*strd
@@ -898,7 +953,7 @@ c                   strd = stepl
 c                  endif
                   pci(i)=max(0.0d00,pci(i))
                   s(i)=min(1.d00,max(0.0d00,s(i)))
-               enddo   
+               enddo      
             else if(ico2.lt.0.and.ice.eq.0) then
 c     
 c     make corrections for isothermal air-water mixture

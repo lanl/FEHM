@@ -368,6 +368,8 @@ C**********************************************************************
 
       logical null1,readflag
       integer inode,max_arrays
+      integer i,ii,izunit,nin
+      integer open_file
       parameter(max_arrays = 10 )
       integer in_number,out_number,npoints,narrays,ireturn
       integer itype(*),iarray,ipoint,inumber,ja,jb,jc,icode,nfound
@@ -376,6 +378,7 @@ C**********************************************************************
       integer n_realcount, n_intcount
       character*80 strtot
       character*4 macro
+      character*30 zonesavename
       integer, allocatable :: ifind(:)
       integer, allocatable :: isset(:)
       integer, allocatable :: notset(:)
@@ -389,6 +392,7 @@ C**********************************************************************
       integer, optional :: i4_3(:)
       integer, optional :: i4_4(:)
       integer, optional :: i4_5(:)
+      logical ex,op
 
       allocate(ifind(npoints),isset(npoints),notset(npoints))
       ifind=0
@@ -430,7 +434,7 @@ c     Set values to default values for all positions in each array
             n_intcount = n_intcount + 1
             if( .not. readflag ) then
                if(n_intcount.eq.1) then
-                  i4_1(1:npoints) = nint(default(iarray))
+                  i4_1(1:npoints) = nint(default(iarray))+initdata_pad
                elseif(n_intcount.eq.2) then
                   i4_2(1:npoints) = nint(default(iarray))
                elseif(n_intcount.eq.3) then
@@ -474,6 +478,27 @@ c     Loop over all lines of data to read
          ireturn = ireturn + 1
 c     Input by zones is first, or else input is by node
          if( ja .lt. 0 ) then
+c gaz 060617         
+c check for saved zonefile             
+          zonesavename(1:14) = 'zone00000.save'
+          write(zonesavename(5:9),'(i5)') abs(ja)+10000
+          zonesavename(5:5) = '0'
+          ex = .false.
+          op = .false.
+          inquire (file = zonesavename, exist = ex)
+          if(ex) then
+           inquire (file = zonesavename, opened = op)   
+           if(.not.op) izunit=open_file(zonesavename,'unknown')
+           read(izunit,*)
+           read(izunit,*)
+           read(izunit,*) nin
+           if(allocated(ncord)) deallocate(ncord)
+           allocate(ncord(nin))
+           backspace izunit
+           read(izunit,*) nin, (ncord(i), i =1, nin)
+           close(izunit)
+          endif  
+          if(.not.ex) then
             do inode = 1, npoints
                if( izonef(inode) .eq. abs(ja) ) then
                   ifind(inode) = 1
@@ -497,6 +522,7 @@ c     Input by zones is first, or else input is by node
                         n_intcount = n_intcount + 1
                         if(n_intcount.eq.1) then
                            i4_1(inode) = nint(values(iarray))
+     &                      +initdata_pad
                         elseif(n_intcount.eq.2) then
                            i4_2(inode) = nint(values(iarray))
                         elseif(n_intcount.eq.3) then
@@ -510,6 +536,47 @@ c     Input by zones is first, or else input is by node
                   end do
                end if
             end do
+           else
+c gaz 111716  
+            do ii = 1, nin
+               inode = ncord(ii)
+                  ifind(inode) = 1
+                  n_realcount = 0
+                  n_intcount = 0
+                  do iarray = 1, narrays
+                     if( itype(iarray) .eq. 8 ) then
+                        n_realcount = n_realcount + 1
+                        if(n_realcount.eq.1) then
+                           r8_1(inode) = values(iarray)
+                        elseif(n_realcount.eq.2) then
+                           r8_2(inode) = values(iarray)
+                        elseif(n_realcount.eq.3) then
+                           r8_3(inode) = values(iarray)
+                        elseif(n_realcount.eq.4) then
+                           r8_4(inode) = values(iarray)
+                        elseif(n_realcount.eq.5) then
+                           r8_5(inode) = values(iarray)
+                        end if
+                     else
+                        n_intcount = n_intcount + 1
+                        if(n_intcount.eq.1) then
+                           i4_1(inode) = nint(values(iarray))
+     &                      +initdata_pad
+                        elseif(n_intcount.eq.2) then
+                           i4_2(inode) = nint(values(iarray))
+                        elseif(n_intcount.eq.3) then
+                           i4_3(inode) = nint(values(iarray))
+                        elseif(n_intcount.eq.4) then
+                           i4_4(inode) = nint(values(iarray))
+                        elseif(n_intcount.eq.5) then
+                           i4_5(inode) = nint(values(iarray))
+                        end if
+                     end if
+                  end do
+c                end if
+            end do   
+            deallocate(ncord)
+          endif
          else
             if( ja .eq. 1 .and. jb .eq. 0 .and. jc .eq. 0 ) then
                ja = 1
@@ -539,7 +606,7 @@ c     Input by zones is first, or else input is by node
                else
                   n_intcount = n_intcount + 1
                   if(n_intcount.eq.1) then
-                     i4_1(ja:jb:jc) = nint(values(iarray))
+                     i4_1(ja:jb:jc) = nint(values(iarray))+initdata_pad
                   elseif(n_intcount.eq.2) then
                      i4_2(ja:jb:jc) = nint(values(iarray))
                   elseif(n_intcount.eq.3) then

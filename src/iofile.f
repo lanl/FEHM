@@ -286,7 +286,8 @@ C***********************************************************************
       nufilb(27)=36
       nufilb(28)=37
       nufilb(29)=38
-      nufilb(30)=39      
+      nufilb(30)=39 
+      nufilb(31)=40      
       suffix(1)='.files'
       suffix(2)='.dat'
       suffix(3)='.dat'
@@ -317,6 +318,7 @@ C***********************************************************************
       suffix(28)='.nop'
       suffix(29)='.txt'
       suffix(30)='.well2'
+      suffix(31)='.txt'
       iowork(1)='iocntl'
       iowork(2)='inpt  '
       iowork(3)='incoor'
@@ -346,7 +348,8 @@ C***********************************************************************
       iowork(27)='iswt  '
       iowork(28)='ionop '
       iowork(29)='ioco2 '
-      iowork(30)='well2 '      
+      iowork(30)='well2 ' 
+      iowork(31)='ioh2o '      
       cstats(1)='old    '
       cstats(2)='old    '
       cstats(3)='old    '
@@ -376,7 +379,8 @@ C***********************************************************************
       cstats(27)='unknown'
       cstats(28)='unknown'
       cstats(29)='old    '
-      cstats(30)='unknown'      
+      cstats(30)='unknown'  
+      cstats(31)='old    '     
       cform(1)='formatted'
       cform(2)='formatted'
 ! Coordinate file can be formatted or unformatted
@@ -407,7 +411,7 @@ C***********************************************************************
       cform(27)='formatted'
       cform(28)='unformatted'
       cform(29)='formatted'
-      cform(30)='formatted'      
+      cform(31)='unformatted'     
       blank=' '
       if(in(4).NE.666) nmfil( 1) = 'fehmn.files'
       nmfil( 2) = 'fehmn.dat'
@@ -438,7 +442,8 @@ C***********************************************************************
       nmfil(27) = ''
       nmfil(28) = 'nop.temp'
       nmfil(29) = 'co2_interp_table.txt'
-      nmfil(30) = 'fehmn.well2'      
+      nmfil(30) = 'fehmn.well2' 
+      nmfil(31) = 'h2o_interp_table.txt'     
       nmfily( 1) = 'terminal console input'
       nmfily( 2) = 'terminal console output'
       nmfily( 3) = 'not using'
