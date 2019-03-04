@@ -1,8 +1,0 @@
-input: ../input/doe_rlpm.dat
-outpu: doe_rlpm.out
-rsti:  ../input/doe.ini
-hist:  doe_rlpm.his
-root:  doe_rlpm
-
-none
-0

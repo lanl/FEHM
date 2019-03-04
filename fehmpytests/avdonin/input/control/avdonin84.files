@@ -1,8 +1,0 @@
-input: ../input/avdonin.in
-grida: ../input/avdonin84.geom
-outp: avdonin84.out
-hist: avdonin84.his
-root: avdonin84
-
-none
-0

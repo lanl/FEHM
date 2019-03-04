@@ -1,0 +1,77 @@
+======
+V3.3.0
+======
+
+The major changes in the FEHM application from V3.2.0 to this release V3.3.0 are: enhancements related to multi-phase flow physics in salt, updates to stress capabilities, and modifications to improve the performance of FEHM simulations such as air-water-heat physics module. (Refer to Appendix V3.3.0 in the User Manual). Enhancements to this release include:
+
+New salt simulation capabilities such as the ability to run salt simulations with combinations of water vapor formulations, initialization of grid blocks to saturation temperature at total fluid pressure or total fluid pressure at saturation temperature, improved numerical performance with temporal averaging of porosities permeabilities.
+
+Enhancements to air-water-heat physics module with the "ngas" keyword that improve performance of FEHM when simulating the drying out of rock.
+
+Enhancement to stress capabilities include new rock failure model that applies Mohr-coulomb failure criteria to an ensemble of fractures with variable orientations.
+
+macro "bodyforce" adds flexibility for specifying body forces so user can apply body force on each node.
+macro "cont" has new keyword "heatflux" which prints the x,y,z heat flux vector (W/m2) analogous to the velocity vector.
+macro "boun" has new keyword "fxa" for handling the boundary conditions for air-water-heat physics.
+
+Known code bugs fixed:
+
+1. Modification to ``dvacalc.f`` to fix a bug in setting the limits of dva.
+2. ``diagnostics.f``: Fixed array accessing error that stopped code on some platforms.
+3. Code change to exponential.f to avoid NaN problem.
+4. ``write_avs_node_con.f``: Fixed contour output problems for vapor species, and array out of bound problems.
+
+There are no known bugs in this V3.3.0 release.
+
+----------------------------------
+
+The major changes in the FEHM application from V3.2.0 to this release V3.3.0 are: salt development, updates to stress capabilities, various modifications to improve the performance of FEHM simulation such as enhancements to air-water-heat physics module, and fixing several known code bugs. All changes are described in detail in release notes and Appendix documents posted on the fehm.lanl.gov web page. Enhancements to this FEHM release include:
+
+* Work performed on improving the performance of simulations with salt
+
+  * A new controller module (saltctr.f) was created to manage simulations with salt. This was implemented for three primary reasons: First, to isolate the added salt-related hardwired software modifications into one location so that those modifications can be merged with the primary FEHM software suite and allow a platform for future software development; Second, to easily allow (via user input) different salt capabilities to be tested separately to assess individual modification importance and sensitivity; Third, to allow the testing of numerical algorithms associated with the averaging and temporal updating of the highly nonlinear salt-related physics.
+
+    * Key additions to capability include:
+
+      * The ability to run salt simulations with a variety of combinations of water vapor formulations with vapor pressure lowering with different salt concentrations and capillary pressure vapor pressure lowering.
+
+      * The option to initialize grid blocks to saturation temperature at total fluid pressure or total fluid pressure at saturation temperature. The partial pressure of air in these conditions was set to a prescribed small number.
+
+      * Improved numerical performance with temporal averaging of porosities permeabilities. This simple change allowed significantly smaller porosities to be reached in a simulation while maintaining large timesteps. It also was the difference between simulations finishing and not finishing for some parameter combinations.
+
+* Enhancements to air-water-heat physics module
+
+  * Several modifications were made to the air-water-heat physics module of FEHM that is invoked with the ngas keyword. These were made to improve the performance of FEHM when simulating the dry out of rock. Initial testing shows a very good improvement in performance.
+
+    * Key additions to capability include:
+
+      * The ability to set a fixed total pressure with a flowing mass fraction of air. This is useful when applying and high pressure source of low humidity air to dry reservoir rock.
+
+      * Improved the ability to simulate a constant saturation node by allowing both fixed saturation and fixed pressure at the node. The simulated physics allows the saturation to be maintained at a fixed value by addition/removal of water. The pressure is maintained by the addition/removal of air.
+
+      * The outflow fluid mix with constant pressure was corrected to include the correct mixture of air and water
+
+      * The boundary conditions for air-water-heat physics are now available with the boun keyword. New keyword 'fxa' for flowing ngas mass fraction added. Several errors in other ngas boundary condition now work.
+
+* Additional stress models have been added
+
+  * Mohr-coulomb failure criteria applied to an ensemble of fractures with orientations distributed according to fracture orientation data. Pre-failure increase in permeability occurs according to the Bai et al. (1999) model. Post-failure increase in permeability occurs according to an empirical model based on Lee and Cho (2002).
+
+  * The macro “bodyforce” add greater flexibility for specifying body forces, allow user to apply body force on each node.
+
+  * The macro "cont” has been modified to add a new keyword “(heat)flux” which adds the option for printing out the x,y,z heat flux vector (W/m2) analogous to the velocity vector.
+
+  * The macro "boun" has been modified to add a new keyword “fxa” for handling the boundary conditions for air-water-heat physics.
+
+
+**Known code bugs fixed**
+
+1. Modification to ``dvacalc.f`` to fix a bug in setting the limits of dva.
+
+2. ``diagnostics.f``: Fixed array accessing error that stopped code on some platforms.
+
+3. Code change to ``exponential.f`` to avoid NaN problem.
+
+4. ``write_avs_node_con.f``: Fixed contour output problems for vapor species, and array out of bound problems.
+
+No known bugs in this V3.3.0 release

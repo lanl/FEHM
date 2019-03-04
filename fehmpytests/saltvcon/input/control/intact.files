@@ -1,7 +1,0 @@
-root:  intact
-input: ../input/intact.dat
-outpu: intact.out
-grida: ../input/1dgrid.grid
-stori: ../input/1dgrid.stor
-
-none

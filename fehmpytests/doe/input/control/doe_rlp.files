@@ -1,8 +1,0 @@
-input: ../input/doe_rlp.dat
-outpu: doe_rlp.out
-rsti:  ../input/doe.ini
-hist:  doe_rlp.his
-root:  doe_rlp
-
-none
-0

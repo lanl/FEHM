@@ -1,8 +1,0 @@
-input: input/avdonin.in
-grida: input/avdoninbase.geom
-outp: output/avdoninbase.out
-hist: output/avdoninbase.his
-root: output/avdoninbase
-
-none
-0

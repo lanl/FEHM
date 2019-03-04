@@ -1,9 +1,0 @@
-input: ../input/bodyforce3.dat
-grida: ../input/grid.grid
-rsto: 
-outp: bodyforce3.out
-check: 
-hist: 
-root:bodyforce3
-
-all

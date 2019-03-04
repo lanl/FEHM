@@ -1,8 +1,0 @@
-input: input/conv2d_water_tec_gaz.dat
-grida: input/conv101x101.grid2
-outpu: output/conv2d_water_tec_gaz.out
-rsto: output/conv2d_water_tec_gaz.fin
-root: output/conv2d_water_tec_gaz
-
-none
-0

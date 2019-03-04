@@ -1,0 +1,1716 @@
+======
+V3.1.0
+======
+
+This version brings current all code work since January 2008 and includes the
+internal release V3.0 on which must of the User Manual was based.
+The FEHM copyright for FEHM LA-CC-2012-083 was based on this version of code.
+
+------------------------------------------
+
+.. code::
+
+  Release Notes for Version 3.1.0 Jan 29 2008 to Aug 20 2012 
+  
+  Use trac/ Browse Source for list of changesets by Archive number, Age and Author
+  Use trac/ Timeline for changesets listed by date
+  Next Code Release will TAG V3.1.0 with docs V3.1
+  
+  ------------------------------------------
+  08/20/12 dev compile mac version for use of trxn for E. Keating
+  
+  @465:8b356280cfe7   3 weeks spchu   
+  rename params_eosco2 to params_eosco2.h to be used by co2_fugacity.f
+      
+  @464:e9d99e2042a8   3 weeks spchu   
+  rename params_eosco2 to params_eosco2.h to be used by co2_fugacity.f
+  
+  ------------------------------------------
+  08/16/12
+   
+  @463:f90e801271bc   4 weeks spchu   
+  Added fix to set ifxconc correctly when using pH.
+      
+  @462:79484e04dce0   4 weeks spchu   
+  remove params_eosco2.h, renamed it to be params_eosco2 which is not an object file needed to be included in the depends file
+      
+  @461:45b7068b66f5   4 weeks spchu   
+  modified depends for params_eosco2
+      
+  @460:2cfd7db27534   4 weeks spchu   
+  Added several error messages and removed the testing subroutine trxn_varcheck.
+      
+  @459:67e0168fdcc5   4 weeks spchu   
+  Modified to move print block processing from rxn section of the code to trac section.
+  
+  ------------------------------------------
+  08/09/12 
+  
+  Matthew Schauer enhancements to combine trac and rxn to macro trxn. 
+  This commit incorporates a number of major updates and revisions to the trxn
+  macro.  The macro is now current with the documentation on the manual wiki at
+  https://ancho.lanl.gov/fehm/trac/wiki/MacroTrxn 
+      
+  @458:b1e4124c911e   5 weeks spchu   
+  Subroutine removed from project because it only existed for debugging purposes.
+      
+  @457:f277f7c2c6aa   5 weeks spchu   
+  Subroutine changed to trxnint and moved to rdtr.f90.
+      
+  @456:7ba4b938ee53   5 weeks spchu   
+  Subroutine changed to rdtr and moved to rdtr.f90.
+      
+  @455:815a25a34966   5 weeks spchu   
+  New file. This is a module containing variables that need to be
+  shared among rdtr and its helper subroutines, and any variables that
+  need to be shared with external subroutines.
+      
+  @454:8e21b9e21f46   5 weeks spchu   
+  New file. This file contains trxn's main input reader subroutine,
+  rdtr, and supporting subroutines.
+      
+  @453:6edd3ed74b1b   5 weeks spchu   
+  New file. This is a module containing variables related to
+  trxn's database lookup functionality, all of which need to be shared
+  among rdtr and its helper subroutines.
+      
+  @452:70e74fe9870a   5 weeks spchu   
+  Modified the zone macro reader to provide rudimentary support for
+  naming zones, useful only in conjunction with trxn.
+      
+  @451:e73022ec7918   5 weeks spchu   
+  Added a line including the trxnvars module, and modified the trxn
+  reader to permit recursiveuse of the include block in trxn.
+      
+  @450:66e26e8f516f   5 weeks spchu   
+  Changed the name of the main trxn reader subroutine and added some
+  code to handle errors and permit the moles block to be used in trxn.
+      
+  @449:250591ba74f2   5 weeks spchu   
+  Added a line including the trxnvars module, which is now required due
+  to the changes in comrxni.
+      
+  @448:f89fd752925a   5 weeks spchu   
+  Added a statement to allow a five-parameter fit when calculating
+  tkeq.
+      
+  @447:48c5c0a30624   5 weeks spchu   
+  Removed variables that have been moved to trxnvars.
+      
+  @446:f730ab43ca3a   5 weeks spchu   
+  Increased hard limits in the code to permit up to 40 species to be
+  given.
+      
+  @445:4679b3dff9d4   5 weeks spchu   
+  Added a statement to allow a five-parameter fit when calculating
+  tkeq, a new functionality introduced with trxn.
+      
+  @444:3f8d20f1ee15   5 weeks spchu   
+  Added allocation statements required for the enhanced zone reader
+  (see changes to zone.f) and modified allocation for heq to allow for a
+  multi-parameter fit for determining equilibrium constant temperature-
+  dependence.
+      
+  @443:daf59df26031   5 weeks spchu   
+  Modified depends file to account removing three routines:
+  readtracrxn.f90, tracrxn_init.f90, trxn_varcheck.f90
+  adding three new routines:
+  rdtr.f90, trxnvars.f90, lookupvars.f90
+  
+  ------------------------------------------
+  06/07/12
+      
+  @442:09c58b87244b   3 months    kelkar  
+  stressctr.f
+  debuged the input of flag_element_perm on the same line as the macro 'fem'
+      
+  @441:cf8567988230   3 months    kelkar  
+  Makefile.depends
+  Added dependancies for new routines. Updated several older ones.
+      
+  @440:02f9a2fa7f3b   3 months    kelkar  
+  startup.f
+  for stress calculations, save FE coefficients in dnidnj type arrays
+      
+  @439:a8a75c623100   3 months    kelkar  
+  porosity_wrt_displacements.f
+  NEW routine. for coupled flow-stress, calculate defivatives of pore volume wrt displacements
+      
+  @438:bf9788602993   3 months    kelkar  
+  setup_edgePointers_3D.f
+  initialize permfactor and permtmp arrays.
+      
+  @437:f08de4a9ac29   3 months    kelkar  
+  geneq1.f
+  for coupled permeability-stress, replacing the conditional
+  if(ihms.gt.0) with if(allocated(permfactor))
+      
+  @436:7fad84e9520b   3 months    kelkar  
+  compute_permfactor_effstrs.f
+  passign the recompute_stress to replace 'recompute' and not evaluating it within the routine
+      
+  @435:b6bed5a9b67f   3 months    kelkar  
+  compute_flow_residual.f
+  added flag_permmodel
+  passing the flag recompute_stress to the 'computer_permfactor_*' routines
+      
+  @434:783b3361bc69   3 months    kelkar  
+  geneq1_stress_coupl_porosi.f
+  NEW routine. heat-mass equations for coupled porotity-stress with ihms = 15 or 17
+      
+  @433:66d16d946e41   3 months    kelkar  
+  gensl1.f
+  added abs(ndex(1) to the 'cannot normalize, stopping," message
+  for debugging, added routines to extract elements of the a matrix
+      
+  @432:e4ae9707fba9   3 months    kelkar  
+  bnswer.f
+  for coupled porosity-stress, added call to porosity_wrt_displacememnt
+  for permeability-stress coupling, if flag_permmodel, setup memory and update permfactor.
+      
+  @431:caab5eaad792   3 months    kelkar  
+  comfem.f
+  added flag flag_element_perm
+      
+  @430:abe59fc780ff   3 months    kelkar  
+  fem_DruckerPrager_stiffness.f
+  New routine
+  Returns the 6x6 material stiffness (D) matrix for Drucker Prager without cap
+  model
+      
+  @429:b9a986537f83   3 months    kelkar  
+  fem_DruckerPrager_stress_update.f
+  New routine. Computes the stresses from strains for the drucker-prager (without cap) plasticity model
+      
+  @428:c59d7d9968f8   3 months    kelkar  
+  fem_transverse_isotropy_elastic_stiffness.f
+  New routine. Returns the 6x6 material stiffness (D) matrix for a transverse isotropic elastic solid
+      
+  @427:00092becb8f4   3 months    kelkar  
+  fehmn.f
+      
+  @426:dd2e58ac928b   3 months    kelkar  
+  fehmn.f
+  if flag_permmodel then setup arrays if using element permfactor and call update routine
+      
+  @425:2937e48b6817   3 months    kelkar  
+  fem_material_stiffness.f
+  if stress_anisotropy_in call the matrix form routine fo relastic stifffness
+  added call for iPlastic, using Drucker-Prager
+      
+  @424:aac548fa22f4   3 months    kelkar  
+  fem_elastic_stress_update.f
+  added the flag stress_anisotropy_in
+  if stress_anisotropy_in then call fem_transverse_isotropy_elastic_stiffness
+  for matrix firmulaiton of the equations
+      
+  @423:da9b1b4a3865   3 months    kelkar  
+  fem_vonMises_stress_update.f
+  removed calculation of phi_trial as it was not used
+      
+  @422:180d8498fece   3 months    kelkar  
+  geneq_stress_fem_3D.f
+  added calculation of D matrix for the axisymmetric case
+      
+  @421:802180c3fd43   3 months    kelkar  
+  gensl_stress_coupled_3D.f
+  added routine calls for coupling options ihms = 15, 16, 17
+  for iPlastic, save plastic_strain in conv_strain
+      
+  @420:2a72d0c592d6   3 months    kelkar  
+  stressctr.f
+  added input_msg, etc. for paresing input lines
+  initialized flag_element_perm and ifem
+  added coupled flow-stress cases 15, -15, 16, 17
+  c ihms = 15 : derivatives of pore volume only wrt displacements
+  c in heat-mass equations, but not those of permeability
+  c (ihms = -15 : allow sequentially coupled porosity changes,
+  c ihms is reset to -3)
+  c ihms = 16 : derivatives of permeability only in heat and
+  c mass equations, but not those of pore volume
+  c ihms = 17 : derivatives of both permeability and pore volume
+  c in heat-mass equations
+  for ihms = 15, -15 or 16 or 17, added optional input of pore_factor, with the default value of 1 if absent in the input file.
+  if using fem, added on the same input line the optional flag flag_element_perm with default value of 1 flag_element_perm = 0 : nodal permfactors
+  1 : element permfactors
+  input for Drucker-Prager plastic model
+  for output, if using excess-shear, use the values of friction and strength input on that line instead of those in the permmodel macro.
+      
+  @419:1cfc605bc7cd   3 months    kelkar  
+  comsi.f
+  added plasticParam3 for Drucker-Prager.
+  Added the flag flag_pstrain_perm_coupling for coupled plastic + permeability
+      
+  @418:db0d625b7b53   3 months    kelkar  
+  compute_permfactor_vonMises.f
+  New ROUTINE. permfactors for coupled plasticity with Von Mises model
+      
+  @417:192d5966e833   3 months    kelkar  
+  stress_perm.f
+  for now, if ifem and ihms>0 then node based permmodels are not allowed, skip this routine
+      
+  @416:9086283d4637   3 months    kelkar  
+  thermw.f
+  save arrays density and internal_energy if coupled porosity solution with
+  ihms = 15 or 17
+      
+  @415:152893d77a26   3 months    kelkar  
+  update_permfactors.f
+  if iplastic then forcing the entire domain to have the same plastic model
+  added call to compute_permfactor_effstrs_pp
+  added check to enforce permfactor>0.
+      
+  @414:a284b2546537   3 months    kelkar  
+  fem_material_stress_update.f
+  added calls for Drucker-Prager plastic model
+      
+  @413:0275b11b25fa   3 months    kelkar  
+  material_stiffness.f
+  added 'stop' if iplastic = 0
+      
+  @412:32d942bd3fda   3 months    kelkar  
+  material_stress_update.f
+  added 'stop' if iplastic = 0
+      
+  @411:45f40667d669   3 months    kelkar  
+  compute_permfactor_effstrs_pp.f
+  New routine, add an option to have -ve strx_min, in which case pore pressure is used to drive the permeability change
+  
+  ------------------------------------------
+  08/14/12 change version tag to 3.1.1
+      
+  @410:5d466e3241cc   4 months    spchu   
+  Add params_eosco2.h for co2_fugacity.f to include
+      
+  @409:9bf85d6da91a   4 months    spchu   
+  Changed dated.template with new version 3.1.1
+      
+  @408:0837caecfe52   4 months    spchu   
+  Changed co2_fugacity.f to include params_eosco2.h instead of params_eosco2
+      
+  %%%%%%% VERS3.1.0_012_0418 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  In order to better synch version numbers embedded in the code and documentation
+  Change this version to 3.1.0 instead of 3.00 and continue on with versions 3.1.*
+  
+  04/05/12 Release V3.1.0 Distribution for WINDOWS, Shaoping compile
+      
+  @407:ea3d18147a29   5 months    zvd 
+  Added output of node number along with number of connections. Code now reports itis stopping once the connections list is written.
+  
+  ------------------------------------------
+  03/27/12
+  
+  @406:357f079c5f5b   6 months    zvd 
+  Fix improper assignment of function return value for the cden correction.
+      
+  @405:f31ff8101402   6 months    zvd 
+  Add new routines for concntration dependent density correction.
+      
+  @404:e0475fcc9318   6 months    zvd 
+  Added option for liquid density correction using multiple species (cden macro) and actual NaCl? concentration for CO2 brine calculations. Added coding developed by M. Schauer for alternate input for transport and reactions (trxn macro).
+      
+  @403:04f133efb034   6 months    zvd 
+  Updated check for end of stress macro input to be consistent with end keywords used with the "off" keyword option.
+      
+  @402:1a97d1c75f85   6 months    zvd 
+  Made keyword "off" error message consistent with specified usage of the keyword. Added output of the error message to the terminal and output file if active.
+      
+  @401:ae76cc99c60d   6 months    zvd 
+  Modified naming of output for CO2 total mass to be consistent with naming of mass fractions and documentation. Changed volume variable for computation of CO2 total mass to be consistent with what was used in the CO2 output routine.
+      
+  @400:915324fd2ab0   6 months    zvd 
+  Added initialization for variables used in streamline particle tracking when the colloid diversity model is invoked (allocmem). Added deallocation for those variables in releasemem.
+      
+  @399:c7d066d87687   6 months    zvd 
+  Coding was added to compute concntration flux for vapor species. A correction was made to use the correct index for density, volume, saturation and porosity.
+      
+  @398:f52723379110   6 months    zvd 
+  Fixed output order problem (unformatted output) for particle numbers by species for mptr simulations. Modified code to only output information for the number of particles for a given species. Previously output was controlled by number of particles that species 1 had.
+      
+  ------------------------------------------
+  03/29/12
+  
+  @397:e275d496561d   6 months    zvd 
+  Corrected tecplot 'zone t' line when zone identifier is requested without grid or geom specified.
+      
+  @396:405f3078f079   6 months    zvd 
+  Corrected header for sptr btc output when keywords 'alt' and 'xyz' are used.
+      
+  @395:ee6a53bb01ca   6 months    zvd 
+  Added initialization for thermal conductivity model assignment.
+      
+  @394:b0d8aee8fd95   6 months    zvd 
+  Added potential energy correction for enthalpy to table lookup.
+  Added cden correction for density to table lookup.
+  
+  %%%%%%% VERS3.0_012_0418 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  
+  02/02/12 Release V3.1.0 Distribution for Linux and Mac, Zora compile
+  
+  @393:cbe68b96552c   7 months    zvd 
+  Updated files for gfortran compilation.
+      
+  @392:ce633efaf54f   7 months    zvd 
+  Added check for alternate macro end string, endstrs or end strs, to be compatible with implementation of the macro "off" option. Incorporate changes from GAZ so "zone rad" can be used with stresses.
+      
+  @391:b5212ce80ceb   7 months    zvd 
+  Modify so output headers for tecplot are consistent with other data file types.
+      
+  @390:3a1eb1408362   7 months    zvd 
+  Added check for alternate macro end string, endcarb or end carb, to be compatible with implementation of the macro "off" option.
+      
+  @389:f15e5ac6aa8e   7 months    zvd 
+  Updates for the MDAG version of fehmn.f for coupling with GoldSim?.
+  
+  ------------------------------------------
+  01/25/12
+      
+  @388:e003f26c68e3   8 months    zvd 
+  Make arguments to min/max functions consistent type for Absoft compiler.
+      
+  @387:18c47c7651f1   8 months    zvd 
+  Updated compiler for Absoft compiler on MACs.
+      
+  @386:579a25684a49   8 months    zvd 
+  Modified so effective saturation will never be smaller than residual saturation defined in rlp macros.
+      
+  @385:8a5a89720874   8 months    zvd 
+  Update to make consistent with code for mixing model from Shaoping used in the natural systems modeling.
+      
+  @384:1e595b23b214   8 months    zvd 
+  Changes to make mixing model code consistent with code from Shaoping used for the natural systems models.
+      
+  @383:3a92ca4a69b7   8 months    zvd 
+  Fixed argumnet mismatch in subroutine calls from these routines.
+      
+  @382:16f30f45fcff   8 months    zvd 
+  Removed duplicate specification for use of variable ipermstr2 from module comsi.
+      
+  @381:6d3bf5cac2c2   8 months    zvd 
+  Added check for maximum number of words that can be parsed.
+      
+  @380:841ac28cb818   8 months    zvd 
+  Added output of dpdp nodes to the check file for auto-generated zones.
+      
+  @379:7bfd71da0874   8 months    zvd 
+  Added condition so that "zonn" macros will also be read prior to reading the mptr input.
+  
+  ------------------------------------------
+  12/20/11
+      
+  @378:007efc7a9355   9 months    zvd 
+  Modifications to keep in sync with EM version of FEHM and correct minor issues.
+  
+  ------------------------------------------
+  11/29/11
+      
+  @376:32308f3a8a76   10 months   zvd 
+  Fixed variable assignment for CO2 gas density and viscosity output. Added time option 
+  where hours can be fully spelled out instead of abbreviated.
+      
+  @375:f2c1d491a8a1   10 months   zvd 
+  Fixed output flag to only output enthalp fluxes when available in simulation.
+      
+  @374:10f2743202a8   10 months   zvd 
+  Made output time variable consistent with what was written to log file.
+      
+  @373:2f4406f401f8   10 months   zvd 
+  Corrected derivative sign for CO2 liquid variable in relative perm calculation.
+      
+  @372:9ef263594766   10 months   zvd 
+  Corrected allocation of local variable to match size of global equivalent. Mismatch in size 
+  caused crash on deallocation.
+  
+  ------------------------------------------
+  11/17/11
+      
+  @371:d4a2b28e680b   10 months   kelkar  
+  Initialize the arrays fac and fac_E in routines calling stressperm_22 and stressperm_222
+      
+  @370:e2aaf6911381   10 months   kelkar  
+  output stress dependant permeabilities, plastic strain
+      
+  @369:15b373aa5248   10 months   kelkar  
+  output plastic strain
+      
+  @368:cd107ba056ee   10 months   kelkar  
+  changed model to allw tensile as well as shear failure
+      
+  @367:549f5ad0a7fe   10 months   kelkar  
+  changed call parameters so various subroutines cna be used from other places
+      
+  @366:7f4b9628d2b9   10 months   kelkar  
+  1) added permmodel222 2) allocate arrays, use increamental strains for plastic model
+      
+  @365:2e18cb861b89   10 months   kelkar  
+  save converged strain for plasticity
+      
+  @364:c2fd9f365a30   10 months   kelkar  
+  skipp routine if using 'fem' option with coupled stress (it is hardwired to permmodel=2 for now. 
+  will be changed in future)
+      
+  @363:a1bfd2c8330b   10 months   kelkar  
+  add calculations for plastic condition
+      
+  @362:8937581d1156   10 months   kelkar  
+  Allow upto 28 edges (8nodes, 7 connections per node ) per element
+      
+  @361:6f513721da41   10 months   kelkar  
+  added permmodel=222
+      
+  @360:a7d290d03a45   10 months   kelkar  
+  changed tol to 10-20
+      
+  @359:a6258bb36a2d   10 months   kelkar  
+  added calls to :comfem, fem routines, element-setup routines, permfactor routines,
+      
+  @358:23accd8e8d65   10 months   kelkar  
+  added unloading parameter
+      
+  @357:1e7414319ca6   10 months   kelkar  
+  added permeability updates for stress depenadnce
+      
+  @356:ce9670347914   10 months   kelkar  
+  added stress and strain calculations
+      
+  @355:d029b2cc1154   10 months   kelkar  
+  cleaned up use statements and deviatoric stress calculations
+      
+  @354:d9bf5d27dfce   10 months   kelkar  
+  changed to use increamental displacements, added unloading check, cleaned up
+      
+  @353:0b6a861b592a   10 months   kelkar  
+  added parameter to check unloading
+      
+  @352:948c0ec5e6d0   10 months   kelkar  
+  clean up
+      
+  @351:74e0929e9af4   10 months   kelkar  
+  added gauss point strain calculations
+      
+  @350:04ab6998034f   10 months   kelkar  
+  added model asignments for plasticity
+      
+  @349:d86894e96324   10 months   kelkar  
+  added arrayes for increamental displacements, and for permmodel222
+      
+  @348:39530227f70d   10 months   kelkar  
+  moved permfactor calculations to compte_permfactor. added average effective stress calculations
+      
+  @347:987bf3b2bc2b   10 months   kelkar  
+  add arrays for plastic strain
+      
+  @346:4d672d546ca4   10 months   kelkar  
+  update incremental displacements for coupled stress
+      
+  @345:2159a33983c8   10 months   kelkar  
+  FIles needed for evaluating stress-dependant permeability when using 'fem' option.
+      
+  @344:aa8805286800   10 months   kelkar  
+  Files needed for calculating the second invariant of the deviatoric stress used in Plastic stress-strain models
+  
+  ------------------------------------------
+  11/08/11
+      
+  @343:ba11f03c899d   10 months   zvd 
+  Added back in co2 flow option inadvertently ommited during merge due to duplicate use of a flag ID.
+      
+  @342:153f2c936819   10 months   zvd 
+  Corrected problem with zone definitions for dpdp problems, where auto-generated zones overwrote user defined zones for the matrix. Do not want to auto-generate the matrix node zones if the user has created their own zone definitions.
+  
+  %%%%%%% VERS3.00 Nov 2011  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  10/31/11  TAG V3.1 with docs V3.0
+  
+  @336:765d52a467e1   11 months   zvd 
+  Merge and addition of routines from GAZ for gdkm, stress, etc. Revision update to v3.1.
+      
+  @335:f1ec194c8cb2   11 months   zvd 
+  Only deallocate nelm_temp if it has been allocated.
+      
+  @334:02c2b58b566f   11 months   zvd 
+  Add correct (and correctly named version) of gdkm_connect for new generalized double porosity / double permeability model.
+      
+  @333:adae71333d1e   11 months   zvd 
+  Define parameter pi and set input variables.
+      
+  @332:10cc67d40f30   11 months   zvd 
+  Update routine to recognize new end keyword ("end cont" or "endcont") so it can be recognized if "off" keyword is used with the cont macro.
+      
+  @331:817c391f7c1d   11 months   zvd 
+  Modifications for co2 restarts to ensure routines are called in correct order, appropriate minimum values are used, and initialization is captures end state of previous simulation.
+      
+  @330:77e435392c7f   11 months   zvd 
+  Added new keyword "off" to let a macro be disabled without deleting it from an input deck when testing model options. This option also called for needing an end statement when a macro is disabled and allowing an end statement to be added for any macro that takes the form "end macro" or "endmacro".
+      
+  @329:06c630827fd1   11 months   zvd 
+  Correct second index for particle concntration calculation.
+      
+  @328:36aaf420510a   11 months   zvd 
+  Add coding to output multiple species for mptr problems. Original version only output data for species 1 in a multiple species particle tracking simulation.
+      
+  @327:b2a654b9a595   11 months   zvd 
+  Set index offset for ith species.
+  
+  ------------------------------------------
+  09/20/11
+      
+  @326:b7d09afa5f8e   12 months   zvd 
+  Add variable definition from comco2 for icarb.
+      
+  @325:4c0d961bd93d   12 months   zvd 
+  After reading for CO2 restart set ieos and ices, and make sure phase calculations are subsequently done in startup. (Changes by R. Pawar)
+      
+  @324:c713a92e444a   12 months   zvd 
+  Update output headers to meaningful descriptors for particle tracking simulations.
+      
+  @323:4f44aea5f6d1   12 months   zvd 
+  Add flag and code for CO2 coupling in trac and rxn. (developed by E. Keating)
+      
+  @322:c168089d5342   12 months   zvd 
+  Implemented co2 flow input with the boun macro. The two new keywords are sco2 and dsco2 for source iput and distributed source input.
+      
+  @321:dc2c02e5a125   12 months   zvd 
+  Changed the default size of the in array to be consistent with iofile modification for GoldSim?.
+      
+  @320:196e7024d70b   12 months   zvd 
+  Changed the default size of the in array to be consistent with iofile modification for GoldSim?.
+      
+  ------------------------------------------
+  09/06/11
+  
+  @319:5864dd76bb97   12 months   zvd 
+  Add logic to invoke options related to a GOLDSIM linked run with parameter in(4) = 666.
+      
+  @318:677914dbd67b   12 months   zvd 
+  Added logic to set default control file, error file, and check for command line only if this is not a GOLDSIM linked run with input parameter in(4) = 666.
+      
+  @317:6851cfaf2c16   12 months   zvd 
+  Modify part_track output to include cumulative time when outputting particle location (pout = -7) and correct header to reflect the values output to file for that option.
+      
+  @316:a026b8af6eab   12 months   zvd 
+  Added option to output tecplot style header in zbtc file. Added code to read zbtc data from sptr particle restart file if used.
+      
+  @315:8c7532e1126e   12 months   zvd 
+  Fix scanning routine so code is reading correct unit if the rlpm macro is entered in an optional file. Add check to scanning of particle restart data to determine if zbtc data was written so particle count is calculated correctly.
+      
+  @314:6841d26d272d   12 months   zvd 
+  Add options to output fluid density or viscosity with time.
+      
+  @313:4b5b61705a47   12 months   zvd 
+  Add option to input/define a zone using ja, jb, jc loop index format.
+      
+  @312:f282bde89297   12 months   zvd 
+  Added option to insptr to write tecplot style header to zbtc file. Updated routines to save and/or read breakthrough information for particle tracking restart when particle restart file is used.
+  
+  ------------------------------------------
+  07/18/11
+      
+  @311:e4ce0e26c3b5   14 months   zvd 
+  Add logic so that relative perm for a fracture / matrix system is only output for both the fracture and matrix if a Van Genucthen fracture/matrix model is used and a dpdp problem is being run.
+      
+  @310:35626defa85f   14 months   zvd 
+  Correct input unit number so rlpm macro can be correctly read/scanned from an external file.
+  
+  ------------------------------------------
+  06/23/11
+      
+  @309:69aca1255ef0   15 months   zvd 
+  Ensure array assignments that use permeability arrays uses correct portion of pnx, pny, and pnz arrays.
+      
+  @308:fcf58778ce0f   15 months   zvd 
+  Modified conditional checks to allow capillary pressure output when ico2 > 0 or irdof ne 0 or ifree ne 0. Was not outputting capillary pressure for isothermal air/water problem.
+      
+  @307:4dc4208e6948   15 months   zvd 
+  Add option for EOS table lookup for super critical water.
+      
+  @306:68cb023032e8   15 months   zvd 
+  Update in call order for icectrco2. Define tboil as large value if supercritical water table is used.
+      
+  @305:d157b0d12aa1   15 months   zvd 
+  Update to call order for icectrco2 in bnswer and conditional check in ther_co2_h2o.
+      
+  @304:836f107bac33   15 months   zvd 
+  Made variable type consistent with use in subroutine: maxitp --> integer in psat and psatl, matrix_node --> logical in bc_far_ctr.
+  
+  ------------------------------------------
+  06/13/11 Tested version includes CO2 codes from R. Pawar 15-May-11
+      
+  @303:e65f0471d894   15 months   zvd 
+  Latest updates and version tested by zvd.
+      
+  @302:acff0a5fa2d9   15 months   zvd 
+  Added checks for "iout" to make sure the output file is assigned and open before writing.
+      
+  @301:cdc1c90bb417   15 months   zvd 
+  Save "ifile" so the assigned unit is used for writes.
+      
+  @300:2189a200874f   15 months   zvd 
+  Added params_eosco2 to project and uncommented include statement in co2_fugacity to use the file.
+  
+  ------------------------------------------
+  05/17/11
+      
+  @299:37f3318223c0   16 months   zvd 
+  Updated dependencies for CO2 updates and new routine, co2_fugacity.f
+      
+  @298:b8abce31a662   16 months   zvd 
+  Commit changes from branch merge of CO2 changes from R. PAwar 15-May-11.
+      
+  @297:6eb18c1cd8a8   16 months   zvd 
+  Commit changes from R. Pawar update to CO2 routines 15-May-11.
+      
+  @296:6096cf50b73d   16 months   rajesh  
+  Changed model for calculation of fugacity in co2_properties module. Went back to the
+  earlier formulation based on Span and Wagner.
+  Added a new subroutine 'co2_fugacity.f'. Made appropriate changes
+  for calling co2_properties in other subroutines.
+  Changed the order of call for icectrco2 and ther_co2_h2o in bnswer, varchk and startup
+  This was done because the fugacity formulation requires density which is calculated
+  with ther_co2_h2o with flag 0.
+  Changed the formulation for calculating heat outflow bc in ther_co2_h2o.
+  Modified output of zone fluxes.
+  
+  ------------------------------------------
+  04/19/11
+      
+  @295:d5792a841c5e   17 months   zvd 
+  Make array size for parser variables consistent with parse_string2.
+      
+  @294:d97c45efa9eb   17 months   zvd 
+  Commit after pull and fixes for changes that didn't get into repository or were over written.
+      
+  @293:ec1d3a0c79db   17 months   zvd 
+  As far as I can tell, no changes were made to these routines.
+      
+  @292:f035b837244f   17 months   zvd 
+  Make call variables consitent with other code.
+      
+  @291:1bbf2e58140b   17 months   zvd 
+  Fixed prolog and some spacing.
+      
+  @290:45bc2673e3ad   17 months   zvd 
+  Add newline at end of file.
+      
+  @289:54b5151cc904   17 months   zvd 
+  Changed variable "day" (time step size) to "days" (total simulation time) where an average rate was being calculated using the total input or output.
+      
+  @288:d0b23d00790f   17 months   zvd 
+  Fixed cast of type where real value was used in calculation of an index for the in array.
+      
+  @287:66748f5a4aed   17 months   zvd 
+  Made some corrections to allocation (only allocate if unallocated) and assignment of "in" array (only check wtrise if linked to GoldSim?). Changes were needed with respect to adding "in" to comuserc.
+      
+  @286:a82bc5f39580   17 months   zvd 
+  Made call sequence consistent with subroutine for call to max_excess_shear.
+      
+  @285:948c7207758e   17 months   zvd 
+  Made data type consistent in function min.
+      
+  @284:ec3209a8e2e9   17 months   zvd 
+  Added coding so parameter range sampled could be checked for runs using diffusion type curves.
+      
+  @283:67985234a59d   17 months   zvd 
+  Made call to subroutine fem_material_stress_update consistent with coding for the subroutine.
+      
+  @282:4f379c4f747d   17 months   zvd 
+  Added coding to allow checks for the data range being sampled when diffusion type curves are used.
+      
+  @281:68c7e893f581   17 months   zvd 
+  Changed particle node output for initial transient location (sptr2 using "TRA' keyword) so it could be distinguished from a particle that has been excluded, not just delayed in time.
+      
+  @280:33fd6d33905b   17 months   zvd 
+  Updated dependencies for changes to module files and use.
+      
+  @279:2c41ee9f367a   17 months   zvd 
+  Added check for specification of liquid or vapor when density output is requested.
+      
+  @278:a2a59c39c56b   17 months   zvd 
+  Added CO2 to 'flxo'. Modified calculations of CO2 fluxes (in, out, net) and there outputs.
+      
+  @277:52b0c9913626   17 months   zvd 
+  Updated input to not pass "in" array in call to concen.
+  Updated read for 'chea' to use parse_string to assign default values for reference conditions.
+  Close input file at end of data read if no "mptr" macro (which reads data later) is used.
+      
+  @276:7c57acc0f36f   17 months   zvd 
+  Update for getting "in" array from comuserc instead of being passed in.
+  Add check of range of values accessed when using diffusion type curves.
+      
+  @275:e003dc0fec22   17 months   zvd 
+  Add call to flxo for CO2. Update for eliminating passing of "in" array through multiple routines that don't use it (call to concen in this case) by adding it to comuserc.
+      
+  @274:d77d61d43e8a   17 months   zvd 
+  Update trac routines to eliminate passing of "in" array when it is only need by userc routine. Also make files consistent with adaptation for trac used with GoldSim?.
+      
+  ------------------------------------------
+  02/07/11
+  
+  @271:0c85505d5e13   19 months   kelkar  
+  removed unnecessary arrays DSai and gp_strain_mech
+      
+  @272:3026d9e63429   20 months   zvd 
+  Changes from last pull and update.
+      
+  @270:c61cb1fc89e9   20 months   sai 
+  Added routines for stress computations in 2-D using 'fem'
+  Fixed a minor bug in the bodyforce computations
+      
+  @269:a4bd15eaf505   20 months   kelkar  
+  zero out initial strains in fem calculations
+      
+  ------------------------------------------
+  01/19/11
+  
+  @267:8249ed5b9cb4   20 months   kelkar  
+  Merge after pull of 19Jan2011
+      
+  @266:892413ff3aa9   20 months   kelkar  
+  Broke up the stress_perm routine to make seperate subroutines for each permmodel. Added stressperm_91 for table input. Added stressperm_21 to combine Mohr-Coulomb failure on a user specified plane with permmodel=2. Added stressperm_22 which is simillar to _21 except the failure is on the plane of maximum excess shear stress (Jaeger and Cook 1979).
+      
+  @265:93489af04609   20 months   kelkar  
+  Changes related to the inclusion of 'fem' macro in the strs macro, option to do standard finite element calculations - by Saikiran Rapaka. This option is included to incorporate Gauss point stress & strain calculations, instead of the node-based FEHM approach.
+      
+  @264:2910c24a437b   20 months   zvd 
+  Add coding that changes check for number of nodes found in restart file compared to nodes in code because for a gdpm problem additional nodes do not have to be in increments of neq_primary like for dpdp or dual problems.
+      
+  @263:43e675fb216a   20 months   zvd 
+  Commit changes from pull/update of January 13, 2011.
+      
+  @262:3da2f4ae9cbe   20 months   zvd 
+  Corrected assignment of end-point values for linear rlp and capillary pressure models.
+      
+  @261:8f0e9349aa4e   20 months   zvd 
+  Modified history output routines to output liquid enthalpy at specified nodes. Corrected output of enthalpy source / sink so that absolute value was not used to screen values being reported (input enthalpy will be negative). Added new entahlpy keyword eflow or mjs.
+      
+  @260:5e139ecc1183   20 months   zvd 
+  Changes to fix problems with sptr. In insptr insure dtmin is set to positive value, and freeze_time is correctly initialized. In ptrac3 add warning for illegal particle moves and check to make sure that for sptr2 for plumecalc output only occurs when a particle leaves a cell. For move particle remove old coding for random walk jumps in regular grids that erroneously exited loop at edge nodes. Add bilinear interpolation routine for type curve interpolation.
+      
+  @259:025cbf26a2e4   20 months   zvd 
+  Add option to use root file name when naming ptrk output file.
+      
+  ------------------------------------------
+  12/21/10
+      
+  @258:d64ece8896ec   21 months   zvd 
+  Commit changes from merge with gaz updates.
+  
+  @257:e9c2ac08aa2d   21 months   zvd 
+  Removed redundant assignment of alpha and beta for model 19.
+      
+  @256:931efcd15b69   21 months   zvd 
+  Per gaz finding, moved assignment of alpha and beta before conditional for rlp or capillary calculation. Previously they were undefined on return call to routine for calculation of capillary pressure (model 19).
+      
+  @255:a55823a3ce56   21 months   zvd 
+  Added coding from Lagrit parse_string routine to correct problem where the parser was identifying a string made up of integers and "-" as an integer instead of a string.
+      
+  @252:02de775996e4   21 months   sai 
+  Added files needed for the 'fem' macro for stress computations.
+      
+  @251:06a224c066e8   21 months   gaz 
+  new file for far field boundary conditions
+      
+  @250:e6d7421d20f4   21 months   gaz 
+  added capability to manage far-field boundary conditions (comai,combi,data,scanin,
+  input,gensco2h2o.f)
+  fixed errors in vgcap and rlperm_co2
+  
+  @254:c17a4408e4e9       22 months       zvd
+  Added routines from Lagrit that determine whether or not a character string was an integer or a real number. Previous 
+  logic was not correctly identifying as a string a number sequence that contained "-" (such as a date in format 10-10-2
+  010).@253:ebc1d409c9a5       22 months       zvd
+  Removed extraneous "end if" from fehmn_pcx.f. Updated fehmn_pc_dll.f to be consistent with changes ro fehmn_pcx.f.
+      
+  @249:10f47afe77a5   22 months   gaz 
+  merged with routines from central repository
+      
+  @248:d8b5f10cf1ca   22 months   gaz 
+  enrich_ctr.f initial attempt at enrichment scheme
+  phase_balance_ctr.f- test forcing energy balance during phase change
+      
+  @247:f069dd612198   22 months   gaz 
+  anonp-changed averaging fo sx array when using isotropic coefficients
+  comai- added more parameters
+  data-zeroed out additional arrays and parameters
+  geneq_co2- will have to comapre
+  gensco2h2o- added diffrent NR stopping criteria
+  icectrco2- don't know
+  nr_stop_ctr- added variable change limits as stopping critera for CO2
+  ther_co2_h2o- changed constant co2 saturation (important)
+  varchk-commented out correction to co2 equations (done elsewhere)
+      
+  @246:c445533310be   22 months   gaz 
+  src/icectrco2.f cosmetic changes
+  src/scanin.f minor changes
+  src/stressctr.f diffrent perm models
+  src/ther_co2_h2o.f permsd for fg(mi)
+      
+  @236:9e721d07ada3   22 months   zvd 
+  Modified new rlpm macro routines. Worked through issues with definition of phase for rlp and capillary calculations, added routines to check the rlp functions and generate a table of output, completed integration so new macro would work with CO2.
+      
+  @235:f473b5f16909   22 months   zvd 
+  Moved call to sptr_save for data write out of ptrac1 and added after call to load_omr_flux_array in fehmn. The velocities had not been calculated before the write with the previous sequence.
+      
+  @234:dfeca9dcf569   22 months   zvd 
+  Added output for CO2 in vapor phase.
+      
+  @233:4e7b6fe431e8   22 months   zvd 
+  Modified call sequence so that stress variables are defined for call to diskwrite, when stress variables are written to restart file.
+      
+  @232:3d04ca869fa1   22 months   zvd 
+  Added coding to allow output and reading of stress variables from new style restart files.
+      
+  @231:b6a69fa28508   22 months   zvd 
+  Assign values of an to array anl so it will be defined when restarting a problem with concentration density corrections.
+      
+  @230:763bcf14d21c   22 months   zvd 
+  Corrected accumulation terms for solute diffusion. For solute diffusing into or out of a cell a positive change in the cell concentration should be added to the sumin and a negative subtracted from the sumout.
+  
+  ------------------------------------------
+  11/01/10
+  
+  @245:2dae114d9530       23 months       gaz
+  gencof.f improved volume/body force calculation for FE applications
+  gncf2.f and gncf3.f improved body force calculation
+  geneq_stress_uncoupled_2D.f geneq_stress_uncoupled_3D.f- make
+  compatble with corrections above
+  genco2.f small energy term correction (zeroed out)
+  startup.f call to correct FE coefficient readstress_2D_post.f stress_3D_post.f body force correctionsx_combine.f correct FE coefficient read
+  ther_co2_h2o.f small corrections for Co2 energy term (and production term)
+  zone.f added 3d zone capability to 2d problems
+  
+  
+  ------------------------------------------
+  
+  
+  @244:f9af6e74318b       2 years gaz
+  corrected bug in shape function routine
+  changed the definition of volumes generated in gncf3 to match that needed for body
+  forces
+  added test routine in user_ymp.f
+  
+  @243:741d77fece29       2 years gaz
+  commit after merge
+  
+  @242:0760302730bd       2 years gaz
+  Corrected co2 production terms
+  
+  @241:956a0f8937b5       2 years gaz
+  fixed errors
+  
+  @240:430cd04846e2       2 years gaz
+  fixed bugs in CO2 code
+  (geneq_co2.f,geneq_h2o_co2.f,gensco2h2o.f,ther_co2_h2o.f,etc
+  fixed a minor bug in vgrlps.f
+  fixed minor bug in steady.f
+  
+  @238:4662341c3052       2 years gaz
+  testing different NR multipliers
+  
+  @237:8eae8ef26020       2 years gaz
+  continued development
+  
+  -----------------------------------------
+  10/12/10
+      
+  @229:18db16872dff   2 years zvd 
+  Files changed and modified for a new style of rlp model input. Macro "rlpm" was added to the input to indicate the new style of rlp input should be used. This macro is keyword based including phase and model type designations, to simplify inout of model parameters. A tabular input format has with linear interpolation has also been added.
+      
+  @228:f7a9b83f39be   2 years zvd 
+  Fixed co2 code to correct enthalpy terms for water and co2 fluxes. Fixed upper limit check for saturation in vgrlps.
+      
+  @227:d63d8d72c24d   2 years zvd 
+  Add check to ensure that the water saturation used to compute diffusion is between 0. to 1.0 so diffusion is computed correctly. Saturations lieing outside that range can lead to NaN's being computed and bad results.
+      
+  @226:63e74782ebc8   2 years zvd 
+  Compute solute fluxes in terms of rcss instead of flow. That way solute movement by diffusion can be accounted for.
+      
+  @225:1bc1702c0e9b   2 years zvd 
+  For runs with the well / river macro modified code to set header_flag to 'old', so restart file would be correct for runs with trac or ptrk.
+      
+  @224:c5fc17235ffa   2 years zvd 
+  Modified the initialization of bigblock array when dealing with the gmres, b, and piv pointers.
+      
+  @223:925262c1147b   2 years zvd 
+  Modified check for permmodel to correctly read past input when model type 4 is used.
+      
+  @222:71662dab50e3   2 years zvd 
+  Modified code so "chea" variable is only used when the problem is not already a "head" problem. Setting the "chea" variable was causing double output of head.
+      
+  @221:551098684a58   2 years zvd 
+  Commented out variable declarations in comriv that could potentially be in conflict with variables in comwellphys. Commented out an unnecessary initialization in wellphysicsctr that used an unitialized variable index.
+      
+  @220:8d76bcefacc2   2 years zvd 
+  Added call variable type definitions to subroutine exit_pollock.
+      
+  @219:c1c02ca32dd2   2 years zvd 
+  Modified coding to not set ichead variable for a regular head problem and to only put out a single head value when chead is invoked.
+      
+  @218:ee0e7c84cb0b   2 years zvd 
+  Remove double + from dis equation.
+      
+  @217:40f1ad3900de   2 years zvd 
+  Removed double + from dis equations.
+      
+  -----------------------------------------
+  06/24/10
+  
+  @216:4138aed9d7b1   2 years zvd 
+  Resolve inconsistencies found on merge of open code with ExxonMobil? base code.
+      
+  @215:90586bc3cbd7   2 years zvd 
+  Update dependencies for new routines added by GAZ. Add back in changes that didn't make it into code updated and merged by GAZ 22-Jun-10.
+      
+  @214:64b44025034f   2 years gaz 
+  added files
+      
+  @213:5b93321ad570   2 years gaz 
+  added these files
+      
+  @212:901945ec7f50   2 years gaz 
+  made changes to stress calc routine
+  added more sterss coefficients (stress averaging)
+  added changes for tensor perm and heat and mass flow
+  added partial fix for spatially variable GDKM
+  minor fix for peaceman well
+      
+  @211:6364768c4e5b   2 years gaz 
+  Organized new use modules and minor changes
+      
+  @208:2ba3b6b0d5d0   2 years zvd 
+  Added additional write statement for output so solute identifier will be output for multiple species runs.
+      
+  @207:12493f1b1e81   2 years zvd 
+  Added coding to distribute solute entered as moles over complete specified zone when there is the possibility of overlap between zones that could reduce the number of nodes that the solute is distributed over.
+      
+  @206:49efd98cd146   2 years zvd 
+  Added coding to apply scaling of permeability (fperms) to models that include relative permeability. Arrays were added to save permeability scaling factors so they could be applied to rlp perms during a simulation.
+  Added reading of variable ihms to scanin so it can be used for some history plot set up if strs macro is not read before hist macro.
+      
+  @205:6a8998a14b17   2 years zvd 
+  Added coding to apply scaling of permeability (fperms) to models that include relative permeability. Arrays were added to save permeability scaling factors so they could be applied to rlp perms during a simulation.
+      
+  @204:19fd1184147f   2 years zvd 
+  Corrected indexing problem with particle output when particle restarts are used for the minimal (plumecalc style) sptr2 output. Also, added option to only output final particle location when particle time is greater than simulation time if an output end flag is set.
+      
+  @203:73e4bd7e4863   2 years zvd 
+  Corrected type decalrations for ncon and nop to integer in the routine to match the variables being passed in.
+      
+  @202:a792c181091e   2 years zvd 
+  Added deallocation of n_col variable when column data is being generated for a grid. Caused code crash on Windows PC when the already allocated array was reallocated when rereading the data from the just generated file.
+      
+  @201:25f08da112b6   2 years zvd 
+  Corrected trac output for Henry's Law species. For history output, the concentration values output were correct for the model component, but the headers were wrong for vapor species - reporting output as aqueous instead of vapor. For contour output, the aqueous values were always output instead of the vapor concnetrations when a vapor species was used.
+      
+  @200:78589ef7794b   2 years zvd 
+  Extend particle exclusion option to also exclude particles whose initial location places them at a node with porosity <= 0.
+  
+  ------------------------------------------
+  03/04/10
+  
+  @210:d8ac62b7e519       3 years gaz
+  Fixed minor out of bounds
+  
+  @209:c3913611527b       3 years gaz
+  add_gdpm.f : added new model and minir changes
+  area_flow_bc.f : added calculation of control volume lengths in all directions
+  bnswer.f : changed call to outbnd
+  comai.f : added global variables
+  resetv.f : minor bug fix
+  gradctr.f : additional capability
+  
+      
+  @199:8ef559671e5c   3 years zvd 
+  For strs problem, read parameter "ihms" in scanin. This parameter controls whether or not history output will be written, and eliminates need for putting "hist" macro after "strs" macro in the input deck so output will be properly invoked.
+      
+  @198:83bf968958f4   3 years zvd 
+  Added conversion for log permeability if permeability was entered as negative value for model option -1.
+      
+  @197:f8c72fc1cc21   3 years zvd 
+  Added keyword 'output_end' to sptr macro to flag output of final particle position in standard sptr2 file if the partivcle time exceeds the total simulation time. The default is to not output the location if the particle time is greater than the ending time.
+      
+  @196:d65de61536c1   3 years zvd 
+  Corrected incorrect input unit designator in reads for 'well' macro, so data can be correctly read from an alternate input file.
+      
+  @195:3b1a11d08006   3 years zvd 
+  Fixed terminal and output file headers for flux output to match new format of zone flux output.
+      
+  @194:c5d98ca2644c   3 years zvd 
+  Fixed indexing variable so zone idnetifiers are written correctly to output title string.
+      
+  @193:0f42bf2d586f   3 years zvd 
+  Fixed default conditions for macro flxz so that vapor output is not enabled for wtsi problems.
+      
+  @192:20eed7004adc   3 years zvd 
+  Added an option to exclude input particle locations that fall outside the problem doamin instead of moving the particle to a position within the domain.
+      
+  @191:77786116cb9e   3 years zvd 
+  Replaced extraneous comma in header for zone flux output using CSV format.
+      
+  @190:2fb8505d431d   3 years zvd 
+  Eliminate extraneous "+" in distance calculation and assignment.
+      
+  @189:f17bcc17d5e8   3 years zvd 
+  Corrected incorrect goto location when rxn macro and zone output are used.
+      
+  @188:e50237e91734   3 years zvd 
+  Fixed time reporting problem when using transient particle release with initial simulation time greater than particle release time. Particle movement is now related to initial simulation time, if greater than particle release time.
+      
+  @187:7b2df28fe5e5   3 years zvd 
+  Add correction for calls to solve_new and solve_dual when igauss = 1.
+      
+  @186:411fbd96cc97   3 years zvd 
+  Added keyword option to generate a single-phase flow macro (i.e. output 0. or 1.0 for saturation).
+      
+  @185:ce2bfb5e1f89   3 years zvd 
+  Fixed problem with coordinate output in vector file when 2D geometry is not in terms of XY but XZ or YZ.
+      
+  @184:6859ca9914a4   3 years zvd 
+  Updates to rdcon to correctly partition input moles between liquid, vapor, and sorbed quantities for a Henry's Law species. Also reworked partitioning of species when sorption is invoked.
+      
+  @183:38b921e30668   3 years zvd 
+  Did manual merge to recover changes that got lost when pulled GAZ updates on 19-November-09.
+      
+  @182:4e32c6b17e4e   3 years zvd 
+  Updated dependencies to include new routine (area_flow_bc.f) and account for addition of use modules in hstz, plot_new, write_avs_node_mat, and
+  write_avs_node_s
+      
+  @181:b3fce545cb9c   3 years gaz 
+  Resolved small (rlp= -4) in rlperm.f
+  inpyt and scanin have only small changes.
+      
+  @180:b6fa4fe6aacb   3 years gaz 
+  area_flow_bc.f - new routine to calculated physically based BC "aipeds"
+      
+  @179:ab5d379cf4ac   3 years gaz 
+  airctr.f- added additional flo3 boundary conditions
+  comai.f - more global parameters
+  inflo3.f- addition BC types
+  input.f - don'y know
+  rlperm.f - added another fracture matrix model(-4)
+  scanin.f check for rlp = -4
+  startup.f added call to area_flow_bc.f
+  thrair.f- added flo3 BCs
+  vgcap.f - don't know
+  vgcap_fit.f - different fit for high saturation end
+      
+  @178:d30fa951c93d   3 years zvd 
+  Modified 0. arguments to max function, wouldn't compile on intel MAC using absoft compiler due to type mismatch.
+      
+  @177:8d7ea705ff3a   3 years zvd 
+  Changes from merge with GAZ updates of 27-Oct-09.
+      
+  @176:6c5ec1828792   3 years zvd 
+  Add newline to end of file so file will merge.
+      
+  @175:92e1dff371a6   3 years zvd 
+  Insure proper allocation of all stress variables.
+      
+  @174:14b6cc8eed00   3 years zvd 
+  Comment out calls to vg_regions (not used) and set ireg = 1.
+      
+  @173:952cd9c4bb7f   3 years zvd 
+  Fixed index for output in diagnostics and gensdp_switch. Checked for open output file in infiles before write. Added allocatio for unallocated stress parameters.
+      
+  @172:2197eae6f71b   3 years gaz 
+  comai - made mine consistent with zoras
+  write_avs_node_con - corrected allocation error
+      
+  @171:2d6367069af7   3 years gaz 
+  merge with zoras files hope it works
+      
+  @170:69752dc1deb3   3 years gaz 
+  got these from zora
+      
+  @169:a9b4009e8e7f   3 years gaz 
+  datchk. small changes to data checking for EOS and dimensionality
+  open_file.f small and don't remember
+  structured.f corrected generated element output from fdm input
+  write_avs_node_con.f added elements with fdm
+  write_avs_node_s.f added elements with fdm
+      
+  @168:8a905759b5ab   3 years 090334  
+  minor changed to data checkin
+      
+  -----------------------------------
+  10/20/09
+  
+  @167:fe48975f2ab8   3 years gaz 
+  merged keita's code with george's code
+      
+  @166:7b0ba975a79c   3 years gaz 
+  airctr.f changes to control phase changes (could be important)
+  comai.f added parameters
+  data.f set default values for some ne phase change control parameters
+  input.f added new input macro ittm for pase change sticking time
+  stress_perm.f minor corrections
+  structured.f added routine to generate an element file (not tested!)
+  user_ymp.f added case 455 (covert NER data to permeabilities)
+  write_avs_node_con.f,write_avs_node_mat.f,write_avs_node_s.f - read,write elem(for fdm) to graphics file.
+      
+  @165:fdf5952c2f68   3 years zvd 
+  Made changes to rdcon to check for 0 or negative porosities when distributing input moles in a zone. Fixed incorrect goto label for zone output for transport with reactions in write_avs_node_con. Added better conditional check for air/vapor flux output to ensure phase is present and variables have been defined in input and flxz.
+      
+  @164:4c8a9148607d   3 years zvd 
+  Commit changes from merge and add modifications to output head values in history and countour files when using chead macro, and add vapor zone flux output and keywords to select zone flux phase for liquid-air/vapor problems.
+      
+  @163:f0c8b606e975   3 years zvd 
+  Correctly set vboun flag and modify to allow 0 volume input.
+      
+  @162:7b52ff7b1b6d   3 years zvd 
+  Remove extraneous commas from write statements in compute_exit_new and steady. Add back in density assignment to rolf in ther_co2_h2o that is needed for correct functioning of transport.
+      
+  @161:58a7322b14d1   3 years zvd 
+  Commit changes from merge, updated Makefile.depends for modified common file and new file added, fixed call to subroutine max in stress_perm so data types matched.
+      
+  @160:7d95937de499   3 years zvd 
+  In steady.f move format statement to contained subroutine wher it is used. For write_avs_node_s, fix coordinate for avs express.
+      
+  @159:17cd9ad6e50b   3 years gaz 
+  correction for writing head output
+  added sticking parameter for phase changes
+      
+  @158:5213955b6514   3 years gaz 
+  changed some phase change parameters for geothermal problems
+      
+  @157:8da8877cf727   3 years gaz 
+  more changes for potential energy
+  some initial changes for anisotropic multiphase
+  
+       @156:ab437de78729      3 years gaz 
+  all these changes are to implement tha potential energy term
+  in the enthalpy
+      
+  @155:4ffa96d8bab4   3 years zvd 
+  Modified comsteady, steady to output steady state message for each output time. Fixed problem in write_avs_node_s that was causing double zone headers to be written when xyz output was invoked.
+      
+  @154:cf02bca151a3   3 years zvd 
+  Add new routine from GAZ and update dependencies.
+      
+  @153:021849c3a761   3 years zvd 
+  Moved my latest version of plot_new.f back into project because the updates to it did not properly merge into GAZ version from last pull.
+      
+  @152:aed2feb61e8a   3 years gaz 
+  change only to comment statements
+      
+  @151:04979d734d86   3 years gaz 
+  comsi- new variable
+  plot_new.f - mods for relative displacement
+      
+  @150:c77f49df78bd   3 years gaz 
+  airctr.f -insignificant cganges
+  bcon.f - added ifree.eq.0
+  comriv.f - added more well variables
+  comriv.f - added and passed through implicit well variables
+  geneq1.f - small change for river or well connections (only for iriver=2)
+  geneq2_wtsi.f - small change for river or well connections (only for iriver=2)
+  geneq_stress_uncoupled_2D.f - minor changes
+  geneq_stress_uncoupled_2D_FEM_rad.f - minor changes
+  geneq_stress_uncoupled_3D.f - minor changes
+  gensl2.f - insignificant changes
+  implicit_well2.f - cleaned up generation of well segments
+  plot_new.f - don't know
+  plot_new.f
+  rlperm_wtsi.f - commented out per iteraioin output
+  startup.f- don't know
+  stress_2D_post.f - minor
+  stressctr.f - minor
+  user_ymp.f - added case 455 permeabilty data conversion to fehm input
+  wtsictr.f - minor
+      
+  @149:6b303a0dfd09   3 years zvd 
+  Corrected initializations so multiple boun macros in an input deck would work correctly. For PC corrected inconsistencies between versions of the fehmn subroutine.
+      
+  @148:734eb0cc6acf   3 years zvd 
+  Added conditional check so data won't be written for sptr2 output when not requested.
+      
+  @147:b51ac15eb065   3 years zvd 
+  Add additional output options for CO2 (mass fraction) and minor bug fixes in logic.
+      
+  @146:3be075e24044   3 years zvd 
+  Correct logic for output of relative displacements for history plots.
+      
+  @144:ce08bedefe10   3 years zvd 
+  Updates to history output for addition of CO2 pressure output and split of pressure output into multiple files.
+      
+  @143:d1afc7e95636   3 years gaz 
+  changes to improve efficiency for anisortropy calcs
+  merged keita's changes to stress perm
+      
+  @142:f846be920e37   3 years zvd 
+  Minor fixes that were not correct from last update: fehmn.f modified to match fehmn_pcx.f, missing conditional in stress_perm and type conversion fixes, and delete unnecessary variables from geneq_stress_uncoupled_2D.
+      
+  @141:4649c1a16f56   3 years gaz 
+  miscellaneous snall corrections and corretcions for running heat conduction with stress
+      
+  @140:6b5e47c7d50a   3 years gaz 
+  corrected files for anisotropy, wells, and minor changes to stress solution
+      
+  @138:db1aea21180a   3 years zvd 
+  Miscellaneous fixes: cntlio - fixed read of usub_num to be non formatted integer, comai & cntlio - implemented flag to suppress output of nodal equation residuals, storsx & storsx_write - fixed file checks and assignments, wellphysicsctr - added check to see if variable is already allocated, flxz, inhist & plot_new - fixed output headers, etc and variables for co2, split co2 saturations into two output files.
+      
+  @137:5915093c3de5   3 years zvd 
+  Fixes for stress with thermal only simulation. Use conditional idoff .eq. -1 for check.
+      
+  @136:d211cc0d3323   3 years zvd 
+  Fixes to routines for stress used with thermal only simulation. Corrected conditional checks from idof .le. 1 to idoff .eq. -1.
+      
+  @135:9a50f74a8ee8   3 years zvd 
+  Implemented option to input total moles for a species. The moles will be distributed over the input zone. For single nodes it is scaled by the nodal volume.
+      
+  @134:68b14b782d2a   3 years zvd 
+  Add updates from GAZ for modifications to anisotropy routines and calculations.
+      
+  @133:c1710e4535e3   3 years zvd 
+  Minor modificatins to file naming and manipulation for use with gfortran compiler.
+      
+  @132:4e55c2ce1d6f   3 years zvd 
+  Moved continuation label to appropriate location in block.
+      
+  @131:45e9e733a21c   3 years zvd 
+  Minor modifications to correct line length, position of continuation character, change to real variable where integer was used incorrectly used.
+      
+  @130:1d70fc17995d   3 years zvd 
+  Modifications to have code output initial particle positions when there is a time delay in particle start and to output the upcoming location of a particle that is delayed past the end simulation time due to diffusion.
+      
+  @129:faefad97f8b9   3 years zvd 
+  Update file dependencies for new files and recent changes.
+      
+  @128:68bca1e21804   3 years zvd 
+  New files from update by GAZ.
+      
+  @126:c731823792ba   3 years zvd 
+  Moved output position for source to be adjacent to other flux output options. Added call to diskwrite for case where run terminates based on maximum run time to ensure fin file is updated before program stops.
+      
+  @125:e0fdf6fae5e0   3 years gaz 
+  src for new wells and peaceman well
+      
+  @124:71c80bfa1d92   3 years gaz 
+  modifed files for peaceman well, improved stress, and multisegmented wells
+      
+  @123:27926c34fa88   3 years zvd 
+  Merge and update from GAZ changes of 18-Jun-09
+      
+  ------------------------------------
+  06/18/09
+  
+  @122:d5650132fc95   3 years zvd 
+  These modifications include changes to fehmn.f for FEHM V2.26 modifications and the sptr module updates. Also included are modifications to improve/correct the functionality of a free drainage condition (inflo3.f), new sub-model input and output functionality (input.f, submodel_bc.f), data updates (data.f, setparams.f), fixes/changes to output logic (flxz.f, cflxz.f, write_avs_node_con.f, wrtout.f) and any other associated changes to variables or logic.
+      
+  @121:ffea1a9199e7   3 years zvd 
+  These modifications incorporate changes to the sptr module including an alternate output format for breakthrough (added for FEHM V2.26) and updates to improve code performance and behavior when particles move into poorly connected regions of the grid created by addition of zero porosity nodes. Changes have also been made to sptr2 output to be used with PLUMECALC.
+      
+  @120:14d4e4d22fd0   3 years zvd 
+  These changes incorporate the functionality and fixes incorporated in YMP qualified version FEHM V2.26. It includes a variable permeabilty option in the boun macro and a solute recirculation with erosion model. Logic corrections were made in the GoldSim? coupled model for colloid filtration where the random number used was incorrectly set and the full colloid distribution was not sampled, and to correctly apply a change in water table elevation.
+      
+  @118:c0c49293eabc   3 years gaz 
+  merged update
+      
+  @117:197f5fb3952e   3 years gaz 
+  changes to riverctr(model 2) , submodel bc, airctr (kq = -2 and -23) stress perm model
+      
+  @116:94def0377502   3 years zvd 
+  Changed bcon to enforce outflow condition correcting sk. Uncommented line in plot_new that flushed flxz data output after write.
+      
+  @115:9221767ebc07   3 years zvd 
+  Incorporate updates for CO2 code to correctly implement CO2 flow input and to implement CO2 chemistry.
+      
+  @114:682e28a40274   3 years zvd 
+  Corrected problem when reading an existing connectivity file for tecplot output if generated for avsx. Fixed a conditional check for velocity output when zones are being used that resulted in all nodes being output multiple times.
+      
+  @113:f9145cd3fb35   3 years zvd 
+  Added check for existence of output file.
+      
+  @112:215fde755bd7   3 years zvd 
+  Added option to output particle start time for reduced output options at node 0.
+      
+  @111:f4895b713974   3 years zvd 
+  Added files to repository that have changes implemented for use with gfortran compiler which does not support 'binary' format.
+      
+  @109:3e375b61764e   3 years zvd 
+  Date change for PC recompile.
+      
+  @108:a85473d6c62d   3 years gaz 
+  added call to stressctr lor lithostatic BC
+      
+  @107:bc1256befe36   3 years zvd 
+  Increased size of variable name character string so variable headers will be correctly output for tecplot.
+      
+  @106:556c13037fbf   3 years zvd 
+  Update date for PC compilation.
+      
+  @105:bff77cbdfa29   3 years zvd 
+  Updated dependencies resulting from recent code modifications.
+      
+  @104:c1a645111276   3 years zvd 
+  Integrated changes from scanin.f and startup.f that got omitted/lost from gaz merge of routines with his changes.
+      
+  @103:2f306b19c72a   3 years zvd 
+  Fixed problem of printing out particle after it has left the system (current_node = 0)
+      
+  @102:79ae896a0e57   3 years zvd 
+  Commit changes from pull.
+      
+  @101:782dbe6a5fa6   3 years zvd 
+  Commit changes from pull of repository.
+      
+  @100:af57b6f4ce36   3 years zvd 
+  Update date time satamp.
+      
+  @99:296b7ea6d1fb    3 years zvd 
+  Partial fix for water not getting into system.
+      
+  @98:2cad21cf7375    3 years zvd 
+  Partial fix to porosi call for model falg.
+      
+  @97:2d97a8f738ca    3 years zvd 
+  Added stopping conditions for when particles get into ill-defined (not completely connected) regions.
+  
+  @96:2a1ebe2796c9    3 years gaz 
+  committing files with minor cosmetic changes
+      
+  @95:47f9587aae44    3 years gaz 
+  added correct date stamp
+      
+  @94:397af23187c4    3 years gaz 
+  removed some unused code that was there for testing
+      
+  @93:493bc4c9051d    3 years gaz 
+  commmented out used and unallocted variables that were initialized
+      
+  @92:6e7d0103b9ca    3 years gaz 
+  added additional variables
+      
+  @91:a788a7322c13    3 years gaz 
+  added additional capability and rlp-like stress-perm models
+      
+  @90:83d842a41b99    3 years gaz 
+  generalized some stress-permeability models
+      
+  @89:756b7dde37ee    3 years zvd 
+  Added stress variables to time history and contour output.
+  Expanded keyword options for hist to be more compatible with contour output.
+  Added/modified keyword scanning for cont and hist in scanin to avoid conflicts with macro names.
+      
+  @88:a5f2ef6131d8    3 years zvd 
+  Moved variable sptr_time inside particle loops for correct value assignment by index.
+      
+  @87:c15627c0f0df    3 years zvd 
+  Added routine for computing number of connections for each node after connectivity has been simplified based on porosity.
+      
+  @86:20c77a7994a9    3 years zvd 
+  Added option to gnerate list with number of connections for each node after connections have been simplified based on porosity. Code terminates after list is generated.
+      
+  @85:7152e2717fa8    3 years zvd 
+  Wrapped do loop with conditional block, to prevent segmentation fault that occurred with PGI optimized code for do i = 1, 0 loop.
+      
+  @84:3251c519f1e4    3 years zvd 
+  Expanded error message to provide additional information on cause of program exit.
+      
+  @83:fb077ace19bc    3 years zvd 
+  Commented out unnecessary saturation check, to ensure "to" is initialized correctly for a conduction only restart.
+      
+  @82:c8e731b77301    3 years zvd 
+  Added flag to suppress warning messages for compilation using Absoft compiler on MAC.
+      
+  @81:401bf5325e2b    3 years zvd 
+  Removed unneccesary change of "iporos" variable before call to subroutine porosi that prevented correct initialization of variables for ppor model -5.
+      
+  @80:515f01f6763c    3 years zvd 
+  Initialize variable boun_out for optional suppression of boundary model output messages -- default is true to cause messages to be output.
+      
+  @79:7fdcba8787ce    3 years zvd 
+  Added initialization for variable istrs_coupl.
+      
+  @78:5ac9b8cab32a    3 years zvd 
+  Added optional keyword to suppress output messages for boundary model changes.
+      
+  @77:154283f8c581    3 years zvd 
+  Updated version identifier for code to version 3.00 to reflect addition of stress.
+      
+  @76:c6aa26cb636a    3 years zvd 
+  Corrected problem caused by attempt to output undefined variable pcp.
+      
+  ------------------------------------------
+  03/30/09 Version 3.00
+      
+  @74:1962ecdd3f0a    3 years zvd 
+  Major revision/update of fehm-open: Version 3.00
+  Added and changed routines to implement stress. Changes made to the stress-related subroutines to fix array addressing problems, simplify input, and allow for different conceptual models of aperture-displacement-stress relationships to be implemented. Split storsx into 3 parts to simplify modification. Added additional well bore gridding options. Added options to allow reading of different element conventions. Added a framework for specifying different wellbore physics. Added option for output of initial pressures and temperatures for stress calculations. MOdified submodel_bc to output boundary fluxes for keyword 'flux'. Added keyword 'all' to zone input to allow every node in grid to be put into a zone without having to specify coordinates.
+      
+  @75:1fec9a244f41    3 years zvd 
+  Corrected inconsistency in number of parameters checked for rlp model 19.
+      
+  @70:56d6979c894f    3 years zvd 
+  Modified to just use sk array when 'flux' is the requested output for the submodel.
+  
+  %%%%%%% VERS2.30 Nov 2008  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  03/16/09
+  
+  /scratch/nts/BIN
+  -rwxr-xr-x  1 zvd         8098863 Mar 30  2009 xfehm_v2.30pgi32.30Mar09
+  -rwxr-xr-x  1 zvd         8395796 Mar 30  2009 xfehm_v2.30pgi64.30Mar09
+  -rwxr-xr-x  1 zvd         8395796 Mar 26  2009 xfehm_v2.30pgi64.26Mar09
+  -rwxr-xr-x  1 zvd         8099023 Mar 26  2009 xfehm_v2.30pgi32.26Mar09
+  -rwxr-xr-x  1 zvd         6486176 Jan 13  2009 xfehm_v2.30mac.13Jan09
+  -rwxr-xr-x  1 zvd        11757716 Jan 13  2009 xfehm_v2.30sun.13Jan09
+  -rwxrwxr-x  1 zvd         4407296 Jan 13  2009 fehm_v2_30sa13Jan09.exe
+  -rwxrwxr-x  1 zvd         8386430 Jan 13  2009 xfehm_v2.30pgi64.13Jan09
+  -rwxr-xr-x  1 zvd         8088864 Jan 13  2009 xfehm_v2.30pgi32.13Jan09
+  -rwxr-x--x  1 zvd         4335494 Jul 21  2008 xfehm_v2.26lnx
+  
+  
+  @72:20fe6b667682        4 years viswana
+  Updated from repository
+  
+  @71:90a287193902        4 years viswana
+  Changed the appropriate tracer and co2 flow routines so that tracers work with co2 problems.
+  chemod.f: made it so that the dissolved co2 concentration from the flow code controls the amount of co2 in the water
+  coneq1.f, icetrco2.f, ther_co2_h2o.f: variables that have changed in the co2 code that are needed by the trac macro we
+  re accounted for.
+      
+  @69:2d96b4ec6022    4 years zvd 
+  Output format changes and updates.
+      
+  ------------------------------------------
+  02/27/09
+  
+  @68:acdc6b125a78    4 years rajesh  
+  Merge changes
+      
+  @67:7b3cfad6a6b4    4 years rajesh  
+  Changed drivatives in co2_properties for maximum dissolved CO2 saturation.
+  Changed the way enthalpy is calculated for water(brine) with dissolved
+  CO2 and associated derivatives in geneq_co2, gener_h2o_co2 and ther_co2_h2o.
+  Changed the way phase change is done for CO2, for dissolved CO2 case.
+      
+  @66:18b76e3b63f3    4 years zvd 
+  Minor updates to io options.
+      
+  @65:026be620baec    4 years zvd 
+  Updates for implementation of CO2 restart.
+      
+  @64:a9febac53924    4 years zvd 
+  Updates for new CO2 rlperm model.
+      
+  @63:9d582079ba2f    4 years zvd 
+  Updated id file for PC.
+      
+  @62:6a9160a4e786    4 years zvd 
+  Change resizing of b matrix for Richard's dpdp problems.
+      
+  ------------------------------------------
+  11/21/08
+  
+  @61:2d83a486c594    4 years zvd 
+  New conductivity models and temperature dependent porosity.
+      
+  @60:0f132e93bf14    4 years zvd 
+  Updates to timing routines, timcrl to ensure all dits are reached, csolve to keep
+  transport time step at previous value if cut to a smaller value to hit end of
+  tracer time step.
+      
+  @59:5c8b1ed87722    4 years zvd 
+  CO2 code updates.
+      
+  @58:a0cdd5de58be    4 years zvd 
+  Update to make sure particles are placed in non-zero porosity control volumes.
+      
+  @57:5ec85da07c1a    4 years zvd 
+  Updates for Richard's equation with dpdp.
+      
+  @56:4c7eff0fbe03    4 years zvd 
+  Minor small fixes so code will compile on all compilers. Fix to cnswer to addresss
+  convergence criteria counter reset when necessary at start of SIA iteration.
+      
+  @55:faf3a2b4b757    4 years zvd 
+  Merged open source with CO2 additions and minor changes.
+      
+  @54:ecd104c9e01f    4 years zvd 
+  Correction to variable assignment for restart output.
+      
+  @53:b78108af6b05    4 years zvd 
+  Updates and working out bugs.
+      
+  @52:9a46e441ae26    4 years zvd 
+  Merge with changes from FEHM_V2.30open repository.
+      
+  @51:9a0e94e9ab23    4 years zvd 
+  Fixes for problems with CO2 and open code merge.
+  
+  ------------------------------------------
+  08/11/08
+  
+  @50:691ed239dd6a    4 years zvd 
+  Add and commit CO2 routines
+      
+  @49:7b0c951390cd    4 years zvd 
+  Updates from RAJ and some from FEHM_V2.30open
+      
+  @46:c57a050f2355    4 years zvd 
+  Code fixes that impacted gfortran compilation and execution of test cases (fdm & gdpm).
+      
+  @45:0b8ea1b5f576    4 years zvd 
+  Minor modifications to work with Absoft compiler.
+      
+  @44:f6c63812f4ae    4 years zvd 
+  Added error condition for no output nodes defined when using 'hist' macro.
+      
+  @43:c8f5a63d7ad6    4 years zvd 
+  Updated dependencies for new routines and updates (Richard's equation/evaporation)
+      
+  @42:ec6b1b1b04f3    4 years zvd 
+  Added reporting of current variable status when steady state time exceeded.
+      
+  @41:8549978c1e8d    4 years zvd 
+  Incorporate new macros/functionality for evaporation and Richard's equation into FEHM.
+      
+  @40:f36f3e72a096    4 years zvd 
+  Modified transport output filtering options and added component names to
+  concentration output file names.
+      
+  @39:bfb6a0521b33    4 years zvd 
+  Fixed logic for creation of geometry files and added time unit output option for tecplot.
+      
+  @38:871aee93fd66    4 years zvd 
+  Fixed anonp to use neq_primary for wellbore/river problems.
+      
+  @37:72817523e748    4 years zvd 
+  Added change in mass/energy to global output.
+      
+  @36:74fbff3ad929    4 years zvd 
+  Correct problem with global variable headers and index problem for trac vapor species
+  when multiple species are used.
+      
+  @35:af2d5097130a    4 years zvd 
+  Release memory for allocatable Henry's LAw arrays.
+      
+  @34:d917473f3135    4 years zvd 
+  Initialize idebug to 0 for not printing SIA iterations.
+      
+  @33:773ff8f0d721    4 years zvd 
+  Remove trac SIA iteration count messages from output. May be reinstated by
+  setting idebug = 1
+      
+  @32:586f47fcf4ba    4 years zvd 
+  Initialize henry_model variable.
+      
+  @31:d404fe681b22    4 years zvd 
+  Fixed trac macro Henry's law variables to use allocatable arrays instead of a
+  fixed size which limited runs to 10 species.
+      
+  @30:cd3f3c12ca81    4 years zvd 
+  Various minor updates including variable initializations, data/logic checks.
+      
+  @29:4856462eb1ff    4 years zvd 
+  Updated flux output routines. For history plots added input options for
+  specifying which flux values to output. For contour output added option
+  for using cell volume weighting for boundary flux output.
+      
+  @28:1505e7d8e5e7    4 years zvd 
+  Updated routines to use transport porosity variable for streamline particle tracking.
+      
+  @27:c2fb14af5ab8    4 years zvd 
+  Added option for specifying the maximum saturation for vapor or Henry's species
+  and set a default value.
+      
+  @26:58362a65d22d    4 years zvd 
+  Added module for steady-state variables that needed to be saved between calls.
+  Added an option for specifying minimum number of time steps that should be used
+  before deciding if steady-state has been achieved.
+      
+  @25:8787ec8cf40a    4 years zvd 
+  Updated header for air source/sink output.
+      
+  @24:29ac4b7ea70f    4 years zvd 
+  Corrected contour output for 2D problems to correctly output specified coordinates.
+  Also fixed problem with tecplot headers for vector output.
+      
+  
+  @23:fe743a495ad2    5 years zvd 
+  Added control logic to update steady-state flag when flux is not used to determine steady-state condition.
+  Added usage and comments to Makefile.fehm.
+      
+  @22:a31aaffa42b3    5 years zvd 
+  Added declaration for undeclared variable.
+      
+  @21:b478fceb89d8    5 years zvd 
+  Corrected problem with potential close of unassigned unit.
+      
+  @20:99311d000265    5 years zvd 
+  Files were removed or renamed so Makefile configuration would work
+  correctly on UNIX/Linux systems.
+      
+  @19:bd7b1d1a9fa7    5 years zvd 
+  Added Makefiles and template for automatic updating of dated.f for
+  compilation on UNIX/Linux systems
+      
+  @18:16397d541843    5 years zvd 
+  Moved files specifically modified for compilation on a PC to subdirectory
+  PC to ensure Makefile for Linux/Unix? works correctly.
+      
+  @17:0e1b97593ea9    5 years zvd 
+  Moved/added variable initializations to ensure they were performed before
+  the variable was used.
+      
+  @12:7a20c9e0db2d    5 years zvd 
+  Added new files from GAZ
+      
+  @11:3b77d68c2d5f    5 years zvd 
+  Removed extraneous files
+      
+  @10:44e6bb775a51    5 years zvd 
+  Incorporated changes from GAZ and worked on insuring uninitialized variables were properly initialized.
+      
+  @5:0172b2f83706     5 years zvd 
+  Correctly initialized flag for reading pressure using new restart format.
+      
+  @4:d7e234760ed6     5 years zvd 
+  Added new routine for simplified restart files.
+      
+  @3:6bcce696e86b     5 years zvd 
+  Added date file for 64 bit PGI compiler
+      
+  @2:6cb79ea4860d     5 years zvd 
+  Implemented output options for restart files and variable initialization.
+  
+  Start Trac 01/29/08 09:33:06 
+  FEHM (open source pending release) V 2.30 from Zora Dash.
+  Original source from: /scratch/eeyore1/dash/FEHM_V2.x/SRC_V2.30
+  
+  
+  %%%%%%% VERS2.24 Dec 2006  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  
+  These are the YMP QA released codes.
+  
+  /scratch/eescommon/ymp-qacodes
+  drwxr-xr-x   4 zvd          4096 Jan  4  2007 FEHM_V2.24/
+  drwxr-xr-x   3 zvd          4096 Jul 27  2007 FEHM_V2_24-01/
+  drwxr-xr-x   3 zvd          4096 Jul 27  2007 FEHM_V2.25/
+  
+  /bin/
+  -rwxr-xr-x   1 root       294912 Jan  6  2003 fehm_v2_20.exe*
+  -rwxr-xr-x   1 root      3375104 Jan  6  2003 fehmn_v2_20.dll*
+  -rwxr-xr-x   1 root       299008 Sep 23  2003 fehm_v2_21win.exe*
+  -rwxr-xr-x   1 root      3190784 Oct  1  2003 fehmn_v2_21.dll*
+  
+  -rwxr-xr-x   1 root      3207168 Feb 18  2005 fehmn_v2_23.dll*
+  -rwxr-xr-x   1 root       299008 Feb 18  2005 fehm_v2_23win.exe*
+  
+  -rwxr-xr-x   1 root      3469572 Apr 24  2006 fehm_v2_24lah.exe*
+  -rwxr-xr-x   1 zvd       3125248 Apr 24  2006 fehmn_v2_24.dll*
+  -rwxr-xr-x   1 root       299008 Apr 24  2006 fehm_v2_24win.exe*
+  -rwxr-xr-x   1 zvd        299008 Apr 24  2006 fehm_v2_24win_2000.exe*
+  -rwxr-xr-x   1 zvd        294912 Dec  7  2006 fehm_v2_24win_xp.exe*
+  -rwxr-xr-x   1 zvd       3485956 Jan  4  2007 FEHM_V2_24lahey.exe*
+  -rwxr-xr-x   1 zvd       2838528 Jan 10  2007 fehmn_v2_24-01.dll*
+  -rwxr-xr-x   1 zvd        262144 Jan 11  2007 fehm_v2_24-01win.exe*
+  
+  -rwxr-xr-x   1 zvd       3227648 Apr 19  2007 fehmn_v2_25.dll*
+  -rwxr-xr-x   1 zvd        299008 Apr 19  2007 fehm_v2_25win.exe*
+  
+  -rwxr-xr-x   1 root       245760 Feb 12  2003 ppptrk_v1.0win.exe*
+  -rwxr-xr-x   1 root         2541 Mar  4  2003 run_fehm2post.pl*
+  -rwxr-xr-x   1 root         5638 Mar 11  2003 fehm2post_pc.pl*
+  -rwxr-xr-x   1 root       266240 Apr 10  2003 discrete_tf_v1.0win.exe*
+  -rwxr-xr-x   1 root       270336 Aug 14  2003 discrete_tf_v1.1win.exe*
+  
