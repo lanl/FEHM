@@ -154,5 +154,8 @@ inrestart.o : ${ALTDIR}inrestart.f
 insptr.o : ${ALTDIR}insptr.f
 	${FC} ${FFLAGS} $< -c -o ${SRCDIR}$@
 
+dated.o : ${SRCDIR}dated.f
+	${FC} ${FFLAGS} $< -c -o ${SRCDIR}$@
+
 # Include `Makefile.depends`
 include ${DEPEND}
