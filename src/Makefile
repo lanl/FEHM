@@ -40,6 +40,7 @@ DATE = $(shell date '+.%d%b%y')
 FFLAGS = -O2 -frecord-marker=4
 DEBUGFLAGS = -g -O0 -frecord-marker=4 -fbounds-check -Wall
 
+
 # Define the written OS tag
 ifeq (${OPSYS}, Linux)
 	OSTAG = lbUbuntu16
@@ -53,6 +54,7 @@ else
 	OSTAG = OPSYS
 endif
 
+
 # Define special permissions for gfortran
 # Namely, accessing two Fortran files from an
 # alternate directory due to compatibility issues
@@ -61,6 +63,7 @@ ifeq (${FC}, gfortran)
 else
 	ALTDIR = ${SRCDIR}
 endif
+
 
 # Define the helpscreen that will show on `make help`
 define help
@@ -93,9 +96,12 @@ MAKEFILE CONFIGURATION
 endef
 export help
 
+
 # Define FORTRAN and FORTRAN90 objects
 OBJECTS     := $(patsubst ${SRCDIR}%.f,${SRCDIR}%.o,$(wildcard ${SRCDIR}*.f))
 OBJECTS_F90 := $(patsubst ${SRCDIR}%.f90,${SRCDIR}%.o,$(wildcard ${SRCDIR}*.f90))
+OBJECTS     += ${SRCDIR}dated.o
+
 
 # Define targets
 .PHONY: all
@@ -131,7 +137,7 @@ test:
 .PHONY: dated
 dated:
 	rm -f ${SRCDIR}dated.f
-	sed s/OS\ DATE/${OSTAG}\ ${DATETAG}/ ${SRCDIR}dated.template >  ${SRCDIR}dated.f
+	sed s/OS\ DATE/${OSTAG}\ ${DATETAG}/ ${SRCDIR}dated.template > ${SRCDIR}dated.f
 
 xfehm: ${OBJECTS} ${OBJECTS_F90}
 	${FC} ${FFLAGS} ${OBJECTS} ${OBJECTS_F90} -o ${EXE}
@@ -147,6 +153,10 @@ debug: dated ${OBJECTS} ${OBJECTS_F90}
 %.o : ${SRCDIR}%.f90
 	${FC} ${FFLAGS} $< -c
 
+dated.o : ${SRCDIR}dated.f
+	${FC} ${FFLAGS} $< -c
+
+
 # Special handling of two files
 inrestart.o : ${ALTDIR}inrestart.f
 	${FC} ${FFLAGS} $< -c -o ${SRCDIR}$@
@@ -154,8 +164,6 @@ inrestart.o : ${ALTDIR}inrestart.f
 insptr.o : ${ALTDIR}insptr.f
 	${FC} ${FFLAGS} $< -c -o ${SRCDIR}$@
 
-dated.o : ${SRCDIR}dated.f
-	${FC} ${FFLAGS} $< -c -o ${SRCDIR}$@
 
 # Include `Makefile.depends`
 include ${DEPEND}
