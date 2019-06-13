@@ -109,6 +109,7 @@ all: FFLAGS += -O2
 all: dated xfehm
 
 .PHONY: install
+install: FFLAGS += -O2
 install: dated xfehm
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	cp ${EXE} $(DESTDIR)$(PREFIX)/bin/fehm
