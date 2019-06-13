@@ -37,7 +37,7 @@ DEPEND = ${SRCDIR}Makefile.depends
 OPSYS = $(shell uname -s )
 DATETAG = $(shell date '+%y-%m-%d')
 DATE = $(shell date '+.%d%b%y')
-FFLAGS = -O2 -frecord-marker=4
+FFLAGS = -frecord-marker=4
 DEBUGFLAGS = -g -O0 -frecord-marker=4 -fbounds-check -Wall
 
 
@@ -105,6 +105,7 @@ OBJECTS     += ${SRCDIR}dated.o
 
 # Define targets
 .PHONY: all
+all: FFLAGS += -O2
 all: dated xfehm
 
 .PHONY: install
@@ -141,7 +142,8 @@ dated:
 
 xfehm: ${OBJECTS} ${OBJECTS_F90}
 	${FC} ${FFLAGS} ${OBJECTS} ${OBJECTS_F90} -o ${EXE}
-	
+
+debug: FFLAGS += -g	
 debug: dated ${OBJECTS} ${OBJECTS_F90}
 	${FC} ${DEBUGFLAGS} ${OBJECTS} ${OBJECTS_F90} -o ${EXE}
 
