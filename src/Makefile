@@ -96,12 +96,9 @@ MAKEFILE CONFIGURATION
 endef
 export help
 
-
 # Define FORTRAN and FORTRAN90 objects
 OBJECTS     := $(patsubst ${SRCDIR}%.f,${SRCDIR}%.o,$(wildcard ${SRCDIR}*.f))
 OBJECTS_F90 := $(patsubst ${SRCDIR}%.f90,${SRCDIR}%.o,$(wildcard ${SRCDIR}*.f90))
-OBJECTS     += ${SRCDIR}dated.o
-
 
 # Define targets
 .PHONY: all
@@ -139,25 +136,26 @@ test:
 .PHONY: dated
 dated:
 	rm -f ${SRCDIR}dated.f
+	rm -f ${SRCDIR}dated.o
 	sed s/OS\ DATE/${OSTAG}\ ${DATETAG}/ ${SRCDIR}dated.template > ${SRCDIR}dated.f
 
 xfehm: ${OBJECTS} ${OBJECTS_F90}
 	${FC} ${FFLAGS} ${OBJECTS} ${OBJECTS_F90} -o ${EXE}
 
-debug: FFLAGS += -g	
+debug: FFLAGS += -g	-fbounds-check
 debug: dated ${OBJECTS} ${OBJECTS_F90}
 	${FC} ${DEBUGFLAGS} ${OBJECTS} ${OBJECTS_F90} -o ${EXE}
 
 
 # Define rules
 %.o : ${SRCDIR}%.f
-	${FC} ${FFLAGS} $< -c
+	${FC} ${FFLAGS} $< -c -o ${SRCDIR}$@
 
 %.o : ${SRCDIR}%.f90
-	${FC} ${FFLAGS} $< -c
+	${FC} ${FFLAGS} $< -c  -o ${SRCDIR}$@
 
 dated.o : ${SRCDIR}dated.f
-	${FC} ${FFLAGS} $< -c
+	${FC} ${FFLAGS} $< -c  -o ${SRCDIR}$@
 
 
 # Special handling of two files
