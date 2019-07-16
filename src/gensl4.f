@@ -137,6 +137,7 @@ C***********************************************************************
       use combi
       use comdti
       use comai
+      use petsc_package
       implicit none
       
       integer ndex(3),idiag,j,k
@@ -285,13 +286,15 @@ c         iad=abs(maxit)
 c     full solution
          allocate(dum(neq*3*4))
          if (igauss .gt. 1) then
-            call solve_new(neq,a,b,bp,nmat,nb,nrhs,nelm,nop,north
-     *           ,tollr,irb,iirb,npvt,gmres,dum,piv
-     *           ,h,c,ss,g,y,iter,iback,3,iptty,maxor,accm)
+!            call solve_new(neq,a,b,bp,nmat,nb,nrhs,nelm,nop,north
+!     *           ,tollr,irb,iirb,npvt,gmres,dum,piv
+!     *           ,h,c,ss,g,y,iter,iback,3,iptty,maxor,accm)
+            call petsc_solver(a,bp,nmat,nrhs,nelm,tollr)       ! petsc solver
          else
-            call solve_new(neq,a,b,bp,nmat,nmat,nrhs,nelm,nelm,north
-     *           ,tollr,irb,iirb,npvt,gmres,dum,piv
-     *           ,h,c,ss,g,y,iter,iback,3,iptty,maxor,accm)
+!            call solve_new(neq,a,b,bp,nmat,nmat,nrhs,nelm,nelm,north
+!     *           ,tollr,irb,iirb,npvt,gmres,dum,piv
+!     *           ,h,c,ss,g,y,iter,iback,3,iptty,maxor,accm)
+            call petsc_solver(a,bp,nmat,nrhs,nelm,tollr)       ! petsc solver
          end if
          itert=itert+iter
          itotals=itotals+iter

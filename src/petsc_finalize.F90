@@ -31,6 +31,7 @@ module petsc_finalize_package
          deallocate(row_index)
          deallocate(rank_nonzero_array)
 
+         call VecDestroy(nnz_seq, ierr_3)
          call VecDestroy(x,ierr_3)
          call VecDestroy(b,ierr_3)
          call MatDestroy(A_matrix,ierr_3)

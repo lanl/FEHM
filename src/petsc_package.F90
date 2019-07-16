@@ -28,6 +28,7 @@ subroutine petsc_solver(a,bp,nmat,nrhs,nelm,tollr)
 
       use petsc_initialize_package
       use comai
+      use comco2
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -63,7 +64,7 @@ subroutine petsc_solver(a,bp,nmat,nrhs,nelm,tollr)
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
+!		
       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr_3)
       call MPI_Comm_size(MPI_COMM_WORLD,rank_size,ierr_3)
 
@@ -71,7 +72,7 @@ subroutine petsc_solver(a,bp,nmat,nrhs,nelm,tollr)
       rank_rows         = 0
       rank_cols         = 0
       value_block_above = 0
-
+      
 ! Create sequential AIJ (CSR) Sparse Matrices
 ! call MatCreateSeqAIJ(PETSC_COMM_SELF,neq,neq,nz,nnz,A_sub,ierr)
 !
@@ -85,94 +86,56 @@ subroutine petsc_solver(a,bp,nmat,nrhs,nelm,tollr)
       row_index(1)    = 0
       col_id          = 0
       nnz_block_above = 0
+       neq_inc = neq
+       neq_adj = 0
+       idf_cnt = 0  
+       idf_adj = 0
+      
+      
+    !print *, "nnz: ", size(nnz), rank, Istart, Iend, neq, idf
+    do i = 1, Istart+1
+			if(i > neq_inc)then
+				idf_adj = idf_adj + (idf-1)
+				idf_cnt = idf_cnt + 1
+				neq_inc = neq_inc + neq
+				neq_adj = neq_adj + neq
+			end if	
+	end do
 
-      if(Iend .LE. neq) then 
+            
+	do i = Istart+1,Iend                  ! Matrix start [0][0], row[0] to row[n-1]; (i=1) is row[0]
 
-            do i = Istart+1,Iend                  ! Matrix start [0][0], row[0] to row[n-1]; (i=1) is row[0]
+			if(i > neq_inc)then
+				idf_adj = idf_adj + (idf-1)
+				idf_cnt = idf_cnt + 1
+				neq_inc = neq_inc + neq
+				neq_adj = neq_adj + neq
+			end if  
+			
+		  row_index(i-Istart+1) = row_index(i-Istart) + nnz_global(i)*idf
+		
+		  do k = 1,idf				  
+				   col_id(nnz_block_above*idf+1+nnz_global(i)*(k-1):nnz_block_above*idf+nnz_global(i)*k)  =   &
+				   &      nelm(nelm(i-neq_adj)+1:nelm(i+1-neq_adj)) -1 +(k-1)*neq		
+				   
+				  value_index(nnz_block_above*idf+(k-1)*nnz_global(i)+1:nnz_block_above*idf+(k-1)*nnz_global(i)+nnz_global(i))&
+				  &  =  rank_nonzero_array(1:nnz_global(i)) + nnz_above(i) + (k-1)*nnz_total + nnz_total*idf_adj					  
 
-                  row_index(i-Istart+1) = row_index(i-Istart) + nnz_global(i)*idof
+		  end do
 
-                  do k = 1,idof
+		  nnz_block_above = nnz_block_above + nnz_global(i)
 
-                      col_id(nnz_block_above*2+1+nnz_global(i)*(k-1):nnz_block_above*2+nnz_global(i)*k) =   &
-                      &      nelm(nelm(i)+1:nelm(i+1)) -1 + (k-1)*neq
-
-                      value_index(nnz_block_above*2+(k-1)*nnz_global(i)+1:nnz_block_above*2+(k-1)*nnz_global(i)+nnz_global(i)) &
-                           &  =  rank_nonzero_array(1:nnz_global(i)) + nnz_above(Istart+1) + nnz_block_above +(k-1)*nnz_total
-
-                  end do
-
-                  nnz_block_above = nnz_block_above + nnz_global(i)
-
-            end do
-
-      else if ( (Iend > neq) .AND. (Istart .GE. neq) ) then
-
-            do i = Istart+1,Iend                  ! Matrix start [0][0], row[0] to row[n-1]; (i=1) is row[0]
-
-                  nnz_global(i) = nnz(i-neq)
-                 
-                  row_index(i-Istart+1) = row_index(i-Istart) + nnz_global(i)*idof
-
-                  do k = 1,idof
-
-                     col_id(nnz_block_above*2+1+nnz_global(i)*(k-1):nnz_block_above*2+nnz_global(i)*k) =   &
-                     &      nelm(nelm(i-neq)+1:nelm(i+1-neq)) -1 + (k-1)*neq
-
-                      value_index(nnz_block_above*2+(k-1)*nnz_global(i)+1:nnz_block_above*2+k*nnz_global(i))     &
-                      &  = rank_nonzero_array(1:nnz_global(i)) +nnz_total*2 +(k-1)*nnz_total + nnz_above(i-neq)
-
-                  end do
-
-                  nnz_block_above = nnz_block_above + nnz_global(i)
-
-            end do
-
-      else if ( (Iend > neq) .AND. (Istart<neq) ) then
-
-            do i = Istart+1,Iend                  ! Matrix start [0][0], row[0] to row[n-1]; (i=1) is row[0]
-
-                  if (i > neq) then
-                     nnz_global(i) = nnz(i-neq)
-                  end if 
-
-                  row_index(i-Istart+1) = row_index(i-Istart) + nnz_global(i)*idof
-
-                  do k = 1,idof
-
-                      if (i >  neq) then
-                           col_id(nnz_block_above*2+1+nnz_global(i)*(k-1):nnz_block_above*2+nnz_global(i)*k)  =   &
-                           &      nelm(nelm(i-neq)+1:nelm(i+1-neq)) -1 +(k-1)*neq
-
-                      value_index(nnz_block_above*2+(k-1)*nnz_global(i)+1:nnz_block_above*2+k*nnz_global(i)) &
-                      &  = rank_nonzero_array(1:nnz_global(i)) +nnz_total*2 +(k-1)*nnz_total + nnz_above(i-neq)
-
-                      else 
-                           col_id(nnz_block_above*2+1+nnz_global(i)*(k-1):nnz_block_above*2+nnz_global(i)*k) =   &
-                           &      nelm(nelm(i)+1:nelm(i+1)) -1 + (k-1)*neq
-
-                      value_index(nnz_block_above*2+(k-1)*nnz_global(i)+1:nnz_block_above*2+(k-1)*nnz_global(i)+nnz_global(i))&
-                           &  =  rank_nonzero_array(1:nnz_global(i))+ nnz_above(Istart+1)+ nnz_block_above +(k-1)*nnz_total
-
-                      end if 
-
-                  end do
-
-                  nnz_block_above = nnz_block_above + nnz_global(i)
-
-            end do
-
-       end if 
-
-       value(1:nnz_block_above*idof) = a(value_index(1:nnz_block_above*idof))
+	end do            
 
 
-       call MatCreateMPIAIJWithArrays(MPI_COMM_WORLD,rank_rows,PETSC_DECIDE,A_size,A_size, &
+       value(1:nnz_block_above*idf) = a(value_index(1:nnz_block_above*idf))
+
+       call MatCreateMPIAIJWithArrays(MPI_COMM_WORLD,rank_rows, PETSC_DECIDE,A_size,A_size, &
             &    row_index,col_id,value,A_matrix,ierr_3)
-
+       
        call MatAssemblyBegin(A_matrix,MAT_FINAL_ASSEMBLY,ierr_3)
        call MatAssemblyEnd(A_matrix,MAT_FINAL_ASSEMBLY,ierr_3)
-
+       
 !       call MatView(A_matrix,PETSC_VIEWER_STDOUT_WORLD,ierr_3)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -263,11 +226,11 @@ subroutine petsc_solver(a,bp,nmat,nrhs,nelm,tollr)
       end do
 
       ! Gather values from each processor to rank 0
-      call MPI_GATHERV(solution,bcore_size,MPI_REAL8,solution,recvcounts,displs,MPI_REAL8,0,MPI_COMM_WORLD,ierr_3)
+      call MPI_GATHERV(solution,bcore_size,MPI_REAL8,sol_gather,recvcounts,displs,MPI_REAL8,0,MPI_COMM_WORLD,ierr_3)
 
       if (rank == 0 ) then
         bp(1:A_size) = 0.0
-        bp(1:A_size) = bp(1:A_size) + solution(1:A_size)
+        bp(1:A_size) = bp(1:A_size) + sol_gather(1:A_size)
       end if
 
       ! send the solver solution bp to all the processors

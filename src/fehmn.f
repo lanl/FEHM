@@ -1479,16 +1479,6 @@ c EHK check for kill file
 
         end do      ! End major time step loop 
 
-c ******************* end major time step loop ****************
-
-
-! -----------------------------------------------------------
-!               Finalize / Deallocate PETSc memory
-! -----------------------------------------------------------
-
-       call petsc_finalize
-
-! -----------------------------------------------------------
 
 
 
@@ -1498,6 +1488,17 @@ c**** write solution to plot tapes ****
 
  170     continue
 
+
+c ******************* end major time step loop ****************
+
+
+! -----------------------------------------------------------
+!               Finalize / Deallocate PETSc memory
+! -----------------------------------------------------------
+      call petsc_finalize()
+
+! ----------------------------------------------------------- 
+ 
 c     check for steady state solution
          if(isteady.ne.0) then
             ntty = 2

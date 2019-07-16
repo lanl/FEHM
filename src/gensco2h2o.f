@@ -35,7 +35,7 @@ CD4  RJP 02/05/07 First version of gensco2h2o subroutine
 CD4
 C***********************************************************************
 
-      use comai
+      use comai      
       use comgi
       use comfi
       use comei
@@ -48,6 +48,7 @@ C***********************************************************************
       use comcouple
       use comco2
       use comwellphys
+      use petsc_package
       implicit none
 
       integer nmatd, index(6)
@@ -307,16 +308,19 @@ c
 c
 c     full dof solution
 c
-
          if(gdpm_flag.eq.0) then 
             if (igauss .gt. 1) then
-               call solve_new(neq,a,b,bp,nmat,nb,nrhs,nelm,nop,north
-     &              ,tollr,irb,iirb,npvt,gmres,dumz,piv
-     &              ,h,c,ss,g,y,iter,iback,idofm,iptty,maxor,accm)
+!               call solve_new(neq,a,b,bp,nmat,nb,nrhs,nelm,nop,north
+!     &              ,tollr,irb,iirb,npvt,gmres,dumz,piv
+!     &              ,h,c,ss,g,y,iter,iback,idofm,iptty,maxor,accm)
+				
+				call petsc_solver(a,bp,nmat,nrhs,nelm,tollr)       ! petsc solver
             else
-               call solve_new(neq,a,b,bp,nmat,nmat,nrhs,nelm,nelm
-     &              ,north,tollr,irb,iirb,npvt,gmres,dumz,piv
-     &              ,h,c,ss,g,y,iter,iback,1,iptty,maxor,accm)
+!               call solve_new(neq,a,b,bp,nmat,nmat,nrhs,nelm,nelm
+!     &              ,north,tollr,irb,iirb,npvt,gmres,dumz,piv
+!     &              ,h,c,ss,g,y,iter,iback,1,iptty,maxor,accm)
+     
+     			call petsc_solver(a,bp,nmat,nrhs,nelm,tollr)       ! petsc solver
                
             end if
          else

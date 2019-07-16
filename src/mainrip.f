@@ -1,4 +1,4 @@
-      program main
+	program main
 !***********************************************************************
 !  Copyright, 1994, 2004,  The  Regents of the University of California.
 !  This program was prepared by the Regents of the University of 
@@ -165,9 +165,11 @@ c	PC Version
 C      use dfport
 C      use ifport
 
-      use MPI
+      use MPI      
+      
       use comai
       use petsc_initialize_package, only : ierr_3
+      use petsc_finalize_package
 
       implicit none
 
@@ -182,6 +184,8 @@ C!DEC$ ATTRIBUTES reference :: out
          real(8) in(4), out(3)
          end subroutine fehmn
       end interface
+      
+      
       integer return_flag
       integer method, state
       real(8) in(4), out(3)
@@ -192,15 +196,12 @@ C!DEC$ ATTRIBUTES reference :: out
 c     temporary variables for testing
       real*8 oldtime
       integer its, nts, i, tindex
-
-! ----------------------------------------- for PETSC_solver 
-      integer :: ierr_1
-
-      call MPI_INIT(ierr_1)
-
-      call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr_1)
-      call MPI_Comm_size(MPI_COMM_WORLD,rank_size,ierr_1)
-
+      	
+      	call MPI_INIT(ierr_3)
+		call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr_3)
+		call MPI_Comm_size(MPI_COMM_WORLD,rank_size,ierr_3)
+		print *, "RANK CHECK: ", rank
+      
 ! ------------------------------------------
 
 c zvd 09-Sep-2011 change size of in array to be consistent with iofile
@@ -240,13 +241,11 @@ c	UNIX Version
          end if
       end do
 
+      print *, "Finalizing Threads"
 
-! -----------------------------------------------------------
- 
-      call MPI_Finalize(ierr_1)          ! for MPI running
-! -----------------------------------------------------------
+      call MPI_Finalize(ierr_3)
 
-
+      
 c	UNIX Version
  1000 format(a13, 1x, i10, 1x, i10)
  1001 format(a14, 1x, i10, 1x, i10)
@@ -297,9 +296,11 @@ c       UNIX version
          close(3)
       else
          nsim = 1
-      end if
-
+      end if     
+      
       return
       end subroutine inmsim
-
+      
+      
+      
       end program main

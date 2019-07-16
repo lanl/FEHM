@@ -303,10 +303,13 @@ c
 !               call solve_new(neq,a,b,bp,nmat,nb,nrhs,nelm,nop,
 !     &              north,tollr,irb,iirb,npvt,gmres,dum,piv,
 !     &              h,c,ss,g,y,iter,iback,2,iptty,maxor,accm)
-!
 
-               call petsc_solver(a,bp,nmat,nrhs,nelm,tollr)       ! petsc solver
 
+				call petsc_solver(a,bp,nmat,nrhs,nelm,tollr)       ! petsc solver
+		
+!               call solve_new(neq,a,b,bp,nmat,nmat,nrhs,nelm,nelm,
+!     &              north,tollr,irb,iirb,npvt,gmres,dum,piv,
+!     &              h,c,ss,g,y,iter,iback,2,iptty,maxor,accm)
 
             else
                call solve_new(neq,a,b,bp,nmat,nmat,nrhs,nelm,nelm,
