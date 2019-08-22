@@ -391,6 +391,7 @@ c
       use comwt
       use comriv
       use comwellphys
+      use petsc_package              ! petsc solver
       implicit none
 
       real*8, allocatable :: sto5(:,:)
@@ -672,9 +673,11 @@ c***************************Change 3/2/94 gaz       .
             nmat_save=nmat(1)
             nmat(1)=nmat(3)
             if (igauss .gt. 1) then
-               call solve_new(neq,a,b,bp,nmat,nb,nrhs,nelm,nop
-     *              ,north,tollr,irb,iirb,npvt,gmres,dum,piv
-     *              ,h,c,ss,g,y,iter,iback,1,iptty,maxor,accm)
+!               call solve_new(neq,a,b,bp,nmat,nb,nrhs,nelm,nop
+!     *              ,north,tollr,irb,iirb,npvt,gmres,dum,piv
+!     *              ,h,c,ss,g,y,iter,iback,1,iptty,maxor,accm)
+     
+     			call petsc_solver(a,bp,nmat,nrhs,nelm,tollr)       ! petsc solver
             else
                call solve_new(neq,a,b,bp,nmat,nmat,nrhs,nelm,nelm
      *              ,north,tollr,irb,iirb,npvt,gmres,dum,piv
@@ -777,9 +780,12 @@ c***************************Change 3/2/94 gaz       .
             if(gdpm_flag.eq.0) then
 	       if(iback.eq.0) then
                   if (igauss .gt. 1) then
-                     call solve_new(neq,a,b,bp,nmat,nb,nrhs,nelm,nop,
-     &                    north,tollr,irb,iirb,npvt,gmres,dum,piv
-     &                    ,h,c,ss,g,y,iter,iback,1,iptty,maxor,accm)
+!                     call solve_new(neq,a,b,bp,nmat,nb,nrhs,nelm,nop,
+!     &                    north,tollr,irb,iirb,npvt,gmres,dum,piv
+!     &                    ,h,c,ss,g,y,iter,iback,1,iptty,maxor,accm)
+     
+     					call petsc_solver(a,bp,nmat,nrhs,nelm,tollr)       ! petsc solver
+     					
                   else
                      call solve_new(neq,a,b,bp,nmat,nmat,nrhs,nelm,nelm,
      &                    north,tollr,irb,iirb,npvt,gmres,dum,piv
@@ -791,10 +797,11 @@ c      form LU factors once
                      allocate(bsave(nbd))
                      allocate(pivsave(n0))
                      if (igauss .gt. 1) then
-                        call solve_new(neq,a,bsave,bp,nmat,nb,nrhs,nelm,
-     &                       nop,north,tollr,irb,iirb,npvt,gmres,dum,
-     &                       pivsave,h,c,ss,g,y,iter,0,1,iptty,maxor,
-     &                       accm)
+!                        call solve_new(neq,a,bsave,bp,nmat,nb,nrhs,nelm,
+!     &                       nop,north,tollr,irb,iirb,npvt,gmres,dum,
+!     &                       pivsave,h,c,ss,g,y,iter,0,1,iptty,maxor,
+!     &                       accm)
+     					call petsc_solver(a,bp,nmat,nrhs,nelm,tollr)       ! petsc solver
                      else
                         call solve_new(neq,a,bsave,bp,nmat,nmat,nrhs,
      &                       nelm,nelm,north,tollr,irb,iirb,npvt,gmres,
@@ -804,10 +811,11 @@ c      form LU factors once
                   else
 c      use already-formed LU factors 
                      if (igauss .gt. 1) then
-                        call solve_new(neq,a,bsave,bp,nmat,nb,nrhs,nelm,
-     &                       nop,north,tollr,irb,iirb,npvt,gmres,dum,
-     &                       pivsave,h,c,ss,g,y,iter,1,1,iptty,maxor,
-     &                       accm)
+!                        call solve_new(neq,a,bsave,bp,nmat,nb,nrhs,nelm,
+!     &                       nop,north,tollr,irb,iirb,npvt,gmres,dum,
+!     &                       pivsave,h,c,ss,g,y,iter,1,1,iptty,maxor,
+!     &                       accm)
+     					call petsc_solver(a,bp,nmat,nrhs,nelm,tollr)       ! petsc solver
                      else
                         call solve_new(neq,a,bsave,bp,nmat,nmat,nrhs,
      &                       nelm,nelm,north,tollr,irb,iirb,npvt,gmres,
@@ -901,9 +909,10 @@ c
             if(irdof.le.0) then 
                if(gdpm_flag.eq.0) then
                   if (igauss .gt. 1) then
-                     call solve_new(neq,a,b,bp,nmat,nb,nrhs,nelm,nop
-     &                    ,north,tollr,irb,iirb,npvt,gmres,dum,piv
-     &                    ,h,c,ss,g,y,iter,iback,2,iptty,maxor,accm)
+!                     call solve_new(neq,a,b,bp,nmat,nb,nrhs,nelm,nop
+!     &                    ,north,tollr,irb,iirb,npvt,gmres,dum,piv
+!     &                    ,h,c,ss,g,y,iter,iback,2,iptty,maxor,accm)
+     					call petsc_solver(a,bp,nmat,nrhs,nelm,tollr)       ! petsc solver
                   else
                      call solve_new(neq,a,b,bp,nmat,nmat,nrhs,nelm,nelm
      &                    ,north,tollr,irb,iirb,npvt,gmres,dum,piv

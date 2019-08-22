@@ -23,6 +23,8 @@ subroutine petsc_solver(a,bp,nmat,nrhs,nelm,tollr)
 ! a_num,bp_num,nmat_num,nrhs_num,nelm_num: size for these input vector
 !
 #include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
 
       use petscksp
 
@@ -55,6 +57,7 @@ subroutine petsc_solver(a,bp,nmat,nrhs,nelm,tollr)
       integer :: rank_rows,rank_cols
       integer :: nnz_block_above,value_block_above
       integer :: a_start_num,a_end_num
+
       
       PetscReal        norm,tol
       PetscInt         its,nnz_count          ! n: dimension of A matrix
@@ -132,7 +135,11 @@ subroutine petsc_solver(a,bp,nmat,nrhs,nelm,tollr)
 
        call MatCreateMPIAIJWithArrays(MPI_COMM_WORLD,rank_rows, PETSC_DECIDE,A_size,A_size, &
             &    row_index,col_id,value,A_matrix,ierr_3)
-       
+            
+!       call MatSetValues(A_matrix, rank_rows, row_index, A_size, col_id, value, INSERT_VALUES, ierr_3)
+       call MatGetInfo(A_matrix, MAT_LOCAL, info, ierr_3)
+       mal = info(MAT_INFO_MALLOCS)
+       a_nz = info(MAT_INFO_NZ_ALLOCATED)
        call MatAssemblyBegin(A_matrix,MAT_FINAL_ASSEMBLY,ierr_3)
        call MatAssemblyEnd(A_matrix,MAT_FINAL_ASSEMBLY,ierr_3)
        
@@ -165,7 +172,7 @@ subroutine petsc_solver(a,bp,nmat,nrhs,nelm,tollr)
 
 !  Create linear solver context
 
-      call KSPCreate(PETSC_COMM_WORLD,ksp,ierr_3)
+!      call KSPCreate(PETSC_COMM_WORLD,ksp,ierr_3)
 
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
@@ -180,7 +187,7 @@ subroutine petsc_solver(a,bp,nmat,nrhs,nelm,tollr)
 !     KSPSetFromOptions();
 
       call KSPGetPC(ksp,pc,ierr_3)
-      call KSPSetType(ksp,KSPGMRES,ierr_3)
+      call KSPSetType(ksp,KSPBCGS,ierr_3)
 !      call KSPGMRESSetRestart(ksp,20,ierr)
 
       call PCSetType(pc,PCASM,ierr_3)      ! set up preconditioners
@@ -234,9 +241,9 @@ subroutine petsc_solver(a,bp,nmat,nrhs,nelm,tollr)
       end if
 
       ! send the solver solution bp to all the processors
-      call MPI_Bcast(bp,A_size,MPI_REAL8,0,MPI_COMM_WORLD,ierr_3)
+      call MPI_Bcast(bp,A_size,MPI_REAL8,0,MPI_COMM_WORLD,ierr_3)           
 
-
+      call MatDestroy(A_matrix,ierr_3)
 end subroutine petsc_solver ! End of SUBROUTINE PETSc_solver
 !
 !

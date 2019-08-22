@@ -36,6 +36,10 @@ module petsc_initialize_package
     integer,dimension(:),allocatable :: row_index, row_nelm       ! for assemble A_matrix
     integer,dimension(:),allocatable :: value_index               ! the index for value vector to assemble
     integer,dimension(:),allocatable :: rank_nonzero_array, global_nonzero        ! just for the order: from 1 to ...
+    
+      
+    double precision info(MAT_INFO_SIZE)
+    double precision mal, nz_a    
 
 contains
 
@@ -159,7 +163,7 @@ contains
        ! More robust algorithm for calculation of nz for unstructured grid !
        if (rank_size == 1) then
 
-             d_nz = 7 * idf          ! 3 dimension * number of variables
+             d_nz = 10 * idf          ! 3 dimension * number of variables
              o_nz = 0                 ! o_nz: off diagonal    d_nz: diagonal non-zero
 
        else if (rank_size == 2) then
@@ -200,7 +204,10 @@ contains
        call MatSetUp(A_matrix,ierr_3)
        call MatMPIAIJSetPreallocation(A_matrix,d_nz,PETSC_NULL_INTEGER,o_nz,PETSC_NULL_INTEGER,ierr_3)
 
-
+       call MatGetInfo(A_matrix, MAT_LOCAL, info, ierr_3)
+       mal = info(MAT_INFO_MALLOCS)
+       nz_a = info(MAT_INFO_NZ_ALLOCATED)
+       
        ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        !         Compute the matrix A for the linear system, Ax = b
        ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -258,12 +265,12 @@ contains
 
        rank_nonzero_array = (/ (I, I = 1,rank_nonzero_num) /)
 
-
        call VecCreate(PETSC_COMM_WORLD,x,ierr_3)
        call VecSetSizes(x,PETSC_DECIDE,A_size,ierr_3)
        call VecSetFromOptions(x,ierr_3)
-       call VecDuplicate(x,b,ierr_3)
-             
+       call VecDuplicate(x,b,ierr_3)   
+       
+       call KSPCreate(PETSC_COMM_WORLD,ksp,ierr_3)
 
     end subroutine petsc_initialize
 
