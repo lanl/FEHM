@@ -212,7 +212,7 @@ flux_net.o: comai.o combi.o comci.o comdi.o comflow.o comgi.o comji.o davidi.o
 flxn.o: comai.o combi.o comflow.o davidi.o
 flxo.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o comfi.o
 flxo.o: comflow.o comgi.o comxi.o davidi.o
-flxz.o: comai.o combi.o comco2.o comdi.o comdti.o comflow.o davidi.o
+flxz.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comflow.o davidi.o
 ftime.o: compfrac.o
 gdkm_calc.o: comai.o combi.o comci.o comdi.o comdti.o comji.o comki.o davidi.o
 gdkm_connect.o: comai.o combi.o comci.o comdi.o comdti.o comji.o comki.o
@@ -496,7 +496,7 @@ releasemem.o: comai.o combi.o comchem.o comci.o comcouple.o comdi.o comdti.o
 releasemem.o: comei.o comfi.o comflow.o comgi.o comhi.o comii.o comji.o
 releasemem.o: compart.o compfrac.o comrtd.o comrxnb.o comrxni.o comsk.o
 releasemem.o: comsptr.o comuserc.o comzeoli.o davidi.o
-renum.o: comai.o combi.o comdti.o comei.o comki.o
+renum.o: comai.o combi.o comdi.o comdti.o comei.o comgi.o comki.o davidi.o
 resettrc.o: comai.o comci.o comdi.o comdti.o
 resetv.o: comai.o comci.o comco2.o comdi.o comdti.o comfi.o davidi.o
 river_ctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o

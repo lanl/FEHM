@@ -253,7 +253,7 @@ c     RJP 1/12/07 added following
       real*8 hdum, sdum, px, py, pz, flxdum
       real*8 pdum, tdum, rolconv, dumconv, dumconv1
       real*8 sxx_dum, syy_dum, szz_dum, sxy_dum, sxz_dum, syz_dum
-      real*8 pi
+      real*8 pi,sat_out_tol
       character*80 title(2*maxscalar+3)
       character*150 :: tecstring = ''
       character*150 :: tecstring_riv = ''
@@ -266,6 +266,7 @@ c     RJP 1/12/07 added following
       character*6 zonestring
       parameter(iblanking_value = -9999)
       parameter (pi=3.1415926535)
+      parameter (sat_out_tol=1.d-98)
       save tecstring, tecstring_riv
 C     BEGIN
       size_head = size(head)
@@ -773,7 +774,8 @@ c gaz use a blanking value
 c     sdum = max(s(i), sattol)
 c     if (sdum .le. sattol) sdum = 0.d0
 c     saturations are never zeroed out, report what is in array
-                  sdum = s(i)
+                sdum = s(i)   
+                if (s(i) .le. sat_out_tol) sdum = sat_out_tol 
                else
                   sdum = 1.0d0
                end if

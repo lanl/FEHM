@@ -1448,9 +1448,13 @@ c gaz 110715
       integer istate, ifail        
       parameter (kang = 1, pflowa_tol= 1.d-12, huma_tol = 1.d-12)
       parameter (permd_air_mult = 1.d-2, permd_hum_mult = 1.d-3)
-      
+c gaz 010519      
+       real*8 pcrit_h2o, tcrit_h2o
+       parameter(pcrit_h2o=22.00d0, tcrit_h2o=373.95)      
 c gaz  081917  
       real*8 dcp_dt, dcprt_dum
+c gaz 010719
+      real*8 dtdp
 c gaz 112718
       integer isk_key
       save isk_key
@@ -1469,7 +1473,9 @@ c     xnv  -  mass fraction of air in vapour
 c     visl -  viscosity of liquid
 c     visv -  viscosity of vapour
 c     rl   -  relative permeability of liquid phase
-c     rv   -  relative permeability of vapour phase
+c          else if(ieosd.eq.3) then
+c calculate water vapor pressure at 100 % humidity
+c needed for rel perm calc
 c     tl -  temperature
 c     sl   -  saturation liquid
 c
@@ -1802,12 +1808,16 @@ c         else
             pv=pl-pcl
             pci(mi)=pcl
             dpct=-dpsatt
+            dtdp = 1./dpsatt
       else if(ieosd.eq.3) then
 c calculate water vapor pressure at 100 % humidity
 c needed for rel perm calc
+          if(tl.ge.tcrit_h2o) then
+              psatl_100 = pcrit_h2o
+          else
             psatl_100 = psatl(tl,pcp(mi),dpcef(mi),dpsatt_100,dpsats,
      &                   0,an(mi))
- 
+          endif
       endif
 c 
 c calculate vapor pressure
@@ -1975,26 +1985,36 @@ c    real*8 var1,var2,var3,var4,var5(9),var6
                   call h2o_properties_new(4,ieosd,pl,tl,dum1,istate,
      &                 dumb,value,dumc)
 
-             elseif (ieosd.eq.2) then
-                  call h2o_properties_new(5,ieosd,pl,tl,dum1,istate,
+              elseif (ieosd.eq.2) then                  
+c                  call h2o_properties_new(5,ieosd,pl,tl,dum1,istate,
+c     &                 dumb,value,dumc)
+c gaz 120618 call with ieosd = 1 and use chain rule 
+c might need to do something else                  
+                  call h2o_properties_new(4,1,pl,tl,dum1,istate,
      &                 dumb,value,dumc)
-
              endif    
                    rol = value(1)
                    drolt = value(2)
                    drolp = value(3)
                    enl = value(4) + p_energy
+c gaz 120518 enw has slight (grav) correction                   
+                   enw = enl
                    dhlt = value(5)
                    dhlp = value(6)
                    xvisl = value(7)
                    dvislt = value(8)
-                   dvislp = value(9)    
+                   dvislp = value(9)  
+c gaz 120518                   
+                   dhlpc=0.0
+                   drolpc=0.0 
+                   dvlpc=0.0
 c chain rule not needed for table (d/dp already includes)
-                 if(ieosd.eq.2) then
-                  drolt = 0.0
-                  dhlt = 0.0
-                  dvislt = 0.0  
-                 endif
+c gaz 120618 need d/dp now                   
+c                 if(ieosd.eq.2) then
+c                 drolt = 0.0
+c                  dhlt = 0.0
+c                  dvislt = 0.0  
+c                 endif
 c gaz 110117
 c might need the following un commented
 c     if(ieosd.ne.3) then
@@ -2017,6 +2037,9 @@ c     endif
 c
 c       calculate mass fraction of air in liquid
 c
+c gaz 010519
+        call air_sol(tl,pl,pcl,xnl,dxnlp,dxnlpc,dxnlt)
+        go to 130
         alpha=1.6111e-04
         dalpca=0.0
         xnl=alpha*pcl + xtol
@@ -2026,6 +2049,7 @@ c
          dxnlp=0.0
          dxnlpc=alpha
          dxnlt=0.0
+130     continue         
 c           if(xnl.le.0.0) then
 c              xnl=0.0
 c next line is new 4/13/98
@@ -2165,34 +2189,42 @@ c
 c subroutine h2o_properties_new(iflg,iphase,var1,var2,var3,istate,var4,var5,var6)  
 c    real*8 var1,var2,var3,var4,var5(9),var6
                 if(ieosd.eq.3)then
-                  call h2o_properties_new(4,ieosd,pl,tl,dum1,istate,
+                  call h2o_properties_new(4,ieosd,pv,tl,dum1,istate,
      &                 dumb,value,dumc)
 
-               elseif (ieosd.eq.2) then
-                  call h2o_properties_new(6,ieosd,pl,tl,dum1,istate,
+                elseif (ieosd.eq.2) then
+c gaz 120718  derivatives match rat polynomials                
+c                  call h2o_properties_new(6,ieosd,pl,tl,dum1,istate,
+c     &                 dumb,value,dumc)
+                  call h2o_properties_new(4,3,pv,tl,dum1,istate,
      &                 dumb,value,dumc)
-
                endif    
                    rov = value(1)
+c gaz  120418                  
+                   ros = rov
                    drovt = value(2)
                    drovp = value(3)
                    env = value(4) + p_energy
+c gaz  120418                   
+                   ens = env
                    dhvt = value(5)
                    dhvp = value(6)
                    xvisv = value(7)
+                   vis = xvisv
                    dvisvt = value(8)
                    dvisvp = value(9)  
+                   dhvpc=-dhvp
+                   drovpc=-drovp
+                   dvvpc=-dvisvp
+                   
 c chain rule not needed for table (d/dp already includes)
-               if(ieosd.eq.2) then
-                drovt = 0.0
-                dhvt = 0.0
-                dvisvt = 0.0  
-               endif
+c gaz 120718 need to have d/dp                   
+c               if(ieosd.eq.2) then
+c                drovt = 0.0
+c                dhvt = 0.0
+c                dvisvt = 0.0  
+c               endif
           endif           
-c term needed for air pressure derivative
-c
-      dvvpc=-dvisvp
-c
 c gaz 111915
 c also changed pv_tol to 1.e-3
 c
@@ -2289,6 +2321,7 @@ c
 c modify derivatives for 2-phase
 c
       if(ieosd.eq.2) then
+c gaz 010519    dtpcs important for t as variable when ieosd = 2      
       dtpcs=1.0
 c gaz 10-18-2001 set condition to unattainable value
       if(ice .eq. -99) then
@@ -2430,10 +2463,11 @@ c
 c
 c accumulation terms
 c water balance
-c
       den=por*(sl*rol*(1.0-xnl)+sv*rov*(1.0-xnv))
+c energy balance      
       eqdum=sl*rol*enl+sv*rov*env-pl
       dene=((1.-por)*cp*tl+por*eqdum)
+c air balance      
       denc=por*(sl*rol*xnl+sv*rov*xnv)
 c
 c       production of steam
@@ -2443,17 +2477,17 @@ c
 c
 c       derivatives of accumulation terms
 c
-c water balance
+c pressure derivatives
         rop=por*(sv*drovp*(1.0-xnv)+sl*drolp*(1.0-xnl))    
         damp =rop*dtin + por*(sv*rov*(-dxnvp)
-     &  +sl*rol*(-dxnlp))*dtin  
-c gaz 081917        
-        daep =((1.d0-por)*(dur_dt*dtps)+
+     &  +sl*rol*(-dxnlp))*dtin     
+c 011219     replace dtdp with 0.   
+        daep =((1.d0-por)*(dur_dt*0.0)+
      &   por*(sv*drovp*env+sv*rov*dhvp+
      &   sl*drolp*enl+sl*rol*dhlp)-por)*dtin
         dacp =(por*(sv*drovp*xnv+sv*rov*dxnvp+sl*drolp*xnl+sl*rol
      &   *dxnlp))*dtin
-c water balance     
+c saturation derivatives    
         damh =por*dtin*((rol*(1.0-xnl)-rov*(1.0-xnv))
      &  +(sl*drolt*(1.0-xnl)+sv*drovt*(1.0-xnv))
      &  +(-sl*rol*dxnlt-sv*rov*dxnvt))
@@ -2463,11 +2497,10 @@ c water balance
         dach =por*dtin*((rol*xnl-rov*xnv)
      &  +(sl*drolt*xnl+sv*drovt*xnv)
      &  +(sl*rol*dxnlt+sv*rov*dxnvt))
-c water balance  
-c gaz 081917        
+c temperature derivatives          
         ropc=por*(sv*drovpc*(1.0-xnv)+sl*drolpc*(1.0-xnl))
         dampc =ropc*dtin+por*(sv*rov*(-dxnvpc)+sl*rol*(-dxnlpc))*dtin
-        daepc =((1.d0-por)*(cp*dtpcs+dcp_dt*tl*dtpcs)+
+        daepc =((1.d0-por)*(dur_dt*dtpcs)+
      &   por*(sv*drovpc*env+sv*rov*dhvpc+
      &   sl*drolpc*enl+sl*rol*dhlpc))*dtin
         dacpc =por*(sv*drovpc*xnv+sv*rov*dxnvpc

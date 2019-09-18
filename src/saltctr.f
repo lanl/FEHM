@@ -662,7 +662,9 @@ c
              pnx(i)  = pnx_old(i)*(1.0d0-permavg_salt) + 
      &                 pnx_new*permavg_salt
              pny(i)  = pnx(i)
-             pnz(i)  = pnx(i)         
+             pnz(i)  = pnx(i)  
+c pjjohnson edit july 2018             
+             pjk(i)  = pnx(i)             
           enddo
         endif
 c
@@ -1017,6 +1019,7 @@ c if k0f(i) the in-place perms will be used
                pnx(i) = k0f(i)*exp(bkf(i)*(ps(i)-por0f(i)))
                pny(i) = pnx(i)
                pnz(i) = pnx(i)
+               pjk(i) = pnx(i) 
              endif
             enddo           
         elseif(iflg.eq.2) then

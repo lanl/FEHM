@@ -457,7 +457,12 @@ c
       dtin=1.0/dtot
 c     
 c     generate coef and derivatives
-c     
+c gaz 071819  
+c     save some source terms if iad = 0
+c
+c      if(iad.eq.0) then
+c       call source_manage(0)
+c      endif
       ifree1 = 0 
       do 100 mid=1,neq
          mi=mid+ndummy
@@ -677,25 +682,37 @@ c     ===Seepage face condition for air and water
             permsd=abs(wellim(mi))
             permsdv = permsd*seep_facv
             permsdl = permsd*seep_facl
-            watterm= xrl*permsdl
-            airterm= xrv*permsdv
+c gaz debug 081119            
+c            watterm= xrl*permsdl
+c            airterm= xrv*permsdv
+            watterm= sl*permsdl
+            airterm= (1.0-sl)*permsdv            
             pflow(mi) = crl(4,1)
             pdifa = pl-pflow(mi)
 c     
             pdifw = pl-pflow(mi)
             if(pdifw.gt.0.0) then
                qwdis = watterm*pdifw
-c     
-               dqws = drl*permsdl*pdifw 
-               dqwp = drlp*permsdl*pdifw + watterm 
+c  gaz debug  081119      
+c               dqws = drl*permsdl*pdifw 
+c               dqwp = drlp*permsdl*pdifw + watterm 
+c  
+               dqws = permsdl*pdifw 
+               dqwp = watterm                
             else
                qwdis = 0.0
                dqws = 0.0
                dqwp = 0.0
             endif
-            qadis = airterm*(pdifa) 
-            dqas = drv*permsdv*pdifa
-            dqap = drvp*permsdv*pdifa + airterm
+            if(jswitch.eq.0) then
+             qadis = airterm*(pdifa) 
+             dqas = -1.0*permsdv*pdifa
+             dqap =  airterm
+            else
+             qadis = 0.0d0
+             dqas = 0.0d0
+             dqap = 0.0d0                
+            endif
 
 
          else if(kq.eq.-3.and.ifree.ne.0) then
@@ -717,7 +734,7 @@ c     permsd= qc(mi)/wellim(mi)
             else
 	       qwdis = 0.0
 	       dqws = 0.0
-               dqwp = 0.0
+             dqwp = 0.0
             endif
 
 
@@ -748,7 +765,34 @@ c            permsd=abs(wellim(mi))
              dqwp = 0.0
             endif
             
-         else if(kq.eq.-5.and.ifree.ne.0) then
+        else if(kq.eq.-4.and.ifree.eq.0) then
+c gaz 081219
+c     Seepage face uz and rich eq
+c     fully saturated only
+c     based on average cell pressure
+c     permsd= qc(mi)/wellim(mi)
+c            permsd=abs(wellim(mi))
+            if(igrav.eq.2) then
+             permsd = pnx(mi)*sx1(mi)**0.3333
+            elseif(igrav.eq.3) then
+             permsd = max(pnx(mi),pny(mi))*sx1(mi)**0.3333
+            endif
+            permsdl = permsd*seep_facl*esk(mi) 
+c gaz 081219             
+c            plow = crl(4,1)
+            plow = pflow(mi)            
+            watterm = permsdl
+            pdifw = pwl-plow
+            if(pdifw.ge.0.0d0.and.sl.ge.1.0) then
+               qwdis = watterm*pdifw
+               dqws = 0.0
+               dqwp = watterm
+            else
+	       qwdis = 0.0
+	       dqws = 0.0
+             dqwp = 0.0
+            endif
+            else if(kq.eq.-5.and.ifree.ne.0) then
 c     Seepage face for simpliflied water table
 c     when cell is just wet
 c     
@@ -1119,8 +1163,13 @@ c
              pflow(mi)=phi(mi) - sk(mi)/permsd
             endif
         endif      
- 100  continue
-      
+ 100        continue
+c gaz 071819
+c call routine to limit source change magitude
+c  
+c      call source_manage(1)
+c      call source_manage(2)
+c      
       if(allocated(s0)) then
          deallocate(s0,pcp0,dpcps0,rlf0)
          deallocate(drlfs0,rvf0,drvfs0)       
@@ -1133,4 +1182,32 @@ c
       enddo
 
       return
+      end
+      subroutine source_manage(iflg)
+      use comai
+      use comdi
+      implicit none
+      integer iflg, i
+      real*8 ratio, rat_tol      
+      if(iflg.eq.0) then
+c allocate space          
+c save last step source    
+       if(.not.allocated(sko)) allocate(sko(n))
+       sko = sk
+       elseif(iflg.eq.1) then
+c limit max change in sk
+        source_ratio_in = 5
+        source_ratio_out = 2
+        do i = 1, n
+         if(sk(i).ne.0.0d0) then
+          ratio = max(abs(sk(i))/abs(sko(i)+rat_tol),1.0)
+          if(sk(i).gt.0.0) ratio = min(source_ratio_out,ratio)
+          if(sk(i).lt.0.0) ratio = min(source_ratio_in,ratio)
+          sk(i) = ratio*sk(i)
+         endif
+        enddo
+
+       elseif(iflg.eq.2) then
+c        deallocate(sko)
+      endif
       end

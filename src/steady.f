@@ -214,11 +214,13 @@ C***********************************************************************
 
       integer i, iflg, itt
       real*8 divisor, divisore, inflow, inflowe, btol_save, tolde_save
+      real*8 flow_max, ratio2, balfac1, balfac2, balfac3, balfac12
+      real*8 balfac13, tol_divisor, tmch1_min, tmch1_max
       character*20 dummy
       logical null1
+      parameter (tol_divisor= 1.d-8)
 
       if(isteady.eq.0) return
-
       if(iflg .eq. 0) then
 c     Reading steady input parameters
          toldh = tolerance
@@ -228,14 +230,17 @@ c     Reading steady input parameters
          toldc = tolerance
          tolde = tolerance
          tacc = tolerance
+         tol_str = tolerance
          spercent = .false.
          divisor = 1.
          divisore = 1.
          smult = 1.
          sday = 0.
          shtl = 0.0
+         sdmx = 0.0
          stmch = 0.0
          balance_tol = tolerance
+         tmch_old = 1.d20
          svar_flag = .false.
          sflux_flag = .false.
          info_string = 'absolute difference'
@@ -287,6 +292,8 @@ c     Reading steady input parameters
                read (wdd1, *) dummy, smult
             case('sday')
                read (wdd1, *) dummy, sday
+            case('sdmx')
+               read (wdd1, *) dummy, sdmx               
             case('snst')
                read (wdd1, *) dummy, snstep
             case('smst')
@@ -297,6 +304,12 @@ c     Reading steady input parameters
                read (wdd1, *) dummy, tacc
             case('stmc')
                read (wdd1, *) dummy, stmch
+            case('smas')
+               read (wdd1, *) dummy, smass  
+            case('tstr')
+               read (wdd1, *) dummy, tol_str                 
+            case('stss')
+               read (wdd1, *) dummy, stsstr                
             case('sper')
                spercent = .true.
                info_string = 'fractional change'
@@ -304,18 +317,22 @@ c     Reading steady input parameters
          end do
       
       else if(iflg.eq.-1) then
-c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
-         tims_trans = tims
-         daymax_save = daymax
-         tims = time_ss
-         daymax = tims
+c 'steady macro overrides usual stopping time tims (gaz 032405)
+       tims_trans = tims
+       daymax_save = daymax
+       tims = time_ss
+       if(sdmx.gt.0.0) then
+        daymax = sdmx
+       else 
+        daymax = tims
+       endif
 	 daycs_save=daycs
 	 daycf_save=daycf
 	 dayhf_save=dayhf
 	 dayhs_save=dayhs 
-         dayhf = 1.d50
+       dayhf = 1.d50
 	 dayhs = 1.d50
-         daycs = 1.d50
+       daycs = 1.d50
 	 day_save_ss = day
          if (sday .ne. 0) day = sday
          if (shtl .ne. 0.0) shtl0 = head_tol
@@ -328,6 +345,8 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
       else if(iflg.eq.1) then
         divisor = 1.
         divisore = 1.
+        i_pdiff = 0
+        pmax_i = 0.
          if (svar_flag) then
             isteady=-1
          else
@@ -337,6 +356,7 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
          if(irdof.eq.13) then
             pdifmax = 0.0
             accmax = 0.0
+            accdif_i = 0
             do i = 1, n
                if (spercent) then
                   if (pho(i) .ne. 0.) then
@@ -348,7 +368,12 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
                   end if
                end if
                pdifmax = max(abs((phi(i)-pho(i))/divisor),pdifmax)
-               accmax = max(abs(deni(i)*sx1(i)),accmax) 
+c 082319 gaz                
+               accdif_i = abs((deni(i)*sx1(i))*dtot)
+               if(accdif_i.gt.accmax) then
+                i_accdif = i
+                accmax = accdif_i
+               endif  
             end do
             if(pdifmax.gt.toldp) go to 100 
             if(accmax.gt.tacc) go to 100     
@@ -356,6 +381,10 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
             pdifmax = 0.0
             sdifmax = 0.0
             accmax = 0.0
+            amass = 0.0
+            i_pdiff = 0
+            i_sdiff = 0
+            i_accdif = 0
             do i = 1, n
                if (spercent) then
                   if (pho(i) .ne. 0) then
@@ -366,19 +395,39 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
                      divisor = 1.
                   end if
                end if
-               pdifmax = max(abs((phi(i)-pho(i))/divisor),pdifmax)
+               pdiff_i = abs((phi(i)-pho(i))/divisor)
+               if(pdiff_i.gt.pdifmax) then
+                i_pdiff = i
+                pmax_i = phi(i)
+                pmax_io = pho(i)
+                pdifmax = pdiff_i
+               endif
                if (spercent) then
-                  if (so(i) .ne. 0) then
-                     divisor = so(i)
-                  else if (s(i) .ne. 0) then
-                     divisor = s(i)
-                  else
                      divisor = 1.
-                  end if
                end if
-               sdifmax = max(abs((s(i)-so(i))/divisor),sdifmax) 
-               accmax = max(abs(deni(i)*sx1(i)),accmax)   
+               sdiff_i = abs((s(i)-so(i))/1.)
+               if(sdiff_i.gt.sdifmax) then
+                i_sdiff = i
+                smax_i = s(i)
+                smax_io = so(i)
+                sdifmax = sdiff_i
+               endif 
+c 082319 gaz                
+               accdif_i = abs((deni(i)*sx1(i))*dtot)
+               if(accdif_i.gt.accmax) then
+                i_accdif = i
+                accmax = accdif_i
+               endif                
+            amass = amass + denh(i) * volume(i)
             end do
+            if(l.eq.1) then
+             amass0 = am0
+             amass_ch =(amass-amass0)
+             amass0 = amass
+            else
+             amass_ch =(amass-amass0)
+             amass0 = amass
+            endif
             if(pdifmax.gt.toldp) go to 100
             if(sdifmax.gt.tolds) go to 100 
             if(accmax.gt.tacc) go to 100   
@@ -386,7 +435,9 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
             pdifmax = 0.0
             sdifmax = 0.0
             tdifmax = 0.0
+            i_accdif = 0
             accmax = 0.0
+            amass = 0
             do i = 1, n
                if (spercent) then
                   if (pho(i) .ne. 0.) then
@@ -399,15 +450,9 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
                end if
                pdifmax = max(abs((phi(i)-pho(i))/divisor),pdifmax) 
                if (spercent) then
-                  if (so(i) .ne. 0.) then
-                     divisor = so(i)
-                  else if (s(i) .ne. 0.) then
-                     divisor = s(i)
-                  else
                      divisor = 1.
-                  end if
                end if
-               sdifmax = max(abs((s(i)-so(i))/divisor),sdifmax)   
+               sdifmax = max(abs((s(i)-so(i))/1.),sdifmax)   
                if (spercent) then
                   if (to(i) .ne. 0.) then
                      divisor = to(i)
@@ -418,8 +463,22 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
                   end if
                end if
                tdifmax = max(abs((t(i)-to(i))/divisor),tdifmax)
-               accmax = max(abs(deni(i)*sx1(i)),accmax) 
+c 082319 gaz                
+               accdif_i = abs((deni(i)*sx1(i))*dtot)
+               if(accdif_i.gt.accmax) then
+                i_accdif = i
+                accmax = accdif_i
+               endif                
+              amass = amass + denh(i) * volume(i)
             end do
+            if(l.eq.1) then
+             amass0 = am0
+             amass_ch =(amass-amass0)
+             amass0 = amass
+            else
+             amass_ch =(amass-amass0)
+             amass0 = amass
+            endif
             if(pdifmax.gt.toldp) go to 100   
             if(sdifmax.gt.tolds) go to 100   
             if(tdifmax.gt.toldt) go to 100  
@@ -442,15 +501,9 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
                end if
                pdifmax = max(abs((phi(i)-pho(i))/divisor),pdifmax) 
                if (spercent) then
-                  if (so(i) .ne. 0.) then
-                     divisor = so(i)
-                  else if (s(i) .ne. 0.) then
-                     divisor = s(i)
-                  else
                      divisor = 1.
-                  end if
                end if
-               sdifmax = max(abs((s(i)-so(i))/divisor),sdifmax)   
+               sdifmax = max(abs((s(i)-so(i))/1.),sdifmax)   
                if (spercent) then
                   if (to(i) .ne. 0.) then
                      divisor = to(i)
@@ -514,8 +567,9 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
                   divisor = 1.
                end if
             else
-               divisor = day*8.64e4
+                divisor = day*8.64e4
             end if
+c gaz 082819 always go through flowrate adjustment of tmch            
             flow_rate = (abs(inflow) - abs(qtoti))/divisor
             if(abs(flow_rate) .le. balance_tol) then
                if(isteady.eq.-1)then 
@@ -524,19 +578,66 @@ c     'stea'dy macro overrides usual stopping time tims (gaz 032405)
                   isteady = 2
                   itt = 0
                endif
-            else
+            endif   
+
                if (shtl.ne.0) then
-                  ratio = max(1.0d0,abs(flow_rate/balance_tol))
-                  head_tol = min(ratio*shtl0,shtl)
+c gaz 082619                   
+c                  ratio = max(1.0d0,abs(flow_rate/balance_tol))
+c                  head_tol = min(ratio*shtl0,shtl)
+                   ratio = 1. 
+                   head_tol = min(ratio*shtl0,shtl)
                endif
                if (stmch.ne.0) then
-                  ratio = max(1.0d0,abs(flow_rate/balance_tol))
-                  tmch1 = min(ratio*stmch0,stmch)
-                  ratio = sqrt(tims/days)
-                  tmch2 = min(ratio*stmch0,stmch)
-                  tmch = min(tmch1,tmch2)
+                  flow_max = abs(flow_rate)
+c                  ratio = flow_max/balance_tol
+                  balfac13 = 1.5*balance_tol
+                  balfac12 = 2.*balance_tol
+                  balfac1 = 4*balance_tol
+                  balfac2 = 100.*balance_tol
+                  balfac3 = 1000.*balance_tol
+                  if(flow_max.gt.balfac3.or
+     &                   .days.lt.tol_str) then
+                   tmch1 = 100.*stmch0
+          write(ierr,*) 'balfac3 flow_max ', flow_max,' tmch1 ',tmch1
+                  else if(flow_max.gt.balfac2) then
+                   tmch1_min = 50.*stmch0
+                   tmch1_max = 100.*stmch0
+                   tmch1 = ((tmch1_max-tmch1_min)/(balfac3 -balfac2))*
+     &               flow_max + tmch1_min
+          write(ierr,*) 'balfac2 flow_max ', flow_max,' tmch1 ',tmch1     
+                  else if(flow_max.gt.balfac1) then 
+                   tmch1_min = 10.*stmch0
+                   tmch1_max = 50.*stmch0
+                   tmch1 = ((tmch1_max-tmch1_min)/(balfac2 -balfac1))*
+     &               flow_max + tmch1_min 
+          write(ierr,*) 'balfac2 flow_max ', flow_max,' tmch1 ',tmch1      
+                  else if(flow_max.gt.balfac12) then
+                   tmch1_min = 5.*stmch0
+                   tmch1_max = 10.*stmch0
+                   tmch1 = ((tmch1_max-tmch1_min)/(balfac1 -balfac12))*
+     &               flow_max + tmch1_min  
+          write(ierr,*) 'balfac12 flow_max ', flow_max,' tmch1 ',tmch1      
+                  else if(flow_max.gt.balfac13) then
+                   tmch1_min = 1.5*stmch0
+                   tmch1_max = 5.*stmch0
+                   tmch1 = ((tmch1_max-tmch1_min)/(balfac12 -balfac13))*
+     &               flow_max + tmch1_min 
+            write(ierr,*) 'balfac13 flow_max ', flow_max,' tmch1 ',tmch1       
+                  else if(flow_max.gt.balance_tol) then
+                   tmch1_min = stmch0
+                   tmch1_max = 1.5*stmch0
+                   tmch1=((tmch1_max-tmch1_min)/(balfac13-balance_tol))*
+     &               flow_max + tmch1_min   
+            write(ierr,*) 'bal_tol flow_max ', flow_max,' tmch1 ',tmch1       
+                  else                   
+                   tmch1 = stmch0                    
+                  endif 
+c gaz 080519 tolerance should decrease monotonically                     
+                  tmch = min(tmch1,tmch_old)   
+             write(ierr,*) ' tmch ', tmch,' tmch_old ',tmch_old   
+                  tmch_old = tmch  
                endif			 		 
-            endif
+c            endif
          else if(ico2.ge.0) then
             if (spercent) then
                if (qtoti .ne. 0) then
@@ -590,7 +691,7 @@ c     If we have reached steady state or reached our maximum
 c     time limit, make sure we output information
             if(itt .eq. 0) then
                if (iout .ne. 0) write(iout,50) days, trim(info_string)
-               if(iptty.ne.0) write(iptty,50) days, trim(info_string)
+               if(iptty.ne.0) write(iptty,50) days, trim(info_string) 
             else
                if (iout .ne. 0) then
                   write (iout, 52) snstep, time_ss, days
@@ -651,6 +752,9 @@ c     time limit, make sure we output information
  54   format(/,'>>>>> Time control information <<<<<',/,1p,
      &     'Max timesteps: ', i6, ' Specified Time: ',
      &     g15.6,' Simulated Time: ',g15.6, /)
+ 56   format('>>>>> Total Mass ',1x,1p,g15.6
+     &     'Max timesteps: ', i6, ' Specified Time: ',
+     &     g15.6,' Simulated Time: ',g15.6, /)   
 
       contains 
 
@@ -663,18 +767,28 @@ c     time limit, make sure we output information
      &        write (iout, 41) trim(info_string)
          if (toldp .ne. tolerance)
      &        write(iout, 40) 'pressure', pdifmax, toldp
+         if (toldp .ne. tolerance. and. i_pdiff. ne. 0) 
+     &        write(iout, 43) i_pdiff, pmax_i, pmax_io,izonef(i_pdiff)
          if (toldh .ne. tolerance)
      &        write(iout, 40) 'head', hdifmax, toldh
          if (tolds .ne. tolerance)
      &        write(iout, 40) 'saturation', sdifmax, tolds
+         if (tolds .ne. tolerance. and. i_sdiff. ne. 0) 
+     &        write(iout, 44) i_sdiff, smax_i, smax_io, izonef(i_sdiff)         
          if (toldt .ne. tolerance)
      &        write(iout, 40) 'temperature', tdifmax, toldt
-         if (toldc .ne. tolerance)
-     &        write(iout, 40) 'air pressure', pcidifmax, toldc
+         if (tacc .ne. tolerance)
+     &        write(iout, 40) 'nodal mass', accmax, tacc
+         if (tacc .ne. tolerance. and. i_accdif. ne. 0) 
+     &    write(iout,45)i_accdif,accmax/(sx1(i_accdif)*denh(i_accdif)),
+     &            amass_ch,izonef(i_accdif)         
+         if (toldc .ne. tolerance)         
+     &        write(iout, 40) 'air pressure', pcidifmax, toldc         
          if (balance_tol .ne. tolerance) write(iout, 40) 
      &        'flow balance (IN-OUT)', flow_rate, balance_tol
          if (tolde .ne. tolerance) write(iout, 40) 
      &        'enthalpy balance (IN-OUT)', enth_rate, tolde
+            write(iout,42) tmch
          if (isty .ne. 0) write(iout,51)
       end if
       if(iptty.ne.0) then
@@ -682,24 +796,43 @@ c     time limit, make sure we output information
      &        write (iptty, 41) trim(info_string)
          if (toldp .ne. tolerance)
      &        write(iptty, 40) 'pressure', pdifmax, toldp
+         if (toldp .ne. tolerance. and. i_pdiff. ne. 0) 
+     &        write(iptty, 43) i_pdiff, pmax_i, pmax_io, izonef(i_pdiff)
          if (toldh .ne. tolerance)
      &        write(iptty, 40) 'head', hdifmax, toldh
          if (tolds .ne. tolerance)
      &        write(iptty, 40) 'saturation', sdifmax, tolds
-         if (toldt .ne. tolerance)
+         if (tolds .ne. tolerance. and. i_sdiff. ne. 0) 
+     &        write(iptty, 44) i_sdiff, smax_i, smax_io, izonef(i_sdiff) 
+         if (toldt .ne. tolerance)         
      &        write(iptty, 40) 'temperature', tdifmax, toldt
+         if (tacc .ne. tolerance)
+     &        write(iptty, 40) 'nodal mass', accmax, tacc
+         if (tacc .ne. tolerance. and. i_accdif. ne. 0) 
+     &    write(iptty,45)i_accdif,accmax/(sx1(i_accdif)*denh(i_accdif)),
+     &            amass_ch,izonef(i_accdif)         
          if (toldc .ne. tolerance)
      &        write(iptty, 40) 'air pressure', pcidifmax, toldc
          if (balance_tol .ne. tolerance) write(iptty, 40) 
      &        'flow balance (IN-OUT)', flow_rate, balance_tol
          if (tolde .ne. tolerance) write(iptty, 40) 
      &        'enthalpy balance (IN-OUT)', enth_rate, tolde
+         write(iptty,42) tmch
          if (isty .ne. 0) write(iptty,51)
       endif 
       
  40   format ('>>>>> Max change in ', a, 1pg12.4, ' tolerance',
      &     1pg12.4, ' <<<<<')
+ 43   format ('>>>>> Gridblock Max Pres change ',i8,
+     &     ' Pres(new) ',1p,g12.4,' Pres(old) ',g12.4,
+     &      ' Zone ',i6,' <<<<<')
+ 44   format ('>>>>> Gridblock Max Sat change ',i8,
+     &     ' Sat(new) ',1p,g12.4,' Sat(old) ',g12.4,
+     &     ' Zone ',i6,' <<<<<')
+  45  format ('>>>>> Gridblock Max Mass change ',i8,' Frac change ',1p, 
+     &       g12.4,' Total Mass change ',g14.6,' Zone ',i6,' <<<<<')     
  41   format (/, '>>>>> Steady state check (', a, ') <<<<<')
+ 42   format ('>>>>> Equation tolerance (',1p,g12.4, ') <<<<<')    
  51   format(/,'>>>>> Starting transient with steady solution <<<<<',/)
      
       end subroutine write_steady_state

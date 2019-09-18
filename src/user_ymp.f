@@ -145,6 +145,20 @@ c      integer, allocatable :: elem_temp(:,:)
       real*8, allocatable :: water(:)
       real*8, allocatable :: x_wt(:),y_wt(:)
       character*80 dum_user
+c gaz 041219 - 043019     
+      integer nblk, izone_recharge, izone_num1, izone_num2, idir_zone
+      integer ifile4, max_lines, izone_num0, num_rech_blks, kb_model
+      integer, allocatable :: izone_node(:)
+      real*8, allocatable :: area_surface(:)
+      integer, allocatable :: node_surface(:)
+      real*8 recharge1, recharge2, area_total, volume_total
+      real*8 por_air, por_tbu, por_wlt, por_cddl
+      real*8 area_tbu, area_wlt, area_cddl
+      character*200 wdd1_t,file_zone1,file_area1,file_area2
+      character*200 file_node1, file_node2, file_recharge_out
+      character*8 macro
+      logical approx
+      
       character*80 water_file, above_wt_file, outside_zone_file
       logical matrix_node, null1, xy, ex
 
@@ -544,7 +558,7 @@ c     top boundary side node with new coords reflecting new model
      &                 head_val-pnz(i3),sqrt(dumx) 
                endif
             enddo
- 876        format('base',i6,' new node ',i8,' x ',g13.7,' y ',g13.7,
+ 876        format('base',i6,' new node ',i8,' x ',g15.7,' y ',g13.7,
      &           ' z ',g13.7,' diff ',g13.5)      
  877        format(3(1x,i7),3(1x,g14.7),' # diff ',2g12.4)
             write(ifile1,'(a4)') '    '
@@ -1638,7 +1652,7 @@ c     loop on tracer
           xm2 = xm*xm
           xm3 = xm2*xm
           write(99,786) and,ms,xf
-786       format('concentration = ',5(1x,g15.10))
+786       format('concentration = ',5(1x,f15.8))
 787       format(3(1x,g20.10)) 
 c     loop on temperture
          isalt = 1
@@ -1829,5 +1843,361 @@ c
         close(99)
         stop
       endif
+      case(-913)
+c george zyvoloski 041319 (NEPTUNE PROJECT)          
+c will add read voronoi areas - apply flowrates  
+c make sure to close files          
+       if(l.eq.1) then
+c open  files for recharge (recharge.files)
+          ex = .false.
+          inquire(file = 'recharge.files', exist = ex) 
+          if(ex) then
+            ifile1 = open_file('recharge.files','old')  
+699         read (ifile1, '(a200)',end=988) wdd1_t          
+            if (wdd1_t(1:1) .eq. '#') go to 699
+            read (wdd1_t, '(a4)') macro
+            if (macro(1:4) .eq. 'stop') then
+              go to 788
+            elseif (macro(1:4) .eq. 'nblk') then
+               read (wdd1_t(5:200), *) nblk
+               allocate(node_a(nblk))
+            elseif (macro(1:4) .eq. 'rech') then
+               read(ifile1,*) recharge1, file_zone1
+               ex = .false.
+               inquire(file = file_zone1, exist = ex)   
+               if(ex) then
+                ifile2= open_file(file_zone1,'old')
+               else
+                 write(iout,239) 
+                 stop
+               endif
+698            read (ifile2, '(a200)',end=988) wdd1_t 
+               if (wdd1_t(1:1) .eq. '#') go to 698
+               if (wdd1_t(1:3) .eq. 'zon') then
+                read(ifile2,*) izone_recharge
+                read(ifile2,'(a)',end=988) wdd1_t(1:4)
+                if(wdd1_t(1:4).ne.'nnum') then
+                 write(iout,240)
+                 stop
+                endif
+               endif
+               read(ifile2,*) num_rech_blks
+               allocate(izone_node(num_rech_blks))
+               read(ifile2,*) (izone_node(i), i =1, num_rech_blks)
+            elseif (macro(1:4) .eq. 'area') then  
+c just read "outside top  areas and nodes
+c file_area1 is usually the LaGrit outside zone file 
+c izone_num1 is the zone number in  file_area1 that is the top  
+             read(ifile1,'(a)') wdd1_t(1:6)   
+             if(wdd1_t(1:6).eq.'approx') then
+              approx = .true.
+              go to 699
+             else 
+              approx = .false.
+              backspace ifile1
+             endif
+             read (ifile1,'(a)') file_area1
+             ex = .false.
+             inquire(file = file_area1, exist = ex)
+             if(ex) then
+              ifile2= open_file(file_area1,'old')
+             else
+              if(iout.ne.0) write(iout,239) 
+             endif
+             read (ifile1,*) izone_num1
+             max_lines = 2*nblk
+             do i = 1, max_lines
+              read(ifile2,'(a4)') dum_user(1:4)
+              if(dum_user(1:4).eq.'nnum') then
+               backspace ifile2 
+               backspace ifile2
+               read(ifile2,*) izone_num0
+               if(izone_num0.eq.izone_num1) then
+                read(ifile2,*) dum_user(1:4)
+                read(ifile2,*) idummy
+                  read(ifile2,*)(node_a(j), j=1, idummy) 
+                go to 766
+               else 
+                read(ifile2,*) dum_user(1:4)
+                read(ifile2,*) dum_user(1:4)
+                read(ifile2,*) dum_user(1:4)                  
+               endif
+              endif
+             enddo
+766    continue             
+c file_area2 is usually the LaGrit outside voronoi area file 
+c izone_num1 is the zone number in  file_area2 that is the top 
+c idir_zone in the direction of recharge for file_area2. usually=3    
+c
+             read (ifile1,'(a)') file_area2
+             ex = .false.
+             inquire(file = file_area2, exist = ex)
+             if(ex) then
+              ifile3= open_file(file_area2,'old')
+             else
+              if(iout.ne.0) then
+               write(iout,239) 
+              endif             
+             endif   
+            read (ifile1,*) izone_num2, idir_zone 
+             allocate(temp2(nblk,3))
+             do i = 1, max_lines
+              read(ifile3,'(a4)') dum_user(1:4)
+              if(dum_user(1:4).eq.'nnum') then
+               backspace ifile3 
+               backspace ifile3
+               read(ifile3,*) izone_num0
+               if(izone_num0.eq.izone_num2) then
+                read(ifile3,*) dum_user(1:4)
+                read(ifile3,*) idummy
+                 read(ifile3,*)
+     &            (temp2(j,1),temp2(j,2),temp2(j,3), j=1, idummy)
+                go to 767
+               else 
+                read(ifile3,*) dum_user(1:4)
+                read(ifile3,*) dum_user(1:4)
+                read(ifile3,*) dum_user(1:4)                  
+               endif
+              endif
+             enddo
+767          continue  
+   
+c             
+       else if(macro(1:4).eq.'outp') then
+c
+c merge data and write as FEHM file
+c assume recharge (recharge1) is m/yr converted to kg/sec
+c yr/sec= 3.170979e-8,recharge2= (kg/sec)/area 
+        recharge2 = recharge1*3.170979e-8*997.
+        read (ifile1,'(a)') file_recharge_out
+        ifile4= open_file(file_recharge_out,'unknown')
+c first fill in array (nblk-sized) of surface grid blocks and surface areas  
+c    
+        allocate (area_surface(nblk))
+        area_surface = 0.0d0
+        allocate (sk_save(nblk))
+        sk_save = 0.0d0
+        area_total = 0.0
+c       if(approx.eq..false.) then
+        if(approx.eqv..false.) then
+c area obtained from outside zone list and outside_vor.area            
+        write(ierr,*) '>>>>> top outside zone >>>>> ',izone_num2
+        do j = 1, idummy
+          i = node_a(j)
+          area_surface(i) = temp2(j,idir_zone)
+          area_total = area_total + area_surface(i)
+         write(ierr,'(a7,i8,a2,g12.3,a6,3g16.6)')'node_o ', i ,' area ',
+     &   area_surface(i),' x y z = ', (cord(i,i1), i1 = 1,3) 
+        enddo
+        write(ierr,242) izone_num2, area_total
+        write(ierr,*)
+        write(ierr,*)  'analysis of zone ', izone_num0
+        else
+c area obtained from gridblock volume and gridblock thickness
+         do j = 1, num_rech_blks
+          i = izone_node(j)
+          area_surface(i) = volume(i)/dzrg(i)
+          area_total = area_total + area_surface(i)
+         enddo
+        endif
+
+       iii = 0
+       area_total =0.0
+       do j = 1, num_rech_blks
+        i = izone_node(j)
+        sk_save(i) = -recharge2*area_surface(i)
+        if(sk_save(i).ne.0.0) iii = iii+1
+        write(ierr,'(a7,i8,a2,g12.3,a6,3g16.6)') 'node_r ', i ,' area ',
+     &   area_surface(i),' x y z = ', (cord(i,i1), i1 = 1,3)   
+         area_total = area_total + area_surface(i)
+       enddo
+       write (ierr,*) 'non zero sources ', iii,' area_tot',
+     &  area_total
+c
+c  write FEHM flow macro
+
+c 
+       write(ifile4,*) 'flow  ',
+     &   '    # created from Aaron Bandler analysis'
+       do j = 1, num_rech_blks
+        i = izone_node(j)
+        write(ifile4,241) i,i,1,sk_save(i),1.0,0.0
+       enddo
+       write(ifile4,'(a4)') '    '
+       close(ifile4)
+       endif
+       go to 699
+788    if(iout.ne.0) then
+        write(iout,238) 
+c        close(ifile1) 
+c        close(ifile2)
+c        close(ifile3)
+c        close(ifile4)
+        stop
+       endif 
+       
+988    continue
+       if(iout.ne.0) write(iout,*) 
+     &     'EOF found recharge.files (user -913)'
+       stop
+238    format ('stop record found in recharge.files',
+     &          ', ending recharge calcs')
+239   format('recharge.files is missing, stopping')
+240   format('zone recharge file wrong format(need nnum), stopping')
+241   format(1x,i8,1x,i8,1x,i4,1x,g14.5,1x,f8.2,1x,g10.2)    
+242   format('voronoi zone number ', i5, ' total_area ', 1p, g14.5)      
+      endif
+      endif
+      case(-914)
+c george zyvoloski 043019 (NEPTUNE PROJECT)          
+c create new air zone that 
+c make sure to close files 
+       if(l.eq.1) then
+       if(iout.ne.0) write(iout,*) '>>>>>> starting  user -914 '
+       if(iptty.ne.0) write(iptty,*) '>>>>> starting user -914 '           
+       por_air = 5.55d-5
+       iii = 0
+       ii = 0
+       i3 = 0      
+       allocate(node_a(n))
+       allocate(node_b(n))
+       allocate(izone_node(n))
+       node_a = 0
+       node_b = 0
+       izone_node = 0
+        do i = 1,n
+          if(abs(ps(i)-por_air).le.1.d-8) then
+           if(ka(i).ne.0) then
+            i3 = i3 +1    
+            node_b(i3) = i
+            write(ierr,'(a17,1x,i8,1p,3(1x,g14.4))') 
+     &         'flow bc in air nodes', i, sk(i), pflow(i), wellim(i)
+           else
+             iii = iii+ 1   
+             izone_node(iii) = i
+              i1 = nelm(i)+1
+              i2 = nelm(i+1)
+              do j = i1,i2
+               kb = nelm(j)
+               if(ps(kb).ne.por_air) then
+                ii = ii +1
+                node_a(ii) = i
+                go to 261
+               endif
+              enddo
+           endif
+          endif
+261     continue        
+        enddo
+c write files for air zones 
+       ifile1 = open_file('air_total_401_gaz.zonn','unknown')   
+       ifile2 = open_file('air_near_402_gaz.zonn','unknown') 
+       ifile3 = open_file('air_src_403_gaz.zonn','unknown')   
+       write(ifile1,*) 'zonn'
+       write(ifile1,*) ' 401'
+       write(ifile1,*) 'nnum'
+       write(ifile1,'(i9)') iii
+       write(ifile1,'(10(1x,i9))') (izone_node(i), i = 1, iii)
+       write(ifile1,*) '    '
+       close(ifile1)
+       write(ifile2,*) 'zonn'
+       write(ifile2,*) ' 402'
+       write(ifile2,*) 'nnum'
+       write(ifile2,'(i9)') ii
+       write(ifile2,'(10(1x,i9))') (node_a(i), i = 1, ii)
+       write(ifile2,*) '    '
+       close(ifile2)
+       write(ifile3,*) 'zonn'
+       write(ifile3,*) ' 403'
+       write(ifile3,*) 'nnum'
+       write(ifile3,'(i9)') i3
+       write(ifile3,'(10(1x,i9))') (node_b(i), i = 1, i3)
+       write(ifile3,*) '    '
+       close(ifile3)
+c calculate nodes in air-model interface
+       node_a = 0
+       node_b = 0
+       izone_node = 0
+       if(.not.allocated(izone_awt)) allocate(izone_awt(n))
+       izone_awt =0
+       ii = 0
+        do i = 1,n
+          if(abs(ps(i)-por_air).le.1.d-8) then
+              i1 = nelm(i)+1
+              i2 = nelm(i+1)
+              do j = i1,i2
+               kb = nelm(j)
+               if(abs(ps(kb)-por_air).gt.1.d-8) then
+                izone_awt(kb) = izone_awt(kb) + 1
+                write(ierr,'(a17,1x,i7,1x,i7)') 'found model node ', kb,
+     &            izone_awt(kb)
+               endif
+              enddo
+           endif
+271        continue        
+        enddo
+c node_a() contains the rind (air-model interface)
+      write(ierr,*) ' air model interface contains nodes = ', ii
+       por_tbu = 0.11d0
+       por_wlt = 0.12d0
+       por_cddl = 0.223d0
+       i1 = 0
+       i2 = 0
+       i3 = 0
+       area_tbu = 0.0
+       area_wlt = 0.0
+       area_cddl = 0.0
+       do i = 1, n
+        j = izone_awt(i)
+        if(j.ne.0) then
+         if(abs(ps(i)-por_tbu).le.1.d-8) then
+          i1 = i1 +1
+          node_a(i1) = i
+          area_tbu =  area_tbu + volume(i)/dzrg(i)
+         else if(abs(ps(i)-por_wlt).le.1.d-8) then
+          i2 = i2 +1
+          node_b(i2) = i
+          area_wlt =  area_wlt + volume(i)/dzrg(i)
+         else if(abs(ps(i)-por_cddl).le.1.d-8) then
+          i3 = i3 +1
+          izone_node(i3) = i  
+          area_cddl =  area_cddl + volume(i)/dzrg(i)
+         endif
+        endif
+       enddo
+       write(ierr,*) 'node_tbu ', i1,' node_wlt ', i2,
+     &   ' node_cddl ', i3       
+       write(ierr,*) 'area_tbu ', area_tbu,' area_wlt ', area_wlt,
+     &   ' area_cddl ', area_cddl
+c write files for air zones 
+       ifile1 = open_file('tbu_rechg_gaz_222.zonn','unknown')   
+       ifile2 = open_file('wlt_rechg_gaz_221.zonn','unknown') 
+       ifile3 = open_file('cddl_rechg_gaz_223.zonn','unknown')   
+       write(ifile1,'(a)') 'zonn'
+       write(ifile1,'(a)') ' 222'
+       write(ifile1,'(a)') 'nnum'
+       write(ifile1,'(i9)') i1
+       write(ifile1,'(10(1x,i9))') (node_a(i), i = 1, i1)
+       write(ifile1,'(a)') '    '
+       close(ifile1)
+       write(ifile2,'(a)') 'zonn'
+       write(ifile2,'(a)') ' 221'
+       write(ifile2,'(a)') 'nnum'
+       write(ifile2,'(i9)') i2
+       write(ifile2,'(10(1x,i9))') (node_b(i), i = 1, i2)
+       write(ifile2,'(a)') '    '
+       close(ifile2)
+       write(ifile3,'(a)') 'zonn'
+       write(ifile3,'(a)') ' 223'
+       write(ifile3,'(a)') 'nnum'
+       write(ifile3,'(i9)') i3
+       write(ifile3,'(10(1x,i9))') (izone_node(i), i = 1, i3)
+       write(ifile3,'(a)') '    '
+       close(ifile3)       
+       endif
+c l = 0 ifblock ends
+       if(iout.ne.0) write(iout,*) '>>>>>> stopping user -914 '
+       if(iptty.ne.0) write(iptty,*) '>>>>> stopping user -914 '
+       stop
       end select
       end

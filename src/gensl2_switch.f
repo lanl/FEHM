@@ -369,6 +369,7 @@ c
          ibp_max = 0
          bp_max = 0.0
          do id=1,neq
+c gaz_test 080819             
             np=nelmdg(id)
             i1=nelm(id)+1
             i2=nelm(id+1)
@@ -378,14 +379,17 @@ c             if(apiv.lt.1.e-6) pause
                ij=nelm(ijj)
                aij=a(ijj-neqp1+nmat(1))/apiv
                a(ijj-neqp1)=aij
-            enddo
+            enddo 
+            
+c          if(izonef(id).ne.14) then        
             bp_maxc = abs(bp(id+nrhs(1)))
-	    if(bp_maxc.gt.bp_max) then
+	      if(bp_maxc.gt.bp_max) then
                bp_max = bp_maxc
                ibp_max = id
-	    endif
+	      endif
             bp(id+nrhs(1))=bp(id+nrhs(1))/apiv
             fdum2=fdum2+bp(id+nrhs(1))*bp(id+nrhs(1))
+c          endif  
          enddo
          fdum2 = max(fdum2,fdum2_tol)
          bp_max = bp_max + fdum2_tol
@@ -397,7 +401,7 @@ c	 pause
 c      write (iout,*) 
 c          fdum=fdum2**0.5
 c check if fluxes are small enough to quit
-         mink=n
+         mink=neq_active
          if(g1.lt.0.) then
             if(bp_max.le.abs(g1)) then
                fdum = -999.0
@@ -431,7 +435,7 @@ c          bp_tol = bp_max/a(nelmdg(ibp_max)+nmat(1)-neqp1)
                enddo
             endif
             fdum=-1.0
-            minkt=minkt+mink
+c            minkt=minkt+mink
             go to 999
  995        continue
             f0=-1.0

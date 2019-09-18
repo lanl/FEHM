@@ -422,11 +422,7 @@ C***********************************************************************
 c symmetry check on = 1, off = 0      
       parameter (ic_sym = 0)
       parameter (very_small= 1.d-30)
-c gaz debug
-c
-      fac_nop = wellim(1)
-      fac_nop = anl(1)
- 
+c 
 c
 c     Calculate rho1grav
 c      rho1grav = crl(1,1)*(9.81d-6)
@@ -569,16 +565,18 @@ c**** compatability scaling (viscosity is in pa-sec, not in mpa-sec) ***
       end do
 
 c**** set permeabilities = 0 for porosity = 0.0 ****
+      neq_active = 0
       do i = 1, n
          if (abs(ps(i)) .le. zero_t .and. idoff .gt. 0)  then
             pnx(i) = zero_t
             pny(i) = zero_t
             pnz(i) = zero_t
+            neq_active = neq_active +1
          end if
       end do
 
       days = 0.0
-      mink = neq
+      mink = neq - neq_active
 
 c**** complete element information ****
 !      if(contim.ge.0) then
@@ -1027,7 +1025,9 @@ c
             else
                nop = 0
             end if
+            neq_active = neq
             if(i.gt.0) then
+               neq_active = neq -i
                if (iout .ne. 0) write(iout, 100) i
                if (ischk .ne. 0) write(ischk, 100) i
                if (iptty .ne. 0) write(iptty, 100) i
@@ -1044,7 +1044,8 @@ c
                         pnz(i)=very_small
                      end if
                      pho(i)=0.1
-                     to(i)=crl(6,1)
+c gaz 042119 set to to 0.0 (will be changed later to tref
+                      to(i)=0.0
                      if (irdof .ne. 13 .or. ifree .ne. 0) s(i)=1.0
                   endif
                enddo
@@ -1266,7 +1267,9 @@ c      rho1grav = 997.*9.81d-6
 c     Moved calls to airctr for head option to below the iflg = -1 call
 c if head input has been used,convert to pressures
 c
-      if(ihead.ne.0.or.ichead.ne.0) then
+c      if(ihead.ne.0.or.ichead.ne.0) then
+c gaz 083119 this could possibly cause problems if ichead does more that I think  <<<<
+       if(ihead.ne.0) then
          if(head0.gt.0) then
             phi_inc = head0*crl(1,1)*(-grav)
          end if

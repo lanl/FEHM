@@ -86,6 +86,8 @@ C***********************************************************************
       real*8, allocatable :: zpest(:)
       real*8, allocatable :: fperms(:,:)
       real*8 sumfout, sumsink, sumsource, sumboun, xc, yc, zc
+c gaz 080419      
+      real*8 avgsat, volsat, s_dum, vel_mag
       integer, allocatable :: nelm_pest(:)
       integer, allocatable :: npestq(:)
       integer, allocatable :: npestc(:)
@@ -255,17 +257,19 @@ c     output section
 	 endif
          if(ihead.eq.0) then
             if (istea_pest.eq.0) then
-               write(ispest,*) 'pressures'
+               write(ispest,*) 'pressure     zone'
             else
-               write(ispest,*) 'pressures and pressure differences'
+               write(ispest,*) 'pressure  pressure difference  zone'
 	    endif
             do  i = 1,mpest 
                if(npest(i).gt.0) then
                   if (istea_pest.eq.0) then
-                     write(ispest,'(i10,f40.20)') npest(i),phi(npest(i))
+                     write(ispest,'(i10,f40.20,1x,i7)') npest(i),
+     &                phi(npest(i)),izonef(npest(i))
                   else
-                     write(ispest,'(i10,2f40.20)') npest(i),
-     &                    phi(npest(i)),phi(npest(i))-phini(npest(i))
+                   write(ispest,'(i10,2f40.20,1x,i7)') npest(i),
+     &              phi(npest(i)),phi(npest(i))-phini(npest(i)),
+     &              izonef(npest(i))
                   endif
                   if (rlp_flag .eq. 1) then
                      write(ispst1,'(i8,1x,i4,1x,3(g20.12,1x))') 
@@ -346,7 +350,7 @@ c     output section
      &              0,0.d00               
             endif
          end do
-         write(ispest,*) 'temperatures'
+         write(ispest,*) 'temperature'
          do  i = 1,mpest 
             if(npest(i).gt.0) then
                write(ispest,'(i10,f40.20)') npest(i),t(npest(i))
@@ -362,7 +366,7 @@ c     output section
          write(ispest,*) 'permeabilities'
          do  i = 1,mpest 
             if(npest(i).gt.0) then
-               write(ispest,'(i10,3g18.10)') npest(i),
+               write(ispest,'(i10,1p,3g18.10)') npest(i),
      &              pnx(npest(i))*1.d-6,pny(npest(i))*1.d-6,
      &              pnz(npest(i))*1.d-6
             else if(npest(i).lt.0) then
@@ -372,8 +376,32 @@ c     output section
      &              ypest(i), zpest(i),k,valuey,pny)
                call pest_elem(1, i, nelm_pest, xpest(i), 
      &              ypest(i), zpest(i),k,valuez,pnz)
-               write(ispest,'(i10,3g18.10)') npest(i),valuex*1.d-6,
+               write(ispest,'(i10,1p,4g18.10)') npest(i),valuex*1.d-6,
      &              valuey*1.e-6,valuez*1.d-6               
+            else
+               write(ispest,'(i10,f40.20,5x,21hobservation not found)')
+     &              0,0.d00               
+            endif
+         end do
+         write(ispest,*) 'velocities'
+         do  i = 1,mpest 
+            if(npest(i).gt.0) then
+               vel_mag =sqrt(pnx(npest(i)+n)**2 + pny(npest(i)+n)**2 + 
+     &          pnz(npest(i)+n)**2)
+               write(ispest,'(i10,1p,4g18.10)') npest(i),
+     &              pnx(npest(i)+n),pny(npest(i)+n),
+     &              pnz(npest(i)+n), vel_mag
+            else if(npest(i).lt.0) then
+               call pest_elem(1, i, nelm_pest, xpest(i), 
+     &              ypest(i), zpest(i),k,valuex,pnx(n+1))
+               call pest_elem(1, i, nelm_pest, xpest(i), 
+     &              ypest(i), zpest(i),k,valuey,pny(n+1))
+               call pest_elem(1, i, nelm_pest, xpest(i), 
+     &              ypest(i), zpest(i),k,valuez,pnz(n+1))
+               vel_mag =sqrt(valuex**2 + valuey**2 + 
+     &          valuez**2)               
+               write(ispest,'(i10,1p,4g18.10)') npest(i),valuex,
+     &              valuey, valuez                
             else
                write(ispest,'(i10,f40.20,5x,21hobservation not found)')
      &              0,0.d00               
@@ -392,8 +420,9 @@ c     Compute flux passing thorugh a zone
      &           'Leaving Zone (flxz macro option)')
             write(ispest,*)
  1041       format('Zones = ',i8)
-            write(ispest,*)'Zone Number        Source           Sink',
-     &           '            Net       Boundary'
+            write(ispest,1044)
+ 1044      format(t3,'Zone',t14,'Source',t29,'Sink',t44,'Net',
+     &      t59,'Boundary',t74,'Avg Saturation')               
             write(ispest,*)
 c     Compute fluxes out of zone (>0), leaving out fluxes
 c     into other parts of the zone
@@ -403,6 +432,8 @@ c     into other parts of the zone
                sumsink = 0.
                sumsource = 0.
                sumboun = 0.0
+               avgsat = 0.0
+               volsat = 1.d-30
 c     Loop over all nodes
                do inode = 1, n0
 c     Determine if node is fracture or matrix, set indexes
@@ -418,10 +449,19 @@ c     and flags accordingly
                      addnode = 0
                      idummy = 0
                   end if
+c gaz 051519  (repeated 080419)       
+                     if(irdof.eq.13) then
+                         s_dum = 1.
+                     else
+                         s_dum = s(inneq)
+                     endif
 c     Determine if node is part of the zone being summed
                   if(izoneflxz(inode).eq.izone) then
 c     Add boundary condition sources
                      sumboun=sumboun + sk(inode)
+c gaz 080419 avg sat calc
+                     volsat = volsat + volume(inneq)*ps(inneq)
+                     avgsat = avgsat + volume(inneq)*ps(inneq)*s_dum
 c     Set index for looping through a_axy depending on whether
 c     the node is a fracture or matrix node
                      i1 = nelm(inneq)+1
@@ -454,11 +494,13 @@ c     add to source sum
                   end if
                end do
 c     Write results
+c gaz 080419
+               avgsat = avgsat/volsat
                write(ispest,1045) iflxz(izone),
-     2              sumsource, sumsink, sumfout, sumboun
+     2              sumsource, sumsink, sumfout, sumboun, avgsat
                write(ispst1,1045) iflxz(izone),
-     2              sumsource, sumsink, sumfout, sumboun
- 1045          format(1x,i5,5x,4(2x,e13.7))
+     2              sumsource, sumsink, sumfout, sumboun, avgsat
+ 1045          format(1x,i5,5x,5(2x,e15.7))
             end do
 
          end if
@@ -466,7 +508,7 @@ c
 c     print out concentrations
 c     
 
-         if(mpestc.ne.0) then
+         if(mpestc.ne.0.and.iccen.ne.0) then
             if(allocated(anl)) then
                write(ispest,*) 'concentrations'
                do  i = 1,mpestc 

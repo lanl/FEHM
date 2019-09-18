@@ -413,6 +413,8 @@ C**********************************************************************
       real*8 eosml
       real*8 eostol 
       real*8 stepl
+c gaz 121918 added pci0
+      real*8 pci0
       real*8 pcimin
       real*8 phase_mult
       real*8 phase_sat 
@@ -689,8 +691,9 @@ c gaz debug added saltctr calls 091414
                   do i=1,neq
                      ij=i+ndummy
                      pl=phi(ij)
+                     pci0 = pcio(ij)
                      pcl=pci(ij)
-                     pcl=max(pcl,pcimin)
+c                     pcl=max(pcl,pcimin)
                      pci(ij)=pcl
                      x=pl-pcl
                      tl=t(ij)
@@ -703,33 +706,89 @@ c     check if eos change is necessary
 c
                      if(ps(ij).eq.0.0.or.idof.le.1) then
 c                 ieosdc=-1 gaz 10-17-2001 do nothing
+c gax 120818 need a goto statement here???                         
                      endif
 c 
                      if(ieosd.eq.1) then
 c
 c     liquid only state
 c
-c                      if(isalt.eq.0) then
-                       tl=t(ij)
+c gaz 120818 add transition to supercritical state
+c SC state occurs when total pressure (pl here)  reaches Pcrit 
+c pure water uses total pressure and same here because it is liquid phase
+c or leaving liquid phase
+                         
+                     tboil = 2000.
+                      if(pl.ge.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+                        ieosdc = 4
+                        go to 101
+                      else if(pl.lt.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+                        ieosdc = 3 
+                        s(ij) = 0.0
+                        go to 101
+                      else if(pcl.ge.pl) then
+c gaz 121918  add physical phase change 
+c gaz 01                          
+                        ieosdc = 2
+                        s(ij) = 0.9
+                        strd = stepl
+                        pboil=psatl(tl,pcp(ij),dpcef(ij),dtsatp,dpsats,
+     &                             0,an(ij))
+                        phi(ij)= pcl
+                        pci(ij) = phi(ij)-pboil
+                        go to 101
+                   else if(pl.lt.pcrit_h2o) then
+c gaz 121918 pci0 instead of pcl   
+c use total pressure
+                         tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,
+     &                             dpsats,1,an(ij))
+                      endif                       
                        pboil=psatl(tl,pcp(ij),dpcef(ij),dtsatp,dpsats,
      &                             0,an(ij))
-c                      else
-c                       call saltctr(1,ij,dpsatt,dpsats)
-c                       pboil = pl - pci(ij)
-c                      endif
+
 c     change to 2-phase
-                        if(x.le.pboil/phase_mult.
+c gaz 121118 and 121818(changed to "t"
+c                        if((x.le.pboil/phase_mult.or.
+c     &                        tl.gt.tboil*phase_mult).
+                        
+                          if(tl.gt.tboil*phase_mult.  
      &                     and.days.ge.time_ieos(ij)) then
                            ieosdc=2
+c                           strd=stepl
                            strd = 1.
-                           pci(ij)=max(pl-pboil,0.0d00)
-                           s(ij)=eosml
+c                           pboil=psatl(tl,pcp(ij),dpcef(ij),dtsatp,
+c     &                             dpsats,0,an(ij))
+c gaz 121218 and 121818                          
+c                           pci(ij)=(max(pl-pboil,0.0d00)+pcl)/2.
+                           s(ij)=0.95
                            time_ieos(ij) = days + time_ch
                         endif
+101                  continue  
                      endif
 c 
                      if(ieosd.eq.2) then
 c
+c                                  
+                      if(pl.ge.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+                        ieosdc = 4
+                        s(ij) = 1.
+                        go to 201
+                      else if(pl.lt.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+                        ieosdc = 3 
+                        s(ij) = 0.0
+                        go to 201
+                      else if(pcl.lt.-0.0001) then 
+c gaz 122018 another phase change                          
+                        ieosdc =3
+                        s(ij) = 0.0                               
+                        call prop_phase_change(1,ij,2,3,
+     &                  tl,pl,pcl)
+                        go to 201
+                      else if(pl.lt.pcrit_h2o) then
+c gaz 121918 pcl0 instead of pcl                          
+                         tboil=psatl(pl-pcl,pcp(ij),dpcef(ij),dtsatp,
+     &                             dpsats,1,an(ij))
+                      endif                       
 c     2-phase conditions
                         if(sl.ge.1.and.days.ge.time_ieos(ij)) then 
 c     change to liquid only conditions
@@ -791,15 +850,31 @@ c                           phi(ij) = pci(ij) + pboil*0.999
                         endif
                      endif
 c 
+201                  continue
 c                     if(ieosd.eq.3.or.ieosdc.eq.3) then
 c gaz debug 120814
                      if(ieosd.eq.3) then
 
-c gaz debug 091514
-c gaz debug 120714    
+c gaz 120818 add SC transition logic (use pv (x here) instead of total pressure
+c gaz 121118 use pl for liquid phase(s)
+c                       if(x.ge.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+                        if(pl.ge.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+                         ieosdc = 4
+                         s(ij) = 1
+                         go to 500
+c                      else if(x.ge.pcrit_h2o.and.tl.lt.tcrit_h2o) then
+                        elseif(pl.ge.pcrit_h2o.and.tl.lt.tcrit_h2o) then
+                         ieosdc = 1
+                         s(ij) = 1.0
+                         go to 500
+                        elseif(tl.ge.tcrit_h2o) then
+                          pvapor = pcrit_h2o
+                          go to 500
+                        else
+                         pvapor=psatl(tl,pcp(ij),dpcef(ij),dpsatt,
+     &                           dpsats,0,an(ij))                          
+                        endif  
                
-                    pvapor=psatl(tl,pcp(ij),dpcef(ij),dpsatt,dpsats, 
-     &                           0,an(ij))
 c     check vapor pressure against saturated vapor pressure
 c     change if lower
                        if(x.ge.pvapor*phase_mult.and.days.
@@ -807,15 +882,42 @@ c     change if lower
                            s(ij)=satml  
                            tboil=psatl(x,pcp(ij),dpcef(ij),dtsatp,
      &                            dpsats,1,an(ij))
-                           t(ij) = 0.5*(tboil+tl)
+c                           t(ij) = 0.5*(tboil+tl)
 c                           if(ieosd.eq.3) then
 c                             s(ij)= satml
 c                           endif
                            time_ieos(ij) = days + time_ch
                            strd = stepl
                            ieosdc = 2
-                       endif
+                      endif
+500                  continue
                      endif
+c gaz 121118 add SC   
+c
+c     sc conditions 
+c 
+c sufficient  to go to gas or liquid
+                  if(ieosd.eq.4) then 
+                      if(pl.lt.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+                        ieosdc = 3
+                        s(ij) = 0.0
+                      else if(pl.ge.pcrit_h2o.and.tl.lt.tcrit_h2o) then
+                        ieosdc = 1
+                        s(ij) = 1.0
+                      else if(pl.lt.pcrit_h2o.and.tl.lt.tcrit_h2o) then
+                       tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,
+     &                             1,an(ij))
+                       if(tl.ge.tboil) then
+                        ieosdc = 3
+                        s(ij) = 0.0
+                       else
+                        ieosdc = 1
+                        s(ij) = 1.0
+                       endif 
+                      else
+                       ieosdc = 4
+                      endif                     
+                   endif  
 c
 c     remember if danl eos change occured
 c     tally eos numbers
@@ -927,7 +1029,8 @@ c     strd is passed through common
                   if(ps(i).eq.0.0) then
 c     gaz 10-18-2001
                      t(i)=t(i)-bp(i2)*strd
-                  elseif(ieosd.eq.1) then
+c gaz 121718 added ieosd 4                     
+                  elseif(ieosd.eq.1.or.ieosd.eq.4) then
                      phi(i)=phi(i)-bp(i1)*strd
                      t(i)=t(i)-bp(i2)*strd
                      pci(i)=pci(i)-bp(i3)*strd
@@ -936,6 +1039,12 @@ c     gaz 10-18-2001
                      s(i)=s(i)-bp(i2)*strd
 c  GAZ 5/1/98          
                      t(i)=t(i)-bp(i3)*strd
+c gaz 122418                     
+c                     tboil=psatl(phi(i),pcp(i),dpcef(i),dtsatp,
+c     &                            dpsats,1,an(i))
+                         pvapor=psatl(t(i),pcp(i),dpcef(i),dpsatt,
+     &                           dpsats,0,an(i))                      
+                     pci(i) = phi(i)-pvapor
                   elseif(ieosd.eq.3) then
                      phi(i)=phi(i)-bp(i1)*strd
                      t(i)=t(i)-bp(i2)*strd
@@ -952,6 +1061,7 @@ c                   pci(i) = phi(i)
 c                   strd = stepl
 c                  endif
                   pci(i)=max(0.0d00,pci(i))
+                  pci(i)=min(phi(i),pci(i))
                   s(i)=min(1.d00,max(0.0d00,s(i)))
                enddo      
             else if(ico2.lt.0.and.ice.eq.0) then
@@ -973,5 +1083,47 @@ c
          endif
 
 
+      return
+      end
+      subroutine prop_phase_change(iflg,i,ieosd1,ieosd2,
+     & tl_new,phi_new,pcl_new)
+c
+c calculate phase properties
+c compare props for possible phase change   
+c output new variables      
+c
+c gaz 122118
+c
+      use comai
+      use comci
+      use comdi
+      use comfi
+      implicit none
+      integer iflg,i,ieosd1,ieosd2
+      real*8 tl,pl,pcl,denpci0
+      real*8 roc,drocpc,dtin
+      real*8 tl_new,phi_new,pcl_new,pcl0
+      if(iflg.eq.1) then
+c check props for change from state 2 to state 3      
+       if(ieosd1.eq.2.and.ieosd2.eq.3) then
+         if(ps(i).gt.0.0) then
+          tl = t(i)
+          pl = phi(i)
+          pcl = pci(i)
+          dtin=1.0/dtot
+          denpci0 = (denpci(i)/dtin+denpch(i))/ps(i)
+          roc0=1.292864
+          pcl0=0.101325 
+          drocpc=roc0*(273./(tl+273.))/pcl0    
+c roc is mass of air/vol (enough to compare)          
+          roc=drocpc*pcl
+          pcl_new = denpci0/drocpc
+          continue         
+         else
+c error condition : no pore space             
+         endif  
+       endif
+      else
+      endif
       return
       end

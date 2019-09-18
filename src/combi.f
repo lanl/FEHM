@@ -315,7 +315,6 @@ c gaz 08102016
 
       real*8, allocatable ::   dnidnj(:,:)
 
-c arrays for interface reduction
       integer nitfcpairs, ncoldpairs
       integer nitfcitfc, nitfcsizes
       integer, allocatable ::  filter_flag(:)
@@ -326,6 +325,9 @@ c arrays for interface reduction
       real*8, allocatable ::   ftn_factor(:)
       real*8, allocatable ::   itfcporsize(:,:)
       real*8, allocatable ::   itfcprobsize(:,:)
+c gaz 062219 added array to save interface coordinates and multiplier
+      integer num_red_fac, i_redfac
+      logical nitf_use, ncol_use
 
       integer, allocatable ::  nflxc(:)
       integer ik_gdkm_red

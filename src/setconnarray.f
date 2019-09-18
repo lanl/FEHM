@@ -13,7 +13,7 @@
 !**********************************************************************
 !D1
 !D1 PURPOSE
-!D1
+!D1 
 !D1 Determine and store node connections at which interface reduction
 !D1 factor model is applied.
 !D1 
@@ -66,7 +66,9 @@
 
       integer i, ii1, ii2, idg, neqp1, jmi, jmia, jitfc, kitfc
       integer jm, kb, n_levels, ilevel, add_node, add_istrw
-
+      integer kr, idem_redfac
+      integer open_file
+      logical exists, match
 
       if(idpdp.eq.0) then
          n_levels = 1
@@ -76,7 +78,6 @@
 
 
 c     Loop for either 1 or 2 continua
-
       do ilevel = 1, n_levels
 
          if(ilevel .eq. 1) then
@@ -89,7 +90,41 @@ c     Loop for either 1 or 2 continua
 
 c     Section for determining the interface reduction
 c     array
-
+c gaz save interface coordinates for visualization, save ID
+c only onpen files for nitfcpairs
+      if(nitf_use) then
+       num_red_fac = 0
+       if(icnl.eq.0) then
+        idem_redfac = 3
+       else
+        idem_redfac = 2
+       endif
+       do i = 1, nitfcpairs
+        ii1 = zone_pair(i,1)
+        ii2 = zone_pair(i,2)
+        if(ii1.eq.0.and.ii2.eq.0) then
+c write error message 
+         if(iptty.ne.0) write(iptty,200) 
+         if(iout.ne.0) write(iout,200)
+         if(ierr.ne.0) write(ierr,200)
+         stop
+        else if(ii1.eq.0) then
+         zone_pair(i,1) = ii2
+         zone_pair(i,2) = ii1
+        endif
+        enddo
+200     format('error macro itfc(1): both zones cannot be 0')       
+       inquire(file = 'red_fac_itfc.txt', exist = exists)
+       if(exists) then       
+        i_redfac = open_file('red_fac_itfc.txt', 'old')
+       else 
+        i_redfac = open_file('red_fac_itfc.txt', 'unknown')
+       endif
+        write(i_redfac,*) 'itfc information file'
+        write(i_redfac,*) 'reduction factor number, node 1, node 2,',
+     &   ' factor, x, y, z'
+101   format(t20,i7,t30,i8,t40,i8,t50,1p,g14.6,t64,3(2x,g14.6),2(1x,i7))   
+      endif
       do i = 1, neq
          
          ii1=nelm(i)+1
@@ -102,25 +137,51 @@ c     array
 c         do jm=jmi+1,ii2
          do jm=ii1,ii2
             kb=nelm(jm)+add_node
-            
 c     loop over all possible reduction models to search for
 c     reduction factor to be applied
-            
+         if(nitf_use) then         
           reduction: do jitfc = 1, nitfcpairs
             
             if(izonef_itfc(i+add_node).eq.zone_pair(jitfc,1)) then
-               if(izonef_itfc(kb).eq.zone_pair(jitfc,2)) then
+c gaz 071219 
+                match = .false.
+                if(zone_pair(jitfc,2).eq.0.and.
+     &           izonef_itfc(kb).ne.izonef_itfc(i+add_node)) then
+                 match = .true.
+                elseif(izonef_itfc(kb).eq.zone_pair(jitfc,2)) then
+                 match = .true.
+                endif
+                 if(match) then
                   istrw_itfc(jm-neqp1+add_istrw) = jitfc
-                  exit reduction
-               end if
-            elseif(izonef_itfc(i+add_node).eq.zone_pair(jitfc,2)) then
-               if(izonef_itfc(kb).eq.zone_pair(jitfc,1)) then
-                  istrw_itfc(jm-neqp1+add_istrw) = jitfc
-                  exit reduction
-               end if
+                  num_red_fac = num_red_fac + 1 
+                  write(i_redfac,101) jitfc,i,kb,red_factor(jitfc),
+     &            ((cord(i,kr)+cord(kb,kr))/2., kr= 1, idem_redfac),
+     &             izonef_itfc(i+add_node), izonef_itfc(kb)             
+                 endif
+c                 exit reduction
+            elseif(izonef_itfc(i+add_node).eq.zone_pair(jitfc,2).or.
+     &            zone_pair(jitfc,2).eq.0) then
+c gaz 071219
+                match = .false.
+                if (zone_pair(jitfc,2).eq.0.and.
+     &           izonef_itfc(kb).ne.zone_pair(jitfc,1).and.
+     &           izonef_itfc(kb).ne.izonef_itfc(i+add_node)) then 
+                 match = .true.
+                elseif(izonef_itfc(kb).eq.zone_pair(jitfc,2).and.
+     &           izonef_itfc(kb).ne.izonef_itfc(i+add_node)) then
+                 match = .true.
+                endif
+                  if(match) then
+                   istrw_itfc(jm-neqp1+add_istrw) = jitfc
+                  endif
+c                  num_red_fac = num_red_fac + 1 
+c                  write(i_redfac,101) jitfc,i,kb,red_factor(jitfc),
+c    &            ((cord(i,kr)+cord(kb,kr))/2., kr= 1, idem_redfac)      
+c                  exit reduction
             end if
           end do reduction
-          
+         endif   
+         if(ncol_use) then 
           colloid: do kitfc = 1, ncoldpairs
             
             if(izonef_itfc(i+add_node).eq.zonec_pair(kitfc,1)) then
@@ -134,12 +195,89 @@ c     reduction factor to be applied
                   exit colloid
                end if
             end if
-          end do colloid         
+          end do colloid  
+         endif    
       end do
       
       end do
 
       end do
+      if(nitfcpairs.gt.0.and.nitf_use) then
+c write output in vtk format          
+       call vtk_points(1,i_redfac,num_red_fac,idem_redfac)
+       close(i_redfac)
+       if(iout.ne.0) write(iout,*) 
+     &  '>>> number of modified itfc connections ',num_red_fac,' <<<'
+       if(iptty.ne.0) write(iptty,*) 
+     &  '>>> number of modified itfc connections ',num_red_fac,' <<<'  
+      endif
+      end
+      subroutine vtk_points(iflg,iunit_num,npoints,idem)
+c
+c     write out set of points in vtk legacy format
+c
+      implicit none
+      
+      integer iflg, iunit_num, npoints, i_redvtk, i
+      integer j,kk, idem
+      integer open_file
+      real*8, allocatable ::   points(:,:) 
+      real*8, allocatable ::   ftn_num(:,:) 
+      logical exists
 
-      return
+      if(iflg.eq.1) then
+       inquire(file = 'red_fac_itfc.vtk', exist = exists)
+       if(exists) then       
+        i_redvtk = open_file('red_fac_itfc.vtk', 'old')
+       else 
+        i_redvtk = open_file('red_fac_itfc.vtk', 'unknown')
+       endif
+       allocate(points(npoints,idem))
+       allocate (ftn_num(npoints,2))
+c read from text file       
+       rewind iunit_num
+       read(iunit_num,*)
+       read(iunit_num,*)
+       do i = 1, npoints
+        read(iunit_num,*) ftn_num(i,1),kk,kk, 
+     &      ftn_num(i,2),(points(i,j),j=1,idem)  
+       enddo
+c write to vtk file       
+       write(i_redvtk,100)
+       write(i_redvtk,101) npoints
+       do i = 1, npoints
+       write(i_redvtk,102) (points(i,j),j=1,idem)
+       enddo
+       write(i_redvtk,103) npoints, 2*npoints
+       do i = 1, npoints
+       write(i_redvtk,104) 1, i
+       enddo 
+       write(i_redvtk,105) npoints
+       do i = 1, npoints
+       write(i_redvtk,106) 1
+       enddo 
+       write(i_redvtk,107) npoints
+       write(i_redvtk,108) (ftn_num(i,1), i=1,npoints)
+       write(i_redvtk,109)
+       write(i_redvtk,108) (ftn_num(i,2), i=1,npoints)
+       close (i_redvtk)
+       deallocate(points,ftn_num) 
+      else
+      endif
+100   format('# vtk DataFile Version 2.0',/,
+     &       'FEHM itfc interface points',/,
+     &       'ASCII',/,
+     &       'DATASET UNSTRUCTURED_GRID') 
+101   format('POINTS',3x,i7,1x,'double') 
+102   format(1p,g14.6,1x,g14.6,1x,g14.6)  
+103   format('CELLS',1x,i7,1x,i7)  
+104   format(1x,i7,1x,i7)   
+105   format('CELL_TYPES',1x,i7)   
+106   format(1x,i7)  
+107   format('point_data',1x,i7,/,
+     &       'scalars number double 1',/,
+     &       'lookup_table default')    
+108   format(8(1x,f10.4))  
+109   format('scalars itfc_value double 1',/,
+     &       'lookup_table default')        
       end

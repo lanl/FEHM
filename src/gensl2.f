@@ -587,7 +587,8 @@ c
                if(abs(bp(i+nrhs(2))).gt.tmch) go to 991
             enddo
             fdum=-1.0
-            minkt=minkt+mink
+c gaz 042219 mink not calculated correctly (hopefully this works            
+c            minkt=minkt+mink
             go to 999
  991        continue
             f0=-1.0

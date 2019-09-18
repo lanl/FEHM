@@ -240,8 +240,8 @@ c      write(jtimex,'(i2.2,1h:,i2.2,1h:,i2.2)')  jjtime
       idatex(7:8) = current_date(1:2)
       idatex(9:11) = current_date(3:4)
 ! Version number passed to GoldSim
-      vernum = 3.3
+      vernum = 3.4
 ! Code version identifier
-      verno = "FEHM V3.3.2macOS 19-06-13 QA:NA"
+      verno = "FEHM V3.4.0lnUbuntu16 19-09-12 QA:QA"
 
       end

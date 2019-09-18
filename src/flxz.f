@@ -46,6 +46,7 @@
       use combi
       use comco2, only : c_axy, c_vxy, skco2, icarb
       use comdi
+      use comci, only : rolf
       use comdti
       use comflow
       use davidi
@@ -57,7 +58,9 @@
       integer, allocatable :: md(:)
       real*8, allocatable :: sumfout(:,:), sumfin(:,:), sumsink(:,:)
       real*8, allocatable :: sumsource(:,:), sumboun(:,:)
-      real*8 ptime, out_tol
+c gaz 051619      
+      real*8, allocatable :: summass(:,:), avgsat(:,:)
+      real*8 ptime, out_tol, s_dum
       character*18 value_string
       character*24 form_string
       character*90, allocatable :: flux_string(:), fluxv_string(:)
@@ -70,11 +73,11 @@
          if (wflux_flag .and. vflux_flag .or. icarb .ne. 0) then
              allocate (sumfout(nflxz,2), sumsink(nflxz,2))
              allocate (sumsource(nflxz,2), sumboun(nflxz,2))
-		   allocate (sumfin(nflxz,2))
+		   allocate (sumfin(nflxz,2), summass(nflxz,2),avgsat(nflxz,2))
           else
              allocate (sumfout(nflxz,1), sumsink(nflxz,1))
              allocate (sumsource(nflxz,1), sumboun(nflxz,1))
-		   allocate (sumfin(nflxz,1))
+		   allocate (sumfin(nflxz,1), summass(nflxz,1),avgsat(nflxz,2))
          end if
       end if
              
@@ -121,6 +124,8 @@ c     into other parts of the zone
       sumsink = 0.
       sumsource = 0.
       sumboun = 0.0
+      summass = 0.0
+      avgsat = 0.0
       md = 0
       do izone = 1, nflxz
 c     Loop over all nodes
@@ -141,6 +146,12 @@ c     and flags accordingly
 c     Determine if node is part of the zone being summed
             if(izoneflxz(inode).eq.izone) then
                md(izone) = md(izone) + 1
+c gaz 051519         
+                     if(irdof.eq.13) then
+                         s_dum = 1.
+                     else
+                         s_dum = s(inneq)
+                     endif
 c     Add boundary condition sources
                if (flxz_flag.eq.3) then
                   sumboun(izone,ic) = sumboun(izone,ic) + skco2(inode)
@@ -148,8 +159,15 @@ c     Add boundary condition sources
                   if (wflux_flag) 
      &                 sumboun(izone,ii) = sumboun(izone,ii) + sk(inode)
                   if (vflux_flag) sumboun(izone,iv) = 
-     &                 sumboun(izone,iv) + (1.0-s(inode))*sk(inode)
+     &                 sumboun(izone,iv) + (1.0-s_dum)*sk(inode)
                end if
+                     
+                     summass(izone,1) = summass(izone,1) +
+     2               volume(inneq)*s_dum*rolf(inneq)*ps(inneq) 
+                     avgsat(izone,1) = avgsat(izone,1) + 
+     2               volume(inneq)*s_dum*ps(inneq) 
+                     avgsat(izone,2) = avgsat(izone,2) + 
+     2               volume(inneq)*ps(inneq)                   
 c     Set index for looping through a_axy depending on whether
 c     the node is a fracture or matrix node
                i1 = nelm(inneq)+1
@@ -239,6 +257,7 @@ c     add to source sum
      2                          a_axy(indexa_axy)
                         end if
                      end if
+
                      if(vflux_flag) then
                         if (a_vxy(indexa_axy).gt.0.) then
 c     add to sum only if the connecting node is not also
@@ -274,15 +293,19 @@ c     Fluxes are written to tty and output file
             do izone = 1, nflxz
                if(iatty.ne.0) then
                   if (izone .eq. 1) write(iatty, *) 'Water'
-                  write(iatty,1045) iflxz(izone), md(izone),
+                  write(iatty,1046) iflxz(izone), md(izone),
      2                 sumsource(izone,ii), sumsink(izone,ii), 
-     3                 sumfout(izone,ii), sumboun(izone,ii)
+     3                 sumfout(izone,ii), sumboun(izone,ii), 
+     4                 summass(izone,ii),
+     5                 avgsat(izone,1)/(avgsat(izone,2) + out_tol)
                end if
                if(ntty.eq.2 .and. iout .ne. 0) then
                   if (izone .eq. 1) write(iout, *) 'Water'
-                  write(iout,1045) iflxz(izone), md(izone),
+                  write(iout,1046) iflxz(izone), md(izone),
      2                 sumsource(izone,ii), sumsink(izone,ii), 
-     3                 sumfout(izone,ii), sumboun(izone,ii)
+     3                 sumfout(izone,ii), sumboun(izone,ii),
+     4                 summass(izone,ii),
+     5                 avgsat(izone,1)/(avgsat(izone,2) + out_tol)           
                end if
             end do
          end if
@@ -293,6 +316,7 @@ c     Fluxes are written to tty and output file
                   write(iatty,1045) iflxz(izone), md(izone),
      2                 sumsource(izone,iv), sumsink(izone,iv), 
      3                 sumfout(izone,iv), sumboun(izone,iv)
+
                end if
                if(ntty.eq.2 .and. iout .ne. 0) then
                   if (izone .eq. 1) write(iout, *) 'Vapor'
@@ -425,10 +449,11 @@ c     &           sumboun(izone,iv) = 0.d0
          end do
       end if
 
- 1000    format ('Zone  (# nodes)   Source       Sink',
-     &           '         Net          Boundary')
+ 1000 format ('Zone  (# nodes)   Source       Sink',
+     &           '         Net          Boundary      Water Mass',
+     &       '    Avg Saturation' )
  1045 format(1x,i4,' (',i7,')',1x,1p,4(1x,e12.5))
- 1046 format(1x,i4,' (',i6,')',2x,1p,5(1x,e12.5))
+ 1046 format(1x,i4,' (',i6,')',2x,1p,5(1x,e12.5),4x,e12.5)
  1047 format('(g16.9, ', i3, '(a))')
  1050 format(4(g16.9, 1x), g16.9)
  1051 format(g16.9, 1x, a)

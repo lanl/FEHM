@@ -197,11 +197,12 @@ C***********************************************************************
       use comdti
       use comai
       use combi
+      use comdi
       use comki
       implicit none
 
-    
-      integer i,iflg
+      integer i,j,iflg
+
 
       macro = 'renm'
 
@@ -217,7 +218,37 @@ c
       if(iflg.eq.0) then
 c read data
        read(inpt,*) ireord
-       if(ireord.lt.0) then
+       if(ireord.eq.2) then
+c gaz eliminate nodes in zones
+        allocate(izone_renum(n))
+        izone_renum = 0
+        read(inpt,*) n_renu_zone
+        allocate (nrenu_list(n_renu_zone))
+        backspace inpt
+        read(inpt,*) n_renu_zone,(nrenu_list(i), i = 1, n_renu_zone)
+         min_r_z = 1000000
+         max_r_z = -1000000
+         do i = 1, n_renu_zone
+          min_r_z = min(min_r_z, nrenu_list(i))
+          max_r_z = max(max_r_z, nrenu_list(i))
+         enddo
+c count inactive nodes
+         neq_nonact = 0
+         do i = 1,n
+          if(izonef(i).ge.min_r_z.and.izonef(i).le.max_r_z) then
+              do j = 1, n_renu_zone
+               if(izonef(i).eq.nrenu_list(j)) then
+                izone_renum(i) = izonef(i)
+                neq_nonact = neq_nonact +1
+                go to 100
+               endif
+              enddo
+          endif
+100       continue    
+         enddo
+         neq_act = neq-neq_nonact 
+c call routine to renumber with zone exclusion
+       else if(ireord.lt.0) then
         narrays = 1
         itype(1) = 4
         default(1) = 0
@@ -231,7 +262,9 @@ c read data
        endif
       else if(iflg.eq.1) then
 c compute ordering
-       if(ireord.eq.1) then
+       if(ireord.eq.2) then
+        call renum_zone (1,neq_act)
+       else if(ireord.eq.1) then
         call genrcm(neq,nelm,irb,nop(1),nop(neq+1))
        else if(ireord.ge.10) then
          do i=1,neq
@@ -240,4 +273,101 @@ c compute ordering
          enddo
        endif
       endif
+      end
+      subroutine renum_zone(iflg)
+c 
+c renumber to a smaller active nodes
+c by removing ndes from a zone list
+c
+      use comai
+      use combi
+      use comdi
+      use comei
+      use comgi
+      use davidi
+      implicit none
+      integer, allocatable :: idum_renum(:) 
+      real*8, allocatable :: rdum_renum(:,:) 
+      real*8 a_orig
+      integer iflg,i,j,i1,i2,kb,ii,neqp1
+      integer neq_actp1
+      integer ic, ncon_size, inew
+
+      if(iflg.eq.1) then
+c count non active nodes        
+       ncon_size = nelm(neq+1)
+       allocate(ncon_renum(ncon_size))
+       allocate(irb_renum_act(neq_act))
+c create new smaller ncon array      
+       ic = neq_act +1
+       inew = 0
+       ncon_renum(1) = ic
+       do i = 1,neq
+        if(izone_renum(i).eq.0) then
+         inew = inew+1
+         i1 = nelm(i)+1
+         i2 = nelm(i+1)
+         do j = i1,i2
+          kb = nelm(j)
+          if(izone_renum(kb).eq.0) then
+           ic = ic+1
+           ncon_renum(ic) = kb
+          endif
+         enddo 
+         ncon_renum(inew+1) = ic
+         irb_renum_act(inew) = i
+        endif 
+       enddo
+c resize ncon
+      allocate(idum_renum(ic))
+      idum_renum(1:ic) = ncon_renum(1:ic) 
+      deallocate(ncon_renum)
+      allocate(ncon_renum(ic))
+      ncon_renum(1:ic) =idum_renum(1:ic)
+      deallocate(idum_renum)
+      else if(iflg.eq.2) then
+c load bp's (rhs of algebraic eqs)
+       if(.not.allocated(idum_renum)) allocate(idum_renum(neq_act)) 
+       if(.not.allocated(rdum_renum)) allocate(rdum_renum(neq,1)) 
+       rdum_renum(1:neq,1) = bp(1:neq)
+c use known numbering for new connectivity
+       ii = 0
+       do i = 1,neq
+        if(izone_renum(i).eq.0) then
+         ii = ii+1
+         bp(ii) = rdum_renum(i,1)  
+        endif
+       enddo
+c use known numbering for to load coefficients into the 'a' array
+c can a() be overwritten below(don't think so but needn to check)       
+       ic = neq_act +1
+       neq_actp1 = ic
+       inew = 0
+       ncon_renum(1) = ic
+       neqp1 = neq+1
+       do i = 1,neq
+        if(izone_renum(i).eq.0) then
+         i1 = nelm(i)+1
+         i2 = nelm(i+1)
+         do j = i1,i2
+          kb = nelm(j)
+          if(izone_renum(kb).eq.0) then
+           ic = ic+1
+           a_orig = a(j-neqp1+nmat(1))
+           a(ic-neq_actp1) = a_orig
+          endif
+         enddo 
+        endif 
+       enddo   
+      else if(iflg.eq.3) then  
+c extract N-R correction
+c check naming rules for iirb and irb !!!!
+       rdum_renum(1:neq_act,1) = bp(1:neq_act)
+       bp = 0.0d0
+       do i = 1,neq_act
+        ii = irb_renum_act(i)
+        bp(ii) = rdum_renum(i,1)  
+       enddo
+      endif
+      
       end
