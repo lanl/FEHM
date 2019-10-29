@@ -29,6 +29,7 @@ script:
   - cd src
   - make all
   - make debug
+  - cd fehmpytests/ && python fehmpytests.py ../src/xfehm_v3.3.1
 
 after_success:
   - echo FEHM compilation successful
