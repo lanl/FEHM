@@ -228,6 +228,9 @@ C**********************************************************************
       real*8 eltb2,eltb3,elptb,elp2tb,elpt2b,x,x2,x3,tl2,tl3,enwn1,enwn2
       real*8 enwn3,enwn,enwd1,enwd2,enwd3,enwd,enw
       real*8 p_energy
+c gaz 110715
+      real*8 dum1,dumb,dumc,value(9)
+      integer istate 
 c
 c calculates enthalpy as a function of t and p
 c
@@ -238,9 +241,12 @@ c
       endif
       psd=ps(mi)
       cprd=cpr(mi)
+c gaz 081317      
+      cprd=1.0d0
       tl=td
       if(psd.ne.0.0.and.idof.ge.2) then
          pl=phi(mi) - phi_inc
+        if(iwater_table.ne.1) then
          iieosd=iieos(mi)
 c liquid enthalpy
 c numerator coefficients
@@ -280,6 +286,12 @@ c denomenator coefficients
          enwd=enwd1+enwd2+enwd3
          enw=enwn/enwd
          enthp=enw + p_energy
+       else
+c gaz 110915 (calculates too many variables)
+          call h2o_properties_new(4,1,pl,tl,dum1,1,
+     &                 dumb,value,dumc)
+          enthp = value(4) + p_energy
+       endif
       endif
       if(psd.eq.0.0.or.idof.le.1) then
          enthp=cprd*tl

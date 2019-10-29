@@ -458,6 +458,7 @@ C***********************************************************************
       use comevap, only : evaporation_flag
       use comfi, only : qtc, qtotc, pci, pcio
       use comflow, only : a_axy
+      use comii, only : pmin,pmax,tmin,tmax
       use compart
       use comriv
       use comrtd, only : maxmix_flag
@@ -473,8 +474,12 @@ C***********************************************************************
       use comfem, only : edgeNum1, NodeElems, ifem, flag_element_perm
       use comfem, only : fem_strain, conv_strain, conv_pstrain  
       use property_interpolate
+c gaz 121117 added new interpolation for water      
+      use property_interpolate_1
+
 c     added combi and comflow to get izonef and a_axy arrays
 c     in subroutine computefluxvalues
+
       implicit none
 
 c     These are PC attributes used as compiler directives. They
@@ -524,9 +529,7 @@ c*** water table rise modification
       integer :: is_ch_t = 0
       integer :: out_flag = 0
       integer ntty_save
-c
-c gaz debug 121415 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-c
+
       real*8 rel_hum,qin,qin_ng,qin_h2o,qin_enth,enth_avg,pl_dum
 
       save flowflag, ichk, tassem, tasii, tscounter,
@@ -626,16 +629,20 @@ c--Add copyright write out
          call write_copyright (6)
          call iofile (ichk)
 
-c**** initialize/set parameter values
+c**** initialize/set parameter values (this routine calls scanin)
          call setparams
 
 c**** allocate memory ****
          if(irun.eq.1) call allocmem
-
 c**** call data initialization routine ****
+c gaz debug 032318
+         if(i.eq.-999) then
+          i = node_model(1)
+         endif
          call data
-
+c
 c**** call co2_properties_interpolation_lookup_table RJP 04/09/07
+c
          if (icarb .ne. 0) then
             inquire(file=nmfil(29), exist=intfile_ex)
             if(.not.intfile_ex) then
@@ -654,13 +661,47 @@ c**** call co2_properties_interpolation_lookup_table RJP 04/09/07
 	
             call read_interpolation_data(ifail,nmfil(29))
 
-         end if
+         endif 
+c read h2o_property table
+c**** call h2o_properties_interpolation_lookup_table GAZ 103115
+         if(iwater_table.ne.0) then
+            inquire(file=nmfil(31), exist=intfile_ex)
+            if(.not.intfile_ex) then
+               write(ierr, 7010) trim(nmfil(31))
+               write(ierr, 7012)
+               if (iout .ne. 0) then
+                  write(iout, 7010) trim(nmfil(31))
+                  write(iout, 7012)
+               end if         
+               if (iptty .ne. 0) then
+                  write(iptty, 7010) trim(nmfil(31))
+                  write(iptty, 7012)
+               end if         
+               stop
+            endif
+            call read_interpolation_data_1(ifail,nmfil(31),tmin(1),
+     &      tmax(1),pmin(1),pmax(1))
+          endif
 
  6010    format('CO2 Properties Interpolation Table File not found: ', 
      &        /, a, /, 'Stopping')
  6012    format('Input correct name in control file using, co2in : ',
      &        'filename')
+ 7010    format('H2O Properties Interpolation Table File not found: ', 
+     &        /, a, /, 'Stopping')
+ 7012    format('Input correct name in control file using, h2oin : ',
+     &        'filename')
 
+        if(icarb.ne.0) then
+         if(iout.ne.0) write(iout, 6200) nmfil(29)
+         if(iptty.ne.0) write(iptty, 6200) nmfil(29)
+        endif
+        if(iwater_table.ne.0) then
+         if(iout.ne.0) write(iout, 6300) nmfil(31)
+         if(iptty.ne.0) write(iptty, 6300) nmfil(31)
+        endif
+ 6200 format(/,'>>> co2 property interpolation table -',3x, a100) 
+ 6300 format(/,'>>> h2o property interpolation table -',3x, a100)   
 c**** read and write data ****
          in3save = in(3)
          if(in(3).eq.0) then
@@ -669,6 +710,16 @@ c**** read and write data ****
          
          call infiles(in(3))
          if (nriver .ne. 0) call river_ctr(33)
+   
+c gaz 110715
+c
+c gaz new allocate an if ngas enabled (031515)
+c this is so salt vapor lowering can be consistent with psatl
+c 
+c gaz 121217 commented out (did not exist in LANL version
+c           deallocate(an)  
+c           allocate(an(max(n0,nspeci*n0)))
+
 
          in(3) = in3save
 c**** modify gravity to reflect vector value ****
@@ -689,12 +740,19 @@ c *** intialize chemistry if needed **
 c**** call startup calculations ****
          call startup (tajj, tasii)
 c moved flow_boundary_conditions(3) from above(could be dangerous!)
-         call flow_boundary_conditions(3)             
+         call flow_boundary_conditions(3)   
+c call sx_combine to break connections to fixed type BCs
+c gaz 090618         
+      if(ianpe.eq.0) then
+         if (irun.eq.1.and.inobr.eq.0) call sx_combine(1)
+      else
+         if (irun.eq.1.and.inobr.eq.0) call sx_combine_ani(1)
+      endif           
 c**** call to set up area coefficients for md nodes
          call md_nodes(6,0,0)
 c**** call data checking routine ****
          call datchk
-c**** initial active base variables if necessarhy
+c**** initial active base variables if necessary
          call active_nodes_ctr(-1) 
 c gaz 050809 moved to startup
 c calculate initial stress field and displacements
@@ -810,7 +868,7 @@ c ************** major time step loop ***************************
 c
 c     counter that keeps accumulating when rip is the time step driver
 c     Or in a conventional simulation with heat and mass solution
-c           gaz debug 082714
+c gaz debug 082714
             tscounter = tscounter + 1
 c       Don't use input value of initial time step anymore
 c         if(abs(tscounter).eq.1.and.in(3).ne.0.) then
@@ -1044,9 +1102,6 @@ c Make sure fin file is written if we are stopping
                end if
 
 c zero variables used for current time step data
-               amass = 0.0
-               asteam = 0.0
-               aener = 0.0
                tmav = 0.0
                prav = 0.0
                tmavg = 0.0
@@ -1065,7 +1120,7 @@ c this time step only
 
 c**** update variables and parameters ****
 
-c gaz 12-30-99
+c gaz 12-30-09
 c           call varchk (0, 0)
                call dual (1)
 
@@ -1093,10 +1148,14 @@ c
                nphase_liq = 0
                nphase_2 = 0
                nphase_gas = 0
+               nphase_sc = 0
                do i=1,n
+c gaz  081219 eliminated ps < 0 from phase count             
+                if(ps(i).gt.0.0d0) then
                   if(ieos(i).eq.1) nphase_liq = nphase_liq + 1
                   if(ieos(i).eq.2) nphase_2 = nphase_2 + 1
                   if(ieos(i).eq.3) nphase_gas = nphase_gas + 1
+                  if(ieos(i).eq.4) nphase_sc = nphase_sc + 1
                   if (irdof .ne. 13 .or. ifree .ne. 0) then
                      if(s(i).lt.1.0.and.so(i).ge.1.0) then
                         is_ch=is_ch +1
@@ -1107,6 +1166,7 @@ c
                      else if(s(i).le.0.0.and.so(i).gt.0.0) then
                         is_ch=is_ch +1
                      endif
+                   endif                 
                   endif
                enddo
                is_ch_t = is_ch_t + is_ch
@@ -1114,14 +1174,17 @@ c
                 dnphase_liq = nphase_liq - nphase_liq_0
                 dnphase_2 = nphase_2 - nphase_2_0
                 dnphase_gas = nphase_gas - nphase_gas_0
+                dnphase_sc = nphase_sc - nphase_sc_0
                else
                 dnphase_liq = 0
                 dnphase_2 = 0
                 dnphase_gas = 0
+                dnphase_sc = 0
                endif
                nphase_liq_0 = nphase_liq
                nphase_2_0 = nphase_2
                nphase_gas_0 = nphase_gas
+               nphase_sc_0 = nphase_sc
 c
 c call thermo because the solver is overwriting the deni and denei arrays
 c    
@@ -1130,6 +1193,9 @@ c
                endif
 
 c dtotdm is the current time step size in seconds
+               amass = 0.0
+               asteam = 0.0
+               aener = 0.0
                do ja = 1, n
 
                   if (abs(ps(ja)) .gt. zero_t)  then
@@ -1507,7 +1573,7 @@ c     contim_rip days
 !            call contr_days (-1)
 !         endif
          end if
-
+         
       if(die) then
          if (iout .ne. 0) then
          write(iout, '(a40)') 'Kill file present; simulation terminated'
@@ -1609,6 +1675,21 @@ c     Change it back
 
          if (iout .ne. 0) write(iout, 6052)  verno, jdate, jtime
          if (iptty .gt. 0) write(iptty, 6052)  verno, jdate, jtime
+c      
+c gaz 111216 combine flux and scalar files for soilvision
+c
+      call zone_saved_manage(0,i,im,ja,mi,it_is_open)
+c      
+      call zone_saved_manage(2,i,im,ja,mi,it_is_open)
+c      
+c gaz 111216 close and delete zaved zone files
+c      
+      call zone_saved_manage(-1,i,im,ja,mi,it_is_open)
+c      
+      call zone_saved_manage(3,i,im,ja,mi,it_is_open)
+      
+      call zone_saved_manage(4,i,im,ja,mi,it_is_open)
+c     no more method = 4         
          if (ripfehm .eq. 0) then
             close (inpt)
             if (iout .ne. 0) close (iout)

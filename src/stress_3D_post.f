@@ -203,7 +203,8 @@ c s kelkar 12/11/09 axisymmetric anisotropy
 	real*8 shtixy,shtiz,shpixy,shpiz, e4i,e4kb,e4bar
         real*8 sheari, shearkb,shearbar,efac_ks,betat,efac_betat  
 c..................................................................
-      real*8 eigenvec(3,3),alambda(3)
+c gaz 052017        
+c      real*8 eigenvec(3,3),alambda(3)
       real*8 onedV, fac
       integer j
 
@@ -611,7 +612,9 @@ c
       endif        
          
          if(flag_principal.eq.1) then
-            call principal_stress_3D(i,alambda,eigenvec)
+c gaz 052017             
+c           call principal_stress_3D(i,alambda,eigenvec)
+            call principal_stress_3D(i)
 c     save the eigenvlaues in str_z,str)y,str_x in decreasing order
 c     str_z is the max principal stress
             str_x(i)= alambda(1)
@@ -634,14 +637,18 @@ c     ortho-normality
       
 c................................................................
 
-      subroutine principal_stress_3D(i,alambda,eigenvec)
+c gaz 052017      
+c      subroutine principal_stress_3D(i,alambda,eigenvec)
+      subroutine principal_stress_3D(i)
 
       use comai
       use comsi
 
       implicit none
       integer i
-      real*8 AMAT(3,3), eigenvec(3,3),alambda(3)
+c gaz 052017      
+c      real*8 AMAT(3,3), eigenvec(3,3),alambda(3)
+      real*8 AMAT(3,3)
       real*8 AI1,AI2,AI3
 
       AMAT=0.0

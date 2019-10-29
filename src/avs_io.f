@@ -898,9 +898,11 @@ C No binary option
                else
 
 c  PHS 4/27/2000   added altc and days to the pass to write_avs_node_con
-c gaz 111414
-               call write_avs_node_con(icall,npt,neq_primary,
-     &              nspeci,lu,ifdual)
+c gaz 111414 and 070118
+c               call write_avs_node_con(icall,npt,neq_primary,
+c     &              nspeci,lu,ifdual)
+               call write_avs_node_con(icall,npt,neq,
+     &              nspeci,lu,ifdual)               
                endif
                
             endif

@@ -279,15 +279,15 @@ c
 c     
                   tl=tco2(i)
                   sl=fw(i)
-		  sco2g=fg(i)
-		  sco2l=fl(i)
+		           sco2g=fg(i)
+                  sco2l=fl(i)
                   if(pl.lt.pmin_co2 ) mlz=1
                   if(pl.gt.pmax_co2 ) mlz=1
                   if(sl.lt.sminc) mlz=1
                   if(sl.gt.smaxc) mlz=1
-		  if(sco2g.lt.sminc) mlz=1
+		           if(sco2g.lt.sminc) mlz=1
                   if(sco2g.gt.smaxc) mlz=1
-		  if(sco2l.lt.sminc) mlz=1
+	         	  if(sco2l.lt.sminc) mlz=1
                   if(sco2l.gt.smaxc) mlz=1
                   if(tl.lt.tmin_co2 ) mlz=1
                   if(tl.gt.tmax_co2 ) mlz=1
@@ -346,15 +346,15 @@ c
 c     
                   tl=tco2(i)
                   sl=fw(i)
-		  sco2g=fg(i)
-		  sco2l=fl(i)
+		           sco2g=fg(i)
+		           sco2l=fl(i)
                   if(pl.lt.pmin_co2 ) mlz=1
                   if(pl.gt.pmax_co2 ) mlz=1
                   if(sl.lt.smind) mlz=1
                   if(sl.gt.smaxd) mlz=1
-		  if(sco2g.lt.smind) mlz=1
+		           if(sco2g.lt.smind) mlz=1
                   if(sco2g.gt.smaxd) mlz=1
-		  if(sco2l.lt.smind) mlz=1
+		           if(sco2l.lt.smind) mlz=1
                   if(sco2l.gt.smaxd) mlz=1
                   if(tl.lt.tmin_co2 ) mlz=1
                   if(tl.gt.tmax_co2 ) mlz=1
@@ -436,7 +436,7 @@ c         time_ieos(i) = 0.0d0
      &           cord(ii,3)
             write(iout, 9012) pl, tl, sl
             if(ico2.gt.0  .and. icarb .eq. 0) write(iout, 9013) pci(i)
-            write(iout, 9015) ps(i),pnx(i),ieos(i), iad
+            write(iout, 9015) ps(i),pnx(i)*1.d-6,ieos(i), iad
             if (rxn_flag.ne.0)then
                 write(iout, 9016) ps_delta_rxn(i)
             endif

@@ -70,7 +70,7 @@ c     local
       integer ilen, rlen, flen
       integer ityp
       integer :: max_con = 0
-      character*100 filename, tail
+      character*1000 filename, tail
       character*72 cline
       character*32 sxformat
       character*3 stat_var
@@ -79,6 +79,7 @@ c     Storing coefficients
       stat_var='old'
       inquire(unit=isstor,name=filename,form=sxformat)
 c     If the file already contains data we don't want to overwrite it 
+      filename = trim(filename)
       if(sxformat(1:9).eq.'FORMATTED') then
          read(isstor,'(a72)',end=900) cline
       else if(sxformat(1:11).eq.'UNFORMATTED') then

@@ -77,9 +77,11 @@
       real*8 dis2min,aream
       real*8 cord1,cord2,cord3,cord1j,cord2j,cord3j
       real*8 cord1jg,cord2jg,cord3jg
+      real*8 fac_nop
       real*8 sx1_primary,vfrac,sx1_total,vol_frac,perm
       parameter (rlp_min = 1.d-2)
       parameter (ngdkm_con = 6)
+     
       neqp1 = neq +1
       if(gdkm_flag.eq.0) return
       if(iflg.eq.1) then

@@ -498,12 +498,15 @@ C***********************************************************************
       real tmpli
       logical null1, found_end, macro_end, end_macro
       logical :: mptr_call = .false.
+c gaz 062718      
+      logical zone_sv_ex
       character*80 input_msg, dummy_line
       character*4 macro, macro1, chard, last_macro
       integer cnum,iieosd,inptorig,kk,msg(20),nwds,imsg(20)
       real*8 xmsg(20), simnum
       character*5 cden_type
       character*32 cmsg(20)
+      character*30 zonesavename
 
       sssol = 'no  '
       altc = 'fehm'
@@ -545,6 +548,9 @@ c confirm this is the terminator for the last macro read
 
       if (nwds .gt. 1) then
          found_end = .false.
+c check if necassary to save zone 
+c check done only in zone         
+c         izone_save = 0
          do i = 2, nwds
             if (msg(i) .eq. 3) then
                if (cmsg(i) .eq. 'off' .or. cmsg(i) .eq. 'OFF') then
@@ -552,7 +558,10 @@ c     This macro will not be used for the simulation, read to end
 c     of of this macro (flagged as 'end  macro')
                   call skip_macro (macro, inptorig, found_end)
                   exit
+c                else if (cmsg(i) .eq.'save'.or.cmsg(i) .eq.'SAVE') then  
+c                 izone_save = 1
                end if
+             
             end if
          end do
          if (found_end) then
@@ -672,12 +681,15 @@ c     &           sat_ich, head_id
 c            go to 1005
  995           head0 = 0.0
                temp0 = 20.0
-               pres0 = 0.1   
-               sat_ich = 0.0
+               pres0 = 0.1  
+c gaz 090119 set sat_ich to any state not equal to full liquid               
+               sat_ich = 0.999999
                head_id= 0.0
             end if
 c 1005       continue
+c gaz 083019
             call water_density(temp0, pres0, rol0)
+            rho1grav = rol0*9.81d-6
             ichead=1
             if(.not.allocated(head)) allocate(head(n0))
          end if
@@ -1020,14 +1032,19 @@ c will be output
          read(inpt,*)(iflxz(i),i=1,nflxz)
 
 c     Loop over each zone for determining izoneflxz array
-
+c gaz 062718 modified so saved zones can be used
          izoneflxz = 0
          do izone = 1, nflxz
+          call readsavedzone(1,zone_sv_ex,izone,iflxz(izone))
+c if the zone is a saved zone, then  izoneflxz filled in readsavedzone  
+c izoneflxz is in module combi      
+           if (zone_sv_ex .eqv. .false.) then
             do inode = 1, n0
                if(izonef(inode).eq.iflxz(izone)) then
                   izoneflxz(inode) = izone
                end if
             end do
+           endif
          end do
 
 
@@ -1386,11 +1403,14 @@ c     0.95  1.e-5  0.001 0.001
          schng = 0.005
  599     continue
 
-c**** rock densities, etc ****
       else if (macro .eq. 'rock') then
-c**** rock densities, etc ****
+c**** rock densities and heat capacities etc ****
          call inrock
-
+         
+      else if (macro. eq. 'vroc') then
+         ivrock = 1
+         call vrock_ctr(0,0)
+         
       else if(macro .eq. 'rxn ') then
 c**** Multiple reaction data ****
          rxn_flag = 1
@@ -1576,7 +1596,6 @@ c**** Zeolite water balance input
 c**** set zone information ****
          cnum = cnum + 1
          call zone(cnum, inpt)
-
       else if (macro .eq. 'zonn') then
 c**** set zone information ****
          cnum = cnum + 1
@@ -1634,9 +1653,56 @@ c  (un comment out below for new co2-h2o gaz version)
       if(icarb.ne.0) call ther_co2_h2o(10,0)
 
       if (.not. mptr_call) close (inpt)
-
+c deallocate memory from save zone algorthm (msg is
+c      used as a dummy integer array here)
+c     gaz 102918 changed msg to 0      
+      call zone_elem(-1,0,zonesavename,0,0)
       end subroutine input
 
+      subroutine readsavedzone(iflg,ex,izone,ja)
+c      
+c this routine checks for and reads a saved zone 
+c 
+c gaz 062718
+c
+      use combi
+      use comdti
+      use comai
+      implicit none
+      
+      character*30 zonesavename
+      logical ex, op
+      integer iflg, izone, ja, izunit, nin
+      integer open_file, i
+      
+c gaz 060617  (copied from initdata2)      
+c check for saved zonefile  
+      if(iflg.eq.1) then
+          zonesavename(1:14) = 'zone00000.save'
+          write(zonesavename(5:9),'(i5)') abs(ja)+10000
+          zonesavename(5:5) = '0'
+          ex = .false.
+          op = .false.
+          inquire (file = zonesavename, exist = ex)
+          if(ex) then
+           inquire (file = zonesavename, opened = op)   
+           if(.not.op) izunit=open_file(zonesavename,'unknown')
+           read(izunit,*)
+           read(izunit,*)
+           read(izunit,*) nin
+           if(allocated(ncord)) deallocate(ncord)
+           allocate(ncord(nin))
+           backspace izunit
+           read(izunit,*) nin, (ncord(i), i =1, nin)
+           close(izunit)
+c fill array  izoneflxz()  
+            do i = 1, nin
+              izoneflxz(ncord(i)) = izone  
+            enddo
+           deallocate(ncord)
+          endif  
+      endif    
+      end subroutine readsavedzone
 
 
 

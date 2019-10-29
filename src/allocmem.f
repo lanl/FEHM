@@ -522,7 +522,11 @@ c..................................................................
       endif 
 
 c***  allocate memory to all arrays in combi ***
-      allocate(izonef(n0))
+      if(gdkm_flag.ne.0) then
+        allocate(izonef(max(2*neq_primary,neq)))
+      else
+        allocate(izonef(n0))  
+      endif
       izonef = 0
       if(interface_flag.ne.0) then
          allocate(izonef_itfc(n0))
@@ -582,6 +586,7 @@ c     ***** COMMON Block fbs *****men
 c     ***** COMMON Block place *****
       allocate(pcpnt(ncpnt),pimm(nimm),pvap(nvap))
 c     ***** COMMON Block print_flag *****
+c     allocate(cpntprt(ncpnt),cplxprt(101:ncplx+100))
       allocate(cpntprt(ncpnt+nimm),cplxprt(101:ncplx+100))
       allocate(immprt(nimm),vapprt(nvap))
 c     ***** COMMON Block chem_name *****
@@ -672,6 +677,11 @@ c     ***** COMMON Block fdd *****
         allocate(dpcef(n0))
         pcp = 0.
         dpcef = 0.
+c gaz merge 110318        
+c     pjjohnson edits July 2018        
+        allocate(pjki(n0))
+        allocate(pjk(n0))
+c     end pjjohnson edits          
       else
         allocate(pcp(1))
         allocate(dpcef(1))
@@ -688,7 +698,9 @@ c     ***** COMMON Block fdd *****
       allocate(pflow(n0))
       allocate(phi(n0))
       allocate(pho(n0))
-      if (idoff .ne. -1) then
+c gaz 021517  (added just in case of soilvision combining of countour files)   
+      sv_combine = .true.
+      if (idoff .ne. -1 .or. sv_combine ) then
          if (irdof .ne. 13 .or. ifree .ne. 0) then
             allocate(pnx(n3))
             allocate(pny(n3))
@@ -730,6 +742,9 @@ c     ***** COMMON Block fdd *****
       allocate(t(n0))
       allocate(cpr(n0))
       allocate(denr(n0))
+c gaz 090217      
+      allocate(urock(n0))
+      allocate(durockt(n0))
       allocate(denh(n0))
       allocate(denj(n0))
 c gaz 090515
@@ -757,8 +772,13 @@ c gaz 10-19-2001
       allocate(volume(n0))
       allocate(wellim(n0))
 c     ***** COMMON Block fddi *****
-      allocate(nskw(n0))
-      allocate(nskw2(n0))
+      if(gdkm_flag.ne.0.and.ngdpmnodes.eq.0) then
+       allocate(nskw(2*n0))
+       allocate(nskw2(2*n0))
+      else
+       allocate(nskw(n0))
+       allocate(nskw2(n0))
+      endif
 c     ***** COMMON Block fdd1 *****
       totcom = nvap+nimm+ncpnt
       totcomalloc = max(totcom,1)

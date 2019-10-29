@@ -429,6 +429,9 @@ c
       real*8 pnxavg,pnyavg,pnzavg,vmagavg,tolvel,toldisp
       integer strindex,endindex,sehindexl,sehindexv
       integer pntr
+c gaz 082616      
+      integer kb_pri
+      real*8 reduction_factor
       character*120 fname, root
       character*7 fsuffix
       integer iroot
@@ -538,8 +541,9 @@ c----------------------------------------------------
                newdiff = concadiff(1,mflagl(1,itrcdsp(insp)),
      &              sehdiff(itrcdsp(insp)),ps(i),satr,phi(i),t(i))
             endif
+          
             dumi  = satr*newdiff*ps(i)
-
+c
 c     
 c     liquid phase calculations
 c     
@@ -635,9 +639,24 @@ c------- PHS ---------- 9/3/2004 -----------------------------
                      newdiffkb = concadiff(1,mflagl(nsp,itrc(kbnsp)),
      &                    diffmfl(nsp,itrc(kbnsp)),ps(kb),satrkb,
      &                    phi(kb),t(kb))
-               
-                     dumkb = satrkb*newdiffkb*ps(kb)
-                     dum_bar = 2*dumi*dumkb/(dumi+dumkb + toldisp)
+c gaz 081116 to 082616
+                     reduction_factor=red_factor(istrw_itfc(it11(jm))) 
+                            
+                     if(gdkm_flag.eq.0) then
+                       dumkb = satrkb*newdiffkb*ps(kb)
+                       dum_bar = 2.*dumi*dumkb/(dumi+dumkb + toldisp) 
+                     else if(gdkm_flag.ne.0) then   
+                       dumkb = satrkb*newdiff*ps(kb)
+                       if(reduction_factor.gt.2.) then
+                          kb_pri = reduction_factor - 2.
+c gaz 051618 always use harmonic weighting                          
+c                          if(kb_pri.eq.i) dumkb = dumi
+                          reduction_factor= 1.0
+                       endif    
+                       dum_bar = reduction_factor*2.*
+     &                    dumi*dumkb/(dumi+dumkb + toldisp) 
+                     endif
+
 c------- PHS ---------- 9/3/2004 -----------------------------
 
                      kz=kb-icd
@@ -739,8 +758,26 @@ c------- PHS ---------- 9/3/2004 -----------------------------
                      newdiffkb = concadiff(1,mflagl(nsp,itrc(kbnsp)),
      &                    diffmfl(nsp,itrc(kbnsp)),ps(kb),satrkb,
      &                    phi(kb),t(kb))
-                     dumkb = satrkb*newdiffkb*ps(kb)
-                     dum_bar = 2*dumi*dumkb/(dumi+dumkb + toldisp)
+c gaz 081116                     
+c                     dumkb = satrkb*newdiffkb*ps(kb)
+                   
+c gaz 081116 to 082616
+                     reduction_factor=red_factor(istrw_itfc(it11(jm)))  
+                            
+                     if(gdkm_flag.eq.0) then
+                       dumkb = satrkb*newdiffkb*ps(kb)
+                       dum_bar = 2.*dumi*dumkb/(dumi+dumkb + toldisp) 
+                     else if(gdkm_flag.ne.0) then   
+                       dumkb = satrkb*newdiff*ps(kb)
+                       if(reduction_factor.gt.2.) then
+                          kb_pri = reduction_factor - 2.
+                          if(kb_pri.eq.i) dumkb = dumi
+                          reduction_factor= 1.0
+                       endif    
+                       dum_bar = reduction_factor*2.*
+     &                    dumi*dumkb/(dumi+dumkb + toldisp) 
+                     endif                     
+                     
 c------- PHS ---------- 9/3/2004 -----------------------------
                      kz=kb-icd
                      neighc=it9(jm)
@@ -850,8 +887,10 @@ c----------------- PHS ------- 9/3/2004 -----------------------------
             else
                newdiff = concadiff(2,mflagv(1,itrcdsp(insp)),
      &              sehdiffv(itrcdsp(insp)),ps(i),satr,phi(i),t(i))
-            endif
-            dumi  = (1-satr) *newdiff*ps(i)
+            endif           
+             dumi  = (1-satr) *newdiff*ps(i)
+                                 
+                      
 c-----------------------------------------------------------------
 
 c     
@@ -936,8 +975,24 @@ c----------------- PHS ------- 9/3/2004 -----------------------------
                      newdiffkb = concadiff(2,mflagv(nsp,itrc(kbnsp)),
      &                    diffmfv(nsp,itrc(kbnsp)),ps(kb),satrkb,
      &                    phi(kb),t(kb))
-                     dumkb = (1-satrkb)*newdiffkb*ps(kb)
-                     dum_bar = 2*dumi*dumkb/(dumi+dumkb + toldisp)
+               
+c gaz 081116 to 082616
+                     reduction_factor=red_factor(istrw_itfc(it11(jm)))  
+                            
+                     if(gdkm_flag.eq.0) then
+                       dumkb = (1-satr)*newdiffkb*ps(kb)
+                       dum_bar = 2.*dumi*dumkb/(dumi+dumkb + toldisp) 
+                     else if(gdkm_flag.ne.0) then   
+                       dumkb = (1-satr)*newdiff*ps(kb)
+                       if(reduction_factor.gt.2.) then
+                          kb_pri = reduction_factor - 2.
+                          if(kb_pri.eq.i) dumkb = dumi
+                          reduction_factor= 1.0
+                       endif    
+                       dum_bar = reduction_factor*2.*
+     &                    dumi*dumkb/(dumi+dumkb + toldisp) 
+                     endif                       
+                     
 c-----------------------------------------------------------------
                      kz=kb-icd
                      neighc=it9(jm)
@@ -1014,8 +1069,25 @@ c----------------- PHS ------- 9/3/2004 -----------------------------
                      newdiffkb = concadiff(2,mflagv(nsp,itrc(kbnsp)),
      &                    diffmfv(nsp,itrc(kbnsp)),ps(kb),satrkb,
      &                    phi(kb),t(kb))
-                     dumkb = (1-satrkb)*newdiffkb*ps(kb)
-                     dum_bar = 2*dumi*dumkb/(dumi+dumkb + toldisp)
+                     
+    
+c gaz 081116 to 082616
+                     reduction_factor=red_factor(istrw_itfc(it11(jm)))  
+                            
+                     if(gdkm_flag.eq.0) then
+                       dumkb = (1-satr)*newdiffkb*ps(kb)
+                       dum_bar = 2.*dumi*dumkb/(dumi+dumkb + toldisp) 
+                     else if(gdkm_flag.ne.0) then   
+                       dumkb = (1-satr)*newdiff*ps(kb)
+                       if(reduction_factor.gt.2.) then
+                          kb_pri = reduction_factor - 2.
+                          if(kb_pri.eq.i) dumkb = dumi
+                          reduction_factor= 1.0
+                       endif    
+                       dum_bar = reduction_factor*2.*
+     &                    dumi*dumkb/(dumi+dumkb + toldisp) 
+                     endif                     
+                     
 c-----------------------------------------------------------------
                      kz=kb-icd
                      neighc=it9(jm)

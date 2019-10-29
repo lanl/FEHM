@@ -69,6 +69,7 @@
       real*8 cord_kb_pos_neg, cord_i_pos, area_kb_pos
       real*8  cord_i_neg, area_kb_neg
       real*8 disx_max,disx_min
+c gaz 060117 added volume fraction cals      
       real*8 a11,vfrac,vfrac2,sx1_primary,sx1_total,vf_gdpm
       integer, allocatable :: idum1(:)
       integer, allocatable :: idump(:)
@@ -134,7 +135,7 @@ c find min cosine connection in + and - directions
             iconn_gdkm(i,2) = kb_neg 
         if(igdpm(i).gt.0) then    
 c gdkm nodes
-c iconn_gdkm(3 has a different meaning   
+c iconn_gdkm(3) has a different meaning   
        i_gdkm = nelm(nelm(i+1))-1      
        do kk = 1,ngdpm_layers(igdpm(i))
          i_gdkm = i_gdkm +1
@@ -386,13 +387,17 @@ c multiply pemeabilities by volume fractions
 	     pnx(i) = pnx(i)*vfrac
 	     pny(i) = pny(i)*vfrac
 	     pnz(i) = pnz(i)*vfrac
+c save gdkm volume fraction for node 
+           gdkm_volume_fraction(i) = vfrac           
            sx1_total = sx1_primary/vfrac
            do jk = 1, ngdpm_layers(imodel)
             kc = kb+jk-1
             vfrac2 = sx1(kc)/sx1_total
 	      pnx(kc) = pnx(kc)*vfrac2
 	      pny(kc) = pny(kc)*vfrac2
-	      pnz(kc) = pnz(kc)*vfrac2            
+	      pnz(kc) = pnz(kc)*vfrac2  
+c save gdkm volume fraction for node 
+            gdkm_volume_fraction(kc) = vfrac2
            enddo
         endif
        enddo      

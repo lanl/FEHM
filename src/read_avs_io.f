@@ -151,7 +151,7 @@ C***********************************************************************
 
       use avsio
       use comai, only : altc, ichead, ihead, ierr, iptty, icnl, istrs,
-     &     idpdp, idualp, gdkm_flag
+     &     idpdp, idualp, gdkm_flag, sv_combine
       use combi, only : izonef
       use comco2, only : icarb
       use comdi, only : nsurf, izone_surf, izone_surf_nodes, ifree
@@ -175,6 +175,7 @@ c     assign defaults
       iovapor = 0
       iodual = 0
       iogdkm = 0
+      iogdkmblank = 0
       iovelocity = 0
       iopressure = 0
       iocapillary = 0
@@ -337,7 +338,13 @@ c     output temperature, keyword: temperature
      &           write(iptty, *) ' iotemperature   ', iotemperature
 
          elseif((chdum(1:1) .eq. 's').or.(chdum(1:1) .eq. 'S'))then
-            if ((chdum(2:2) .eq. 'o').or.(chdum(2:2) .eq. 'O'))then
+            if ((chdum(2:3) .eq. 'oi').or.(chdum(2:3) .eq. 'OI'))then
+c     SOILVISION OUTPUT     
+                sv_combine = .true.
+                iovelocity = 1
+                 write(iptty, *) 
+     &            ' Soil Vision output (with velocity output enabled) '
+            else if ((chdum(2:2) .eq. 'o').or.(chdum(2:2) .eq. 'O'))then
 c     output source, keyword: source
                iosource = 1
                if (iptty .ne. 0) 
@@ -374,7 +381,8 @@ c     output by zones, keyword: zone
                   allocate(izone_surf(max(1,nsurf)))
                   allocate(izone_surf_nodes(n0))   
                end if
-               read(lu,*) (izone_surf(i),i=1,nsurf)
+               backspace lu
+               read(lu,*) nsurf, (izone_surf(i),i=1,nsurf)
 c     Loop over each zone for determining izone_surf array
                izone_surf_nodes = 0
                do izone = 1, nsurf
@@ -423,6 +431,11 @@ c     output gdkm node data, keyword: gdkm
                iogdkm = 1
                if (iptty .ne. 0) 
      &              write(iptty, *) ' iogdkm          ', iogdkm 
+               if ((chdum(5:5) .eq. 'b').or.(chdum(5:5) .eq. 'B'))then
+                iogdkmblank = 1
+                if (iptty .ne. 0)   
+     &              write(iptty, *) ' blanking option for gdkm enabled '
+               endif
             else if ((chdum(2:2) .eq. 'e').or.(chdum(2:2) .eq. 'E'))then
 c     output avs geometry file, keyword: geo
                iogeo = 1

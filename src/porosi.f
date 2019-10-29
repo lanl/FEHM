@@ -1010,18 +1010,22 @@ c   - - - - PHS 7/17/13 added output to screen and out file for model 7 SALT
      &                     pwv,dvas(md),ps_delta_rxn_s(md)
 
                   end  do
-                 write(iout,*) 'Total change in volume: ', psdelta,
+                 if(iout.ne.0) then 
+                  write(iout,*) 'Total change in volume: ', psdelta,
      &                 ' m'
-                 write(iout,*) 'Percent change in total volume: ',
+                  write(iout,*) 'Percent change in total volume: ',
      &                 psdelta/psvol*100, ' %'
-                 write(iout,*) 'Total Volume involved in ppor  ',
+                  write(iout,*) 'Total Volume involved in ppor  ',
      &               psvol
+                 endif
+                 if(iatty.ne.0) then 
                  write(iatty,*) 'Total change in volume: ', psdelta,
      &                 ' m'
                  write(iatty,*) 'Percent change in total volume: ',
      &                 psdelta/psvol*100, ' %'
                  write(iatty,*) 'Total Volume involved in ppor  ',
      &               psvol
+                 endif
 
 
 

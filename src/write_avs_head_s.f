@@ -58,7 +58,7 @@ C************************************************************************
       use comai, only : altc, contim, days, iadif, icnl, jdate, jtime, 
      &     verno, wdd
       use comdi, only : head
-      use comsi, only : iPlastic,flag_excess_shear
+      use comsi, only : iPlastic,flag_excess_shear, flag_principal
       use davidi
       implicit none
 
@@ -203,14 +203,24 @@ c     Header is only written to the first tecplot file
       title(25) = trim(dual_char) // 'CO2 Phase State'
       title(26) = 'X displacement (m)'
       title(27) = 'Y displacement (m)'
-      title(28) = 'Z displacement (m)'     	          
-      title(29) = 'X stress (MPa)'
-      title(30) = 'Y stress (MPa)'
-      title(31) = 'Z stress (MPa)'  
-      title(32) = 'Volume Strain'      
-      title(33) = 'XY stress (MPa)'
-      title(34) = 'XZ stress (MPa)'
-      title(35) = 'YZ stress (MPa)'  
+      title(28) = 'Z displacement (m)'  
+c gaz 052317      
+      if(flag_principal.eq.0) then
+       title(29) = 'X stress (MPa)'
+       title(30) = 'Y stress (MPa)'
+       title(31) = 'Z stress (MPa)'      
+       title(33) = 'XY stress (MPa)'
+       title(34) = 'XZ stress (MPa)'
+       title(35) = 'YZ stress (MPa)'  
+      else if(flag_principal.eq.1) then
+       title(29) = 'Sigma Max (MPa)'
+       title(30) = 'Sigma 2   (MPa)'
+       title(31) = 'Sigma Min (MPa)'      
+       title(33) = 'Ang Sigma Max-Z'
+       title(34) = 'Ang Sigma Max-X'
+       title(35) = 'Ang Sigma Max-Y'           
+      endif
+      title(32) = 'Volume Strain'  
       title(36) = 'Plastic strain (no dim)'  
       title(37) = 'Youngs Mod (MPa)'  
       title(38) = 'Excess Shear (MPa)'  

@@ -249,7 +249,7 @@ c node_ch_model_type - specified model number change
 c
 c node_model - model number for each node
 c
-      use comai, only : boun_out
+      use comai, only : boun_out, neq_primary
       use combi
       use comci
       use comdi
@@ -271,6 +271,7 @@ c
       real*8 perm_tot,dd,rldum,sf, v11norm
 c     
       logical checkpa,checkpw,checke,checks,checkt,checkqa,checkqw
+      logical time_interpolate_used
       character key_word*4,timchar*9
 
       zmax=-1000
@@ -672,9 +673,9 @@ c     daym1=days
                         endif
                      endif
  10                  format(1x,'BOUNDARY CONDITION CHANGE : model # ',
-     *                    i3, ' time(days) ',g18.13, a9, g12.5)
+     *                    i3, ' time(days) ',g20.13, a9, g12.5)
  11                  format(1x,'BOUNDARY CONDITION CHANGE : model # ',
-     *                    i3, ' time(days) ',g18.13)
+     *                    i3, ' time(days) ',g20.13)
                   endif
                end if
             enddo
@@ -706,12 +707,13 @@ c     zvd 16-Jul08, all weighting will use vtotw for now
 c     vtote(i)=0.0d00
                      endif
                   endif
+c gaz 012819 multiple places distinguish between dsa and fxa by -1 and -2 respectively                   
                   if(iqa.ne.0) then
-                     if(sourcea_type(i).lt.0) then
+                     if(sourcea_type(i).eq.-1) then
                         vtotw(i)=0.0d00
 c     vtota(i)=0.0d00
                      endif
-                  endif
+                  endif            
                   if(iqco2.ne.0) then
                      if(sourceco2_type(i).lt.0) then
                         vtotw(i)=0.0d00
@@ -735,8 +737,6 @@ c
                   endif
                endif
             enddo
-
-c     calculate uppermost node
 
             do i=1,n
                iimodel=node_model(i)
@@ -922,11 +922,17 @@ C
      &                       imodel)
                      endif
                   endif
-                  if(iqa.ne.0.or.ixa.ne.0) then
+                  if(iqa.ne.0) then
                      if(sourcea_type(imodel).gt.0) then
                         qa(i)=sourcea(abs(time_type(imodel)),imodel)
                      endif
                   endif
+c gaz 111418 need separate arrays for "air fraction of sw" and "sa"  : uses lt.0              
+                  if(ixa.ne.0) then
+                     if(sourcea_type(imodel).eq.-2) then
+                        qaxf(i)=sourcea(abs(time_type(imodel)),imodel)
+                     endif
+                  endif                  
                   if(iha.ne.0) then
                      if(humid_type(imodel).lt.0) then
                         huma(i)=-humid(abs(time_type(imodel)),imodel)
@@ -1163,7 +1169,7 @@ C     End Volume/distance weighted cases
                      endif
                   endif
                   if(iqa.ne.0) then
-                     if(sourcea_type(imodel).lt.0) then
+                     if(sourcea_type(imodel).eq.-1) then
 c     vfac = sf*vol_nd(i)/vtota(imodel)
                         qa(i)=sourcea(abs(time_type(imodel)),imodel)*
      &                       vfac
@@ -1313,6 +1319,8 @@ C
 C     time_start = time(abs(time_type(imodel))  ,imodel)
 C     time_end   = time(abs(time_type(imodel))+1,imodel)
 C     time_factor2 = 
+                         
+                        time_interpolate_used = .false.
                         if(days .ge. time(abs(time_type(imodel)),
      &                       imodel)) then
                            time_factor2 = (days - 
@@ -1333,6 +1341,7 @@ C
                               drain(i)= time_factor1*drain(i) + 
      &                             time_factor2*drainar(abs
      &                             (time_type(imodel))+1,imodel)*vfac
+                              time_interpolate_used = .true.
                            endif
                         endif
                         if(iqw.ne.0) then
@@ -1340,6 +1349,13 @@ C
                               qw(i)   = time_factor1*qw(i) + 
      &                             time_factor2*sourcew(abs
      &                             (time_type(imodel))+1,imodel)*vfac
+                              time_interpolate_used = .true.            
+c gaz 012819 added  sw ("gt.0" change) (removed vfac term)                                
+                           else if(sourcew_type(imodel).gt.0) then
+                              qw(i)   = time_factor1*qw(i) + 
+     &                             time_factor2*sourcew(abs
+     &                             (time_type(imodel))+1,imodel) 
+                              time_interpolate_used = .true. 
                            endif
                         endif
                         if(iqco2.ne.0) then
@@ -1347,14 +1363,22 @@ C
                               qco2b(i)   = time_factor1*qw(i) + 
      &                             time_factor2*sourceco2(abs
      &                             (time_type(imodel))+1,imodel)*vfac
+                              time_interpolate_used = .true. 
                            endif
                         endif
                         if(iqa.ne.0) then
-                           if(sourcea_type(imodel).lt.0) then
+                           if(sourcea_type(imodel).eq.-1) then
                               vfac = sf*vol_nd(i)/vtota(imodel)
                               qa(i)   = time_factor1*qa(i) + 
      &                             time_factor2*sourcea(abs
      &                             (time_type(imodel))+1,imodel)*vfac
+                              time_interpolate_used = .true. 
+c gaz 012819 added  sw ("gt.0" change) (removed vfac term)                                
+                           elseif(sourcea_type(imodel).gt.0) then
+                              qa(i)   = time_factor1*qa(i) + 
+     &                             time_factor2*sourcea(abs
+     &                             (time_type(imodel))+1,imodel)
+                              time_interpolate_used = .true. 
                            endif
                         endif
                         if(iqenth.ne.0) then
@@ -1362,15 +1386,76 @@ C
                               qenth(i)= time_factor1*qenth(i) + 
      &                             time_factor2*sourcee(abs
      &                             (time_type(imodel))+1,imodel)*vfac
+                              time_interpolate_used = .true. 
+c gaz 012819 added  se("gt.0" change) (removed vfac term)                                
+                           elseif(sourcee_type(imodel).gt.0) then
+                              qenth(i) = time_factor1*qenth(i) + 
+     &                             time_factor2*sourcee(abs
+     &                             (time_type(imodel))+1,imodel)
+                              time_interpolate_used = .true.                              
                            endif
                         endif
+c gaz 012819 added  air pressure (removed vfac term)   
+                        if(ipresa.ne.0) then
+                            if(pressurea_type(imodel).ne.0) then
+                              presa(i)= time_factor1*presa(i) + 
+     &                             time_factor2*pressurea(abs
+     &                             (time_type(imodel))+1,imodel)
+                              time_interpolate_used = .true. 
+                            continue  
+                           endif
+                        endif                         
+c gaz 012819 added  pressure (removed vfac term)   
+                        if(ipresw.ne.0) then
+                            if(pressurew_type(imodel).ne.0) then
+                              presw(i)= time_factor1*presw(i) + 
+     &                             time_factor2*pressurew(abs
+     &                             (time_type(imodel))+1,imodel)
+                              time_interpolate_used = .true. 
+                            continue  
+                           endif
+                        endif                          
+c gaz 012819 added  temperature (removed vfac term) 
+c gaz 021619 added  head (uses temperature temperature arrays(can't use both)
+c should be valid for both 'hd and hdo'                        
+                        if(itempb.ne.0) then
+                            if(temperature_type(imodel).ne.0) then
+                              tempb(i)= time_factor1*tempb(i) + 
+     &                             time_factor2*temperature(abs
+     &                             (time_type(imodel))+1,imodel)
+                              time_interpolate_used = .true. 
+                            continue  
+                           endif
+                        endif 
+c gaz 021619 enthalpy and flowing enthalpy                        
+                        if(ienth.ne.0) then
+                            if(enthalpy_type(imodel).ne.0) then
+                              enth(i)= time_factor1*enth(i) + 
+     &                             time_factor2*enthalpy(abs
+     &                             (time_type(imodel))+1,imodel)
+                              time_interpolate_used = .true. 
+                            continue  
+                           endif
+                        endif  
+c gaz 021619 saturation                        
+                        if(isatb.ne.0) then
+                            if(saturation_type(imodel).ne.0) then
+                              satb(i)= time_factor1*satb(i) + 
+     &                             time_factor2*saturation(abs
+     &                             (time_type(imodel))+1,imodel)
+                              time_interpolate_used = .true. 
+                            continue  
+                           endif
+                        endif                           
                      endif
                   endif
                enddo
                if(iout.ne.0 .and. boun_out) write(iout,*) ' '
-               if(iptty.ne.0 .and. boun_out) write(iptty,*) ' '
+               if(iptty.ne.0 .and. boun_out) write(iptty,*) ' '              
                do i=1,mmodel
-                  if(time_interpolate(i) .ne. 0)then
+c gaz 012819  write details only if used                   
+                  if(time_interpolate(i) .ne. 0 .and.
+     &                 time_interpolate_used) then
                      if(days .ge. time(abs(time_type(i)),i))then
                         time_factor2 = 
      &                       (days - time(abs(time_type(i)),  i))/
@@ -1397,8 +1482,26 @@ C
      *                       ' f1=',time_factor1,
      *                       ' f2=',time_factor2
                      endif
+c gaz 012819  write warning if ti_linear enabled with know appropriate variables                    
+                  elseif(time_interpolate(i) .ne. 0 .and.
+     &                 .not.time_interpolate_used) then 
+                   if (iout .ne. 0 .and. boun_out) then
+                     write(iout,21) ' ti_linear t=',days,' model #=',i,
+     &                ' no appropriate keywords found (disabled)',
+     &                ' only keywords allowed with ti_linear:',
+     &                ' fd, sw, dsw, dsco2, sa, dsa, se, dse, t, ft,',
+     &                ' hd, hdo, s'      
+                   endif
+                   if (iptty .ne. 0 .and. boun_out) then
+                     write(iptty,21) ' ti_linear t=',days,' model #=',i,
+     &                ' no appropriate keywords found (disabled)',
+     &                ' only keywords allowed with ti_linear:',
+     &                ' fd, sw, dsw, dsco2, sa, dsa, se, dse, t, ft,',
+     &                ' hd, hdo, s'   
+                   endif
                   endif
- 20               format(a,g15.10,a,i4,a,g10.4,a,g10.4,a,g10.4,a,g10.4)
+ 20               format(a,g15.10,a,i4,a,g13.6,a,g13.6,a,g13.6,a,g13.6)
+ 21               format(a,g15.10,a,i4,a,/,a,a,a)                 
                enddo
             endif
          endif

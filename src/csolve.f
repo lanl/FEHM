@@ -999,7 +999,10 @@ c ldsp=0, dispsame either 0 or 1
             sehindexv=1
             neqp1=neq+1
             nmatavw = nelm(neqp1)-neqp1
-            if(idualp.eq.0) then
+c gaz 100917            
+            if(gdkm_flag.ne.0) then
+              nfinal = neq
+            else if(idualp.eq.0) then
                nfinal = n0
             else
                nfinal = neq
@@ -1561,6 +1564,7 @@ c
          else            
             if (ifinsh .ne. 2 .and. ptime .lt. (last_time + histime)
      &           .and. l .lt. (last_step)
+c    &           .and. l .lt. (last_step + nhist)
      &           .and. iprttrc .lt. nprttrc) then
                time2print = .FALSE.
             else

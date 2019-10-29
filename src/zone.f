@@ -13,7 +13,7 @@
 C***********************************************************************
 CD1
 CD1 PURPOSE
-CD1
+CD1 Create FEHM zones using geometry or node lists
 CD1 Enter properties using geometric description.
 CD1 
 C***********************************************************************
@@ -317,25 +317,32 @@ C***********************************************************************
       logical null1, null_new, cdum
       integer cnum, i, infile, izone, izonel, nin, nodez, nsl
       integer nxy, icnl_old, nin_old, i_old, ja, jb, jc, izonn
+      integer izunit, open_file
       character* 4 macro, cmacro
       character(20), allocatable :: znametmp(:)
       character*80 ltest
       real*8 xg, xz(8), yg, yz(8), zg, zz(8)
       real*8 tol_zone, zxy_min, zxy_max 
       integer imodel, j, n_n_n, zmaxtmp
+c gaz 022818
+      integer neq_t
       integer zone_dpadd, i3d_2d, i3d_rad, num_zones, lsize
       integer, allocatable :: znumtmp(:)
-
-      integer, allocatable :: ncord(:)
+c ncord now in combi
+c      integer, allocatable :: ncord(:)
       integer, allocatable :: izonef_old(:)
       integer, allocatable :: zone_list(:), tmp_list(:)
       character*20 zonetmp
+      character*30 zonesavename
       integer k, curzone
+      logical ex, zone_check
 
       save zmaxtmp
       allocate(ncord(n0))
 
 c     Dual perm or dual porosity value to add to get zones
+      zonesavename(1:4) = 'zone'
+      izone_save = 0
       zone_dpadd = 100
       lsize = 100
       allocate (zone_list(lsize))
@@ -359,6 +366,7 @@ c     Dual perm or dual porosity value to add to get zones
       do i = 5,77
          if(wdd1(i:i+3).eq.'conv') i3d_2d = 1
          if(wdd1(i:i+2).eq.'rad') i3d_rad = 1
+         if(wdd1(i:i+3).eq.'save') izone_save = 1
       enddo
       if(i3d_2d.eq.1.and.icnl.eq.0) then
          write(ierr,*) 'i3d_2d parameter ignored for 3d problem'
@@ -430,12 +438,14 @@ c zvd 01/04/2012 Keep track of zones that are defined so auto generated double p
          deallocate (tmp_list)
       end if
       zone_list(num_zones) = izone
-                  
+             
 c     Determine if zone_dpadd needs to be increased to 1000
       if(izone.gt.99) zone_dpadd = 1000
 
       if (izone .gt. 0) then
-c     check if list or nnum occurs
+c     first check if saved already  
+c     check if list or nnum occurs          
+        call check_save_zone(1,izone,zone_check)     
          read(infile, '(a4)') macro
          if (macro .ne. 'list' .and. macro .ne. 'nnum' .and.
      &        macro .ne. 'xyli'.and. macro.ne. 'all ' .and.
@@ -446,7 +456,8 @@ c     check if list or nnum occurs
 c     radial input for 3D problems (uses 2D input)
                read (infile, *) (xz(i), i = 1, 4)
                read (infile, *) (yz(i), i = 1, 4)  
-               call setzone(izone, nin, ncord, 4, xz, yz, zz, 1)
+c               call setzone(izone, nin, ncord, 4, xz, yz, zz, 1)
+               call setzone(izone, nin, 4, xz, yz, zz, 1)
             else if(i3d_2d.eq.0.or.icnl.eq.0) then
                read (infile, *) (xz(i), i = 1, nsl)
                read (infile, *) (yz(i), i = 1, nsl)
@@ -454,7 +465,8 @@ c     radial input for 3D problems (uses 2D input)
 c**** 3-d calculation ****
                   read (infile, *)  (zz(i), i = 1, nsl)
                end if
-               call setzone(izone, nin, ncord, nsl, xz, yz, zz, 0)
+c               call setzone(izone, nin, ncord, nsl, xz, yz, zz, 0)
+               call setzone(izone, nin, nsl, xz, yz, zz, 0)
             else
 c     3-d zones in 2D model (for consistency when extracting slices in 3d)               
                read (infile, *) (xz(i), i = 1, 8)
@@ -469,7 +481,8 @@ c     note we overwrite yz with zz
                yz(2) = zz(6)
                yz(3) = zz(2)
                yz(4) = zz(1)
-               call setzone(izone, nin, ncord, nsl, xz, yz, zz, 0)  
+c               call setzone(izone, nin, ncord, nsl, xz, yz, zz, 0) 
+               call setzone(izone, nin,  nsl, xz, yz, zz, 0)  
             endif
          else if(macro .eq. 'xyli') then
 c     read in nodes in zone from xy list
@@ -517,7 +530,8 @@ c     read in nodes in zone from xy list
             zz(7)=zxy_min
             zz(8)=zxy_min
             nin_old = 0
-            call setzone(izone, nin_old, ncord(nin+1:neq),
+c            call setzone(izone, nin_old, ncord(nin+1:neq),            
+            call setzone(izone, nin_old, 
      &           nsl, xz, yz, zz, 0)
             nin=nin+nin_old
             go to 71
@@ -563,9 +577,21 @@ c     read in nodes belonging to zone
                end if
             end do
          else if(macro .eq. 'all ') then     
+c check for multiple porosity models
+          if(gdpm_flag.ne.0.or.gdkm_flag.ne.0.or.
+     &       idualp.ne.0.or.idpdp.ne.0) then 
+              if(gdpm_flag.ne.0) neq_t = neq_primary
+              if(gdkm_flag.ne.0) neq_t = neq_primary
+              if(idualp.ne.0) neq_t = neq
+              if(idpdp.ne.0) neq_t = neq
+              do i = 1, neq_t
+               izonef(i) = izone
+              enddo
+          else    
             do i = 1, n0
                izonef(i) = izone
-            enddo         
+            enddo 
+          endif
          else if(macro .eq. 'jajb') then
             do
                read (infile, '(a80)') ltest
@@ -595,11 +621,66 @@ c     Change to n0 (used to be neq) - BAR 12-15-99
             write(ischk, 6011) (ncord(i), i = 1, nin)
  6011       format (10i8)
          end if
+c if zonesave ne 0, then save it to a file
+c first check if saved already
+c         call check_save_zone(1,izone,zone_check)
+         if(izone_save.ne.0) then            
+c create a file to save the zone information          
+          write(zonesavename(5:9),'(i5)') izone+10000
+          zonesavename(5:5) = '0'
+          zonesavename(10:14) = '.save'
+          ex = .false.
+c          inquire (file = zonesavename, exist = ex)
+          if(ex) then
+c abort zone save because zonefile exists
+          if (ischk .ne. 0) then
+           write(ischk, 6014)  izone, zonesavename(1:14)
+6014      format(1x, 'zone 'i5,' file creation aborted, ',a14,' exists')
+          endif
+          if (iout .ne. 0) then
+           write(iout, 6014)  izone, zonesavename(1:14)   
+          endif     
+          if (iptty .ne. 0) then 
+           write(iptty, 6014)  izone, zonesavename(1:14)   
+          endif  
+          go to 6015
+          endif
+          izunit=open_file(zonesavename,'unknown')
+c write zone in nnum style
+          if (ischk .ne. 0) then
+           write(ischk, 6013)  izone, zonesavename(1:14)
+6013      format(1x, 'zone 'i5,' saved in file  ', a14)          
+          endif
+          if (iout .ne. 0) then
+           write(iout, 6013)  izone, zonesavename(1:14)   
+          endif     
+          if (iptty .ne. 0) then
+           write(iptty, 6013)  izone, zonesavename(1:14)   
+          endif 
+          write(izunit,*) izone
+          write(izunit,*) 'nnum'
+c   write out nodes belonging to zone
+          nin = 0
+          do i = 1, n0
+            if(izonef(i) .eq. izone) then
+               nin = nin + 1
+               ncord(nin) = i
+            endif
+         end do
+          write(izunit,*) nin, (ncord(i), i = 1,nin)
+c add elements to saved zone        
+          call zone_elem(1,izunit,zonesavename,izone,nin)
+          call zone_elem(2,izunit,zonesavename,izone,nin)
+          close(izunit)
+6015      continue  
+       endif
+c end of saved zones                  
          izonel = izone
          go to 60
       endif
 c     check which nodes don't belong to a zone
- 90   nin = 0
+c gaz 022818
+90    nin = 0
 c     Changed to neq_primary (used to be neq) BAR - 12-15-99
       do i = 1, neq_primary
          if(izonef(i) .eq. 0) then
@@ -617,7 +698,7 @@ c     write(ischk, 6011) (ncord(i), i = 1, nin)
 
 c     Assign zones for GDPM nodes
 
-      if(gdpm_flag.ne.0) then
+      if(gdpm_flag.ne.0.and.gdkm_flag.eq.0) then
 
 c     Set zones for GDPM nodes for the case in which zone has
 c     already been called
@@ -641,6 +722,11 @@ c     it hasn't already been assigned a non-zero value
 c     for example, in a zone with the nnum option
                      izonef(n_n_n) = izonef(i) + zone_dpadd
                   endif
+               else
+c gaz new 061817 to make consistent with dpdp
+                 if(izonef(i).eq.0) then  
+                   izonef(n_n_n) = izonef(i) + zone_dpadd
+                 endif
                endif       
             end do 
          end do
@@ -684,9 +770,16 @@ c     Loop changed to accomodate the new zone_dpadd variable
                izonef(i + neq + neq) = izonef(i) + 2*zone_dpadd
             end if
          end do
-      else if(idpdp .ne. 0) then
-c     dpdp solution
+      else if(idpdp .ne. 0. or. gdkm_flag .ne. 0) then
+c     dpdp solution or gdkm solution
+        if(idpdp.ne.0) then
          n = neq+neq
+         neq_t = neq
+        else
+c     gdkm : neq is total nodes            
+         n = neq
+         neq_t = neq_primary
+        endif
          if (ischk .ne. 0) then
             write(ischk, *) 'dual porosity/dual permeability ',
      &           'solution'
@@ -699,26 +792,53 @@ c     zone definition. This allows the user to set the matrix
 c     nodes in the zone macro and not have the code default
 c     to zone number plus 100.
 c     Loop changed to accomodate the new zone_dpadd variable
-
-         do i = 1, neq
+         k = neq_t
+         do i = 1, neq_t
+c first check for gdkm primary node
+          if(gdkm_flag.ne.0) then
+           if(igdpm(i).ne.0) then
+            k = k+1
             if(izonn.eq.1)then
                if(izonef(i).ne.izonef_old(i)) then
-                  izonef(i + neq) = izonef(i) + zone_dpadd
+                  izonef(k) = izonef(i) + zone_dpadd
                endif
             else
-               if(izonef(i+neq).eq.0) then
-                  izonef(i + neq) = izonef(i) + zone_dpadd
+               if(izonef(k).eq.0.and.izonef(i).ne.0) then
+                  izonef(k) = izonef(i) + zone_dpadd
                endif
             end if
+           endif
+          else
+            if(izonn.eq.1)then
+               if(izonef(i).ne.izonef_old(i)) then
+                  izonef(i+neq_t) = izonef(i) + zone_dpadd
+               endif
+            else
+               if(izonef(i+neq_t).eq.0.and.izonef(i).ne.0) then
+                  izonef(i+neq_t) = izonef(i) + zone_dpadd
+               endif
+            end if              
+          endif          
          end do
          if (ischk .ne. 0) then
             do i = 1, num_zones
                nin = 0
-               do j = neq + 1, 2 * neq
-                  if(izonef(j) .eq. zone_list(i) + zone_dpadd) then
+               k = neq_t
+               do j = 1, neq_t 
+                if(gdkm_flag.ne.0) then
+                 if(igdpm(j).gt.0) then
+                  k = k +1
+                  if(izonef(k) .eq. zone_list(i) + zone_dpadd) then  
                      nin = nin + 1
-                     ncord(nin) = j
+                     ncord(nin) = k
                   endif
+                 endif
+                else
+                 if(izonef(j+neq_t) .eq. zone_list(i) + zone_dpadd) then
+                     nin = nin + 1
+                     ncord(nin) = j+neq_t   
+                  endif
+                endif
                end do
                if (nin .ne. 0) then
                   write(ischk, 6010) nin, zone_list(i) + zone_dpadd
@@ -733,10 +853,533 @@ c     Loop changed to accomodate the new zone_dpadd variable
 c     end if
       go  to  50
  100  continue
-      deallocate (zone_list)
-
+      deallocate(zone_list)  
       macroread(18) = .TRUE.
       deallocate(ncord)
       if(allocated(izonef_old)) deallocate(izonef_old)
       return
       end
+      subroutine zone_elem(iflg,izunit,zonesavename,izone,nin)
+c add element information to saved zones
+c
+      use combi
+      use comdti
+      use comai
+            
+      implicit none
+      integer iflg,izone,izunit,i_elem_cover
+      integer i,ii,j,ie,nin,ic,ic1,k,ib,id
+c      ncord now in combi
+c      integer ncord(*)
+      integer, allocatable :: nopdum(:,:)
+      integer, allocatable :: noodum(:,:)
+      integer, allocatable :: iplace(:) 
+      integer, allocatable :: iplace1(:) 
+      integer, allocatable :: ielem_used(:)  
+      integer, allocatable :: nei_list(:)
+      integer, allocatable :: ncord_new(:)
+      character*30 zonesavename
+      save nopdum,noodum,iplace,ielem_used,iplace1
+      save nei_list,ncord_new
+      parameter(i_elem_cover = 0)
+      if(iflg.eq.1) then
+c          
+c find elements associated with each node 
+c
+c calculate # connections for each node
+c
+      if(.not.allocated(iplace)) then
+       allocate(iplace(n0))
+      else
+c only need to do this section once          
+c this idicates the arrays are ready to use for iflg = 2         
+       return
+      endif
+      iplace = 0
+      do ie=1,nei
+         do j=1,ns
+            i=nelm((ie-1)*ns+j)
+            if (i .ne. 0) then
+               iplace(i)=iplace(i)+1
+            endif
+         enddo
+      enddo 
+      nemx = 0
+      do i = 1, n0
+       nemx = max(nemx,iplace(i))
+      enddo
+      allocate(nopdum(n0,nemx))
+      allocate(ielem_used(nei))
+      iplace=0
+      do ie=1,nei
+         do j=1,ns
+            i=nelm((ie-1)*ns+j)
+            if (i .ne. 0) then
+               iplace(i)=iplace(i)+1
+               nopdum(i,iplace(i))=ie
+            endif
+         enddo
+      enddo
+      else if(iflg.eq.2) then
+c just use element - node relationship
+       if(.not.allocated(iplace1)) allocate (iplace1(n0))
+       iplace1 = 0
+       ielem_used = 0
+       do ii = 1, nin
+        i = ncord(ii)
+        iplace1(i) = 1
+        do j = 1, iplace(i)
+          ie = nopdum(i,j)
+          ielem_used(ie) = ielem_used(ie) + 1
+        enddo
+       enddo
+c iplace is the element list connected to node i in the current zone       
+c iplace1 is list of nodes in current, (izone) zone       
+c look for elements that contain only nodes in current zone
+       if(.not.allocated(nei_list)) allocate(nei_list(nei))
+       nei_list = 0
+       ic = 0
+       ib = 0
+       id = 0
+       do ie = 1, nei
+        if(ielem_used(ie).gt.0) then
+         if(ielem_used(ie).eq.ns) id = id +1
+          ib = ib + 1
+          do j= 1, ns
+            i=nelm((ie-1)*ns+j)  
+            if(iplace1(i).eq.0.and.i_elem_cover.eq.0) go to 201
+          enddo
+c decide on elemnt coverage option (i_elem_cover)          
+          ic = ic + 1
+          nei_list(ic) = ie
+          go to 202
+201       continue  
+          write(ierr,*) 'zone = ',izone,' elem no = ',ie,' node = ',i,
+     &      ' mixed zones'
+202       continue          
+        endif
+       enddo
+          write(ierr,*) 'number of elements that contain at least one '
+     &     ,'node in zone ', izone, ' num elements ', ib
+          write(ierr,*) 'number of elements that contain only  '
+     &     ,'nodes in zone ', izone, ' num elements ', id
+c now add element information
+       write(izunit,*) 'elem'
+       write(izunit,*) ic, ns
+       if(.not.allocated(ncord_new)) allocate (ncord_new(n0))
+c check for expanded node 
+       ncord_new(1:nin) = ncord(1:nin)
+       ic1 = nin
+       do j = 1, ic
+        ie = nei_list(j)
+        write(izunit,*) ie, (nelm((ie-1)*ns+k),k = 1,ns)
+        do k = 1,ns
+          i = nelm((ie-1)*ns+k) 
+          if(iplace1(i).eq.0) then
+            ic1 = ic1 + 1
+            iplace1(i) = -1
+            ncord_new(ic1) = i
+          endif
+         enddo
+       enddo
+c check consistency     
+c       do j = 1, ic
+c        ie = nei_list(j)
+c       enddo
+c correct for expanded node list
+      if (ic1.gt.nin) then
+       write(izunit,'(a13)') 'nnum expanded'
+       write(izunit,*) ic1-nin
+       write (izunit,*) (ncord_new(i),i = nin + 1, ic1)
+       write(izunit,*) '    '
+      endif
+c close file
+      if(.not.allocated(zonesavenames)) 
+     &       allocate(zonesavenames(maxsvzone))
+       izone_sv_cnt = izone_sv_cnt + 1
+       zonesavenames(izone_sv_cnt) = zonesavename
+       close(izunit)
+      else if(iflg.eq.-1) then
+c deallocate memory
+c gz 103018 check allocate status (some arrays may not have been allocated)
+       if(allocated(iplace)) deallocate(iplace)
+       if(allocated(iplace1)) deallocate(iplace1)
+       if(allocated(nopdum)) deallocate(nopdum)
+       if(allocated(ielem_used)) deallocate(ielem_used)
+       if(allocated(nei_list)) deallocate(nei_list)
+       if(allocated(ncord_new)) deallocate(ncord_new)
+      endif
+      return 
+      end
+      subroutine check_save_zone(iflg,izone,zone_check)
+c
+c check for saved zones
+c 
+      use comai
+      use combi, only : izonesavenum, izone_save, maxsvzone 
+      
+      implicit none
+      
+      integer iflg,izone,i 
+      logical zone_check
+      if(iflg.eq.1) then
+        if(.not.allocated(izonesavenum)) 
+     &       allocate(izonesavenum(maxsvzone))           
+c check for previous zone usage for a saved zone           
+          do i = 1, num_sv_zones
+           if(izone.eq.izonesavenum(i)) then
+c write error messages if a preveous saved zone exists     
+            write(ierr,10) izone
+            if(iout.ne.0) write(iout,10) izone
+            if(iptty.ne.0) write(iptty,10) izone
+            stop
+           endif
+           enddo
+c increment the number of saved zones if this is a sved zone        
+       if(izone_save.ne.0) then
+          num_sv_zones = num_sv_zones + 1
+          izonesavenum(num_sv_zones) = izone           
+       endif
+      else
+      endif
+10    format('saved zone',1x,i6,1x,'exists, cannot define again',
+     &       ' stopping')      
+      return
+      end
+      subroutine zone_saved_manage(iflg,izunit,idz,nin,
+     &  n_elem,zone_saved)
+c
+c  manage saved zone files
+c
+      use comai
+      use combi
+      use avsio, only : ioconcentration
+      use comdi, only : nspeci
+      
+      implicit none
+      
+      integer iflg,i,izunit,idz,nin,n_elem,ns_sv,j,ie,k,k1,k2,k3,ij
+      integer izunit1,izunit2,izunit3, max_lines,var_count,n_n,n_e,il
+      integer n_n_c,n_e_c, var_node, var_count2, max_line_char,length
+      integer open_file
+      integer node_temp, n_xyz_node, n_zone, n_zone_max, nzone_cnt
+      integer n_zone_last, iop_conc
+      character*30 zonesavename, char_temp
+      character*200 file_flux, file_scalar
+      character*1100 line_temp1, line_temp2
+      character*200 string_temp
+      logical ex,op,zone_saved
+      parameter (max_lines = 100000000, max_line_char = 1000)
+      real*8 dum_v1(20), dum_v2(20), dum_var, time_temp
+      real*8 time_temp_last
+      real*4 caz(2)
+      real*8 tajj,tyming
+      integer idum_v1(20)
+      save tajj
+c gaz 080417 might want zone saved in general    
+c      if(.not.sv_combine) return
+c       
+      if(iflg.eq.0) then
+      if(.not.sv_combine) return
+c call timing function
+        if(iout.ne.0) then
+         write(iout,100) 
+        endif
+        if(iptty.ne.0) then
+         write(iptty,100) 
+        endif
+100     format(1x,/,'>> Combining files for SoilVision application  <<')        
+        tajj = tyming(caz) 
+      elseif(iflg.eq.3) then
+        if(.not.sv_combine) return
+c write out cpu time for combing files
+        tajj = tyming(caz) - tajj
+        if(iout.ne.0) then
+         write(iout,101) tajj
+        endif
+        if(iptty.ne.0) then
+         write(iptty,101) tajj
+        endif
+101     format(1x,'CPU time for combining SV files = ',1p,g12.4,' sec')
+      else if(iflg.eq.1) then
+c open and read saved zone file if they exist
+            zonesavename(1:14) = 'zone00000.save'
+            write(zonesavename(5:9),'(i5)') idz+10000
+            zonesavename(5:5) = '0'
+c inquire here and if saved file exists then use it 
+c otehrwise revert to old form 
+            zone_saved =.false.
+            inquire (file = zonesavename, exist = zone_saved)
+            if(zone_saved) then
+             izunit=open_file(zonesavename,'old')
+             read(izunit,*) 
+             read(izunit,*)
+             if(.not.allocated(ncord)) allocate(ncord(neq))
+             if(.not.allocated(ncord_inv)) allocate(ncord_inv(neq))
+             read(izunit,*) nin, (ncord(i), i =1, nin)
+             ncord_inv = 0
+             do i = 1, nin
+              ncord_inv(ncord(i)) = i
+             enddo
+             read(izunit,*)
+             read(izunit,*) n_elem, ns_sv
+             allocate(elem_temp(n_elem,ns_sv))
+             do j = 1, n_elem
+              read(izunit,*) ie, (elem_temp(j,i), i = 1, ns_sv)
+             enddo
+             read(izunit,'(a13)',end = 402) char_temp
+             if(char_temp(1:13).eq.'nnum expanded') then
+              read(izunit,*) j
+              read(izunit,*) (ncord(i), i = nin+1, nin+j)
+              do i = nin+1, nin+j
+               ncord_inv(ncord(i)) = i
+              enddo
+              nin = nin +j
+             endif
+402             close(izunit) 
+            endif
+      else if(iflg.eq.2) then
+c combine SV flux files with scalar files
+        if (sv_combine) then
+        izunit2 = open_file('soil_vision_beta.dat','unknown')
+        do i = 1, icflux
+         file_flux = contour_flux_files(i)
+          izunit = open_file(file_flux,'old')
+          do j = 1, max_line_char
+            if(file_flux(j:j+4).eq.'_vec_') then
+              file_scalar = file_flux
+              file_scalar(j:j+4) = '_sca_'
+              ex = .false.
+              inquire(file = file_scalar, exist = ex)
+              if(ex) then
+c now we can combine files  
+               izunit1 = open_file(file_scalar,'old')
+c modify 2nd line variables 
+               if(icnl.eq.0) then                                
+                line_temp2(1:37) = '"Liquid X Volume Flux (m3/[m2 s])"'
+                line_temp2(38:74) = '"Liquid Y Volume Flux (m3/[m2 s])"'
+                line_temp2(75:111) ='"Liquid Z Volume Flux (m3/[m2 s])"'
+               else
+                line_temp2(1:37) = '"Liquid X Volume Flux (m3/[m2 s])"'
+                line_temp2(38:74) = '"Liquid Y Volume Flux (m3/[m2 s])"'
+                line_temp2(75:111) ='                                  '
+               endif     
+c the first countour file contains header information
+               if(i.eq.1) then
+                read(izunit1,'(a)', end = 501) line_temp1
+                write(izunit2,'(a)') line_temp1
+                read(izunit1,'(a)', end = 501) line_temp1
+                read(izunit,*)
+                read(izunit,*)
+                var_count = 0
+                do k = 1, max_line_char
+                 if(line_temp1(k:k).eq.'"') var_count = var_count+1
+                 if(line_temp1(k:k+5).eq.'"node"') var_node =var_count
+                 if(line_temp1(k:k+3).eq.'"   ') then
+                  line_temp1(k+2:k+111) = line_temp2(1:111)
+                  go to 500
+                 endif
+                enddo 
+ 500            continue
+                var_node = var_node/2 + 1
+                var_count = var_count/2 
+c calculate number of flux variables                
+                if(icnl.eq.0) then
+                 var_count2 = var_node + 3
+                else
+                 var_count2 = var_node + 2
+                endif
+                write(izunit2,'(a)') line_temp1
+c  other files all set             
+               else
+                   
+               endif
+                do k = 1, max_lines
+                  read(izunit1,'(a)', end = 501) line_temp1
+                  read(izunit,'(a)', end = 501) line_temp2
+                  if(line_temp1(1:4).eq.'ZONE') then
+c find node and element numbers 
+                   do k1 = 1, max_line_char
+                      if(line_temp1(k1:k1+2).eq.'N =') then
+                       read(line_temp1(k1+3:k1+11),'(i9)') n_n
+                       n_n_c = 1
+                      elseif(line_temp1(k1:k1+2).eq.'E =') then
+                       read(line_temp1(k1+3:k1+11),'(i9)') n_e
+                       n_e_c = 1
+                       go to 502
+                      endif
+                   enddo
+502                continue                   
+                   write(izunit2,'(a)') line_temp1
+                  else
+                   backspace izunit1
+                   backspace izunit
+                   if(n_n_c.le.n_n) then
+                    read(izunit1,*, end = 501) 
+     &               (dum_v1(k1), k1 = 1, var_count)
+                    write(line_temp2,504) 
+     &               (dum_v1(k1), k1 = 1, var_count)
+                    k2 = 14*(var_node-1)+1
+                    ij = dum_v1(var_node)
+                    write(line_temp2(k2:k2+13),'(i14)') ij
+                    read(izunit,*, end = 501)                     
+     &               (dum_v2(k1), k1 = 1, var_count2)
+                    k2 = var_count*14
+                    if(icnl.eq.0)then
+                     k3 = (var_count+3)*14
+                     il = var_count2 -2
+                    else
+                     k3 = (var_count+2)*14
+                     il = var_count2 -1
+                    endif
+                    write(line_temp2(k2+1:k3),503) 
+     &                 (dum_v2(k1),k1 =il, var_count2)
+                    write(izunit2,'(a)') line_temp2(1:k3)
+c                    write(izunit2,503)
+c     &              (dum_v1(k1), k1 = 1, var_count),
+c     &              (dum_v2(k1), k1 = 4, 5) 
+                    n_n_c = n_n_c + 1
+503    format(40(1x,1p,g13.6))  
+504    format(40(1x,1p,g13.6))                  
+                   else
+c read and print element information                       
+                    read(izunit1,*, end = 501) 
+     &               (idum_v1(k1), k1 = 1, ns_in) 
+                    read(izunit,*, end = 501) 
+     &               (idum_v1(k1), k1 = 1, ns_in)                     
+                    write(izunit2,'(50(1x,i10))')
+     &              (idum_v1(k1), k1 = 1, ns_in) 
+                    n_e_c = n_e_c + 1
+                   endif
+                  endif
+                enddo
+              endif  
+            endif
+          enddo   
+501     continue
+        enddo
+c
+       else  
+c no Soil Vision files           
+        return  
+       endif
+      else if(iflg.eq.4) then
+c add transport output to SV file
+       if (sv_combine.and.ioconcentration.eq.1) then
+        if(icnl.eq.0) then
+         n_xyz_node = 4
+        else
+         n_xyz_node = 3  
+        endif
+        izunit2 = open_file('soil_vision_beta.dat','unknown')   
+        izunit3 = open_file('soil_vision_beta_conc.dat','unknown')
+         read(izunit2,'(a)') line_temp1
+         write(izunit3,'(a)') line_temp1
+         read(izunit2,'(a)') line_temp1   
+         line_temp2 = trim(line_temp1)
+c adjust header in SV file         
+         write(string_temp,'(a)') ' "Aqueous_Species_000"'
+         do i = 1, nspeci
+          write(string_temp(19:21),'(i3)') i+100
+          string_temp(19:19) = '0'
+          line_temp2 = trim(line_temp2) // trim(string_temp)
+         enddo
+         write(izunit3,'(a)') line_temp2  
+c i is time count (different conc files-outer loop)         
+         i = 0
+         n_zone_max = 0
+c nzone_cnt is zone count same conc file - inner loop)          
+         nzone_cnt = 0
+         time_temp_last = -1.0
+         iop_conc = 0
+599      continue   
+c gaz use soil_vision_beta.dat(izunit2) as the template         
+         read(izunit2,'(a)') line_temp1
+         write(izunit3,'(a)') trim(line_temp1) 
+         read(line_temp1,'(a4,i6,a21,f17.1,a10,i10,a5,i9)')
+     &      string_temp(1:4), 
+     &      n_zone, string_temp(11:32),time_temp,string_temp (1:10),        
+     &      node_temp,string_temp(1:5), n_elem
+          if(time_temp.eq.time_temp_last) then
+           nzone_cnt = nzone_cnt + 1
+          else
+            n_zone_max = max(nzone_cnt,n_zone_max)
+            time_temp_last = time_temp
+            nzone_cnt = 1
+            i = i + 1
+            iop_conc = 0
+          endif          
+c gaz 070418 need zone number (first zone,second zone,..)          
+          if(n_zone.ne.0) then
+
+            file_scalar = contour_conc_files(i) 
+            ex = .false.
+            inquire(file = file_scalar, exist = ex)
+            if(ex.and.iop_conc.eq.0) then
+c now we can combine files  
+              izunit1 = open_file(file_scalar,'old')
+              iop_conc = 1
+            endif
+            if(i.eq.1.and.nzone_cnt.eq.1) then
+             read(izunit1,'(a)') line_temp1
+             read(izunit1,'(a)') line_temp1
+            endif
+          endif
+          read(izunit1,'(a)') line_temp1
+            do j = 1, node_temp
+             read(izunit1,*,end = 601) (dum_var, k = 1, n_xyz_node),
+     &          (dum_v1(k), k = 1, nspeci)
+             read(izunit2,'(a)') line_temp1
+             length = len_trim(line_temp1) 
+             write(line_temp1(length+2:length+202),*) 
+     &         (dum_v1(k), k = 1, nspeci)
+             write(izunit3,'(a)') trim(line_temp1)
+            enddo
+c read element list from both files, write element list
+            do j = 1, n_elem
+              read(izunit1,'(a)') line_temp1
+              read(izunit2,'(a)') line_temp1
+              write(izunit3,'(a)') trim(line_temp1)
+            enddo
+c icconc is the number of printout times (in use module comai)  
+c gaz 070718            
+c            if(i.eq.icconc.and.nzone_cnt.eq.n_zone_max) go to 602
+c            if(i.eq.icconc*n_zone_max) go to 602
+c gaz debug 070818set i max  = 15            
+             if(i.eq.icconc.and.nzone_cnt.eq.n_zone_max) go to 602
+          go to 599
+c
+
+c
+       go to 602
+601    continue
+       if(iptty.ne.0) write(iptty,*) 'read error in '
+     &  ,'subroutine zone_saved_manage. stopping'
+       if(iout.ne.0) write(iout,*) 'read error in '
+     &  ,'subroutine zone_saved_manage. stopping'  
+       stop
+602    continue  
+c rename file
+       close(izunit3)
+       call rename('soil_vision_beta_conc.dat','soil_vision.dat')
+       continue
+c 
+      endif
+      else if(iflg.eq.-1) then
+c delete saved zone files
+       do i = 1, izone_sv_cnt
+        zonesavename = zonesavenames(i)
+        ex = .false.
+        op = .false.
+        inquire (file = zonesavename, exist = ex)
+         if(ex) then
+          inquire (file = zonesavename, opened = op)   
+          if(.not.op) izunit=open_file(zonesavename,'unknown')
+          close(izunit, status = 'delete')
+         endif
+       enddo
+      endif
+      return
+      end
+      
+      

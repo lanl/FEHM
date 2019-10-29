@@ -189,7 +189,7 @@ C***********************************************************************
       real*8 delx2
       real*8 dely2
       real*8 delz2
-      real*8 reduction_factor
+      real*8 reduction_factor, reduction_factor_t
       real*8  aexy, aexyf, alxi, alxkb, alyi, alykb, alzi, alzkb
       real*8  avxi, avyi, avzi, axi, axkb, axy, axyd, axyf
       real*8  ayi, aykb, azi, azkb
@@ -206,9 +206,8 @@ C***********************************************************************
       real*8  swi, sx1d, sx2c, sx2t, sx3c, sx3t, sx4d, sx4h, sxzt
       real*8  thxi, thxkb, thyi, thykb, thzi, thzkb, ti
       real*8  vexy, vexyf, vxy, vxyd, vxyf
-
       real*8 heatt
-
+      integer kb_pri,i_dir_gdkm
       parameter(dis_tol=1.d-12)
 c
 c
@@ -222,7 +221,6 @@ c changed by avw 4/95 -- entered into new version by seh
       else
          nmatavw=0
       endif
-
       sx1d=sx1(i)
       axi=pnx(i) 
       ayi=pny(i)
@@ -253,6 +251,17 @@ c changed by avw 4/95 -- entered into new version by seh
       thzi=thz(i)
       ti=t(i)
       swi=s(i)
+c gaz 020217      
+c determine direction of model (define for both materials) in geneg2 and other geneq etc 
+      if(gdkm_flag.eq.1) then
+       if(i.le.neq_primary) then
+        i_dir_gdkm = gdkm_dir(igdpm(i))
+       else 
+        i_dir_gdkm = gdkm_dir(igdpm(i-neq_primary))
+       endif
+      else
+        i_dir_gdkm = -1
+      endif      
 c
 c form constants for i>neq
 c
@@ -322,6 +331,7 @@ c
             alykb=aykb
             alzkb=azkb
             reduction_factor = red_factor(istrw_itfc(it11(jm)))
+            reduction_factor_t = reduction_factor 
             perml(1)=2.*alxkb*alxi/(alxkb+alxi)
             perml(2)=2.*alykb*alyi/(alykb+alyi)
             perml(3)=2.*alzkb*alzi/(alzkb+alzi)
@@ -350,49 +360,62 @@ c this connection broken, then added when well equations are generated
               sx2c = 0.0
             endif
             dis2=delx2+dely2+delz2
-            if(gdkm_flag.eq.2.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) then
-               pxy = sx2c*alxkb     
-            elseif(gdkm_flag.eq.2.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
-     &       then   
-               pxy = sx2c*alxi    
-            elseif(gdkm_flag.eq.3.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) 
-     &       then   
-               pxy = sx2c*alxi    
-            elseif(gdkm_flag.eq.3.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
-     &       then   
-               pxy = sx2c*alxkb                                        
+            if(i_dir_gdkm.ge.0.and.reduction_factor.gt.2) then
+               kb_pri = reduction_factor -2
+               reduction_factor = 1.0 
+c use directional harmonic weighting to match high res solution               
+               if(i_dir_gdkm.eq.1) then
+c                 pxy = sx2c*pnx(kb_pri)
+                  pxy = sx2c*perml(1)
+               else if(i_dir_gdkm.eq.2) then
+c                 pxy = sx2c*pny(kb_pri) 
+                  pxy = sx2c*perml(2) 
+               else if(i_dir_gdkm.eq.3) then
+c                 pxy = sx2c*pnz(kb_pri)
+                  pxy = sx2c*perml(3)
+               else if(dis2.gt.dis_tol) then
+                pxy=sx2c*dis2/(delx2/perml(1)+
+     &              dely2/perml(2)+delz2/perml(3))
+               endif                                    
             elseif(dis2.gt.dis_tol.and.iwd.gt.0) then
                pxy=sx2c*dis2/(delx2/perml(1)+
      &              dely2/perml(2)+delz2/perml(3))
             else
                pxy=sx2c*sx_mult*max(perml(1),perml(2),perml(3))
             endif
+            if(reduction_factor.gt.2.) reduction_factor = 1.0
             pxy = pxy*reduction_factor
             pxyi=pxy*(phikb-phii)
             pxyh=pxy*(pvikb-pvii)
-            if(gdkm_flag.eq.2.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) then
-               sx3c = sx2t*thxkb     
-            elseif(gdkm_flag.eq.2.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
-     &       then   
-               sx3c = sx2t*thxi    
-            elseif(gdkm_flag.eq.3.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) 
-     &       then   
-               sx3c = sx2t*thxi    
-            elseif(gdkm_flag.eq.3.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
-     &       then   
-               sx3c = sx2t*thxkb                                        
-            else if(dis2.gt.dis_tol.and.iwd.gt.0) then
+
+            if(i_dir_gdkm.ge.0.and.reduction_factor_t.gt.2) then
+               kb_pri = reduction_factor_t -2
+               reduction_factor_t = 1.0 
+               if(i_dir_gdkm.eq.1) then
+                 sx3c = sx2c*sx2t
+               else if(i_dir_gdkm.eq.2) then
+                 sx3c = sx2c*sx3t 
+               else if(i_dir_gdkm.eq.3) then
+                 sx3c = sx2c*sxzt
+               else if(dis2.gt.dis_tol) then
+                sx3c=sx2c*dis2/
+     &          (delx2/sx2t+dely2/sx3t+
+     &           delz2/sxzt)
+               endif                                    
+            elseif(dis2.gt.dis_tol.and.iwd.gt.0) then
               sx3c=sx2c*dis2/
      &          (delx2/sx2t+dely2/sx3t+
      &           delz2/sxzt)
             else
-              sx3c=sx2c*sx_mult*max(sx2t,sx3t,sxzt)
-            endif          
+               sx3c=sx2c*sx_mult*max(sx2t,sx3t,sxzt)
+            endif
+              if(reduction_factor_t.gt.2) reduction_factor_t = 1.0
+              sx3c = reduction_factor_t*sx3c
             t1(neighc)=pxyi
             t2(neighc)=pxyh
             t3(neighc)=pxy
             t4(neighc)=pxy
-            t5(neighc)=sx3c                    
+             t5(neighc)=sx3c                    
             t6(neighc)=-grav*t3(neighc)
             t7(neighc)=-grav_air*t4(neighc)
  59      continue
@@ -412,6 +435,7 @@ c
             alxkb=axkb
             alykb=aykb
             reduction_factor = red_factor(istrw_itfc(it11(jm)))
+            reduction_factor_t = reduction_factor
             perml(1)=2.*alxkb*alxi/(alxkb+alxi)
             perml(2)=2.*alykb*alyi/(alykb+alyi)
             radkb=0.5*(radi+cord(kz,3))
@@ -425,48 +449,55 @@ c
             delx2=(cord(kz,1)-cord(iz,1))**2
             dely2=(cord(kz,2)-cord(iz,2))**2
             dis2=delx2+dely2
-            if(gdkm_flag.eq.2.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) then
-               pxy = sx2c*alxkb     
-            elseif(gdkm_flag.eq.2.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
-     &       then   
-               pxy = sx2c*alxi    
-            elseif(gdkm_flag.eq.3.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) 
-     &       then   
-               pxy = sx2c*alxi    
-            elseif(gdkm_flag.eq.3.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
-     &       then   
-               pxy = sx2c*alxkb                                        
+            if(i_dir_gdkm.ge.0.and.reduction_factor.gt.2) then
+               kb_pri = reduction_factor -2
+               reduction_factor = 1.0 
+c gaz 050118 harmonic weightging to match high resolution grid               
+               if(i_dir_gdkm.eq.1) then
+c                 pxy = sx2c*pnx(kb_pri)
+                  pxy = sx2c*perml(1)
+               else if(i_dir_gdkm.eq.2) then
+c                 pxy = sx2c*pnx(kb_pri)
+                  pxy = sx2c*perml(2)
+               else if(dis2.gt.dis_tol) then
+                pxy=sx2c*dis2/(delx2/perml(1)+
+     &              dely2/perml(2)+delz2/perml(3))
+               endif                                    
             elseif(dis2.gt.dis_tol.and.iwd.gt.0) then
                pxy=sx2c*dis2/(delx2/perml(1)+
      &              dely2/perml(2))
             else
                pxy=sx2c*sx_mult*max(perml(1),perml(2))
             endif
+            if(reduction_factor.gt.2) reduction_factor = 1.0
             pxy = pxy*reduction_factor
             pxyi=pxy*(phikb-phii)
-            pxyh=pxy*(pvikb-pvii)            
-            if(gdkm_flag.eq.2.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) then
-               sx3c = sx2t*thxkb     
-            elseif(gdkm_flag.eq.2.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
-     &       then   
-               sx3c = sx2t*thxi    
-            elseif(gdkm_flag.eq.3.and.i.le.neq_gdkm.and.kb.gt.neq_gdkm) 
-     &       then   
-               sx3c = sx2t*thxi    
-            elseif(gdkm_flag.eq.3.and.i.gt.neq_gdkm.and.kb.le.neq_gdkm) 
-     &       then   
-               sx3c = sx2t*thxkb                                        
+            pxyh=pxy*(pvikb-pvii)
+
+            if(i_dir_gdkm.ge.0.and.reduction_factor_t.gt.2) then
+               kb_pri = reduction_factor_t -2
+               reduction_factor = 1.0 
+               if(i_dir_gdkm.eq.1) then
+                 sx3c = sx2c*sx2t
+               else if(i_dir_gdkm.eq.2) then
+                 sx3c = sx2c*sx3t  
+               else if(dis2.gt.dis_tol) then
+              sx3c=sx2c*dis2/
+     &          (delx2/sx2t+dely2/sx3t)
+               endif                                    
             elseif(dis2.gt.dis_tol.and.iwd.gt.0) then
               sx3c=sx2c*dis2/
      &          (delx2/sx2t+dely2/sx3t)
             else
-              sx3c=sx2c*sx_mult*max(sx2t,sx3t)
+               sx3c=sx2c*sx_mult*max(sx2t,sx3t)
             endif
+              if(reduction_factor_t.gt.2) reduction_factor_t = 1.
+              sx3c = reduction_factor_t*sx3c
             t1(neighc)=pxyi
             t2(neighc)=pxyh
             t3(neighc)=pxy
             t4(neighc)=pxy
-            t5(neighc)=sx3c
+            t5(neighc)=sx3c                    
             t6(neighc)=-grav*t3(neighc)
             t7(neighc)=-grav_air*t4(neighc)
  69      continue

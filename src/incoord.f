@@ -345,6 +345,9 @@ c**** element node data ****
             if(ns .lt. 0) then
                mlz = 1
                ns = iabs(ns)
+            else
+c gaz debug 032219                
+c               mlz = 0 gaz changed back "no change of mlz"
             end if
 
             if(elem_order.eq.'trad'.or.ns.ne.8) then

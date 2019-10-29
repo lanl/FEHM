@@ -340,8 +340,8 @@ C***********************************************************************
       real*8 dumconv, dumconv1, pdum, tdum, rolconv
 
       integer i,inj,j,neq1,neq2, dummyint,k,jp,kk,ll,length
-      integer ialiq, iavap
-
+      integer ialiq, iavap, ihead_sv
+      
       if(icont.eq.0) return
 c check for contour file output form
 c call veloc calculations here
@@ -354,7 +354,12 @@ c add call to heatloc to calculate heat fluxes for output
 c if head data requested call airctr(8,0)
 c
       if(ichead.ne.0) then
-         ihead=1
+c gaz 083119 don't turn head on exept to printout  
+         ihead_sv = 1 
+         if(ihead.eq.0) then
+          ihead_sv = 0
+          ihead = 1
+         endif
          dumconv = crl(1,1)
          dumconv1 = crl(4,1)
          pdum = pres0+rol0*head0*(-grav)
@@ -364,7 +369,10 @@ c
          crl(4,1)=pres0
          call headctr(2,0,0.,0.)           
          crl(1,1)= dumconv
-         crl(4,1)= dumconv1     
+         crl(4,1)= dumconv1 
+         if(ihead_sv.eq.0) then
+          ihead = 0
+         endif          
       else if(ihead.ne.0) then
          if (inj.ne.0) then
             rolconv = crl(1,1)

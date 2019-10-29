@@ -500,6 +500,8 @@ c gaz 090113
       real*8, allocatable ::  qh(:) 
       real*8, allocatable ::  s(:) 
       real*8, allocatable ::  sk(:)
+c gaz  071819 added sko(:)  last time step source/sink    
+      real*8, allocatable ::  sko(:)
       real*8, allocatable ::  recharge(:)
       real*8, allocatable ::  so(:) 
       real*8, allocatable ::  t(:)
@@ -530,7 +532,13 @@ c gaz 090113
 !     ****   TENMA   ****
       integer, allocatable :: nskw3(:)
 !     ****   TENMA   ****
- 
+
+c pjjohnson change for Leverett Pc function
+      real*8, allocatable :: pjki(:)
+      real*8, allocatable :: pjk(:) 
+
+c end pjjohnson edit      
+      
 !     ***** pointers in COMMON Block fdd1 *****
       real*8, allocatable ::  a1adfl(:,:) 
       real*8, allocatable ::  a1adfv(:,:) 
@@ -715,6 +723,8 @@ c gaz 090113 array for last TS porosity
       integer ixperm,iyperm,izperm
       real*8 fac_sec_days, fac_min_days, fac_year_days
       real*8, allocatable ::  qa(:) 
+c gaz 111418 added qaxf for air fraction in water      
+      real*8, allocatable ::  qaxf(:)       
       real*8, allocatable ::  qw(:) 
       real*8, allocatable ::  qw0(:) 
       real*8, allocatable ::  qco2b(:) 
@@ -930,5 +940,44 @@ c gaz 090113
       real*8 por_salt_min
       real*8 pressure_std,temperature_std
       parameter(pressure_std = 0.1,temperature_std = 20.0)
+c gaz 080817 
+      real*8 energy_conv
+      parameter(energy_conv = 1.d-6)
+c gaz 071819
+      real*8 source_ratio_out, source_ratio_in
+      integer ntable_roc
+      character*200, allocatable :: table_vroc(:)
+      integer, allocatable :: ivrn(:) 
+      integer, allocatable :: ivroc(:) 
+      integer, allocatable :: itroc(:) 
+      integer, allocatable :: ivrov(:)
+      integer, allocatable :: ntable_vroc(:)
+      integer, allocatable :: tblindx_roc(:,:)
+      real*8, allocatable ::  roc_table(:,:)       
+      real*8, allocatable ::  temp_table(:,:) 
+      
+      real*8, allocatable ::  vroc1f(:) 
+      real*8, allocatable ::  vroc2f(:) 
+      real*8, allocatable ::  vroc3f(:) 
+      real*8, allocatable ::  vroc4f(:) 
+      real*8, allocatable ::  vroc5f(:) 
+      real*8, allocatable ::  vroc6f(:) 
+      real*8, allocatable ::  vroc7f(:) 
+      real*8, allocatable ::  vroc8f(:) 
+      real*8, allocatable ::  vroc9f(:)      
+      real*8, allocatable ::  dcprt(:) 
+      real*8, allocatable ::  ddenrt(:) 
+      
+      real*8, allocatable ::  urock(:)
+      real*8, allocatable ::  durockt(:)
+c gaz 111118   
+c sk_temp() used in sub thrmwc      
+      real*8, allocatable ::  sk_temp(:)
+c gaz 081918
+      integer, allocatable :: izone_renum(:)
+      integer, allocatable :: nrenu_list(:)
+      integer, allocatable :: irb_renum_act(:)
+      integer, allocatable :: ncon_renum(:) 
+      integer n_renu_zone, min_r_z, max_r_z, neq_act, neq_nonact
       
       end module comdi

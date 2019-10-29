@@ -129,8 +129,18 @@ c
             else
                cord_val = cord(mid,igrav) 
             endif
+c gaz 090119
+          if(ichead.eq.0) then            
             head(mi)=(pho(mi)-crl(4,1))/rho1grav + cord_val
      &           -head0
+c gaz 090119
+           else
+            head(mi)=(pho(mi)-crl(4,1))/rho1grav + cord_val
+     &           -head0
+           if(s(mi).le.sat_ich.and.ieos(mi).ne.1) then
+            head(mi)= head_id
+           endif
+          endif            
 c     gaz 121306 allow negative heads as necessary
 c     head(mi)= max(head(mi),0.0d00)
          enddo
@@ -174,14 +184,15 @@ c
          endif
          head_value=(pres_value-crl(4,1))/rho1grav +
      &        cord_val-head0
-         if(irich.eq.0) then
-            head_value= max(head_value,0.0d00)
+c gaz 090119
+         if(ichead.ne.0) then
+          if(s(mi).le.sat_ich.and.ieos(mi).ne.1) then
+           head_value= head_id
+          endif
          endif
-c        if (ifree .ne. 0) then
-c           if (izone_free_nodes(mid).ne.0) then
-c              if(s(mid).le.1.E-3) head_value=0.
-c           end if
-c        endif	 
+c         if(irich.eq.0) then
+c           head_value= max(head_value,0.0d00)
+c         endif 
          
       else if(iflg.eq.5) then
 c     

@@ -341,6 +341,8 @@
 !D4   macroread(20)   LOGICAL  macro  Flag denoting if macro mdno has been read
 !D4   macroread(21)   LOGICAL  macro  Flag denoting if macro ptrk has been read
 !D4   macroread(22)   LOGICAL  macro  Flag denoting if macro fper has been read
+!D4   macroread(23)   LOGICAL  macro  Flag denoting if macro perm_olivella has been read
+!D4   macroread(24)   LOGICAL  macro  Flag denoting if macro  den(spatial density) has been read      
 !D4   tpor_flag       LOGICAL         Flag denoting if tracer porosity has been read
 !D4 
 !D4 Global Subprograms
@@ -422,7 +424,7 @@
       integer             time_flag, nhist, glob_flag, icont, istea_pest
       integer             icoef_replace
 c RJP 12/13/06 added nriver below
-      integer             nstep_save, nriver, nrlp, nei_in, ns_in
+      integer             nstep_save, nriver, nrlp, nei_in, ns_in, i_rlp
 c ZVD 05/01/07 added form_flag, ishisc, ishiswc
 c ZVD 08/05/09 added ishisp2, ishisp3, ishiscsl, ishiscsg
       integer             form_flag, ishisc, ishiswc, ishisp2, ishisp3
@@ -439,7 +441,9 @@ c GAZ 11/02/08
       integer             ishisstr, ishisstrx, ishisstry, ishisstrz
       integer             ishisstrxy, ishisstrxz, ishisstryz
       integer             ishisdisx, ishisdisy, ishisdisz
-      integer             ich_max, ich_m1, ich_m2, sat_ich
+c 090119 gaz made  sat_ich real*8 (sat value below head is set to zero)     
+c     integer             ich_max, ich_m1, ich_m2, sat_ich 
+      integer             ich_max, ich_m1, ich_m2
       integer             jswitch, joff
       integer             iwellp_flag, icoef_neg, numcoef_neg
       integer             istrs_coupl, iax_b, ipini
@@ -462,13 +466,26 @@ c gaz 121314
       integer              nrestart_ts
 c gaz 081415
       integer              mlz_save   
-      integer              nphase_liq, nphase_2, nphase_gas 
-      integer              nphase_liq_0, nphase_2_0, nphase_gas_0   
+      integer              nphase_liq, nphase_2, nphase_gas, nphase_sc 
+      integer              nphase_liq_0, nphase_2_0, nphase_gas_0
+      integer              nphase_sc_0
       integer              dnphase_liq, dnphase_2, dnphase_gas
+      integer              dnphase_sc
+c gaz 110715
+      integer              iwater_table
       integer :: irun = 0
 c gaz 013116
       integer              iaprf
-
+      logical              gdkm_new
+c gaz 111216      
+      integer              izone_sv_cnt, num_sv_zones, icflux, icconc
+      logical              sv_combine
+c gaz 081117              
+      integer             ivrock 
+c gaz 100318      
+      integer             initdata_pad
+c gaz 042119              neq_active added to report active varables when porosity <0 nodes are disabled      
+      integer             neq_active
       real*8              aener, aiaa, am0, amass, ame, an0, asteam
       real*8              astmo, aw, awc, awt, ay, ayc, contim, day
       real*8              daycf, daycm, daycmm, daycmx, daycs, dayhf
@@ -486,7 +503,8 @@ c gaz 013116
       real*8              daycs_save, daycf_save, dayhf_save, dayhs_save
       real*8              day_save_ss, fdum_last, aiaa_save, daymax_save
 c gaz 11-06-2007
-      real*8              rho1grav,h_to_p
+c gaz 090119 made sat_ich a real*8 from integer
+      real*8              rho1grav, h_to_p, sat_ich
 c gaz 01-06-2014
       real*8              roc0, visc_gas
       real*4              vernum
@@ -504,8 +522,9 @@ c gaz 090113
       character* 8        jtime
       character*11        jdate, flux_flag
       character*30        verno
-      character*80        wdd, wdd1
-      character*70        salt_read_file, salt_write_file
+c gaz 100318 added wdd2      
+      character*80        wdd, wdd1,wdd2
+      character*80        salt_read_file, salt_write_file
 
       integer nmacros
       parameter( nmacros = 60 )

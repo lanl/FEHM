@@ -793,6 +793,7 @@ c-----------------------------------------------------------
       use comii
       use comrlp, only : rlpnew
       use comrxni
+      use property_interpolate_1
       use comsi, only : ihms, density, internal_energy
       use comtable
 
@@ -802,6 +803,7 @@ C***** AF 11/15/10
 c      include 'comtable.h'                   ! phs 4/23/99
 C*****
       integer ndummy,iieosl,mid,mi,ieosd,iieosd,kq
+      real*8 psatl,dtsatp,dpsats
       real*8 dtin,dporpl,dportl,xrl,xrv,drl,drv,drlp,drvp,ela0,elpa1
       real*8 elpa2,elpa3,elta1,elta2,elta3,elpta,elp2ta,elpt2a
       real*8 elb0,elpb1,elpb2,elpb3,eltb1,eltb2,eltb3,elptb
@@ -838,6 +840,8 @@ C*****
       real*8 tfunn,tfund,dtpsn,dtpsd,dpldt,psat,vfcal,rop2,daep2
       real*8 dqv,dhflxe,drovp,drovt
       real*8 cden_correction, cden_cor
+c gaz  081317,082917  
+      real*8 ur, dur_dt      
 C*****
 C***** AF 11/15/10
       real*8 zwp, zwt                                ! phs 4/23/99
@@ -848,6 +852,9 @@ C*****
       real*8, allocatable :: sto1(:)
       real(8) :: damh = 0., damp = 0., daep = 0., daeh = 0.
       real(8) :: dtps = 0., dtd = 0.
+c gaz 110715
+      real*8 dum1,dumb,dumc,value(9)
+      integer istate, ifail
 
       integer i_mem_rlp
       save i_mem_rlp
@@ -914,11 +921,20 @@ c     calculate pressure dependant porosity and derivatives
       if(iporos.ne.0) call porosi(1)
 c     call capillary pressure models
       if (.not. rlpnew) call cappr(1,ndummy)
+c gaz 103017      
+c  call variable rock properties if appropriate  
+c  rock state started at last time step temperatures     
+      if(iad.eq.0) call vrock_ctr(3,0)
+      call vrock_ctr(1,0)
+      call vrock_ctr(2,0)
+      
       ifree1 = 0
       do mid=1,neq
          mi=mid+ndummy
          avgmolwt(mi) = mw_water
          ieosd=ieos(mi)
+c gaz 111415 modification to include supercritical
+          if(ieosd.eq.4) ieosd = 1
          iieosd=iieos(mi)
          if(ieosd.ge.2) ifree1 = ifree1 + 1
 
@@ -1084,6 +1100,7 @@ c     denomenator coefficients
             vvpt2b=cvv(20,iieosd)
             iieosl=iieosd
          endif
+         
          pl=phi(mi)
 
 c     evaluate thermo functions and derivatives
@@ -1094,20 +1111,17 @@ c     evaluate thermo functions and derivatives
          xa=pl
          xa2=xa*xa
          xa3=xa2*xa
-         xa4=xa3*xa 
+         xa4=xa3*xa    
+          pl=phi(mi)
+
          if(ieosd.eq.2) then
 
 c     two phase conditions
 
 c     calculate temperature and dt/dp
-            tfunn=tsa0+tspa1*xa+tspa2*xa2+tspa3*xa3+tspa4*xa4
-            tfund=tsb0+tspb1*xa+tspb2*xa2+tspb3*xa3+tspb4*xa4
-            tfun=tfunn/tfund
-            tl=tfun
-            dtpsn=((tspa1+2.*tspa2*xa+3.*tspa3*xa2+4.*tspa4*xa3)*tfund)-
-     &           (tfunn*(tspb1+2.*tspb2*xa+3.*tspb3*xa2+4.*tspb4*xa3))
-            dtpsd=tfund**2
-            dtps=dtpsn/dtpsd
+         tl=psatl(pl,pcp(mi),dpcef(mi),
+     2           dtsatp,dpsats,1,an(mi))
+          dtps = dtsatp
          else
             tl=t(mi)
          endif
@@ -1122,11 +1136,10 @@ C*****AF 11/15/10
 c-----------------------------------------
 c     phs      Lookup table if tableFLAG = 1
 c-----------------------------------------
-c 
-               if(tableFLAG.NE.1) then    
+c     
+            if(tableFLAG.NE.1.and.iwater_table.ne.1) then
 c*****
 c     liquid enthalpy
-
                enwn1=ela0+elpa1*x+elpa2*x2+elpa3*x3
                enwn2=elta1*tl+elta2*tl2+elta3*tl3
                enwn3=elpta*tlx+elpt2a*tl2x+elp2ta*tlx2
@@ -1216,10 +1229,40 @@ c     derivatives of liquid viscosity
                dvlen=dvlen1-dvlen2
                dviled=vild**2
                dvislt=dvlen/dviled
+c gaz 110715
+c new supercritical table similiar to doherty fast table as modified by rajesh pawar
+            else if(iwater_table.ne.0) then
+c subroutine h2o_properties_new(iflg,iphase,var1,var2,var3,istate,var4,var5,var6)  
+c    real*8 var1,var2,var3,var4,var5(9),var6
+              if(ieosd.eq.1.or.ieosd.eq.4)then
+                  call h2o_properties_new(4,ieosd,pl,tl,dum1,istate,
+     &                 dumb,value,dumc)
+
+             elseif (ieosd.eq.2) then
+                  call h2o_properties_new(5,ieosd,pl,tl,dum1,istate,
+     &                 dumb,value,dumc)
+
+             endif    
+                   rol = value(1)
+                   drolt = value(2)
+                   drolp = value(3)
+                   enl = value(4) + p_energy
+                   dhlt = value(5)
+                   dhlp = value(6)
+                   xvisl = value(7)
+                   dvislt = value(8)
+                   dvislp = value(9)    
+c chain rule not needed for table (d/dp already includes)
+                 if(ieosd.eq.2) then
+                  drolt = 0.0
+                  dhlt = 0.0
+                  dvislt = 0.0  
+                 endif
+
 C*****
 C*****AF 11/15/10
 c--------------------------------------------------------------------------
-            else    ! USE LOOKUP TABLE       phs 4/23/99         LOOKUP
+          else    ! USE LOOKUP TABLE       phs 4/23/99         LOOKUP
 
                izerrFLAG = 0.
 
@@ -1319,7 +1362,7 @@ C*****
          endif
 
          if(ieosd.ne.1) then
-
+          if(iwater_table.eq.0) then
 c     vapor enthalpy
             ensn1=eva0+evpa1*x+evpa2*x2+evpa3*x3
             ensn2=evta1*tl+evta2*tl2+evta3*tl3
@@ -1403,8 +1446,36 @@ c     derivatives of vapor viscosity
             dvsen=dvsen1-dvsen2
             dvised=visd**2
             dvisvt=dvsen/dvised
-         endif
 
+           else if(iwater_table.ne.0) then
+c subroutine h2o_properties_new(iflg,iphase,var1,var2,var3,istate,var4,var5,var6)  
+c    real*8 var1,var2,var3,var4,var5(9),var6
+                if(ieosd.eq.3)then
+                  call h2o_properties_new(4,ieosd,pl,tl,dum1,istate,
+     &                 dumb,value,dumc)
+
+               elseif (ieosd.eq.2) then
+                  call h2o_properties_new(6,ieosd,pl,tl,dum1,istate,
+     &                 dumb,value,dumc)
+
+               endif    
+                   rov = value(1)
+                   drovt = value(2)
+                   drovp = value(3)
+                   env = value(4) + p_energy
+                   dhvt = value(5)
+                   dhvp = value(6)
+                   xvisv = value(7)
+                   dvisvt = value(8)
+                   dvisvp = value(9)  
+c chain rule not needed for table (d/dp already includes)
+               if(ieosd.eq.2) then
+                drovt = 0.0
+                dhvt = 0.0
+                dvisvt = 0.0  
+               endif
+          endif
+         endif
 c     modify derivatives for 2-phase
          if(ieosd.eq.2) then
             drolp=drolp+drolt*dtps
@@ -1414,7 +1485,7 @@ c     modify derivatives for 2-phase
             dvisvp=dvisvp+dvisvt*dtps
             dvislp=dvislp+dvislt*dtps
             drolt=0.0
-            drovt=0.0
+             drovt=0.0
             dhlt=0.0
             dhvt=0.0
             dvisvt=0.0
@@ -1442,7 +1513,16 @@ c viscosity and derivatives
           dvislt = dpropt
           dvislp = dpropp         
          endif
-
+c gaz 081317      (gaz moved 102917)   
+         if(ivrock.ne.0) then
+          ur = urock(mi)   
+          dur_dt = durockt(mi)
+         else
+          urock(mi) = denr(mi)*cpr(mi)*tl
+          durockt(mi) = denr(mi)*cpr(mi)    
+          ur = urock(mi)   
+          dur_dt  = durockt(mi)
+         endif
          sl=s(mi)
          dq(mi)=0.0
          qh(mi)=0.0
@@ -1497,14 +1577,16 @@ c     saturation and relative permeabilities
 c     accumulation terms
             den=por*(sl*rol+sv*rov)
             eqdum=sl*rol*enl+sv*rov*env-pl
-            dene=((1.-por)*cp*tl+por*eqdum)
+            dene=((1.-por)*ur+por*eqdum)
 c     production of steam
             rag=rol*xvisv/rov/xvisl
             sig=xrv/(xrv+rag*xrl)
 c     derivatives of accumulation terms
             rop=por*(sv*drovp+sl*drolp)
             damp =rop*dtin
-            daep =((1.d0-por)*cp*dtps+por*(sv*drovp*env+sv*rov*dhvp+
+c gaz 081317            
+            daep =((1.d0-por)*(dur_dt*dtps)+
+     &           por*(sv*drovp*env+sv*rov*dhvp+       
      &           sl*drolp*enl+sl*rol*dhlp)-por)*dtin
             damh =por*(rol-rov)*dtin
             daeh =por*(rol*enl-rov*env)*dtin
@@ -1523,6 +1605,7 @@ c     derivatives of sink terms
                end if
             end if
          end if
+
 
 c     compressed liquid
          if(ieosd.eq.1) then
@@ -1544,7 +1627,7 @@ c     compressed liquid
 c     accumulation terms
             den1=rol
             den=den1*por
-            dene=(1.d0-por)*cp*tl+den*enl-por*pl
+            dene=(1.d0-por)*ur+den*enl-por*pl
 
 c......................................................
 c s kelkar, 28 feb 2011, for derivatives pore volume wrt displacements
@@ -1560,14 +1643,15 @@ c     derivatives of accumulation terms
             rop1=rop
             damp=(rop1+rop2)*dtin
             daep1=(rop*enl+por*rol*dhlp-por)
-            daep2=dporpl*(-cp*tl+rol*enl-pl)
+            daep2=dporpl*(-ur+rol*enl-pl)
             daep=(daep1+daep2)*dtin
             roe=por*drolt
             damh=(rol*dportl+drolt*por)*dtin
-            daeh=(-dportl*cp*tl+(1.-por)*cp+
+c gaz 081317            
+            daeh=(-dportl*ur+(1.-por)*dur_dt +
      &           dportl*(enl*rol-pl)+por*(rol*dhlt+enl*drolt))*dtin
-
          end if
+
 
 c     superheated vapour
          if(ieosd.eq.3) then
@@ -1589,7 +1673,7 @@ c     superheated vapour
 c     accumulation terms
             den1=rov
             den=den1*por
-            dene=(1.d0-por)*cp*tl+den*env-por*pl
+            dene=(1.d0-por)*ur+den*env-por*pl
 
 c     derivatives of accumulation terms
             rop=por*drovp
@@ -1597,7 +1681,8 @@ c     derivatives of accumulation terms
             daep=(env*rop-por)*dtin
             roe=por*drovt
             damh =roe*dtin
-            daeh =((1.d0-por)*cp+por*rov*dhvt+env*roe)*dtin
+c gaz 081317            
+            daeh =((1.d0-por)*dur_dt+por*rov*dhvt+env*roe)*dtin          
          end if
          if(ieosd.ne.-1) then
 
@@ -1721,21 +1806,25 @@ c     gaz 2-26-2002
          if(ieosd.eq.0) then
 
 c     heat conduction only
-            cprd=cpr(mi)
+            cprd=cpr(mi)  
+c eflow should have fixed temperature (no cprd)
             if(kq.lt.0) then
                eskd=eflow(mi)
-               edif=cprd*tl-eskd
+               edif=tl-eskd
                permsd=wellim(mi)
                qh(mi)=permsd*edif
-               deqh(mi)=permsd*cprd
+c gaz   081317            
+               deqh(mi)=permsd
             endif
             if(kq.ge.0.and.qflux(mi).eq.0.0) deqh(mi)=0.
             dtpae(mi)=1.
-            denrd=denr(mi)*cprd
+c gaz 082917            
+c            denrd=denr(mi)*cprd
             sto1(mi)=0.0
-            sto1(mi+neq)=denrd*tl
-            deef(mi)=denrd*dtin
+            sto1(mi+neq)=ur
+            deef(mi)=dur_dt*dtin
          endif
+         
          if(kq.eq.1) then
 c     
 c     check for peaceman calculation

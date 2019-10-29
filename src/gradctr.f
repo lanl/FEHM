@@ -61,6 +61,8 @@ CD4
       integer iflg,icode, izone, inode, idir, iroot,neq_total
       integer mi,neqp1,i,i1,i2,j,jj,ja,ngrad_max,i_2nd
       integer open_file,igradm, imodel, jk, node_second_0
+c gaz 052019      
+      integer, allocatable ::  izonef_tmp(:) 
       character*80 gradm_name
       character*5 dgradm
       character*80 gradmod_root
@@ -174,8 +176,10 @@ c     &    status ='unknown')
      &           izone_grad(i),cordg(i),idirg(i),
      &           igradf(i),var0(i),grad1(i)
          enddo
+c gaz 052019
+         if(.not.allocated(izonef_tmp)) allocate(izonef_tmp(n0))
          read(j,'(a4)') dgradm(1:4)
-         read(j,*) (izonef(i),i=1,n0)
+         read(j,*) (izonef_tmp(i),i=1,n0)
 c    
          if(iread.le.0) then
 c code with no restart file is present     
@@ -186,7 +190,7 @@ c code with no restart file is present
           endif          
             do izone=1,ngrad
                do inode=1,neq_total
-                  if(izonef(inode).eq.izone_grad(izone)
+                  if(izonef_tmp(inode).eq.izone_grad(izone)
      &                  .or.izone_grad(izone).eq.-1) then
                      idir = idirg(izone)
                      dist = cord(inode,idir)-cordg(izone)
@@ -216,12 +220,12 @@ c RJP 04/10/07 added the following part for CO2
                      endif
                   endif
                enddo
-c  calgulate variables from gradients for gdpm and gdkm    
+c  calculate variables from gradients for gdpm and gdkm    
              if(gdpm_flag.ge.3.and.gdpm_flag.le.6) then
                do inode=1,neq_primary
                  imodel = igdpm(inode)
                  if(ngdpm_layers(imodel).ne.0) then
-                  if(izonef(inode).eq.izone_grad(izone))then
+                  if(izonef_tmp(inode).eq.izone_grad(izone))then
 c notice that the gdpm nodes are 1D   
                    node_second_0 = nelm(nelm(inode+1))             
                    do jk = 1, ngdpm_layers(imodel)
@@ -244,7 +248,7 @@ c notice that the gdpm nodes are 1D
          else
             do izone=1,ngrad
                do inode=1,n0
-                  if(izonef(inode).eq.izone_grad(izone)) then
+                  if(izonef_tmp(inode).eq.izone_grad(izone)) then
                      idir = idirg(izone)
                      dist = cord(inode,idir)-cordg(izone)
                      if(igradf(izone).eq.4) then
@@ -271,6 +275,7 @@ c        write(j,*) 'gradctr file ', jj, ' read'
        enddo
          if(allocated(izone_grad)) then
             deallocate(izone_grad)
+            deallocate(izonef_tmp)
             deallocate(igradf)
             deallocate(var0)
             deallocate(grad1)

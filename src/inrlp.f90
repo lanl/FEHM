@@ -178,6 +178,8 @@
             tblnum = imsg(2) ! first param is table index  ; not sure this is used    
             if(nwds==6) then   ! older style input; ignore all parameters except last (phase couple)
             couple=ic(cmsg(6), ictype)
+! gaz debug 120317            
+!            couple = 25
 			else
             couple=ic(cmsg(2), ictype)  ! couple will be >20; ictype will include each phase            
             endif
@@ -243,9 +245,9 @@
             cmsg(2) = 'tabular'
 !     End of case 'tabular'
          case ('rlp', 'RLP')
-         write(*,*) 'blah 228 ',cmsg(3)
+!         write(*,*) 'blah 228 ',cmsg(3)
          if(cmsg(3).ne.'same') then
-  		 write(*,*) 'not same'
+!  		 write(*,*) 'not same'
 !     **************** REL PERMS ******************************
 ! increment rlp index           
             nrlp_phases = nrlp_phases+1
@@ -378,7 +380,7 @@
                stop
             end select
 		 else
-		 	write(*,*) 'about to err'
+!		 	write(*,*) 'about to err'
 		 	write(ierr,20) 'option "same" is obselete and is ignored'
 		 endif
             

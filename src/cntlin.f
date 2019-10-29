@@ -332,6 +332,8 @@ c      root_name = blank
                nmfil(28) = filename
             case ('co2i')
                nmfil(29) = filename
+            case ('h2oi')
+               nmfil(31) = filename
             case ('look')
                lookup_file = filename
             case default

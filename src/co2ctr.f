@@ -648,7 +648,14 @@ c
                   wellima(i) = aiped(i)*1.d06
                endif
             enddo
-            
+c
+c gaz new allocate an if ngas enabled (031515)
+c this is so salt vapor lowering can be consistent with psatl
+c
+c gaz 093017 (might need next 2 lines)
+c           deallocate(an)  
+c           allocate(an(max(n0,nspeci*n0)))            
+
            deallocate (aiped)
  
          elseif(iflg.eq.6) then

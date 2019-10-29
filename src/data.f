@@ -253,7 +253,14 @@ c initialize scalar integers in comzone
       tflag = 0
       hflag = 0
       eflag = 0
-
+c initialize number of saved zones      
+      izone_sv_cnt = 0
+      num_sv_zones = 0
+c initialize number of flux countour files       
+      icflux = 0
+      icconc = 0
+c initialize soilvision output to false        
+      sv_combine = .false.
 c initialize character and boolean variables in comai
 
       accm = '    '
@@ -322,6 +329,7 @@ c ico2 set in scanin.f
       ivapl  = 0
 c 23-Feb-12 Default value for thermal conductivity models
       ivcond = 0
+      ivrock = 0
       ivf    = 1
       ivfcal = 0
       ithic  = 0
@@ -434,6 +442,8 @@ c initialize scalar reals in comai
       dtot   =   0.0
       dtotc  =   0.0
       dtotdm =   0.0
+c gaz 100318
+      initdata_pad = 0
 C new variables in comsplitts
       dtot_split = 0.0
       dtot_next = 0.0

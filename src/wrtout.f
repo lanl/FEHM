@@ -1,7 +1,7 @@
       subroutine  wrtout (tassem,tas,totalflin,totalein,curinflow,
      &     cureinflow,is_ch,is_ch_t)
 !***********************************************************************
-!  Copyright, 2004,  The  Regents  of the  University of California.
+!  Copyright, 2004,  The  Regents  of the  University of California.s
 !  This program was prepared by the Regents of the University of 
 !  California at Los Alamos National Laboratory (the University) under  
 !  contract No. W-7405-ENG-36 with the U.S. Department of Energy (DOE). 
@@ -179,7 +179,8 @@ c     zero out enthalpy for air water system
             write(iout,704) itotal,itotals
             write(iout,705) is_ch, is_ch_t
             write(iout,706) nphase_liq, dnphase_liq, nphase_2, 
-     &            dnphase_2, nphase_gas, dnphase_gas 
+     &            dnphase_2, nphase_gas, dnphase_gas, nphase_sc,
+     &            dnphase_sc 
          endif
          if (iptty.gt.0) then
             write(iptty,772)
@@ -193,7 +194,8 @@ c     zero out enthalpy for air water system
             write(iptty,704) itotal,itotals
             write(iptty,705) is_ch, is_ch_t
             write(iptty,706) nphase_liq, dnphase_liq, nphase_2, 
-     &            dnphase_2, nphase_gas, dnphase_gas 
+     &            dnphase_2, nphase_gas, dnphase_gas, nphase_sc,
+     &            dnphase_sc 
          endif
          if(fimp.le.1.0d00) then
             message_ts = '                    '
@@ -230,9 +232,9 @@ c     zero out enthalpy for air water system
  704     format(1x,'Total Number of Iterations, N-R: ',i10,
      &        ' , Solver: ',i10)
  705     format(1x,'Phase Changes This Time Step: ',i8,' Total ',i11)
- 706     format(1x,'Nodes Liq Phase: ',i8,' change ',i8,/,
+706     format(1x,'Nodes Liq Phase: ',i8,' change ',i8,/,
      &   ' Nodes Two Phase: ',i8,' change ',i8,/,' Nodes Gas Phase: ',
-     &     i9,' change ', i8)
+     &     i9,' change ', i8,/,' Nodes SC Phase: ',i8,' change ',i8)
          if(ifree.ne.0) then
           if(ntty.eq.2) then
             write(iout,*) 'Number of partially filled cells ', ifree1
@@ -322,13 +324,13 @@ c Heat and mass w/ head output
      &              'E (MJ)', 4x, 'L sat', 5x, 'Temp (C)', 5x,
      &              '(kg/s)', 7x, '(MJ/s)')
 c Isothermal output w/ head
- 6130          format(59x,'source/sink', /, 3x, 'Node', 2x, 'Head (m)',
-     &              4x, 'P (MPa)', 4x, 'E (MJ)', 4x, 'L sat',3x,
-     &              'Temp (C)', 4x, '(kg/s)')
+ 6130          format(62x,'source/sink', /, 3x, 'Node', 2x, 'Head (m)',
+     &              4x, 'P (MPa)', 4x, 'E (MJ)', 4x, '  L sat',3x,
+     &              'Temp (C)', 4x, '(kg/s)','     State','  Zone' )
 c Isothermal output w/o head
  6230          format(52x, 'source/sink', /, 3x,'Node',2x,' P (MPa) ',
      &              3x, ' E (MJ)', 4x, 'L sat', 5x, 'Temp (C)', 5x,
-     &              '(kg/s)')
+     &              '(kg/s)','      State','  Zone')
                
 c     
 c     organize differing amounts of output for dpdp and dual solutions
@@ -367,9 +369,11 @@ c
                            sl=min(s(md)-rlptol,1.00d0)     
                         else
 	                   sl = s(md) 
+                         if(abs(sl).lt.1.d-98) sl = 1.d-98
                         endif
                      else if(irdof .ne. 13) then
                         sl = s(md)
+                        if(abs(sl).lt.1.d-98) sl = 1.d-98
                      else   
                         sl = 1.0d0
                      endif
@@ -377,10 +381,18 @@ c
                      if(ico2.lt.0.and.ice.eq.0) then
                         eqd=0.0
                      else
+                       if(ieos(md).ne.0.and.ps(md).ne.0.) then
                         eqd=0.0
                         rhomd = sl * rolf(md) + sv * rovf(md)
                         hmd=sl*rolf(md)*enlf(md)+sv*rovf(md)*envf(md)
                         if (abs(rhomd) .gt. zero_t)  eqd = hmd/rhomd
+                       else
+                         if(ivrock.ne.0) then
+                          eqd = urock(md)/denr(md)
+                         else
+                          eqd = cpr(md)*t(md)  
+                         endif
+                       endif
                      endif
                      rqd    =  sk(md)
 c     rqhd   =  0.0
@@ -395,9 +407,11 @@ c     CHANGE ABOVE TO JUST PRINT OUT qh ARRAY
                         phod=pho(md)
                         if (ico2.lt.0) then
                            write(iout, 6031)  md ,
-     *                          phod , eqd , sl , t(md) , rqd 
+     *                          phod , eqd , sl , t(md) , rqd, ieos(md),
+     &                          izonef(md)                      
                            if ( iatty .gt. 0 )  write(iatty ,6031) md ,
-     *                          phod , eqd , sl , t(md) , rqd
+     *                          phod , eqd , sl , t(md) , rqd, ieos(md),
+     &                          izonef(md)                      
                         else
                            write(iout, 6031)  md ,
      *             phod , eqd , sl , t(md) , rqd , qh(md)
@@ -413,10 +427,11 @@ c     CHANGE ABOVE TO JUST PRINT OUT qh ARRAY
                         endif
 c     phod is head with offset removed
                         if (ico2 .lt. 0) then
-                           write(iout, 6032)  md , phod , pres_out ,
-     &                          eqd , sl , t(md) , rqd 
-                        if ( iatty .gt. 0 )  write(iatty ,6032)  md ,
-     *                       phod, pres_out , eqd , sl , t(md) , rqd 
+                          write(iout, 6031)  md , phod , pres_out ,
+     &                    eqd , sl , t(md) , rqd , ieos(md), izonef(md)
+                        if ( iatty .gt. 0 )  write(iatty ,6031)  md ,
+     *                       phod, pres_out , eqd , sl , t(md) , rqd,
+     &                        ieos(md), izonef(md)
                         else
                            write(iout, 6032)  md , phod , pres_out ,
      &                          eqd , sl , t(md) , rqd , qh(md) 
@@ -425,10 +440,10 @@ c     phod is head with offset removed
      &                          rqd , qh(md)
                         end if
                      endif
- 6031                format(i7,2x,g11.4,1x,g9.3,1x,g9.3,1x,f8.3,2x,
-     *                    g11.4,2x,g11.4)
+ 6031                format(i7,2x,g11.4,1x,g9.3,1x,g9.3,1x,f8.3,1x,
+     *                    g11.4,1x,g10.3,1x,i5,5x,i5)
  6032                format(i7,1x,g11.4,1x,g9.3,1x,g9.3,1x,g9.3,1x,
-     *                    f8.3,3x,g11.4,1x,g11.4)
+     *                    f8.3,3x,g11.4,1x,g11.4,3x,i4)
                   enddo
                enddo
                if (ichead .ne. 0) then

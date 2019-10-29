@@ -422,10 +422,7 @@ C***********************************************************************
 c symmetry check on = 1, off = 0      
       parameter (ic_sym = 0)
       parameter (very_small= 1.d-30)
-c gaz debug
-c
-      fac_nop = wellim(1)
-      fac_nop = anl(1)
+c 
 c
 c     Calculate rho1grav
 c      rho1grav = crl(1,1)*(9.81d-6)
@@ -441,8 +438,10 @@ c same for avs
 c restart uses 0.0 for vapor (in case restart is 2-phase)
 c
        if(jswitch.ne.0) then
+c gaz debug 041416 (affects rich flxz and his output)
         vflux_flag = .false.
-c gaz debug 041416 (affects avs output)
+c gaz debug 041416 (affects rich avs and other contour output!)
+c gaz debug 041416 now left as is for correct verification output
 c        iovapor = 0
        endif
 
@@ -566,16 +565,18 @@ c**** compatability scaling (viscosity is in pa-sec, not in mpa-sec) ***
       end do
 
 c**** set permeabilities = 0 for porosity = 0.0 ****
+      neq_active = 0
       do i = 1, n
          if (abs(ps(i)) .le. zero_t .and. idoff .gt. 0)  then
             pnx(i) = zero_t
             pny(i) = zero_t
             pnz(i) = zero_t
+            neq_active = neq_active +1
          end if
       end do
 
       days = 0.0
-      mink = neq
+      mink = neq - neq_active
 
 c**** complete element information ****
 !      if(contim.ge.0) then
@@ -661,34 +662,60 @@ c calculate the dimensions on a control volume
 c neq_primary still defined as gdpm primary grid  
 c gaz 122311 moved lower 
 c         call area_length_calc(3) 
-c         
+c gaz 051616 change calls for gdkm 
+c need drxg,dryg,drzg here 
+c gaz 091118 removed this line          
+c          i = sx(1,1)
+          
+          if (gdkm_flag .ne. 0.and.gdkm_flag .le. 3) 
+c calculate gridblock dimensions           
+     &       call gdkm_volume_fraction_interface(1) 
          if (gdpm_flag .ne. 0) call add_gdpm
-c modify permeabilities if necessary 
-         if (gdkm_flag .ne. 0.and.gdkm_flag .le. 3) call gdkm_connect(3)
+c allocate memory for gdkm volume factors
+         if (gdkm_flag .ne. 0.and.gdkm_flag .le. 3) 
+     &       call gdkm_volume_fraction_interface(-1)
+c         if (gdkm_flag .ne. 0.and.gdkm_flag .le. 3) call gdkm_connect(3)   
+c        gdkm_connect now called from add_gdpm1    
+c gaz 081617         
+         if (gdkm_flag .ne. 0.and.gdkm_flag .le. 3) 
+     &       call gdkm_volume_fraction_interface(3) 
 c
 c calculate connectivity for generalized permeability mode
 c         
          if (gdkm_flag .ne. 0.and.gdkm_flag .le. 3) call gdkm_calc(1)
-c neq_primary now defined as full grid        
+c         
+c neq_primary now defined as full grid 
+          if (gdkm_flag .ne. 0.and.gdkm_flag .le. 3) 
+     &       call gdkm_volume_fraction_interface(0)
+         if (gdkm_flag .ne. 0.and.gdkm_flag .le. 3) 
+     &       call gdkm_volume_fraction_interface(4)  
 c
+c gaz 081116 apply volume fraction to some flow and transport parameters (thx,thy,thz,diff)
+c         call gdkm_volume_fraction_apply(1)
 c gaz 11-09-2001 allocation of istrw_itfc and istrw_cold
 c done here after call to anonp,storsx, or structured
 c still could ne changed in add_gdpm   
        ncon_size=nelm(neq+1)
        nelmd = ncon_size
       if(idpdp.eq.0) then
-         if (.not. allocated (istrw_itfc)) 
-     &        allocate(istrw_itfc(ncon_size))
-         if (.not. allocated (istrw_cold))
-     &        allocate(istrw_cold(ncon_size))
+         if (.not. allocated (istrw_itfc)) then
+          allocate(istrw_itfc(ncon_size))
+          istrw_itfc = 0
+         endif    
+         if (.not. allocated (istrw_cold)) then
+            allocate(istrw_cold(ncon_size))
+            istrw_cold = 0 
+         endif
       else
-         if (.not. allocated (istrw_itfc)) 
-     &        allocate(istrw_itfc(2*ncon_size))
-         if (.not. allocated (istrw_cold))
-     &        allocate(istrw_cold(2*ncon_size))
-      end if
-      istrw_itfc = 0
-      istrw_cold = 0         
+         if (.not. allocated (istrw_itfc)) then
+             allocate(istrw_itfc(2*ncon_size))
+             istrw_itfc = 0
+         endif
+         if (.not. allocated (istrw_cold)) then
+             allocate(istrw_cold(2*ncon_size))
+             istrw_cold = 0
+         endif
+      end if       
 c add river or well connections
          if (nriver .ne. 0) then
 c river_ctr(1) call is made in incoord
@@ -713,12 +740,13 @@ c  (ico2 chance so embedded call to airctr in subsidence) goes through
       ico2 = i
 c      
       if(interface_flag.ne.0) call setconnarray
+c gaz 090618      
 c call sx_combine to break connections to fixed type BCs
-      if(ianpe.eq.0) then
-         if (irun.eq.1.and.inobr.eq.0) call sx_combine(1)
-      else
-         if (irun.eq.1.and.inobr.eq.0) call sx_combine_ani(1)
-      endif     
+c      if(ianpe.eq.0) then
+c         if (irun.eq.1.and.inobr.eq.0) call sx_combine(1)
+c      else
+c         if (irun.eq.1.and.inobr.eq.0) call sx_combine_ani(1)
+c      endif     
 c        
 c call fluxo now to calculate neighbors if necessary
 c
@@ -997,7 +1025,9 @@ c
             else
                nop = 0
             end if
+            neq_active = neq
             if(i.gt.0) then
+               neq_active = neq -i
                if (iout .ne. 0) write(iout, 100) i
                if (ischk .ne. 0) write(ischk, 100) i
                if (iptty .ne. 0) write(iptty, 100) i
@@ -1014,7 +1044,8 @@ c
                         pnz(i)=very_small
                      end if
                      pho(i)=0.1
-                     to(i)=crl(6,1)
+c gaz 042119 set to to 0.0 (will be changed later to tref
+                      to(i)=0.0
                      if (irdof .ne. 13 .or. ifree .ne. 0) s(i)=1.0
                   endif
                enddo
@@ -1236,7 +1267,9 @@ c      rho1grav = 997.*9.81d-6
 c     Moved calls to airctr for head option to below the iflg = -1 call
 c if head input has been used,convert to pressures
 c
-      if(ihead.ne.0.or.ichead.ne.0) then
+c      if(ihead.ne.0.or.ichead.ne.0) then
+c gaz 083119 this could possibly cause problems if ichead does more that I think  <<<<
+       if(ihead.ne.0) then
          if(head0.gt.0) then
             phi_inc = head0*crl(1,1)*(-grav)
          end if
@@ -1279,12 +1312,14 @@ c**** initialize porosities in subsidence calcs ****
       call subsidence(-2)      
 c**** initialize coeffients adjust volumes in dual porosity calcs ****
       call dual (2)
-
+c gaz 101518  debug only    
+c      to(1) = 85.
+c      to(20) =5.
 c**** initialize coefficients adjust volumes in dpdp calcs ****
       call dpdp (1)
       do i = 1, n
          volume(i) = sx1(i)
-c gaz 01-18-2011 chane code to allow for negative temperatures         
+c gaz 01-18-2011 change code to allow for negative temperatures         
 c         if (to (i) .le. zero_t)   to (i) = tin0
          if(irdof.ne.13) then
             if (pho(i) .le. zero_t)   pho (i) = pein

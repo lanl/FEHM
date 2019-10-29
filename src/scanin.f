@@ -303,7 +303,7 @@ C***********************************************************************
       use compart
       use comriv
       use comrlp, only: rlpnew, ntable, ntblines,nphases,rlp_phase,
-     +	rlp_group
+     +  rlp_group
       use comrxni
       use comsi
       use comsk
@@ -345,6 +345,7 @@ C***********************************************************************
       integer icount, tprp_num
       integer jjj, isimnum, realization_num,maxrp
       logical nulldum, found_end
+c      logical gdkm_new
 
       real*8 rflag
         maxrp = 30
@@ -357,6 +358,8 @@ c**** read startup parameters ****
       ice = 0
       ico2 = 0
       icarb = 0
+c gaz 112817      
+      iwater_table = 0 
       icgts = 0
       idoff = 1
       ihead = 0
@@ -429,6 +432,8 @@ c new initial value stuff 12/3/98 GAZ
       nflxz = 0
       sv_hex_tet = .false.
       ipr_tets = 0
+c gaz 100118 set nrlp here to enable mulpiple rlp macros      
+      nrlp = 0
 c zvd 17-Aug-09 move boun flag initializations here
 
       if(allocated(izone_free_nodes)) izone_free_nodes = 0
@@ -440,6 +445,9 @@ c zvd 17-Aug-09 move boun flag initializations here
       save_omr = .false.
       sptr_flag = .false.
       fperm_flag = .false.
+c gaz 070619 variables used in newer itfc      
+      nitf_use = .false.
+      ncol_use = .false.
 
  10   continue
       filename = ''
@@ -627,8 +635,8 @@ c     no longer use variable ichng so value can be saved
 c     check for read from other file
          rlp_flag = 1
          call start_macro(inpt, locunitnum, macro)
-
-         nrlp = 0
+c gaz 100118 will set nrlp = 0 at start on routine so multiple rlp macros can be used
+c         nrlp = 0
  11      continue
          read(locunitnum,'(a80)') wdd1
          if(.not. null1(wdd1)) then
@@ -754,18 +762,19 @@ c Don't count header lines (header lines should start with a character)
                      if (msg(1) .ne. 3) ntblines = ntblines + 1
                   end do
  24               close (idum)
-               else                 
+               else
                   backspace (locunitnum)
                   do
                      read (locunitnum, '(a80)') dumstring
                      if (null_new(dumstring) .or.  dumstring(1:3) .eq. 
      &                    'end' .or. dumstring(1:3) .eq. 'END') exit
-                     ntblines = ntblines + 1                   
+                     ntblines = ntblines + 1
                   end do
                end if
             end if
          end do
          call done_macro(locunitnum)
+
       else if (macro.eq.'boun') then
 c     find number of boun models 
 c     
@@ -792,7 +801,7 @@ c            backspace locunitnum
          else if(wdd1(1:3).eq.'huf') then
             iha=1 
          else if(wdd1(1:2).eq.'hu') then
-            iha=1 
+            iha=1             
          else if(wdd1(1:2).eq.'ph') then
             ipha=1 
          else if(wdd1(1:2).eq.'th') then
@@ -881,6 +890,8 @@ c            backspace locunitnum
             ienth=1
          else if(wdd1(1:2).eq.'ft') then
             ienth=1
+          else if(wdd1(1:3).eq.'fen') then
+            ienth=1 
          else if(wdd1(1:2).eq.'kx') then
             ixperm=1
          else if(wdd1(1:2).eq.'ky') then
@@ -906,8 +917,14 @@ c**** We need to know number of nodes if alternate geometry data is used ****
 
       else if (macro(1:3) .eq. 'nap' .or. macro .eq. 'szna')  then
 c     need to know if napl-water  is envoked
-         ico2 = -3            
-         
+         ico2 = -3  
+c gaz 112817         
+      else if (macro(1:3)  .eq.  'eos')  then
+c     need to know if a table with water props is read
+         call start_macro(inpt, locunitnum, macro)
+          read(locunitnum,'(a80)') wdd1(1:80)
+         call done_macro(locunitnum)
+         if(wdd1(1:5).eq.'table') iwater_table = 1          
       else if (macro(1:3)  .eq.  'air')  then
 c     need to know if air-water  is envoked
          ico2 = -2 
@@ -1003,11 +1020,30 @@ c	Section for determining Generalized Dual Porosity Model (GDPM)
 c	and Generalized Dual Permeability Model (GDKM) parameters
          
       else if(macro .eq. 'gdpm' .or. macro .eq. 'gdkm') then
-         if(macro .eq. 'gdkm') gdkm_flag = 1
-         call start_macro(inpt, locunitnum, macro)
-         read (locunitnum, *) gdpm_flag, ngdpmnodes
+         if(macro .eq. 'gdkm') then
+          gdkm_flag = 1
+          backspace locunitnum
+          read(locunitnum,'(a80)') dumstring
+          gdkm_new = .false.
+c----------------------------------------
+c    Shaoping add, 10/23/2017
+c         do i = 1, 80
+          do i = 1, 78
+c----------------------------------------
+           if(dumstring(i:i+2).eq.'new') then
+             gdkm_new =.true.
+             go to 690
+           endif
+          enddo
+         endif
+690     call start_macro(inpt, locunitnum, macro)
+         if(.not.gdkm_new) then
+           read (locunitnum, *) gdpm_flag, ngdpmnodes
+         else
+            ngdpmnodes = -999 
+         endif
+         
          if(gdkm_flag.eq.1) then
-          gdkm_flag = gdpm_flag
           gdpm_flag = 1
          endif
          maxgdpmlayers = 0
@@ -1022,8 +1058,14 @@ c	sizes can be set and arrays allocated in allocmem
          if (.not.null1(dumstring)) then
             backspace locunitnum
             ngdpm_models = ngdpm_models + 1
-            read(locunitnum,*) nsize_layer,adumm,(adumm,i=1,
+c gaz 091516            
+            if(gdkm_flag.eq.0) then
+             read(locunitnum,*) nsize_layer,adumm,(adumm,i=1,
      &      nsize_layer)
+            else
+             read(locunitnum,*) nsize_layer,adumm
+             nsize_layer = 1 
+            endif
             maxgdpmlayers = max(nsize_layer,maxgdpmlayers)
             goto 1000
          end if
@@ -1046,6 +1088,12 @@ c     Allocate arrays needed for gdpm
             vfrac_primary = 0.
             gdpm_x = 0.
          end if
+         if(gdkm_flag.ne.0) then
+          if(.not.allocated(gdkm_dir)) then  
+           allocate(gdkm_dir(0:ngdpm_models))
+           gdkm_dir = 0
+          endif
+         endif
 
          call done_macro(locunitnum)
          
@@ -1213,6 +1261,8 @@ c     Transport part of interface input
          end if
          goto 6003
  6002    continue
+         if(nitfcpairs.gt.0) nitf_use = .true.
+         if(kk.gt.0) ncol_use = .true.
          nitfcpairs = max(1,nitfcpairs)
          ncoldpairs = max(1,kk)
          call done_macro(locunitnum)
@@ -2437,7 +2487,7 @@ c     Check that no solid species are used without reaction
             stop
         end if
       end if 
-
+      
       return
 
  50   write (ierr, 55) 'STOP'
