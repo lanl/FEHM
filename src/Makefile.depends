@@ -680,13 +680,8 @@ write_avs_node_hf.o: avsio.o comai.o combi.o comdi.o comflow.o
 write_avs_node_mat.o: avsio.o comai.o combi.o comchem.o comdi.o comriv.o silo.o
 write_avs_node_mat.o: comrxni.o davidi.o
 write_avs_node_s.o: avsio.o comai.o combi.o comci.o comco2.o comdi.o comfem.o
-<<<<<<< HEAD
 write_avs_node_s.o: comfi.o comflow.o comii.o comriv.o comsi.o comwt.o davidi.o silo.o
-write_avs_node_v.o: avsio.o comai.o combi.o comdi.o
-=======
-write_avs_node_s.o: comfi.o comflow.o comii.o comriv.o comsi.o comwt.o davidi.o
 write_avs_node_v.o: avsio.o comai.o combi.o comdi.o comriv.o
->>>>>>> 9f4fda97d315de208c7223c4de5e2e5e09545d2e
 write_copyright.o: comai.o
 write_rlp_hyd.o: comai.o commeth.o
 writeio.o: comai.o comco2.o comxi.o
@@ -698,11 +693,7 @@ wtrise.o: comai.o combi.o comdi.o comflow.o compart.o
 wtsi_column.o: comai.o combi.o comdi.o comdti.o comwt.o comxi.o
 wtsictr.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comii.o comwt.o
 wtsictr.o: comxi.o
-<<<<<<< HEAD
 write_silo: silo.o
-zone.o: comai.o combi.o comdti.o trxnvars.o
-=======
 zone.o: avsio.o comai.o combi.o comdi.o comdti.o trxnvars.o
->>>>>>> 9f4fda97d315de208c7223c4de5e2e5e09545d2e
 property_interpolate.mod: interpolate.o
 property_interpolate_1.mod: interpolate_2.o
