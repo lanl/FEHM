@@ -18,6 +18,7 @@
 #    FC                        FORTRAN 77/90 compiler
 #    EXE                       Compiled FEHM executable
 #    SRCDIR                    Path to FEHM source (default: cwd)
+#    WITHSILO 				   Build with SILO HDF5 TPL (DEFUALT)
 #***********************************************************************
 # GNU Make version 3.79.1 or later should be used
 # make should be executed from the directory where the objects 
@@ -29,15 +30,16 @@
 # Compiletime variables
 FC = gfortran
 EXE = xfehm_v3.3.1
-SRCDIR = ./
+SRCDIR = ../src/
 PREFIX = /usr/local/bin
+WITHSILO := 1
 
 # Build system specific variables
 DEPEND = ${SRCDIR}Makefile.depends
 OPSYS = $(shell uname -s )
 DATETAG = $(shell date '+%y-%m-%d')
 DATE = $(shell date '+.%d%b%y')
-FFLAGS = -frecord-marker=4
+FFLAGS = -frecord-marker=4 -ffixed-line-length-132
 DEBUGFLAGS = -g -O0 -frecord-marker=4 -fbounds-check -Wall
 
 
@@ -64,6 +66,12 @@ else
 	ALTDIR = ${SRCDIR}
 endif
 
+SILOFLAGS := -cpp
+ifeq (${WITHSILO}, 0)
+	SILOFLAGS += -DNOSILO
+else
+	FFLAGS += -L/scratch/ymp/smckinney/silo/silo_install/lib -L/scratch/ymp/smckinney/hdf5/hdf5-1.8.11-linux-x86_64-shared/lib/ -I/scratch/ymp/smckinney/silo/silo_install/include -L/scratch/ymp/smckinney/silo/silo_install/lib -L/scratch/ymp/smckinney/hdf5/hdf5-1.8.11-linux-x86_64-shared/lib/ -lhdf5 -lstdc++
+endif
 
 # Define the helpscreen that will show on `make help`
 define help
@@ -97,8 +105,8 @@ endef
 export help
 
 # Define FORTRAN and FORTRAN90 objects
-OBJECTS     := $(patsubst ${SRCDIR}%.f,${SRCDIR}%.o,$(wildcard ${SRCDIR}*.f))
-OBJECTS_F90 := $(patsubst ${SRCDIR}%.f90,${SRCDIR}%.o,$(wildcard ${SRCDIR}*.f90))
+OBJECTS     := $(patsubst ${SRCDIR}%.f,%.o,$(wildcard ${SRCDIR}*.f))
+OBJECTS_F90 := $(patsubst ${SRCDIR}%.f90,%.o,$(wildcard ${SRCDIR}*.f90))
 
 # Define targets
 .PHONY: all
@@ -114,7 +122,7 @@ install: dated xfehm
 
 .PHONY: uninstall
 uninstall:
-	rm -f $(DESTDIR)$(PREFIX)/fehm
+	rm -f $(DESTDIR)$(PREFIX)/fehm      
 	@echo "$(DESTDIR)$(PREFIX)/fehm removed."
 
 .PHONY: clean
@@ -136,11 +144,11 @@ test:
 .PHONY: dated
 dated:
 	rm -f ${SRCDIR}dated.f
-	rm -f ${SRCDIR}dated.o
+	rm -f dated.o
 	sed s/OS\ DATE/${OSTAG}\ ${DATETAG}/ ${SRCDIR}dated.template > ${SRCDIR}dated.f
 
 xfehm: ${OBJECTS} ${OBJECTS_F90}
-	${FC} ${FFLAGS} ${OBJECTS} ${OBJECTS_F90} -o ${EXE}
+	${FC} ${FFLAGS} ${OBJECTS} ${OBJECTS_F90} -o ${EXE} -lsiloh5 -lhdf5 -lstdc++
 
 debug: FFLAGS += -g	-fbounds-check
 debug: dated ${OBJECTS} ${OBJECTS_F90}
@@ -149,21 +157,20 @@ debug: dated ${OBJECTS} ${OBJECTS_F90}
 
 # Define rules
 %.o : ${SRCDIR}%.f
-	${FC} ${FFLAGS} $< -c -o ${SRCDIR}$@
+	${FC} ${FFLAGS} ${SILOFLAGS} $< -c
 
 %.o : ${SRCDIR}%.f90
-	${FC} ${FFLAGS} $< -c  -o ${SRCDIR}$@
+	${FC} ${FFLAGS} $< -c
 
 dated.o : ${SRCDIR}dated.f
-	${FC} ${FFLAGS} $< -c  -o ${SRCDIR}$@
+	${FC} ${FFLAGS} $< -c
 
 
 # Special handling of two files
 inrestart.o : ${ALTDIR}inrestart.f
-	${FC} ${FFLAGS} $< -c -o ${SRCDIR}$@
-
+	${FC} ${FFLAGS} $< -c
 insptr.o : ${ALTDIR}insptr.f
-	${FC} ${FFLAGS} $< -c -o ${SRCDIR}$@
+	${FC} ${FFLAGS} $< -c
 
 
 # Include `Makefile.depends`
