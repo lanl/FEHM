@@ -34,7 +34,7 @@ area_length_calc.o: comriv.o davidi.o
 area_vol_weightctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 area_vol_weightctr.o: comgi.o comii.o comrxni.o davidi.o
 avs_io.o: avsio.o comai.o combi.o comchem.o comdi.o comdti.o commeth.o comriv.o
-avs_io.o: comrxni.o comwt.o comxi.o davidi.o
+avs_io.o: comrxni.o comwt.o comxi.o davidi.o silo.o
 avs_write_cord.o: comai.o
 avs_write_struc.o: comai.o
 bc_far_ctr.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o comfi.o
@@ -694,6 +694,9 @@ wtsi_column.o: comai.o combi.o comdi.o comdti.o comwt.o comxi.o
 wtsictr.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comii.o comwt.o
 wtsictr.o: comxi.o
 write_silo: silo.o
+silo.o: comdti.o
 zone.o: avsio.o comai.o combi.o comdi.o comdti.o trxnvars.o
 property_interpolate.mod: interpolate.o
 property_interpolate_1.mod: interpolate_2.o
+silo.mod: comdti.o
+
