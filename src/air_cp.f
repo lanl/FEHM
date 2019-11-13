@@ -191,6 +191,66 @@ C**********************************************************************
 
       return
       end
+c gaz 121418
+c need to add solubility as function of temperature      
+      subroutine air_sol(tl,pl,pcl,xnl,dxnlp,dxnlpc,dxnlt)
+c calculate air solubility in water      
+       real*8 tl,pl,pcl,xnl,dxnlp,dxnlpc,dxnlt, alpha0
+       real*8 xtol,alpha, dalpca,dalphat,tsolmax, alpha_tol
+       real*8 xnl_max
+       
+       integer imod_sol
+        parameter (imod_sol = 0)
+        parameter (alpha0 = 1.6111d-04, xnl_max=0.1)     
+        parameter(xtol=1.d-16, tsolmax = 300., alpha_tol = 1.d-9)        
+c gaz 121618 disable temperature dependant Henry's law   
+        if(imod_sol.ne.0) then           
+         if(tl.le.tsolmax) then
+          alpha=alpha0*(1.-tl/tsolmax)**2 + alpha_tol
+          dalpca=0.0
+          dalphat = -alpha0*2.*(1.-tl/tsolmax)/tsolmax
+          xnl=alpha*pcl + xtol
+          dxnlp=0.0
+          dxnlpc=alpha
+          dxnlt=dalphat*pcl
+         else
+          xnl=alpha_tol*pcl
+          dxnlp=0.0
+          dxnlpc=alpha_tol
+          dxnlt=0.0     
+         endif
+        else
+          xnl=alpha0*pcl + alpha_tol
+          if(xnl.lt.xnl_max) then
+           dxnlp=0.0   
+           dxnlpc=alpha0
+           dxnlt=0.0
+          else
+           xnl=xnl_max
+           dxnlp=0.0
+           dxnlpc=alpha0
+           dxnlt=0.0           
+          endif
+        endif
+        return
+c gaz 112018 accpunt for pcl < 0    (this produces the old model)    
+          if(pcl.gt.-100.) then
+           xnl=alpha0*pcl
+           dxnlp=0.0
+           dxnlpc=alpha0
+           dxnlt=0.0
+          else
+           xnl=0.0
+           dxnlp=0.0
+           dxnlpc=alpha0
+           dxnlt=0.0              
+          endif
+c
+c       derivatives of liquid mass fraction
+c
+         
+      return
+      end
 
 
 

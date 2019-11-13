@@ -13,13 +13,17 @@
 ! responsibility for the use of this information.       
 !***********************************************************************
 
-      integer snstep, sminstep
-
+      integer snstep, sminstep, i_pdiff, i_sdiff,i_accdif
+c gaz 090119 added parameters for new stea macro inputs 
       real*8 tolerance, toldp, tolds, toldt, toldc, tolde, toldh
-      real*8 balance_tol, smult, sday
+      real*8 balance_tol, smult, sday, sdmx, smass, stsstr
+      real*8 accdif_i, amass_ch, amass0
       real*8 enth_rate, flow_rate
       real*8 shtl,shtl0,tacc,accmax,ratio,stmch,stmch0,tmch1,tmch2
+      real*8 tmch_old, tol_str
       real*8 pdifmax, sdifmax, tdifmax, pcidifmax, hdifmax
+      real*8 pmax_i, pmax_io, pdiff_i
+      real*8 smax_i, smax_io, sdiff_i
 
       character*50 info_string
 

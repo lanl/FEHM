@@ -184,7 +184,9 @@ C**********************************************************************
 
       real*8 r(*), anorm, rr, anorm_tol
       integer nrhs(*), neq, iflag, idof, i, j, n1, n2
-      parameter (anorm_tol=1.d-40)
+c     parameter (anorm_tol=1.d-40)
+C     Raj change
+      parameter (anorm_tol=1.d-90)
 
       anorm=anorm_tol
       do j=1,idof

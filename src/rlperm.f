@@ -428,6 +428,14 @@ c
 c calculates relative permiabilities and derivatives
 c
 
+c * * * * * 
+c here begin descriptions of PJJohnson edits for altered rlp based on dporosity
+c added allocated integer "pjrlp" to comdi to indicate use of flag
+c added if statement to linear (rlp 1) where if Slmax = -666 turn the flag on 
+c
+
+      
+c * * * *
       use comhi
       use comfi
       use comei
@@ -494,6 +502,42 @@ c     check for read from other file
                endif
                icapp = 1
                icapt(i)=1
+c = = = = = = 
+c PJJohnson code changes summer 2017
+c 666 = CPVN (capillary pressure with variable porosity)
+c 333 = Leverett fn
+c for 666, inputs are model #, residual sat, initial porosity,
+c initial maximum capillary pressure, flag for changing Slmax, and two dummy
+
+c for 333, inputs are model#, Sr, init por, Pcmax, flag for changing Sr, and init. perm               
+            else if (irlpd .eq. -666 .or. irlpd .eq. -333) then
+               read(inpt,*) irlpt(i),rp1f(i),rp7f(i), cp1f(i), cp3f(i),
+     &          rp6f(i)
+              
+               if (irlpd .eq. -666) then
+                   rp2f(i) = 0
+                   rp3f(i) = 1
+                   rp4f(i) = 1
+                   rp5f(i) = 0
+c leverett function july 2018 pjjohnson                   
+               else if (irlpd .eq. -333) then
+                  rp2f(i) = 0
+                  rp3f(i) = 1
+                  rp4f(i) = 1
+                  rp5f(i) = 0
+c pjki = initial permeability set by user                  
+                  pjki(i) = rp6f(i)*1.e6
+c NOTE: permeability is modified elsewhere in FEHM by 1e6
+c Probably adjusting for viscosity in MPa to Pa
+c user should enter perm as in perm macro                  
+                  rp5f(i) = 0
+               else
+                   
+               endif
+               icapp = 1
+               icapt(i) = 1
+                                     
+c = = = = = end pjjohnson change for read; next is rlp later                 
             else if (irlpd .eq. 12 .or. irlpd .eq. 13) then
 c linear with residual saturations as function of hydrate fraction
 c for use with methane hydrate 
@@ -686,7 +730,13 @@ c keating 9/2008
             else if (irlpd .eq. 19) then
                read(inpt,*) irlpt(i), rp1f(i), rp2f(i), rp3f(i), 
      &              rp4f(i), rp5f(i), rp6f(i), rp7f(i)
+c           
+c
+c PJJohnson rlp change, 7/25/2017
+            else if (irlpd .eq. -666 .or. irlpd .eq. -333) then
+                read(inpt,*) irlpt(i), rp1f(i), rp2f(i)
             endif
+c end PJJohnson            
 c     If the permeability was entered as a negative value, use log permeability
             if (rp17f(i) .lt. 0.d0) 
      &           rp17f(i) =  1.0d00/10.0d00**(abs(rp17f(i)))
@@ -823,7 +873,8 @@ c read in nodal rlp  type
      2        itype, default, macroread(7), macro, igroup, ireturn,
      3        i4_1=irlp(1:n0) )          
           
-        initdata_pad = 0         
+        initdata_pad = 0  
+        macroread(7) = .TRUE.
       endif 
 c count models so far
       i_rlp = num_models  
@@ -957,7 +1008,9 @@ c     no permeability, no porosity
                   irpd = 1
                end if
                sl = s(mi)
-               if(irpd.eq.1) then
+c pjjohnson code change to use linear rlp for (n,sat) pc function               
+               if(irpd.eq.1.or.irpd.eq.-666.or.irpd.eq.-333) then
+c end pjjohnson addition                   
 c     two-phase mixture
 c     linear function of saturations
                   rl = 0.0

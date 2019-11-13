@@ -468,34 +468,42 @@ c
 c     
       return
       end                
-      subroutine water_density(t,p,rol)
+      subroutine water_density(t,pd,rol)
 c     
 c     calculate water density(assume (*,1) coefficients
 c     
       use comii
       use comai, only : itsat
       implicit none
-      real*8 t,p,rol,prop,dpropt,dpropp
+      real*8 t,p,pd,rol,prop,dpropt,dpropp
       real*8 rnwn1,rnwn2,rnwn3,rnwn
       real*8 rnwd1,rnwd2,rnwd3,rnwd
+c gaz 083019 changed  to iieosd = 2 
+c there was a conflict with useage with iieosd = 1 for isothermal problems      
       if(itsat.le.10) then
-       rnwn1=crl(1,1)+crl(2,1)*p+
-     &     crl(3,1)*p*p+
-     &     crl(4,1)*p*p*p
-       rnwn2=crl(5,1)*t+crl(6,1)*t*t+
-     &     crl(7,1)*t*t*t
-       rnwn3=crl(8,1)*t*p+
-     &     crl(10,1)*t*t*p+
-     &     crl(9,1)*t*p*p
+c iieosd = 2 is a lower pressure model, hence the logic below        
+        if(pd.gt.20.0) then
+         p = 20.0
+        else
+         p = pd
+        endif    
+       rnwn1=crl(1,2)+crl(2,2)*p+
+     &     crl(3,2)*p*p+
+     &     crl(4,2)*p*p*p
+       rnwn2=crl(5,2)*t+crl(6,2)*t*t+
+     &     crl(7,2)*t*t*t
+       rnwn3=crl(8,2)*t*p+
+     &     crl(10,2)*t*t*p+
+     &     crl(9,2)*t*p*p
        rnwn=rnwn1+rnwn2+rnwn3
-       rnwd1=crl(11,1)+crl(12,1)*p+
-     &     crl(13,1)*p*p+
-     &     crl(14,1)*p*p*p
-       rnwd2=crl(15,1)*t+crl(16,1)*t*t+
-     &     crl(17,1)*t*t*t
-       rnwd3=crl(18,1)*t*p+
-     &     crl(20,1)*t*t*p+
-     &     crl(19,1)*t*p*p
+       rnwd1=crl(11,2)+crl(12,2)*p+
+     &     crl(13,2)*p*p+
+     &     crl(14,2)*p*p*p
+       rnwd2=crl(15,2)*t+crl(16,2)*t*t+
+     &     crl(17,2)*t*t*t
+       rnwd3=crl(18,2)*t*p+
+     &     crl(20,2)*t*t*p+
+     &     crl(19,2)*t*p*p
        rnwd=rnwd1+rnwd2+rnwd3
        rol=rnwn/rnwd
       else

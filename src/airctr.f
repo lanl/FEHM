@@ -580,6 +580,7 @@ c
             else if(irdof.ne.13) then   
                if (iad.eq.0) strd = 1.0 
                pref = crl(4,1) 
+c gaz 082719               
                pref_1_2 =  pref - pchng
                pref_2_1 =  pref + pchng  
                s_1_2 = 1.0 - schng
@@ -613,8 +614,11 @@ c   changed eq.2 to eq.3 gaz 103009
                         ieos(mi)=1
                         time_ieos(mi) = days + time_ch
                      else if(s(mi).le.-tol_phase.and.ieos(mi)
-     &                   .eq.2.and.days.ge.time_ieos(mi)) then       
+     &                   .eq.2.and.days.ge.time_ieos(mi)) then 
+c gaz 071919 uncommented  s(mi)=0.0     
+c gaz 072019 commented out again
 c                        s(mi)=0.0
+
                         strd = strd_iter
 c     ieos(mi)=3
                      endif

@@ -192,7 +192,9 @@ C***********************************************************************
       use comco2
       use davidi
       implicit none
-
+c gaz 121718      
+      real*8 pcrit_h2o, tcrit_h2o
+      parameter(pcrit_h2o=22.00d0, tcrit_h2o=373.95)
       integer ndum,id,i
 c first check for saturated only
 
@@ -217,19 +219,8 @@ c               s  (i) =  so (i)
             denei(i) = 0.0
          end do
       endif
-
-c**** reset fluid state ****
-      do id = 1, neq
-         i      =  id+ndum
-         if ( so(i) .le. 0.0 )  then
-            ieos(i) =  3
-         else if ( so(i) .ge. 1.0 )  then
-            ieos(i) =  1
-         else
-            ieos(i) =  2
-         end if
-      end do
-
+c gaz 121718 modifications to support SC water
+      
 c**** reset noncondensible gas if appropriate ****
       if ( ico2 .gt. 0 )  then
          do id = 1, neq
@@ -237,6 +228,23 @@ c**** reset noncondensible gas if appropriate ****
             pci(i) =  pcio(i)
          end do
       end if
+c**** reset fluid state ****
+      do id = 1, neq
+         i      =  id+ndum
+         if(phi(i).ge.pcrit_h2o.and.t(i).ge.tcrit_h2o) then
+            ieos(i) = 4
+         else if ( so(i) .le. 0.0 )  then
+            ieos(i) =  3
+         else if ( so(i) .ge. 1.0 )  then
+            ieos(i) =  1
+         else
+            ieos(i) =  2
+         end if
+c gaz 071919 add correction for rich equation (no ieos(i) = 3)
+       if(jswitch.ne.0.and.ieos(i).eq.3) ieos(i) = 2
+      end do
+
+
 
 c**** reset ice solution ****
       if ( ice .ne. 0 )  then

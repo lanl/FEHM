@@ -268,7 +268,7 @@ c
       use comdti
       use comai
       use comki
-	use comwt
+      use comwt
 
       implicit none
 
@@ -280,6 +280,10 @@ c
 	real*8 ph_dum,hmin,hmax,pl,del_h,del_s,dr_nr
 	real*8 ac3, ac4, bc3, bc4, hlcut, hucut, dslh
 	real*8 smcut,smcutm,scutm,alamda,alpi,hcut,alpha,beta
+c PJJohnson code changes - variable definitions
+      real*8 pjni, pjSri, pjCpmaxi, pjn, pjlmax, pjsat, pjm, pjb
+      real*8 pjSr, pjCpmax, pjconstant
+c end PJJohnson variable changes      
 	parameter (scutm = 1.d-03)	
 	
 c read in data
@@ -302,6 +306,163 @@ c
 c     
 c     linear forsythe(1988) model
 c     
+c * * * * * * * * * * PJJOHNSON CODE MODIFICATIONS, SUMMER 2017 * * * * * * *  
+c added four flags for por-dependent capillary functions
+c these are tied to the linear rlp model - user assigns as normal except Slmax is given a flag, -111, -333, -666, or -999
+c which activates the f(sat, n) one
+c pjn, pjni, pjsr, pjSri, pjcpmax, pjcpmaxi are variables used for that
+c ALL PJJOHNSON variables used for calcs throughout FEHM are noted by prefix pj                   
+c                                  
+
+                   if(irlpt(it).eq.-666) then
+c set residual saturation and max capillary pressure
+c                      open(666,file='Cp_out.txt')
+
+                       pjSri= rp1f(it)
+                       pjCpmaxi=cp1f(it)
+                       
+c read porosity from global variables                       
+                       pjn=ps(mi)
+                      if(pjn.ge. 0.9 .or. pjn.le.1e-6) then
+                          pcp(mi) = 0
+                          dpcef(mi) = 0
+                      else
+                          
+c flag for initial porosity: if 0, then read it from global
+c otherwise, user can specify value to use (e.g. for same material with different properties)
+                      if(rp5f(it) .gt. 0) then
+                          pjni = rp7f(it)
+                      else
+                      
+                       pjni = psini(mi)
+                      endif
+                      
+c flag for changing saturation above which Pc = 0; if 0, change it, otherwise stays same                       
+                      if(cp3f(it).ne.0) then
+                          pjlmax = 1
+                      else
+                          pjlmax = 1-pjn
+                      endif
+c linear residual saturation calculation                      
+                       pjSr=(pjSri/(1-pjni))*(1-pjn)
+                       
+c extrapolate max capillary pressure - note that this is at sat = Sr, not sat = 0 (different from rlp 1)                       
+c                       pjCpmax=(pjCpmaxi/pjsri)*(pjsr)
+                       pjCpmax=pjCpmaxi*(1-pjn)/(1-pjni)
+c read saturation                       
+                       pjsat=s(mi)
+c                         pjb = pjCpmax + (pjCpmax/(pjlmax-pjSr)*pjSr)
+c calculate Pc
+                       if(pjsat.ge.pjlmax) then
+                           pcp(mi)=0
+                       else if(pjsat.le.pjSr) then
+                          pcp(mi)=pjCpmax
+                       else
+                         pjm = -1*(pjCpmax / (pjlmax - pjSr))
+c define derivative                         
+                         pcp(mi) = pjCpmax*(pjlmax-pjsat)/(pjlmax-pjSr)
+c
+c      
+                          dpcef(mi) = pjm
+c                          
+                       end if
+                       end if
+
+
+                  else if(irlpt(it).eq. -333) then
+c Leverett function   
+
+c if user enters a number for porosity entry in rlperm.f, use that
+c if they enter 0, then use the global variable
+c this allows them to have multiple different units be compared to same standard
+                      if(rp7f(it) .gt. 0) then
+                          pjni = rp7f(it)
+                      else
+                      
+                       pjni = psini(mi)
+
+                      endif
+c take initial maximum capillary pressure and residual saturation from input                       
+                       pjCpmaxi = cp1f(it)
+
+                       
+                       pjSri= rp1f(it)
+c
+c read current porosity from global variables                       
+                       pjn=ps(mi)
+c Permeability comes from salt macro, but is sometimes fed 0 (e.g. timestep 1)
+c so address that if need be                       
+                       if(pjk(mi) .eq. 0) then
+                           pjk(mi) = pjki(it)
+                       endif
+
+c Calculate leverett capillary pressure                       
+                       pjCpmax = pjCpmaxi*(sqrt(pjki(it)/pjni) /
+     &                 (sqrt(pjk(mi)/pjn)))
+                       
+                          pjlmax = 1
+
+c handle residual saturation based on user preference
+c if they use 0, hold Sr constant; otherwise, vary with porosity
+                      if(cp3f(it).ne.0) then
+                       pjSr=(pjSri/(1-pjni))*(1-pjn)
+                      
+                      else
+                          pjSr = pjSri
+                      endif
+c truncate Sr in case it tries to go >1 or to .99999 with function divergence issues                      
+                       if(pjSr .ge. 0.99) then
+                           pjSr = 0.99
+                       endif
+c read saturation                       
+                       pjsat=s(mi)
+c calculate Pc
+c max sat is currently 1 but if modified, this line handles that                       
+                       if(pjsat.ge.pjlmax) then
+                           pcp(mi)=0
+                           dpcef(mi)=0
+c if Sl < Sr, use maximum value                           
+                       else if(pjsat.le.pjSr) then
+                          pcp(mi)=pjCpmax
+                          dpcef(mi)=0
+c otherwise fit saturation function                          
+                       else
+                         pjm = -1*(pjCpmax / (pjlmax - pjSr))
+                         pcp(mi) = pjCpmax*(pjlmax-pjsat)/(pjlmax-pjSr)
+                         
+c I added a truncation here to hold Pc to no more than an order of magnitude higher than the starting value
+c to avoid crashes                         
+                         if(pcp(mi) .gt. (10*pjCpmaxi)) then
+                             pcp(mi) = 10*pjCpmaxi
+c failsafe in case of model crash                             
+                         else if (pcp(mi).lt.0) then
+                             pcp(mi) = 0
+                         else
+                             pcp(mi) = pcp(mi)
+                         end if
+
+                         pjm = -1*(pjCpmax / (pjlmax - pjSr))
+                         dpcef(mi) = pjm
+                       end if
+c following comment lines are output files that can be activated to check calcs                       
+c                      write(333,*) pjni, pjn
+c                      write(666,*) pjki(it), pjk(mi)
+c                      write(999,*) pjCpmaxi, pjCpmax
+c                      write(111,*) pjSri, pjSr
+c                      write(777,*) pjsat, pcp(mi)
+c gaz debug 011219
+c                       end if
+                       
+
+   
+
+                  else
+                  pjn = 0
+                  pjsat = 0
+c *********END PJJOHNSON CHANGES **********
+c 
+c gaz debug 011219                  
+                  endif
                   cp1=cp1f(it)
                   cp3=cp3f(it)
                   if(ieos(mi).eq.2) then
@@ -317,13 +478,15 @@ c
                    else if(ieos(mi).eq.1) then
                      pcp(mi)=0.0        
                      dpcef(mi)=0.0  
-                  endif
-               endif
+                   endif
+
+               end if
                if(itp.eq.3) then
 c     
 c     van Genucten (1980) model (calculated in rlperm)
 c     
                endif
+             continue
             enddo
  
          else if(iz.lt.0) then
@@ -428,4 +591,8 @@ c end wtsi block
 
      
       return
+      
+      
+
+
       end

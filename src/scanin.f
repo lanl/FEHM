@@ -445,6 +445,9 @@ c zvd 17-Aug-09 move boun flag initializations here
       save_omr = .false.
       sptr_flag = .false.
       fperm_flag = .false.
+c gaz 070619 variables used in newer itfc      
+      nitf_use = .false.
+      ncol_use = .false.
 
  10   continue
       filename = ''
@@ -887,7 +890,7 @@ c            backspace locunitnum
             ienth=1
          else if(wdd1(1:2).eq.'ft') then
             ienth=1
-          else if(wdd1(1:2).eq.'fen') then
+          else if(wdd1(1:3).eq.'fen') then
             ienth=1 
          else if(wdd1(1:2).eq.'kx') then
             ixperm=1
@@ -1258,6 +1261,8 @@ c     Transport part of interface input
          end if
          goto 6003
  6002    continue
+         if(nitfcpairs.gt.0) nitf_use = .true.
+         if(kk.gt.0) ncol_use = .true.
          nitfcpairs = max(1,nitfcpairs)
          ncoldpairs = max(1,kk)
          call done_macro(locunitnum)

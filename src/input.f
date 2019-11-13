@@ -681,12 +681,15 @@ c     &           sat_ich, head_id
 c            go to 1005
  995           head0 = 0.0
                temp0 = 20.0
-               pres0 = 0.1   
-               sat_ich = 0.0
+               pres0 = 0.1  
+c gaz 090119 set sat_ich to any state not equal to full liquid               
+               sat_ich = 0.999999
                head_id= 0.0
             end if
 c 1005       continue
+c gaz 083019
             call water_density(temp0, pres0, rol0)
+            rho1grav = rol0*9.81d-6
             ichead=1
             if(.not.allocated(head)) allocate(head(n0))
          end if

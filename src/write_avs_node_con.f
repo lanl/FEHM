@@ -516,56 +516,50 @@ c gaz 040517 gdkm needs small modification
 c     fdm grid
                      write (string, '(a)') ''
                   end select
-c not needed below 
+c (gaz put back in 072419)not needed below 
+c use this info to write header later.
+                if(icall.eq.1) then
+                 if(irivp.eq.0) then
+                     if (iogeo .eq. 1) then
+                        tecstring = trim(string)
+                        tecstring = trim(timec_string)//trim(tecstring)
+                     else if (iogrid .eq. 1) then
 
-c not needed above                  
-                  if (ns_in .eq. 0) then
-                     if (iozid .eq. 0) then
-                        write (string, 125) '1-3', iz
+                        tecstring = trim(timec_string)// 
+     &                       trim(gridstring)//trim(times_string)
                      else
-                        write (string, 125) '1-3, 5', iz
+                        tecstring = trim(timec_string)// 
+     &                       trim(tecstring)
                      end if
-                  else if (icnl .eq. 0) then
-                     if (iozid .eq. 0) then
-                        write (string, 140) '1-3', iz
-                     else
-                        write (string, 140) '1-3, 5', iz
-                     end if
-                  else
-                     if (iozid .eq. 0) then
-                        write (string, 140) '1-2', iz
-                     else
-                        write (string, 140) '1-2, 4', iz
-                     end if
-                  end if
-                  if(irivp.eq.0) then
-                     tecstring = trim(tecstring) // trim(string)
-                     string = ''
-                  else
-                     tecstring_riv = trim(tecstring_riv) // trim(string)
-                     string = ''
-                  endif
-               else if (icall .eq. 1 .and. iocord .ne. 0) then
-c gaz 062518 might need to comment out next line
-c                  write (lu, 130) trim(timec_string)
-                  if (icnl .eq. 0) then
-                     if (iozid .eq. 0) then
-                        write (string, 125) '1-3', iz
-                     else
-                        write (string, 125) '1-3, 5', iz
-                     end if
-                  else
-                     if (iozid .eq. 0) then
-                        write (string, 125) '1-2', iz
-                     else
-                        write (string, 125) '1-2, 4', iz
-                     end if
-                  end if
-                  if(irivp.eq.0) then
-                     tecstring = trim(string)
                   else
                      tecstring_riv = trim(string)
-                  endif
+c                     write (lu, 130) trim(timec_string),
+c     &                    trim(tecstring_riv), trim(gridstring), 
+c     &                    trim(times_string)
+                  endif 
+                endif  
+                if(icall .eq. 1 .and. iocord .ne. 0) then
+                  sharestring = ''
+                  if (icnl .eq. 0) then
+                     if (iozid .eq. 0) then
+                        write (sharestring, 140) '1-3', iz
+                     else
+                        write (sharestring, 140) '1-3,5', iz
+                     end if
+                  else
+                     if (iozid .eq. 0) then
+                        write (sharestring, 140) '1-2', iz
+                     else
+                        write (sharestring, 140) '1-2, 4', iz
+                     end if
+                  end if  
+                endif
+
+c not needed above  (not need for icall = 1), save for later                
+                  
+               else if (icall .eq. 1 .and. iocord .ne. 0) then
+                  
+
                else if (icall .eq. 1 .and. iozid .ne. 0) then
                   write (lu, 130) trim(timec_string)
                   write (string, 125) '2', iz
@@ -577,24 +571,27 @@ c                  write (lu, 130) trim(timec_string)
                else
                   if(irivp.eq.0) then
                      if (iogeo .eq. 1) then
-                        write (lu, 130) trim(timec_string), 
-     &                       trim(tecstring)
+c                        write (lu, 130) trim(timec_string), 
+c     &                       trim(tecstring)
                      else if (iogrid .eq. 1) then
-                        write (lu, 130) trim(timec_string), 
-     &                       trim(tecstring),
-     &                       trim(gridstring), trim(times_string)
+c                        write (lu, 130) trim(timec_string), 
+c     &                       trim(tecstring),
+c     &                       trim(gridstring), trim(times_string)
                      else
 c gaz 063018 should not write
 c                         if(icall.ne.1) write (lu, 130)  
 c     &                       trim(timec_string), trim(tecstring)      
                      end if   
                   else
-                     write (lu, 130) trim(timec_string),
-     &                    trim(tecstring_riv), trim(gridstring), 
-     &                    trim(times_string)
-                  endif
-               end if
-            end if
+c                     write (lu, 130) trim(timec_string),
+c     &                    trim(tecstring_riv), trim(gridstring), 
+c     &                    trim(times_string)
+                  end if
+                continue
+              end if
+            continue
+           end if
+          continue         
          end if
 
 
@@ -754,14 +751,16 @@ c start ifblock 1
           iend = nin
          endif
 c start do loop 1   
-c writes too much here    "tecstring"     
+c gaz 072519  mod icall = 1 to tecstring
             if (altc(1:3) .eq. 'tec') then
                if (iozone .eq. 0 .or. iogrid .eq. 1) then
                   if(icall.eq.1) then
-                   write (lu, 94) trim(timec_string)
+c                   write (lu, 94) trim(timec_string)
+                   write (lu, 94) trim(tecstring)                      
 c gaz 070118 this could be the problem                 
                   else
-                    write (lu, 94) trim(timec_string)
+                    write (lu, 94) trim(timec_string),trim(gridstring),
+     &              trim(sharestring)
 c                   write (lu, 94) trim(timec_string), trim(tecstring),
 c     &                 trim(gridstring), trim(times_string)                      
                   endif
@@ -948,16 +947,19 @@ c end endif *****
                   else if (icall .eq. 1 .and. iozid .eq. 1) then
                    if(i.ne.iblanking_value) then
                     write(lu, fstring) (corz(i_wrt,j), j =icord1,icord2,
-     +                    icord3), i_wrt, (min(maxc, max(minc,
-     +                    antmp(i+add_dual,n))), n=1,nspeci)
+     +                   icord3), i_wrt, izonef(i), (min(maxc, max(minc,
+     +                   antmp(i+add_dual,n))), n=1,nspeci)
                    else
                     write(lu, fstring) (corz(i_wrt,j), j =icord1,icord2,
-     +                    icord3), i_wrt, (iblanking_value, n=1,nspeci) 
+     +                    icord3), i_wrt, izonef(i),
+     +                     (iblanking_value, n=1,nspeci) 
                    endif
                   else
+c gaz debug 072819  don't print zone for icall gt 1                    
                      if(i.ne.iblanking_value) then
-                      write(lu, fstring) i_wrt, (min(maxc, max(minc,
-     +                    antmp(i+add_dual,n))), n=1,nspeci)
+                      write(lu, fstring) i_wrt, 
+     +                 (min(maxc, max(minc,antmp(i+add_dual,n))), 
+     +                 n=1,nspeci)
                      else
                       write(lu, fstring) i_wrt, 
      +                    (iblanking_value, n=1,nspeci)       

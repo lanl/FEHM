@@ -868,7 +868,7 @@ c ************** major time step loop ***************************
 c
 c     counter that keeps accumulating when rip is the time step driver
 c     Or in a conventional simulation with heat and mass solution
-c           gaz debug 082714
+c gaz debug 082714
             tscounter = tscounter + 1
 c       Don't use input value of initial time step anymore
 c         if(abs(tscounter).eq.1.and.in(3).ne.0.) then
@@ -1102,9 +1102,6 @@ c Make sure fin file is written if we are stopping
                end if
 
 c zero variables used for current time step data
-               amass = 0.0
-               asteam = 0.0
-               aener = 0.0
                tmav = 0.0
                prav = 0.0
                tmavg = 0.0
@@ -1123,7 +1120,7 @@ c this time step only
 
 c**** update variables and parameters ****
 
-c gaz 12-30-99
+c gaz 12-30-09
 c           call varchk (0, 0)
                call dual (1)
 
@@ -1153,6 +1150,8 @@ c
                nphase_gas = 0
                nphase_sc = 0
                do i=1,n
+c gaz  081219 eliminated ps < 0 from phase count             
+                if(ps(i).gt.0.0d0) then
                   if(ieos(i).eq.1) nphase_liq = nphase_liq + 1
                   if(ieos(i).eq.2) nphase_2 = nphase_2 + 1
                   if(ieos(i).eq.3) nphase_gas = nphase_gas + 1
@@ -1167,6 +1166,7 @@ c
                      else if(s(i).le.0.0.and.so(i).gt.0.0) then
                         is_ch=is_ch +1
                      endif
+                   endif                 
                   endif
                enddo
                is_ch_t = is_ch_t + is_ch
@@ -1193,6 +1193,9 @@ c
                endif
 
 c dtotdm is the current time step size in seconds
+               amass = 0.0
+               asteam = 0.0
+               aener = 0.0
                do ja = 1, n
 
                   if (abs(ps(ja)) .gt. zero_t)  then

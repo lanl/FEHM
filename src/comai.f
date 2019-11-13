@@ -441,7 +441,9 @@ c GAZ 11/02/08
       integer             ishisstr, ishisstrx, ishisstry, ishisstrz
       integer             ishisstrxy, ishisstrxz, ishisstryz
       integer             ishisdisx, ishisdisy, ishisdisz
-      integer             ich_max, ich_m1, ich_m2, sat_ich
+c 090119 gaz made  sat_ich real*8 (sat value below head is set to zero)     
+c     integer             ich_max, ich_m1, ich_m2, sat_ich 
+      integer             ich_max, ich_m1, ich_m2
       integer             jswitch, joff
       integer             iwellp_flag, icoef_neg, numcoef_neg
       integer             istrs_coupl, iax_b, ipini
@@ -482,6 +484,8 @@ c gaz 081117
       integer             ivrock 
 c gaz 100318      
       integer             initdata_pad
+c gaz 042119              neq_active added to report active varables when porosity <0 nodes are disabled      
+      integer             neq_active
       real*8              aener, aiaa, am0, amass, ame, an0, asteam
       real*8              astmo, aw, awc, awt, ay, ayc, contim, day
       real*8              daycf, daycm, daycmm, daycmx, daycs, dayhf
@@ -499,7 +503,8 @@ c gaz 100318
       real*8              daycs_save, daycf_save, dayhf_save, dayhs_save
       real*8              day_save_ss, fdum_last, aiaa_save, daymax_save
 c gaz 11-06-2007
-      real*8              rho1grav,h_to_p
+c gaz 090119 made sat_ich a real*8 from integer
+      real*8              rho1grav, h_to_p, sat_ich
 c gaz 01-06-2014
       real*8              roc0, visc_gas
       real*4              vernum

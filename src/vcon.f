@@ -254,7 +254,7 @@ C**********************************************************************
       parameter (thx_tol=1.0d-12)
       logical null1
 
-
+c gaz 110318 used Peter Johnson code completely
 c read in data
       if(ivcond.ne.0) then
          if(iz.eq.0) then
@@ -385,15 +385,31 @@ c     NOTE:no derivatives,used explicity
                   tmpPor=ps(mi)
 c				  DRH 1/3/2013: Relationship is only valid up to 0.4
 c				  conductivity held constant at porosities above 0.4
-                  if(tmpPor.gt.0.4) tmpPor = 0.4
-                  tmpPor = vc2*(vc3*tmpPor**4 +vc4*tmpPor**3 
+c                  if(tmpPor.gt.0.4) tmpPor = 0.4
+c pjjohnson fix to DRH fix
+c relationship begins increasing above about por=0.3873
+c may be inducing error in test problems where heat flow is too good at high porosity
+c putting a linear extrapolation, thermal cond goes to 0.028 W/mK (value for air at room temp)
+c
+c SCHU revise 08282019 
+c  fix pjjohnson change so thermal conductivity for porosity above 0,3873 calculated correctly
+                  if(tmpPor.gt.0.3873) then
+                     tmpPor = vc2*(0.960308 - 0.930308*tmpPor)
+c                      thx(mi)=(0.97 - (0.95333*tmpPor))
+                  else
+                     tmpPor = vc2*(vc3*tmpPor**4 +vc4*tmpPor**3 
      &                 +vc5*tmpPor**2+vc6*tmpPor + vc7)
+                  endif
+
                   vc8=vc8f(it)
                   thx(mi)=(1e-6*tmpPor)*(vc1/(t(mi)+273.15))**vc8
                   if(thx(mi).le.thx_tol) thx(mi) = thx_tol
                   thy(mi)=thx(mi)
                   thz(mi)=thx(mi)
-               	else if(itp.eq.5) then
+c                 endif
+                  else if(itp.eq.5) then
+                      
+c end pjjohnson                      
 
 c     Thermal conductivity for unsaturated rock salt (Olivella, 2011)
 c      modified by gaz 1/30/2016

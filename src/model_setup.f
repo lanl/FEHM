@@ -216,7 +216,7 @@ c gaz I think I can use array sourcea because air flowrate
 c and air fraction cannot both be set for the same node
 c gaz 111418 can exist in different model        
          read(inpt,*) (sourcea(i,imod),i=1,ntimes)
-         sourcea_type(imod)=-1
+         sourcea_type(imod)=-2
          do i=1,ntimes
             sourcea(i,imod)= sourcea(i,imod)+tol_boun
          enddo

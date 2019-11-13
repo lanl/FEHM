@@ -120,9 +120,6 @@ test:
 %.o : ${SRCDIR}%.f90
 	${FC} ${DFLAG} ${FFLAGS} $< -c
 
-dated.o : ${SRCDIR}dated.f
-    ${FC} ${FFLAGS} $< -c -o ${SRCDIR}$@
-
 clean :
 	rm -f *.o *.mod
 

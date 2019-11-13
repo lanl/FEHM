@@ -387,29 +387,29 @@ c     print out worst residuals
          endif
  400     format ('#### largest N-R corrections, timestep ',i8, ' ####')
          if(idof.eq.1 .or. idof_co2.eq.1) then
- 
+c gaz 080819  added zone ino to output 
             if (iptty .ne. 0) then
-               write(iptty,900) 'EQ1',bp1max,ibp1,
+               write(iptty,900) 'EQ1',bp1max,ibp1,izonef(ibp1),
      $              cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
             endif
             if (ntty .eq. 2) then
-               if (iout .ne. 0) write(iout,900) 'EQ1',bp1max,
+             if (iout .ne. 0) write(iout,900) 'EQ1',bp1max,izonef(ibp1),
      $              ibp1,cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
             endif
          else if(idof.eq.2 .or. idof_co2.eq.2) then
 
             if (iptty .ne. 0) then
-               write(iptty,900) 'EQ1',bp1max,ibp1,cord(ibp1,1)
-     $              ,cord(ibp1,2),cord(ibp1,3)
-               write(iptty,900) 'EQ2',bp2max,ibp2,cord(ibp2,1)
-     $              ,cord(ibp2,2),cord(ibp2,3)
+               write(iptty,900) 'EQ1',bp1max,ibp1,izonef(ibp1),
+     $           cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
+               write(iptty,900) 'EQ2',bp2max,ibp2,izonef(ibp2),
+     $           cord(ibp2,1),cord(ibp2,2),cord(ibp2,3)
             endif
             if (ntty .eq. 2) then
                if (iout .ne. 0) then
-                  write(iout,900) 'EQ1',bp1max,ibp1,cord(ibp1,1)
-     $                 ,cord(ibp1,2),cord(ibp1,3)
-                  write(iout,900) 'EQ2',bp2max,ibp2,cord(ibp2,1)
-     $                 ,cord(ibp2,2),cord(ibp2,3)
+                  write(iout,900) 'EQ1',bp1max,ibp1,izonef(ibp1),
+     $               cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
+                  write(iout,900) 'EQ2',bp2max,ibp2,izonef(ibp2),
+     $               cord(ibp2,1),cord(ibp2,2),cord(ibp2,3)
                endif
             end if
          else if(idof.eq.3 .or. idof_co2.eq.3) then
@@ -424,77 +424,77 @@ c     print out worst residuals
               stop
             endif         
             if (iptty .ne. 0) then
-               write(iptty,900) 'EQ1',bp1max,ibp1,cord(ibp1,1)
-     $              ,cord(ibp1,2),cord(ibp1,3)
-               write(iptty,900) 'EQ2',bp2max,ibp2,cord(ibp2,1)
-     $              ,cord(ibp2,2),cord(ibp2,3)
-               write(iptty,900) 'EQ3',bp3max,ibp3,cord(ibp3,1)
-     $              ,cord(ibp3,2),cord(ibp3,3)
+                  write(iptty,900) 'EQ1',bp1max,ibp1,izonef(ibp1),
+     $               cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
+                  write(iptty,900) 'EQ2',bp2max,ibp2,izonef(ibp2),
+     $               cord(ibp2,1),cord(ibp2,2),cord(ibp2,3)
+                  write(iptty,900) 'EQ3',bp3max,ibp3,izonef(ibp3),
+     $            cord(ibp3,1),cord(ibp3,2),cord(ibp3,3)
             endif
             if (ntty .eq. 2) then
                if (iout .ne. 0) then
-                  write(iout,900) 'EQ1',bp1max,ibp1,
-     $                 cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
-                  write(iout,900) 'EQ2',bp2max,ibp2,
-     $                 cord(ibp2,1),cord(ibp2,2),cord(ibp2,3)
-                  write(iout,900) 'EQ3',bp3max,ibp3,
-     $                 cord(ibp3,1),cord(ibp3,2),cord(ibp3,3)
+                  write(iout,900) 'EQ1',bp1max,ibp1,izonef(ibp1),
+     $               cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
+                  write(iout,900) 'EQ2',bp2max,ibp2,izonef(ibp2),
+     $               cord(ibp2,1),cord(ibp2,2),cord(ibp2,3)
+                  write(iout,900) 'EQ3',bp3max,ibp3,izonef(ibp3),
+     $            cord(ibp3,1),cord(ibp3,2),cord(ibp3,3)
                end if
             endif
          else if(idof.eq.4 .or. idof_co2.eq.4) then
 
             if (iptty .ne. 0) then
-               write(iptty,900) 'EQ1',bp1max,ibp1,cord(ibp1,1)
-     $              ,cord(ibp1,2),cord(ibp1,3)
-               write(iptty,900) 'EQ2',bp2max,ibp2,cord(ibp2,1)
-     $              ,cord(ibp2,2),cord(ibp2,3)
-               write(iptty,900) 'EQ3',bp3max,ibp3,cord(ibp3,1)
-     $              ,cord(ibp3,2),cord(ibp3,3)
-               write(iptty,900) 'EQ4',bp4max,ibp4,cord(ibp4,1)
-     $              ,cord(ibp4,2),cord(ibp4,3)
+                  write(iptty,900) 'EQ1',bp1max,ibp1,izonef(ibp1),
+     $               cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
+                  write(iptty,900) 'EQ2',bp2max,ibp2,izonef(ibp2),
+     $               cord(ibp2,1),cord(ibp2,2),cord(ibp2,3)
+                  write(iptty,900) 'EQ3',bp3max,ibp3,izonef(ibp3),
+     $            cord(ibp3,1),cord(ibp3,2),cord(ibp3,3)
+                  write(iptty,900) 'EQ4',bp4max,ibp4,izonef(ibp4),
+     $            cord(ibp4,1),cord(ibp4,2),cord(ibp4,3)
             endif
             if (ntty .eq. 2) then
                if (iout .ne. 0) then
-                  write(iout,900) 'EQ1',bp1max,ibp1,
-     $                 cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
-                  write(iout,900) 'EQ2',bp2max,ibp2,
-     $                 cord(ibp2,1),cord(ibp2,2),cord(ibp2,3)
-                  write(iout,900) 'EQ3',bp3max,ibp3,
-     $                 cord(ibp3,1),cord(ibp3,2),cord(ibp3,3)
-                  write(iout,900) 'EQ4',bp4max,ibp4,
-     $                 cord(ibp4,1),cord(ibp4,2),cord(ibp4,3)
+                  write(iout,900) 'EQ1',bp1max,ibp1,izonef(ibp1),
+     $               cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
+                  write(iout,900) 'EQ2',bp2max,ibp2,izonef(ibp2),
+     $               cord(ibp2,1),cord(ibp2,2),cord(ibp2,3)
+                  write(iout,900) 'EQ3',bp3max,ibp3,izonef(ibp3),
+     $            cord(ibp3,1),cord(ibp3,2),cord(ibp3,3)
+                  write(iout,900) 'EQ4',bp4max,ibp4,izonef(ibp4),
+     $            cord(ibp4,1),cord(ibp4,2),cord(ibp4,3)
                end if
             endif
          else if(idof.eq.6 .or. idof_co2.eq.6) then
 
             if (iptty .ne. 0) then
-               write(iptty,900) 'EQ1',bp1max,ibp1,cord(ibp1,1)
-     $              ,cord(ibp1,2),cord(ibp1,3)
-               write(iptty,900) 'EQ2',bp2max,ibp2,cord(ibp2,1)
-     $              ,cord(ibp2,2),cord(ibp2,3)
-               write(iptty,900) 'EQ3',bp3max,ibp3,cord(ibp3,1)
-     $              ,cord(ibp3,2),cord(ibp3,3)
-               write(iptty,900) 'EQ4',bp4max,ibp4,cord(ibp4,1)
-     $              ,cord(ibp4,2),cord(ibp4,3)
-               write(iptty,900) 'EQ5',bp5max,ibp5,cord(ibp5,1)
-     $              ,cord(ibp5,2),cord(ibp5,3)
-               write(iptty,900) 'EQ6',bp6max,ibp6,cord(ibp6,1)
-     $              ,cord(ibp6,2),cord(ibp6,3)
+                  write(iptty,900) 'EQ1',bp1max,ibp1,izonef(ibp1),
+     $               cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
+                  write(iptty,900) 'EQ2',bp2max,ibp2,izonef(ibp2),
+     $               cord(ibp2,1),cord(ibp2,2),cord(ibp2,3)
+                  write(iptty,900) 'EQ3',bp3max,ibp3,izonef(ibp3),
+     $            cord(ibp3,1),cord(ibp3,2),cord(ibp3,3)
+                  write(iptty,900) 'EQ4',bp4max,ibp4,izonef(ibp4),
+     $            cord(ibp4,1),cord(ibp4,2),cord(ibp4,3)
+                  write(iptty,900) 'EQ5',bp5max,ibp5,izonef(ibp5),
+     $            cord(ibp5,1),cord(ibp5,2),cord(ibp5,3)
+                  write(iptty,900) 'EQ6',bp6max,ibp6,izonef(ibp6),
+     $            cord(ibp6,1),cord(ibp6,2),cord(ibp6,3)
             endif
             if (ntty .eq. 2) then
                if (iout .ne. 0) then
-                  write(iout,900) 'EQ1',bp1max,ibp1,
-     $                 cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
-                  write(iout,900) 'EQ2',bp2max,ibp2,
-     $                 cord(ibp2,1),cord(ibp2,2),cord(ibp2,3)
-                  write(iout,900) 'EQ3',bp3max,ibp3,
-     $                 cord(ibp3,1),cord(ibp3,2),cord(ibp3,3)
-                  write(iout,900) 'EQ4',bp4max,ibp4,
-     $                 cord(ibp4,1),cord(ibp4,2),cord(ibp4,3)
-                  write(iout,900) 'EQ5',bp5max,ibp5,
-     $                 cord(ibp5,1),cord(ibp5,2),cord(ibp5,3)
-                  write(iout,900) 'EQ6',bp6max,ibp6,
-     $                 cord(ibp6,1),cord(ibp6,2),cord(ibp6,3)
+                  write(iout,900) 'EQ1',bp1max,ibp1,izonef(ibp1),
+     $               cord(ibp1,1),cord(ibp1,2),cord(ibp1,3)
+                  write(iout,900) 'EQ2',bp2max,ibp2,izonef(ibp2),
+     $               cord(ibp2,1),cord(ibp2,2),cord(ibp2,3)
+                  write(iout,900) 'EQ3',bp3max,ibp3,izonef(ibp3),
+     $            cord(ibp3,1),cord(ibp3,2),cord(ibp3,3)
+                  write(iout,900) 'EQ4',bp4max,ibp4,izonef(ibp4),
+     $            cord(ibp4,1),cord(ibp4,2),cord(ibp4,3)
+                  write(iout,900) 'EQ5',bp5max,ibp5,izonef(ibp5),
+     $            cord(ibp5,1),cord(ibp5,2),cord(ibp5,3)
+                  write(iout,900) 'EQ6',bp6max,ibp6,izonef(ibp6),
+     $            cord(ibp6,1),cord(ibp6,2),cord(ibp6,3)
                endif
             end if
          endif
@@ -534,7 +534,7 @@ c     endif
             end if
          enddo
       endif
- 900  format(1x,a3,1x,'R=',g12.4,1x,'node=',i7,1x,'x=',g10.4,1x,
-     $     'y=',g10.4,1x,'z=',g10.4)
+ 900  format(1x,a3,1x,'R=',g12.4,1x,'node=',i7,1x,'zone=',i6,
+     &     1x,'x=',g10.4,1x,'y=',g10.4,1x,'z=',g10.4)
       return
       end

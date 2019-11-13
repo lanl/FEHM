@@ -677,6 +677,11 @@ c     ***** COMMON Block fdd *****
         allocate(dpcef(n0))
         pcp = 0.
         dpcef = 0.
+c gaz merge 110318        
+c     pjjohnson edits July 2018        
+        allocate(pjki(n0))
+        allocate(pjk(n0))
+c     end pjjohnson edits          
       else
         allocate(pcp(1))
         allocate(dpcef(1))
