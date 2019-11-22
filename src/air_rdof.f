@@ -93,7 +93,8 @@ C**********************************************************************
       use comai
 
       implicit none
-      integer nelm(*),nmat(*),nrhs(*)
+      integer nmat(*),nrhs(*)
+      integer nelm(*)
       integer ndummy,irdof,iset 
       integer iadf(21)
       integer neqp1,i,jj,i1,i2,kb,ipos,iflg

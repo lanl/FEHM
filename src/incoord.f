@@ -365,7 +365,7 @@ c**** element node data ****
 
             backspace incoor
             read(incoor, *) mb, 
-     *           (nelm((iabs(mb) - 1) * ns + i), i = 1, ns)
+     *           (nelm((abs(mb) - 1) * ns + i), i = 1, ns)
             if (mb .lt. 0) call gendat (iabs(mb), mc, 2)
             mc = iabs(mb)
             go  to  30

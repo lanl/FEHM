@@ -11,7 +11,7 @@ module petsc_initialize_package
 
     public :: petsc_initialize
     
-    Vec    x,b, nnz_seq
+    Vec    x,b, nnz_seq, global_asize
     Mat    A_matrix
     KSP    ksp
     PC     pc
@@ -22,18 +22,20 @@ module petsc_initialize_package
     PetscInt,dimension(:),allocatable :: recvcounts,displs       ! index for MPI_Gatherv
 
     PetscBool        flg
-    PetscErrorCode   ierr_3
+    integer(kind=4)   ierr_3
 
-    PetscInt         A_size,i,j, nnz_start, nnz_end, nnz_size
+    PetscInt         A_size, nnz_start, nnz_end, nnz_size, local_asize, localstart, localend
     PetscInt,dimension(:),allocatable :: nnz,nnz_above            ! nnz: number of nonzero on each row
     PetscInt,dimension(:),allocatable :: nnz_global               ! nnz: number of nonzero on each row
 
-    integer :: nnz_total,nnz_max, nnz_sum 
-    integer :: Istart,Iend,rank_nonzero_num
-    integer :: d_nz,o_nz, idf, neq_inc, idf_cnt, neq_adj, idf_adj   
-
-    integer,dimension(:),allocatable :: col_id, test_id                    ! for assemble A_matrix
-    integer,dimension(:),allocatable :: row_index, row_nelm       ! for assemble A_matrix
+    integer :: nnz_total,nnz_max, nnz_sum, row_nnz, i, j 
+    integer :: rank_nonzero_num, rank_rows, nnz_block_above
+    integer :: idf, neq_inc, idf_cnt, neq_adj, idf_adj, neq_swc  
+    integer(kind=4) :: d_nz, o_nz, Istart, Iend
+    integer(kind=4),dimension(:),allocatable :: col_id                    ! for assemble A_matrix
+    REAL(8),dimension(:,:),allocatable :: test_id                   
+    
+    integer(kind=4),dimension(:),allocatable :: row_index, row_nelm       ! for assemble A_matrix
     integer,dimension(:),allocatable :: value_index               ! the index for value vector to assemble
     integer,dimension(:),allocatable :: rank_nonzero_array, global_nonzero        ! just for the order: from 1 to ...
     
@@ -163,7 +165,7 @@ contains
        ! More robust algorithm for calculation of nz for unstructured grid !
        if (rank_size == 1) then
 
-             d_nz = 10 * idf          ! 3 dimension * number of variables
+             d_nz = 9 * idf         ! 3 dimension * number of variables
              o_nz = 0                 ! o_nz: off diagonal    d_nz: diagonal non-zero
 
        else if (rank_size == 2) then
@@ -183,10 +185,13 @@ contains
 
        else
 
-             d_nz = ceiling(7 * idf/1.00/rank_size)
-             o_nz = 7*idf - floor(7 * idf/1.00/rank_size)
+             d_nz = ceiling(9 * idf/1.00/rank_size)
+             o_nz = 9*idf - floor(9 * idf/1.00/rank_size)
 
        end if
+       d_nz = 100
+       o_nz = 100
+       
 
        ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        ! - - - -
@@ -196,15 +201,26 @@ contains
        !  Create matrix.  When using MatCreate(), the matrix format can
        !  be specified at runtime.
        !
+       !call VecCreate(PETSC_COMM_WORLD,global_asize,ierr_3)
+       !call VecSetSizes(global_asize,PETSC_DECIDE,A_size,ierr_3)
+       !call VecSetFromOptions(global_asize,ierr_3)
+       !call VecGetOwnershipRange(global_asize, localstart, localend, ierr_3)
+       !local_asize = localend - localstart
+       
+       
+       call MatCreate(PETSC_COMM_WORLD,A_matrix,ierr_3);CHKERRA(ierr_3)        ! for entire large matrix
+       call MatSetSizes(A_matrix,PETSC_DECIDE,PETSC_DECIDE,A_size,A_size,ierr_3);CHKERRA(ierr_3)
+       call MatSetFromOptions(A_matrix,ierr_3);CHKERRA(ierr_3)
+         
+       call MatSetType(A_matrix,MATMPIAIJ,ierr_3);CHKERRA(ierr_3)
+       
+       call MatSetUp(A_matrix,ierr_3);CHKERRA(ierr_3)
+       !call MatSeqAIJSetPreallocation(A_matrix, d_nz, PETSC_NULL_INTEGER, ierr_3);CHKERRA(ierr_3)
+       call MatMPIAIJSetPreallocation(A_matrix,d_nz,PETSC_NULL_INTEGER,o_nz,PETSC_NULL_INTEGER,ierr_3);CHKERRA(ierr_3)
 
-       call MatCreate(PETSC_COMM_WORLD,A_matrix,ierr_3)        ! for entire large matrix
-       call MatSetSizes(A_matrix,PETSC_DECIDE,PETSC_DECIDE,A_size,A_size,ierr_3)
-       call MatSetFromOptions(A_matrix,ierr_3)
-       call MatSetType(A_matrix,MATMPIAIJ,ierr_3)
-       call MatSetUp(A_matrix,ierr_3)
-       call MatMPIAIJSetPreallocation(A_matrix,d_nz,PETSC_NULL_INTEGER,o_nz,PETSC_NULL_INTEGER,ierr_3)
-
-       call MatGetInfo(A_matrix, MAT_LOCAL, info, ierr_3)
+       
+       
+       call MatGetInfo(A_matrix, MAT_LOCAL, info, ierr_3);CHKERRA(ierr_3)
        mal = info(MAT_INFO_MALLOCS)
        nz_a = info(MAT_INFO_NZ_ALLOCATED)
        
@@ -235,36 +251,69 @@ contains
       
        call MatGetOwnershipRange(A_matrix,Istart,Iend,ierr_3)
         
-       nnz_size = nnz_total*idf**2
+       nnz_size = neq
 
        call VecCreate(PETSC_COMM_WORLD,nnz_seq,ierr_3)
-       call VecSetSizes(nnz_seq,PETSC_DECIDE,nnz_size,ierr_3)
+       call VecSetSizes(nnz_seq,PETSC_DECIDE,nnz_total*idf,ierr_3)
        call VecSetFromOptions(nnz_seq,ierr_3)
        call VecGetOwnershipRange(nnz_seq, nnz_start, nnz_end, ierr_3)
 
-       rank_nonzero_num = nnz_end - nnz_start + 0.3*(nnz_end - nnz_start)
+       rank_nonzero_num = nnz_total*idf**2
 	   allocate(col_id(rank_nonzero_num))
 	   allocate(value(rank_nonzero_num))
 	   allocate(value_index(rank_nonzero_num))
 	   allocate(rank_nonzero_array(rank_nonzero_num))
-
-      ! do i =1, neq
-      ! 		row_nelm = nelm(neq+i)
-      ! end do
-
-       allocate(row_index(Iend - Istart+1))
-
-       col_id      = 0
-       value       = 0.0
+	   
+       !allocate(row_index(Iend - Istart+1))
+       
+       ! alloc for using MatSetValues
+       allocate(row_index(rank_nonzero_num))
+       
        row_index   = 0
+       row_nnz = 1
+       idf_cnt = 0
+       neq_inc = 0
+       neq_inc = neq
+       neq_adj = 0
+       idf_cnt = 0  
+       idf_adj = 0       
+       rank_nonzero_array = (/ (I, I = 1,rank_nonzero_num) /)
        value_index = 0
+       nnz_block_above = 0
+
+       do i  = 1, neq*idf
+            neq_swc = 0
+            
+            row_index(row_nnz:(nnz_global(i)*idf+row_nnz-1)) = i - 1
+            
+            if(i > neq_inc)then
+                    idf_adj = idf_adj + (idf-1)
+                    idf_cnt = idf_cnt + 1
+                    neq_inc = neq_inc + neq
+                    neq_adj = neq_adj + neq
+            end if              
+            
+            do j = 0, idf - 1
+                            col_id(row_nnz+nnz_global(i)*j:(nnz_global(i)*(j+1)+row_nnz-1)) = nelm(nelm(i-neq_adj)+1:nelm(i-neq_adj+1)) - 1	+ neq_swc
+                            value_index(row_nnz+nnz_global(i)*j:(nnz_global(i)*(j+1)+row_nnz-1)) = rank_nonzero_array(1:nnz_global(i)) + nnz_above(i) + nnz_total*j + nnz_total*idf_adj
+            neq_swc =  neq_swc + neq
+            end do
+            row_nnz = row_nnz + nnz_global(i) * idf
+            nnz_block_above = nnz_block_above + nnz_global(i)
+       end do
+!       do i = 1, Iend-Istart
+!       		row_index(i) = Istart + i
+!       end do
+
+       !col_id      = 0
+       value       = 0.0       
+       
        nnz_sum = 0
        neq_inc = neq
        neq_adj = 0
        idf_cnt = 0
 
-       rank_nonzero_array = (/ (I, I = 1,rank_nonzero_num) /)
-
+       
        call VecCreate(PETSC_COMM_WORLD,x,ierr_3)
        call VecSetSizes(x,PETSC_DECIDE,A_size,ierr_3)
        call VecSetFromOptions(x,ierr_3)

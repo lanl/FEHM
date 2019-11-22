@@ -16,7 +16,7 @@ C**********************************************************************
 CD1
 CD1 PURPOSE
 CD1
-CD1 To perform the symbolic factorization and calculate computer
+CD1 To perform the symbolic factization and calculate computer
 CD1 storage necessary for the solvers.
 CD1
 C**********************************************************************
@@ -280,7 +280,8 @@ C**********************************************************************
       integer npvc(*)
       integer npvt(*)
       integer nsza
-      integer nszb
+      !integer(kind=8) nszb
+      integer nszb	  
       integer nszom
 
       logical used

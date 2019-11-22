@@ -300,6 +300,7 @@ c****                                                  from slvesu ****c
       integer north
       integer north_old
       integer nsza
+      !integer(kind=8) nszb
       integer nszb
       integer nszom
       character*4 accm

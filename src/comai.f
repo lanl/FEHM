@@ -390,13 +390,13 @@
 !PS None
 !PS
 !***********************************************************************
-      integer             rank,rank_size   ! for MPI Running
+      integer(kind=4)             rank,rank_size   ! for MPI Running
 
       integer             iab, iac, iaccmx, iad, iad_up, iadif, iamm 
       integer             iamx, iatty, icapp, iccen, ice, icf, icgts 
       integer             ichng, icnl, ico2, icontr, ics, idof, idpdp 
       integer             idualp, ierr, ifinsh, iflag, igauss, igrav 
-      integer             ihf, ihs, iprtout, ilt, imdnode, impf, incoor
+      integer		      ihf, ihs, iprtout, ilt, imdnode, impf, incoor
       integer             inpt, intg, inzone, iocntl, iout, iporos, ipqz
       integer             ipsat, iptty, iread, ireord, irpd, isave
       integer             ischk, iscon, iscon1, ishis, ismis, isstor
@@ -405,7 +405,7 @@
       integer             ivfcal, iw, icons, inapl, iboun, ihead, ichead
       integer             iwelb, iyear, l, lda, m, m2, m3, maxit, mink 
       integer             minkt, mlz, month, n, nbnd, ncntr, nei 
-      integer             neigh, nemx, neq, nflx, nflxz, ni, nicg
+      integer(kind=4)     neigh, nemx, neq, nflx, nflxz, ni, nicg
       integer             north, ns, itotals, nflxt, iflxc, irestart_ts
       integer             nsave, nstep, ntpp, ntty, irsttime 
       integer             ispest, ispst1, ipest, mpest, iexrlp, ivar

@@ -378,6 +378,7 @@ c this routine called from slvesu
       integer maxkb
       integer minkb
       integer nalot
+      !integer(kind=8) nbd
       integer nbd
       integer neq
       integer neqp1

@@ -339,6 +339,7 @@ c nbd-size of array nop(nbd=nnop in slvesu)
       integer minkb
       integer maxkb
       integer nalot
+      !integer(kind=8) nbd
       integer nbd
       integer neq
       integer neqp1
