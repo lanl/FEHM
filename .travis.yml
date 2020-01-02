@@ -25,11 +25,15 @@ before_install:
       brew update && brew install gcc
     fi
 
+install:
+  - pip install sphinx sphinx_rtd_theme
+
 script:
   - cd src
   - make all
   - make debug
-  - cd fehmpytests/ && python fehmpytests.py ../src/xfehm_v3.3.1
+  # - cd fehmpytests/ && python fehmpytests.py ../src/xfehm_v3.3.1
+  - cd docs && make html
 
 after_success:
   - echo FEHM compilation successful
