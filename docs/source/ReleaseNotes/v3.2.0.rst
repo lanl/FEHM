@@ -1,0 +1,721 @@
+======
+V3.2.0
+======
+
+The major changes in the FEHM application from V3.1 to this release V3.2, are
+improvements to geothermal, CO2, and stress capabilities.
+All changes are described in detail in release notes and Appendix documents
+posted on fehm.lanl.gov web page. Enhancements to this FEHM release include:
+
+* Additional stress models have been added, including stess permeability for shear-stimulated fractures and settings for incremental shear for porosity damage.
+
+* Enhanced functionality for C02 problems have been added. The User Manual documentation has been updated for both "carb" and "grad". Output for macro "rlpm" has been generalized to include both co2 gas /water and co2 liquid /water output.
+
+* For mass, energy balances in porous media, "anpe" (anisotropic permeability) has been modified to work with dual or dpdp or gdpm or gdkm for the isothermal case. The macro "anpe" works with "trac" for transport and "gdkm" works with isothermal and thermal.
+
+* The macro "trxn" is a new macro, which does not add functionality but is a user-friendly interface to "trac" and "rxn".
+
+--------------------------------------------------------------------------------
+
+.. code::
+
+  Release Notes for Version 3.2.0  Aug 20 2012 to Jul 11 2013 
+  
+  Executables notes:
+  Linux (64-bit): fehm_v3.2.0lin.11Jul13 compiled with gfortran 4.5.1
+  MAC: fehm_v3.2.0mac.11Jul13 compiled with gfortran 4.8.1
+  PC Windows (32-bit): FEHM_V3.2.0w32.11Jul13.exe compiled with Intel Parallel Studio XE 2011
+  PC Windows (64-bit): FEHM_V3.2.0w64.11Jul13.exe compiled with Intel Parallel Studio XE 2011
+  
+  New Release FEHM OPEN V3.2.0 in directory VERS_3.2.0_013_0711 
+  The major changes are: Fix to CO2 capabilities, Updates to stress model, Updates to GDKM
+  
+  Summary of FEHM V3.2 Application Changes
+  
+  The major changes in the FEHM application from V3.1 to this release V3.2, are
+  improvements to geothermal, CO2, and stress capabilities. All changes are
+  described in detail in release notes and Appendix documents posted on the
+  fehm.lanl.gov web page. Enhancements to this FEHM release include:
+  
+  Additional stress models have been added, including stress permeability for
+  shear-stimulated fractures and settings for incremental shear for porosity
+  damage.
+  
+  Enhanced functionality for C02 problems have been added. The User Manual
+  documentation has been updated for both "carb" and "grad". Output for macro
+  "rlpm" has been generalized to include both co2 gas/water and co2 liquid/water.
+  
+  For mass, energy balances in porous media, "anpe" (anisotropic permeability)
+  has been modified to work with dual or dpdp or gdpm or gdkm for the isothermal
+  case. The macro "anpe" works with "trac" for transport and "gdkm" works with
+  isothermal and thermal.
+  
+  The macro "trxn" is a new macro, which does not add functionality but is a
+  user-friendly interface to "trac" and "rxn".
+  
+  
+  Summary of FEHM V3.2 Test Suite Additions
+  
+  The V&V Test Suite for V3.2 has the same test problems as releases V2.26 (for
+  YMP QA) and V3.1 (April 2012). New test problems have been added to the test
+  suite. After confirming successful tests on each operating system, a
+  compressed archive file is created for each operating system; VERIFICATION_V3.2lnx.tar.gz, VERIFICATION_V3.2mac.tar.gz, and VERIFICATION_V3.2win.zip.
+  
+  
+  The following is a partial list of the added tests (and associated test name): 
+  
+  Tests for macro co2 with co2pres, co2flow, and co2frac (co2test)
+  Test the macro evap (evaporation)
+  Test macros ngas and trac (wvtest)
+  Tests for infiltration using the ecm and dpm models with Richard’s equation
+  (infiltration*)
+  Test new concentration dependent density formulation (cden_test)
+  Test concentration flux output option (cflxz_test)
+  Test a new stress permeability model (stress_prem)
+  Tests using the rlpm macro instead of the rlp macro, using both equation and
+  table input.
+  Tests using trxn format input in place of the trac and rxn macros.
+  
+  
+  Developer Notes  9/27/2012 to 7/11/2013 -----------------------------  
+  
+  06/24-07/11/2013:
+  Fixed GDKM problems and modified routines for improvement:
+  
+  area_length_calc.f - modified to make gdkm and anpe work, corrected routine so that cell dimensions are calculated for only the total gridblock dimensions in dpdp problems - not the primary and secondary volumes.
+  incoord.f - modified to allow different ordering to 3D tets (variable ich_pebi)
+  setparams.f - initialized  new variable ich_pebi
+  comai.f  - added ich_pebi and other new variables 
+  gncf3.f - added code to correct ordering for 3D tets if necessary(see variable ich_pebi)
+  diskread.f- set some secondary stress variables to zero if primary stress variables are readi in
+  ther_co2_h2o.f - changed (only) where some variables are declared. Now more are declared in comco2.f
+  icectrco2.f - changed (only) where some variables are declared. Now more are declared in comco2.f 
+  h2o_properties.f - changed (only) where some variables are declared. Now more are declared in comco2.f 
+  wellphysicsctr.f - changed (only) where some variables are declared. Now more are declared in comco2.f
+  commeth.f - changed (only) where some variables are declared. Now more are declared in comco2.f
+  diagnostics.f - minor changes for identifying Nans
+  
+  input.f - added capability for removing negative coefficients (macro zneg)
+  varchk.f - commented out ieos = 1 about line 587 (co2 tests passed!)
+  inpres.f - minor changes taht will be used in next version of co2 module.
+  structured.f - added 1 comment line
+  
+  releasemem.f - release memory for new variable nvar_select() (will be used in next co2 version)
+  david.f - added declaration for variables nvar_select(:) and max_variables
+  
+  allocmem.f - added allocation for variables nvar_select(:)
+  scanin.f - set vatiable icoef_neg = 0
+  setord.f - added option for another variable ordering
+  switch.f - allowed possibility if move equation ordering
+  switchb.f - allowed possibility if move equation ordering
+  
+  mdnodes.f - minor correction to zero indexing (still ran in release mode)
+  gensco2h2o.f - minor addition thatwill be useful in next co2 version
+  comco2.f - moved many local co2-related variables to this module
+  startup.f - changed calling sequence for area_length_calc.f and some code related to equation ordering
+  coeff_management.f - sets to zero all area coefficients that are generated or read in a stor file. This capability should be used with caution but is helpful in determining if negative area coefficients are causing stability issues.
+  
+  gdkm_calc.f - corrected an array out of bounds (from i4 = nelm(kb) to i4 = nelm(kb+1), line 140)
+  
+  thrair.f - added a new constant pressure condition that controls saturation by adding or taking out gas. Useful in 2 phase gas injection problems
+  
+  airctr.f - changed the calculation of initial density so that the denisity is calculated correctly for concentration dependent density when a tracer restart file is present
+  
+  05/08/2013:
+  Modified mdnodes.f
+  Minor bug fix for array out of bound.
+  
+  04/03-10/2013:
+  Modified diskread.f diskwrite_new.f
+  Added ability to read and write porosity to restart file 
+  Corrected allocation of stress variables for reading
+  
+  Modified fehmn.f, iofile.f, and added new routine write_copyright.f90 for output copyright disclosure statement (output to terminal and in output file).
+  
+  Modified inhist.f to fix  an error where the wrong unit number was being used for some output.
+  
+  03/20/2013: 
+  Add stress permeability model 24
+  
+  Summary of source code changes:
+   
+  1. comsif.f
+  Change: allocate new integer ipermstr24.
+  Purpose: indicates whether stress perm model 24 applies to a particular node.
+   
+  2. stress_perm.f
+  Change: add call for stressperm_24.
+  Purpose: applies the stress perm model when called.
+   
+  3. stressperm_allocate.f
+  Change: save initial values for permeability. Already implemented for models 2, 6, 21, 
+  22, 31 - extended to 24.
+  Purpose: new stress perm model formulated in terms of a multplier applied to initial pe
+  rmeability.
+   
+  4. stress_uncoupled.f
+  Change: save initial pore pressure in str_pf0_perm. 
+  Purpose: for later calculation, permeability as a function of pressure change.
+   
+  5. stressctr.f
+  Change: reads in parameters associated with stress perm model 24.
+  Purpose: for later use when doing calculations with stress perm model 24.
+   
+  6. stressperm_24.f  *new file*
+  Contains routines for calculating permeability multipliers as a function of in situ str
+  ess assuming a ubiquitously fractured media.
+  Steps:
+  i.  Allocate initial values 
+  ii. Generate N (input parameter) fractures with a uniform distribution of orientations (subroutine stressperm_24_spiral)
+  iii.    For each of the N fractures...
+  a.  Construct local coordinate system in frame of fracture. z-prime is fracture normal, x-prime aligned with shear stress (subroutine stressperm_24_local)
+  b.  Transform global stress state into local frame (subroutine stressperm_24_rotate)
+  c.  Calculate elastic change in fracture aperture using Bai et al. model (subroutine stressperm_24_prefailure)
+  d.  Assess if frictional failure (Mohr-Coulomb) of fracture occurs (subroutine stressperm_24_failure)
+  e.  If failure, calculate permeability increase along fracture using Lee and Cho (2002) empirical curves (subroutine stressperm_24_postfailure)
+  f.  Transform modified fracture permeability back to global frame, add to total (subroutine stressperm_24_perm)
+  iv. Calculate overall permeability modifier as ensemble average of all fractures, apply to initial permeability.
+  
+  01/31/2013 - 02/011/2013: 
+  
+  Fixed a minor bug in write_avs_node_mat.f, add missing 
+  specific heat value which didn't get write out for avsx mat_node file.
+  
+  
+  12/20/2012:
+  
+  Updated with Stress model changes and RTD mixing model changes,
+  passed stress test (fracture_aperture). 
+  
+  
+  bnswer.f
+  a. moved permeability updating from 'fehmn' to bnswer
+  b. changed the flags for choosing nodal vs edge updating of 
+     permeability as a funciton of stress
+  
+  compute_flow_residual.f
+  a. minor changes to variable names
+  b. include 'recoumpte_stress' in the call to compute_permfactor
+  
+  compute_permfactor_effstrs.f
+  changed to using properties of the model assigned to the current node 
+  instead of that asigned to node '1'
+  
+  compute_permfactor_effstrs_pp.f
+  a. minor changes to variable names
+  b. changed the definition of 'average' pore pressure between nodes
+  
+  compute_permfactor.f
+  passign 'recompute_stress' thru the parameter list instead of computing 
+    it within the subroutine
+  
+  compute_permfactor_vonMises.f
+  a. use permmodel 100 instead 22
+  b. use only spm1f(1) = perx_m in computing permFactor
+  c. print mean_accum_pstrain, fac,norm_per,perm_fac to 'iout'
+  
+  comsi.f
+  a. created a new flag for using incremental shear in permmodel-22
+  b. created a new flag for  permmodel-23
+  c. declare arrays for increamental shear in permmodel22
+  
+  fehmn.f
+  a. added updating of converged strain when using 'fem' option
+  b. moved to bnswer permeability updates related to stress
+  
+  geneq_stress_fem_3D.f
+  minor changes to variable names
+  
+  gensl_stress_coupled_3D.f
+  changed call to geneq_flowflux_perm() instead of geneq_flow_coupled()
+  
+  stressctr.f
+  a. modified arrangement of conditional statements for ihms = -15, 16 and 17
+  b. changed allocation of array itemp_term22
+  c. modified input for permmodel=22 to allow use increamenatl shear
+  d. modified input for permmodel=22 to allow porosity damage
+  e. for young's modulus as a funciton of temperature, if using table entry
+     make the first line of the input file optional
+  f. for 'plastic' case, forcing the use of a single model for whole domain
+  
+  stressperm_22.f
+  c. modified permmodel=22 to allow use increamenatl shear
+  d. modified permmodel=22 to allow porosity damage
+  
+  stressperm_2.f
+  If strx_min <or= 0 model is interpreted to be that for local failure 
+    driven by pore pressure only.
+  
+  stress_perm.f
+  added call for permmodel = 23 that uses Stuart Walsh model of aperture
+  
+  stress_uncoupled.f
+  save initial stresses if they need to be zerod out in stressperm_22
+  
+  update_permfactors.f
+  a. minor variable name changes
+  b. added a flag for plasticity-coupled with permeability
+  c. changed call to compute_permfactor to pass 'recompute_stress'
+     flag
+  d. call compute_permfactor_vonMises for both vonMises and Drucker-Prager 
+  
+  write_avs_head_s.f
+  optional output for excess shear and young's modulus
+  
+  write_avs_node_s.f
+  optional output for excess shear and young's modulus
+  
+  flow_flux_perm_residual.f
+  new routine, replaces compute_flow_residual. changed definition of residual
+  
+  geneq_flowflux_perm.f
+  new routine, replaces the routine geneq_flow_coupled. calling 
+    flow_flux_perm_residual instead of compute_flow_residual. made 
+    modifications to  'a' matrix 
+    cumulative
+  
+  stressperm_23.f
+  new routine,  Stuart Walsh model of aperture
+  
+  gen_mixmodel.f
+  rtd mixing model update
+  
+  subdivide_rtd.f
+  rtd mixing model update
+  
+  
+  
+  11/06/2012:
+  Following new changes are incorporated:
+  
+  7 routines to fix CO2 capabilities --
+  check_rlp.f :       added a more descriptive header to the 'rlp' output file 
+  vcap-ek.f:          commented out the last few lines, which were erroneously forcing cp=0 at sl=0
+  rlperm_co2.f:       fixed bug in model 19,which did not handle the 'co2 is gas' case correctly.
+  check_rlp_carb.f:   generalized tabular output for rlps to include both co2 gas /water and co2 liquid /water output.  
+              Improved tecplot column headings.
+  inrlp.f:        fixed a bug in loading the array 'cap_type'
+  brooks_corey_cap.f: added a few comment lines to better describe the code
+  rlp_cap.f:          corrected logic for the water/co2-gas case, so that rl_l will be correctly calculated
+  
+  2 routines to fix zone definition issue:
+  Allocmem.f and zone.f: bug fixed so the code works with large zone numbers
+  
+  
+  10/22/2012:
+  FEHM_V3.1.1w64_largeMemory.22Oct12.exe is compiled for using with large memory problems
+  
+  09/27/2012:
+  Executable has following known issues:
+  1) not passing stress test (fracture_aperture in test suites)
+  2) Two new GDKM code changes not incorporated (causing GDPM break)
+     (gdkm_calc.f, area_length_calc.f) 
+  
+  Linux executable on Conejo (intel compiler vertsion 11.1.072, 64-bit) is at following link:
+  /usr/projects/yfwater/spchu/fehm_bin/xfehm_v3.1intel64.12Oct12
+  
+  
+  End Developer Notes 9/27/2012 to 7/11/2013 -------------------------------
+  
+  hg/trac changesets by date -----------------------------------------------
+  
+  Use trac/ Browse Source / fehm_open / Revision Log (full messages) 
+  Use trac/ Timeline for one line changesets listed by date
+  This Code Release has TAG V3.2.0 
+  
+  ------------------------------------------
+  07/16/13
+      
+  @566:e5118aba3213   3 hours spchu   
+  Added tag Release V3.2.0 for changeset 6e77d57423b6
+      
+  @565:6e77d57423b6   3 hours spchu   
+  Change version number to V3.2
+  
+  ------------------------------------------
+  7/11/13
+      
+  @564:96f5de3319bc   5 days  spchu   
+  minor correction for indexing
+      
+  ------------------------------------------
+  7/9/13
+  
+  @563:c47bc11dc6e3   7 days  spchu   
+  corrected routine so that cell dimensions are calculated for only the total gridblock dimensions in dpdp problems - not the primary and secondary volumes
+      
+  @562:9f6622b6ef51   7 days  spchu   
+  added a new constant pressure condition that controls saturation by adding or taking out gas. Useful in 2 phase gas injection problems
+      
+  @561:5d6908ab19af   7 days  spchu   
+  changed the calculation of initial density so that the denisity is calculated correctly for concentration dependent density when a tracer restart file is present
+      
+  @560:8d3777f8b556   7 days  spchu   
+  update date in routine
+  
+  ------------------------------------------
+  6/25/13
+      
+  @559:6c611354ce69   3 weeks spchu   
+  Update depends file due to modified and new routines
+      
+  @558:1cfb29b3c1a8   3 weeks spchu   
+  sets to zero all area coefficients that are generated or read in a stor file. This capability should be used with caution but is helpful in determining if negative area coefficients are causing stability issues.
+      
+  @557:7c839154f83c   3 weeks spchu   
+  changed (only) where some variables are declared. Now more are declared in comco2.f
+      
+  @556:73570d5e1b63   3 weeks spchu   
+  commented out ieos = 1 about line 587 (co2 tests passed!)
+      
+  @555:53ca43b3c385   3 weeks spchu   
+  changed (only) where some variables are declared. Now more are declared in comco2.f
+      
+  @554:1eaf5767027b   3 weeks spchu   
+  allowed possibility if move equation ordering
+      
+  @553:c7aebc804298   3 weeks spchu   
+  allowed possibility if move equation ordering
+      
+  @552:80d50d9cfd6a   3 weeks spchu   
+  added 1 comment line
+      
+  @551:6562c1cd1e0f   3 weeks spchu   
+  changed calling sequence for area_length_calc.f and some code related to equation ordering
+  coeff_management.f
+      
+  @550:157587a00ff4   3 weeks spchu   
+  initialized new variable ich_pebi
+      
+  @549:f40c4599013f   3 weeks spchu   
+  added option for another variable ordering
+      
+  @548:f2c38527b3bd   3 weeks spchu   
+  set vatiable icoef_neg = 0
+      
+  @547:7c4814f31fb6   3 weeks spchu   
+  release memory for new variable nvar_select() (will be used in next co2 version)
+      
+  @546:5691d83e5663   3 weeks spchu   
+  added capability for removing negative coefficients (macro zneg)
+      
+  @545:6d323f184db6   3 weeks spchu   
+  minor changes taht will be used in next version of co2 module.
+      
+  @544:ab31353bad97   3 weeks spchu   
+  modified to allow different ordering to 3D tets (variable ich_pebi)
+      
+  @543:9949fc6bd736   3 weeks spchu   
+  changed (only) where some variables are declared. Now more are declared in comco2.f
+      
+  @542:6134f1443b3d   3 weeks spchu   
+  changed (only) where some variables are declared. Now more are declared in comco2.f
+      
+  @541:4832e90b0f19   3 weeks spchu   
+  added code to correct ordering for 3D tets if necessary(see variable ich_pebi)
+      
+  @540:ff2b81f861d8   3 weeks spchu   
+  minor addition thatwill be useful in next co2 version
+      
+  @539:1f78460ffa77   3 weeks spchu   
+  corrected an array out of bounds (from i4 = nelm(kb) to i4 = nelm(kb+1), line 140)
+      
+  @538:da9272e8f01a   3 weeks spchu   
+  set some secondary stress variables to zero if primary stress variables are read in
+      
+  @537:b7b9855a5fe5   3 weeks spchu   
+  minor changes for identifying Nans
+      
+  @536:d8662dd1fd48   3 weeks spchu   
+  added declaration for variables nvar_select(:) and max_variables
+      
+  @535:e3dab31dbad3   3 weeks spchu   
+  changed (only) where some variables are declared. Now more are declared in comco2.f
+      
+  @534:d9bf436692f0   3 weeks spchu   
+  moved many local co2-related variables to this module
+  
+  ------------------------------------------
+  6/24/13
+      
+  @533:5fe05ca8c639   3 weeks spchu   
+  added ich_pebi and other new variables
+      
+  @532:0fd849839fc9   3 weeks spchu   
+  modified to make gdkm and anpe work
+      
+  @531:d84b29ef015f   3 weeks spchu   
+  added allocation for variables nvar_select(:)
+      
+  ------------------------------------------
+  6/12/13
+  
+  @530:d25e7d44e237   5 weeks spchu   
+  Update error output statement to be consistent with main src directory
+  
+  ------------------------------------------
+  5/9/13
+      
+  @529:429dae8c1082   2 months    spchu   
+  Minor bug fix for array out of bound.
+  
+  ------------------------------------------
+  4/10/13
+      
+  @528:996c8fc47d63   3 months    spchu   
+  Add copyrigh disclosure to terminal when output to screen and to the output file.
+      
+  @527:3b344e3b8fde   3 months    spchu   
+  Fixed error where the wrong unit number was being used for some output.
+      
+  @526:56c9b1c49be5   3 months    spchu   
+  dded ability to read and write porosity to restart file
+  Corrected allocation of stress variables for reading
+  
+  ------------------------------------------
+  3/20/13
+      
+  @525:4a97f6f9e7bb   4 months    spchu   
+  New file: Contains routines for calculating permeability multipliers as a function of in situ stress changes. Assumes material is ubiquitously fractured, with fractures existing in every orientation without bias.
+  
+  ------------------------------------------
+  2/13/13
+      
+  @524:d38717e1e994   5 months    spchu   
+  Change: reads in parameters associated with stress perm model 24.
+  Purpose: for later use when doing calculations with stress perm model 24.
+      
+  @523:2570ad7fcd2e   5 months    spchu   
+  Change: save initial pore pressure in str_pf0_perm.
+  Purpose: for later calculation, permeability as a function of pressure change.
+      
+  @522:660b4371e7c2   5 months    spchu   
+  Change: save initial values for permeability. Already implemented for models 2, 6, 21, 22, 31 - extend
+  ed to 24.
+  Purpose: new stress perm model formulated in terms of a multplier applied to initial permeability.
+      
+  @521:4ae6abf01d72   5 months    spchu   
+  Change: add call for stressperm_24.
+  Purpose: applies the stress perm model when called.
+      
+  @520:d884b077db77   5 months    spchu   
+  Change: allocate new integer ipermstr24.
+  Purpose: indicates whether stress perm model 24 applies to a particular node.
+      
+  @519:cfd3f9d4cc28   5 months    spchu   
+  change: dependencies for stressperm_24.f
+      
+  @518:041a132d53d9   5 months    spchu   
+  new file, Contains routines for calculating permeability multipliers as a function of in situ stress assuming a ubiquitously fractured media.
+      
+  @517:86140e8041f5   5 months    spchu   
+  permission change, recommit
+  
+  ------------------------------------------
+  1/31/13
+      
+  @516:50b71760055c   6 months    spchu   
+  permission change causing recommit
+      
+  @515:cfa74c7fc5c1   6 months    spchu   
+  fixed a bug in write_avs_node_mat.f: add missing specific heat value which didn't get write out
+  for avsx mat_node file.
+  
+  ------------------------------------------
+  12/20/12
+      
+  @514:f655030cbab1   7 months    spchu   
+  updated PC version of the fehmn.f
+      
+  @513:62a628b27fcb   7 months    spchu   
+  update PC folder fehmn.f
+      
+  @512:51780e147582   7 months    spchu   
+  new routine, Stuart Walsh model of aperture
+      
+  @511:10bcdbfdfff3   7 months    spchu   
+  new routine, replaces the routine geneq_flow_coupled. calling
+  flow_flux_perm_residual instead of compute_flow_residual. made
+  modifications to 'a' matrix cumulative
+      
+  @510:3bf57b05398e   7 months    spchu   
+  new routine, replaces compute_flow_residual. changed definition of residual
+      
+  @509:7761929482b8   7 months    spchu   
+  optional output for excess shear and young's modulus
+      
+  @508:a273006c790c   7 months    spchu   
+  optional output for excess shear and young's modulus
+      
+  @507:be957009d26b   7 months    spchu   
+  minor variable name changes
+  added a flag for plasticity-coupled with permeability
+  changed call to compute_permfactor to pass 'recompute_stress' flag
+  call compute_permfactor_vonMises for both vonMises and Drucker-Prager
+      
+  @506:2a0df93dbe25   7 months    spchu   
+  allocate variables
+      
+  @505:26f77eddc258   7 months    spchu   
+  allocate variables
+      
+  @504:3937f2fb5574   7 months    spchu   
+  modified permmodel=22 to allow use increamenatl shear
+  modified permmodel=22 to allow porosity damage
+      
+  @503:0ae26e8e09e6   7 months    spchu   
+  If strx_min <or= 0 model is interpreted to be that for local failure
+  driven by pore pressure only.
+      
+  @502:3bf593ae51be   7 months    spchu   
+  modified arrangement of conditional statements for ihms = -15, 16 and 17
+  changed allocation of array itemp_term22
+  modified input for permmodel=22 to allow use increamenatl shear
+  modified input for permmodel=22 to allow porosity damage
+  for young's modulus as a funciton of temperature, if using table entry make the first line of the input file optional
+  for 'plastic' case, forcing the use of a single model for whole domain
+      
+  @501:6543886ec65c   7 months    spchu   
+  save initial stresses if they need to be zerod out in stressperm_22
+      
+  @500:7aa6b0d17c62   7 months    spchu   
+  added call for permmodel = 23 that uses Stuart Walsh model of aperture
+      
+  @499:afaa770e919e   7 months    spchu   
+  permfactor initialization
+      
+  @498:450e06c5e119   7 months    spchu   
+  RTD mixing model update
+      
+  @497:afd99ad9b86d   7 months    spchu   
+  RTD mixing model updates
+      
+  @496:8201a581332c   7 months    spchu   
+  changed call to geneq_flowflux_perm() instead of geneq_flow_coupled()
+      
+  @495:e66150f70bb5   7 months    spchu   
+  minor changes to variable names
+      
+  @494:0c2351a163f2   7 months    spchu   
+  added updating of converged strain when using 'fem' option
+  moved to bnswer permeability updates related to stress
+      
+  @493:e2808ee5c447   7 months    spchu   
+  created a new flag for using incremental shear in permmodel-22
+  created a new flag for permmodel-23
+  declare arrays for increamental shear in permmodel-22
+      
+  @492:99c86d730395   7 months    spchu   
+  use permmodel 100 instead 22
+  use only spm1f(1) = perx_m in computing permFactor
+  print mean_accum_pstrain, fac,norm_per,perm_fac to 'iout'
+      
+  @491:f6235c29831d   7 months    spchu   
+  minor changes to variable names
+  changed the definition of 'average' pore pressure between nodes
+      
+  @490:da24eee5d1cc   7 months    spchu   
+  changed to using properties of the model assigned to the current node
+  instead of that asigned to node '1'
+      
+  @489:7abcb101a133   7 months    spchu   
+  passing in 'recompute_stress' thru the parameter list instead of computing
+  it within the subroutine
+      
+  @488:67007595fd44   7 months    spchu   
+  minor changes to variable names
+  include 'recoumpte_stress' in the call to compute_permfactor
+      
+  @487:411d95bfbae7   7 months    spchu   
+  moved permeability updating from 'fehmn' to bnswer
+  changed the flags for choosing nodal vs edge updating of permeability as a funciton of stress
+      
+  @486:fafe6a11ea71   7 months    spchu   
+  Update depends file with new routines changes
+  HG commit message. Lines beginning with 'HG:' are removed.
+  
+  ------------------------------------------
+  11/06/12
+      
+  @485:1d7a30247689   8 months    spchu   
+  Added tag Nov 6, 2012 for changeset 35175bc21ad1
+      
+  @484:35175bc21ad1   8 months    spchu   
+  Added tag Nov 6, 2012 compile for changeset 520c6b2670dc
+      
+  @483:520c6b2670dc   8 months    spchu   
+  added a more descriptive header to the 'rlp' output file
+      
+  @482:11be28c24c7c   8 months    spchu   
+  commented out the last few lines, which were erroneously forcing cp=0 at sl=0
+      
+  @481:581e896ea284   8 months    spchu   
+  fixed bug in model 19,which did not handle the 'co2 is gas' case correctly.
+      
+  @480:893bd39a5166   8 months    spchu   
+  added a more descriptive header to the 'rlp' output file
+      
+  @479:29910c6cbc64   8 months    spchu   
+  generalized tabular output for rlps to include both co2 gas /water and co2 liquid /water output.
+  Improved tecplot column headings.
+      
+  @478:b488015c28dc   8 months    spchu   
+  updated fehmn.f to be consistent with fehmn.f in manin src directory
+      
+  @477:2d8d30047846   8 months    spchu   
+  updated PC version of the fehmn.f
+      
+  @476:5ced24ab106d   8 months    spchu   
+  updated depends file with new development
+  
+  ------------------------------------------
+  10/30/12
+  
+  Ticket #13 (Manual Change to ngas) created by stauffer
+  The secret flag is -666 for PCO2 (first ngas input values) and it allows the user to force zero water vapor in the problem, so that if you have saturation of zero you can run an air only (no water) problem. (only used without a restart file).
+  
+  The code always uses the temp and pressure of a restart file to calculate the initial partial pressure of noncondensible gas as PCO2 = Ptotal - Pwater vapor, where Pwater vapor is a function of temperature assuming 100% humidity.
+  
+  ------------------------------------------
+  10/29/12
+      
+  @475:cfd2a427625f   9 months    spchu   
+  Modified zonenames and zonenums allocation so code works for all situation
+      
+  @474:57c1257e84d4   9 months    spchu   
+  Made modification in connection with zone.f changes
+  
+  ------------------------------------------
+  10/18/12
+      
+  @473:707ef4ff5ae7   9 months    spchu   
+  updated depends file in corresponding with new code changes.
+  
+  ------------------------------------------
+  10/16/12
+      
+  @472:41318be89a90   9 months    spchu   
+  corrected logic for the water/co2-gas case, so that rl_l will be correctly calculated.
+      
+  @471:cfd72e764898   9 months    spchu   
+  fixed a bug in loading the array 'cap_type'.
+      
+  @470:ced6ebd076de   9 months    spchu   
+  added a few comment lines to better describe the code.
+      
+  @469:7c9238c5ed7b   9 months    spchu   
+  generalized tabular output for rlps to include both co2 gas /water and co2 liquid /water output. Improved tecplot column headings.
+      
+  @468:8afac388670b   9 months    dharp   
+  Added gfortran makefile; modified Makefile.depend to find header file even if building in another folder; added .hgignore so that hg ignores created .o and .mod files
+  
+  ------------------------------------------
+  10/04/12
+      
+  @467:94bc838423a0   9 months    spchu   
+  Added tag STABLE V3.1.1 sep27_2012 for changeset 6d431002e6db
+  
+  
+  End hg/trac changesets     -----------------------------------------------
+  
+  
