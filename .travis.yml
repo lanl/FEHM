@@ -1,5 +1,4 @@
 language: c
-sudo: required
 
 os:
   - linux
@@ -18,7 +17,7 @@ before_install:
       sudo apt-get purge cmake
       sudo apt-key update
       sudo apt-get update
-      sudo apt-get -y -f install gfortran python3 cmake
+      sudo apt-get -y -f install gfortran python python3 cmake
     fi
   - |
     if [ $TRAVIS_OS_NAME = osx ]; then
@@ -29,11 +28,11 @@ install:
   - pip install sphinx sphinx_rtd_theme
 
 script:
+  - cd docs && make html && cd ..
   - cd src
   - make all
   - make debug
   # - cd fehmpytests/ && python fehmpytests.py ../src/xfehm_v3.3.1
-  - cd docs && make html
 
 after_success:
   - echo FEHM compilation successful
