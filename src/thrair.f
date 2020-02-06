@@ -329,14 +329,15 @@ c
       implicit none
 
       integer ndummy,mid,mi,ieosd,kq
-      real*8 dtin,tempc,drocp,drocp0,rolref,xvisl,comw,pref,xvisv
+c gaz 110819 removed tref, pref (now global)       
+      real*8 dtin,tempc,drocp,drocp0,rolref,xvisl,comw,xvisv
       real*8 xrl,drl,drlp,xrv,drv,drvp,pl,sl,svd,pwl,dpwlp,dpwls
       real*8 qdis,qwdis,qadis,dqws,dqas,dqwp,dqap,por,sflux,permsd
       real*8 pflowd,area,uperm,roc,drocs,rol,drolp,dporpl
       real*8 rcomd,drols,dena,ddenp,ddens,ddenap,ddenas,dql,dqv
       real*8 pcl0,xvisl0,pdiff,plow,watfrac,dwfracp
-      real*8 airterm,watterm,pdifa,pdifw
-      real*8 tl_last,viln,vild,vil,tref
+      real*8 airterm,watterm,pdifa,pdifw   
+      real*8 tl_last,viln,vild,vil 
       real*8 viln1,viln2,viln3,vild1,vild2,vild3
       real*8 vla0,vlpa1,vlpa2,vlpa3,vlta1,vlta2,vlta3,vlpta,vlp2ta
       real*8 vlpt2a
@@ -346,14 +347,14 @@ c
       real*8 dsatp, rlpmin, qwmax_fac, qwmax
       real*8 pld,dis_ex,wat_ex,dwat_exs, time_max
       real*8 seep_facv,seep_facl,permsdv,permsdl,plwt
-      real*8 rol_b, rolref_b
+      real*8 rol_b, rolref_b, tol_dis, area_term, dis_term, vap_ratio
       real*8 cden_correction, cden_cor
       integer i_mem_rlp
       integer iadka        
       save i_mem_rlp
       parameter(pcl0 = 0.101325)
 c      parameter(roc0 = 1.292864)
-      parameter(rlpmin = 0.01)
+      parameter(rlpmin = 0.01, tol_dis = 1.e-12)
       parameter(qwmax_fac = 1.)
 
       parameter(iadka=1000)                
@@ -413,14 +414,15 @@ c
 c     
 c     dependent variables vap p and sl
 c     
-c     misc. constants (roc is at t = 0 C
-      tref = crl(6,1)
+c     misc. constants (roc is at tref)
+c gaz 110819 pref, tref (global) read in scanin        
+c      tref = crl(6,1)
       tempc=(273.0)/(tref+273.0)
       drocp0=roc0*tempc/pcl0
       rolref=crl(1,1)
       xvisl0=crl(2,1)
       comw=crl(3,1)
-      pref=crl(4,1)
+c      pref=crl(4,1)
       xvisv=visc_gas
 c      rcomd=comw*rolref
 
@@ -601,6 +603,9 @@ c
             else if(sflux.eq.1.0.and.irdof.eq.13) then
                qwdis=permsd*(pl-pflowd) 
                dqwp=permsd
+            else if(sflux.eq.-1.000) then
+                qadis=permsd*(pl-pflowd) 
+                dqap=permsd
             else if(sflux.gt.0.0.and.sflux.lt.1.0) then
                if(pflowd.ge.0.0) then
                   qadis=permsd*(pl-pflowd)
@@ -686,8 +691,9 @@ c gaz debug 081119
 c            watterm= xrl*permsdl
 c            airterm= xrv*permsdv
             watterm= sl*permsdl
-            airterm= (1.0-sl)*permsdv            
-            pflow(mi) = crl(4,1)
+            airterm= (1.0-sl)*permsdv   
+c gaz 110819 pref (crl(4,1) now pref and inputed elsewhere            
+            pflow(mi) = pref
             pdifa = pl-pflow(mi)
 c     
             pdifw = pl-pflow(mi)
@@ -705,9 +711,12 @@ c
                dqwp = 0.0
             endif
             if(jswitch.eq.0) then
-             qadis = airterm*(pdifa) 
-             dqas = -1.0*permsdv*pdifa
-             dqap =  airterm
+c gaz debug 121219                 
+c             qadis = airterm*(pdifa) 
+c             dqas = -1.0*permsdv*pdifa
+             qadis = permsdv*(pdifa) 
+             dqas = 0.
+             dqap =  permsdv
             else
              qadis = 0.0d0
              dqas = 0.0d0
@@ -777,13 +786,14 @@ c            permsd=abs(wellim(mi))
             elseif(igrav.eq.3) then
              permsd = max(pnx(mi),pny(mi))*sx1(mi)**0.3333
             endif
-            permsdl = permsd*seep_facl*esk(mi) 
+c gaz 121219 see below permsdl = permsd*seep_facl*esk(mi) 
 c gaz 081219             
 c            plow = crl(4,1)
             plow = pflow(mi)            
-            watterm = permsdl
+            watterm = permsd*abs(wellim(mi))
             pdifw = pwl-plow
-            if(pdifw.ge.0.0d0.and.sl.ge.1.0) then
+c gaz 121219 use  esk for sl            
+            if(pdifw.ge.0.0d0.and.sl.ge.esk(mi)) then
                qwdis = watterm*pdifw
                dqws = 0.0
                dqwp = watterm
@@ -967,6 +977,7 @@ c     no derivatives of rlps
          else if(kq.eq.-22.and.irdof.ne.13) then
 c     ===manage outflow only conditions
             if(sflux.lt.0.0) then
+               permsd=abs(wellim(mi))
                qadis = permsd*(pl-pflowd)
                dqap  = permsd 
                qwdis = permsd*(sl)
@@ -977,6 +988,124 @@ c     ===manage outflow only conditions
                dqws = 0.0d00
                dqwp = 0.0d00
             endif
+         else if(kq.eq.-19.and.irdof.ne.13) then  
+c gaz 121519 conditional air source with water spec flowrate
+            permsd=abs(wellim(mi))
+            permsdv = permsd*seep_facv
+
+             qadis = 0.0d0
+             dqas = 0.0d0
+             dqap = 0.0d0    
+c pflow is flowrate             
+               qwdis = pflow(mi)
+               dqws  = 0.0d00
+               dqwp  = 0.0d00 
+          if(sl.lt.esk(mi)) then
+               qadis = permsdv*(pl-pref)
+               dqap  = permsdv 
+          elseif(sl.lt.1.0) then
+               qadis = permsdv*(pl-pref)
+               dqap  = permsdv            
+          endif                     
+         else if(kq.eq.-20.and.irdof.ne.13) then  
+c gaz 121519 conditional air source for boundaries
+     
+            if(igrav.le.2) then
+             permsd = pnx(mi)*sx1(mi)**0.3333
+            elseif(igrav.eq.3) then
+             permsd = max(pnx(mi),pny(mi))*sx1(mi)**0.3333
+            endif
+            permsdv = permsd*abs(wellim(mi))
+            permsdl = permsd*abs(wellim(mi))*esk(mi)
+             qadis = 0.0d0
+             dqas = 0.0d0
+             dqap = 0.0d0        
+               qwdis = 0.0d00
+               dqws  = 0.0d00
+               dqwp  = 0.0d00 
+          if(sl.le.0.0) then
+               if(jswitch.eq.0) then
+                qadis = permsdv*(pl-pflow(mi))
+                dqap  = permsdv 
+              endif
+          elseif(sl.lt.1.0) then
+               if(jswitch.eq.0) then
+                qadis = permsdv*(pl-pflow(mi))
+                dqap  = permsdv 
+              endif
+               qwdis = permsdl*(sl)
+               dqws  = permsdl
+               dqwp = 0.0d00  
+          else if(sl.ge.1.0) then
+              if(pl-pflow(mi).ge.0.0) then
+               qwdis = permsdl*(1.0 + (pl-pflow(mi)))
+               dqwp  = permsdl  
+              else
+               qwdis = permsdl
+               dqwp = 0.0
+              endif 
+          endif 
+         else if(kq.eq.-25.and.irdof.ne.13) then  
+c gaz 121519 conditional air source for boundaries
+c gaz 122219
+            
+            if(igrav.le.2) then
+             dis_term = dxrg(mi) + tol_dis
+             area_term = sx1(mi)/(dis_term*dis_term)
+             permsd = pnx(mi)*dil(mi)*area_term
+            elseif(igrav.eq.3) then
+             dis_term = max(dxrg(mi),dyrg(mi)) + tol_dis 
+             area_term = sx1(mi)/(dis_term*dis_term)
+             permsd = max(pnx(mi),pny(mi))*dil(mi)*area_term
+            endif
+            vap_ratio = max(0.,div(mi)/(dil(mi)+tol_dis))
+     &        *abs(wellim(mi)*1.e-6)
+            permsdv = permsd*vap_ratio/(esk(mi)+tol_dis)
+            permsdl = permsd/(esk(mi)+tol_dis)
+             qadis = 0.0d0
+             dqas = 0.0d0
+             dqap = 0.0d0        
+               qwdis = 0.0d00
+               dqws  = 0.0d00
+               dqwp  = 0.0d00 
+          if(sl.le.0.0) then
+               if(jswitch.eq.0) then
+                qadis = permsdv*(pl-pflow(mi))
+                dqap  = permsdv 
+              endif
+          elseif(ieos(mi).eq.2) then
+               if(jswitch.eq.0) then
+                qadis = permsdv*(pl-pflow(mi))
+                dqap  = permsdv 
+              endif
+               qwdis = permsdl*(sl)
+               dqws  = permsdl
+               dqwp = 0.0d00  
+          else if(sl.gt.1.0) then
+              if(pl-pflow(mi).ge.0.0) then
+               qwdis = permsdl*(1.0 + (pl-pflow(mi)))
+               dqwp  = permsdl  
+              else
+               qwdis = permsdl
+               dqwp = 0.0
+              endif 
+          endif                   
+         else if(kq.eq.-21.and.irdof.ne.13) then  
+c gaz 111519 conditional air source for boundaries
+c no water source allowed
+c gaz 121219 added permsd = here
+          if(sl.lt.esk(mi)) then
+               permsd=abs(wellim(mi))
+               pflowd = pflow(mi) 
+               qadis = permsd*(pl-pflowd)
+               dqap  = permsd 
+          else
+               qadis = 0.0
+               dqap  = 0.0             
+          endif
+               qwdis = 0.0d00
+               dqws = 0.0d00
+               dqwp = 0.0d00
          else if(kq.eq.-22.and.irdof.eq.13) then
 c     make sure there is a deivative wrt P for ifree ne 0
          else if(kq.eq.2) then
@@ -1209,5 +1338,52 @@ c limit max change in sk
 
        elseif(iflg.eq.2) then
 c        deallocate(sko)
+      endif
+      end
+      subroutine phase_change_mass_conv(iflg,mid)
+c subroutine to calculate accurate saturations for gridblocks
+c undergoing phase change
+      use comai
+      use combi
+      use comci
+      use comdi
+      use comdti
+      use comei
+      use comevap, only : evaporation_flag, evap_flag
+      use comfi
+      use comgi
+      use comii
+      use comrlp, only : rlpnew
+      use comrxni
+      use comwt
+      use davidi
+      implicit none
+      integer iflg, mid, ii, i
+      integer iphase_old, iphase_new
+C  SCHU add definition 01022020
+      real*8, allocatable :: s_prev(:)
+      real*8, allocatable :: phi_prev(:)
+      real*8, allocatable :: n_phase_nodes(:)
+      real*8, allocatable :: ieos_prev(:)
+      integer n_phase_ch
+
+c gaz notes 090719
+c add arrays to comdi    
+c pressure may decrease past 0.1 ; need starting pres for
+c      mass (denity change)
+      if(iflg.eq.0) then
+        allocate(s_prev(n))
+        allocate(phi_prev(n))
+        allocate(n_phase_nodes(n))
+        allocate(ieos_prev(n))
+        s_prev = 0.0
+        phi_prev = 0.0
+        n_phase_nodes = 0
+        ieos_prev = 0
+      else if(iflg.eq.1) then    
+       do ii = 1, n_phase_ch
+         i = n_phase_nodes(ii) 
+         iphase_old = ieos_prev(i)
+       enddo
       endif
       end

@@ -442,6 +442,9 @@ c initialize scalar reals in comai
       dtot   =   0.0
       dtotc  =   0.0
       dtotdm =   0.0
+c gaz 121319      
+      pchng = 0.001
+      schng = 0.001
 c gaz 100318
       initdata_pad = 0
 C new variables in comsplitts
@@ -469,6 +472,9 @@ C from comwt
       pein   =   0.0
 C added phi_inc to comai so it only needs to be computed in one place
       phi_inc =  0.0
+c gaz 110919 initialized perf,tref      
+      pref = 0.101325
+      tref = 20.0
       pow    =   0.0
       qt     =   0.0
       qte    =   0.0

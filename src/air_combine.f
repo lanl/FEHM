@@ -15,8 +15,9 @@
 CD1
 CD1
 CD1  This subroutine changes variable in air-water problems
-CD1  PC version uses dool loop instead of F90 because os stack overflow 
+CD1  PC version uses do loop instead of F90 because os stack overflow 
 CD1  large problems
+CD1  gaz 112219 used only for Richard's Ed (jswitch ne 0)      
 CD1
 C***********************************************************************
 CD2
@@ -174,7 +175,8 @@ c
                if(ieos(i).ne.1) then
                   bp(i+nrhs(1)) = 0.0d0 
                   bp(i+nrhs(2)) = bpsave
-                  phi(i) = crl(4,1)
+c gaz 110819 pref, tref (global) read in scanin crl(4,1) repaced with pref                   
+                  phi(i) = pref
                else 
 c     bp(i+nrhs(1)) is correct       
                   bp(i+nrhs(2)) = 0.0d0	   	   
@@ -183,7 +185,8 @@ c     bp(i+nrhs(1)) is correct
                if(ieos(j).ne.1) then
                   bp(i+nrhs(3)) = 0.0d0 
                   bp(i+nrhs(4)) = bpsave2
-                  phi(j) = crl(4,1) 
+c gaz 110819 pref, tref (global) read in scanin crl(4,1) repaced with pref                   
+                  phi(j) = pref 
                else 
                   bp(i+nrhs(3)) = bpsave2
                   bp(i+nrhs(4)) = 0.0d0	   	   
@@ -232,8 +235,8 @@ c
                   bpsave = bp(i+nrhs(1))
                   bp(i+nrhs(1)) = 0.0d0 
                   bp(i+nrhs(2)) = bpsave 
-c     testing 
-                  phi(i) = crl(4,1)
+c gaz 110819 pref, tref (global) read in scanin crl(4,1) repaced with pref 
+                  phi(i) = pref
                else 
                   bp(i+nrhs(2)) = 0.0d0	   	   
                endif	  

@@ -192,8 +192,29 @@ c set special outflow only condition
                esk(i) = esktmp(i)
                wellim(i) = abs(aiped(i)) * 1.0e+06
                ka(i) = -22
+            else if (katmp(i).eq.-21) then
+c gaz 111519 
+c set special air only flow when sat < 1. condition
+               pflow(i) = sktmp(i)
+               esk(i) = esktmp(i)
+               wellim(i) = abs(aiped(i)) * 1.0e+06
+               ka(i) = -21   
+            else if (katmp(i).eq.-20.or.katmp(i).eq.-25) then 
+c gaz 121219 
+c set special air only flow when sat < 1. condition
+               pflow(i) = sktmp(i)
+               esk(i) = esktmp(i)
+               wellim(i) = abs(aiped(i)) * 1.0e+06
+               ka(i) = katmp(i)                             
+            else if (katmp(i).eq.-19) then
+c gaz 121219 
+c set special air only flow when sat < 1. condition
+               pflow(i) = sktmp(i)
+               esk(i) = esktmp(i)
+               wellim(i) = abs(aiped(i)) * 1.0e+06
+               ka(i) = -19               
             end if
-         end if
+       endif
       end do
       
       deallocate(aiped,esktmp,sktmp,katmp)

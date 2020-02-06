@@ -181,7 +181,8 @@ c
       real*8 tcap1(nn),tcap2(nn),dtcap1(nn),dtcap2(nn)
       real*8 pcai, axycap, pcaij,pcakb
 c
-      phi_0 = crl(4,1) + phi_inc
+c gaz 110819 pref, tref (global) read in scanin crl(4,1) repaced with pref       
+      phi_0 = pref + phi_inc
 c     water column height correction
       pcai = cap_fac*dzrg(i)*(rlxyf(i)-0.5)
 

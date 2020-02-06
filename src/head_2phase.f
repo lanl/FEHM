@@ -65,15 +65,18 @@ c sets air and water pressure with 2 phase conditions
       integer iflg, neq2
       integer mi,mid
       real*8 rho2grav,hmax,drocp0
-      real*8 pcl0,pref,rolref,tref,tempc,roc
+c gaz 110819 removed tref, pref (now global)        
+      real*8 pcl0, rolref, tempc,roc
       parameter(pcl0 = 0.101325)
 c gaz debug 011014
 c      parameter(roc0 = 1.292864)
-      tref = crl(6,1)
+c gaz 110819 tref  read in scanin        
+c      tref = crl(6,1)
       tempc=(273.0)/(tref+273.0)
       drocp0=roc0*tempc/pcl0
       rolref=crl(1,1)
-      pref=crl(4,1)
+c gaz 110819 pref  read in scanin     
+c      pref=crl(4,1)
       roc = drocp0*pref
       rho2grav = roc*(-grav)
       neq2 = 2*neq
@@ -97,13 +100,14 @@ c     first find max height
             else
                mid=mi
             endif
-            if(pho(mi).lt.crl(4,1).and.l.eq.0) then
+c gaz 110819 pref, tref (global) read in scanin crl(4,1) repaced with pref             
+            if(pho(mi).lt.pref.and.l.eq.0) then
 c     correct initial pressure
-               pho(mi)= (hmax-cord(mid,igrav))*rho2grav + crl(4,1)
+               pho(mi)= (hmax-cord(mid,igrav))*rho2grav + pref
 c     change to seepage face condition if specified head
             endif
-            if(pflow(mi).lt.crl(4,1)) then
-               pflow(mi)= (hmax-cord(mid,igrav))*rho2grav + crl(4,1)
+            if(pflow(mi).lt.pref) then
+               pflow(mi)= (hmax-cord(mid,igrav))*rho2grav + pref
 c     if(ka(mi).lt.0) ka(mi) = -3
             else 
 c     s(mi) = 1.0
