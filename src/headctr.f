@@ -130,10 +130,10 @@ c
                cord_val = cord(mid,igrav) 
             endif
 c gaz 090119
-          if(ichead.eq.0) then            
-            head(mi)=(pho(mi)-crl(4,1))/rho1grav + cord_val
+          if(ichead.eq.0) then                 
+            head(mi)=(pho(mi)-pref)/rho1grav + cord_val
      &           -head0
-c gaz 090119
+c gaz 112619 ichead uses crl(4,1) still
            else
             head(mi)=(pho(mi)-crl(4,1))/rho1grav + cord_val
      &           -head0
@@ -163,7 +163,7 @@ c
                cord_val = cord(mid,igrav)
             endif
             pho(mi)=rho1grav*(pho(mi)-cord_val+head0)
-     &           +crl(4,1)
+     &           +pref
          enddo
       else if(iflg.eq.4) then
 c     
@@ -182,8 +182,14 @@ c
          else
             cord_val = cord(mid,igrav)
          endif
+c gaz 112619 need crl(4,1) for ichead ne 0   
+         if(ichead.ne.0) then
          head_value=(pres_value-crl(4,1))/rho1grav +
      &        cord_val-head0
+         else
+         head_value=(pres_value-pref)/rho1grav +
+     &        cord_val-head0  
+         endif
 c gaz 090119
          if(ichead.ne.0) then
           if(s(mi).le.sat_ich.and.ieos(mi).ne.1) then
@@ -212,9 +218,14 @@ c
          else
             cord_val = cord(mid,igrav)
          endif
-         pres_value  =rho1grav*(head_value-cord_val+head0)
-     &        +crl(4,1)
-
+c gaz 112619  need pref to be pres0 (iconv or ichead via crl(4,1)  
+         if(iconv.ne.0.or.ichead.ne.0) then
+          pres_value  =rho1grav*(head_value-cord_val+head0)
+     &      +crl(4,1)
+         else
+          pres_value  =rho1grav*(head_value-cord_val+head0)
+     &      + pref            
+         endif
       else if(iflg.eq.6) then
 c     
 c     convert from head to pressure(all nodes,pflow)
@@ -235,7 +246,7 @@ c
                endif
                if(pflow(mi).ne.0.0) then
                   pflow(mi)=rho1grav*(pflow(mi)-cord_val+head0)
-     &                 +crl(4,1)
+     &                 +pref
                endif
             enddo
 	 else
@@ -254,7 +265,7 @@ c
                endif
                if(pflow(mi).ne.0.0) then
                   pflow(mi)=rho1grav*(pflow(mi)-cord_val+head0)
-     &                 +crl(4,1)
+     &                 +pref
                endif
             enddo
 	 endif

@@ -65,13 +65,14 @@
       implicit none
 
       integer mid,mi,ieosd,kq,iflg
-      real*8 dtin,tempc,drocp,drocp0,rolref,xvisl,comw,pref,xvisv
+c gaz 110819 removed tref, pref (now global)         
+      real*8 dtin,tempc,drocp,drocp0,rolref,xvisl,comw,xvisv
       real*8 xrl,drl,drlp,xrv,drv,drvp,pl,sl,svd,pwl,dpwlp,dpwls
       real*8 qdis,qwdis,qadis,dqws,dqas,dqwp,dqap,por,sflux,permsd
       real*8 pflowd,area,uperm,roc,drocs,rol,drolp,dporpl
       real*8 rcomd,drols,dena,ddenp,ddens,ddenap,ddenas,dql,dqv
-      real*8 pcl0, rolref_b
-      real*8 tl_last,viln,vild,vil,tref
+      real*8 pcl0, rolref_b    
+      real*8 tl_last,viln,vild,vil
       real*8 viln1,viln2,viln3,vild1,vild2,vild3
       real*8 vla0,vlpa1,vlpa2,vlpa3,vlta1,vlta2,vlta3,vlpta,vlp2ta
       real*8 vlpt2a
@@ -92,13 +93,15 @@ c
 c     dependent variables vap p and sl
 c     
 c     misc. constants
-      tref = crl(6,1)
+c gaz 110819 removed tref, pref (now global)      
+c      tref = crl(6,1)
       tempc=(273.0)/(tref+273.0)
       drocp0=roc0*tempc/pcl0
       rolref=crl(1,1)
       xvisl=crl(2,1)
       comw=crl(3,1)
-      pref=crl(4,1)
+c gaz 110819 pref, tref (global) read in scanin      
+c      pref=crl(4,1)
       xvisv=crl(5,1)
 
 c

@@ -95,9 +95,10 @@ c      real*8 rov,drovt,drovp,dvisvt,dvisvp
 c      real*8 rol,drolt,drolp,dvislt,dvislp  
       real*8 vismix,dvismixp,dvismixt,dvismixs  
 c      real*8 sw,visv,visl,divipl,tref,tempc
-      real*8 sw,divipl,tref,tempc
+c gaz 110819 removed tref, pref (now global)      
+      real*8 sw,divipl,tempc
       real*8 xvisl0,xvisl,drocp0
-      real*8 pl,pref,xvisv,agrav
+      real*8 pl,xvisv,agrav
 
       real*8, allocatable  :: dum(:)
       real*8, allocatable  :: dum1(:,:)
@@ -473,13 +474,14 @@ c
                drlgass = term1 + sg*dterm1        
 c     
 c     misc. constants  (like at the top of thrair.f)
-c     
-               tref = crl(6,1)
+c  
+c gaz 110819 pref, tref (global) read in scanin                 
+c               tref = crl(6,1)
                tempc=(273.0)/(tref+273.0)
                drocp0=roc0*tempc/pcl0
                xvisl0=crl(2,1)
                xvisl = xvisl0          
-               pref=crl(4,1)
+c               pref=crl(4,1)
                xvisv=crl(5,1)
                rov = drocp0*pl
                drovp = drocp0

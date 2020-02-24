@@ -1,5 +1,4 @@
 language: c
-sudo: required
 
 os:
   - linux
@@ -18,17 +17,34 @@ before_install:
       sudo apt-get purge cmake
       sudo apt-key update
       sudo apt-get update
-      sudo apt-get -y -f install gfortran python3 cmake
+      sudo apt-get -y -f install gfortran python python3 cmake
     fi
   - |
     if [ $TRAVIS_OS_NAME = osx ]; then
-      brew update && brew install gcc
+      brew update #&& brew install gcc
+      export PATH=$PATH:/Users/travis/Library/Python/2.7/bin
     fi
 
+install:
+  - pip install --user sphinx sphinx_rtd_theme
+
 script:
+  - cd docs && make html && cd ..
   - cd src
   - make all
   - make debug
+  # - cd fehmpytests/ && python fehmpytests.py ../src/xfehm_v3.3.1
 
 after_success:
   - echo FEHM compilation successful
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  local_dir: docs/docs/html
+  github_token: $GITHUB_TOKEN
+  target_branch: gh-pages
+  keep_history: false
+  verbose: true
+  on:
+    branch: master

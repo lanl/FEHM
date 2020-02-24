@@ -755,6 +755,31 @@ c   gaz 100118 reset model numbers
                
 c     calculate cutoff saturation and head difference
 c     GAZ 8-16-94 added slcut to work with liquid saturation
+c gaz 110419 write out warnings
+          if(rp6f(i).le.rp1f(i)) then  
+           if(iout.ne.0) write(iout,*) 
+     &      '>>> incorrect vg model 3 parameters <<<'
+           if(iptty.ne.0) write(iptty,*) 
+     &      '>>> incorrect vg model 3 parameters <<<'
+          endif
+          if(rp6f(i).ge.rp2f(i)) then  
+           if(iout.ne.0) write(iout,*) 
+     &      '>>> incorrect vg model 3 parameters <<<'
+           if(iptty.ne.0) write(iptty,*) 
+     &      '>>> incorrect vg model 3 parameters <<<'
+          endif   
+       if(rp1f(i).ge.rp2f(i)) then  
+           if(iout.ne.0) write(iout,*) 
+     &      '>>> incorrect vg model 3 parameters <<<'
+           if(iptty.ne.0) write(iptty,*) 
+     &      '>>> incorrect vg model 3 parameters <<<'                       
+       endif 
+       if(rp2f(i).gt.1.0) then  
+           if(iout.ne.0) write(iout,*) 
+     &      '>>> incorrect vg model 3 parameters <<<'
+           if(iptty.ne.0) write(iptty,*) 
+     &      '>>> incorrect vg model 3 parameters <<<'                      
+       endif
                alpha = rp3f(i)
                beta = rp4f(i)
                alamda = 1.0-1.0/beta

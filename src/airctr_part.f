@@ -63,14 +63,16 @@
       integer mi,i1,i2,ilev,mlev,il,md,irlpsv,irlptsv,nr1
       integer nr2,irdofsv
       integer ja
-      real*8 tref,pref,pssv,ssv,phisv,dmpfd,dmefd,dqd,rqd,qcd
+c gaz 110819 removed tref, pref (now global)       
+      real*8 pssv,ssv,phisv,dmpfd,dmefd,dqd,rqd,qcd
       real*8  strd_part
       real*8 inflow_thstime,inen_thstime,denht,deneht
       
       real*8 dels,delp,dfdum11,dfdum12,dfdum21,dfdum22
       real*8 dfdum11i,dfdum12i,dfdum21i,dfdum22i,detdf
       real*8 fdum01,fdum02,sx1d
-      save tref,pref
+c  gaz 110819 tref, pref (now global)      
+c      save tref,pref
 
 C ? ico2d not passed in, not initialized
       ico2d = 0
@@ -147,9 +149,10 @@ c     reference air viscosity is in crl(5,1)
             crl(1,1)=rolf(1)
             crl(2,1)=1.0/(dil(1)/rolf(1))
             crl(3,1)=dmpf(1)/rolf(1)
-            crl(4,1)=pref
+c gaz 110819 pref, tref (global) read in scanin              
+c            crl(4,1)=pref
             crl(5,1)=182.e-07
-            crl(6,1)=tref
+c            crl(6,1)=tref
             if(ico2d.eq.-1) then
                crl(7,1)=1.0
             else
@@ -414,8 +417,9 @@ c     calculate global mass and energy flows
 c     
 c     store sk in qc
 c     initialize t,to,tini,iieos
-c     
-            tref=crl(6,1)
+c
+c gaz 110919 tref now global        
+c            tref=crl(6,1)
             do i=1,n
                qc(i)=sk(i)
                if(to(i).eq.0.0d00) then

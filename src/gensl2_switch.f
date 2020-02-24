@@ -320,9 +320,15 @@ c
       real*8, allocatable :: dum(:)
       real*8, allocatable :: a_save(:)
       real*8 a11, a22, adiag_tol,fdum2_tol, bp_max, bp_maxc, bp_tol
-      parameter(adiag_tol=1.d-9, fdum2_tol= 1.d-15)
+      real*8 tol_temp
+c gaz debug 112019  
+      real*8 dumdb1, dumdb2
+      real*8, allocatable :: dumdb3(:)
+      real*8, allocatable :: dumdb4(:)
+c gaz debug 110319    fdum2_tol= 1.d-15  to  fdum2_tol= 1.d-30  
+      parameter(adiag_tol=1.d-9, fdum2_tol= 1.d-30)
       integer jj
-
+c      
       neqp1=neq+1
 c     zero out arrays
       do 10 i=1,neq
@@ -346,18 +352,28 @@ c     decide on equation type
 c     
          if(ps(id).gt.0.0) then
                call geneq2_switch(id)
-               call add_accumulation(id)         
-         else if(ps(id).le.0.0) then
-           
+               call add_accumulation(id)          
+         else if(ps(id).le.0.0) then        
                a(nelmdg(id)-neqp1+nmat(2))=sx1(id)   
 c               a(nelmdg(id)-neqp1+nmat(3))=0.0d00    
                a(nelmdg(id)-neqp1+nmat(1))=sx1(id)
 c               a(nelmdg(id)-neqp1+nmat(4))=sx1(id)
                bp(id+nrhs(1))=0.0d00
                bp(id+nrhs(2))=0.0d00            
-         endif
+         endif 
       enddo
 
+c gaz debug 112019
+c      dumdb1 = 0.0
+c      dumdb2 = 0.0
+c      if(.not.allocated(dumdb3)) allocate(dumdb3(neq))
+c      if(.not.allocated(dumdb4)) allocate(dumdb4(neq))
+c      do i = 1, neq
+c        dumdb1 = dumdb1 +abs(bp(i))
+c        dumdb2 = dumdb2 +abs(bp(i+neq))
+c        dumdb3(i) = bp(i)
+c        dumdb4(i) = bp(i)
+c      enddo
 c
 c arrange arrays for 1 dof solve (ie variable switching)
 c
@@ -365,7 +381,7 @@ c
 c     
 c     coding for 1dof  only
 c          
-         fdum2=0.0
+         fdum2=fdum2_tol
          ibp_max = 0
          bp_max = 0.0
          do id=1,neq
@@ -380,38 +396,33 @@ c             if(apiv.lt.1.e-6) pause
                aij=a(ijj-neqp1+nmat(1))/apiv
                a(ijj-neqp1)=aij
             enddo 
-            
-c          if(izonef(id).ne.14) then        
+
             bp_maxc = abs(bp(id+nrhs(1)))
 	      if(bp_maxc.gt.bp_max) then
                bp_max = bp_maxc
                ibp_max = id
-	      endif
+            endif
             bp(id+nrhs(1))=bp(id+nrhs(1))/apiv
-            fdum2=fdum2+bp(id+nrhs(1))*bp(id+nrhs(1))
+            fdum2=fdum2+bp(id+nrhs(1))*bp(id+nrhs(1))            
 c          endif  
          enddo
-         fdum2 = max(fdum2,fdum2_tol)
-         bp_max = bp_max + fdum2_tol
-         if(fdum2.eq.fdum2_tol) go to 999
-
-c      write (iout,*) 
-c	 pause
+         bp_max = bp_max + fdum2_tol      
          fdum=sqrt(fdum2)
-c      write (iout,*) 
-c          fdum=fdum2**0.5
 c check if fluxes are small enough to quit
          mink=neq_active
+         bp_tol = 1.d-30
          if(g1.lt.0.) then
-            if(bp_max.le.abs(g1)) then
+            tol_temp = tmch
+            if(bp_max.le.tol_temp.and.iad.gt.iad_min-1) then
                fdum = -999.0
                fdum1 = bp_max
                go to 999
             else
 c          bp_tol = bp_max/a(nelmdg(ibp_max)+nmat(1)-neqp1)
-               bp_tol = abs(g1)/bp_max*fdum
+c               bp_tol = abs(g1)/bp_max*fdum
                f0=-1.0
-               tmch = 1.e-20
+c gaz 110519               
+c               tmch = 1.e-20
                go to 996
             endif
          else
@@ -423,6 +434,7 @@ c          bp_tol = bp_max/a(nelmdg(ibp_max)+nmat(1)-neqp1)
          endif
          if(fdum1.lt.0.0.and.iad.ne.0) then
             if(ifree.eq.0) then
+c               if(bp_max.gt.tmch) go to 995
                do i=1,neq
                   if(abs(bp(i+nrhs(1))).gt.tmch) go to 995
                enddo
@@ -435,12 +447,15 @@ c          bp_tol = bp_max/a(nelmdg(ibp_max)+nmat(1)-neqp1)
                enddo
             endif
             fdum=-1.0
-c            minkt=minkt+mink
-            go to 999
+c            minkt=minkt+mink           
+c gaz 102919 make sure minimum iteration are done           
+            if(iad.gt.iad_min-1) go to 999
  995        continue
             f0=-1.0
          endif
- 996    if(fdum.gt.f0.or.iad.eq.0) then
+c gaz 101919          
+c 996    if(fdum.gt.f0.or.iad.le.iad_min) then
+996     if(fdum.gt.f0.or.iad.le.iad_min-1) then         
             facr=1.0
 c            tolls=max(facr*f0,min(g1*fdum,g2*fdum2))
 c            tollr=g3*max(tolls,tmch)

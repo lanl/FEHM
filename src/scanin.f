@@ -345,7 +345,6 @@ C***********************************************************************
       integer icount, tprp_num
       integer jjj, isimnum, realization_num,maxrp
       logical nulldum, found_end
-c      logical gdkm_new
 
       real*8 rflag
         maxrp = 30
@@ -928,7 +927,11 @@ c     need to know if a table with water props is read
       else if (macro(1:3)  .eq.  'air')  then
 c     need to know if air-water  is envoked
          ico2 = -2 
-           
+c gaz 110819 reading tref, pref here (these variables are now global          
+         call start_macro(inpt, locunitnum, macro)
+          read(locunitnum,'(a80)') wdd1(1:80)
+          read(locunitnum,*) tref, pref
+         call done_macro(locunitnum)           
       else if (macro .eq. 'ice ' .or. macro .eq. 'meth') then
          ice = 1
          

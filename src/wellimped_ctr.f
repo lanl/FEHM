@@ -72,7 +72,8 @@
       integer i,j,ii,ij,jj,kb,i1,i2,neqp1,max_wellmod
       integer izone1,izone2,iflg,ibnd,iroot,idsubm 
       integer k,open_file
-      real*8 aiped, tref,pnxa,pnya 
+c gaz 110819 removed tref, pref (now global)       
+      real*8 aiped, pnxa, pnya 
       real*8 head_value, parm1, parm2, parm3
       real*8 delx,dely,delz,xi,yi,zi 
       real*8 rw,rthick,r0,rw_tol

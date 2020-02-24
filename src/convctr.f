@@ -468,9 +468,10 @@ c
 c     
       return
       end                
-      subroutine water_density(t,pd,rol)
+      subroutine water_density(t,p,rol)
 c     
 c     calculate water density(assume (*,1) coefficients
+c gaz 112819 hardwired (*,1) coefs to avoid possible memory issues      
 c     
       use comii
       use comai, only : itsat
@@ -478,32 +479,96 @@ c
       real*8 t,p,pd,rol,prop,dpropt,dpropp
       real*8 rnwn1,rnwn2,rnwn3,rnwn
       real*8 rnwd1,rnwd2,rnwd3,rnwd
-c gaz 083019 changed  to iieosd = 2 
-c there was a conflict with useage with iieosd = 1 for isothermal problems      
+c gaz 112819 hardwired crl(,1)  coefs  
+      real*8 crl01
+      real*8 crl02
+      real*8 crl05
+      real*8 crl03
+      real*8 crl06
+      real*8 crl08
+      real*8 crl04
+      real*8 crl07
+      real*8 crl10
+      real*8 crl09
+      real*8 crl11
+      real*8 crl12
+      real*8 crl15
+      real*8 crl13
+      real*8 crl16
+      real*8 crl18
+      real*8 crl14
+      real*8 crl17
+      real*8 crl20
+      real*8 crl19
+
+      real*8 pmin1
+      real*8 pmax1
+      real*8 tmin1
+      real*8 tmax1
+ 
+
+c
+c**** density of liquid ****
+c
+c**** date created 10/31/88, max error(percent) 0.055 ****
+c
+      pmin1 =    0.001
+      pmax1 =  110.000
+      tmin1 =   15.000
+      tmax1 =  360.000
+
+      crl01 =  0.10000000d+01
+      crl02 =  0.17472599d-01
+      crl05 =  0.49564109d-02
+      crl03 = -0.20443098d-04
+      crl06 = -0.40757664d-04
+      crl08 =  0.50330978d-04
+      crl04 = -0.17442012d-06
+      crl07 =  0.50676664d-07
+      crl10 = -0.18383009d-06
+      crl09 =  0.33914814d-06
+      crl11 =  0.10009476d-02
+      crl12 =  0.16812589d-04
+      crl15 =  0.48841156d-05
+      crl13 = -0.24582622d-07
+      crl16 = -0.32967985d-07
+      crl18 =  0.53249055d-07
+      crl14 = -0.17014984d-09
+      crl17 =  0.28619380d-10
+      crl20 = -0.12221899d-09
+      crl19 =  0.30456698d-09        
       if(itsat.le.10) then
-c iieosd = 2 is a lower pressure model, hence the logic below        
-        if(pd.gt.20.0) then
-         p = 20.0
-        else
-         p = pd
-        endif    
-       rnwn1=crl(1,2)+crl(2,2)*p+
-     &     crl(3,2)*p*p+
-     &     crl(4,2)*p*p*p
-       rnwn2=crl(5,2)*t+crl(6,2)*t*t+
-     &     crl(7,2)*t*t*t
-       rnwn3=crl(8,2)*t*p+
-     &     crl(10,2)*t*t*p+
-     &     crl(9,2)*t*p*p
+c
+c**** density of liquid ****
+c
+c**** date created 10/31/88, max error(percent) 0.055 ****
+c
+      pmin1 =    0.001
+      if(p.le.pmin1) p = pmin1
+      pmax1 =  110.000
+      if(p.ge.pmax1) p = pmax1
+      tmin1 =   15.000
+      if(t.le.tmin1) t = tmin1
+      tmax1 =  360.000
+      if(t.ge.tmax1) t = tmax1
+c      
+       rnwn1=crl01+crl02*p+
+     &     crl03*p*p+
+     &     crl04*p*p*p
+       rnwn2=crl05*t+crl06*t*t+
+     &     crl07*t*t*t
+       rnwn3=crl08*t*p+
+     &     crl10*t*t*p+
+     &     crl09*t*p*p
        rnwn=rnwn1+rnwn2+rnwn3
-       rnwd1=crl(11,2)+crl(12,2)*p+
-     &     crl(13,2)*p*p+
-     &     crl(14,2)*p*p*p
-       rnwd2=crl(15,2)*t+crl(16,2)*t*t+
-     &     crl(17,2)*t*t*t
-       rnwd3=crl(18,2)*t*p+
-     &     crl(20,2)*t*t*p+
-     &     crl(19,2)*t*p*p
+       rnwd1=crl11+crl12*p+
+     &     crl13*p*p+
+     &     crl14*p*p*p
+       rnwd2=crl15*t+crl16*t*t+
+     &     crl17*t*t*t
+       rnwd3=crl18*t*p+
+     &     crl20*t*t*p+
+     &     crl19*t*p*p
        rnwd=rnwd1+rnwd2+rnwd3
        rol=rnwn/rnwd
       else
