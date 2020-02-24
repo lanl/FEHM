@@ -202,8 +202,8 @@
       integer n0, n044, n2, n3, n4, n5, n6, n7, n8, ne1 
       integer ne2, ne3, ne5, ne6, ne7, ne8, ne9, ne10, ne11 
       integer ne12, ne13, ne14, ne15, nelmd, nelucm, nn
-      !integer(kind=8) nnop, nbd
-      integer nnop, nbd      	  
+      integer(kind=8) nnop, nbd
+      !integer nnop, nbd      	  
       integer nq, nr, n7a, mdmax 
 
       end module comdti

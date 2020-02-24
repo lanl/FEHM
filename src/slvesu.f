@@ -280,8 +280,8 @@ C**********************************************************************
       integer npvc(*)
       integer npvt(*)
       integer nsza
-      !integer(kind=8) nszb
-      integer nszb	  
+      integer(kind=8) nszb
+      !integer nszb	  
       integer nszom
 
       logical used

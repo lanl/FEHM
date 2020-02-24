@@ -327,11 +327,15 @@ c Formatted output
             write(isave, '(a11)') 'temperature'
 c   gaz 012111 removed tolw for printing neg temperatures (ice models)            
 c            write(isave, 6002)  (max(to(mi),tolw),   mi=1,n )
+        if(rank .eq. 0)then
            write(isave, 6002)  (to(mi),   mi=1,n )
+        end if
          end if
          if (write_sat .and. irdof .ne. 13 .and. ihead .eq. 0) then
-            write(isave, '(a11)') 'saturation '
-            write(isave, 6002)  (max(s(mi),tolw),    mi=1,n )
+            if(rank .eq. 0)then
+                write(isave, '(a11)') 'saturation '
+                write(isave, 6002)  (max(s(mi),tolw),    mi=1,n )
+            end if
          else
          end if
          if (write_pres) then
@@ -339,7 +343,9 @@ c            write(isave, 6002)  (max(to(mi),tolw),   mi=1,n )
             if (ico2 .lt. 0) then
                write(isave, 6002) (pho(mi)-phi_inc,  mi=1,n )
             else
-               write(isave, 6002)  (max(pho(mi),tolw),  mi=1,n )
+                if(rank .eq. 0)then
+                    write(isave, 6002)  (max(pho(mi),tolw),  mi=1,n )
+                end if
             end if
          end if
          if (write_gasp .and. irdof .ne. 13) then
