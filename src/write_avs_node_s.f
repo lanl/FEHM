@@ -249,7 +249,7 @@ c     RJP 1/12/07 added following
       integer size_head, size_pcp, istart, iend, ic1, ic2, length, nadd
       integer icord1, icord2, icord3, ns_in0, irivp, iocord_tmp 
       integer, allocatable :: nelm2(:)
-      integer izunit,nin,ii,n_elem,ns_elem,ie, e_mem(8)
+      integer izunit,nin,n_elem,ns_elem,ie, e_mem(8)
       integer neq_sv, nei_in_sv, icall_sv, neq_p, iblanking_value
       integer i_pri,i_sec
       logical zone_saved

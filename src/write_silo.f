@@ -117,7 +117,7 @@
 			! Create the Silo mat file		
 			silofile = 'materials.silo'
 			print *, 'Creating SILO file: ', trim(silofile)
-			silo_ierr = dbcreate(silofile, 15, DB_CLOBBER, DB_LOCAL, "Unstructured 3d mesh", 20, DB_HDF5, silo_dbfile)
+			silo_ierr = dbcreate(silofile, 14, DB_CLOBBER, DB_LOCAL, "Unstructured 3d mesh", 20, DB_HDF5, silo_dbfile)
 			
 		else if(silo_func .eq. 'sca') then
 			! Create the Silo sca file
