@@ -353,7 +353,7 @@
 
 
 
-     
+     	silo_cycl = icall
      	call create_silo('sca')	  
      	
 		! Set arrays that require calculations
@@ -659,7 +659,7 @@
      	! Clear silo variables, close file, and increase the cycle for next time input
      	silo_ierr = dbfreeoptlist(optlistid)
 
-     	silo_cycl = icall
+     	
      	silo_ierr = dbclose(silo_dbfile)
      	return
 	end

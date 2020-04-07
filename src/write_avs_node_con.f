@@ -594,13 +594,17 @@ c     &                    trim(times_string)
           continue         
          end if
 
-        ! SILO call
-        if (altc(1:4) .eq. 'silo') then
-            call write_silo_c(anv_dum, an_dum, icall, npt, neq, nspeci, ifdual)
-        endif 
+<<<<<<< HEAD
+      ! SILO call
+      if (altc(1:4) .eq. 'silo') then
+      		call write_silo_c(anv_dum, an_dum, icall, npt, neq, nspeci, ifdual)
+      endif 
+      
+      if(rxn_flag.eq.0)then
+=======
 
         if(rxn_flag.eq.0)then
-
+>>>>>>> 9f4fda97d315de208c7223c4de5e2e5e09545d2e
          if(nspeci .gt. maxcon)then
             write(lu,*)'--------------------------------------------'
             write(lu,*)'ERROR: WRITE_AVS_NODE_CON'
@@ -1439,9 +1443,12 @@ c first generate elements
          end if   
 
       if (altc(1:3) .ne. 'sur') close (lu)
-
+<<<<<<< HEAD
+      iocord = iocord_temp
+            
+=======
       iocord = iocord_tmp
-
+>>>>>>> 9f4fda97d315de208c7223c4de5e2e5e09545d2e
 
 c 94   format('ZONE T = "Simulation time ',1p,g16.9,' days"', a)
  94   format('ZONE T = ', a, a, a, a)
