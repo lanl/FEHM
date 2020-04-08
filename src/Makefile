@@ -139,7 +139,7 @@ dated:
 	rm -f ${SRCDIR}dated.o
 	sed s/OS\ DATE/${OSTAG}\ ${DATETAG}/ ${SRCDIR}dated.template > ${SRCDIR}dated.f
 
-xfehm: ${OBJECTS} ${OBJECTS_F90}
+xfehm: | dated ${OBJECTS} ${OBJECTS_F90}
 	${FC} ${FFLAGS} ${OBJECTS} ${OBJECTS_F90} -o ${EXE}
 
 debug: FFLAGS += -g	-fbounds-check
