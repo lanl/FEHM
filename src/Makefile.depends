@@ -73,7 +73,7 @@ cntlio.o: comai.o comxi.o
 co2_array.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 co2_array.o: comhi.o commeth.o davidi.o
 co2_fugacity.o: ${SRCDIR}params_eosco2.h
-co2_properties.o: comai.o comco2.o comdi.o comrxni.o interpolate.o
+co2_properties.o: comai.o comco2.o comdi.o comrxni.o interpolate_2.o
 co2ctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 co2ctr.o: comhi.o comii.o comki.o comxi.o davidi.o
 co2h2o_combine.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o
@@ -184,7 +184,7 @@ fd_calc_heat.o: davidi.o
 fehmn.o: comai.o combi.o comci.o comco2.o comcomp.o comdi.o comdti.o comei.o
 fehmn.o: comevap.o comfem.o comfi.o comflow.o compart.o comriv.o comrtd.o
 fehmn.o: comrxni.o comsi.o comsk.o comsplitts.o comsptr.o comuserc.o comwt.o
-fehmn.o: comxi.o davidi.o interpolate.o
+fehmn.o: comxi.o davidi.o interpolate_2.o interpolate.o
 fem_DruckerPrager_stiffness.o: comai.o comfem.o comsi.o
 fem_DruckerPrager_stress_update.o: comai.o comdi.o comfem.o comsi.o
 fem_elastic_stiffness.o: comai.o comfem.o comsi.o
@@ -466,7 +466,7 @@ porosity_gradient_log.o: comai.o combi.o comdi.o comsptr.o
 porosity_gradient_omr.o: comai.o combi.o comdi.o comsptr.o
 porosity_wrt_displacements.o: comai.o comdi.o comsi.o
 psat.o: comai.o comdti.o comii.o
-psatl.o: comai.o comdti.o comii.o
+psatl.o: comai.o comdti.o comii.o interpolate_2.o
 ptrac1.o: comai.o combi.o comci.o comdi.o comflow.o compart.o comsk.o comsptr.o
 ptrac1.o: comwt.o comxi.o davidi.o
 ptrac3.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
@@ -694,3 +694,5 @@ wtsictr.o: comxi.o
 write_silo: silo.o
 zone.o: comai.o combi.o comdti.o trxnvars.o
 property_interpolate.mod: interpolate.o
+property_interpolate_1.mod: interpolate_2.o
+silo.mod: silo.o

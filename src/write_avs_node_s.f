@@ -265,15 +265,13 @@ c     RJP 1/12/07 added following
       character*43 tstring
       character*5 char_type
       character*3 dls
-<<<<<<< HEAD
-=======
+
       character*30 zonesavename, char_temp
       character*6 zonestring
       parameter(iblanking_value = -9999)
       parameter (pi=3.1415926535)
       parameter (sat_out_tol=1.d-98)
       save tecstring, tecstring_riv
->>>>>>> 9f4fda97d315de208c7223c4de5e2e5e09545d2e
 C     BEGIN
       size_head = size(head)
       size_pcp = size(pcp)
@@ -1305,12 +1303,8 @@ c
 
          call flush(lu)
          if (altc(1:3) .eq. 'sur') close (lu)
-<<<<<<< HEAD
-      enddo 
-=======
       enddo
       if(zone_saved) return
->>>>>>> 9f4fda97d315de208c7223c4de5e2e5e09545d2e
       if (icall .eq. 1 .and. altc(1:3) .eq. 'tec' .and. iogeo .eq. 1)
      &     then
 c     Read the element connectivity and write to tec file

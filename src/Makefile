@@ -127,8 +127,8 @@ uninstall:
 
 .PHONY: clean
 clean:
-	rm ${SRCDIR}*.o
-	rm ${SRCDIR}*.mod
+	rm *.o
+	rm *.mod
 
 .PHONY: help
 help:
