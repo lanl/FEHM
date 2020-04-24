@@ -1,5 +1,5 @@
 Coordinates & volumes for primary finite difference gridblocks
-          50
+          50           1           1          50
         1    0.500000        0.500000       -1.000000E-03   2.0000E-03
         2    0.500000        0.500000       -3.000000E-03   2.0000E-03
         3    0.500000        0.500000       -5.000000E-03   2.0000E-03

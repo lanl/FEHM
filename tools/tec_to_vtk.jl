@@ -231,7 +231,7 @@ end
 
 s = ArgParseSettings(description = "Convert FEHM gdkm tecplot output to vtu2 files")
 
-@add_arg_table s begin
+@add_arg_table! s begin
     "--sca_diff"
 		help = "Sca file to subtract to create delta variables"
 		arg_type = String

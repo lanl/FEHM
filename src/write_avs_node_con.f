@@ -756,11 +756,12 @@ c gaz 072519  mod icall = 1 to tecstring
                if (iozone .eq. 0 .or. iogrid .eq. 1) then
                   if(icall.eq.1) then
 c                   write (lu, 94) trim(timec_string)
-                   write (lu, 94) trim(tecstring)                      
+                    write (lu, 500) contour_time, trim(time_units)
 c gaz 070118 this could be the problem                 
                   else
-                    write (lu, 94) trim(timec_string),trim(gridstring),
-     &              trim(sharestring)
+                    write (lu, 94) trim(timec_string),trim(gridstring)
+c                    write (lu, 94) trim(timec_string),trim(gridstring),
+c     &              trim(sharestring)
 c                   write (lu, 94) trim(timec_string), trim(tecstring),
 c     &                 trim(gridstring), trim(times_string)                      
                   endif
@@ -1437,6 +1438,7 @@ c first generate elements
       iocord = iocord_tmp
 
 c 94   format('ZONE T = "Simulation time ',1p,g16.9,' days"', a)
+ 500     format ('ZONE T = "Simulation time ', 1p, g16.9, a, '"')
  94   format('ZONE T = ', a, a, a, a)
  95   format('ZONE T = "',i4.4,'"', a)
  96   format("('node', ", i3, "(', ', a))")

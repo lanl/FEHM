@@ -26,7 +26,7 @@ import shutil
 from tpl_write import tpl_write
 
 try:
-    sys.path.insert(0,os.path.join('..','pyfehm'))
+    sys.path.insert(0,os.path.join('pyfehm'))
     import fdata
 except ImportError as err:
     print 'ERROR: Unable to import pyfehm fpost module'
@@ -1024,7 +1024,7 @@ def suite(mode, test_case, log):
     
     #Default mode is admin for now. Should it be different?
     if mode == 'admin' or mode == 'default':
-        suite.addTest(fehmTest('saltvcon', log))
+        #suite.addTest(fehmTest('saltvcon', log))
         suite.addTest(fehmTest('dissolution', log))
         suite.addTest(fehmTest('salt_perm_poro', log))
         suite.addTest(fehmTest('avdonin', log))
@@ -1039,7 +1039,7 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('sorption', log))
         suite.addTest(fehmTest('baro_vel', log))
         suite.addTest(fehmTest('cellbased', log))
-        suite.addTest(fehmTest('heat_pipe', log))
+        #suite.addTest(fehmTest('heat_pipe', log))
         suite.addTest(fehmTest('toronyi', log))
         suite.addTest(fehmTest('colloid_filtration', log))
         suite.addTest(fehmTest('mptr', log))
