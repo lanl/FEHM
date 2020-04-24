@@ -1,12 +1,13 @@
 ''' Utilities to handle reading and writing PEST files '''
-from asteval import Interpreter
+import io
+from .asteval import Interpreter
 from glob import glob
 import re
 from numpy import recarray, array
 try:
     from collections import OrderedDict
 except ImportError:
-    from ordereddict import OrderedDict
+    from .ordereddict import OrderedDict
 
 def tpl_write( pardict, f, outflnm ):
     ''' Write model input file using PEST template file
@@ -19,7 +20,7 @@ def tpl_write( pardict, f, outflnm ):
         :type outflnm: str
     '''
     # Check if f is a string or file and read in lines
-    if isinstance( f, file ): 
+    if isinstance( f, io.IOBase ):
         t = f.read()
         fnm = f.name
         f.close()
@@ -33,7 +34,7 @@ def tpl_write( pardict, f, outflnm ):
     lh = t.split('\n')[0]
     k = lh.split()
     if k[0] != 'ptf':
-        print fnm+" does not appear to be a PEST template file"
+        print(fnm+" does not appear to be a PEST template file")
         return
     else: 
         tok = k[1] # Collect parameter identifier character
@@ -46,7 +47,7 @@ def tpl_write( pardict, f, outflnm ):
     pd = {} # Pattern dictionary
     # Create evaluation interpreter
     aeval = Interpreter()
-    for k,v in pardict.items():
+    for k,v in list(pardict.items()):
         aeval.symtable[k] = v
     # Evaluate all unique expressions
     for m in ms:
@@ -54,8 +55,16 @@ def tpl_write( pardict, f, outflnm ):
         if pstr not in pd:
             pd[m] = aeval(pstr)
     # Perform substitutions
-    for k,v in pd.items():
-        t = re.sub( re.escape(k), str(v), t)
+    for k,v in list(pd.items()):
+        if isinstance(v,float):
+            t = re.sub( re.escape(k), '%s' % float('%.16g' % v), t)
+        elif isinstance(v,int):
+            t = re.sub( re.escape(k), str(v), t)
+        elif isinstance(v,str):
+            t = re.sub( re.escape(k), v, t)
+        else:
+            print("Error: Substitution value not a float, int, or string")
+            return
 
     # Write output file
     fout = open( outflnm, 'w' )
@@ -93,17 +102,17 @@ def read_par_files( *files ):
                 # If first file, just collect names and values
                 if first:
                     ks_save = ks
-                    names = ks.keys()
-                    pars.append(ks.values())
+                    names = list(ks.keys())
+                    pars.append(list(ks.values()))
                     first = False
                 # Else, check that keys match and put values in correct order according to first file
                 else:
-                    if not ks_save.keys() == ks.keys():
-                        print "Parameters in "+fnm+" differs from other files"
+                    if not list(ks_save.keys()) == list(ks.keys()):
+                        print("Parameters in "+fnm+" differs from other files")
                         return 0
                     else:
                         ptemp = []
-                        for v in ks_save.keys():
+                        for v in list(ks_save.keys()):
                             ptemp.append(ks[v])
                         pars.append(ptemp)
 
@@ -112,7 +121,7 @@ def read_par_files( *files ):
     if output_format == 'numpy_array':
         return names, pars
     elif output_format == 'recarray':
-        pars_rc = pars.view(dtype=zip(names,['float64']*len(names))).copy()
+        pars_rc = pars.view(dtype=list(zip(names,['float64']*len(names)))).copy()
         return pars_rc
 
 
