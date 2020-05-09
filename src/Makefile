@@ -27,10 +27,15 @@
 # Edit FC,FFLAGS,EXE for your environment and compiler 
 #***********************************************************************
 
+# SET THIS VARIABLE TO WHERE YOUR FEHM DIR IS #
+FEHMDIR = /Users/smckinney/work/FEHM
+###############################################
 # Compiletime variables
 FC = gfortran
 EXE = xfehm_v3.3.1
-SRCDIR = ../src/
+
+SRCDIR = ${FEHMDIR}/src/
+TPLDIR = ${FEHMDIR}/TPL
 PREFIX = /usr/local/bin
 WITHSILO := 1
 
@@ -67,11 +72,7 @@ else
 endif
 
 SILOFLAGS := -cpp
-ifeq (${WITHSILO}, 0)
-	SILOFLAGS += -DNOSILO
-else
-	FFLAGS += -L/scratch/ymp/smckinney/silo/silo_install/lib -L/scratch/ymp/smckinney/hdf5/hdf5-1.8.11-linux-x86_64-shared/lib/ -I/scratch/ymp/smckinney/silo/silo_install/include -L/scratch/ymp/smckinney/silo/silo_install/lib -L/scratch/ymp/smckinney/hdf5/hdf5-1.8.11-linux-x86_64-shared/lib/ -lhdf5 -lstdc++
-endif
+FFLAGS += -L${TPLDIR}/silo-4.10.2-bsd_install/lib -L${TPLDIR}/hdf5-1.8_install/lib/ -I${TPLDIR}/silo-4.10.2-bsd_install/include -L${TPLDIR}/silo-4.10.2-bsd_install/lib -L${TPLDIR}/hdf5-1.8_install/lib/ -lhdf5 -lstdc++
 
 # Define the helpscreen that will show on `make help`
 define help
@@ -111,7 +112,21 @@ OBJECTS_F90 := $(patsubst ${SRCDIR}%.f90,%.o,$(wildcard ${SRCDIR}*.f90))
 # Define targets
 .PHONY: all
 all: FFLAGS += -O2
-all: dated xfehm
+all: hdf5-1.8 silo-4.10.2 dated xfehm
+
+.PHONY: hdf5-1.8
+hdf5-1.8:	
+	@cd ${TPLDIR} && git clone https://github.com/live-clones/hdf5.git --branch 1.8/master $@
+	@cd ${TPLDIR}/hdf5-1.8/ && git branch && ./configure --prefix=${TPLDIR}/hdf5-1.8_install/ --enable-fortran --enable-cxx
+	@cd ${TPLDIR}/hdf5-1.8/ && make install
+
+.PHONY: silo-4.10.2 
+silo-4.10.2:
+	@cd ${TPLDIR} && tar -xzvf ${TPLDIR}/silo-4.10.2-bsd.tar.gz && cd ./silo-4.10.2-bsd/
+	@cd ${TPLDIR}/silo-4.10.2-bsd/ && ./configure --enable-fortran --with-hdf5=${TPLDIR}/hdf5-1.8_install/include/,${TPLDIR}/hdf5-1.8_install/lib/ --prefix=${TPLDIR}/silo-4.10.2-bsd_install
+	@cd ${TPLDIR}/silo-4.10.2-bsd/ && make all
+	
+
 
 .PHONY: install
 install: FFLAGS += -O2
