@@ -28,7 +28,7 @@
 #***********************************************************************
 
 # SET THIS VARIABLE TO WHERE YOUR FEHM DIR IS #
-FEHMDIR = /Users/smckinney/work/FEHM
+FEHMDIR = /Users/smckinney/test_fehmsilo/FEHM
 ###############################################
 # Compiletime variables
 FC = gfortran
@@ -124,7 +124,7 @@ hdf5-1.8:
 silo-4.10.2:
 	@cd ${TPLDIR} && tar -xzvf ${TPLDIR}/silo-4.10.2-bsd.tar.gz && cd ./silo-4.10.2-bsd/
 	@cd ${TPLDIR}/silo-4.10.2-bsd/ && ./configure --enable-fortran --with-hdf5=${TPLDIR}/hdf5-1.8_install/include/,${TPLDIR}/hdf5-1.8_install/lib/ --prefix=${TPLDIR}/silo-4.10.2-bsd_install
-	@cd ${TPLDIR}/silo-4.10.2-bsd/ && make all
+	@cd ${TPLDIR}/silo-4.10.2-bsd/ && make install
 	
 
 
@@ -144,6 +144,7 @@ uninstall:
 clean:
 	rm *.o
 	rm *.mod
+	rm -R ${TPLDIR}/hdf5-1.8
 
 .PHONY: help
 help:
