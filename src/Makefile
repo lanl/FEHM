@@ -27,8 +27,9 @@
 # Edit FC,FFLAGS,EXE for your environment and compiler 
 #***********************************************************************
 
+CURRENTDIR := $(PWD)
 # SET THIS VARIABLE TO WHERE YOUR FEHM DIR IS #
-FEHMDIR = /Users/smckinney/test_fehmsilo/FEHM
+FEHMDIR = ${CURRENTDIR}/..
 ###############################################
 # Compiletime variables
 FC = gfortran
