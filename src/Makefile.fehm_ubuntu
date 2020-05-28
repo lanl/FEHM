@@ -19,9 +19,9 @@
 #***********************************************************************
 # Before starting source GnuDevelEnv.cshrc
 
-SRCDIR = /scratch/ymp/smckinney/fehm_petsc_pull/FEHM/src/
+SRCDIR = /Users/smckinney/FEHM-metis/FEHM/src/
 WORKDIR = ./
-INCDIR = ./ -I ${PETSC_DIR}/include/ -I ${PETSC_DIR}/arch-linux2-c-debug/include/
+INCDIR = ./ -I ${PETSC_DIR}/include/ -I ${PETSC_DIR}/${PETSC_ARCH}/include/
 OBJDIR = ./
 DEPEND = ${SRCDIR}Makefile.depends
 
@@ -43,10 +43,10 @@ ifeq (${OPSYS}, Linux)
 OSTAG = lnUbuntu16
 ifeq (${BIT},64)
 FC = ${PETSC_DIR}/${PETSC_ARCH}/bin/mpif90
-LIBRARY =  -L ${PETSC_DIR}/arch-linux2-c-debug/lib/ -lpetsc -Wl,-rpath,${PETSC_DIR}/arch-linux2-c-debug/lib/
+LIBRARY =  -L ${PETSC_DIR}/${PETSC_ARCH}/lib/ -lpetsc -Wl,-rpath,${PETSC_DIR}/${PETSC_ARCH}/lib/
 else
 FC = ${PETSC_DIR}/${PETSC_ARCH}/bin/mpif90
-LIBRARY = -Lls -lpetsc -Wl,-rpath,${PETSC_DIR}/arch-linux2-c-debug/lib/
+LIBRARY = -Lls -lpetsc -Wl,-rpath,${PETSC_DIR}/${PETSC_ARCH}/lib/
 endif
 DFLAG =
 LD = ld

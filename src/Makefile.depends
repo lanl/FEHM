@@ -694,3 +694,4 @@ wtsictr.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comii.o comwt.o
 wtsictr.o: comxi.o
 zone.o: comai.o combi.o comdti.o trxnvars.o
 property_interpolate.mod: interpolate.o
+petsc_finalize.o: petsc_package.o

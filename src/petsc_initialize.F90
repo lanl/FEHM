@@ -4,7 +4,15 @@
 !
 module petsc_initialize_package
     
-#include <petsc/finclude/petscksp.h>            
+#include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petsc.h>
+#include <petsc/finclude/petscis.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscpc.h>
+!#include <petsc/finclude/petscsles.h>
+#include <petsc/finclude/petscdmda.h>
+#include <petsc/finclude/petscdmplex.h>
 
     use petscksp
     use comco2
@@ -15,6 +23,7 @@ module petsc_initialize_package
     Mat    A_matrix
     KSP    ksp
     PC     pc
+    DM     mesh
 
     PetscInt,dimension(:),allocatable :: bp_index,x_index        ! index for right hand vector
     PetscReal,dimension(:),allocatable :: solution,sol_gather    ! index for right hand vector
@@ -41,7 +50,17 @@ module petsc_initialize_package
     
       
     double precision info(MAT_INFO_SIZE)
-    double precision mal, nz_a    
+    double precision mal, nz_a  
+    
+    !METIS
+    Mat             mesh,dual;
+    PetscErrorCode  ierr;
+    PetscInt        Nvertices = 6;       /* total number of vertices */
+    PetscInt        ncells    = 2;       /* number cells on this process */
+    PetscInt        *ii,*jj;
+    PetscMPIInt     size,rank;
+    MatPartitioning part;
+    IS              is;
 
 contains
 
@@ -58,6 +77,37 @@ contains
 
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr_3)
+       
+       ! METIS ----------------------------------------------------------------
+       
+		  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+		  ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
+		  if (size != 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example is for exactly two processes");
+		  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
+		
+		  ierr  = PetscMalloc1(3,&ii);CHKERRQ(ierr);
+		  ierr  = PetscMalloc1(6,&jj);CHKERRQ(ierr);
+		  ii[0] = 0; ii[1] = 3; ii[2] = 6;
+		  if (!rank) {
+			jj[0] = 0; jj[1] = 1; jj[2] = 2; jj[3] = 1; jj[4] = 2; jj[5] = 3;
+		  } else {
+			jj[0] = 1; jj[1] = 4; jj[2] = 5; jj[3] = 1; jj[4] = 3; jj[5] = 5;
+		  }
+		  ierr = MatCreateMPIAdj(MPI_COMM_WORLD,ncells,Nvertices,ii,jj,NULL,&mesh);CHKERRQ(ierr);
+		  ierr = MatMeshToCellGraph(mesh,2,&dual);CHKERRQ(ierr);
+		  ierr = MatView(dual,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+		
+		  ierr = MatPartitioningCreate(MPI_COMM_WORLD,&part);CHKERRQ(ierr);
+		  ierr = MatPartitioningSetAdjacency(part,dual);CHKERRQ(ierr);
+		  ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
+		  ierr = MatPartitioningApply(part,&is);CHKERRQ(ierr);
+		  ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+		  ierr = ISDestroy(&is);CHKERRQ(ierr);
+		  ierr = MatPartitioningDestroy(&part);CHKERRQ(ierr);
+		  
+	  ! METIS ----------------------------------------------------------------
+		  
+       !call DMPlexCreate(PETSC_COMM_WORLD, mesh, ierr_3);CHKERRA(ierr_3)
        
        ! set the dof present in he a matrix
        if(idof_co2 .ne. 0)then
