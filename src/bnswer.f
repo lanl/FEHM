@@ -273,8 +273,8 @@ C**********************************************************************
       use davidi
       use comfem
       implicit none
-
-      integer iad_min, iad_mult, i
+c gaz 110919 moved iad_min to comai (global variable now)
+      integer iad_mult, i
       real*8 fdum_mult
       parameter (fdum_mult=1.d02,iad_mult= 100)
 
@@ -285,7 +285,7 @@ C**********************************************************************
       mlz_save= 0
 c gaz 110715
       mlz = 0
-      if(g1.lt.0.0) then
+      if(g1.lt.0.0.and.jswitch.eq.0) then
 	 iad_min = 0
       else if(maxit.ge.0) then
          iad_min=1

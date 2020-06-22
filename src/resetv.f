@@ -192,9 +192,9 @@ C***********************************************************************
       use comco2
       use davidi
       implicit none
-c gaz 121718      
-      real*8 pcrit_h2o, tcrit_h2o
-      parameter(pcrit_h2o=22.00d0, tcrit_h2o=373.95)
+c gaz 121718   0923219 h2o_crit   moved to comai
+c      real*8 pcrit_h2o, tcrit_h2o
+c      parameter(pcrit_h2o=22.00d0, tcrit_h2o=373.95)
       integer ndum,id,i
 c first check for saturated only
 
@@ -233,6 +233,9 @@ c**** reset fluid state ****
          i      =  id+ndum
          if(phi(i).ge.pcrit_h2o.and.t(i).ge.tcrit_h2o) then
             ieos(i) = 4
+c gaz 102319 insure that pcp = 0.0 and dpcef = 0.0 for SC
+            pcp(i) = 0.0
+            dpcef(i) = 0.0
          else if ( so(i) .le. 0.0 )  then
             ieos(i) =  3
          else if ( so(i) .ge. 1.0 )  then

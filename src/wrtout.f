@@ -441,9 +441,9 @@ c     phod is head with offset removed
                         end if
                      endif
  6031                format(i7,2x,g11.4,1x,g9.3,1x,g9.3,1x,f8.3,1x,
-     *                    g11.4,1x,g10.3,1x,i5,5x,i5)
+     *                    g11.4,1x,g10.3,1x,i5,5x,i7)
  6032                format(i7,1x,g11.4,1x,g9.3,1x,g9.3,1x,g9.3,1x,
-     *                    f8.3,3x,g11.4,1x,g11.4,3x,i4)
+     *                    f8.3,3x,g11.4,1x,g11.4,3x,i7)
                   enddo
                enddo
                if (ichead .ne. 0) then
@@ -606,14 +606,15 @@ c
      &           ' (air)')
             if(fdum.eq.-999.) then
 c     write out flux discrepency (kg/s)
-	       if (ntty.eq.2) write(iout,979) abs(g1),fdum1
-               if (iatty.gt.0)	write(iatty,979) abs(g1),fdum1	
- 979           format(' >>> End on flux error (kg/s) ',1p,g12.4,
+c  gaz 110519 changed g1 to tmch                 
+	       if (ntty.eq.2) write(iout,979) abs(tmch),fdum1
+               if (iatty.gt.0)	write(iatty,979) abs(tmch),fdum1	
+ 979           format(' >>> End on flowrate error (kg/s) ',1p,g12.4,
      &              ' Max error ',g12.4,' <<<')
-c     now write in terms of (m**3/s), use desity of water
-               if (ntty.eq.2) write(iout,978) abs(g1)/997.,fdum1/997.
-               if (iatty.gt.0) write(iatty,978) abs(g1)/997.,fdum1/997.	
- 978           format(' >>> End on flux error (m**3/s) ',1p,g12.4,
+c     now write in terms of (m**3/s), use density of water
+               if (ntty.eq.2) write(iout,978) abs(tmch)/997.,fdum1/997.
+              if (iatty.gt.0) write(iatty,978) abs(tmch)/997.,fdum1/997.	
+ 978          format(' >>> End on volume flux error (m**3/s) ',1p,g12.4,
      &              ' Max error ',g12.4,' <<<')
             endif    
          endif

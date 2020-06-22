@@ -552,7 +552,9 @@ c end pjjohnson edit
       real*8, allocatable ::  betadfv(:,:)
       real*8, allocatable ::  cm(:) 
       real*8, allocatable ::  cm0(:)
-      real*8, allocatable ::  cnsk(:) 
+      real*8, allocatable ::  cnsk(:)
+c gaz 040120 added   cnsk_background   
+      real*8, allocatable ::  cnsk_background(:)
       real*8, allocatable ::  cp1f(:) 
       real*8, allocatable ::  cp2f(:) 
       real*8, allocatable ::  cp3f(:) 
@@ -972,12 +974,19 @@ c gaz 071819
       real*8, allocatable ::  durockt(:)
 c gaz 111118   
 c sk_temp() used in sub thrmwc      
-      real*8, allocatable ::  sk_temp(:)
+      real*8, allocatable ::  sk_temp(:) 
 c gaz 081918
       integer, allocatable :: izone_renum(:)
       integer, allocatable :: nrenu_list(:)
       integer, allocatable :: irb_renum_act(:)
       integer, allocatable :: ncon_renum(:) 
       integer n_renu_zone, min_r_z, max_r_z, neq_act, neq_nonact
-      
+c gaz 090819
+c arrays and global variables associated with mass equality with
+c  phase change
+      real*8, allocatable ::  phi_prev(:)
+      real*8, allocatable ::  s_prev(:)
+      integer, allocatable :: n_phase_nodes(:)
+      integer, allocatable :: ieos_prev(:)
+      integer n_phase_ch
       end module comdi

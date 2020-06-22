@@ -419,6 +419,7 @@ c gaz 121918 added pci0
       real*8 phase_mult
       real*8 phase_sat 
       real*8 satml 
+c gaz 101419       
       real*8 xdiff_tol
       parameter(psatmn=0.0001)
       parameter(eosmg=1.0001)
@@ -433,9 +434,11 @@ c gaz debug 092115
 c      parameter(satml=1.0d-4)
 c      parameter(satml=1.0d-6)
 c      parameter(phase_mult=1.01)
+c gaz 101419      
       parameter(xdiff_tol=1.0d-4)
-      real*8 pcrit_h2o, tcrit_h2o
-      parameter(pcrit_h2o=22.00d0, tcrit_h2o=373.95)
+c gaz 121718   0923219 h2o_crit   moved to comai
+c      real*8 pcrit_h2o, tcrit_h2o
+c      parameter(pcrit_h2o=22.00d0, tcrit_h2o=373.95)
 c ich_max should be odd or even but don't know which
 c      parameter(ich_max = 2)
       real*8 psatl
@@ -468,10 +471,11 @@ c      parameter(ich_max = 2)
       integer ndummy,k
       real*8 stepl_hm, phase_mult_hm, satml_hm, eosml_hm
       real*8 stepl_hma, phase_mult_hma, satml_hma, eosml_hma
-      parameter(stepl_hm = 0.95, phase_mult_hm = 1.00001)
+      parameter(stepl_hm = 0.95, phase_mult_hm = 1.0001)
 c gaz debug 051516 (optimized for geothermal;satml = 1.0d-2 may be too large)      
       parameter(satml_hm = 1.0d-2, eosml_hm = 0.9)
-      parameter(stepl_hma = 0.95, phase_mult_hma = 1.05)
+c gaz 101419  102119 ...mult_hma = 1.00001 is best
+      parameter(stepl_hma = 0.95, phase_mult_hma = 1.00001)
       parameter(satml_hma = 1.0d-7, eosml_hma = 0.99)
 c
 c
@@ -624,6 +628,7 @@ c
                         ieosdc = 1
                         s(ij) = 1.0
                       endif  
+c gaz 101719 modify if block (leave for now)                      
                        tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,
      &                             1,an(ij))
                         if(tl.le.tboil/phase_mult.
@@ -730,12 +735,15 @@ c or leaving liquid phase
 c gaz 121918  add physical phase change 
 c gaz 01                          
                         ieosdc = 2
-                        s(ij) = 0.9
+                        s(ij) = 0.99
                         strd = stepl
                         pboil=psatl(tl,pcp(ij),dpcef(ij),dtsatp,dpsats,
      &                             0,an(ij))
-                        phi(ij)= pcl
-                        pci(ij) = phi(ij)-pboil
+c gaz 012919                         
+c                        phi(ij)= pcl
+c                        pci(ij) = phi(ij)-pboil
+                         phi(ij)= pcl + pboil
+c                        pci(ij) = phi(ij)-pboil                        
                         go to 101
                    else if(pl.lt.pcrit_h2o) then
 c gaz 121918 pci0 instead of pcl   
@@ -754,13 +762,13 @@ c     &                        tl.gt.tboil*phase_mult).
                           if(tl.gt.tboil*phase_mult.  
      &                     and.days.ge.time_ieos(ij)) then
                            ieosdc=2
-c                           strd=stepl
-                           strd = 1.
+                           strd=stepl
+c                           strd = 1.
 c                           pboil=psatl(tl,pcp(ij),dpcef(ij),dtsatp,
 c     &                             dpsats,0,an(ij))
 c gaz 121218 and 121818                          
 c                           pci(ij)=(max(pl-pboil,0.0d00)+pcl)/2.
-                           s(ij)=0.95
+                           s(ij)= eosml
                            time_ieos(ij) = days + time_ch
                         endif
 101                  continue  
@@ -781,8 +789,8 @@ c
 c gaz 122018 another phase change                          
                         ieosdc =3
                         s(ij) = 0.0                               
-                        call prop_phase_change(1,ij,2,3,
-     &                  tl,pl,pcl)
+c                        call prop_phase_change(1,ij,2,3,
+c     &                  tl,pl,pcl)
                         go to 201
                       else if(pl.lt.pcrit_h2o) then
 c gaz 121918 pcl0 instead of pcl                          
@@ -798,7 +806,10 @@ c gaz 011116 testing
 c                         if(sl.ge.1.000.and.so(ij).gt.0.95) then
                          if(sl.ge.1.000) then
                            ieosdc=1
-                           pci(ij)=pl-pboil
+c gaz 012819                           
+c                           pci(ij)=pl-pboil
+c gaz 013019 debug                           
+c                           phi(ij) = pci(ij)+pboil
                            s(ij)=1.0
                            strd = stepl
                            time_ieos(ij) = days + time_ch
@@ -818,6 +829,8 @@ c                          if(sl.le.0.0.and.so(ij).lt.0.05) then
                            denpci_ch(ij) = denpci(ij)
                            ieos_bal(ij) = ieos(ij)
                            dum = so(ij)
+c gaz 013019 debug
+                           phi(ij) = phi(ij)*0.99
                            ieosdc=3 
                            s(ij)=0.0
                            strd = stepl
@@ -843,7 +856,8 @@ c gaz debug 120714
                            s(ij)=0.0
                            t(ij) = 1.0001*tl 
 c                           phi(ij) = pci(ij) + pboil*0.999
-                            pci(ij) = phi(ij) - pboil*0.999
+c gaz 012819                            
+c                            pci(ij) = phi(ij) - pboil*0.999
                             phi(ij) = pci(ij) + pboil
                            strd = stepl
                            time_ieos(ij) = days + time_ch
@@ -872,7 +886,7 @@ c                      else if(x.ge.pcrit_h2o.and.tl.lt.tcrit_h2o) then
                           go to 500
                         else
                          pvapor=psatl(tl,pcp(ij),dpcef(ij),dpsatt,
-     &                           dpsats,0,an(ij))                          
+     &                           dpsats,0,an(ij))                     
                         endif  
                
 c     check vapor pressure against saturated vapor pressure
@@ -882,10 +896,9 @@ c     change if lower
                            s(ij)=satml  
                            tboil=psatl(x,pcp(ij),dpcef(ij),dtsatp,
      &                            dpsats,1,an(ij))
-c                           t(ij) = 0.5*(tboil+tl)
-c                           if(ieosd.eq.3) then
-c                             s(ij)= satml
-c                           endif
+c                           phi(ij) = pvapor
+c gaz 101819 
+c                           t(ij) = tboil
                            time_ieos(ij) = days + time_ch
                            strd = stepl
                            ieosdc = 2
@@ -917,11 +930,14 @@ c sufficient  to go to gas or liquid
                       else
                        ieosdc = 4
                       endif                     
-                   endif  
+                  endif  
 c
 c     remember if danl eos change occured
 c     tally eos numbers
 c 
+c gaz 012919 **************** very new limiting change to pci*********************************   
+                     pci(i)=max(0.0d00,pci(i))
+                     pci(i)=min(phi(i),pci(i))
                      if(ieosd.ne.ieosdc) then
 c gaz debug 120814
 c                        strd    =stepl
@@ -1039,11 +1055,15 @@ c gaz 121718 added ieosd 4
                      s(i)=s(i)-bp(i2)*strd
 c  GAZ 5/1/98          
                      t(i)=t(i)-bp(i3)*strd
-c gaz 122418                     
-c                     tboil=psatl(phi(i),pcp(i),dpcef(i),dtsatp,
-c     &                            dpsats,1,an(i))
+c gaz 122418                      
                          pvapor=psatl(t(i),pcp(i),dpcef(i),dpsatt,
-     &                           dpsats,0,an(i))                      
+     &                           dpsats,0,an(i))  
+c gaz debug 093019 stays in!                       
+                     if(pvapor.ge.phi(i)) then
+                          t(i)=psatl(phi(i),pcp(i),dpcef(i),
+     &                          dtsatp,dpsats,1,an(i)) 
+                        pvapor = phi(i)
+                     endif     
                      pci(i) = phi(i)-pvapor
                   elseif(ieosd.eq.3) then
                      phi(i)=phi(i)-bp(i1)*strd

@@ -416,7 +416,9 @@ c code written by g zyvoloski feb 1980
        character*32 cmsg(20)
        logical :: old_input = .false.
        character*90 wdum
-       parameter (tol_p = 1.d-6)
+c gaz 102419 changed tol_p  from 1.e-6    
+c applying tol_p to mass frac calc       
+       parameter (tol_p = 1.d-8)
        parameter (tol_sat_bc = 1.d-10)
        real*8, allocatable :: aiped(:)      
 c     set tbnd for pco2 change(see about line 580)
@@ -608,7 +610,7 @@ c     The impedance, by default is set to 0.
 
             else
 c     
-c     read in source strength for noncon gas(kg/s)
+c     read in source strength for noncon gas(kg/s),air fraction, impendance
 c     
                default(1) = 0.0
                default(2) = 0.0
@@ -628,13 +630,17 @@ c
             end if
 
             macroread(2) = .TRUE.
-c
-            allocate (xairfl(n0))   
+c gaz 060820 new conditions
+c if aiped ne.0.0, then imped associated   with pflowa          
+            if(.not.allocated(xairfl)) allocate (xairfl(n0))   
+             xairfl = 0.0
             do i=1,n0
                if(qng(i).eq.default(1)) then
                   qng (i)=0.0
                elseif(qng(i).eq.0.0) then
                   qng(i)=1.d-30
+               else
+                  xairfl(i) = 1.0  
                endif
                if(aiped(i).eq.default(2)) then
                   wellima(i)=0.0
@@ -680,7 +686,9 @@ c check for relative humidity IC
                      istflag = -1
                      goto 9000
  100                 format ('cannot input ngas temp in single phase')
-                  else if(abs(pcid).le.1.0d0.and.abs(pcid).ge.0.0d0)then
+c gaz 121218 correction to allow pci < 1.0 but > 0                      
+                  else if(pcid.lt.0.0.and.abs(pcid).le.1.0d0
+     &                .and.abs(pcid).ge.0.0d0)then
 c rel humidity IC and calculate new pci
 c 100 percent hmidity water vapor pressure
                    pv= psatl(to(i),pcp(i),dpcef(i),dpsatt,dpsats,0,
@@ -688,8 +696,10 @@ c 100 percent hmidity water vapor pressure
                    humida(i) = abs(pcid)
                    pci(i) = pho(i)-abs(pcid)*pv
                   endif
-c negative 0<= pci <= 1. indicates relative permeability                   
-               else if(ieos(i).eq.2.and.pcid.lt.-tbnd) then
+c negative 0<= pci <= 1. indicates relative permeability   
+c gaz 122018 need to allow small pci()                
+                 else if(ieos(i).eq.2.and.abs(pcid).ge.1.0.
+     %              and.pcid.lt.-tbnd) then
 c set water vapor pressure                    
                   if(ngas_flag) then
                    pv = 0.0
@@ -954,6 +964,8 @@ c gaz  debug 062516
 c calculate the relative humidity here                      
                    hum_frac = humida(md)
                   endif
+c gaz 110119 calculate air mass fraction
+                  dencht = denpch(md)/(denpch(md)+denh(md)+tol_p)
                   rqd= sk(md)
                   qcd=0.0
                   bpd=bp(md+nrhs(3))
@@ -962,19 +974,19 @@ c gaz 5-3-2001 need to output air source/sink
                   qcd=qc(md)
                   if (iout .ne. 0) write(iout,804)
      &                 mdd,pci(md),pcp(md),phi(md)-pcp(md),qcd,
-     &                 bpd, ieos(md), hum_frac
+     &                 bpd, ieos(md), hum_frac, dencht
                   if (iatty .ne. 0) write(iatty,804)
      &                 mdd,pci(md),pcp(md),phi(md)-pcp(md),qcd,
-     &                 bpd, ieos(md), hum_frac
+     &                 bpd, ieos(md), hum_frac, dencht
                enddo
  803           format(/, 20x, 'Nodal Information (Gas)', /, 8x, 
      &              'Partial P', 3x, 'Capillary', 3x, 'Liquid', 6x, 
      &              'Gas source/sink', /, 3x, 'Node', 1x, 'Gas (MPa)', 
      &              3x, 'Pres (MPa)', 2x, 'Pres (MPa)', 5x, '(kg/s)', 
-     &              7x, 'Residual','    State ',
-     &              3x,'R humidity (fraction)')
+     &              7x, 'Residual','    State',
+     &              x,'R humidity',3x,'air m frac')
  804           format(i7, 1x, g11.4, 1x, g11.4, 1x, g11.4, 1x,
-     &              g11.4, 5x, g11.4, 1x, i5, 13x, g9.4)
+     &              g11.4, 5x, g11.4, 1x, i5, 3x, f8.4, 2x, g11.4)
 c     calculate global mass and energy flows
                if (iout .ne. 0) then
                   write(iout,689) qtc,difc

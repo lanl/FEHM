@@ -480,6 +480,8 @@ C***********************************************************************
       use comco2
       use comdi
       use comdti
+c gaz debug 042120      
+      use comfi, only : pci
       use comevap, only : evaporation_flag
       use comflow, only: flag_heat_out
       use compart
@@ -507,7 +509,8 @@ c gaz 062718
       character*5 cden_type
       character*32 cmsg(20)
       character*30 zonesavename
-
+c gaz debug 042120
+      i = pci(1)
       sssol = 'no  '
       altc = 'fehm'
       inptorig = inpt
@@ -835,7 +838,7 @@ c**** element node data, read in incoord subroutine  ****
  125     continue
 
       else if (macro .eq. 'eos ') then
-c**** forms simple water eos and/or changes the eos set number ****
+c**** forms simple water eos, hi temp tabular eos, and/or changes the eos set number ****
          iieosd =  0
          call sther (iieosd)
       else if (macro .eq. 'den ') then
@@ -1132,10 +1135,10 @@ c**** iteration parameters ****
          read (inpt, *) g1, g2, g3, tmch, overf
          read (inpt, *) irdof, islord, iback, icoupl, rnmax
          if (ihead .eq. 1 .and. irdof .ne. 13) then
-            if (iout .ne. 0) write(iout,*) "Warning: irdof = 13 for ",
-     &           "head problem"
+          if (iout .ne. 0) write(iout,*) "Warning: setting irdof = 13 ",
+     &           "for head problem"
             if (iptty .gt. 0) write(iptty,*) 
-     .           "Warning: irdof = 13 for head problem"
+     &           "Warning: setting irdof = 13 for head problem"
             irdof = 13
          end if
          if (rnmax .lt. zero_t) rnmax = 1.0d+06
@@ -1149,7 +1152,15 @@ c**** iteration parameters ****
          if(irdof.lt.0) then
             overf = 1.0
          endif
-
+c gaz 041620  if richards solution(jswitch.ne.0) , set irdof = 0
+        if (jswitch.ne.0.and.irdof.eq.13) then
+          if (iout .ne. 0) write(iout,*) "Warning: setting irdof = 0 ",
+     &           "for Richard's problem"
+            if (iptty .gt. 0) write(iptty,*) 
+     &           "Warning: setting irdof = 0 for Richard's  problem"            
+          irdof = 0
+        endif
+          
       else if (macro .eq. 'ittm') then
 c**** sticking time for phase changes      
          read (inpt, *) time_ch
@@ -1399,8 +1410,8 @@ c     0.95  1.e-5  0.001 0.001
          read (wdd1,*,end = 598) strd_rich, tol_phase, pchng, schng 
          go to 599
  598     continue
-         pchng = 0.005
-         schng = 0.005
+         pchng = 0.001
+         schng = 0.001
  599     continue
 
       else if (macro .eq. 'rock') then

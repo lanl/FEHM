@@ -46,6 +46,9 @@
       use combi, only : prnt_flxzvar
       use comco2, only : icarb
       use comdi
+c gaz 041620 need n0 and pci      
+      use comfi, only : pci
+      use comdti, only : n0
       use comrlp, only : ishisrlp, delta_sat, num_sat, sat_out
       use comsi, only : ihms
       use comwt, only : wt_flag
@@ -316,7 +319,16 @@
                      pres_flag = 2
                   end if
                end if
-            end if
+               end if
+c gaz 041520 make sure pci() iz allocated(n) for pres_flag 1,2,3 (pres_flag 4 OK)
+            if(allocated(pci).and.ico2.le.0) then
+             deallocate(pci)
+             allocate(pci(n0))
+             pci= 0.0d0
+            else if(.not.allocated(pci)) then
+             allocate(pci(n0))
+             pci= 0.0d0                
+            endif
             ishisp = ishis + 100
             chtmp = ''
             select case (pres_flag)

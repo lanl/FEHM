@@ -68,7 +68,8 @@
       integer idsubmc,isubmd,isubmodel0,open_file   
       integer mi,ik,ityps,itemp,ic
       integer nmatavw,izik
-      real*8 subflux,aiped, flux_gh, tref, pres_gh
+c gaz 110819 removed tref, pref (now global)       
+      real*8 subflux,aiped, flux_gh,  pres_gh
       real*8 head_value, parm1, parm2, parm3
       logical null1
       character*4 keyword
@@ -456,7 +457,8 @@ c
          neqp1 = neq+1
 	 if(keyword.eq.'flgh') then
 c     print out all generalized head bc
-            tref = crl(6,1)
+c gaz 110819 tref now global       
+c            tref = crl(6,1)
             do ii = 1,ngh 
                i = node_gh(ii)
                call headctr(5,i,pres_gh,pflow_gh(ii))   

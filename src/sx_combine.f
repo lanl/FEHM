@@ -227,7 +227,7 @@ C  zvd 09-09-2005 use istrw_itfc instead of istrw to store broken connections
                      kb=nelm(jj)
                      if(ka(kb).lt.0) then
                         istrw_itfc(jj-neqp1)=nitfcpairs+1
-                        icon=1
+                        icon=icon+1
                      endif
                   enddo
                endif
@@ -240,7 +240,7 @@ C  zvd 09-09-2005 use istrw_itfc instead of istrw to store broken connections
                      kb=nelm(jj)
                      if(ka(kb).ne.0.and.ka(kb).ne.-3) then
                         istrw_itfc(jj-neqp1)=nitfcpairs+1
-                        icon=1
+                        icon=icon+1
                      endif
                   enddo
                endif
@@ -255,7 +255,7 @@ C  zvd 09-09-2005 use istrw_itfc instead of istrw to store broken connections
                      kb=nelm(jj)
                      if(ka(kb).eq.-1) then
                         istrw_itfc(jj-neqp1) = nitfcpairs+1
-                        icon=1
+                        icon=icon+1
                      endif
                   enddo
                endif
@@ -268,7 +268,7 @@ C  zvd 09-09-2005 use istrw_itfc instead of istrw to store broken connections
                      kb=nelm(jj)
                      if(ka(kb).ne.0.and.ka(kb).ne.-3) then
                         istrw_itfc(jj-neqp1) = nitfcpairs+1
-                        icon=1
+                        icon=icon+1
                      endif
                   enddo
                endif
@@ -277,12 +277,12 @@ C  zvd 09-09-2005 use istrw_itfc instead of istrw to store broken connections
 c     
 c     write out warning that connections have been broken
 c     
-         if(icon.eq.1) then
+         if(icon.gt.0) then
             if (iout .ne. 0) 
-     &           write(iout,*) 'BC to BC connection(s) found ',
+     &           write(iout,*) icon,' BC to BC connection(s) found ',
      &           '(now set=0.0)'
             if(iptty.ne.0)
-     &           write(iptty,*) 'BC to BC connection(s) found ',
+     &           write(iptty,*) icon,' BC to BC connection(s) found ',
      &           '(now set=0.0)'
          endif
 c     

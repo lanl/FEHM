@@ -226,7 +226,7 @@ c
                  if(iz_temp.eq.2) then
                   cp1=cp1f(it)
                   cp3=cp3f(it)
-	             pl = pl - crl(4,1)
+	             pl = pl - pref
 				 rlxyf(mi) = (pl+cp1*cp3)/cp1 + rlptol  
 			     drlxyf(mi) = 1.d0/cp1 
 				 s(mi) = rlxyf(mi) - rlptol
@@ -262,7 +262,7 @@ c now calculate sl
 c cutoff for near sucut = 1 region
                 sucut = (0.99d0*(rp2-rp1) + rp1)
 	          hlcut = -bc3*(1.-sucut)
-	          pl = phi(mi)-crl(4,1)
+	          pl = phi(mi)-pref
 	          hp = pl/h_to_p      
 	             call vgcap_inv(1, sl, rp1, rp2, rp3, rp4, 
      &              slcut,sucut,hlcut, hucut, ac3, ac4, bc3, bc4,
@@ -319,7 +319,7 @@ c     inverse solved explicitly
 c
                    cp1=cp1f(it)
                    cp3=cp3f(it)
-	             pl = pl - crl(4,1)
+	             pl = pl - pref
 				 rlxyf(mi) = (pl+cp1*cp3)/cp1 + rlptol  
 			     drlxyf(mi) = 1.d0/cp1 
 				 s(mi) = rlxyf(mi) - rlptol	       	       
@@ -349,7 +349,7 @@ c now calculate sl
 c cutoff for near sucut = 1 region
                 sucut = (0.99d0*(rp2-rp1) + rp1)
 	          hlcut = -bc3*(1.-sucut)
-	          pl = phi(mi)-crl(4,1)
+	          pl = phi(mi)-pref
 	          hp = pl/h_to_p      
 	             call vgcap_inv(1, sl, rp1, rp2, rp3, rp4, 
      &              slcut,sucut,hlcut, hucut, ac3, ac4, bc3, bc4,

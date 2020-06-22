@@ -1426,6 +1426,8 @@ c      real*8 fimped
       real*8 cden_correction, cden_cor
       real*8 spec1, fracc,ms,xf,af,bf,cf,df,ef,dumf,tltemp
       real*8 pv_tol, satdif
+c gaz 092419 added pa_tol (set in parameter statement)      
+      real*8 pa_tol
 c gaz debug 121714
       real*8 dum_gaz
       real*8 xair, pflowa_tol
@@ -1449,8 +1451,9 @@ c gaz 110715
       parameter (kang = 1, pflowa_tol= 1.d-12, huma_tol = 1.d-12)
       parameter (permd_air_mult = 1.d-2, permd_hum_mult = 1.d-3)
 c gaz 010519      
-       real*8 pcrit_h2o, tcrit_h2o
-       parameter(pcrit_h2o=22.00d0, tcrit_h2o=373.95)      
+c 0923219 h2o_crit   moved to comai
+c      real*8 pcrit_h2o, tcrit_h2o
+c      parameter(pcrit_h2o=22.00d0, tcrit_h2o=373.95)     
 c gaz  081917  
       real*8 dcp_dt, dcprt_dum
 c gaz 010719
@@ -1481,7 +1484,8 @@ c     sl   -  saturation liquid
 c
       parameter(xtol=1.d-16)
       parameter(flow_tol=1.d-31)
-      parameter(pv_tol=1.e-9)
+c gaz   092419 (pa_tol)    
+      parameter(pv_tol=1.d-9, pa_tol = 1.d-16) 
 c note flow_tol=1.d-31 because of default dqpc=1.d-30
 c and default dqpc should look like 0.0 but specified flow
 c
@@ -1592,8 +1596,12 @@ c
                xrl = 0.0
                xrv = 1.0
             else if (ieosd.eq.4) then
-               xrl = 0.0
+c   gaz 102119 xrl = .0
+c  gaz 102119 added pcp(mi) = 0.0 and dpcef(mi) = 0.0 for sc                
+               xrl =1.0
                xrv = 0.0
+               pcp(mi) = 0.0
+               dpcef(mi) = 0.0
             end if
             drl = 0.0
             drlp = 0.0
@@ -1803,10 +1811,17 @@ c            pcl = pci(mi)
 c            pv=pl-pcl
 c            dpct=-dpsatt
 c         else
-            pcl=pl-psatl(tl,pcp(mi),dpcef(mi),dpsatt,dpsats,
+c gaz 013019 ************* new limiting pci here ***********************          
+c            pcl=pl-psatl(tl,pcp(mi),dpcef(mi),dpsatt,dpsats,
+c     &                   0,an(mi))
+c            pv=pl-pcl
+c            pci(mi)=pcl
+            pv=psatl(tl,pcp(mi),dpcef(mi),dpsatt,dpsats,
      &                   0,an(mi))
-            pv=pl-pcl
-            pci(mi)=pcl
+            pcl=pl-pv
+            pcl=max(pa_tol,pcl)
+            pcl=min(phi(mi),pcl)
+            pci(mi)=pcl            
             dpct=-dpsatt
             dtdp = 1./dpsatt
       else if(ieosd.eq.3) then

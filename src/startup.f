@@ -429,7 +429,9 @@ c      rho1grav = crl(1,1)*(9.81d-6)
 c      rho1grav = 997.*9.81d-6
 c**** Deallocate printout information array for variable porosity model
 c**** if allocated and not a variable porosity problem
-      if (iporos .ne. -4) then
+c gaz debug 121319
+      j = sk(1)+ieos(1)+ ps(1)+psini(1)+pci(1)
+       if (iporos .ne. -4) then
          if (allocated(nskw3)) deallocate(nskw3)
       endif
 c
@@ -1470,9 +1472,10 @@ c     id mobile methane and water
       else
          if(ico2.lt.0.and.ice.eq.0) then
 c     air water problem
+c gaz 111119 changed crl(4,1) to pref             
             do i = 1, n0
                rolf(i)=crl(1,1)*
-     2              (1.0+crl(3,1)*(phi(i)-crl(4,1)))
+     2              (1.0+crl(3,1)*(phi(i)-pref))
             end do
          else if(ico2.lt.0.and.ice.ne.0) then
 c gaz 10-18-2001 following used ase dummy parameters
@@ -1583,8 +1586,17 @@ c output map of active nodes
 !      endif
 c 
 c**** initalize concentration ****
-      if (iccen .ne. 0)  call concen (-1,0)
-
+      if (iccen .ne. 0)  then
+c gaz 050820 allocate and initialize 
+c pure water rolf and dil here
+       if(cden) then
+             if(.not.allocated(rolf_pure)) allocate(rolf_pure(n0)) 
+             if(.not.allocated(dil_pure)) allocate(dil_pure(n0)) 
+             rolf_pure(1:n0) = rolf(1:n0)
+             dil_pure(1:n0) = dil(1:n0)
+       endif      
+       call concen (-1,0)
+      endif
       call pest(1)
 
 ! Moved history file setup below zone volume calculations

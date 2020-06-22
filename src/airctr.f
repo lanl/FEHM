@@ -14,7 +14,7 @@ C**********************************************************************
 CD1
 CD1 PURPOSE
 CD1
-CD1 To manage the isothermal air-water calculations.
+CD1 To manage the isothermal air-water calculations. 
 CD1
 C**********************************************************************
 CD2
@@ -382,7 +382,8 @@ c
       integer mi,i1,i2,ilev,mlev,il,md,irlpsv,irlptsv,icapsv,nr1
       integer nr2,irdofsv 
       integer  ii,ij,im,inode,iwm,ja,k,kb
-      real*8 tref,pref,pssv,ssv,phisv,dmpfd,dmefd,dqd,rqd,qcd
+c gaz 110819 removed tref, pref (now global)       
+      real*8 pssv,ssv,phisv,dmpfd,dmefd,dqd,rqd,qcd
       real*8 inflow_thstime,inen_thstime,denht,deneht
       real*8 dels,delp,dfdum11,dfdum12,dfdum21,dfdum22
       real*8 dfdum11i,dfdum12i,dfdum21i,dfdum22i,detdf
@@ -393,14 +394,20 @@ c
       character*80 dum_air
       real*8 pref_1_2,pref_2_1,s_1_2
       real*8 t_low
+c gaz 103019 added strd_satneg for under relaxation when neg saturations    
+      real*8 strd_satneg, strd_old, phi_unsat_to_sat, p_uzmin
       integer i_t_bad 
-      parameter(t_low = 5.)
+c gaz debug 112119      
+      integer ieos_c
+      parameter(t_low = 5.,strd_satneg = 0.85)
+      parameter (p_uzmin = 0.099, phi_unsat_to_sat = 0.001)
 c      parameter (pchng = 0.005,schng = 0.005)
 c      gaz pchng and schng in comai 103009
-      save tref,pref
+c gaz 110819 tref,pref now global      
+c      save tref,pref
       if (jswitch.ne.0) strd_iter = strd_rich
-
-C     ? ico2d not passed in, not initialized
+      
+      k = l +iad 
       ico2d = 0
 c     return if no air present 
       if(ico2.lt.0) then
@@ -416,7 +423,7 @@ c
             itype_meth = 0
             itype_co2 = 0
             read(inpt,'(a80)')  dum_air    
-            read(dum_air,*) tref,pref
+            read(dum_air,*) tref, pref
             do i = 1, 77
              if(dum_air(i:i+3).eq.'meth'.or.
      &        dum_air(i:i+3).eq.'METH') then
@@ -445,6 +452,7 @@ c air props at 0.1 Mpa and 0 C
          roc0 = 1.292864d0
          visc_gas = 1.758e-05
         else
+c default is air
          roc0 = 1.292864d0
          visc_gas = 1.758e-05
         endif
@@ -522,9 +530,10 @@ c     subtract initial density calculation (added back in thrair.f)
             endif
             crl(2,1)=1.0/(dil(1)/rolf(1))
             crl(3,1)=dmpf(1)/rolf(1)
-            crl(4,1)=pref
+c gaz 110819 pref, tref (global) read in scanin  (and above)            
+c            crl(4,1)=pref
             crl(5,1)=visc_gas
-            crl(6,1)=tref
+c            crl(6,1)=tref
             if(ico2d.eq.-1) then
                crl(7,1)=1.0
             else
@@ -571,121 +580,164 @@ c
 c     determine phase state
 c     
             if(ifree.ne.0) then
-               
+c gaz 090819 mass conservative phase change
+c             call phase_change_mass_conv(0,0)
                do  mid=1,neq
                   mi=mid+ndummy
                   ieos(mi) = 2
                enddo
                continue
             else if(irdof.ne.13) then   
-               if (iad.eq.0) strd = 1.0 
-               pref = crl(4,1) 
+c gaz 103019 might need to set strd = 1 for every iad 
+c               if (iad.eq.0) strd = 1.0 
+               strd = 1
+c gaz 110819 pref, tref (global) read in scanin                 
+c               pref = crl(4,1) 
 c gaz 082719               
                pref_1_2 =  pref - pchng
                pref_2_1 =  pref + pchng  
                s_1_2 = 1.0 - schng
+c gaz debug 112119 added ieos_c
 	       if (jswitch.ne.0) then
+c determine phase state Rich Eq                 
+                  ieos_c = 0
                   do  mid=1,neq
                      mi=mid+ndummy
 c     
-                     if(phi(mi).lt.pref_1_2.and.ieos(mi)
+c gaz 103019 testing pref here  (pref_1_2 to pref) if(phi(mi).lt.pref_1_2.and.ieos(mi) no change
+c   s_1_2 to 1.               best =       1. - 0.000001
+c gaz 103019 set strd_old to strd                       
+                     strd_old = strd
+                     if(phi(mi).lt.pref.and.ieos(mi)
      &                 .eq.1.and.days.ge.time_ieos(mi)) then
                         strd = strd_iter
                         s(mi) = s_1_2
                         phi(mi) = pref
                         ieos(mi)=2 
                         time_ieos(mi) = days + time_ch
+                        ieos_c = ieos_c + 1
                      else if(s(mi).lt.1.0-tol_phase.and.ieos(mi) 
      &                   .eq.1.and.days.ge.time_ieos(mi)) then 
                         strd = strd_iter
                         s(mi) = s_1_2
                         ieos(mi)=2 
                         time_ieos(mi) = days + time_ch
+                        ieos_c = ieos_c + 1
                      else if(s(mi).gt.tol_phase.and.ieos(mi)
      &                .eq.3.and.days.ge.time_ieos(mi)) then 
 c   changed eq.2 to eq.3 gaz 103009     
                         strd = strd_iter
-                        ieos(mi)=2                      
-                     else if(s(mi).gt.1.0+tol_phase.and.ieos(mi)
+                        ieos(mi)=2   
+                        ieos_c = ieos_c + 1                  
+                     else if(s(mi).ge.1.0+tol_phase.and.ieos(mi)
      &                   .eq.2.and.days.ge.time_ieos(mi)) then     
                         strd = strd_iter
-                        phi(mi) = pref_2_1
+c gaz debug 110119       phi_unsat_to_sat (0.001) instead of     phi(mi) = pref_2_1
+                        phi(mi) = pref + phi_unsat_to_sat
                         s(mi) = 1.
                         ieos(mi)=1
                         time_ieos(mi) = days + time_ch
+                        ieos_c = ieos_c + 1
                      else if(s(mi).le.-tol_phase.and.ieos(mi)
      &                   .eq.2.and.days.ge.time_ieos(mi)) then 
 c gaz 071919 uncommented  s(mi)=0.0     
 c gaz 072019 commented out again
+c gaz 103019 and again   s(mi)=0.0
 c                        s(mi)=0.0
-
-                        strd = strd_iter
+                        strd = strd_satneg
 c     ieos(mi)=3
                      endif
-c     
+c big deal?    
+c gaz 103019 does not look like min strd is used
+                    strd = min(strd_old,strd)
                   enddo
+c gaz debug 112119
+c                write(ierr,878) 'rich',l,iad,ieos_c,strd,fdum
+878             format(a4,' l ',i5,' iad ',i5,' ieos_c ',i3,
+     &             ' strd ',f13.3,' fdum ', f15.8)           
                else
 c     
-c     determine phase state
+c     determine phase state uzsz
 c     
                   if(irdof.ne.13) then
 c     pnx used to be set in the following loops -- currently removed
-                     if (iad.eq.0) strd = 1.0        
+
+                     ieos_c = 0
                      do  mid=1,neq
                         mi=mid+ndummy
 c     
-                        if(s(mi).lt.1.0.and.ieos(mi).eq.1) then
-                           if(iad.eq.1) strd = strd_iter
+                        strd_old = strd
+                        if(s(mi).lt.1.0-schng.and.ieos(mi).eq.1) then
                            strd = strd_iter
+c gaz 120919
+                           s(mi) = 1.0-schng
                            ieos(mi)=2
+                           ieos_c = ieos_c +1
 c     call phase_timcrl(days,day,dtot,dtotdm)
 c     
                         else if(s(mi).gt.0.0.and.ieos(mi).eq.3) then
-                           if(iad.eq.1) strd = strd_iter
                            strd = strd_iter
                            ieos(mi)=2
+                           ieos_c = ieos_c +1
 c     call phase_timcrl(days,day,dtot,dtotdm)
 c     
                         else if(s(mi).gt.1.0.and.ieos(mi).eq.2) then
-                           if(iad.eq.1) strd = strd_iter
                            ieos(mi)=1
+c gaz 120919                            
+                           s(mi) = 1.0
+c                           phi(mi) = phi(mi) + pchng
+                           strd = strd_iter
+                           ieos_c = ieos_c +1
 c     call phase_timcrl(days,day,dtot,dtotdm)
 c     
                         else if(s(mi).le.0.0.and.ieos(mi).eq.2) then
-                           if(iad.eq.1) strd = strd_iter
                            s(mi)=0.0
                            strd = strd_iter
                            ieos(mi)=3
-c     call phase_timcrl(days,day,dtot,dtotdm)
-c     
+                           ieos_c = ieos_c +1
+c     call phase_timcrl(days,day,dtot,dtotdm)    
                         endif
+                        strd = min(strd_old,strd)
                      enddo
+c gaz 110319 could use some cleanup                      
                      do  mid=1,neq
                         mi=mid+ndummy
-                        
-                        if(phi(mi).lt.1.d-2) then
-                           if(iad.eq.1) strd = strd_iter
-                           phi(mi)=1.d-2
-                           if (so(mi).ge.1.0) then
+                        strd_old = strd
+c gaz 120919 debug  
+c                        if(phi(mi).lt.p_uzmin) then
+                        if(phi(mi).lt.p_uzmin.and.ieos(mi).eq.1) then
+                         strd = strd_iter
+c gaz 112419 
+                         phi(mi) = p_uzmin
+c                         s(mi) =0.999
+                         s(mi) = 1.0-schng
+                         ieos(mi) = 2
+c  gaz 120919 
+c                           if (so(mi).ge.1.0) then
+                         if (so(mi).ge.100.0) then
                               s(mi)= 0.999
-                              phi(mi)=5.d-2
+                              phi(mi) = p_uzmin
                               strd = strd_iter
                            endif
                         endif
 c     
-                        if(s(mi).lt.0.0) then
-                           if(iad.eq.1) strd = strd_iter
-                           s(mi)=0.0
+                        if(s(mi).lt.-schng) then                            
+                          strd = strd_iter
+c gaz 120919 13:50                          
+                          ieos(mi) = 3
+                          s(mi) = 0.0
 c     strd = strd_iter
                         endif
-c     
-                        if(s(mi).gt.1.0) then
-                           if(iad.eq.1) strd = strd_iter
-c     s(mi)=1.0
-c     strd = strd_iter
+c                       
+                        if(s(mi).gt.1.0+schng) then
+                         strd = strd_iter
+                         ieos(mi) = 1
+                         s(mi) = 1.
                         endif
 c     
+                        strd = min(strd_old,strd)
                      enddo
+c                   write(ierr,878) 'uzsz',l,iad,ieos_c,strd,fdum
                   endif
                endif
             endif
@@ -792,13 +844,14 @@ c
                      qcd=qh(md)
                      if(ihead.ne.0.and.ifree.ne.0) then
 c     wtsi solution
+c gaz 110819 pref, tref (global) read in scanin crl(4,1) repaced with pref                          
                         if(s(md).le.0.0) then
-                           phidum = crl(4,1) - phi_inc
+                           phidum = pref - phi_inc
                         else if(s(md).lt.1.0) then
                            phi_1 = head12(md,1)
                            phi_2 = head12(md,2)
                            phi_dif = phi_2-phi_1
-                           phidum = crl(4,1) + s(md)*(phi_dif)
+                           phidum = pref + s(md)*(phi_dif)
                         else
                            phi_1 = head12(md,1)
                            phi_2 = head12(md,2)
@@ -862,8 +915,9 @@ c     calculate global mass and energy flows
 c     
 c     store sk in qc
 c     initialize t,to,tini,iieos
-c     
-            tref=crl(6,1)
+c  
+c gaz 110919 tref now global   
+c            tref=crl(6,1)
             do i=1,n
                qc(i)=sk(i)
                if(to(i).eq.0.0d00) then

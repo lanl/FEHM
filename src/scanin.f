@@ -336,6 +336,7 @@ C***********************************************************************
       real*8 xmsg(20)
       integer imsg(20)
       character*32 cmsg(20)
+      character*80 table_name
       integer kz,iz2,iz2p,i1,i2,ipivt,sehindexl,sehindexv,neqp1
       integer ireaddum, inptread, open_file
       integer locunitnum, kk, j
@@ -344,8 +345,7 @@ C***********************************************************************
       integer idum1, idum2, ilines, i
       integer icount, tprp_num
       integer jjj, isimnum, realization_num,maxrp
-      logical nulldum, found_end
-c      logical gdkm_new
+      logical nulldum, found_end, intfile_ex
 
       real*8 rflag
         maxrp = 30
@@ -574,6 +574,9 @@ c Read zones to name flxz output files in inhist if necessary
          read (locunitnum, *) irdof, islord, iback, icoupl, rnmax
          if (ihead .eq. 1 .and. irdof .ne. 13) then
             irdof = 13
+         end if
+          if (jswitch .ne. 0 .and. irdof .eq. 13) then
+            irdof = 0
          end if
          call done_macro(locunitnum)
       else if (macro.eq.'sol ') then
@@ -923,12 +926,21 @@ c gaz 112817
 c     need to know if a table with water props is read
          call start_macro(inpt, locunitnum, macro)
           read(locunitnum,'(a80)') wdd1(1:80)
+          if(wdd1(1:5).eq.'table') iwater_table = 1   
+          table_name = trim(wdd1(7:80))
+          inquire(file=table_name, exist=intfile_ex)
+          if(intfile_ex) iwater_table = 2    
+          if(iwater_table.eq.2) nmfil(31) = table_name
          call done_macro(locunitnum)
-         if(wdd1(1:5).eq.'table') iwater_table = 1          
+         
       else if (macro(1:3)  .eq.  'air')  then
 c     need to know if air-water  is envoked
          ico2 = -2 
-           
+c gaz 110819 reading tref, pref here (these variables are now global          
+         call start_macro(inpt, locunitnum, macro)
+          read(locunitnum,'(a80)') wdd1(1:80)
+          read(locunitnum,*) tref, pref
+         call done_macro(locunitnum)           
       else if (macro .eq. 'ice ' .or. macro .eq. 'meth') then
          ice = 1
          
@@ -2331,7 +2343,10 @@ c need porosity model
          call start_macro(inpt, locunitnum, macro)
          read (locunitnum,*) iporos
          call done_macro(locunitnum)
-
+c gaz 041620 (need two phases to work with)
+      else if(macro .eq. 'rich') then
+         jswitch = 1
+         if(irdof.eq.13) irdof = 0
       else if (macro .eq. 'vcon') then
 ! need number of variable conductivity models
          call start_macro(inpt, locunitnum, macro)

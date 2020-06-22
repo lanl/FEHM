@@ -800,6 +800,8 @@ c gaz 113018 added "if(iqenth.ne.0) then " to avoid unallocated arrays
                   if(iqa.ne.0) then
                      if(qa(i).ne.0.0) then
                         qng(i)=qa(i)
+c gaz 061420 qng nonzero, xairfl = 0
+                        xairfl(i) = 0.0
                      endif
                   endif
                endif

@@ -231,13 +231,15 @@ C***********************************************************************
       use comdi
       use comdti
       use comki
+      use comii
       implicit none
 
       integer i,icode
       real*8, allocatable :: aiped(:)
       real*8, allocatable::  sktmp(:)
       real*8, allocatable ::  esktmp(:)
-
+      real*8  sat_mult
+      parameter (sat_mult = 1.d-5)
       macro = 'flow'
       
       allocate(aiped(n0),esktmp(n0),sktmp(n0))
@@ -274,6 +276,11 @@ c**** read flow data ****
                end if
                wellim(i) = abs(aiped(i)) * 1.0e+06
                pflow(i) = sktmp(i)
+c gaz 110719 if pflow< pref then turn off node (sort of)
+c rich only               
+               if(pflow(i).lt.pref.and.jswitch.ne.0) then
+                wellim(i) = wellim(i)*sat_mult
+               endif
             end if
          end if
       end do

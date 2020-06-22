@@ -232,7 +232,7 @@ C*****
       real*8 tsat,psat,dtsatp
       real*8 visl0,visl1,t0,t1,coef0,coef1
       integer i, iieosd, open_file
-      character cdum*4
+      character cdum*4, table_name*80
 C*****
 C*****AF 11/15/10
 C*****
@@ -270,7 +270,21 @@ c  for now start with ieos_aux = 1
           allocate(ieos_aux(n0))
           ieos_aux = 1   
           else if(wdd1(1:5).eq.'table') then  
-             iwater_table = 1   
+c gaz 060720 check  for file name here (new input format)
+c read water EOS table name (iwater_table set to 1 after table read and ided in scanin)
+               if(iwater_table.eq.1) then
+                table_name = trim(wdd1(7:80))               
+                 if(iout.ne.0) then
+                  write(iout,81) 'water table EOS :', table_name
+                 endif
+                 if(iptty.ne.0) then
+                  write(iptty,81) 'water table EOS:', table_name
+                 endif
+81    format('>>> ',a17,1x,a50)                 
+              else
+c old format (do nothing)
+               backspace inpt
+              endif
 c gaz 110715
 c
 c set very high bounds for table
@@ -279,7 +293,7 @@ c
            iieos(i)=1
           enddo   
          else
-c classic simplt thermo         
+c classic simple thermo         
           read(wdd1,*) iieosd,itsat
           if(itsat.eq.2) then
            read(wdd1,*) iieosd,itsat,tsat,psat,dtsatp
