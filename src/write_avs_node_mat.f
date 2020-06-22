@@ -150,9 +150,12 @@ C***********************************************************************
       use comrxni, only : rxn_flag
       use comriv, only : iriver
       use davidi
+      use silo
 
       implicit none
-
+      
+      include "silo.inc"
+                    
       integer i, j, lu, ifdual, maxtitle, mout, length, ic1, ic2
       integer il, open_file, nelm(ns_in), iocord_temp
       integer icord1, icord2, icord3, neq_read, neq_write, istart, iend
@@ -166,14 +169,17 @@ C***********************************************************************
       character*600 print_title, vstring
       real*8 perm_fac
       parameter (perm_fac=1.d-6)
-      logical :: xon = .false., yon = .false., zon = .false.
+      logical :: xon = .false., yon = .false., zon = .false.      
 
+      
 c     If this structure changes, also change the binary version
 c     To ensure label is left justified, an <= string length
 c       adding avsx output option  --  can assign integer perms then plot
 c       the material types in avsx with a discrete colorbar.  PHS 8/11/2000      
 c------------------------------------------------------------------------------
-      temp_string = ''
+
+	  silo_meshtype = ''
+	  temp_string = ''
       print_title = ''
       pstring = ''
       dual_char = ''
@@ -207,9 +213,9 @@ c------------------------------------------------------------------------------
       title(9) = trim(dual_char) // 'Capillary pressure (MPa)'
       title(10)= trim(dual_char) // 'Relative permeability model'
       title(11)= trim(dual_char) // 'Capillary pressure model'
-      title(12) = 'X coordinate (m)'
+      title(12) = 'X coordinate (m)' 
       title(13) = 'Y coordinate (m)'
-      title(14) = 'Z coordinate (m)'         
+      title(14) = 'Z coordinate (m)' 
       
       units(1) = '(m**2)'
       units(2) = '(m**2)'
@@ -240,7 +246,9 @@ c------------------------------------------------------------------------------
          yon = .true.
          zon = .true.
       end select
-      if(altc(1:3).eq.'avs' .and. altc(4:4) .ne. 'x') then
+   
+      if(altc(1:4) .ne. 'silo') then
+       if(altc(1:3) .eq. 'avs' .and. altc(4:4) .ne. 'x') then
          write (temp_string, '(i2)') mout
          ic2 = len_trim(temp_string)
          pstring(ic1:ic2) = temp_string
@@ -684,9 +692,16 @@ c for river or wells, "geoname" will only have neq_primary nodes
             write (lu, '(a)') vstring(1:length)
          end do
 
-      end if
-      iocord = iocord_temp
-      
+       end if
+      ! SILO MAT CALL
+      else if (altc(1:4) .eq. 'silo') then	
+			call init_silo()
+      		call write_silo_mat(ifdual)
+      end if 
+	  iocord = iocord_temp
+
+!################### SILO ADDITION ###################
+ 	  
  100  format(a, ', ', a)
  200  format("( ' ", a, "', a)")
  300  format("('",' "', "', a, '",'"',"')")

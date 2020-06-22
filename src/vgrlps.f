@@ -321,9 +321,9 @@ c     gaz 091210
           rl = 1.0
           drls= 0.0
        endif
-c now block beginning on line 275 is ended
+c     now block beginning on line 275 is ended
       endif
-c now block beginning on line 270 is ended
+c     now block beginning on line 270 is ended
 
       if(iflg.eq.1) then
 c rv is 1. -rl

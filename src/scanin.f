@@ -323,7 +323,7 @@ C***********************************************************************
 
       logical null1, opened, done, ok, null_new
       integer idumm, ja, jb, jc, numtime
-      character* 4 cdumm, macro, ctmp
+      character*4 cdumm, ctmp, macro
       real*8 adumm, rdum1
       integer igrp,pos_index,trac_flag,ispeci
       integer ic2
@@ -490,9 +490,9 @@ c Check for "OFF" keyword for skipping macro
       else if (macro .eq. 'cont') then
          call start_macro(inpt, locunitnum, macro)
 ! Read over keywords if avs, tecplot or surfer
-         read (locunitnum, '(a3)', END = 50) macro
+         read (locunitnum, '(a4)', END = 50) macro
          if(macro(1:3) .eq. 'avs' .or. macro(1:3) .eq. 'tec' .or.
-     &        macro(1:3) .eq. 'sur' .or. macro .eq. 'csv') then
+     &   macro(1:3) .eq. 'sur' .or. macro .eq. 'csv' .or. macro(1:4) .eq. 'silo') then
             ok = .false.
             do
                read (locunitnum, *, END = 60) dumstring

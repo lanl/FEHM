@@ -237,7 +237,10 @@ c     &     neq_primary, rho1grav, ifdm_elem, i_subsid, igrav
 c     RJP 1/12/07 added following
       use comco2
       use comriv, only : npoint_riv, nnelm_riv, nelm_riv
+      use silo
       implicit none
+      
+      include "silo.inc"
 
       integer maxscalar
       parameter (maxscalar = 37)
@@ -246,7 +249,7 @@ c     RJP 1/12/07 added following
       integer size_head, size_pcp, istart, iend, ic1, ic2, length, nadd
       integer icord1, icord2, icord3, ns_in0, irivp, iocord_tmp 
       integer, allocatable :: nelm2(:)
-      integer izunit,nin,ii,n_elem,ns_elem,ie, e_mem(8)
+      integer izunit,nin,n_elem,ns_elem,ie, e_mem(8)
       integer neq_sv, nei_in_sv, icall_sv, neq_p, iblanking_value
       integer i_pri,i_sec
       logical zone_saved
@@ -262,6 +265,7 @@ c     RJP 1/12/07 added following
       character*43 tstring
       character*5 char_type
       character*3 dls
+
       character*30 zonesavename, char_temp
       character*6 zonestring
       parameter(iblanking_value = -9999)
@@ -281,7 +285,6 @@ c  Shaoping add  10-19-2017
       zone_saved =.false.
 c-------------------------------------------
 C     ERROR checking:
-      
       if(nscalar .gt. maxscalar)then
          write(lu,*)'--------------------------------------------'
          write(lu,*)'ERROR: WRITE_AVS_NODE_S'
@@ -1365,7 +1368,12 @@ c first generate elements
       end if        
       if (altc(1:3) .ne. 'sur') close (lu)
       iocord = iocord_tmp
-
+      
+      ! SILO call
+      if (altc(1:4) .eq. 'silo') then
+      		call write_silo_s(icall, neq, nscalar, ifdual, iriver2)
+      endif 
+      
  100  format(i10.10)
 c 100  format(i10)
  105  format(a, i10.10)

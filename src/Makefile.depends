@@ -33,7 +33,7 @@ area_length_calc.o: comai.o combi.o comci.o comdi.o comdti.o comji.o comki.o
 area_length_calc.o: comriv.o davidi.o
 area_vol_weightctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 area_vol_weightctr.o: comgi.o comii.o comrxni.o davidi.o
-avs_io.o: avsio.o comai.o combi.o comchem.o comdi.o comdti.o commeth.o comriv.o
+avs_io.o: avsio.o comai.o combi.o comchem.o comdi.o comdti.o commeth.o comriv.o silo.mod
 avs_io.o: comrxni.o comwt.o comxi.o davidi.o
 avs_write_cord.o: comai.o
 avs_write_struc.o: comai.o
@@ -73,7 +73,7 @@ cntlio.o: comai.o comxi.o
 co2_array.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 co2_array.o: comhi.o commeth.o davidi.o
 co2_fugacity.o: ${SRCDIR}params_eosco2.h
-co2_properties.o: comai.o comco2.o comdi.o comrxni.o interpolate.o
+co2_properties.o: comai.o comco2.o comdi.o comrxni.o interpolate_2.o
 co2ctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 co2ctr.o: comhi.o comii.o comki.o comxi.o davidi.o
 co2h2o_combine.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o
@@ -182,9 +182,9 @@ explicit.o: comgi.o comji.o davidi.o
 fd_calc_heat.o: comai.o combi.o comci.o comdi.o comdti.o comji.o comki.o
 fd_calc_heat.o: davidi.o
 fehmn.o: comai.o combi.o comci.o comco2.o comcomp.o comdi.o comdti.o comei.o
-fehmn.o: comevap.o comfem.o comfi.o comflow.o comii.o compart.o comriv.o
-fehmn.o: comrtd.o comrxni.o comsi.o comsk.o comsplitts.o comsptr.o comuserc.o
-fehmn.o: comwt.o comxi.o davidi.o interpolate.o interpolate_2.o
+fehmn.o: comevap.o comfem.o comfi.o comflow.o compart.o comriv.o comrtd.o
+fehmn.o: comrxni.o comsi.o comsk.o comsplitts.o comsptr.o comuserc.o comwt.o
+fehmn.o: comxi.o davidi.o interpolate_2.o interpolate.o
 fem_DruckerPrager_stiffness.o: comai.o comfem.o comsi.o
 fem_DruckerPrager_stress_update.o: comai.o comdi.o comfem.o comsi.o
 fem_elastic_stiffness.o: comai.o comfem.o comsi.o
@@ -212,12 +212,11 @@ flux_net.o: comai.o combi.o comci.o comdi.o comflow.o comgi.o comji.o davidi.o
 flxn.o: comai.o combi.o comflow.o davidi.o
 flxo.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o comfi.o
 flxo.o: comflow.o comgi.o comxi.o davidi.o
-flxz.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comflow.o davidi.o
+flxz.o: comai.o combi.o comco2.o comdi.o comdti.o comflow.o davidi.o
 ftime.o: compfrac.o
 gdkm_calc.o: comai.o combi.o comci.o comdi.o comdti.o comji.o comki.o davidi.o
 gdkm_connect.o: comai.o combi.o comci.o comdi.o comdti.o comji.o comki.o
 gdkm_connect.o: davidi.o
-gdkm_volume_fraction_interface.o: comai.o combi.o comco2.o comdi.o comdti.o
 gdpm_corr.o: comai.o combi.o comdti.o comei.o comki.o davidi.o
 gdpm_geneqh.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 gdpm_geneqh.o: comflow.o comgi.o comhi.o comji.o davidi.o
@@ -341,7 +340,6 @@ gp_global_coord.o: comai.o combi.o comfem.o
 grad_array.o: comai.o combi.o comsptr.o
 gradctr.o: comai.o combi.o comco2.o comdi.o comdti.o comfi.o commeth.o
 h2o_properties.o: comai.o comco2.o comrxni.o
-h2o_properties_new.o: comai.o comco2.o comrxni.o interpolate_2.o
 head_2phase.o: comai.o combi.o comdi.o comdti.o comfi.o comgi.o comii.o
 head_2phase.o: comrxni.o
 headctr.o: comai.o combi.o comdi.o comdti.o comfi.o comgi.o comii.o comrxni.o
@@ -496,7 +494,7 @@ releasemem.o: comai.o combi.o comchem.o comci.o comcouple.o comdi.o comdti.o
 releasemem.o: comei.o comfi.o comflow.o comgi.o comhi.o comii.o comji.o
 releasemem.o: compart.o compfrac.o comrtd.o comrxnb.o comrxni.o comsk.o
 releasemem.o: comsptr.o comuserc.o comzeoli.o davidi.o
-renum.o: comai.o combi.o comdi.o comdti.o comei.o comgi.o comki.o davidi.o
+renum.o: comai.o combi.o comdti.o comei.o comki.o
 resettrc.o: comai.o comci.o comdi.o comdti.o
 resetv.o: comai.o comci.o comco2.o comdi.o comdti.o comfi.o davidi.o
 river_ctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
@@ -622,7 +620,7 @@ ther_meth_h2o.o: comgi.o comii.o commeth.o comrxni.o
 thermc.o: comai.o combi.o comchem.o comci.o comcouple.o comdi.o comdti.o
 thermc.o: comfi.o comgi.o comrxni.o davidi.o
 thermw.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
-thermw.o: comii.o comrlp.o comrxni.o comsi.o comtable.o interpolate_2.o
+thermw.o: comii.o comrlp.o comrxni.o comsi.o comtable.o
 thickness.o: comai.o combi.o comdi.o comdti.o comfi.o comgi.o comrxni.o
 thomeercap.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comhi.o
 thomeercap.o: comki.o
@@ -660,13 +658,13 @@ velocity_derivatives.o: comsptr.o
 velocity_derivatives_lsq.o: comai.o combi.o comci.o comdi.o comflow.o comsk.o
 velocity_derivatives_lsq.o: comsptr.o
 vfcal.o: comai.o combi.o comdi.o comdti.o
+vg.o: comai.o comco2.o comdi.o comrlp.o
 vg_regions.o: comai.o comdi.o comdti.o
+vgcap_fit2.o: comai.o comrlp.o
 vgcap_inv_calc.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 vgcap_inv_calc.o: comhi.o comii.o comki.o comwt.o
 vonMises_stiffness.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 vonMises_stiffness.o: comflow.o comgi.o comji.o comsi.o davidi.o
-vrock_ctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
-vrock_ctr.o: comii.o comki.o
 wellimped_ctr.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 wellimped_ctr.o: comflow.o comgi.o comii.o comji.o comki.o comxi.o davidi.o
 wellphysicsctr.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o
@@ -674,17 +672,17 @@ wellphysicsctr.o: comfi.o comflow.o comgi.o comii.o comki.o commeth.o comrxni.o
 wellphysicsctr.o: comwellphys.o comxi.o davidi.o
 write_avs_head_s.o: avsio.o comai.o comdi.o comsi.o davidi.o
 write_avs_node_con.o: avsio.o comai.o combi.o comchem.o comdi.o comdti.o
-write_avs_node_con.o: compart.o comriv.o comrxni.o
+write_avs_node_con.o: compart.o comrxni.o
 write_avs_node_h.o: comai.o
 write_avs_node_hf.o: avsio.o comai.o combi.o comdi.o comflow.o
-write_avs_node_mat.o: avsio.o comai.o combi.o comchem.o comdi.o comriv.o
+write_avs_node_mat.o: avsio.o comai.o combi.o comchem.o comdi.o comriv.o silo.o
 write_avs_node_mat.o: comrxni.o davidi.o
 write_avs_node_s.o: avsio.o comai.o combi.o comci.o comco2.o comdi.o comfem.o
-write_avs_node_s.o: comfi.o comflow.o comii.o comriv.o comsi.o comwt.o davidi.o
-write_avs_node_v.o: avsio.o comai.o combi.o comdi.o comriv.o
+write_avs_node_s.o: comfi.o comflow.o comii.o comriv.o comsi.o comwt.o davidi.o silo.o
+write_avs_node_v.o: avsio.o comai.o combi.o comdi.o
 write_copyright.o: comai.o
 write_rlp_hyd.o: comai.o commeth.o
-writeio.o: comai.o comco2.o comxi.o
+writeio.o: comai.o comxi.o
 wrtcon.o: comai.o combi.o comchem.o comdi.o comdti.o comgi.o comrxni.o comxi.o
 wrtout.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o comfi.o
 wrtout.o: comflow.o comgi.o comii.o comwt.o comxi.o davidi.o
@@ -693,6 +691,8 @@ wtrise.o: comai.o combi.o comdi.o comflow.o compart.o
 wtsi_column.o: comai.o combi.o comdi.o comdti.o comwt.o comxi.o
 wtsictr.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comii.o comwt.o
 wtsictr.o: comxi.o
-zone.o: avsio.o comai.o combi.o comdi.o comdti.o trxnvars.o
+write_silo: silo.o
+zone.o: comai.o combi.o comdti.o trxnvars.o
 property_interpolate.mod: interpolate.o
 property_interpolate_1.mod: interpolate_2.o
+silo.mod: silo.o

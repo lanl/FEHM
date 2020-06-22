@@ -1374,6 +1374,13 @@ c undergoing phase change
       implicit none
       integer iflg, mid, ii, i
       integer iphase_old, iphase_new
+C  SCHU add definition 01022020
+      real*8, allocatable :: s_prev(:)
+      real*8, allocatable :: phi_prev(:)
+      real*8, allocatable :: n_phase_nodes(:)
+      real*8, allocatable :: ieos_prev(:)
+      integer n_phase_ch
+
 c gaz notes 090719
 c add arrays to comdi    
 c pressure may decrease past 0.1 ; need starting pres for

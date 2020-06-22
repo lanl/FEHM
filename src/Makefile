@@ -18,6 +18,7 @@
 #    FC                        FORTRAN 77/90 compiler
 #    EXE                       Compiled FEHM executable
 #    SRCDIR                    Path to FEHM source (default: cwd)
+#    WITHSILO 				   Build with SILO HDF5 TPL (DEFUALT)
 #***********************************************************************
 # GNU Make version 3.79.1 or later should be used
 # make should be executed from the directory where the objects 
@@ -26,18 +27,25 @@
 # Edit FC,FFLAGS,EXE for your environment and compiler 
 #***********************************************************************
 
+CURRENTDIR := $(PWD)
+# SET THIS VARIABLE TO WHERE YOUR FEHM DIR IS #
+FEHMDIR = ${CURRENTDIR}/..
+###############################################
 # Compiletime variables
 FC = gfortran
 EXE = xfehm_v3.3.1
-SRCDIR = ./
+
+SRCDIR = ${FEHMDIR}/src/
+TPLDIR = ${FEHMDIR}/TPL
 PREFIX = /usr/local/bin
+WITHSILO := 1
 
 # Build system specific variables
 DEPEND = ${SRCDIR}Makefile.depends
 OPSYS = $(shell uname -s )
 DATETAG = $(shell date '+%y-%m-%d')
 DATE = $(shell date '+.%d%b%y')
-FFLAGS = -frecord-marker=4
+FFLAGS = -frecord-marker=4 -ffixed-line-length-132
 DEBUGFLAGS = -g -O0 -frecord-marker=4 -fbounds-check -Wall
 
 
@@ -64,6 +72,8 @@ else
 	ALTDIR = ${SRCDIR}
 endif
 
+SILOFLAGS := -cpp
+FFLAGS += -L${TPLDIR}/silo-4.10.2-bsd_install/lib -L${TPLDIR}/hdf5-1.8_install/lib/ -I${TPLDIR}/silo-4.10.2-bsd_install/include -L${TPLDIR}/silo-4.10.2-bsd_install/lib -L${TPLDIR}/hdf5-1.8_install/lib/ -lhdf5 -lstdc++
 
 # Define the helpscreen that will show on `make help`
 define help
@@ -97,13 +107,27 @@ endef
 export help
 
 # Define FORTRAN and FORTRAN90 objects
-OBJECTS     := $(patsubst ${SRCDIR}%.f,${SRCDIR}%.o,$(wildcard ${SRCDIR}*.f))
-OBJECTS_F90 := $(patsubst ${SRCDIR}%.f90,${SRCDIR}%.o,$(wildcard ${SRCDIR}*.f90))
+OBJECTS     := $(patsubst ${SRCDIR}%.f,%.o,$(wildcard ${SRCDIR}*.f))
+OBJECTS_F90 := $(patsubst ${SRCDIR}%.f90,%.o,$(wildcard ${SRCDIR}*.f90))
 
 # Define targets
 .PHONY: all
 all: FFLAGS += -O2
-all: dated xfehm
+all: hdf5-1.8 silo-4.10.2 dated xfehm
+
+.PHONY: hdf5-1.8
+hdf5-1.8:	
+	@cd ${TPLDIR} && git clone https://github.com/live-clones/hdf5.git --branch 1.8/master $@
+	@cd ${TPLDIR}/hdf5-1.8/ && git branch && ./configure --prefix=${TPLDIR}/hdf5-1.8_install/ --enable-fortran --enable-cxx
+	@cd ${TPLDIR}/hdf5-1.8/ && make install
+
+.PHONY: silo-4.10.2 
+silo-4.10.2:
+	@cd ${TPLDIR} && tar -xzvf ${TPLDIR}/silo-4.10.2-bsd.tar.gz && cd ./silo-4.10.2-bsd/
+	@cd ${TPLDIR}/silo-4.10.2-bsd/ && ./configure --enable-fortran --with-hdf5=${TPLDIR}/hdf5-1.8_install/include/,${TPLDIR}/hdf5-1.8_install/lib/ --prefix=${TPLDIR}/silo-4.10.2-bsd_install
+	@cd ${TPLDIR}/silo-4.10.2-bsd/ && make install
+	
+
 
 .PHONY: install
 install: FFLAGS += -O2
@@ -114,13 +138,14 @@ install: dated xfehm
 
 .PHONY: uninstall
 uninstall:
-	rm -f $(DESTDIR)$(PREFIX)/fehm
+	rm -f $(DESTDIR)$(PREFIX)/fehm      
 	@echo "$(DESTDIR)$(PREFIX)/fehm removed."
 
 .PHONY: clean
 clean:
-	rm ${SRCDIR}*.o
-	rm ${SRCDIR}*.mod
+	rm *.o
+	rm *.mod
+	rm -R ${TPLDIR}/hdf5-1.8
 
 .PHONY: help
 help:
@@ -136,11 +161,11 @@ test:
 .PHONY: dated
 dated:
 	rm -f ${SRCDIR}dated.f
-	rm -f ${SRCDIR}dated.o
+	rm -f dated.o
 	sed s/OS\ DATE/${OSTAG}\ ${DATETAG}/ ${SRCDIR}dated.template > ${SRCDIR}dated.f
 
 xfehm: ${OBJECTS} ${OBJECTS_F90}
-	${FC} ${FFLAGS} ${OBJECTS} ${OBJECTS_F90} -o ${EXE}
+	${FC} ${FFLAGS} ${OBJECTS} ${OBJECTS_F90} -o ${EXE} -lsiloh5 -lhdf5 -lstdc++
 
 debug: FFLAGS += -g	-fbounds-check
 debug: dated ${OBJECTS} ${OBJECTS_F90}
@@ -149,21 +174,20 @@ debug: dated ${OBJECTS} ${OBJECTS_F90}
 
 # Define rules
 %.o : ${SRCDIR}%.f
-	${FC} ${FFLAGS} $< -c -o ${SRCDIR}$@
+	${FC} ${FFLAGS} ${SILOFLAGS} $< -c
 
 %.o : ${SRCDIR}%.f90
-	${FC} ${FFLAGS} $< -c  -o ${SRCDIR}$@
+	${FC} ${FFLAGS} $< -c
 
 dated.o : ${SRCDIR}dated.f
-	${FC} ${FFLAGS} $< -c  -o ${SRCDIR}$@
+	${FC} ${FFLAGS} $< -c
 
 
 # Special handling of two files
 inrestart.o : ${ALTDIR}inrestart.f
-	${FC} ${FFLAGS} $< -c -o ${SRCDIR}$@
-
+	${FC} ${FFLAGS} $< -c
 insptr.o : ${ALTDIR}insptr.f
-	${FC} ${FFLAGS} $< -c -o ${SRCDIR}$@
+	${FC} ${FFLAGS} $< -c
 
 
 # Include `Makefile.depends`
