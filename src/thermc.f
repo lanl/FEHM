@@ -308,6 +308,8 @@ C**********************************************************************
       integer mi
       integer mim
       real*8 anv_subst, h_const
+c gaz 050320 added cden correction      
+      real*8 cden_correction
 
       do nsolute = 1, nspeci
 **** Add Henry's law, do it like liquid part
@@ -322,8 +324,19 @@ CPS   IF a liquid,  solid  or a henry's law tracer
                   danv(mi) = max( rovf(mim) * ( 1. - s(mim) ), rtol )
                   danl(mi) = max( rolf(mim) * s(mim), rtol )
                else
+c gaz 050320 added cden correction      
+c note that danl() usually is a derivative of anl() but at this point it is 
+c the water density. ( was used to save memory)   
+c dil follow a similiar logic                   
+                if(cden) then
                   danv(mi) = 0.
-                  danl(mi) = max( rolf(mim), rtol )
+                  danl(mi) = max(rolf_pure(mim) + cden_correction(mim),
+     &             rtol ) 
+                  dil(mi) = dil_pure(mi)*(danl(mi)/rolf_pure(mi))
+                else
+                  danv(mi) = 0.
+                  danl(mi) = max(rolf(mim), rtol )
+                endif
                end if
             end do
          else

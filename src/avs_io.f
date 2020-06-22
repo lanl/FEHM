@@ -188,7 +188,6 @@ c      write_avs_node_mat, write_avs_ucd_header
       use commeth
       use comwt, only : isconwt, col
       use davidi
-      use silo
 
       implicit none
 
@@ -247,9 +246,6 @@ C
       data icall /1/
       data num_cdata / 0 /, num_mdata / 0 /
       data io_err /0/
-      
-      silo_time = days
-      
       if (iogdkm .eq. 1) then
          head_mat_dual = 'mat_gdkm_head'
          head_sca_dual = 'sca_gdkm_head'
@@ -282,7 +278,7 @@ C
          allocate(dum(neq))
          dum=0.0d00
       endif
-      
+
       if (inj .eq. 0) then
 C
 C     Substitute file_prefix to find root of contour file name or if not
@@ -526,7 +522,6 @@ c====================================================================
 c   added altc to pass to write_avs_node_mat so avsx can get zone info
 c    PHS 8/11/2000
 c=====================================================================
-		 print *, "nmat = ", nmaterial
          if (nmaterial .ne. 0) then
             if (altc(1:3) .eq. 'avs' ) 
      &           call namefile1(lu,ioformat,avs_root,head_mat,
@@ -544,8 +539,6 @@ C No binary option
                   tmp_tail = trim(material_tail) // '.csv'
                else if (altc(1:4) .eq. 'avsx') then
                   tmp_tail = trim(material_tail) // '.avsx'
-               else if (altc(1:4) .eq. 'silo') then
-                  tmp_tail = trim(material_tail) // '.silo'
                else 
                   tmp_tail = trim(material_tail) // '.avs'
                end if
@@ -575,8 +568,6 @@ C No binary option
                   tmp_tail = trim(material_dual_tail) // '.csv'
                else if (altc(1:4) .eq. 'avsx') then
                   tmp_tail = trim(material_dual_tail) // '.avsx'
-               else if (altc(1:4) .eq. 'silo') then
-                  tmp_tail = trim(material_dual_tail) // '.silo'
                else
                   tmp_tail = trim(material_dual_tail) // '.avs'
                end if

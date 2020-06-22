@@ -158,6 +158,8 @@ c     Add boundary condition sources
                else
                   if (wflux_flag) 
      &                 sumboun(izone,ii) = sumboun(izone,ii) + sk(inode)
+c gaz debug 110219                  
+                  if(izone.eq.15) write(ierr,*) inode,sk(inode)
                   if (vflux_flag) sumboun(izone,iv) = 
      &                 sumboun(izone,iv) + (1.0-s_dum)*sk(inode)
                end if
@@ -449,11 +451,11 @@ c     &           sumboun(izone,iv) = 0.d0
          end do
       end if
 
- 1000 format ('Zone  (# nodes)   Source       Sink',
-     &           '         Net          Boundary      Water Mass',
+ 1000 format ('Zone   (#  nodes)       Source       Sink',
+     &           '         Net       Boundary     Water Mass',
      &       '    Avg Saturation' )
- 1045 format(1x,i4,' (',i7,')',1x,1p,4(1x,e12.5))
- 1046 format(1x,i4,' (',i6,')',2x,1p,5(1x,e12.5),4x,e12.5)
+ 1045 format(1x,i7,' (',i8,')',1x,1p,4(1x,e12.5))
+ 1046 format(1x,i7,' (',i8,')',1x,1p,5(1x,e12.5),4x,e12.5)
  1047 format('(g16.9, ', i3, '(a))')
  1050 format(4(g16.9, 1x), g16.9)
  1051 format(g16.9, 1x, a)

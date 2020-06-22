@@ -339,7 +339,7 @@ c     Write Z coordinate
             write(lu,200) trim(title(32)), trim(units(32))
          end if  	               
       else
-C--   altc is 'avsx', 'tec', 'sur', 'silo'
+C--   altc is 'avsx', 'tec', 'sur'
          tstring = ''
          if(altc(1:4) .eq. 'avsx') then
             write (formstring, 100) ' : '
@@ -347,7 +347,7 @@ C--   altc is 'avsx', 'tec', 'sur', 'silo'
          else if (altc(1:3) .eq. 'tec') then
             write (formstring, 300) 
             tstring2 = 'VARIABLES = '
-         else if (altc(1:3) .eq. 'sur' .or. altc(1:4) .eq. 'silo') then
+         else if (altc(1:3) .eq. 'sur') then
             write (formstring, 100) ', '
             tstring2 = 'node'
          end if

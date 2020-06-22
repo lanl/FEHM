@@ -165,7 +165,7 @@ c	PC Version
 C      use dfport
 C      use ifport
       implicit none
-      
+
       interface
          subroutine fehmn(method, state,in, out)
 C!DEC$ ATTRIBUTES c :: fehmn
@@ -196,7 +196,6 @@ c      ripfehm = 0
 c     Determine how many runs to perform
       call inmsim
 
-      
 c     Perform all runs
       do irun = 1, nsim
 
@@ -278,7 +277,7 @@ c       UNIX version
       else
          nsim = 1
       end if
-      
+
       return
       end subroutine inmsim
 

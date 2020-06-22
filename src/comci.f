@@ -322,6 +322,9 @@
       real*8, allocatable ::   danl(:) 
       real*8, allocatable ::   danv(:) 
       real*8, allocatable ::   dpcef(:)
+c gaz 050620  added pure water versions of rolf and dil  
+      real*8, allocatable ::   rolf_pure(:)  
+      real*8, allocatable ::   dil_pure(:) 
 ! allocatable storage for saved LU factors
       real*8, allocatable :: bsave(:)
       real*8, allocatable :: pivsave(:)

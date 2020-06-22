@@ -366,9 +366,8 @@ c      parameter(roc0 = 1.292864)
       real*8, allocatable :: drlfs0(:)
       real*8, allocatable :: rvf0(:)
       real*8, allocatable :: drvfs0(:)
-c gaz debug  050712    
-      mi = l
-      mi = cord(1,1)
+c gaz debug  042720   
+      mi = cord(1,1)+l+an(1)
       if(irdof.ne.13) then
          if(abs(iexrlp).ne.0.and.i_mem_rlp.eq.0) then
             i_mem_rlp=1
@@ -1108,6 +1107,19 @@ c gaz 121219 added permsd = here
                dqwp = 0.0d00
          else if(kq.eq.-22.and.irdof.eq.13) then
 c     make sure there is a deivative wrt P for ifree ne 0
+         else if(kq.eq.-101) then
+c     change specified pressure to head condition
+              permsd=abs(wellim(mi))
+              pflowd = pflow(mi) 
+              qwdis = permsd*(pl-pflowd)
+              if(abs(qwdis).gt.esk(mi)) then
+               pflow(mi) = qwdis/permsd + pl
+               qwdis = 0.0
+               dqwp = permsd
+              else
+               qwdis = permsd*(pl-pflowd)
+               dqwp = permsd
+              endif
          else if(kq.eq.2) then
             qwdis = qc(mi)
             qadis = esk(mi)
@@ -1192,8 +1204,10 @@ c     water density
          else
             pld=phi(mi)
          endif
+c gaz 042720 error fix    
          rol=rolref*(1.0+comw*(pld-pref))
          if(cden) rol= rol+cden_correction(mi)
+c         rol = rolf(mi)
          drolp=rcomd
          drols=0.0
 c     accumulation terms
@@ -1360,13 +1374,6 @@ c undergoing phase change
       implicit none
       integer iflg, mid, ii, i
       integer iphase_old, iphase_new
-C  SCHU add definition 01022020
-      real*8, allocatable :: s_prev(:)
-      real*8, allocatable :: phi_prev(:)
-      real*8, allocatable :: n_phase_nodes(:)
-      real*8, allocatable :: ieos_prev(:)
-      integer n_phase_ch
-
 c gaz notes 090719
 c add arrays to comdi    
 c pressure may decrease past 0.1 ; need starting pres for

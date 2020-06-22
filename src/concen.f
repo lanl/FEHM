@@ -304,8 +304,7 @@ c
 c hmon is 1 if heat and mass solution is active
 
 ! zvd 22-Jan-04 diskc and diskp are no longer called from this routine
-!               check for use of both trac and ptrk moved to scanin
-
+!               check for use of both trac and ptrk moved to scanin     
       if (ihf.ne.ihs .or. .not. compute_flow) then
          hmon=0
       else
@@ -337,7 +336,10 @@ c hmon is 1 if heat and mass solution is active
                call  csolve(hmon)
             endif
          else if ( iz .eq. 2 )  then
-            if ( ics .ne. icf ) then
+c gaz 033020 check for steady solution if transient
+c -----------------------------------------------------              
+c          if (isty.ne.0.and.isteady.ne.2) return             
+            if ( ics .ne. icf ) then                
                call  wrtcon(1)
             end if
          else if ( iz .eq. 5 )  then

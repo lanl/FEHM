@@ -349,6 +349,10 @@ c
 
                   rcss(mi) = rcss(mi)+cnsk(mi) * srmiml
                   rc_ss = rc_ss+cnsk(mi)*srmiml
+               else
+c gaz 031520
+                  rcss(mi) = rcss(mi)+cnsk_background(mi) * srmiml
+                  rc_ss = rc_ss+cnsk_background(mi)*srmiml       
 c
 c       ENDIF
 c

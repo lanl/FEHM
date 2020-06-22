@@ -430,8 +430,8 @@ c      rho1grav = 997.*9.81d-6
 c**** Deallocate printout information array for variable porosity model
 c**** if allocated and not a variable porosity problem
 c gaz debug 121319
-      j = sk(1)+ieos(1)
-      if (iporos .ne. -4) then
+      j = sk(1)+ieos(1)+ ps(1)+psini(1)+pci(1)
+       if (iporos .ne. -4) then
          if (allocated(nskw3)) deallocate(nskw3)
       endif
 c
@@ -1586,8 +1586,17 @@ c output map of active nodes
 !      endif
 c 
 c**** initalize concentration ****
-      if (iccen .ne. 0)  call concen (-1,0)
-
+      if (iccen .ne. 0)  then
+c gaz 050820 allocate and initialize 
+c pure water rolf and dil here
+       if(cden) then
+             if(.not.allocated(rolf_pure)) allocate(rolf_pure(n0)) 
+             if(.not.allocated(dil_pure)) allocate(dil_pure(n0)) 
+             rolf_pure(1:n0) = rolf(1:n0)
+             dil_pure(1:n0) = dil(1:n0)
+       endif      
+       call concen (-1,0)
+      endif
       call pest(1)
 
 ! Moved history file setup below zone volume calculations

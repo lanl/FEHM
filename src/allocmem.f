@@ -786,9 +786,12 @@ c     ***** COMMON Block fdd1 *****
       allocate(a1adfl(totcomalloc,totnum),a1adfv(totcomalloc,totnum),
      2     a2adfl(totcomalloc,totnum))
       allocate(a2adfv(totcomalloc,totnum),an(n7))
+c gaz 040120 added cnsk_background (background tracer inflow)  
       allocate(anl(n7),anlo(n7),anv(n7),betadfl(totcomalloc,totnum))
+      
       allocate(betadfv(totcomalloc,totnum),cm(totcomalloc),
-     2     cm0(totcomalloc),cnsk(n7),pcnsk(n7))
+     2     cm0(totcomalloc),cnsk(n7),pcnsk(n7),
+     3     cnsk_background(n7))
       allocate(henry_model(totcomalloc),hawwa(totcomalloc,5))
       allocate(a_henry(totcomalloc),dh_henry(totcomalloc))
       allocate(conc_read(totcomalloc))

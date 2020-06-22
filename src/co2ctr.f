@@ -610,7 +610,7 @@ c     The impedance, by default is set to 0.
 
             else
 c     
-c     read in source strength for noncon gas(kg/s)
+c     read in source strength for noncon gas(kg/s),air fraction, impendance
 c     
                default(1) = 0.0
                default(2) = 0.0
@@ -630,13 +630,17 @@ c
             end if
 
             macroread(2) = .TRUE.
-c
-            allocate (xairfl(n0))   
+c gaz 060820 new conditions
+c if aiped ne.0.0, then imped associated   with pflowa          
+            if(.not.allocated(xairfl)) allocate (xairfl(n0))   
+             xairfl = 0.0
             do i=1,n0
                if(qng(i).eq.default(1)) then
                   qng (i)=0.0
                elseif(qng(i).eq.0.0) then
                   qng(i)=1.d-30
+               else
+                  xairfl(i) = 1.0  
                endif
                if(aiped(i).eq.default(2)) then
                   wellima(i)=0.0

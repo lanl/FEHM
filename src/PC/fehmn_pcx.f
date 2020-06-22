@@ -531,7 +531,8 @@ c*** water table rise modification
       integer ntty_save
 
       real*8 rel_hum,qin,qin_ng,qin_h2o,qin_enth,enth_avg,pl_dum
-
+c gaz 050620 added function cden_correction
+      real*8 cden_corr, cden_correction
       save flowflag, ichk, tassem, tasii, tscounter,
      &     contr_riptot, tims_save, day_saverip, in3save,
      &     water_table_old, ntty_save
@@ -636,6 +637,9 @@ c**** allocate memory ****
          if(irun.eq.1) call allocmem
 c**** call data initialization routine ****
 c gaz debug 032318
+c gaz 032720 debug
+      ja = ps(1)+psini(1)
+      
          if(i.eq.-999) then
           i = node_model(1)
          endif
@@ -696,12 +700,19 @@ c**** call h2o_properties_interpolation_lookup_table GAZ 103115
          if(iout.ne.0) write(iout, 6200) nmfil(29)
          if(iptty.ne.0) write(iptty, 6200) nmfil(29)
         endif
-        if(iwater_table.ne.0) then
+        if(iwater_table.eq.1) then
          if(iout.ne.0) write(iout, 6300) nmfil(31)
          if(iptty.ne.0) write(iptty, 6300) nmfil(31)
+        else if(iwater_table.eq.2) then
+         if(iout.ne.0) write(iout, 6301) nmfil(31)
+         if(iptty.ne.0) write(iptty, 6301) nmfil(31) 
+c gaz 060820 can now set for rest of code         
+         iwater_table = 1
         endif
  6200 format(/,'>>> co2 property interpolation table -',3x, a100) 
- 6300 format(/,'>>> h2o property interpolation table -',3x, a100)   
+ 6300 format(/,'>>> h2o property table (from control file) -',3x, a100) 
+ 6301 format
+     &    (/,'>>> h2o property table (from data file(eos)) -',3x, a100)       
 c**** read and write data ****
          in3save = in(3)
          if(in(3).eq.0) then
@@ -847,8 +858,11 @@ c
             qtote = 0.0
             qtc = 0.0
             qtotc = 0.0
+            am0 = amass
             amass = 0.0
+            astmo = asteam
             asteam = 0.0
+            ame = aener
             aener = 0.0
             toutfl = 0.0
             teoutf = 0.0
@@ -1150,7 +1164,6 @@ c
                nphase_gas = 0
                nphase_sc = 0
                do i=1,n
-c gaz  081219 eliminated ps < 0 from phase count             
                 if(ps(i).gt.0.0d0) then
                   if(ieos(i).eq.1) nphase_liq = nphase_liq + 1
                   if(ieos(i).eq.2) nphase_2 = nphase_2 + 1
@@ -1339,7 +1352,14 @@ c
 c  save old ps and pnx
 c
             if(isalt.ne.0) call saltctr(3,0,0.0d00,0.0d00) 
-c            
+c 
+            if(cden) then
+             do mi = 1,n0
+              cden_corr = cden_correction(mi)
+              rolf_pure(mi) = rolf(mi)- cden_corr
+              dil_pure(mi) = dil(mi)*(rolf_pure(mi)/rolf(mi))
+             enddo
+            endif
             call concen (1,tscounter)
 c
 c average and updates new porosities and perms if necessary
