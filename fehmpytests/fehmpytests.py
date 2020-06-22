@@ -26,11 +26,11 @@ import shutil
 from tpl_write import tpl_write
 
 try:
-    sys.path.insert(0,os.path.join('..','pyfehm'))
-    import fdata
+    #sys.path.insert(0,os.path.join('pyfehm'))
+    import fpost
 except ImportError as err:
-    print 'ERROR: Unable to import pyfehm fpost module'
-    print err
+    print('ERROR: Unable to import pyfehm fpost module')
+    print(err)
     os._exit(0)
 
 #Suppresses tracebacks
@@ -688,9 +688,9 @@ class fehmTest(unittest.TestCase):
        
         def contour_case():      
             #Find the difference between the old and new
-            f_old = fdata.fcontour(os.path.join('..','compare','*')+subcase+'.'+filetype)
-            f_new = fdata.fcontour('*'+subcase+'.'+filetype)
-            f_dif = fdata.fdiff(f_new, f_old)
+            f_old = fpost.fcontour(os.path.join('..','compare','*')+subcase+'.'+filetype)
+            f_new = fpost.fcontour('*'+subcase+'.'+filetype)
+            f_dif = fpost.fdiff(f_new, f_old)
                 
             msg = 'Incorrect %s at time %s.'
             
@@ -710,10 +710,10 @@ class fehmTest(unittest.TestCase):
             test_flag = False
             for t in times: 
                 #Its possible some times do not have all variables in f_dif.
-                for v in np.intersect1d(variables, f_dif[t].keys()):
+                for v in np.intersect1d(variables, list(f_dif[t].keys())):
                     #Measure the difference into a single quantity.
-                    f_dif[t][v] = map(abs, f_dif[t][v])
-                    f_old[t][v] = map(abs, f_old[t][v])
+                    f_dif[t][v] = list(map(abs, f_dif[t][v]))
+                    f_old[t][v] = list(map(abs, f_old[t][v]))
                     difference = { 
                         'max_difference': max(f_dif[t][v]),
                         'rms_difference': np.sqrt(np.mean(f_dif[t][v])), 
@@ -740,9 +740,9 @@ class fehmTest(unittest.TestCase):
                 self.fail("Missing common nodes in compare and output contour files, no test performed")
         def history_case():
             #Find the difference between the old and new
-            f_old = fdata.fhistory(os.path.join('..','compare','*')+subcase+filetype) 
-            f_new = fdata.fhistory('*'+subcase+filetype)
-            f_dif = fdata.fdiff(f_new, f_old)
+            f_old = fpost.fhistory(os.path.join('..','compare','*')+subcase+filetype) 
+            f_new = fpost.fhistory('*'+subcase+filetype)
+            f_dif = fpost.fdiff(f_new, f_old)
 
             #If no pre-specified variables, grab them from f_dif.         
             if len(values['variables']) == 0:
@@ -761,8 +761,8 @@ class fehmTest(unittest.TestCase):
             test_flag = False
             for v in variables:
                 #Its possible some variables do not have all nodes in f_dif.
-                for n in np.intersect1d(nodes, f_dif[v].keys()):  
-                    f_dif[v][n] = map(abs, f_dif[v][n])
+                for n in np.intersect1d(nodes, list(f_dif[v].keys())):  
+                    f_dif[v][n] = list(map(abs, f_dif[v][n]))
                     difference = { 
                         'max_difference': max(f_dif[v][n]),
                         'rms_difference': np.sqrt(np.mean(f_dif[v][n])), 
@@ -790,9 +790,9 @@ class fehmTest(unittest.TestCase):
                     
         def tracer_case():
             #Find the difference between the old and new
-            f_old = fdata.ftracer(os.path.join('..','compare','*')+subcase+filetype) 
-            f_new = fdata.ftracer('*'+subcase+filetype)
-            f_dif = fdata.fdiff(f_new, f_old)
+            f_old = fpost.ftracer(os.path.join('..','compare','*')+subcase+filetype) 
+            f_new = fpost.ftracer('*'+subcase+filetype)
+            f_dif = fpost.fdiff(f_new, f_old)
             
             #If no pre-specified variables, grab them from f_dif.         
             if len(values['variables']) == 0:
@@ -812,9 +812,9 @@ class fehmTest(unittest.TestCase):
             test_flag = False
             for v in variables:
                 #Its possible some variables do not have all nodes in f_dif.
-                for n in np.intersect1d(nodes, f_dif[v].keys()):
+                for n in np.intersect1d(nodes, list(f_dif[v].keys())):
                     #Measure the difference into a single quantity.
-                    f_dif[v][n] = map(abs, f_dif[v][n])
+                    f_dif[v][n] = list(map(abs, f_dif[v][n]))
                     difference = { 
                         'max_difference': max(f_dif[v][n]),
                         'rms_difference': np.sqrt(np.mean(f_dif[v][n])), 
@@ -844,9 +844,9 @@ class fehmTest(unittest.TestCase):
             #Find difference between old and new file assume 1 file per subcase.
             old_filename = glob.glob(os.path.join('..','compare','*')+subcase+filetype)[0]
             new_filename = glob.glob('*'+subcase+filetype)[0]
-            f_old = fdata.foutput(old_filename)
-            f_new = fdata.foutput(new_filename)
-            f_dif = fdata.fdiff(f_new, f_old)
+            f_old = fpost.foutput(old_filename)
+            f_new = fpost.foutput(new_filename)
+            f_dif = fpost.fdiff(f_new, f_old)
             
             #If no pre-specified variables, grab them from f_dif.         
             if len(values['variables']) == 0:
@@ -871,10 +871,10 @@ class fehmTest(unittest.TestCase):
             #Check the node at each component for significant differences.   
             test_flag = False
             for c in components:
-                for n in np.intersect1d(nodes, f_dif.node[c].keys()):
-                    for v in np.intersect1d(variables, f_dif.node[c][n].keys()):
+                for n in np.intersect1d(nodes, list(f_dif.node[c].keys())):
+                    for v in np.intersect1d(variables, list(f_dif.node[c][n].keys())):
                         #Measure the difference into a single quantity.
-                        fdiff_array = map(abs, f_dif.node[c][n][v])
+                        fdiff_array = list(map(abs, f_dif.node[c][n][v]))
                         difference = { 
                             'max_difference': max(fdiff_array),
                             'rms_difference': np.sqrt(np.mean(fdiff_array)),
@@ -886,7 +886,7 @@ class fehmTest(unittest.TestCase):
                         }[test_measure]
                         try:
                             self.assertTrue(difference < mxerr, msg%(v,c,n))
-                    	    test_flag = True
+                            test_flag = True
                         except AssertionError as e:
                             #Write to fail log if switch is on.
                             if self.log:
@@ -904,9 +904,9 @@ class fehmTest(unittest.TestCase):
         
         def ptrack_case():
             #Find the difference between the old and new
-            f_old = fdata.fptrk(os.path.join('..','compare','*')+subcase+filetype)
-            f_new = fdata.fptrk('*'+subcase+filetype)  
-            f_dif = fdata.fdiff(f_new, f_old)
+            f_old = fpost.fptrk(os.path.join('..','compare','*')+subcase+filetype)
+            f_new = fpost.fptrk('*'+subcase+filetype)  
+            f_dif = fpost.fdiff(f_new, f_old)
             
             msg = 'Incorrect %s.'
             
@@ -919,7 +919,7 @@ class fehmTest(unittest.TestCase):
             test_flag = False
             for v in variables:
                 #Measure the difference into a single quantity.
-                fdiff_array = map(abs, f_dif[v])
+                fdiff_array = list(map(abs, f_dif[v]))
                 difference = { 
                     'max_difference': max(fdiff_array),
                     'rms_difference': np.sqrt(np.mean(fdiff_array)),
@@ -1024,7 +1024,7 @@ def suite(mode, test_case, log):
     
     #Default mode is admin for now. Should it be different?
     if mode == 'admin' or mode == 'default':
-        suite.addTest(fehmTest('saltvcon', log))
+        #suite.addTest(fehmTest('saltvcon', log))
         suite.addTest(fehmTest('dissolution', log))
         suite.addTest(fehmTest('salt_perm_poro', log))
         suite.addTest(fehmTest('avdonin', log))
@@ -1039,7 +1039,7 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('sorption', log))
         suite.addTest(fehmTest('baro_vel', log))
         suite.addTest(fehmTest('cellbased', log))
-        suite.addTest(fehmTest('heat_pipe', log))
+        #suite.addTest(fehmTest('heat_pipe', log))
         suite.addTest(fehmTest('toronyi', log))
         suite.addTest(fehmTest('colloid_filtration', log))
         suite.addTest(fehmTest('mptr', log))

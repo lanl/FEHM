@@ -7,7 +7,7 @@ stori: ../input/1dgrid.stor
 error: crushed.err
 check: crushed.chk
 
-none
+all
 
 
 
