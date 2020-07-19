@@ -21,6 +21,10 @@ A negative heat flow indicates heat flow into the reservoir.
 |                |        |         | | :math:`Q_H = ABS(QFLXM) \cdot (S_l - QFLUX)` (MW).                       |
 +----------------+--------+---------+----------------------------------------------------------------------------+
 
+.. note::
+  
+  If the parameter ``QFLUX`` is set to -999, there will be fixed temperature from restart.
+
 The following is an example of ``hflx``. In this example, at each node from 401 to 410,
 a heat flow of 0.001 MW is being injected into the model.
 
@@ -29,5 +33,11 @@ a heat flow of 0.001 MW is being injected into the model.
 +------+-----+---+--------+-----+
 | 401  | 410 | 1 | -0.001 | 0.0 |
 +------+-----+---+--------+-----+
-|      |     |   |        |     |
+
+In this example, ``QFLUX`` is set to -999 (see note above).
+
++------+-----+---+--------+-----+
+| hflx |     |   |        |     |
++------+-----+---+--------+-----+
+| -1   | 0   | 0 | -999   | 1e6 |
 +------+-----+---+--------+-----+
