@@ -286,7 +286,7 @@ c gaz read (inpt,*) maxit, epe, north
       if (agrav .gt. 3.0) agrav = 3.0
       if (abs(agrav) .gt. zero_t) then
          igrav = agrav
-         grav = 9.81
+         grav = 3.711 !9.81(earth) changed to Mars grav
       else
          igrav = 3
          grav = 0.0

@@ -509,12 +509,13 @@
             case (1)
                write(ishisfa, 6005) verno, jdate, jtime
             end select
-          else
-           if(iout.ne.0) write (iout,*) 
-     &      '>>>> not output for gas src/sink <<<<'
-           if(iptty.ne.0) write (iptty,*) 
-     &      '>>>> not output for gas src/sink <<<<'         
           endif 
+c          else
+c           if(iout.ne.0) write (iout,*) 
+c     &      '>>>> not output for gas src/sink <<<<'
+c           if(iptty.ne.0) write (iptty,*) 
+c     &      '>>>> not output for gas src/sink <<<<'         
+c          endif 
          case ('kgs ', 'KGS ', 'flo', 'FLO')
 ! Output flow in kg/s
             fname =  root(1:iroot) // '_flow' // hissfx
@@ -524,6 +525,7 @@
             case (0)
                write(ishisf, 6000) verno, jdate, jtime, trim(wdd)
             case (1)
+c 6005 is for tec output (case 1; form_flag-=1)
                write(ishisf, 6005) verno, jdate, jtime
             end select
          case ('ent', 'ENT')
