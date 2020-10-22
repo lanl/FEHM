@@ -28,7 +28,7 @@
 
 # Compiletime variables
 FC = gfortran
-EXE = xfehm_v3.3.1
+EXE = xfehm_v3.3.1_mars
 SRCDIR = ./
 PREFIX = /usr/local/bin
 
