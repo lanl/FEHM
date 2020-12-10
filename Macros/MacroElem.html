@@ -1,0 +1,427 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>elem &mdash; FEHM 3.3.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="fdm" href="MacroFdm.html" />
+    <link rel="prev" title="coor" href="MacroCoor.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> FEHM
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.3.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../SystemInterface.html">System Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../SystemInterface.html#installation-instructions">Installation Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DataFiles.html">Data Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DefinitionsAndAcronyms.html">Definitions and Acronyms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ExamplesAndSamples.html">Examples and Sample Problems</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Program Specifications</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../Macros.html">Macros</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Macros.html#macros-by-problem-type">Macros by Problem Type</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../Macros.html#required-macros">Required Macros</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="MacroAnpe.html"><code class="docutils literal notranslate"><span class="pre">anpe</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroBoun.html"><code class="docutils literal notranslate"><span class="pre">boun</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroCond.html"><code class="docutils literal notranslate"><span class="pre">cond</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroCoor.html"><code class="docutils literal notranslate"><span class="pre">coor</span></code></a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">elem</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFdm.html"><code class="docutils literal notranslate"><span class="pre">fdm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFlow.html"><code class="docutils literal notranslate"><span class="pre">flow</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFtsc.html"><code class="docutils literal notranslate"><span class="pre">ftsc</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroHcon.html"><code class="docutils literal notranslate"><span class="pre">hcon</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroHyco.html"><code class="docutils literal notranslate"><span class="pre">hyco</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroInit.html"><code class="docutils literal notranslate"><span class="pre">init</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroIvfc.html"><code class="docutils literal notranslate"><span class="pre">ivfc</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroPerm.html"><code class="docutils literal notranslate"><span class="pre">perm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroPres.html"><code class="docutils literal notranslate"><span class="pre">pres</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRock.html"><code class="docutils literal notranslate"><span class="pre">rock</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroStop.html"><code class="docutils literal notranslate"><span class="pre">stop</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroTime.html"><code class="docutils literal notranslate"><span class="pre">time</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Macros.html#optional-macros">Optional Macros</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../InputData.html">Input Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Output.html">Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ProgramConsiderations.html">Program Considerations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">References &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../References.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Support.html">User Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ReleaseNotes/release_notes.html">Release Notes</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">FEHM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../Macros.html">Macros</a> &raquo;</li>
+        
+      <li><code class="docutils literal notranslate"><span class="pre">elem</span></code></li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/Macros/MacroElem.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="elem">
+<h1><code class="docutils literal notranslate"><span class="pre">elem</span></code><a class="headerlink" href="#elem" title="Permalink to this headline">¶</a></h1>
+<p>Element connectivity data. These data are usually created by a mesh generation program, then cut and copied into the input file or a separate geometry data input file.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><code class="docutils literal notranslate"><span class="pre">elem</span></code> is required if macro <code class="docutils literal notranslate"><span class="pre">fdm</span></code> is not used.</p>
+</div>
+<ul class="simple">
+<li>Group 1 - <code class="docutils literal notranslate"><span class="pre">NS</span></code>, <code class="docutils literal notranslate"><span class="pre">NEI</span></code></li>
+<li>Group 2 - <code class="docutils literal notranslate"><span class="pre">MB</span></code>, <code class="docutils literal notranslate"><span class="pre">NELM</span> <span class="pre">(1)</span></code>, <code class="docutils literal notranslate"><span class="pre">NELM</span> <span class="pre">(2)</span></code>, …, <code class="docutils literal notranslate"><span class="pre">NELM</span> <span class="pre">(NS)</span></code></li>
+</ul>
+<p>If <span class="math notranslate nohighlight">\(NS &lt; 0\)</span> then <span class="math notranslate nohighlight">\(ABS(NS)\)</span> is interpreted as the number of nodes per element.
+<span class="math notranslate nohighlight">\(NS &lt; 0\)</span> signals the code to make rectangles (or bricks in three dimensions)
+a sum of triangles (or tetrahedrals). This provides more stability in nonlinear problems
+with a distorted mesh. <a class="reference external" href="Macro39151.html">See Elements available with FEHM in 2-D and 3-D problems showing
+nodal numbering convention.</a> shows available element types
+and the nodal numbering convention. To end the control section a blank line is entered.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="7%" />
+<col width="4%" />
+<col width="88%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Input Variable</td>
+<td>Format</td>
+<td>Description</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">NS</span></code></td>
+<td>integer</td>
+<td>Number of nodes per element.</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">NEI</span></code></td>
+<td>integer</td>
+<td>Number of elements</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">MB</span></code></td>
+<td>integer</td>
+<td>Element number. <code class="docutils literal notranslate"><span class="pre">If</span> <span class="pre">MB</span> <span class="pre">&lt;</span> <span class="pre">0</span></code> then the difference between the absolute value of MB and the previous absolute value of MB is used to generate intermediate values by interpolation in the code.</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">NELM</span> <span class="pre">(1)</span></code></td>
+<td>integer</td>
+<td>First node of element MB</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">NELM</span> <span class="pre">(2)</span></code></td>
+<td>integer</td>
+<td>Second node of element MB</td>
+</tr>
+<tr class="row-odd"><td colspan="3">…</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">NELM</span> <span class="pre">(NS)</span></code></td>
+<td>integer</td>
+<td>Last node of element MB</td>
+</tr>
+</tbody>
+</table>
+<p>The following is an example of <strong>elem</strong>. In this example there are 4 nodes per element,
+i.e., the elements are 2-dimensional quadrilaterals. There are a total of
+117 elements in the model, element number 1 is defined by nodes 15, 16, 2, and 1,
+element number 2 is defined by nodes 16, 17, 3 and2, and so on.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="23%" />
+<col width="19%" />
+<col width="19%" />
+<col width="19%" />
+<col width="19%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>elem</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>4</td>
+<td>117</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>15</td>
+<td>16</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>2</td>
+<td>16</td>
+<td>17</td>
+<td>3</td>
+<td>2</td>
+</tr>
+<tr class="row-odd"><td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+</tr>
+<tr class="row-even"><td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+</tr>
+<tr class="row-odd"><td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+</tr>
+<tr class="row-even"><td>10</td>
+<td>24</td>
+<td>25</td>
+<td>11</td>
+<td>10</td>
+</tr>
+<tr class="row-odd"><td>11</td>
+<td>25</td>
+<td>26</td>
+<td>12</td>
+<td>11</td>
+</tr>
+<tr class="row-even"><td>12</td>
+<td>26</td>
+<td>27</td>
+<td>13</td>
+<td>12</td>
+</tr>
+<tr class="row-odd"><td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+</tr>
+<tr class="row-even"><td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+</tr>
+<tr class="row-odd"><td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+</tr>
+<tr class="row-even"><td>116</td>
+<td>138</td>
+<td>139</td>
+<td>125</td>
+<td>124</td>
+</tr>
+<tr class="row-odd"><td>117</td>
+<td>139</td>
+<td>140</td>
+<td>126</td>
+<td>125</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="MacroFdm.html" class="btn btn-neutral float-right" title="fdm" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="MacroCoor.html" class="btn btn-neutral float-left" title="coor" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Los Alamos National Laboratory
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,403 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>cflx &mdash; FEHM 3.3.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="cgdp" href="MacroCgdp.html" />
+    <link rel="prev" title="cden" href="MacroCden.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> FEHM
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.3.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../SystemInterface.html">System Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../SystemInterface.html#installation-instructions">Installation Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DataFiles.html">Data Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DefinitionsAndAcronyms.html">Definitions and Acronyms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ExamplesAndSamples.html">Examples and Sample Problems</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Program Specifications</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../Macros.html">Macros</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Macros.html#macros-by-problem-type">Macros by Problem Type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Macros.html#required-macros">Required Macros</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../Macros.html#optional-macros">Optional Macros</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="MacroAdif.html"><code class="docutils literal notranslate"><span class="pre">adif</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroAirwater.html"><code class="docutils literal notranslate"><span class="pre">airwater</span> <span class="pre">or</span> <span class="pre">air</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroAlti.html"><code class="docutils literal notranslate"><span class="pre">alta</span></code> (Deprecated)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroBous.html"><code class="docutils literal notranslate"><span class="pre">bous</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroCarb.html"><code class="docutils literal notranslate"><span class="pre">carb</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroCden.html"><code class="docutils literal notranslate"><span class="pre">cden</span></code></a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">cflx</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroCgdp.html"><code class="docutils literal notranslate"><span class="pre">cgdp</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroChea.html"><code class="docutils literal notranslate"><span class="pre">chea</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroConn.html"><code class="docutils literal notranslate"><span class="pre">conn</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroCont.html"><code class="docutils literal notranslate"><span class="pre">cont</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroConv.html"><code class="docutils literal notranslate"><span class="pre">conv</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroCtrl.html"><code class="docutils literal notranslate"><span class="pre">ctrl</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroDpdp.html"><code class="docutils literal notranslate"><span class="pre">dpdp</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroDual.html"><code class="docutils literal notranslate"><span class="pre">dual</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroDvel.html"><code class="docutils literal notranslate"><span class="pre">dvel</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroEos.html"><code class="docutils literal notranslate"><span class="pre">eos</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroEvap.html"><code class="docutils literal notranslate"><span class="pre">evap</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroExrl.html"><code class="docutils literal notranslate"><span class="pre">exrl</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFinv.html"><code class="docutils literal notranslate"><span class="pre">finv</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFlgh.html"><code class="docutils literal notranslate"><span class="pre">flgh</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFlo2.html"><code class="docutils literal notranslate"><span class="pre">flo2</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFlo3.html"><code class="docutils literal notranslate"><span class="pre">flo3</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFloa.html"><code class="docutils literal notranslate"><span class="pre">floa</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFlwt.html"><code class="docutils literal notranslate"><span class="pre">flwt</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFlxn.html"><code class="docutils literal notranslate"><span class="pre">flxn</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFlxo.html"><code class="docutils literal notranslate"><span class="pre">flxo</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFlxz.html"><code class="docutils literal notranslate"><span class="pre">flxz</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFper.html"><code class="docutils literal notranslate"><span class="pre">fper</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFrlp.html"><code class="docutils literal notranslate"><span class="pre">frlp</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroGdkm.html"><code class="docutils literal notranslate"><span class="pre">gdkm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroGdpm.html"><code class="docutils literal notranslate"><span class="pre">gdpm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroGrad.html"><code class="docutils literal notranslate"><span class="pre">grad</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroHead.html"><code class="docutils literal notranslate"><span class="pre">head</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroHflx.html"><code class="docutils literal notranslate"><span class="pre">hflx</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroHist.html"><code class="docutils literal notranslate"><span class="pre">hist</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroIce.html"><code class="docutils literal notranslate"><span class="pre">ice</span></code> or <code class="docutils literal notranslate"><span class="pre">meth</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroIntg.html"><code class="docutils literal notranslate"><span class="pre">intg</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroImex.html"><code class="docutils literal notranslate"><span class="pre">imex</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroImpf.html"><code class="docutils literal notranslate"><span class="pre">impf</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroIsot.html"><code class="docutils literal notranslate"><span class="pre">isot</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroIter.html"><code class="docutils literal notranslate"><span class="pre">iter</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroItfc.html"><code class="docutils literal notranslate"><span class="pre">itfc</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroIttm.html"><code class="docutils literal notranslate"><span class="pre">lttm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroItup.html"><code class="docutils literal notranslate"><span class="pre">itup</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroIupk.html"><code class="docutils literal notranslate"><span class="pre">iupk</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroMdnode.html"><code class="docutils literal notranslate"><span class="pre">mdnode</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroMptr.html"><code class="docutils literal notranslate"><span class="pre">mptr</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroNfinv.html"><code class="docutils literal notranslate"><span class="pre">nfinv</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroNgas.html"><code class="docutils literal notranslate"><span class="pre">ngas</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroNobr.html"><code class="docutils literal notranslate"><span class="pre">nobr</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroNod2.html"><code class="docutils literal notranslate"><span class="pre">nod2</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroNod3.html"><code class="docutils literal notranslate"><span class="pre">nod3</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroNode.html"><code class="docutils literal notranslate"><span class="pre">node</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroNrst.html"><code class="docutils literal notranslate"><span class="pre">nrst</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroPara.html"><code class="docutils literal notranslate"><span class="pre">para</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroPest.html"><code class="docutils literal notranslate"><span class="pre">pest</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroPhys.html"><code class="docutils literal notranslate"><span class="pre">phys</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroPpor.html"><code class="docutils literal notranslate"><span class="pre">ppor</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroPtrk.html"><code class="docutils literal notranslate"><span class="pre">ptrk</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRenu.html"><code class="docutils literal notranslate"><span class="pre">renu</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRest.html"><code class="docutils literal notranslate"><span class="pre">rest</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRflo.html"><code class="docutils literal notranslate"><span class="pre">rflo</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRflx.html"><code class="docutils literal notranslate"><span class="pre">rlfx</span></code> (Deprecated)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRich.html"><code class="docutils literal notranslate"><span class="pre">rich</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRive.html"><code class="docutils literal notranslate"><span class="pre">rive</span></code> or <code class="docutils literal notranslate"><span class="pre">well</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRlp.html"><code class="docutils literal notranslate"><span class="pre">rlp</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRlpm.html"><code class="docutils literal notranslate"><span class="pre">rlpm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRxn.html"><code class="docutils literal notranslate"><span class="pre">rxn</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroSol.html"><code class="docutils literal notranslate"><span class="pre">sol</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroSptr.html"><code class="docutils literal notranslate"><span class="pre">sptr</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroStea.html"><code class="docutils literal notranslate"><span class="pre">stea</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroStrs.html"><code class="docutils literal notranslate"><span class="pre">strs</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroSubm.html"><code class="docutils literal notranslate"><span class="pre">subm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroSvar.html"><code class="docutils literal notranslate"><span class="pre">svar</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroSzna.html"><code class="docutils literal notranslate"><span class="pre">szna</span> <span class="pre">or</span> <span class="pre">napl</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroText.html"><code class="docutils literal notranslate"><span class="pre">text</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroThic.html"><code class="docutils literal notranslate"><span class="pre">thic</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroTrac.html"><code class="docutils literal notranslate"><span class="pre">trac</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroTrxn.html"><code class="docutils literal notranslate"><span class="pre">trxn</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroUser.html"><code class="docutils literal notranslate"><span class="pre">user</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroVapl.html"><code class="docutils literal notranslate"><span class="pre">vap</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroVbou.html"><code class="docutils literal notranslate"><span class="pre">vbou</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroVcon.html"><code class="docutils literal notranslate"><span class="pre">vcon</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroWeli.html"><code class="docutils literal notranslate"><span class="pre">weli</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroWflo.html"><code class="docutils literal notranslate"><span class="pre">wflo</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroWgtu.html"><code class="docutils literal notranslate"><span class="pre">wgtu</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroWtsi.html"><code class="docutils literal notranslate"><span class="pre">wtsi</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroZeol.html"><code class="docutils literal notranslate"><span class="pre">zeol</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroZneg.html"><code class="docutils literal notranslate"><span class="pre">zneg</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroZone.html"><code class="docutils literal notranslate"><span class="pre">zone</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroZonn.html"><code class="docutils literal notranslate"><span class="pre">zonn</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../InputData.html">Input Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Output.html">Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ProgramConsiderations.html">Program Considerations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">References &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../References.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Support.html">User Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ReleaseNotes/release_notes.html">Release Notes</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">FEHM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../Macros.html">Macros</a> &raquo;</li>
+        
+      <li><code class="docutils literal notranslate"><span class="pre">cflx</span></code></li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/Macros/MacroCflx.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="cflx">
+<h1><code class="docutils literal notranslate"><span class="pre">cflx</span></code><a class="headerlink" href="#cflx" title="Permalink to this headline">¶</a></h1>
+<p>Total moles of liquid solute moving through a zone are output by choosing this control statement. Vapor solute molar flows are currently not available. When this macro is invoked, the following output is given at every solute time step:</p>
+<ul class="simple">
+<li>The sum of all solute source flow rates for each zone</li>
+<li>The sum of all solute sink rates for each zone</li>
+<li>The sum of all solute entering each zone</li>
+<li>The sum of all solute leaving each zone</li>
+<li>The net source/sink (boundary) solute flow for each zone</li>
+</ul>
+<p>The following values can be included on the macro line to specify which solute flows should be output:</p>
+<ul class="simple">
+<li>1 (source)</li>
+<li>2 (sink)</li>
+<li>3 (netin)</li>
+<li>4 (netout)</li>
+<li>5 (boundary)</li>
+</ul>
+<p>The default is to output all values.</p>
+<p>Zones must be defined using macro zone prior to using this macro.</p>
+<p>Group 1 - <code class="docutils literal notranslate"><span class="pre">CFLXZ</span></code></p>
+<p>Group 2 - <code class="docutils literal notranslate"><span class="pre">ICFLXZ(I),</span> <span class="pre">I</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">CFLXZ</span></code></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="9%" />
+<col width="76%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Input Variable</th>
+<th class="head">Format</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>CFLXZ</td>
+<td>integer</td>
+<td>Number of zones for which output for solute flow through the zone iswritten.</td>
+</tr>
+<tr class="row-odd"><td>ICFLXZ</td>
+<td>integer</td>
+<td>Zone numbers for which solute flow output is written (NFLXZ zones)</td>
+</tr>
+</tbody>
+</table>
+<p>The following is an example of cflx. In this example solute flow through zones 1, 6 and 10 will be output.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="47%" />
+<col width="16%" />
+<col width="16%" />
+<col width="21%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head" colspan="4">cflx</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>CFLXZ</td>
+<td colspan="3">3</td>
+</tr>
+<tr class="row-odd"><td>ICFLXZ</td>
+<td>1</td>
+<td>6</td>
+<td>10</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="MacroCgdp.html" class="btn btn-neutral float-right" title="cgdp" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="MacroCden.html" class="btn btn-neutral float-left" title="cden" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Los Alamos National Laboratory
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

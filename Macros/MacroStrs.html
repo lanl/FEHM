@@ -1,0 +1,835 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>strs &mdash; FEHM 3.3.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="subm" href="MacroSubm.html" />
+    <link rel="prev" title="stea" href="MacroStea.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> FEHM
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.3.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../SystemInterface.html">System Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../SystemInterface.html#installation-instructions">Installation Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DataFiles.html">Data Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DefinitionsAndAcronyms.html">Definitions and Acronyms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ExamplesAndSamples.html">Examples and Sample Problems</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Program Specifications</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../Macros.html">Macros</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Macros.html#macros-by-problem-type">Macros by Problem Type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Macros.html#required-macros">Required Macros</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../Macros.html#optional-macros">Optional Macros</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="MacroAdif.html"><code class="docutils literal notranslate"><span class="pre">adif</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroAirwater.html"><code class="docutils literal notranslate"><span class="pre">airwater</span> <span class="pre">or</span> <span class="pre">air</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroAlti.html"><code class="docutils literal notranslate"><span class="pre">alta</span></code> (Deprecated)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroBous.html"><code class="docutils literal notranslate"><span class="pre">bous</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroCarb.html"><code class="docutils literal notranslate"><span class="pre">carb</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroCden.html"><code class="docutils literal notranslate"><span class="pre">cden</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroCflx.html"><code class="docutils literal notranslate"><span class="pre">cflx</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroCgdp.html"><code class="docutils literal notranslate"><span class="pre">cgdp</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroChea.html"><code class="docutils literal notranslate"><span class="pre">chea</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroConn.html"><code class="docutils literal notranslate"><span class="pre">conn</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroCont.html"><code class="docutils literal notranslate"><span class="pre">cont</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroConv.html"><code class="docutils literal notranslate"><span class="pre">conv</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroCtrl.html"><code class="docutils literal notranslate"><span class="pre">ctrl</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroDpdp.html"><code class="docutils literal notranslate"><span class="pre">dpdp</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroDual.html"><code class="docutils literal notranslate"><span class="pre">dual</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroDvel.html"><code class="docutils literal notranslate"><span class="pre">dvel</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroEos.html"><code class="docutils literal notranslate"><span class="pre">eos</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroEvap.html"><code class="docutils literal notranslate"><span class="pre">evap</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroExrl.html"><code class="docutils literal notranslate"><span class="pre">exrl</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFinv.html"><code class="docutils literal notranslate"><span class="pre">finv</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFlgh.html"><code class="docutils literal notranslate"><span class="pre">flgh</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFlo2.html"><code class="docutils literal notranslate"><span class="pre">flo2</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFlo3.html"><code class="docutils literal notranslate"><span class="pre">flo3</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFloa.html"><code class="docutils literal notranslate"><span class="pre">floa</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFlwt.html"><code class="docutils literal notranslate"><span class="pre">flwt</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFlxn.html"><code class="docutils literal notranslate"><span class="pre">flxn</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFlxo.html"><code class="docutils literal notranslate"><span class="pre">flxo</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFlxz.html"><code class="docutils literal notranslate"><span class="pre">flxz</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFper.html"><code class="docutils literal notranslate"><span class="pre">fper</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFrlp.html"><code class="docutils literal notranslate"><span class="pre">frlp</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroGdkm.html"><code class="docutils literal notranslate"><span class="pre">gdkm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroGdpm.html"><code class="docutils literal notranslate"><span class="pre">gdpm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroGrad.html"><code class="docutils literal notranslate"><span class="pre">grad</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroHead.html"><code class="docutils literal notranslate"><span class="pre">head</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroHflx.html"><code class="docutils literal notranslate"><span class="pre">hflx</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroHist.html"><code class="docutils literal notranslate"><span class="pre">hist</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroIce.html"><code class="docutils literal notranslate"><span class="pre">ice</span></code> or <code class="docutils literal notranslate"><span class="pre">meth</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroIntg.html"><code class="docutils literal notranslate"><span class="pre">intg</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroImex.html"><code class="docutils literal notranslate"><span class="pre">imex</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroImpf.html"><code class="docutils literal notranslate"><span class="pre">impf</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroIsot.html"><code class="docutils literal notranslate"><span class="pre">isot</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroIter.html"><code class="docutils literal notranslate"><span class="pre">iter</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroItfc.html"><code class="docutils literal notranslate"><span class="pre">itfc</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroIttm.html"><code class="docutils literal notranslate"><span class="pre">lttm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroItup.html"><code class="docutils literal notranslate"><span class="pre">itup</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroIupk.html"><code class="docutils literal notranslate"><span class="pre">iupk</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroMdnode.html"><code class="docutils literal notranslate"><span class="pre">mdnode</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroMptr.html"><code class="docutils literal notranslate"><span class="pre">mptr</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroNfinv.html"><code class="docutils literal notranslate"><span class="pre">nfinv</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroNgas.html"><code class="docutils literal notranslate"><span class="pre">ngas</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroNobr.html"><code class="docutils literal notranslate"><span class="pre">nobr</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroNod2.html"><code class="docutils literal notranslate"><span class="pre">nod2</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroNod3.html"><code class="docutils literal notranslate"><span class="pre">nod3</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroNode.html"><code class="docutils literal notranslate"><span class="pre">node</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroNrst.html"><code class="docutils literal notranslate"><span class="pre">nrst</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroPara.html"><code class="docutils literal notranslate"><span class="pre">para</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroPest.html"><code class="docutils literal notranslate"><span class="pre">pest</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroPhys.html"><code class="docutils literal notranslate"><span class="pre">phys</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroPpor.html"><code class="docutils literal notranslate"><span class="pre">ppor</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroPtrk.html"><code class="docutils literal notranslate"><span class="pre">ptrk</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRenu.html"><code class="docutils literal notranslate"><span class="pre">renu</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRest.html"><code class="docutils literal notranslate"><span class="pre">rest</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRflo.html"><code class="docutils literal notranslate"><span class="pre">rflo</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRflx.html"><code class="docutils literal notranslate"><span class="pre">rlfx</span></code> (Deprecated)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRich.html"><code class="docutils literal notranslate"><span class="pre">rich</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRive.html"><code class="docutils literal notranslate"><span class="pre">rive</span></code> or <code class="docutils literal notranslate"><span class="pre">well</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRlp.html"><code class="docutils literal notranslate"><span class="pre">rlp</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRlpm.html"><code class="docutils literal notranslate"><span class="pre">rlpm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRxn.html"><code class="docutils literal notranslate"><span class="pre">rxn</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroSol.html"><code class="docutils literal notranslate"><span class="pre">sol</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroSptr.html"><code class="docutils literal notranslate"><span class="pre">sptr</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroStea.html"><code class="docutils literal notranslate"><span class="pre">stea</span></code></a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">strs</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroSubm.html"><code class="docutils literal notranslate"><span class="pre">subm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroSvar.html"><code class="docutils literal notranslate"><span class="pre">svar</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroSzna.html"><code class="docutils literal notranslate"><span class="pre">szna</span> <span class="pre">or</span> <span class="pre">napl</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroText.html"><code class="docutils literal notranslate"><span class="pre">text</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroThic.html"><code class="docutils literal notranslate"><span class="pre">thic</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroTrac.html"><code class="docutils literal notranslate"><span class="pre">trac</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroTrxn.html"><code class="docutils literal notranslate"><span class="pre">trxn</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroUser.html"><code class="docutils literal notranslate"><span class="pre">user</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroVapl.html"><code class="docutils literal notranslate"><span class="pre">vap</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroVbou.html"><code class="docutils literal notranslate"><span class="pre">vbou</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroVcon.html"><code class="docutils literal notranslate"><span class="pre">vcon</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroWeli.html"><code class="docutils literal notranslate"><span class="pre">weli</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroWflo.html"><code class="docutils literal notranslate"><span class="pre">wflo</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroWgtu.html"><code class="docutils literal notranslate"><span class="pre">wgtu</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroWtsi.html"><code class="docutils literal notranslate"><span class="pre">wtsi</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroZeol.html"><code class="docutils literal notranslate"><span class="pre">zeol</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroZneg.html"><code class="docutils literal notranslate"><span class="pre">zneg</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroZone.html"><code class="docutils literal notranslate"><span class="pre">zone</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroZonn.html"><code class="docutils literal notranslate"><span class="pre">zonn</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../InputData.html">Input Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Output.html">Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ProgramConsiderations.html">Program Considerations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">References &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../References.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Support.html">User Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ReleaseNotes/release_notes.html">Release Notes</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">FEHM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../Macros.html">Macros</a> &raquo;</li>
+        
+      <li><code class="docutils literal notranslate"><span class="pre">strs</span></code></li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/Macros/MacroStrs.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="strs">
+<h1><code class="docutils literal notranslate"><span class="pre">strs</span></code><a class="headerlink" href="#strs" title="Permalink to this headline">¶</a></h1>
+<p>The solid mechanical deformation module is invoked with this control statement.</p>
+<p>Group 1-        ISTRS, IHMS</p>
+<p>Group 2-        KEYWORD</p>
+<p>The remaining input is entered in subgroups defined by additional keywords. These keywords are all optional unless otherwise noted, but the user should be careful to ensure the problem is completely defined with the keywords selected.</p>
+<p>Input associated with KEYWORDS is shown below and described in more detail in the following table. Unless otherwise specified, blank lines are not permitted.</p>
+<p>KEYWORD “excess_she”</p>
+<p>FRICTION_OUT, STRENGTH_OUT, PP_FAC_OUT</p>
+<p>KEYWORD “permmodel”</p>
+<p>IPERM, SPMF1, SPMF2, … SPMF13</p>
+<p>(as many models as needed,one per line, terminated by a blank line)</p>
+<p>[[InputData#JA|         JA, JB, JC, MODEL_NUMBER (JA, JB, JC-defined on [[wiki:Macro20058|See JA, JB, JC, PROP1, PROP2, …]])</p>
+<p>KEYWORD “elastic”</p>
+<p><a class="reference external" href="InputData#JA">JA, JB, JC, ELASTIC_MOD, POISSON</a></p>
+<p>KEYWORD “nonlinear”</p>
+<p>NONLIN_MODEL_FLAG</p>
+<p>If the value of NONLIN_MODEL_FLAG = 1 then this model is for linear dependence on temperature of Young’s modulus and Poisson’s ratio:</p>
+<p>E_INI, DEDT, POISSON_INI, DNUEDT</p>
+<p>Else, if the value of NONLIN_MODEL_FLAG = 91then a table lookup is used:</p>
+<p>YOUNG_TEMP_FILE</p>
+<p>KEYWORD “plastic”</p>
+<p>NUMPLASTICMODELS</p>
+<p>The following are repeated NUMPLASTICMODELS times</p>
+<p>PLASTICMODEL, MODULUS, NU, [PLASTICPARAM1, PLASTICPARAM2]</p>
+<p><a class="reference external" href="InputData#JA">JA, JB, JC, MODELNUMBER</a></p>
+<p>KEYWORD “biot”</p>
+<p>`               JA, JB, JC, ALPHA, PP_FAC &lt;InputData#JA&gt;`_</p>
+<p>KEYWORD “stressboun”</p>
+<p>SUB-KEYWORD ‘distributed’ or ‘lithostatic’ (optional)</p>
+<p>or</p>
+<p>SUB-KEYWORD ‘lithograd’ SDEPTH GDEPTH (optional)</p>
+<p>`               JA, JB, JC, BOUNVAL, KQ &lt;InputData#JA&gt;`_</p>
+<p>KEYWORD “tolerance (required)</p>
+<p>STRESS_TOL</p>
+<p>KEYWORD “end strs” (required)</p>
+<p>The input is terminated with keyword “//end strs//” or “//endstrs//”.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="3%" />
+<col width="41%" />
+<col width="17%" />
+<col width="39%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Input Variable</th>
+<th class="head">Format</th>
+<th class="head">Default</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>ISTRS</td>
+<td>integer</td>
+<td>0</td>
+<td>State of stressISTRS = 0   -   skip stress solutionISTRS = 1   -   plain strain and 3-D solutionISTRS = 2  -   plain stress solution (must be 2-D)</td>
+</tr>
+<tr class="row-odd"><td>IHMS</td>
+<td>integer</td>
+<td>&#160;</td>
+<td>Identify the amount and frequency of coupling between TH and M parts of the codeIHMS = -1   -   stress solved only at the end of the TH (flow) simulationIHMS = -2  -   stress solved at the beginning and end of the TH (flow) simulation (useful for establishing a lithostatic loadIHMS = -3   -   stress solved after each timestep of the TH (flow) simulationIHMS = -4  -   stress solved after a timestep of the TH (flow) simulation as determined automatically by the code (not fully implemented)IHMS = 1  -   stress solved fully coupled with the TH (flow) simulationIHMS = 2   -   stress solved sequentially coupled with the TH (flow) simulation</td>
+</tr>
+<tr class="row-even"><td>KEYWORD “end strs” or “endstrs”</td>
+<td>End of strs input.</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>KEYWORD “initcalc”</td>
+<td>&#160;</td>
+<td>Initiate an initial stress calculation that is useful for establishing lithostatic stress.</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>KEYWORD “bodyforce”</td>
+<td>&#160;</td>
+<td>Sets a body force if gravity is non zero. Force is calculated using the rock density information provided in the rock macro.</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>KEYWORD “reldisp”</td>
+<td>&#160;</td>
+<td>Use relative displacement in the calculation of volume strains, permeability models, and output.</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>KEYWORD “stresspor”</td>
+<td>&#160;</td>
+<td>Explicitly update the porosity after each time step.</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>KEYWORD “fem”</td>
+<td>&#160;</td>
+<td>Use the Finite Element modules for forming displacement equations, and calculating stresses. Although optional, it is strongly recommended that this keyword be included.</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>KEYWORD “principal”</td>
+<td>&#160;</td>
+<td>For stress output to the files generated by the cont macro, output the principal stress values and the orientation of the axis.</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>KEYWORD “strainout”</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>Create a file, strain.out, containing x, y, z, node number, ε,,xx,,, ε,,yy,,, ε,,zz,,, ε,,xy,,, ε,,xz,,, ε,,yz,,</td>
+</tr>
+<tr class="row-even"><td>KEYWORD “excess_shear”</td>
+<td>For stress output to the files generated by the cont macro, output the excess shear stress and the direction of the failure plane given in the equation below, as well as the Young’s modulus[[Image(FEHM-UM.6-187.gif)]]&nbsp;and [[Image(FEHM-UM.6-188.gif)]]. Where [[Image(FEHM-UM.6-189.gif)]] is the excess shear, [[Image(FEHM-UM.6-190.gif)]] and [[Image(FEHM-UM.6-191.gif)]] are the maximum and minimum principal stresses, [[Image(FEHM-UM.6-192.gif)]] is the coefficient of friction, and [[Image(FEHM-UM.6-193.gif)]] is the shear strength. The angle [[Image(FEHM-UM.6-194.gif)]] between this plane and the orientation of the maximum principal stress is given by [[Image(FEHM-UM.6-195.gif)]] .</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>FRICTION_OUT</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Coefficient of friction</td>
+</tr>
+<tr class="row-even"><td>STRENGTH_OUT</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Cohesion</td>
+</tr>
+<tr class="row-odd"><td>PP_FAC_OUT</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Pore pressure factor similar to Biot’s coefficient in the ‘biot’ macro.</td>
+</tr>
+<tr class="row-even"><td>KEYWORD “zone”</td>
+<td>&#160;</td>
+<td>The format and inputs for this are described in the zone macro. Inclusion of zone macros within the strs macro are allowed to facilitate input associated with the following keywords.</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>KEYWORD “permmodel”</td>
+<td>&#160;</td>
+<td>This keyword identifies the stress or displacement dependent permeability model. The permeability model can be invoked in a fully coupled, sequentially coupled, or explicitly coupled manner.</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>IPERM</td>
+<td>integer</td>
+<td>1</td>
+<td>Specifies the type of permeability model used, input parameters specified on this line change depending on the model selected.</td>
+</tr>
+<tr class="row-odd"><td>IPERM = 1</td>
+<td>Equivalent to no stress permeability model</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>IPERM = 2</td>
+<td>Stress permeability model dependent on tensile stress in the coordinate directions. Changes are linear in stress up to the prescribed maximum change. Tensile stress in a given coordinate direction affects the permeabilities in the other two directions. Input: iperm, spm1f, spm2f, spm3f, spm4f, spm5f, spm6f, spm7f, spm8f,spm9f</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>SPM1F</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Minimum tensile stress (x direction) for damage to occur.</td>
+</tr>
+<tr class="row-even"><td>SPM2F</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Minimum tensile stress (y direction) for damage to occur</td>
+</tr>
+<tr class="row-odd"><td>SPM3F</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Minimum tensile stress (z direction) for damage to occur</td>
+</tr>
+<tr class="row-even"><td>SPM4F</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Damage factor for elastic modulus in x direction.</td>
+</tr>
+<tr class="row-odd"><td>SPM5F</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Damage factor for elastic modulus in y direction.</td>
+</tr>
+<tr class="row-even"><td>SPM6F</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Damage factor for elastic modulus in z direction.</td>
+</tr>
+<tr class="row-odd"><td>SPM7F</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Maximum factor for x-permeability.</td>
+</tr>
+<tr class="row-even"><td>SPM8F</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Maximum factor for y-permeability.</td>
+</tr>
+<tr class="row-odd"><td>SPM9F</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Maximum factor for z-permeability.</td>
+</tr>
+<tr class="row-even"><td>IPERM = 22</td>
+<td>Mohr-coulomb failure criteria on the plane that maximizes the excess shear. Here z-prime is along the normal to the plane of failure, and y-prime is along the plane of median principal stress. Input: iperm,spm1f,spm2f,spm3f,spm4f,spm5f,spm6f,spm7f, spm8f,spm9f,spmf10</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>SPM1F</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Friction coefficient of shear in the fault plane.</td>
+</tr>
+<tr class="row-even"><td>SPM2F</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Shear strength of the fault plane.</td>
+</tr>
+<tr class="row-odd"><td>SPM3F</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Factor in effective stress calculation where [[Image(FEHM-UM.6-196.gif)]]</td>
+</tr>
+<tr class="row-even"><td>SPM4F</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Range of excess shear stress over which damage is ramped</td>
+</tr>
+<tr class="row-odd"><td>SPM5F</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Maximum multiplier for young’s modulus in x-prime direction.</td>
+</tr>
+<tr class="row-even"><td>SPM6F</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Maximum multiplier for young’s modulus in y-prime direction</td>
+</tr>
+<tr class="row-odd"><td>SPM7F</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Maximum multiplier for young’s modulus in z-prime direction</td>
+</tr>
+<tr class="row-even"><td>SPM8F</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Maximum multiplier for permeability x-prime direction.</td>
+</tr>
+<tr class="row-odd"><td>SPM9F</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Maximum multiplier for permeability y-prime direction.</td>
+</tr>
+<tr class="row-even"><td>SPM10F</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Maximum multiplier for permeability z-prime direction.</td>
+</tr>
+<tr class="row-odd"><td>IPERM = 91</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>Table input from a file</td>
+</tr>
+<tr class="row-even"><td>FILENAME</td>
+<td>character</td>
+<td>&#160;</td>
+<td>Name of the file with permeability model factors. The file has the following format:Line 1: # of rows in the tableLines 2 through (# of rows)+1: stress, x-factor, y-factor, z-factor</td>
+</tr>
+<tr class="row-odd"><td>KEYWORD “elastic”</td>
+<td>&#160;</td>
+<td>For linear elastic material.</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>ELASTIC_MOD</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Young’s modulus. (MPa)</td>
+</tr>
+<tr class="row-odd"><td>POISSON</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Poisson’s ratio.</td>
+</tr>
+<tr class="row-even"><td>KEYWORD “nonlinear”</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>NONLIN_MODEL_FLAG</td>
+<td>integer</td>
+<td>&#160;</td>
+<td>If NONLIN_MODEL_FLAG = 1 then this model is for linear dependence on temperature of Young’s modulus and Poisson’s ratio. Input: E_INI, DEDT, POISSON_INI, DNUEDT</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>If NONLIN_MODEL_FLAG= 91 then a table lookup is used:. Input: YOUNG_TEMP_FILE</td>
+</tr>
+<tr class="row-odd"><td>E_INI</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Value of Young’s modulus at the reference temperature (MPa).</td>
+</tr>
+<tr class="row-even"><td>DEDT</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Derivative of Young’s modulus with respect to temperature (MPa/^o^C)</td>
+</tr>
+<tr class="row-odd"><td>POISSON_INI</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Value of Poisson’s ratio at the reference temperature.</td>
+</tr>
+<tr class="row-even"><td>DNUEDT</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Derivative of Poisson’s ratio with respect to temperature (per^ o^C)</td>
+</tr>
+<tr class="row-odd"><td>YOUNG_TEMP_FILE</td>
+<td>character</td>
+<td>&#160;</td>
+<td>Name of the file with nonlinear model values. The file has the following format:Line 1: # of rows in the table (nentries_young)Lines 2 through (# of rows)+1: temperature, young’s modulus, poisson’s ratio</td>
+</tr>
+<tr class="row-even"><td>KEYWORD “plastic”</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>NUMPLASTICMODELS</td>
+<td>integer</td>
+<td>&#160;</td>
+<td>Number of plastic models.</td>
+</tr>
+<tr class="row-even"><td>PLASTICMODEL</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Plastic model numberIf PLASTICMODEL = 1 Isotropic, linear elastic solidIf PLASTICMODEL = 2 von Mises modelPLASTICPARAM1 and PLASTICPARAM2 are only entered for the von Mises model.</td>
+</tr>
+<tr class="row-odd"><td>MODULUS</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Young’s modulus in the elastic region (MPa).</td>
+</tr>
+<tr class="row-even"><td>NU</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Poisson’s ratio in the elastic region.</td>
+</tr>
+<tr class="row-odd"><td>PLASTICPARAM1</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Yield stress for von Mises model (MPa).</td>
+</tr>
+<tr class="row-even"><td>PLASTICPARAM2</td>
+<td>real</td>
+<td><ol class="first last arabic simple" start="0">
+<li></li>
+</ol>
+</td>
+<td>Currently not used.</td>
+</tr>
+<tr class="row-odd"><td>KEYWORD “biot”</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>ALPHA</td>
+<td>real</td>
+<td>0</td>
+<td>Volumetric coefficient of thermal expansion (per^ o^C)</td>
+</tr>
+<tr class="row-odd"><td>PP_FAC</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Factor multiplying the pore pressure coupling term in the stress-strain relations, given by [[Image(FEHM-UM.6-197.gif)]].Where the symbols have the usual meanings.</td>
+</tr>
+<tr class="row-even"><td>KEYWORD “stressboun”</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>Enter boundary conditions for the mechanical deformation equations. These can be a combination of specified values of displacements, stresses, or forces.</td>
+</tr>
+<tr class="row-odd"><td>SUB-KEYWORD ‘distributed’</td>
+<td>&#160;</td>
+<td>Distribute the applied force in proportion to areas of the members of the zone to which the force is applied.</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>SUB-KEYWORD ‘lithostatic’</td>
+<td>&#160;</td>
+<td>BOUNVAL and KQ are interpreted as multipliers of the lithostatic stress and the stress direction. The lithostatic stress is always in the vertical (downward) direction. The z-axis is taken to be positive upwards. In the ctrl macro the direction of gravity must be set to 3.</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>SUB-KEYWORD ‘lithograd’ SDEPTH GDEPTH</td>
+<td>BOUNVAL and KQ are interpreted as the stress gradient and stress direction. The parameters sdepth and gdepth are read on the same line as lithograd, and the KQth diagonal component of the stress at any node is calculated as follows, where z is the vertical coordinate of the node (see [[wiki:Macro94703</td>
+<td>See Schematic illustrating varaibles for ‘lithograd’ option.]]) [[Image(FEHM-UM.6-198.gif)]]</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>SDEPTH</td>
+<td>real</td>
+<td>&#160;</td>
+<td>Depth (m) of the reference level from the free surface of the earth corresponding to the level specified by GDEPTH, i.e., model elevation of GDEPTH meters is equivalent to SDEPTH meters depth.</td>
+</tr>
+<tr class="row-odd"><td>GDEPTH</td>
+<td>real</td>
+<td>&#160;</td>
+<td>In the coordinate system of the model, the z coordinate of the reference level.</td>
+</tr>
+<tr class="row-even"><td>BOUNVAL</td>
+<td>real</td>
+<td>0</td>
+<td>This is a fixed displacement, specified stress, or specified force depending on the value of KQ and optional keywords.No keyword, and kq &gt; 0 : prescribed displacement (m) in the kq directionNo keyword and kq &lt; 0 : applied stress (MPa) in the kq directionKeyword = ‘lithograd’ and kq &gt; 0 : the stress gradient (MPa/m) in the kq directionKeyword = ‘distributed’ and kq &lt; 0 : prescribed force (MN) in the kq direction.</td>
+</tr>
+<tr class="row-odd"><td>KQ</td>
+<td>integer</td>
+<td>0</td>
+<td>Parameter that determines the type of boundary conditionkq = 1 or -1: prescribed value in the x directionkq = 2 or -2: prescribed value in the y directionkq = 3 0r -3: prescribed value in the z direction</td>
+</tr>
+<tr class="row-even"><td>KEYWORD “tolerance (required)</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>STRESS_TOL</td>
+<td>real</td>
+<td>0</td>
+<td>The tolerance for solution of the stress equations STRESS_TOL &gt; 0 STRESS_TOL is the reduction of initial residual of the stress equationsSTRESS_TOL &lt; 0 STRESS_TOL is the required absolute value of the residual of the normalized equations</td>
+</tr>
+<tr class="row-even"><td>[[Image(UM3.1_Figure3.png)]]</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>Schematic illustrating varaibles for ‘lithograd’ option.</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+</tbody>
+</table>
+<p>In the 3D example below, the option to explicitly couple stress with heat-mass equations is invoked. Initial stresses and displacements are calculated, a body force due to gravity is applied, optional strain output is activated, computations are performed using the finite element module, material is specified to be elastic, with temperature dependence of Young’s modulus and Poisson’s ratio specified in a file called “EvsT.txt”, linear coefficient of thermal expansion 1.4e-5/0C, Biot’s coefficient equal to 0. Zone 3 is pinned in all 3 directions, zones 4 And 5 are constrained in the X direction, and zones 6 and 7 are constrained in the Y direction. Tolerance for the stress solution is set to 1.e-3.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>strs
+1 -3
+initcalc
+bodyforce
+strainout
+fem
+elastic
+1 0 0 1.59e4 0.25
+
+nonlinear
+91
+EvsT.txt
+biot
+1 0 0 5.4e-5 0.
+
+zone
+2 ! top,Z=300
+-1.e+15 +1.e+15 +1.e+15 -1.e+15 -1.e+15 +1.e+15 +1.e+15 -1.e+15
++1.e+15 +1.e+15 -1.e+15 -1.e+15 +1.e+15 +1.e+15 -1.e+15 -1.e+15
+300.01 300.01 300.01 300.01 299.99 299.99 299.99 299.99
+3 ! bottom, Z=0
+-1.e+15 +1.e+15 +1.e+15 -1.e+15 -1.e+15 +1.e+15 +1.e+15 -1.e+15
++1.e+15 +1.e+15 -1.e+15 -1.e+15 +1.e+15 +1.e+15 -1.e+15 -1.e+15
+0.1 0.1 0.1 0.1 -0.1 -0.1 -0.1 -0.1
+
+stressboun
+-3 0 0 0. 3
+
+stressboun
+-3 0 0 0. 2
+
+stressboun
+-3 0 0 0. 1
+
+zone
+4 ! back X=20
+19.99 20.01 20.01 19.99 19.99 20.01 20.01 19.99
++1.e+15 +1.e+15 -1.e+15 -1.e+15 +1.e+15 +1.e+15 -1.e+15 -1.e+15
+300.01 300.01 300.01 300.01 -1. -1. -1. -1.
+5 ! front X=0
+-0.01 +0.01 +0.01 -0.01 -0.01 +0.01 +0.01 -0.01
++1.e+15 +1.e+15 -1.e+15 -1.e+15 +1.e+15 +1.e+15 -1.e+15 -1.e+15
+300.01 300.01 300.01 300.01 -1. -1. -1. -1.
+
+stressboun
+-4 0 0 0. 1
+
+stressboun
+-5 0 0 0. 1
+
+zone
+6 ! right, Y=0
+-1.e+15 +1.e+15 +1.e+15 -1.e+15 -1.e+15 +1.e+15 +1.e+15 -1.e+15
+0.01 0.01 -0.01 -0.01 0.01 0.01 -0.01 -0.01
+300.01 300.01 300.01 300.01 -1. -1. -1. -1.
+7 ! left, Y=60.
+-1.e+15 +1.e+15 +1.e+15 -1.e+15 -1.e+15 +1.e+15 +1.e+15 -1.e+15
+60.01 60.01 59.99 59.99 60.01 60.01 59.99 59.99
+300.01 300.01 300.01 300.01 -1. -1. -1. -1.
+
+stressboun
+-6 0 0 0. 2
+
+stressboun
+-7 0 0 0. 2
+
+tolerance
+-1.e-3
+
+end stress
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="MacroSubm.html" class="btn btn-neutral float-right" title="subm" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="MacroStea.html" class="btn btn-neutral float-left" title="stea" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Los Alamos National Laboratory
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

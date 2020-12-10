@@ -1,0 +1,402 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>time &mdash; FEHM 3.3.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="adif" href="MacroAdif.html" />
+    <link rel="prev" title="stop" href="MacroStop.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> FEHM
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.3.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../SystemInterface.html">System Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../SystemInterface.html#installation-instructions">Installation Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DataFiles.html">Data Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DefinitionsAndAcronyms.html">Definitions and Acronyms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ExamplesAndSamples.html">Examples and Sample Problems</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Program Specifications</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../Macros.html">Macros</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Macros.html#macros-by-problem-type">Macros by Problem Type</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../Macros.html#required-macros">Required Macros</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="MacroAnpe.html"><code class="docutils literal notranslate"><span class="pre">anpe</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroBoun.html"><code class="docutils literal notranslate"><span class="pre">boun</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroCond.html"><code class="docutils literal notranslate"><span class="pre">cond</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroCoor.html"><code class="docutils literal notranslate"><span class="pre">coor</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroElem.html"><code class="docutils literal notranslate"><span class="pre">elem</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFdm.html"><code class="docutils literal notranslate"><span class="pre">fdm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFlow.html"><code class="docutils literal notranslate"><span class="pre">flow</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFtsc.html"><code class="docutils literal notranslate"><span class="pre">ftsc</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroHcon.html"><code class="docutils literal notranslate"><span class="pre">hcon</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroHyco.html"><code class="docutils literal notranslate"><span class="pre">hyco</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroInit.html"><code class="docutils literal notranslate"><span class="pre">init</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroIvfc.html"><code class="docutils literal notranslate"><span class="pre">ivfc</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroPerm.html"><code class="docutils literal notranslate"><span class="pre">perm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroPres.html"><code class="docutils literal notranslate"><span class="pre">pres</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRock.html"><code class="docutils literal notranslate"><span class="pre">rock</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroStop.html"><code class="docutils literal notranslate"><span class="pre">stop</span></code></a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">time</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Macros.html#optional-macros">Optional Macros</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../InputData.html">Input Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Output.html">Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ProgramConsiderations.html">Program Considerations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">References &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../References.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Support.html">User Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ReleaseNotes/release_notes.html">Release Notes</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">FEHM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../Macros.html">Macros</a> &raquo;</li>
+        
+      <li><code class="docutils literal notranslate"><span class="pre">time</span></code></li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/Macros/MacroTime.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="time">
+<h1><code class="docutils literal notranslate"><span class="pre">time</span></code><a class="headerlink" href="#time" title="Permalink to this headline">¶</a></h1>
+<p>Time step and time of simulation data.</p>
+<ul class="simple">
+<li>Group 1 - DAY, TIMS, NSTEP, IPRTOUT, YEAR, MONTH, INITTIME</li>
+<li>Group 2 - DIT1, DIT2, DIT3, ITC, DIT4 (as needed)</li>
+</ul>
+<p>DAY should be larger than DAYMIN defined in control statement <strong>ctrl</strong>.
+The code proceeds to the next control statement when a blank line is encountered for Group 2.
+Group 2 can be used to generate output at specific times (with multiple Group 2s).
+Contour plot output will be written at each DIT1 regardless of the input in control statement <strong>cont</strong>.
+The restart file will be written (or rewritten if one already exists) at each DIT1. If DIT4 is omitted
+(for compatibility with older input files where DIT4 was not input) the maximum
+time step defined in the control statement ctrl will be used.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="10%" />
+<col width="72%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Input Variable</th>
+<th class="head">Format</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>DAY</td>
+<td>real</td>
+<td>Initial time step size (days).</td>
+</tr>
+<tr class="row-odd"><td>TIMS</td>
+<td>real</td>
+<td>Final simulation time (days).</td>
+</tr>
+<tr class="row-even"><td>NSTEP</td>
+<td>integer</td>
+<td>Maximum number of time steps allowed.</td>
+</tr>
+<tr class="row-odd"><td>IPRTOUT</td>
+<td>integer</td>
+<td>Print-out interval for nodal information (pressure,
+enthalpy etc.), as set up under control statement node.
+(i.e., number of time steps).</td>
+</tr>
+<tr class="row-even"><td>YEAR</td>
+<td>integer</td>
+<td>Year that simulation starts.</td>
+</tr>
+<tr class="row-odd"><td>MONTH</td>
+<td>integer</td>
+<td>Month that simulation starts.</td>
+</tr>
+<tr class="row-even"><td>INITTIME</td>
+<td>real</td>
+<td>Initial time of simulation (days). For compatibility
+with older versions, if this parameter is absent the
+initial time of simulation will be 0 if no restart
+file is used, or the time in the restart file if one is used.</td>
+</tr>
+<tr class="row-odd"><td>DIT1</td>
+<td>real</td>
+<td>Time (days) for time step change.</td>
+</tr>
+<tr class="row-even"><td>DIT2</td>
+<td>real</td>
+<td>New time step size (days). If DIT2 &lt; 0 then ABS (DIT2)
+is the new time step multiplier.</td>
+</tr>
+<tr class="row-odd"><td>DIT3</td>
+<td>real</td>
+<td><div class="first last line-block">
+<div class="line">Implicitness factor for new time step.</div>
+<div class="line">DIT3 ≤ 1.0 backward Euler.</div>
+<div class="line">DIT3 &gt; 1.0 for second-order implicit scheme.</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td>ITC</td>
+<td>integer</td>
+<td>New print-out interval.</td>
+</tr>
+<tr class="row-odd"><td>DIT4</td>
+<td>real</td>
+<td>Maximum time step size for next time interval (days).</td>
+</tr>
+</tbody>
+</table>
+<p>The following is an example of <code class="docutils literal notranslate"><span class="pre">time</span></code>. In this example, the initial time step size is
+30 days, the final simulation time is 3650 days, the number of time steps allowed is
+20, nodal information is printed out for every 5th time step, the simulation starts
+in the 10th month of 1989, and the initial time of simulation is assigned a value of
+0.</p>
+<p>The time step multiplier is changed after 1 day, and the new time step multiplier
+is 1.2, backward Euler is used from this time on and the printout interval is every
+10th time step. The maximum time step size for the next interval is omitted so the
+default value entered in the <code class="docutils literal notranslate"><span class="pre">ctrl</span></code> macro will be used.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="21%" />
+<col width="13%" />
+<col width="11%" />
+<col width="16%" />
+<col width="11%" />
+<col width="13%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>time</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>30.0</td>
+<td>3650.0</td>
+<td>20</td>
+<td>5</td>
+<td>1989</td>
+<td>10</td>
+<td>0.0</td>
+</tr>
+<tr class="row-odd"><td>1.0</td>
+<td>-1.2</td>
+<td>1.0</td>
+<td>10</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="MacroAdif.html" class="btn btn-neutral float-right" title="adif" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="MacroStop.html" class="btn btn-neutral float-left" title="stop" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Los Alamos National Laboratory
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,357 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fdm &mdash; FEHM 3.3.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="flow" href="MacroFlow.html" />
+    <link rel="prev" title="elem" href="MacroElem.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> FEHM
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.3.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../SystemInterface.html">System Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../SystemInterface.html#installation-instructions">Installation Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DataFiles.html">Data Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DefinitionsAndAcronyms.html">Definitions and Acronyms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ExamplesAndSamples.html">Examples and Sample Problems</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Program Specifications</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../Macros.html">Macros</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Macros.html#macros-by-problem-type">Macros by Problem Type</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../Macros.html#required-macros">Required Macros</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="MacroAnpe.html"><code class="docutils literal notranslate"><span class="pre">anpe</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroBoun.html"><code class="docutils literal notranslate"><span class="pre">boun</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroCond.html"><code class="docutils literal notranslate"><span class="pre">cond</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroCoor.html"><code class="docutils literal notranslate"><span class="pre">coor</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroElem.html"><code class="docutils literal notranslate"><span class="pre">elem</span></code></a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">fdm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFlow.html"><code class="docutils literal notranslate"><span class="pre">flow</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFtsc.html"><code class="docutils literal notranslate"><span class="pre">ftsc</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroHcon.html"><code class="docutils literal notranslate"><span class="pre">hcon</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroHyco.html"><code class="docutils literal notranslate"><span class="pre">hyco</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroInit.html"><code class="docutils literal notranslate"><span class="pre">init</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroIvfc.html"><code class="docutils literal notranslate"><span class="pre">ivfc</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroPerm.html"><code class="docutils literal notranslate"><span class="pre">perm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroPres.html"><code class="docutils literal notranslate"><span class="pre">pres</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRock.html"><code class="docutils literal notranslate"><span class="pre">rock</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroStop.html"><code class="docutils literal notranslate"><span class="pre">stop</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroTime.html"><code class="docutils literal notranslate"><span class="pre">time</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Macros.html#optional-macros">Optional Macros</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../InputData.html">Input Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Output.html">Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ProgramConsiderations.html">Program Considerations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">References &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../References.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Support.html">User Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ReleaseNotes/release_notes.html">Release Notes</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">FEHM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../Macros.html">Macros</a> &raquo;</li>
+        
+      <li><code class="docutils literal notranslate"><span class="pre">fdm</span></code></li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/Macros/MacroFdm.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fdm">
+<h1><code class="docutils literal notranslate"><span class="pre">fdm</span></code><a class="headerlink" href="#fdm" title="Permalink to this headline">¶</a></h1>
+<p>Finite difference input.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><code class="docutils literal notranslate"><span class="pre">fdm</span></code> is required if macros <code class="docutils literal notranslate"><span class="pre">coor</span></code> are <code class="docutils literal notranslate"><span class="pre">elem</span></code> are not used.</p>
+</div>
+<ul class="simple">
+<li>Group 1 - KEYWORD</li>
+<li>Group 2 - MODCHAR (only if KEYWORD is “modf”)</li>
+</ul>
+<p>or</p>
+<ul class="simple">
+<li>Group 2 - NX, NY, NZ (if KEYWORD is “block” or “poin”)</li>
+<li>Group 3 - X0, Y0, Z0 (only if KEYWORD is ‘block)</li>
+<li>Group 4 - MB, COORDINATE (X, Y or Z) (if KEYWORD is “poin”)</li>
+</ul>
+<p>or</p>
+<ul class="simple">
+<li>Group 4 - MB, SPACING (DX, DY, DZ) (if KEYWORD is “bloc”)</li>
+</ul>
+<p>Group 4 is repeated for each NX, NY, and NZ, i.e., all X data are input, followed by Y data, followed by Z data for each division terminated by a blank line.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="8%" />
+<col width="8%" />
+<col width="84%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Input Variable</th>
+<th class="head">Format</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>KEYWORD</td>
+<td>character*4</td>
+<td>Keyword indicating format of finite difference input to follow (“block”, “poin”, or “modf”).</td>
+</tr>
+<tr class="row-odd"><td>MODCHAR</td>
+<td>character*132</td>
+<td>If the keyword is “modf”, the name of a modflow geometry data file is input and the finite difference input is read from that file and no other data is input.</td>
+</tr>
+<tr class="row-even"><td>NX</td>
+<td>integer</td>
+<td>Number of divisions in the x direction.</td>
+</tr>
+<tr class="row-odd"><td>NY</td>
+<td>integer</td>
+<td>Number of divisions in the y direction.</td>
+</tr>
+<tr class="row-even"><td>NZ</td>
+<td>integer</td>
+<td>Number of divisions in the z direction.</td>
+</tr>
+<tr class="row-odd"><td>X0</td>
+<td>real</td>
+<td>Coordinate of x origin point (m).</td>
+</tr>
+<tr class="row-even"><td>Y0</td>
+<td>real</td>
+<td>Coordinate of y origin point (m).</td>
+</tr>
+<tr class="row-odd"><td>Z0</td>
+<td>real</td>
+<td>Coordinate of z origin point (m).</td>
+</tr>
+<tr class="row-even"><td>X</td>
+<td>real</td>
+<td>X coordinate (m).</td>
+</tr>
+<tr class="row-odd"><td>Y</td>
+<td>real</td>
+<td>Y coordinate (m).</td>
+</tr>
+<tr class="row-even"><td>Z</td>
+<td>real</td>
+<td>Z coordinate (m).</td>
+</tr>
+<tr class="row-odd"><td>DX</td>
+<td>real</td>
+<td>Node spacing in the x direction (m).</td>
+</tr>
+<tr class="row-even"><td>DY</td>
+<td>real</td>
+<td>Node spacing in the y direction (m).</td>
+</tr>
+<tr class="row-odd"><td>DZ</td>
+<td>real</td>
+<td>Node spacing in the z direction (m).</td>
+</tr>
+<tr class="row-even"><td>MB</td>
+<td>integer</td>
+<td>Division number. If the division number is negative the code will space each divison from the previous to the current proportional to the assigned spacings.</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="MacroFlow.html" class="btn btn-neutral float-right" title="flow" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="MacroElem.html" class="btn btn-neutral float-left" title="elem" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Los Alamos National Laboratory
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

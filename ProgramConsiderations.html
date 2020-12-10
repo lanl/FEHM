@@ -1,0 +1,564 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Program Considerations &mdash; FEHM 3.3.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="References" href="References.html" />
+    <link rel="prev" title="Output" href="Output.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> FEHM
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.3.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="SystemInterface.html">System Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SystemInterface.html#installation-instructions">Installation Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DataFiles.html">Data Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DefinitionsAndAcronyms.html">Definitions and Acronyms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ExamplesAndSamples.html">Examples and Sample Problems</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Program Specifications</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Macros.html">Macros</a></li>
+<li class="toctree-l1"><a class="reference internal" href="InputData.html">Input Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Output.html">Output</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Program Considerations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#program-options">Program Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fehm-capabilities-and-associated-macro-command-statements">FEHM Capabilities and Associated Macro Command Statements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#initialization">Initialization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#restart-procedures">Restart Procedures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#error-processing">Error Processing</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">References &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="References.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Support.html">User Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ReleaseNotes/release_notes.html">Release Notes</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">FEHM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Program Considerations</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/ProgramConsiderations.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="program-considerations">
+<h1>Program Considerations<a class="headerlink" href="#program-considerations" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="program-options">
+<h2>Program Options<a class="headerlink" href="#program-options" title="Permalink to this headline">¶</a></h2>
+<p>The uses and capabilities of FEHM are summarized below with reference to the macro input structure discussed in <a class="reference external" href="InputData.html">Input Data</a>.</p>
+</div>
+<div class="section" id="fehm-capabilities-and-associated-macro-command-statements">
+<h2>FEHM Capabilities and Associated Macro Command Statements<a class="headerlink" href="#fehm-capabilities-and-associated-macro-command-statements" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Mass, energy balances in porous media<ul>
+<li>Variable rock properties (<code class="docutils literal notranslate"><span class="pre">rock</span></code>)</li>
+<li>Variable permeability (<code class="docutils literal notranslate"><span class="pre">perm,</span> <span class="pre">fper</span></code>)</li>
+<li>Variable thermal conductivity (<code class="docutils literal notranslate"><span class="pre">cond,</span> <span class="pre">vcon</span></code>)</li>
+<li>Variable fracture properties, dual porosity, dual porosity/dual permeability (<code class="docutils literal notranslate"><span class="pre">dual,</span> <span class="pre">dpdp,</span> <span class="pre">gdpm</span></code>)</li>
+</ul>
+</li>
+<li>Multiple components available<ul>
+<li>Air-water isothermal mixture available (<code class="docutils literal notranslate"><span class="pre">airwater,</span> <span class="pre">bous,</span> <span class="pre">head</span></code>), fully coupled to heat and mass transfer (<strong>ngas</strong>, vapl, adif)</li>
+<li>Up to 10 solutes with chemical reactions between each (<code class="docutils literal notranslate"><span class="pre">trac,</span> <span class="pre">rxn</span></code>)</li>
+<li>Multiple species particle tracking (<code class="docutils literal notranslate"><span class="pre">ptrk,</span> <span class="pre">mptr,</span> <span class="pre">sptr</span></code>)</li>
+<li>Different relative permeability and capillary pressure models (<code class="docutils literal notranslate"><span class="pre">rlp,</span> <span class="pre">exrl</span></code>)</li>
+</ul>
+</li>
+<li>Equation of state flexibility inherent in code (<code class="docutils literal notranslate"><span class="pre">eos</span></code>)</li>
+<li>Pseudo-stress and storativity models available<ul>
+<li>Linear porosity deformation (<code class="docutils literal notranslate"><span class="pre">ppor</span></code>)</li>
+<li>Gangi stress model (<code class="docutils literal notranslate"><span class="pre">ppor</span></code>)</li>
+</ul>
+</li>
+<li>Numerics<ul>
+<li>Finite element with multiple element capabilities (<code class="docutils literal notranslate"><span class="pre">elem</span></code>)</li>
+<li>Short form input methods available (<code class="docutils literal notranslate"><span class="pre">coor,</span> <span class="pre">elem,</span> <span class="pre">fdm</span></code>)</li>
+<li>Flexible properties assignment (<code class="docutils literal notranslate"><span class="pre">zone,</span> <span class="pre">zonn</span></code>)</li>
+<li>Flexible solution methods<ul>
+<li>Upwinding, implicit solution available (<code class="docutils literal notranslate"><span class="pre">ctrl</span></code>)</li>
+<li>Iteration control adaptive strategy (<code class="docutils literal notranslate"><span class="pre">iter</span></code>)</li>
+</ul>
+</li>
+<li>Finite volume geometry (<code class="docutils literal notranslate"><span class="pre">finv,</span> <span class="pre">isot</span></code>)</li>
+</ul>
+</li>
+<li>Flexible time step and stability control (<code class="docutils literal notranslate"><span class="pre">time</span></code>)</li>
+<li>Time-dependent fixed value and flux boundary conditions (<code class="docutils literal notranslate"><span class="pre">flow,</span> <span class="pre">boun,</span> <span class="pre">hflx</span></code>)</li>
+</ul>
+</div>
+<div class="section" id="initialization">
+<h2>Initialization<a class="headerlink" href="#initialization" title="Permalink to this headline">¶</a></h2>
+<p>The coefficient arrays for the polynomial representations of the density (crl, crv),
+enthalpy (cel, cev), and viscosity (cvl, cvv) functions are initialized to the values
+enumerated in Appendix of the “Models and Methods Summary” of the
+FEHM Application (Zyvoloski et al. 1999), while values for the saturation pressure and
+temperature function coefficients are found in Appendix of that document.
+All other global array and scalar variables, with the exception of the variables listed in the
+table below, are initialized to zero if integer or real, character variables are initialized
+to a single blank character, and logical variables are initialized as false.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="13%" />
+<col width="34%" />
+<col width="11%" />
+<col width="19%" />
+<col width="11%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">&#160;</th>
+<th class="head">&#160;</th>
+<th class="head">Initial (Default) Values</th>
+<th class="head">&#160;</th>
+<th class="head">&#160;</th>
+<th class="head">&#160;</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Variable</td>
+<td>Value</td>
+<td>Variable</td>
+<td>Value</td>
+<td>Variable</td>
+<td>Value</td>
+</tr>
+<tr class="row-odd"><td>aiaa</td>
+<td>1.0</td>
+<td>contim</td>
+<td>1.0e+30</td>
+<td>daymax</td>
+<td>30.0</td>
+</tr>
+<tr class="row-even"><td>daymin</td>
+<td>1.0e-05</td>
+<td>g1</td>
+<td>1.0e-06</td>
+<td>g2</td>
+<td>1.0e-06</td>
+</tr>
+<tr class="row-odd"><td>g3</td>
+<td>1.0e-03</td>
+<td>iad_up</td>
+<td>1000</td>
+<td>iamx</td>
+<td>500</td>
+</tr>
+<tr class="row-even"><td>icons</td>
+<td>1000</td>
+<td>irlp</td>
+<td>1</td>
+<td>nbits</td>
+<td>256</td>
+</tr>
+<tr class="row-odd"><td>ncntr</td>
+<td>10000000</td>
+<td>nicg</td>
+<td>1</td>
+<td>rnmax</td>
+<td>1.0e+11</td>
+</tr>
+<tr class="row-even"><td>str</td>
+<td>1.0</td>
+<td>strd</td>
+<td>1.0</td>
+<td>tmch</td>
+<td>1.0e-09</td>
+</tr>
+<tr class="row-odd"><td>upwgt</td>
+<td>1.0</td>
+<td>upwgta</td>
+<td>1.0</td>
+<td>weight_factor</td>
+<td>1.0e-3</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="restart-procedures">
+<h2>Restart Procedures<a class="headerlink" href="#restart-procedures" title="Permalink to this headline">¶</a></h2>
+<p>FEHM writes a restart file for each run. The restart output file name may be given in the input control file or as terminal input, or if unspecified will default to fehmn.fin (see <a class="reference external" href="InputData#ControlFileorTerminalIOStartup.html">Control File or Terminal I/O Input</a>). The file is used on a subsequent run by providing the name of the generated file (via control file or terminal) for the restart input file name. It is recommended that the restart input file name be modified to avoid confusion with the restart output file. For example, by changing the suffix to .ini, the default restart output file, fehmn.fin would be renamed fehmn.ini, and that file name placed in the control file or given as terminal input. Values from the restart file will overwrite any variable initialization prescribed in the input file. The initial time of simulation will also be taken from the restart file unless specified in the macro <a class="reference external" href="MacroTime.html">time</a> input.</p>
+</div>
+<div class="section" id="error-processing">
+<h2>Error Processing<a class="headerlink" href="#error-processing" title="Permalink to this headline">¶</a></h2>
+<p>Due to the nonlinearity of the underlying partial differential equations, it is possible to produce an underflow or overflow condition through an unphysical choice of input parameters. More likely the code will fail to converge or will produce results which are out of bounds for the thermodynamic functions. The code will attempt to decrease the time step until convergence occurs. If the time step drops below a prescribed minimum the code will stop, writing a restart file. The user is encouraged to look at the input check file which contains information regarding maximum and minimum values of key variables in the code. All error and warning messages will be output to an output error file or the main output file.</p>
+<p>The table below provides additional information on errors that will cause FEHM to terminate.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="80%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Error Conditions Which Result in Program Termination</th>
+<th class="head">&#160;</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Error Condition</td>
+<td>Error Message</td>
+</tr>
+<tr class="row-odd"><td>I/O file error</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>Unable to create / open I/O file</td>
+<td>**** Error opening file fileid ****⋅⋅⋅****—————————******* JOB STOPPED ******—————————****</td>
+</tr>
+<tr class="row-odd"><td>Coefficient storage file not found</td>
+<td>program terminated because coefficient storage file not found</td>
+</tr>
+<tr class="row-even"><td>Coefficient storage file can not be read</td>
+<td>error in parsing beginning of stor file-or-stor file has unrecognized format:quit-or-stor file has neq less than data file:quit</td>
+</tr>
+<tr class="row-odd"><td>Coefficient storage file already exists</td>
+<td>changing name of new *.stor (old file exists) new file name is fehmn_temp.stor-and-&gt;&gt;&gt; name fehmn_temp.stor is used : stopping</td>
+</tr>
+<tr class="row-even"><td>Optional input file not found</td>
+<td>ERROR nonexistant file filenameSTOPPED trying to use optional input file</td>
+</tr>
+<tr class="row-odd"><td>Unable to open optional input file</td>
+<td>ERROR opening filenameSTOPPED trying to use optional input file</td>
+</tr>
+<tr class="row-even"><td>Unable to determine file prefix for AVS output files</td>
+<td>FILE ERROR: nmfil2 file: filename unable to determine contour file prefix</td>
+</tr>
+<tr class="row-odd"><td>Unable to determine file prefix for pest output files</td>
+<td>FILE ERROR: nmfil15 file: filename unable to determine pest file name-or-FILE ERROR: nmfil16 file: filename unable to determine pest1 file name</td>
+</tr>
+<tr class="row-even"><td>Unable to determine file prefix for streamline particle tracking output files</td>
+<td>FILE ERROR: nmfil17 file: filename unable to determine sptr1 file name-or-FILE ERROR: nmfil18 file: filename unable to determine sptr2 file name-or-FILE ERROR: nmfil19 file: filename unable to determine sptr3 file name</td>
+</tr>
+<tr class="row-odd"><td>Unable to determine file prefix for submodel output file</td>
+<td>FILE ERROR: nmfil24 file: filename unable to determine submodel file name</td>
+</tr>
+<tr class="row-even"><td>Input deck errors</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>Coordinate or element data not found</td>
+<td>**** COOR Required Input ****-or-**** ELEM Required Input ******—————————****** JOB STOPPED ******—————————****</td>
+</tr>
+<tr class="row-even"><td>Inconsistent zone coordinates</td>
+<td>inconsistent zone coordinates izone = izone please check icnl in macro CTRL</td>
+</tr>
+<tr class="row-odd"><td>Invalid AVS keyword read for macro cont</td>
+<td>ERROR:READ_AVS_IOunexpected character string (terminate program execution)Valid options are shown:⋅⋅⋅The invalid string was: string</td>
+</tr>
+<tr class="row-even"><td>Invalid keyword or input order read for macro boun</td>
+<td>time change was not first keyword,stop-or-illegal keyword in macro boun, stopping</td>
+</tr>
+<tr class="row-odd"><td>Invalid keyword read for macro subm</td>
+<td>&gt;&gt;&gt;&gt; error in keyword for macro subm &lt;&lt;&lt;&lt;</td>
+</tr>
+<tr class="row-even"><td>Invalid macro read</td>
+<td>**** error in input deck : char ****</td>
+</tr>
+<tr class="row-odd"><td>Invalid parameter values (macros using loop construct)</td>
+<td>Fatal error - for array number arraynummacro - macroGroup number - groupnumSomething other than a real or integer has been specified-or-Line number - lineBad input, check this line-or-Fatal error, too manyreal inputs to initdata2-or-Fatal error, too manyinteger inputs to initdata2</td>
+</tr>
+<tr class="row-even"><td>Invalid streamline particle tracking parameter</td>
+<td>ist must be less than or equal to 2</td>
+</tr>
+<tr class="row-odd"><td>Invalid tracer input</td>
+<td>** Using Old InputEnter Temperature Dependency Model Number: 1 - Van Hoff 2 - awwa model, see manual for details **</td>
+</tr>
+<tr class="row-even"><td>Invalid transport conditions</td>
+<td>Fatal error You specified a Henrys Law species with initial concentrations input for the vapor phase (icns = -2), yet the Henrys Constant is computed as 0 for species number speciesnum and node number nodenum. If you want to simulate a vapor-borne species with no interphase transport, then you must specify a gaseous species.</td>
+</tr>
+<tr class="row-odd"><td>Invalid flag specified for diffusion coefficient calculation</td>
+<td>ERROR – Illegal Flag to concadiffCode Aborted in concadiff</td>
+</tr>
+<tr class="row-even"><td>Optional input file name can not be read</td>
+<td>ERROR reading optional input file nameSTOPPED trying to use optional input file</td>
+</tr>
+<tr class="row-odd"><td>Optional input file contains data for wrong macro</td>
+<td>ERROR –&gt; Macro name in file for macro macroname is wrong_macronameSTOPPED trying to use optional input file</td>
+</tr>
+<tr class="row-even"><td>Option not supported</td>
+<td>This option (welbor) not supported.Stop in input-or-</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td>specific storage not available fornon isothermal conditions : stopping-or-gangi model not yet available forair-water-heat conditions : stopping-or-Gencon not yet set for rd1dof.Stop in gencon</td>
+</tr>
+<tr class="row-even"><td>Parameter not set</td>
+<td>&gt;&gt;&gt;&gt; gravity not set for head problem: stopping &lt;&lt;&lt;&lt;</td>
+</tr>
+<tr class="row-odd"><td>Relative permeabilities specified for non-dual or -double porosity model.</td>
+<td>*************************************f-m terms but no dpdp : stopping******************************</td>
+</tr>
+<tr class="row-even"><td>Invalid parameters set</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>Dual porosity</td>
+<td>**** check fracture volumes,stopping********* check equivalent continuum VGs ****</td>
+</tr>
+<tr class="row-even"><td>Finite difference model (FDM)</td>
+<td>&gt;&gt;&gt;&gt; dimension (icnl) not set to 3 for FDM: stopping &lt;&lt;&lt;&lt;</td>
+</tr>
+<tr class="row-odd"><td>Maximum number of nodes allowed is less than number of equations</td>
+<td>**** n0(n0) .lt. neq(neq) **** check parameter statements <a href="#id1"><span class="problematic" id="id2">**</span></a><a href="#id3"><span class="problematic" id="id4">*</span></a></td>
+</tr>
+<tr class="row-even"><td>Node number not in problem domain (macros dvel, flxo, node, nod2, nod3, zone, zonn)</td>
+<td>**** Invalid input: macro macro ****’**** Invalid node specified, value is greater than n0 ( n0 ): stopping <a href="#id5"><span class="problematic" id="id6">**</span></a><a href="#id7"><span class="problematic" id="id8">**</span></a></td>
+</tr>
+<tr class="row-odd"><td>Noncondensible gas</td>
+<td>cannot input ngas temp in single phase-or-ngas pressure lt 0 at temp and total press givenmax allowable temperature temp-or-ngas pressure gt total pressure i= i-or-ngas pressure lt 0.</td>
+</tr>
+<tr class="row-even"><td>Particle tracking</td>
+<td>ERROR: Pcnsk in ptrk must be either always positive or always negative.Code aborted in set_ptrk.f</td>
+</tr>
+<tr class="row-odd"><td>Relative permeabilities</td>
+<td>cannot have anisotropic perms for rlp model 4 or rlp model 7 with equivalent continuum stopping</td>
+</tr>
+<tr class="row-even"><td>Tracer</td>
+<td>ERROR: Can not have both particle tracking (ptrk) and tracer input (trac).Code Aborted in concen.f-or-Gencon not yet set for rd1dof.Stop in gencon-or-ERROR - solute accumulation option cannot be used with cnsk&lt;0-or-** On entry to SRNAME parameter number I2 had an illegal value</td>
+</tr>
+<tr class="row-odd"><td>Insufficient storage</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>Boundary conditions</td>
+<td>exceeded storage for number of models</td>
+</tr>
+<tr class="row-odd"><td>Dual porosity</td>
+<td>**** n &gt; n0, stopping ****</td>
+</tr>
+<tr class="row-even"><td>Generalized dual porosity</td>
+<td>In gdpm macro, ngdpmnodes must be reduced to reduce storage requirementsA value of ngdpm_actual is requiredThe current value set is ngdpmnodes-or-Fatal error in gdpm macroA value of ngdpm_actual is required’The current value set is ngdpmnodesIncrease ngdpmnodes to ngdpm_actual and restart</td>
+</tr>
+<tr class="row-odd"><td>Geometric coefficients</td>
+<td>program terminated because of insufficient storage</td>
+</tr>
+<tr class="row-even"><td>Tracer</td>
+<td>**** memory too small for multiple tracers ****</td>
+</tr>
+<tr class="row-odd"><td>Invalid colloid particle size distribution</td>
+<td>Fatal error, the colloid particle size distribution must end at 1</td>
+</tr>
+<tr class="row-even"><td>Invalid particle diffusion</td>
+<td>Fatal errorFor a dpdp simulation, Do not apply the matrix diffusion particle tracking to the matrix nodes, only the fracture nodes</td>
+</tr>
+<tr class="row-odd"><td>Invalid particle state</td>
+<td>Initial state of particles is invalidParticle number i1</td>
+</tr>
+<tr class="row-even"><td>Error computing geometric coefficients</td>
+<td>iteration in zone did not converge, izone = zone_number please check icnl in macro CTRL</td>
+</tr>
+<tr class="row-odd"><td>Too many negative volumes or finite element coefficients</td>
+<td>too many negative volumes : stopping-or-too many negative coefficients : stopping</td>
+</tr>
+<tr class="row-even"><td>Unable to compute local coordinates</td>
+<td>iteration in zone did not converge, izone = zone please check icnl in macro CTRL</td>
+</tr>
+<tr class="row-odd"><td>Unable to normalize matrix</td>
+<td>cannot normalize</td>
+</tr>
+<tr class="row-even"><td>Singular matrix in LU decomposition</td>
+<td>singular matrix in ludcmp</td>
+</tr>
+<tr class="row-odd"><td>Singular matrix in speciation calculations</td>
+<td>Speciation Jacobian matrix is singular!-or-Scaled Speciation Jacobian matrix is singular!-or-Speciation scaling matrix is singular!</td>
+</tr>
+<tr class="row-even"><td>Solution failed to converge</td>
+<td>timestep less than daymin timestep_number current_timestep_size current_simulation_time-or-Tracer Time Step Smaller Than Minimum StepStop in resettrc-or-</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td>Newton-Raphson iteration limit exceeded in speciation subroutine!-or-Newton-Raphson iteration limit exceeded in scaled speciation subroutine!Failure at node i</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="References.html" class="btn btn-neutral float-right" title="References" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Output.html" class="btn btn-neutral float-left" title="Output" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Los Alamos National Laboratory
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

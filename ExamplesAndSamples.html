@@ -1,0 +1,1350 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Examples and Sample Problems &mdash; FEHM 3.3.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Macros" href="Macros.html" />
+    <link rel="prev" title="Definitions and Acronyms" href="DefinitionsAndAcronyms.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> FEHM
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.3.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="SystemInterface.html">System Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SystemInterface.html#installation-instructions">Installation Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DataFiles.html">Data Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DefinitionsAndAcronyms.html">Definitions and Acronyms</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples and Sample Problems</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#constructing-an-input-file">Constructing an Input File</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#macro-control-statements-by-problem-type">Macro Control Statements by Problem Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#heat-conduction">Heat Conduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#water-water-vapor-heat-equivalent-continuum-dual-porosity-dual-permeability">Water / Water Vapor / Heat Equivalent Continuum, Dual Porosity,Dual Permeability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#air-water-no-heat-equivalent-continuum-dual-porosity-dual-permeability">Air / Water / No Heat Equivalent Continuum, Dual Porosity, Dual Permeability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id87">Air / Water / No Heat Equivalent Continuum, Dual Porosity, Dual Permeability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#code-execution">Code Execution</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#heat-conduction-in-a-square">Heat Conduction in a Square</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id125">FEHM input file for heat conduction example (<code class="docutils literal notranslate"><span class="pre">heat2d.in</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id126">FEHM output from the 2-D heat conduction example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#doe-code-comparison-project-problem-5-case-a">DOE Code Comparison Project, Problem 5, Case A</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#input-parameters-for-the-doe-code-comparison-project-problem">Input Parameters for the DOE Code Comparison Project Problem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id127">FEHM input file for DOE problem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reactive-transport-example">Reactive Transport Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fehm-input-file-for-reactive-transport-problem">FEHM input file for reactive transport problem</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Program Specifications</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Macros.html">Macros</a></li>
+<li class="toctree-l1"><a class="reference internal" href="InputData.html">Input Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Output.html">Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ProgramConsiderations.html">Program Considerations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">References &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="References.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Support.html">User Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ReleaseNotes/release_notes.html">Release Notes</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">FEHM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Examples and Sample Problems</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/ExamplesAndSamples.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="examples-and-sample-problems">
+<h1>Examples and Sample Problems<a class="headerlink" href="#examples-and-sample-problems" title="Permalink to this headline">¶</a></h1>
+<p>The following describes execution of the FEHM code. <a class="reference internal" href="#constructing-an-input-file">Constructing an Input File</a> discusses the construction of an input file. <a class="reference internal" href="#code-execution">Code Execution</a> illustrates the entire procedure for executing the FEHM code using terminal input. Example 1 describes the setup and results from a simple 2-D heat conduction simulation. The remaining sections provide more complex example problems and deal only with problem setup and expected results.</p>
+<div class="section" id="constructing-an-input-file">
+<h2>Constructing an Input File<a class="headerlink" href="#constructing-an-input-file" title="Permalink to this headline">¶</a></h2>
+<p>FEHM is a very general simulation code. Thus it is preferable to discuss the construction of an input file from a problem oriented point of view. In what follows the needs of the physical problem (initial conditions, boundary conditions, etc.) will be addressed in terms of the macro statements.</p>
+<p><strong>Initial conditions</strong>. These are needed for every problem, even if it is a steady state simulation. If the simulation is comprised of fully saturated water flow or heat conduction only, then the appropriate control statement would be <a class="reference external" href="MacroInit.html">init</a>. The use of <code class="docutils literal notranslate"><span class="pre">init</span></code> also allows the specification of initial temperature and pressure (gravity) gradients. If two phase flow is prescribed (thermal or isothermal) then entering the initial conditions through the control statement <a class="reference external" href="MacroPres.html">pres</a> is more convenient. Initial values for noncondensible gas are handled in the <a class="reference external" href="MacroNgas.html">ngas</a> control statement. It should be remembered that if a restart file is present, those values will have precedence over values input in control statement <code class="docutils literal notranslate"><span class="pre">init</span></code> but not over values input in control statement <code class="docutils literal notranslate"><span class="pre">pres</span></code> Solute initial conditions are prescribed through the control statement <a class="reference external" href="MacroTrac.html">trac</a>.</p>
+<p><strong>Boundary conditions</strong>. Fluid and heat flow boundary conditions can be prescribed through control statements <code class="docutils literal notranslate"><span class="pre">pres</span></code> <a class="reference external" href="MacroBoun.html">bound</a>, <a class="reference external" href="MacroFlow.html">flow</a>, and <a class="reference external" href="MacroHflx.html">hflx</a>. Boundary conditions are entered with <code class="docutils literal notranslate"><span class="pre">pres</span></code> by specifying a negative phase state designation (the code will actually use the absolute value of the phase state designation). In this case the code will keep the variable values constant at whatever value was prescribed in <strong>pres</strong>. Flowing pressures are input with the boun or <code class="docutils literal notranslate"><span class="pre">flow</span></code> control statement. Solute boundary conditions are prescribed through the control statement <code class="docutils literal notranslate"><span class="pre">trac</span></code></p>
+<p><strong>Material and Energy Balance Equations</strong>. The choice of the coupled system equations is made in control statements <a class="reference external" href="MacroSol.html">sol</a>, <code class="docutils literal notranslate"><span class="pre">ngas</span></code>, and <a class="reference external" href="MacroAir.html">air</a>.</p>
+<p><strong>Rock or Media Properties</strong>. These are found in the <a class="reference external" href="MacroRock.html">rock</a> and <code class="docutils literal notranslate"><span class="pre">perm</span></code> control statements.</p>
+<p><strong>Fluid Properties</strong>. These are found in control statement <a class="reference external" href="MacroEos.html">eos</a>, which is optional. If <strong>eos</strong> is not invoked, then the properties of water and air included in the code are used. Relative permeabilities, depending on both the fluid and media type, are found in control statement <a class="reference external" href="MacroRlp.html">rlp</a>.</p>
+<p><strong>Mesh Geometry and Nodal Coordinates</strong>. This geometry information is found in control statements <a class="reference external" href="MacroCoor.html">coor</a> and <a class="reference external" href="MacroElem.html">elem</a>. This information is usually created with a mesh generation program.</p>
+<p><strong>Simulation Time</strong>. The time stepping information including printout intervals and time step sizing is found in control statement <a class="reference external" href="MacroTime.html">time</a>.</p>
+<p><strong>Numerics</strong>. Convergence criteria, upwinding parameters, fill-in for the preconditioned conjugate gradient solver and geometry type (2-D, 3-D, radial) are entered with control statement <a class="reference external" href="MacroCtrl.html">ctrl</a>.</p>
+<p><strong>Advanced Iteration Control</strong>. Reduced degree of freedom methods are invoked with the <a class="reference external" href="MacroIter.html">iter</a> control statement. One important quantity entered with this statement is the maximum time for the job to run on the computer.</p>
+<p><strong>Sources and Sinks</strong>. These are input with the control statements <code class="docutils literal notranslate"><span class="pre">boun</span></code> or <code class="docutils literal notranslate"><span class="pre">flow</span></code> Care must be taken as the parameters have different meanings for different physical models.</p>
+<p>The following table shows required and optional macros listed by the type of problem being simulated. See the Alphabetic Macro List for all available macros and their definitions.</p>
+<div class="section" id="macro-control-statements-by-problem-type">
+<span id="macrotable"></span><h3>Macro Control Statements by Problem Type<a class="headerlink" href="#macro-control-statements-by-problem-type" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="heat-conduction">
+<h3>Heat Conduction<a class="headerlink" href="#heat-conduction" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="61%" />
+<col width="39%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Required Macros</th>
+<th class="head">Optional Macros</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroTitle.html">title</a></td>
+<td><a class="reference external" href="Macros/MacroCont.html">cont</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroBoun.html">boun</a> or <a class="reference external" href="Macros/MacroFlow.html">flow</a> or <a class="reference external" href="Macros/MacroHflx.html">hflx</a></td>
+<td><a class="reference external" href="Macros/MacroFinv.html">finv</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroCond.html">cond</a></td>
+<td><a class="reference external" href="Macros/MacroFlo2.html">flo2</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroCoor.html">coor</a></td>
+<td><a class="reference external" href="Macros/MacroFlxo.html">flxo</a> or <a class="reference external" href="Macros/MacroFlxz.html">flxz</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroCtrl.html">ctrl</a></td>
+<td><a class="reference external" href="Macros/MacroIter.html">iter</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroElem.html">elem</a></td>
+<td><a class="reference external" href="Macros/MacroNode.html">node</a> or <a class="reference external" href="Macros/MacroNod2.html">nod2</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroInit.html">init</a> or <a class="reference external" href="Macros/MacroPres.html">pres</a></td>
+<td><a class="reference external" href="Macros/MacroRenu.html">renu</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroRock.html">rock</a></td>
+<td><a class="reference external" href="Macros/MacroRflx.html">rflx</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroSol.html">sol</a></td>
+<td>text or comments (#)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroTime.html">time</a></td>
+<td><a class="reference external" href="Macros/MacroUser.html">user</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroStop.html">stop</a></td>
+<td><a class="reference external" href="Macros/MacroVcon.html">vcon</a></td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td><a class="reference external" href="Macros/MacroZone.html">zone</a> or <a class="reference external" href="Macros/MacroZonn.html">zonn</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="water-water-vapor-heat-equivalent-continuum-dual-porosity-dual-permeability">
+<h3>Water / Water Vapor / Heat Equivalent Continuum, Dual Porosity,Dual Permeability<a class="headerlink" href="#water-water-vapor-heat-equivalent-continuum-dual-porosity-dual-permeability" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="61%" />
+<col width="39%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Required Macros</th>
+<th class="head">Optional Macros</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroTitle.html">title</a></td>
+<td><a class="reference external" href="Macros/MacroCden.html">cden</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroBoun.html">boun</a> or <a class="reference external" href="Macros/MacroFlow.html">flow</a> or <a class="reference external" href="Macros/MacroHflx.html">hflx</a></td>
+<td><a class="reference external" href="Macros/MacroCont.html">cont</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroCond.html">cond</a></td>
+<td><a class="reference external" href="Macros/MacroEos.html">eos</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroCoor.html">coor</a></td>
+<td><a class="reference external" href="Macros/MacroExrl.html">exrl</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroCtrl.html">ctrl</a></td>
+<td><a class="reference external" href="Macros/MacroFinv.html">finv</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroElem.html">elem</a></td>
+<td><a class="reference external" href="Macros/MacroFlo2.html">flo2</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroInit.html">init</a> or <a class="reference external" href="Macros/MacroPres.html">pres</a></td>
+<td><a class="reference external" href="Macros/MacroFlxo.html">flxo</a> or <a class="reference external" href="Macros/MacroFlxz.html">flxz</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroPerm.html">perm</a></td>
+<td><a class="reference external" href="Macros/MacroFper.html">fper</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroRlp.html">rlp</a></td>
+<td><a class="reference external" href="Macros/MacroGdpm.html">gdpm</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroRock.html">rock</a></td>
+<td><a class="reference external" href="Macros/MacroHflx.html">hflx</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroSol.html">sol</a></td>
+<td><a class="reference external" href="Macros/MacroIter.html">iter</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroTime.html">time</a></td>
+<td><a class="reference external" href="Macros/MacroNode.html">node</a> or <a class="reference external" href="Macros/MacroNod2.html">nod2</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroStop.html">stop</a></td>
+<td><a class="reference external" href="Macros/MacroPpor.html">ppor</a></td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td><a class="reference external" href="Macros/MacroRenu.html">renu</a></td>
+</tr>
+<tr class="row-even"><td>dual (* only)</td>
+<td><a class="reference external" href="Macros/MacroRflx.html">rflx</a></td>
+</tr>
+<tr class="row-odd"><td>dpdp (** only)</td>
+<td><a class="reference external" href="Macros/MacroRxn.html">rxn</a></td>
+</tr>
+<tr class="row-even"><td rowspan="6">&#160;</td>
+<td>text or comments (#)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroTrac.html">trac</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroUser.html">user</a> or <a class="reference external" href="Macros/MacroUserc.html">userc</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroVcon.html">vcon</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroVelo.html">velo</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroZone.html">zone</a> or <a class="reference external" href="Macros/MacroZonn.html">zonn</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="air-water-no-heat-equivalent-continuum-dual-porosity-dual-permeability">
+<h3>Air / Water / No Heat Equivalent Continuum, Dual Porosity, Dual Permeability<a class="headerlink" href="#air-water-no-heat-equivalent-continuum-dual-porosity-dual-permeability" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="59%" />
+<col width="41%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Required Macros</th>
+<th class="head">Optional Macros</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroTitle.html">title</a></td>
+<td><a class="reference external" href="Macros/MacroAdif.html">adif</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroBoun.html">boun</a> or <a class="reference external" href="Macros/MacroFlow.html">flow</a> or <a class="reference external" href="Macros/MacroHflx.html">hflx</a></td>
+<td><a class="reference external" href="Macros/MacroCden.html">cden</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroCond.html">cond</a></td>
+<td><a class="reference external" href="Macros/MacroCont.html">cont</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroCoor.html">coor</a></td>
+<td><a class="reference external" href="Macros/MacroEos.html">eos</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroCtrl.html">ctrl</a></td>
+<td><a class="reference external" href="Macros/MacroFinv.html">finv</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroElem.html">elem</a></td>
+<td><a class="reference external" href="Macros/MacroFlo2.html">flo2</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroInit.html">init</a> or <a class="reference external" href="Macros/MacroPres.html">pres</a></td>
+<td><a class="reference external" href="Macros/MacroFlxo.html">flxo</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroNgas.html">ngas</a></td>
+<td><a class="reference external" href="Macros/MacroFper.html">fper</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroPerm.html">perm</a></td>
+<td><a class="reference external" href="Macros/MacroGdpm.html">gdpm</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroRlp.html">rlp</a></td>
+<td><a class="reference external" href="Macros/MacroIter.html">iter</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroRock.html">rock</a></td>
+<td><a class="reference external" href="Macros/MacroNode.html">node</a> or <a class="reference external" href="Macros/MacroNod2.html">nod2</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroSol.html">sol</a></td>
+<td><a class="reference external" href="Macros/MacroPpor.html">ppor</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroTime.html">time</a></td>
+<td><a class="reference external" href="Macros/MacroRenu.html">renu</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroStop.html">stop</a></td>
+<td><a class="reference external" href="Macros/MacroRflx.html">rflx</a></td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td><a class="reference external" href="Macros/MacroRxn.html">rxn</a></td>
+</tr>
+<tr class="row-odd"><td>dual (<a href="#id76"><span class="problematic" id="id77">*</span></a>only)</td>
+<td><a class="reference external" href="Macros/MacroSzna.html">szna</a></td>
+</tr>
+<tr class="row-even"><td>dpdp (<a href="#id78"><span class="problematic" id="id79">**</span></a>only)</td>
+<td>text or comments (#)</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td><a class="reference external" href="Macros/MacroTrac.html">trac</a></td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td><a class="reference external" href="Macros/MacroUser.html">user</a> or <a class="reference external" href="Macros/MacroUserc.html">userc</a></td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td><a class="reference external" href="Macros/MacroVapl.html">vapl</a></td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td><a class="reference external" href="Macros/MacroVcon.html">vcon</a></td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td><a class="reference external" href="Macros/MacroVelo.html">velo</a></td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td><a class="reference external" href="Macros/MacroZone.html">zone</a> or <a class="reference external" href="Macros/MacroZone.html">zonn</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id87">
+<h3>Air / Water / No Heat Equivalent Continuum, Dual Porosity, Dual Permeability<a class="headerlink" href="#id87" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Required Macros</th>
+<th class="head">Optional Macros</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroTitle.html">title</a></td>
+<td><a class="reference external" href="Macros/MacroBous.html">bous</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroAirwater.html">airwater</a></td>
+<td><a class="reference external" href="Macros/MacroCont.html">cont</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroBoun.html">boun</a> or <a class="reference external" href="Macros/MacroFlow.html">flow</a></td>
+<td><a class="reference external" href="Macros/MacroEos.html">eos</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroCoor.html">coor</a></td>
+<td><a class="reference external" href="Macros/MacroExri.html">exri</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroCtrl.html">ctrl</a></td>
+<td><a class="reference external" href="Macros/MacroFinv.html">finv</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroElem.html">elem</a></td>
+<td><a class="reference external" href="Macros/MacroFlo2.html">flo2</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroInit.html">init</a> or <a class="reference external" href="Macros/MacroPres.html">pres</a></td>
+<td><a class="reference external" href="Macros/MacroFlxo.html">flxo</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroNode.html">node</a> or <a class="reference external" href="Macros/MacroNod2.html">nod2</a></td>
+<td><a class="reference external" href="Macros/MacroFper.html">fper</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroPerm.html">perm</a></td>
+<td><a class="reference external" href="Macros/MacroGdpm.html">gdpm</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroRock.html">rock</a></td>
+<td><a class="reference external" href="Macros/MacroHead.html">head</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroSol.html">sol</a></td>
+<td><a class="reference external" href="Macros/MacroIter.html">iter</a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="Macros/MacroTime.html">time</a></td>
+<td><a class="reference external" href="Macros/MacroPpor.html">ppor</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="Macros/MacroStop.html">stop</a></td>
+<td><a class="reference external" href="Macros/MacroPres.html">pres</a></td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td><a class="reference external" href="Macros/MacroRenu.html">renu</a></td>
+</tr>
+<tr class="row-even"><td>dual (<a href="#id114"><span class="problematic" id="id115">*</span></a>only)</td>
+<td><a class="reference external" href="Macros/MacroRlp.html">rlp</a></td>
+</tr>
+<tr class="row-odd"><td>dpdp (only)</td>
+<td><a class="reference external" href="Macros/MacroRxn.html">rxn</a></td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>text or comments</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td><a class="reference external" href="Macros/MacroTrac.html">trac</a></td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td><a class="reference external" href="Macros/MacroUser.html">user</a> or <a class="reference external" href="Macros/MacroUserc.html">userc</a></td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td><a class="reference external" href="Macros/MacroVapl.html">vapl</a></td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td><a class="reference external" href="Macros/MacroVelo.html">velo</a></td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td><a class="reference external" href="Macros/MacroZone.html">zone</a> or <a class="reference external" href="Macros/MacroZonn.html">zonn</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="code-execution">
+<h3>Code Execution<a class="headerlink" href="#code-execution" title="Permalink to this headline">¶</a></h3>
+<p>To run FEHM, the program executable file name is entered at the system prompt:</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">PROMPT</span><span class="o">&gt;</span> <span class="n">xfehm_v2</span><span class="o">.</span><span class="mi">30</span>
+</pre></div>
+</div>
+<p>Note that executable names may vary depending on the system being used.</p>
+<p>The I/O file information is provided to the code from an input control file or the terminal. The default control file name is <code class="docutils literal notranslate"><span class="pre">fehmn.files</span></code>. If a control file with the default name is present in the directory from which the code is being executed, no terminal input is required. If the default control file is not present, input prompts are written to the screen. A short description of the I/O files used by FEHM precedes the initial prompt. The following assumes the default control file was not found in the execution directory (for this example <code class="docutils literal notranslate"><span class="pre">/home/fehm/heat2d</span></code>).</p>
+<p>After the command <code class="docutils literal notranslate"><span class="pre">xfehm_v2.30</span></code> is given, the code queries the user regarding the input files, as follows:</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Enter</span> <span class="n">name</span> <span class="k">for</span> <span class="n">iocntl</span> <span class="o">--</span> <span class="n">default</span> <span class="n">file</span> <span class="n">name</span><span class="p">:</span> <span class="ow">not</span> <span class="n">using</span>
+<span class="p">[(</span><span class="n">name</span><span class="o">/</span><span class="n">na</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">using</span><span class="p">),</span> <span class="n">RETURN</span> <span class="o">=</span> <span class="n">DEFAULT</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>This query asks for a control file name. If a control file name is entered no further terminal input is required. The below example shows the control file that would produce the same results as the terminal responses discussed below and illustrated in <a class="reference internal" href="#terminalquery">TerminalQuery</a>. Files that are not needed for output can be represented with a blank line. If names are not provided for the write file and/or the data check file, the code will use the following defaults: fehmn.fin and fehmn.chk. Following the file names is the flag that controls terminal output. The last line of the file is the user subroutine number. Omitting these values results in no terminal output and no user subroutine call. For now, we assume a carriage return <code class="docutils literal notranslate"><span class="pre">&lt;cr&gt;</span></code> is entered and a control file is not being used. The following query will appear:</p>
+<p><strong>Input control file for heat conduction example</strong></p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">fehm</span><span class="o">/</span><span class="n">heat2d</span><span class="o">/</span><span class="nb">input</span><span class="o">/</span><span class="n">heat2d</span><span class="o">.</span><span class="ow">in</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">fehm</span><span class="o">/</span><span class="n">heat2d</span><span class="o">/</span><span class="nb">input</span><span class="o">/</span><span class="n">heat2d</span><span class="o">.</span><span class="ow">in</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">fehm</span><span class="o">/</span><span class="n">heat2d</span><span class="o">/</span><span class="nb">input</span><span class="o">/</span><span class="n">heat2d</span><span class="o">.</span><span class="ow">in</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">fehm</span><span class="o">/</span><span class="n">heat2d</span><span class="o">/</span><span class="n">output</span><span class="o">/</span><span class="n">heat2d</span><span class="o">.</span><span class="n">out</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">fehm</span><span class="o">/</span><span class="n">heat2d</span><span class="o">/</span><span class="n">output</span><span class="o">/</span><span class="n">heat2d</span><span class="o">.</span><span class="n">fin</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">fehm</span><span class="o">/</span><span class="n">heat2d</span><span class="o">/</span><span class="n">output</span><span class="o">/</span><span class="n">heat2d</span><span class="o">.</span><span class="n">his</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">fehm</span><span class="o">/</span><span class="n">heat2d</span><span class="o">/</span><span class="n">output</span><span class="o">/</span><span class="n">heat2d</span><span class="o">.</span><span class="n">chk</span>
+<span class="n">some</span>
+
+
+<span class="n">Enter</span> <span class="n">name</span> <span class="k">for</span> <span class="n">inpt</span> <span class="o">--</span> <span class="n">default</span> <span class="n">file</span> <span class="n">name</span><span class="p">:</span> <span class="n">fehmn</span><span class="o">.</span><span class="n">dat</span>
+<span class="p">[(</span><span class="n">name</span><span class="o">/</span><span class="n">na</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">using</span><span class="p">),</span> <span class="n">RETURN</span> <span class="o">=</span> <span class="n">DEFAULT</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>This query asks for an input file name. If a <code class="docutils literal notranslate"><span class="pre">&lt;cr&gt;</span></code> is given, the default <code class="docutils literal notranslate"><span class="pre">fehmn.dat</span></code> is used for the input file. We shall assume that the input file name entered is</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">input</span><span class="o">/</span><span class="n">heat2d</span><span class="o">.</span><span class="ow">in</span>
+</pre></div>
+</div>
+<p>Note that a subdirectory containing the file is also given. If the file did not exist, the code would repeat the prompt for an input file. Next the code would query to determine if the prefix of the input file name (the portion of the name preceding the final “.” or first space) should be used for code generated file names.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>Do you want all file names of the form input/heat2d.* ? [(y/n), RETURN = y]
+*** Note: If &quot;y&quot; incoor and inzone will equal inpt ***
+</pre></div>
+</div>
+<p>A <code class="docutils literal notranslate"><span class="pre">&lt;cr&gt;</span></code> will produce files with identical prefixes, including the subdirectory. If the response is negative, the code will query for the names of all required files. Assume we enter <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Enter</span> <span class="n">name</span> <span class="k">for</span> <span class="n">incoor</span> <span class="o">--</span> <span class="n">default</span> <span class="n">file</span> <span class="n">name</span><span class="p">:</span> <span class="nb">input</span><span class="o">/</span><span class="n">heat2d</span><span class="o">.</span><span class="ow">in</span>
+<span class="p">[(</span><span class="n">name</span><span class="o">/</span><span class="n">na</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">using</span><span class="p">),</span> <span class="n">RETURN</span> <span class="o">=</span> <span class="n">DEFAULT</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>(See <a class="reference internal" href="#terminalquery">TerminalQuery</a> for the remaining file name queries.)</p>
+<p>Next a query for terminal output appears.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tty</span> <span class="n">output</span> <span class="o">--</span> <span class="n">show</span> <span class="nb">all</span> <span class="n">reference</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">selected</span> <span class="n">reference</span> <span class="n">nodes</span><span class="p">,</span> <span class="ow">or</span> <span class="n">none</span><span class="p">:</span>
+<span class="p">[(</span><span class="nb">all</span><span class="o">/</span><span class="n">some</span><span class="o">/</span><span class="n">none</span><span class="p">),</span> <span class="n">RETURN</span> <span class="o">=</span> <span class="n">none</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>An “all” reply prints out the primary node information to the terminal at every time step. A “some” reply prints a selected subset of the node information. A reply of “none” suppresses all tty output with the exception of error messages printed if code execution is terminated abnormally or when maximum number of iterations are exceeded. Assume we enter “some”.</p>
+<p>The next query concerns the subroutine USER. This subroutine is used for special purposes and is not available to the general user.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">user</span> <span class="n">subroutine</span> <span class="n">number</span> <span class="p">(</span><span class="n">provided</span> <span class="n">to</span> <span class="n">subroutine</span> <span class="n">USER</span> <span class="n">before</span> <span class="n">every</span> <span class="n">time</span> <span class="n">step</span><span class="p">):</span>
+<span class="p">[</span><span class="n">RETURN</span> <span class="o">=</span> <span class="n">none</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Assume a <code class="docutils literal notranslate"><span class="pre">&lt;cr&gt;</span></code> is entered.</p>
+<p>The code will then print a summary of the I/O files to be used.</p>
+<p>The final query regards the acceptance of the file set just created. A “yes” reply denotes that the user has accepted the file set and the code proceeds with calculations. A “no” reply starts the query sequence again so I/O file names may be reentered or modified. A “stop” reply stops the current computer job.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">If</span> <span class="n">data</span> <span class="ow">is</span> <span class="n">OK</span> <span class="n">enter</span> <span class="n">yes</span> <span class="n">to</span> <span class="k">continue</span><span class="p">,</span> <span class="n">no</span> <span class="n">to</span> <span class="n">restart</span> <span class="n">terminal</span> <span class="nb">input</span><span class="p">,</span>
+<span class="ow">or</span> <span class="n">stop</span> <span class="n">to</span> <span class="n">end</span> <span class="n">program</span><span class="p">:</span> <span class="p">[(</span><span class="n">yes</span><span class="o">/</span><span class="n">no</span><span class="o">/</span><span class="n">stop</span><span class="p">),</span> <span class="n">RETURN</span> <span class="o">=</span> <span class="n">yes</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Screen output for this example execution using terminal input and a previous version of the code is shown below. The only difference in the output is that the code version identifier and date are updated for the current version. User responses are shown in <em>italics</em>.</p>
+<p id="terminalquery"><strong>Terminal query for FEHM example run</strong></p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;PROMPT&gt; xfehm_v2.30sun
+version FEHM V2.30sun 03-09-15 QA:QA 09/15/2003 11:08:14
+**** Default names for I/O files ****
+control file : fehmn.files
+input file : filen.*
+geometry data file : filen.*
+zone data file : filen.*
+output file : filen.out
+read file (if it exists) : filen.ini
+write file (if it exists) : filen.fin
+history plot file : filen.his
+tracer history plot file : filen.trc
+contour plot file : filen.con
+dual or dpdp contour plot file : filen.dp
+stiffness matrix data read/write file : filen.stor
+input check file : filen.chk
+**** where ****
+&quot;filen.*&quot; may be 100 characters maximum. If a name is not entered
+when prompted for, a default file name is used. &quot;fehmn.dat&quot; is the
+default used for the input file name.
+**** note ****
+A save file and input check file are always written. If you do not
+provide a name for these files, the following defaults will be used:
+fehmn.fin, fehmn.chk
+Enter name for iocntl -- default file name: not using
+[(name/na or not using), RETURN = DEFAULT]
+&lt;cr&gt;
+Enter name for inpt -- default file name: fehmn.dat
+[(name/na or not using), RETURN = DEFAULT]
+input/heat2d.in
+Do you want all file names of the form input/heat2d.* ? [(y/n), RETURN = y]
+*** Note: If &quot;y&quot; incoor and inzone will equal inpt ***
+n
+Enter name for incoor -- default file name: input/heat2d.in
+[(name/na or not using), RETURN = DEFAULT]
+&lt;cr&gt;
+Enter name for inzone -- default file name: input/heat2d.in
+[(name/na or not using), RETURN = DEFAULT]
+&lt;cr&gt;
+Enter name for iout -- default file name: input/heat2d.out
+[(name/na or not using), RETURN = DEFAULT]
+output/heat2d.out
+Enter name for iread -- default file name: input/heat2d.ini
+[(name/na or not using), RETURN = DEFAULT]
+na
+Enter name for isave -- default file name: input/heat2d.fin
+[(name/na or not using), RETURN = DEFAULT]
+output/heat2d.fin
+Enter name for ishis -- default file name: input/heat2d.his
+[(name/na or not using), RETURN = DEFAULT]
+output/heat2d.his
+Enter name for istrc -- default file name: input/heat2d.trc
+[(name/na or not using), RETURN = DEFAULT]
+na
+Enter name for iscon -- default file name: input/heat2d.con
+[(name/na or not using), RETURN = DEFAULT]
+na
+Enter name for iscon1 -- default file name: input/heat2d.dp
+[(name/na or not using), RETURN = DEFAULT]
+na
+Enter name for isstor -- default file name: input/heat2d.stor
+[(name/na or not using), RETURN = DEFAULT]
+na
+Enter name for ischk -- default file name: input/heat2d.chk
+[(name/na or not using), RETURN = DEFAULT]
+output/heat2d.chk
+tty output -- show all reference nodes, selected reference nodes, or none:
+[(all/some/none), RETURN = none]
+some
+user subroutine number (provided to subroutine USER before every time step):
+[RETURN = none]
+&lt;cr&gt;
+First reference output node will be written to tty
+File purpose - Variable - Unit number - File name
+control - iocntl - 0 - not using
+input - inpt - 11 - input/heat2d.in
+geometry - incoor - 11 - input/heat2d.in
+zone - inzone - 11 - input/heat2d.in
+output - iout - 14 - output/heat2d.out
+initial state - iread - 0 - not using
+final state - isave - 16 - output/heat2d.fin
+time history - ishis - 17 - output/heat2d.his
+time his.(tr) - istrc - 18 - not using
+contour plot - iscon - 19 - not using
+con plot (dp) - iscon1 - 20 - not using
+fe coef stor - isstor - 21 - not using
+input check - ischk - 22 - output/heat2d.chk
+Value provided to subroutine user: not using
+If data is OK enter yes to continue, no to restart terminal input,
+or stop to end program: [(yes/no/stop), RETURN = yes]
+&lt;cr&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="heat-conduction-in-a-square">
+<h2>Heat Conduction in a Square<a class="headerlink" href="#heat-conduction-in-a-square" title="Permalink to this headline">¶</a></h2>
+<p>This simple 2-D problem is used to illustrate input file construction and basic output. Heat conduction in a 1 meter square with an initial temperature, <span class="math notranslate nohighlight">\(T_0 = 200 ^{\circ}C\)</span>, is modeled after a surface temperature, <span class="math notranslate nohighlight">\(T_s = 100 ^{\circ}C\)</span>, is imposed at time, <span class="math notranslate nohighlight">\(t = 0\)</span> (<a class="reference external" href="FEHM-UM.9.3.html">See Schematic diagram of 2-D heat conduction problem.</a>). The input parameters used for the heat conduction problem are defined in <a class="reference external" href="FEHM-UM.9.3.htm#71293">Input Parameters for the 2-D Heat Conduction Problem</a>.The finite element mesh for this problem is shown in <a class="reference external" href="FEHM-UM.9.3.htm#49464">Finite element mesh used for 2-D heat conduction problem.</a>. Only a quarter of the square needs to be modeled because of problem symmetry.</p>
+<span class="target" id="terminalquerytable"></span><table border="1" class="docutils">
+<colgroup>
+<col width="34%" />
+<col width="38%" />
+<col width="29%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head" colspan="3">Input Parameters for the 2-D Heat Conduction Problem</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Rock thermal conductivity</td>
+<td><span class="math notranslate nohighlight">\(\kappa r\)</span></td>
+<td><span class="math notranslate nohighlight">\(2.7 \frac{W}{m \cdot K}\)</span></td>
+</tr>
+<tr class="row-odd"><td>Rock density</td>
+<td><span class="math notranslate nohighlight">\(\rho r\)</span></td>
+<td><span class="math notranslate nohighlight">\(2700 \frac{kg}{m^3}\)</span></td>
+</tr>
+<tr class="row-even"><td>Rock specific heat</td>
+<td><span class="math notranslate nohighlight">\(Cr\)</span></td>
+<td><span class="math notranslate nohighlight">\(1000 \frac{J}{kg \cdot K}\)</span></td>
+</tr>
+<tr class="row-odd"><td>Width</td>
+<td><span class="math notranslate nohighlight">\(a\)</span></td>
+<td><span class="math notranslate nohighlight">\(0.5 m\)</span></td>
+</tr>
+<tr class="row-even"><td>Length</td>
+<td><span class="math notranslate nohighlight">\(b\)</span></td>
+<td><span class="math notranslate nohighlight">\(0.5 m\)</span></td>
+</tr>
+<tr class="row-odd"><td>Initial temperature</td>
+<td><span class="math notranslate nohighlight">\(T_0\)</span></td>
+<td><span class="math notranslate nohighlight">\(200 ^{\circ}C\)</span></td>
+</tr>
+<tr class="row-even"><td>Surface temperaturefor all x, y = 0.5 m</td>
+<td><span class="math notranslate nohighlight">\(T_s\)</span></td>
+<td><span class="math notranslate nohighlight">\(100 ^{\circ}C\)</span></td>
+</tr>
+<tr class="row-odd"><td>Rock thermal diffusivity</td>
+<td><span class="math notranslate nohighlight">\(\kappa = \frac{\kappa_r}{\rho_r C_r}\)</span></td>
+<td>&#160;</td>
+</tr>
+</tbody>
+</table>
+<p>The input file (see <a class="reference external" href="FEHM-UM.9.3.htm#26275">FEHM input file for heat conduction example (heat2d.in).</a>) uses optional macro control statement node (output nodes) and the required macro control statements sol (solution specification - heat transfer only), init (initial value data), rock (rock properties), cond (thermal conductivities), perm (permeabilities), time (simulation timing data), ctrl (program control parameters), coor (node coordinates), elem (element node data), and stop. For this problem macro control statement flow is also used to set the temperature boundary conditions. A portion of the output file is reproduced in <a class="reference external" href="FEHM-UM.9.3.htm#50551">FEHM output from the 2-D heat conduction example.</a>.</p>
+</div>
+<div class="section" id="id125">
+<h2>FEHM input file for heat conduction example (<code class="docutils literal notranslate"><span class="pre">heat2d.in</span></code>)<a class="headerlink" href="#id125" title="Permalink to this headline">¶</a></h2>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">*****</span> <span class="mi">2</span><span class="o">-</span><span class="n">D</span> <span class="n">Heat</span> <span class="n">Conduction</span> <span class="n">Model</span> <span class="p">(</span><span class="mi">2</span><span class="n">X2</span> <span class="n">rectangles</span><span class="p">)</span> <span class="o">*****</span><span class="n">node</span>
+<span class="mi">2</span>
+<span class="mi">7</span>    <span class="mi">5</span>
+<span class="n">sol</span>
+
+<span class="o">-</span><span class="mi">1</span>   <span class="o">-</span><span class="mi">1</span>
+<span class="n">init</span>
+
+<span class="mf">10.</span>  <span class="mf">0.</span>      <span class="mf">200.</span>    <span class="mf">0.</span>      <span class="mf">0.</span>      <span class="mf">200.</span>    <span class="mf">0.</span>      <span class="mf">0.</span>
+<span class="n">rock</span>
+
+<span class="mi">1</span>    <span class="mi">9</span>       <span class="mi">1</span>       <span class="mf">2700.</span>   <span class="mf">1000.</span>   <span class="mf">0.</span>
+
+<span class="n">cond</span>
+
+<span class="mi">1</span>    <span class="mi">9</span>       <span class="mi">1</span>       <span class="mf">2.7e-00</span> <span class="mf">2.7e-00</span> <span class="mf">2.7e-00</span>
+
+<span class="n">perm</span>
+
+<span class="mi">1</span>    <span class="mi">9</span>       <span class="mi">1</span>       <span class="mf">1.e-30</span>  <span class="mf">1.e-30</span>  <span class="mf">1.e-30</span>
+
+<span class="n">flow</span>
+
+<span class="mi">1</span>    <span class="mi">3</span>       <span class="mi">1</span>        <span class="mf">10.00</span>  <span class="o">-</span><span class="mf">100.00</span> <span class="mf">1.e03</span>
+<span class="mi">3</span>    <span class="mi">9</span>       <span class="mi">3</span>        <span class="mf">10.00</span>  <span class="o">-</span><span class="mf">100.00</span> <span class="mf">1.e03</span>
+
+<span class="n">time</span>
+
+<span class="mf">0.005</span>        <span class="mf">4.00</span>    <span class="mi">1000</span>    <span class="mi">10</span>      <span class="mi">1994</span>    <span class="mi">02</span>
+
+<span class="n">ctrl</span>
+
+<span class="mi">40</span>   <span class="mf">1.e-04</span>  <span class="mi">08</span>
+<span class="mi">1</span>    <span class="mi">9</span>       <span class="mi">1</span>       <span class="mi">1</span>
+
+<span class="mf">1.0</span>  <span class="mf">0.0</span>     <span class="mf">1.0</span>
+<span class="mi">10</span>   <span class="mf">1.0</span>     <span class="mf">0.00005</span> <span class="mf">0.005</span>
+<span class="mi">1</span>    <span class="mi">0</span>
+<span class="n">coor</span> <span class="n">Feb</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">1994</span> <span class="mi">11</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">40</span>
+
+     <span class="mi">9</span>
+
+     <span class="mi">1</span>       <span class="mf">0.</span>      <span class="mf">0.50</span>    <span class="mf">0.</span>
+
+     <span class="mi">2</span>       <span class="mf">0.25</span>    <span class="mf">0.50</span>     <span class="mf">0.</span>
+
+     <span class="mi">3</span>       <span class="mf">0.50</span>    <span class="mf">0.50</span>     <span class="mf">0.</span>
+
+     <span class="mi">4</span>       <span class="mf">0.</span>      <span class="mf">0.25</span>     <span class="mf">0.</span>
+
+     <span class="mi">5</span>       <span class="mf">0.25</span>    <span class="mf">0.25</span>     <span class="mf">0.</span>
+
+     <span class="mi">6</span>       <span class="mf">0.50</span>    <span class="mf">0.25</span>     <span class="mf">0.</span>
+
+     <span class="mi">7</span>       <span class="mf">0.</span>      <span class="mf">0.</span>      <span class="mf">0.</span>
+
+     <span class="mi">8</span>       <span class="mf">0.25</span>     <span class="mf">0.</span>     <span class="mf">0.</span>
+
+     <span class="mi">9</span>       <span class="mf">0.50</span>     <span class="mf">0.</span>     <span class="mf">0.</span>
+
+
+
+<span class="n">elem</span>
+
+     <span class="mi">4</span>       <span class="mi">4</span>
+
+     <span class="mi">1</span>       <span class="mi">4</span>       <span class="mi">5</span>       <span class="mi">2</span>       <span class="mi">1</span>
+
+     <span class="mi">2</span>       <span class="mi">5</span>       <span class="mi">6</span>       <span class="mi">3</span>       <span class="mi">2</span>
+
+     <span class="mi">3</span>       <span class="mi">7</span>       <span class="mi">8</span>       <span class="mi">5</span>       <span class="mi">4</span>
+
+     <span class="mi">4</span>       <span class="mi">8</span>       <span class="mi">9</span>       <span class="mi">6</span>       <span class="mi">5</span>
+
+
+
+<span class="n">stop</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id126">
+<h2>FEHM output from the 2-D heat conduction example<a class="headerlink" href="#id126" title="Permalink to this headline">¶</a></h2>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FEHM</span> <span class="n">V2</span><span class="o">.</span><span class="mi">10</span> <span class="mi">00</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">28</span> <span class="mi">08</span><span class="o">/</span><span class="mi">07</span><span class="o">/</span><span class="mi">2000</span> <span class="mi">13</span><span class="p">:</span><span class="mi">25</span><span class="p">:</span><span class="mi">08</span>
+<span class="o">*****</span> <span class="mi">2</span><span class="o">-</span><span class="n">D</span> <span class="n">Heat</span> <span class="n">Conduction</span> <span class="n">Model</span> <span class="o">*****</span>
+<span class="n">File</span> <span class="n">purpose</span> <span class="o">-</span> <span class="n">Variable</span> <span class="o">-</span> <span class="n">Unit</span> <span class="n">number</span> <span class="o">-</span> <span class="n">File</span> <span class="n">name</span>
+<span class="n">control</span> <span class="o">-</span> <span class="n">iocntl</span> <span class="o">-</span> <span class="mi">0</span><span class="o">-</span> <span class="ow">not</span> <span class="n">using</span>
+<span class="nb">input</span> <span class="o">-</span> <span class="n">inpt</span> <span class="o">-</span> <span class="mi">11</span><span class="o">-</span> <span class="n">heat2d</span><span class="o">.</span><span class="ow">in</span>
+<span class="n">geometry</span><span class="o">-</span> <span class="n">incoor</span><span class="o">-</span> <span class="mi">11</span><span class="o">-</span> <span class="n">heat2d</span><span class="o">.</span><span class="ow">in</span>
+<span class="n">zone</span> <span class="o">-</span> <span class="n">inzone</span><span class="o">-</span> <span class="mi">11</span><span class="o">-</span> <span class="n">heat2d</span><span class="o">.</span><span class="ow">in</span>
+<span class="n">output</span> <span class="o">-</span> <span class="n">iout</span> <span class="o">-</span> <span class="mi">14</span><span class="o">-</span> <span class="n">heat2d</span><span class="o">.</span><span class="n">out</span>
+<span class="n">initial</span> <span class="n">state</span><span class="o">-</span> <span class="n">iread</span><span class="o">-</span> <span class="mi">0</span><span class="o">-</span> <span class="ow">not</span> <span class="n">using</span>
+<span class="n">final</span> <span class="n">state</span><span class="o">-</span> <span class="n">isave</span><span class="o">-</span> <span class="mi">16</span><span class="o">-</span> <span class="n">fehmn</span><span class="o">.</span><span class="n">fin</span>
+<span class="n">time</span> <span class="n">history</span><span class="o">-</span> <span class="n">ishis</span><span class="o">-</span> <span class="mi">17</span><span class="o">-</span> <span class="n">heat2d</span><span class="o">.</span><span class="n">his</span>
+<span class="n">time</span> <span class="n">his</span><span class="o">.</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span><span class="o">-</span> <span class="n">istrc</span><span class="o">-</span> <span class="mi">0</span><span class="o">-</span> <span class="ow">not</span> <span class="n">using</span>
+<span class="n">contour</span> <span class="n">plot</span><span class="o">-</span> <span class="n">iscon</span><span class="o">-</span> <span class="mi">0</span><span class="o">-</span> <span class="ow">not</span> <span class="n">using</span>
+<span class="n">con</span> <span class="n">plot</span> <span class="p">(</span><span class="n">dp</span><span class="p">)</span><span class="o">-</span> <span class="n">iscon1</span><span class="o">-</span> <span class="mi">0</span><span class="o">-</span> <span class="ow">not</span> <span class="n">using</span>
+<span class="n">fe</span> <span class="n">coef</span> <span class="n">stor</span><span class="o">-</span> <span class="n">isstor</span><span class="o">-</span> <span class="mi">0</span><span class="o">-</span> <span class="ow">not</span> <span class="n">using</span>
+<span class="nb">input</span> <span class="n">check</span><span class="o">-</span> <span class="n">ischk</span><span class="o">-</span> <span class="mi">22</span><span class="o">-</span> <span class="n">fehmn</span><span class="o">.</span><span class="n">chk</span>
+<span class="n">Value</span> <span class="n">provided</span> <span class="n">to</span> <span class="n">subroutine</span> <span class="n">user</span><span class="p">:</span> <span class="ow">not</span> <span class="n">using</span>
+<span class="o">****</span> <span class="nb">input</span> <span class="n">title</span> <span class="p">:</span> <span class="n">coor</span><span class="o">****</span> <span class="n">incoor</span> <span class="o">=</span> <span class="mi">11</span> <span class="o">****</span>
+<span class="o">****</span> <span class="nb">input</span> <span class="n">title</span> <span class="p">:</span> <span class="n">elem</span><span class="o">****</span> <span class="n">incoor</span> <span class="o">=</span> <span class="mi">11</span> <span class="o">****</span>
+<span class="o">****</span> <span class="nb">input</span> <span class="n">title</span> <span class="p">:</span> <span class="n">stop</span><span class="o">****</span> <span class="n">incoor</span> <span class="o">=</span> <span class="mi">11</span> <span class="o">****</span>
+<span class="o">****</span> <span class="nb">input</span> <span class="n">title</span> <span class="p">:</span> <span class="n">node</span><span class="o">****</span> <span class="n">inpt</span> <span class="o">=</span> <span class="mi">11</span> <span class="o">****</span>
+<span class="o">****</span> <span class="nb">input</span> <span class="n">title</span> <span class="p">:</span> <span class="n">sol</span><span class="o">****</span> <span class="n">inpt</span> <span class="o">=</span> <span class="mi">11</span> <span class="o">****</span>
+<span class="o">****</span> <span class="nb">input</span> <span class="n">title</span> <span class="p">:</span> <span class="n">init</span><span class="o">****</span> <span class="n">inpt</span> <span class="o">=</span> <span class="mi">11</span> <span class="o">****</span>
+<span class="o">****</span> <span class="nb">input</span> <span class="n">title</span> <span class="p">:</span> <span class="n">rock</span><span class="o">****</span> <span class="n">inpt</span> <span class="o">=</span> <span class="mi">11</span> <span class="o">****</span>
+<span class="o">****</span> <span class="nb">input</span> <span class="n">title</span> <span class="p">:</span> <span class="n">cond</span><span class="o">****</span> <span class="n">inpt</span> <span class="o">=</span> <span class="mi">11</span> <span class="o">****</span>
+<span class="o">****</span> <span class="nb">input</span> <span class="n">title</span> <span class="p">:</span> <span class="n">perm</span><span class="o">****</span> <span class="n">inpt</span> <span class="o">=</span> <span class="mi">11</span> <span class="o">****</span>
+<span class="o">****</span> <span class="nb">input</span> <span class="n">title</span> <span class="p">:</span> <span class="n">flow</span><span class="o">****</span> <span class="n">inpt</span> <span class="o">=</span> <span class="mi">11</span> <span class="o">****</span>
+<span class="o">****</span> <span class="nb">input</span> <span class="n">title</span> <span class="p">:</span> <span class="n">time</span><span class="o">****</span> <span class="n">inpt</span> <span class="o">=</span> <span class="mi">11</span> <span class="o">****</span>
+<span class="o">****</span> <span class="nb">input</span> <span class="n">title</span> <span class="p">:</span> <span class="n">ctrl</span><span class="o">****</span> <span class="n">inpt</span> <span class="o">=</span> <span class="mi">11</span> <span class="o">****</span>
+<span class="o">****</span> <span class="nb">input</span> <span class="n">title</span> <span class="p">:</span> <span class="n">stop</span><span class="o">****</span> <span class="n">inpt</span> <span class="o">=</span> <span class="mi">11</span> <span class="o">****</span>
+<span class="n">BC</span> <span class="n">to</span> <span class="n">BC</span> <span class="n">connection</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="n">found</span><span class="p">(</span><span class="n">now</span> <span class="nb">set</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="n">BC</span> <span class="n">to</span> <span class="n">BC</span> <span class="n">connection</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="n">found</span><span class="p">(</span><span class="n">now</span> <span class="nb">set</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="n">pressures</span> <span class="ow">and</span> <span class="n">temperatures</span> <span class="nb">set</span> <span class="n">by</span> <span class="n">gradients</span>
+<span class="o">&gt;&gt;&gt;</span><span class="n">reading</span> <span class="n">nop</span> <span class="kn">from</span> <span class="nn">file</span> <span class="n">nop</span><span class="o">.</span><span class="n">temp</span><span class="o">.....</span>
+<span class="o">&gt;&gt;&gt;</span><span class="n">reading</span> <span class="n">nop</span> <span class="n">was</span> <span class="n">succesful</span><span class="o">.....</span>
+<span class="n">storage</span> <span class="n">needed</span> <span class="k">for</span> <span class="n">ncon43</span> <span class="n">available</span> <span class="mi">43</span>
+<span class="n">storage</span> <span class="n">needed</span> <span class="k">for</span> <span class="n">nop43</span> <span class="n">available</span> <span class="mi">46</span>
+<span class="n">storage</span> <span class="n">needed</span> <span class="k">for</span> <span class="n">a</span> <span class="n">matrix33</span> <span class="n">available</span> <span class="mi">33</span>
+<span class="n">storage</span> <span class="n">needed</span> <span class="k">for</span> <span class="n">b</span> <span class="n">matrix33</span> <span class="n">available</span> <span class="mi">46</span>
+<span class="n">storage</span> <span class="n">needed</span> <span class="k">for</span> <span class="n">gmres81</span> <span class="n">available</span> <span class="mi">81</span>
+<span class="n">storage</span> <span class="n">available</span> <span class="k">for</span> <span class="n">b</span> <span class="n">matrix</span> <span class="n">resized</span> <span class="n">to</span> <span class="mi">33</span><span class="o">&lt;&lt;&lt;&lt;&lt;&lt;</span>
+<span class="n">time</span> <span class="k">for</span> <span class="n">reading</span> <span class="nb">input</span><span class="p">,</span> <span class="n">forming</span> <span class="n">coefficients</span> <span class="mf">0.204E-01</span>
+<span class="o">****</span> <span class="n">analysis</span> <span class="n">of</span> <span class="nb">input</span> <span class="n">data</span> <span class="n">on</span> <span class="n">file</span> <span class="n">fehmn</span><span class="o">.</span><span class="n">chk</span> <span class="o">****</span>
+<span class="o">*********************************************************************</span>
+<span class="n">Time</span> <span class="n">Step</span> <span class="mi">1</span>
+<span class="n">Timing</span> <span class="n">Information</span>
+<span class="n">Years</span> <span class="n">Days</span> <span class="n">Step</span> <span class="n">Size</span> <span class="p">(</span><span class="n">Days</span><span class="p">)</span>
+<span class="mf">0.136893E-04</span> <span class="mf">0.500000E-02</span> <span class="mf">0.500000E-02</span>
+<span class="n">Cpu</span> <span class="n">Sec</span> <span class="k">for</span> <span class="n">Time</span> <span class="n">Step</span> <span class="o">=</span> <span class="mf">0.8081E-03</span> <span class="n">Current</span> <span class="n">Total</span> <span class="o">=</span> <span class="mf">0.2650E-02</span>
+<span class="n">Equation</span> <span class="n">Performance</span>
+<span class="n">Number</span> <span class="n">of</span> <span class="n">N</span><span class="o">-</span><span class="n">R</span> <span class="n">Iterations</span><span class="p">:</span> <span class="mi">1</span>
+<span class="n">Avg</span> <span class="c1"># of Linear Equation Solver Iterations: 3.0</span>
+<span class="n">Number</span> <span class="n">of</span> <span class="n">Active</span> <span class="n">Nodes</span><span class="p">:</span> <span class="mf">9.</span>
+<span class="n">Total</span> <span class="n">Number</span> <span class="n">of</span> <span class="n">Newton</span><span class="o">-</span><span class="n">Raphson</span> <span class="n">Iterations</span><span class="p">:</span> <span class="mi">1</span> <span class="p">,</span> <span class="n">Solver</span><span class="p">:</span> <span class="mi">3</span>
+<span class="n">Largest</span> <span class="n">Residuals</span>
+<span class="n">EQ1</span> <span class="n">R</span><span class="o">=</span> <span class="mf">0.1660E-07</span> <span class="n">node</span><span class="o">=</span> <span class="mi">5</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.2500</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.2500</span> <span class="n">z</span><span class="o">=</span> <span class="mf">1.000</span>
+<span class="n">Node</span> <span class="n">Equation</span> <span class="mi">1</span> <span class="n">Residual</span> <span class="n">Equation</span> <span class="mi">2</span> <span class="n">Residual</span>
+<span class="mi">7</span> <span class="mf">0.111444E-07</span> <span class="mf">0.185894E-01</span>
+<span class="mi">5</span> <span class="mf">0.165983E-07</span> <span class="mf">0.135450E+01</span>
+<span class="n">Nodal</span> <span class="n">Information</span> <span class="p">(</span><span class="n">Water</span><span class="p">)</span>
+<span class="n">source</span><span class="o">/</span><span class="n">sink</span> <span class="n">source</span><span class="o">/</span><span class="n">sink</span>
+<span class="n">Node</span> <span class="n">p</span><span class="p">(</span><span class="n">MPa</span><span class="p">)</span> <span class="n">e</span><span class="p">(</span><span class="n">MJ</span><span class="p">)</span> <span class="n">l</span> <span class="n">sat</span> <span class="n">temp</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="p">(</span><span class="n">kg</span><span class="o">/</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="n">MJ</span><span class="o">/</span><span class="n">s</span><span class="p">)</span>
+<span class="mi">7</span> <span class="mf">10.000</span> <span class="mf">0.00</span> <span class="mf">0.000</span> <span class="mf">199.981</span> <span class="mf">0.</span> <span class="mf">0.</span>
+<span class="mi">5</span> <span class="mf">10.000</span> <span class="mf">0.00</span> <span class="mf">0.000</span> <span class="mf">198.645</span> <span class="mf">0.</span> <span class="mf">0.</span>
+<span class="n">Global</span> <span class="n">Mass</span> <span class="o">&amp;</span> <span class="n">Energy</span> <span class="n">Balances</span>
+<span class="n">Total</span> <span class="n">mass</span> <span class="ow">in</span> <span class="n">system</span> <span class="n">at</span> <span class="n">this</span> <span class="n">time</span><span class="p">:</span><span class="mf">0.000000E+00</span> <span class="n">kg</span>
+<span class="n">Total</span> <span class="n">mass</span> <span class="n">of</span> <span class="n">steam</span> <span class="ow">in</span> <span class="n">system</span> <span class="n">at</span> <span class="n">this</span> <span class="n">time</span><span class="p">:</span><span class="mf">0.000000E+00</span> <span class="n">kg</span>
+<span class="n">Total</span> <span class="n">enthalpy</span> <span class="ow">in</span> <span class="n">system</span> <span class="n">at</span> <span class="n">this</span> <span class="n">time</span><span class="p">:</span><span class="mf">0.105123E+03</span> <span class="n">MJ</span>
+<span class="n">Water</span> <span class="n">discharge</span> <span class="n">this</span> <span class="n">time</span> <span class="n">step</span><span class="p">:</span><span class="mf">0.000000E+00</span> <span class="n">kg</span> <span class="p">(</span><span class="mf">0.000000E+00</span> <span class="n">kg</span><span class="o">/</span><span class="n">s</span><span class="p">)</span>
+<span class="n">Water</span> <span class="nb">input</span> <span class="n">this</span> <span class="n">time</span> <span class="n">step</span><span class="p">:</span><span class="mf">0.000000E+00</span> <span class="n">kg</span> <span class="p">(</span><span class="mf">0.000000E+00</span> <span class="n">kg</span><span class="o">/</span><span class="n">s</span><span class="p">)</span>
+<span class="n">Total</span> <span class="n">water</span> <span class="n">discharge</span><span class="p">:</span><span class="mf">0.000000E+00</span> <span class="n">kg</span> <span class="p">(</span><span class="mf">0.000000E+00</span> <span class="n">kg</span><span class="o">/</span><span class="n">s</span><span class="p">)</span>
+<span class="n">Total</span> <span class="n">water</span> <span class="nb">input</span><span class="p">:</span><span class="mf">0.000000E+00</span> <span class="n">kg</span> <span class="p">(</span><span class="mf">0.000000E+00</span> <span class="n">kg</span><span class="o">/</span><span class="n">s</span><span class="p">)</span>
+<span class="n">Enthalpy</span> <span class="n">discharge</span> <span class="n">this</span> <span class="n">time</span> <span class="n">step</span><span class="p">:</span><span class="mf">0.297800E+02</span> <span class="n">MJ</span> <span class="p">(</span><span class="mf">0.689352E-01</span> <span class="n">MJ</span><span class="o">/</span><span class="n">s</span><span class="p">)</span>
+<span class="n">Enthalpy</span> <span class="nb">input</span> <span class="n">this</span> <span class="n">time</span> <span class="n">step</span><span class="p">:</span><span class="mf">0.000000E+00</span> <span class="n">MJ</span> <span class="p">(</span><span class="mf">0.000000E+00</span> <span class="n">MJ</span><span class="o">/</span><span class="n">s</span><span class="p">)</span>
+<span class="n">Total</span> <span class="n">enthalpy</span> <span class="n">discharge</span><span class="p">:</span><span class="mf">0.297800E+02</span> <span class="n">MJ</span> <span class="p">(</span><span class="mf">0.689352E-01</span> <span class="n">MJ</span><span class="o">/</span><span class="n">s</span><span class="p">)</span>
+<span class="n">Total</span> <span class="n">enthalpy</span> <span class="nb">input</span><span class="p">:</span><span class="mf">0.297800E+02</span> <span class="n">MJ</span> <span class="p">(</span><span class="mf">0.689352E-01</span> <span class="n">MJ</span><span class="o">/</span><span class="n">s</span><span class="p">)</span>
+<span class="n">Net</span> <span class="n">kg</span> <span class="n">water</span> <span class="n">discharge</span> <span class="p">(</span><span class="n">total</span> <span class="n">out</span><span class="o">-</span><span class="n">total</span> <span class="ow">in</span><span class="p">):</span><span class="mf">0.000000E+00</span>
+<span class="n">Net</span> <span class="n">MJ</span> <span class="n">discharge</span> <span class="p">(</span><span class="n">total</span> <span class="n">out</span><span class="o">-</span><span class="n">total</span> <span class="ow">in</span><span class="p">):</span><span class="mf">0.000000E+00</span>
+<span class="n">Conservation</span> <span class="n">Errors</span><span class="p">:</span> <span class="mf">0.000000E+00</span> <span class="p">(</span><span class="n">mass</span><span class="p">),</span> <span class="o">-</span><span class="mf">0.100326E+01</span> <span class="p">(</span><span class="n">energy</span><span class="p">)</span>
+<span class="o">*********************************************************************</span>
+<span class="n">Time</span> <span class="n">Step</span> <span class="mi">11</span>
+<span class="o">.</span>
+<span class="o">.</span>
+<span class="o">.</span>
+<span class="o">*********************************************************************</span>
+<span class="n">Time</span> <span class="n">Step</span> <span class="mi">801</span>
+<span class="n">Timing</span> <span class="n">Information</span>
+<span class="n">Years</span> <span class="n">Days</span> <span class="n">Step</span> <span class="n">Size</span> <span class="p">(</span><span class="n">Days</span><span class="p">)</span>
+<span class="mf">0.109515E-01</span> <span class="mf">0.400005E+01</span> <span class="mf">0.500000E-04</span>
+<span class="n">Cpu</span> <span class="n">Sec</span> <span class="k">for</span> <span class="n">Time</span> <span class="n">Step</span> <span class="o">=</span> <span class="mf">0.</span> <span class="n">Current</span> <span class="n">Total</span> <span class="o">=</span> <span class="mf">4.533</span>
+<span class="n">Equation</span> <span class="n">Performance</span>
+<span class="n">Number</span> <span class="n">of</span> <span class="n">N</span><span class="o">-</span><span class="n">R</span> <span class="n">Iterations</span><span class="p">:</span> <span class="mi">1</span>
+<span class="n">Avg</span> <span class="c1"># of Linear Equation Solver Iterations: 2.0</span>
+<span class="n">Number</span> <span class="n">of</span> <span class="n">Active</span> <span class="n">Nodes</span><span class="p">:</span> <span class="mf">9.</span>
+<span class="n">Total</span> <span class="n">Number</span> <span class="n">of</span> <span class="n">Newton</span><span class="o">-</span><span class="n">Raphson</span> <span class="n">Iterations</span><span class="p">:</span> <span class="mi">801</span> <span class="p">,</span> <span class="n">Solver</span><span class="p">:</span> <span class="mi">2402</span>
+<span class="n">Largest</span> <span class="n">Residuals</span>
+<span class="n">EQ1</span> <span class="n">R</span><span class="o">=</span> <span class="mf">0.9774E-13</span> <span class="n">node</span><span class="o">=</span> <span class="mi">7</span> <span class="n">x</span><span class="o">=</span> <span class="mf">0.000</span> <span class="n">y</span><span class="o">=</span> <span class="mf">0.000</span> <span class="n">z</span><span class="o">=</span> <span class="mf">1.000</span>
+<span class="n">Node</span> <span class="n">Equation</span> <span class="mi">1</span> <span class="n">Residual</span> <span class="n">Equation</span> <span class="mi">2</span> <span class="n">Residual</span>
+<span class="mi">7</span> <span class="mf">0.977369E-13</span> <span class="mf">0.186062E-04</span>
+<span class="mi">5</span> <span class="mf">0.621566E-13</span> <span class="mf">0.930309E-05</span>
+<span class="n">Nodal</span> <span class="n">Information</span> <span class="p">(</span><span class="n">Water</span><span class="p">)</span>
+<span class="n">source</span><span class="o">/</span><span class="n">sink</span> <span class="n">source</span><span class="o">/</span><span class="n">sink</span>
+<span class="n">Node</span> <span class="n">p</span><span class="p">(</span><span class="n">MPa</span><span class="p">)</span> <span class="n">e</span><span class="p">(</span><span class="n">MJ</span><span class="p">)</span> <span class="n">l</span> <span class="n">sat</span> <span class="n">temp</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="p">(</span><span class="n">kg</span><span class="o">/</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="n">MJ</span><span class="o">/</span><span class="n">s</span><span class="p">)</span>
+<span class="mi">7</span> <span class="mf">10.000</span> <span class="mf">0.00</span> <span class="mf">0.000</span> <span class="mf">100.230</span> <span class="mf">0.</span> <span class="mf">0.</span>
+<span class="mi">5</span> <span class="mf">10.000</span> <span class="mf">0.00</span> <span class="mf">0.000</span> <span class="mf">100.115</span> <span class="mf">0.</span> <span class="mf">0.</span>
+<span class="n">Global</span> <span class="n">Mass</span> <span class="o">&amp;</span> <span class="n">Energy</span> <span class="n">Balances</span>
+<span class="n">Total</span> <span class="n">mass</span> <span class="ow">in</span> <span class="n">system</span> <span class="n">at</span> <span class="n">this</span> <span class="n">time</span><span class="p">:</span><span class="mf">0.000000E+00</span> <span class="n">kg</span>
+<span class="n">Total</span> <span class="n">mass</span> <span class="n">of</span> <span class="n">steam</span> <span class="ow">in</span> <span class="n">system</span> <span class="n">at</span> <span class="n">this</span> <span class="n">time</span><span class="p">:</span><span class="mf">0.000000E+00</span> <span class="n">kg</span>
+<span class="n">Total</span> <span class="n">enthalpy</span> <span class="ow">in</span> <span class="n">system</span> <span class="n">at</span> <span class="n">this</span> <span class="n">time</span><span class="p">:</span><span class="mf">0.675565E+02</span> <span class="n">MJ</span>
+<span class="n">Water</span> <span class="n">discharge</span> <span class="n">this</span> <span class="n">time</span> <span class="n">step</span><span class="p">:</span><span class="mf">0.000000E+00</span> <span class="n">kg</span> <span class="p">(</span><span class="mf">0.000000E+00</span> <span class="n">kg</span><span class="o">/</span><span class="n">s</span><span class="p">)</span>
+<span class="n">Water</span> <span class="nb">input</span> <span class="n">this</span> <span class="n">time</span> <span class="n">step</span><span class="p">:</span><span class="mf">0.000000E+00</span> <span class="n">kg</span> <span class="p">(</span><span class="mf">0.000000E+00</span> <span class="n">kg</span><span class="o">/</span><span class="n">s</span><span class="p">)</span>
+<span class="n">Total</span> <span class="n">water</span> <span class="n">discharge</span><span class="p">:</span><span class="mf">0.000000E+00</span> <span class="n">kg</span> <span class="p">(</span><span class="mf">0.000000E+00</span> <span class="n">kg</span><span class="o">/</span><span class="n">s</span><span class="p">)</span>
+<span class="n">Total</span> <span class="n">water</span> <span class="nb">input</span><span class="p">:</span><span class="mf">0.000000E+00</span> <span class="n">kg</span> <span class="p">(</span><span class="mf">0.000000E+00</span> <span class="n">kg</span><span class="o">/</span><span class="n">s</span><span class="p">)</span>
+<span class="n">Enthalpy</span> <span class="n">discharge</span> <span class="n">this</span> <span class="n">time</span> <span class="n">step</span><span class="p">:</span><span class="mf">0.455636E-05</span> <span class="n">MJ</span> <span class="p">(</span><span class="mf">0.105471E-05</span> <span class="n">MJ</span><span class="o">/</span><span class="n">s</span><span class="p">)</span>
+<span class="n">Enthalpy</span> <span class="nb">input</span> <span class="n">this</span> <span class="n">time</span> <span class="n">step</span><span class="p">:</span><span class="mf">0.000000E+00</span> <span class="n">MJ</span> <span class="p">(</span><span class="mf">0.000000E+00</span> <span class="n">MJ</span><span class="o">/</span><span class="n">s</span><span class="p">)</span>
+<span class="n">Total</span> <span class="n">enthalpy</span> <span class="n">discharge</span><span class="p">:</span><span class="mf">0.673463E+02</span> <span class="n">MJ</span> <span class="p">(</span><span class="mf">0.155894E+02</span> <span class="n">MJ</span><span class="o">/</span><span class="n">s</span><span class="p">)</span>
+<span class="n">Total</span> <span class="n">enthalpy</span> <span class="nb">input</span><span class="p">:</span><span class="mf">0.673463E+02</span> <span class="n">MJ</span> <span class="p">(</span><span class="mf">0.155894E+02</span> <span class="n">MJ</span><span class="o">/</span><span class="n">s</span><span class="p">)</span>
+<span class="n">Net</span> <span class="n">kg</span> <span class="n">water</span> <span class="n">discharge</span> <span class="p">(</span><span class="n">total</span> <span class="n">out</span><span class="o">-</span><span class="n">total</span> <span class="ow">in</span><span class="p">):</span><span class="mf">0.000000E+00</span>
+<span class="n">Net</span> <span class="n">MJ</span> <span class="n">discharge</span> <span class="p">(</span><span class="n">total</span> <span class="n">out</span><span class="o">-</span><span class="n">total</span> <span class="ow">in</span><span class="p">):</span><span class="mf">0.000000E+00</span>
+<span class="n">Conservation</span> <span class="n">Errors</span><span class="p">:</span> <span class="mf">0.000000E+00</span> <span class="p">(</span><span class="n">mass</span><span class="p">),</span> <span class="o">-</span><span class="mf">0.100144E+01</span> <span class="p">(</span><span class="n">energy</span><span class="p">)</span>
+<span class="n">simulation</span> <span class="n">ended</span><span class="p">:</span> <span class="n">days</span> <span class="mf">4.00</span> <span class="n">timesteps</span> <span class="mi">801</span>
+<span class="n">total</span> <span class="n">N</span><span class="o">-</span><span class="n">R</span> <span class="n">iterations</span> <span class="o">=</span> <span class="mi">801</span>
+<span class="n">total</span> <span class="n">solver</span> <span class="n">iterations</span> <span class="o">=</span> <span class="mi">2402</span>
+<span class="n">total</span> <span class="n">code</span> <span class="n">time</span><span class="p">(</span><span class="n">timesteps</span><span class="p">)</span> <span class="o">=</span> <span class="mf">0.526277</span>
+<span class="o">****</span> <span class="o">--------------------------------------------------------------</span> <span class="o">****</span>
+<span class="o">****</span> <span class="n">This</span> <span class="n">program</span> <span class="k">for</span> <span class="o">****</span>
+<span class="o">****</span> <span class="n">Finite</span> <span class="n">Element</span> <span class="n">Heat</span> <span class="ow">and</span> <span class="n">Mass</span> <span class="n">Transfer</span> <span class="ow">in</span> <span class="n">porous</span> <span class="n">media</span><span class="o">****</span>
+<span class="o">****</span> <span class="o">--------------------------------------------------------------</span> <span class="o">****</span>
+<span class="o">****</span> <span class="n">Version</span> <span class="p">:</span> <span class="n">FEHM</span> <span class="n">V2</span><span class="o">.</span><span class="mi">10</span> <span class="mi">00</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">28</span> <span class="o">****</span>
+<span class="o">****</span> <span class="n">End</span> <span class="n">Date</span> <span class="p">:</span> <span class="mi">08</span><span class="o">/</span><span class="mi">07</span><span class="o">/</span><span class="mi">2000</span> <span class="o">****</span>
+<span class="o">****</span> <span class="n">Time</span> <span class="p">:</span> <span class="mi">13</span><span class="p">:</span><span class="mi">25</span><span class="p">:</span><span class="mi">08</span> <span class="o">****</span>
+<span class="o">****</span> <span class="o">--------------------------------------------------------------****</span>
+</pre></div>
+</div>
+<p>The analytical solution for 2-D heat conduction (Carslaw and Jaeger, 1959) is given by</p>
+<p>The below image shows a plot of the simulation results compared to the analytical solution for the selected output nodes at <span class="math notranslate nohighlight">\(x = y = 0 m\)</span> and <span class="math notranslate nohighlight">\(x = y = 0.25 m\)</span>.</p>
+</div>
+<div class="section" id="doe-code-comparison-project-problem-5-case-a">
+<h2>DOE Code Comparison Project, Problem 5, Case A<a class="headerlink" href="#doe-code-comparison-project-problem-5-case-a" title="Permalink to this headline">¶</a></h2>
+<p>This problem involves multiphase flow in a 2-D horizontal reservoir. The problem is characterized by a moving two-phase region, i.e., the fluid produced at the production well is replaced by cold water recharge over one of the outer boundaries. The problem parameters are given below and the geometry and boundary conditions are shown in the below schematic. Of particular note are the variable initial temperature field, provided to the code through a read file (see <a class="reference external" href="DataFiles.html#Readfileiread">iread</a>), and the prescribed pressure and temperature on the right boundary. A partial listing of the input file is provided in <a class="reference external" href="FEHM-UM.9.4.htm#30248">FEHM input file for DOE problem</a>. In addition to the required macros, macro flow is used to specify the pressure and temperature boundary condition and the production flow rate. Macro rlp is used to set the residual liquid and gas saturations.</p>
+<div class="section" id="input-parameters-for-the-doe-code-comparison-project-problem">
+<h3>Input Parameters for the DOE Code Comparison Project Problem<a class="headerlink" href="#input-parameters-for-the-doe-code-comparison-project-problem" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="39%" />
+<col width="32%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Symbol</th>
+<th class="head">Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Reservoir permeability</td>
+<td><span class="math notranslate nohighlight">\(k\)</span></td>
+<td><span class="math notranslate nohighlight">\(2.5 \cdot 10^{-14} m^2\)</span></td>
+</tr>
+<tr class="row-odd"><td>Reservoir porosity</td>
+<td><span class="math notranslate nohighlight">\(\phi\)</span></td>
+<td><span class="math notranslate nohighlight">\(0.35\)</span></td>
+</tr>
+<tr class="row-even"><td>Rock thermal conductivity</td>
+<td><span class="math notranslate nohighlight">\(\kappa r\)</span></td>
+<td><span class="math notranslate nohighlight">\(1 \frac{W}{m \cdot K}\)</span></td>
+</tr>
+<tr class="row-odd"><td>Rock density</td>
+<td><span class="math notranslate nohighlight">\(\rho r\)</span></td>
+<td><span class="math notranslate nohighlight">\(2563 \frac{kg}{m^3}\)</span></td>
+</tr>
+<tr class="row-even"><td>Rock specific heat</td>
+<td><span class="math notranslate nohighlight">\(C r\)</span></td>
+<td><span class="math notranslate nohighlight">\(1010 \frac{J}{kg \cdot K}\)</span></td>
+</tr>
+<tr class="row-odd"><td>Reservoir length</td>
+<td><span class="math notranslate nohighlight">\(x\)</span></td>
+<td><span class="math notranslate nohighlight">\(300 m\)</span></td>
+</tr>
+<tr class="row-even"><td>Reservoir thickness</td>
+<td><span class="math notranslate nohighlight">\(y\)</span></td>
+<td><span class="math notranslate nohighlight">\(200 m\)</span></td>
+</tr>
+<tr class="row-odd"><td>Liquid residual saturation</td>
+<td>slr</td>
+<td><span class="math notranslate nohighlight">\(0.3\)</span></td>
+</tr>
+<tr class="row-even"><td>Gas residual saturation</td>
+<td>sgr</td>
+<td><span class="math notranslate nohighlight">\(0.1\)</span></td>
+</tr>
+<tr class="row-odd"><td>Reservoir discharge</td>
+<td>qm</td>
+<td><span class="math notranslate nohighlight">\(0.05 \frac{kg}{m \cdot s}\)</span></td>
+</tr>
+<tr class="row-even"><td>Initial Pressure</td>
+<td><span class="math notranslate nohighlight">\(P_0\)</span></td>
+<td><span class="math notranslate nohighlight">\(3.6 MPa\)</span></td>
+</tr>
+<tr class="row-odd"><td>Production well coordinates:</td>
+<td><span class="math notranslate nohighlight">\(x = 62.5 m\)</span>, <span class="math notranslate nohighlight">\(y = 62.5 m\)</span></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>Observation well coordinates:</td>
+<td><span class="math notranslate nohighlight">\(x = 162.5 m\)</span>, <span class="math notranslate nohighlight">\(y = 137.5 m\)</span></td>
+<td>&#160;</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id127">
+<h3>FEHM input file for DOE problem<a class="headerlink" href="#id127" title="Permalink to this headline">¶</a></h3>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">***</span> <span class="n">DOE</span> <span class="n">Code</span> <span class="n">Comparison</span> <span class="n">Project</span><span class="p">,</span> <span class="n">Problem</span> <span class="mi">5</span><span class="p">,</span> <span class="n">Case</span> <span class="n">A</span> <span class="o">***</span>
+<span class="n">node</span>
+<span class="mi">2</span>
+<span class="mi">50</span> <span class="mi">88</span>
+<span class="n">sol</span>
+<span class="mi">1</span> <span class="mi">1</span>
+<span class="n">init</span>
+<span class="mf">3.6</span> <span class="mf">0.</span> <span class="mf">240.</span> <span class="mf">0.</span> <span class="mf">0.</span> <span class="mf">240.</span> <span class="mf">0.</span> <span class="mf">0.</span>
+<span class="n">rlp</span>
+<span class="mi">2</span> <span class="mf">0.3</span> <span class="mf">0.1</span> <span class="mf">0.0</span> <span class="mf">0.0</span>
+<span class="mi">1</span> <span class="mi">140</span> <span class="mi">1</span> <span class="mi">1</span>
+<span class="n">rock</span>
+<span class="mi">1</span> <span class="mi">140</span> <span class="mi">1</span> <span class="mf">2563.</span> <span class="mf">1010.</span> <span class="mf">0.35</span>
+<span class="n">cond</span>
+<span class="mi">1</span> <span class="mi">140</span> <span class="mi">1</span> <span class="mf">1.00e-00</span> <span class="mf">1.00e-00</span> <span class="mf">1.00e-00</span>
+<span class="n">perm</span>
+<span class="mi">1</span> <span class="mi">140</span> <span class="mi">1</span> <span class="mf">2.5e-14</span> <span class="mf">2.5e-14</span> <span class="mf">0.e-00</span>
+<span class="n">flow</span>
+<span class="mi">88</span> <span class="mi">88</span> <span class="mi">1</span> <span class="mf">0.050</span> <span class="o">-</span><span class="mf">25.00</span> <span class="mf">0.</span>
+<span class="mi">14</span> <span class="mi">140</span> <span class="mi">14</span> <span class="mf">3.600</span> <span class="o">-</span><span class="mf">160.00</span> <span class="mf">1.</span>
+<span class="n">time</span>
+<span class="mf">30.0</span> <span class="mf">3650.</span> <span class="mi">10000</span> <span class="mi">1000</span> <span class="mi">1994</span> <span class="mi">03</span>
+<span class="n">ctrl</span>
+<span class="mi">40</span> <span class="mf">1.e-07</span> <span class="mi">08</span>
+<span class="mi">1</span> <span class="mi">140</span> <span class="mi">1</span> <span class="mi">1</span>
+<span class="mf">1.0</span> <span class="mf">0.0</span> <span class="mf">1.0</span>
+<span class="mi">40</span> <span class="mf">1.2</span> <span class="mf">0.1</span> <span class="mf">60.</span>
+<span class="mi">1</span> <span class="mi">0</span>
+<span class="n">coor</span>
+<span class="mi">140</span>
+<span class="o">...</span>
+<span class="n">elem</span>
+<span class="mi">4</span> <span class="mi">117</span>
+<span class="o">...</span> <span class="n">stop</span>
+</pre></div>
+</div>
+<p>There is no analytical solution for this problem, but six researchers produced results for the DOE code comparison project (Molloy, 1980). The reader is referred to this reference for a more detailed discussion of this problem and the code comparison. Results from this problem are compared to those for the other codes, obtained from Molloy (1980), as a check on FEHM. The results for the outlet temperature, shown in <a class="reference external" href="FEHM-UM.9.4.htm#30437">Comparison of FEHM production well temperatures with results from other codes</a>, are in excellent agreement with the other codes. The results for the outlet pressure and pressure at an observation well 125 m distant, <a class="reference external" href="FEHM-UM.9.4.htm#89269">Comparison of FEHM production and observation well pressure drops with results from other codes</a>, are also in good agreement with the other codes. Contour plots of pressure and temperature at the end of the simulation were also generated for this problem and are shown in <a class="reference external" href="FEHM-UM.9.4.htm#99688">Contour plot of pressure at ten years for the DOE problem</a> and <a class="reference external" href="FEHM-UM.9.4.htm#58720">Contour plot of temperature at ten years for the DOE problem</a>.</p>
+</div>
+<div class="section" id="reactive-transport-example">
+<h3>Reactive Transport Example<a class="headerlink" href="#reactive-transport-example" title="Permalink to this headline">¶</a></h3>
+<p>This one-dimensional example demonstrates the use of the reactive transport module of FEHM. The application of this simulation is the transport of cobalt (Co) in groundwater. Radioactive cobalt is present in the subsurface at several DOE sites. Although its presence as a divalent cation implies that it should sorb strongly to most soils, its migration rate has been shown to be greater than expected due to complexation with EDTA, a decontaminating agent also found in the subsurface of these sites. Much experimental work has gone into studying the transport of Co as CoEDTA, a much less strongly sorbed species. The chemical reactions and equilibrium or rate constants used to perform this simulation are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="55%" />
+<col width="18%" />
+<col width="28%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td colspan="3">Input Parameters for the Reactive Transport Test Problem</td>
+</tr>
+<tr class="row-even"><td>Parameter</td>
+<td>Symbol</td>
+<td>Value</td>
+</tr>
+<tr class="row-odd"><td>Reactor Length</td>
+<td><span class="math notranslate nohighlight">\(L\)</span></td>
+<td>10 m</td>
+</tr>
+<tr class="row-even"><td>Node spacing</td>
+<td><span class="math notranslate nohighlight">\(\Delta l\)</span></td>
+<td>0.1 m</td>
+</tr>
+<tr class="row-odd"><td>Fluid Density</td>
+<td><span class="math notranslate nohighlight">\(\rho_f\)</span></td>
+<td><span class="math notranslate nohighlight">\(1000\:kg/m^3\)</span></td>
+</tr>
+<tr class="row-even"><td>Bulk Rock Density</td>
+<td><span class="math notranslate nohighlight">\(\rho_b\)</span></td>
+<td><span class="math notranslate nohighlight">\(1500\:kg/m^3\)</span></td>
+</tr>
+<tr class="row-odd"><td>Porosity</td>
+<td><span class="math notranslate nohighlight">\(\phi\)</span></td>
+<td><span class="math notranslate nohighlight">\(0.4\)</span></td>
+</tr>
+<tr class="row-even"><td>Pore Water Velocity</td>
+<td><span class="math notranslate nohighlight">\(u\)</span></td>
+<td><span class="math notranslate nohighlight">\(1\:m/hr\)</span></td>
+</tr>
+<tr class="row-odd"><td>Dispersivity</td>
+<td><span class="math notranslate nohighlight">\(\alpha\)</span></td>
+<td><span class="math notranslate nohighlight">\(0.05 m\)</span></td>
+</tr>
+<tr class="row-even"><td>Time step (tracer)</td>
+<td><span class="math notranslate nohighlight">\(\Delta t\)</span></td>
+<td><span class="math notranslate nohighlight">\(0.09 - 360 s\)</span></td>
+</tr>
+<tr class="row-odd"><td>Total elapsed time</td>
+<td><span class="math notranslate nohighlight">\(t\)</span></td>
+<td>7.25 days</td>
+</tr>
+<tr class="row-even"><td>Pressure</td>
+<td><span class="math notranslate nohighlight">\(P_0\)</span></td>
+<td><span class="math notranslate nohighlight">\(1.0\:MPa\)</span></td>
+</tr>
+<tr class="row-odd"><td>Co Inlet Concentration</td>
+<td><span class="math notranslate nohighlight">\(C_{in\:Co}\)</span></td>
+<td><span class="math notranslate nohighlight">\(3.1623 \cdot 10^{-5}\:M\)</span></td>
+</tr>
+<tr class="row-even"><td>Fe Inlet Concentration</td>
+<td><span class="math notranslate nohighlight">\(C_{in\:Fe}\)</span></td>
+<td><span class="math notranslate nohighlight">\(0\:M\)</span></td>
+</tr>
+<tr class="row-odd"><td>EDTA Inlet Concentration</td>
+<td><span class="math notranslate nohighlight">\(C_{in\:EDTA}\)</span></td>
+<td><span class="math notranslate nohighlight">\(3.1623 \cdot 10^{-5}\:M\)</span></td>
+</tr>
+<tr class="row-even"><td>Boundary conditions:  At l = 0, u = 1 m/hr; At l = 1, P = 1 MPa</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>‡Flow rate: <span class="math notranslate nohighlight">\(q = 0.5556 kg/s\)</span></td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="fehm-input-file-for-reactive-transport-problem">
+<h3>FEHM input file for reactive transport problem<a class="headerlink" href="#fehm-input-file-for-reactive-transport-problem" title="Permalink to this headline">¶</a></h3>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span>COMPARE FEHMN and PDREACT: Linear Sorption w/ Surface Exchange
+cond
+1 202 1 2.7 2.7 2.7
+ctrl
+50 1e-6 8
+1 202 1 2
+1 0 0.5
+25 2. 1.e-6 1.e-1
+1 0
+flow
+1 202 101 -0.05556 -25 0
+101 202 101 1. -25 -1
+init
+1. 25 25 0 1000 25 0 0
+node
+1
+202
+perm
+1 202 1 5.0e-13 5.0e-30 5.0e-30
+rock
+1 202 1 1500 1000 0.4
+sol
+1 -1
+time
+1.e-6 7.25 1000 10 92 11
+# solute 1: Total Cobalt Concentration
+# solute 2: Total Iron Concentration
+# solute 3: Total EDTA Concentration
+# solute 4: CoEDTA adsorbed concentration
+# solute 5: Co adsorbed concentration
+# solute 6: FeEDTA adsorbed concentration
+trac
+0.0 1.0 1.e-6 0.5
+1. 2000 1.0 2000
+5 5.0 1.e-6 4.1667e-3
+61
+1 0. 0. 1. 1.e-9 .05 1.e-34 1.e-34
+1 202 1 1
+1 202 1 0.
+1 202 101 3.1623e-5 1.0 4.16667
+1
+1 0. 0. 1. 1.e-9 .05 1.e-34 1.e-34
+1 202 1 1
+1 202 1 0.
+1 202 101 1.e-13 1.0 4.16667
+1
+1 0. 0. 1. 1.e-9 .05 1.e-34 1.e-34
+1 202 1 1
+1 202 1 0.
+1 202 101 3.1623e-5 1.0 4.16667
+0
+1 202 1 0.
+0
+1 202 1 0.
+0
+1 202 1 0.0
+rxn
+** NCPLX, NUMRXN
+2,4
+** Coupling of the aqueous components (dRi/dUj)
+2
+1 0 1
+0 1 0
+** IDCPNT(IC),CPNTNAM(IC),IFXCONC(IC),CPNTPRT(IC) (comp,name,cond.; NCPNT
+rows)
+1 Cobalt[aq] 0 0 1.e-9
+2 Iron[aq] 0 0 1.e-9
+3 EDTA[aq] 0 0 1.e-9
+** IDCPLX(IX), CPLXNAM(IX),CPLXPRT(IX) (ID # and name of complex, NCPLX rows)
+101 Co-EDTA[aq] 0
+102 Fe-EDTA[aq] 0
+** IDIMM(IM), IMMNAM(IM),IMMPRT(IM)(ID # and name of immoblie spec, NIMM rows)
+1 Co-EDTA[s] 0
+2 Fe-EDTA[s] 0
+3 Cobalt[s] 0
+** IDVAP(IV), VAPNAM(IM), VAPPRT(IV) (ID # and name of vapor spec, NVAP rows)
+** Skip nodes
+0
+** RSDMAX
+1.0e-10
+**** Chemical reaction information for equilibrium reactions ******
+** LOGKEQ (=0 if stability constants are given as K, =1 if given as log(K))
+0
+** CKEQ(IX) ,HEQ(IX) (Stability constants and Enthaplys, NCPLX rows)
+1.0e+18 0
+6.31e+27 0
+** STOIC(IX,IC) (Stoichiometric coeff: NCPLX rows, NCPNT columns)
+1.0 0.0 1.0
+0.0 1.0 1.0
+** LINEAR KINETIC REACTION (type 1) **
+1
+** Where does the reaction take place? **
+1 0 0
+** Aqueous Component/Complex #, Solid Component #
+101 1
+** Distribution coeffienct (kg water/ kg rock) **
+0.533
+** Mass transfer coefficient (1/hr) **
+1.0
+** LINEAR KINETIC REACTION (type 1) **
+1
+** Where does the reaction take place? **
+1 0 0
+** Aqueous Component/Complex #, Solid Component #
+1 3
+** Distribution coeffienct (kg rock/ kg water) **
+5.07
+** Mass transfer coefficient (1/hr) **
+1.0
+** LINEAR KINETIC REACTION (type 1) **
+1
+** Where does the reaction take place? **
+1 0 0
+** Aqueous Component/Complex #, Solid Component #
+102 2
+** Distribution coeffienct (kg rock/ kg water) **
+0.427
+** Mass transfer coefficient (1/hr) **
+1.0
+** GENERAL EXCHANGE REACTION (type 3) **
+3
+** Where does the reaction take place? **
+1 0 0
+** # of solid, liquid and vapor species **
+3 0 0
+** forward and reverse rate constants (1/hr) **
+1.26e-2 0
+** Solid Species in reaction **
+1 2 3
+** Stoichiometry **
+1.0 -1.0 -1.0
+coor n/a
+202
+1 0.000001.000000.00000
+2 0.100001.000000.00000
+3 0.200001.000000.00000
+...
+2009.800000.000000.00000
+2019.900000.000000.00000
+20210.000000.000000.00000
+elem
+4 100
+1 10210321
+2 10310432
+3 10410543
+...
+98 1992009998
+99 20020110099
+100201202101100
+stop
+</pre></div>
+</div>
+<p>FEHM results for this problem are compared to those of PDREACT (Valocchi et al., 1994), a two-dimensional, isothermal, saturated-zone flow and transport code in <a class="reference external" href="FEHM-UM.9.5.htm#51118">Comparison of FEHM and PDREACT for the breakthrough curves of aqueous species</a> and <a class="reference external" href="FEHM-UM.9.5.htm#30492">Comparison of FEHM and PDREACT for the exit concentration versus time for solid species</a>.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Macros.html" class="btn btn-neutral float-right" title="Macros" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="DefinitionsAndAcronyms.html" class="btn btn-neutral float-left" title="Definitions and Acronyms" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Los Alamos National Laboratory
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

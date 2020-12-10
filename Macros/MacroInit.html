@@ -1,0 +1,411 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>init &mdash; FEHM 3.3.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ivfc" href="MacroIvfc.html" />
+    <link rel="prev" title="hyco" href="MacroHyco.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> FEHM
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.3.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../SystemInterface.html">System Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../SystemInterface.html#installation-instructions">Installation Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DataFiles.html">Data Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DefinitionsAndAcronyms.html">Definitions and Acronyms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ExamplesAndSamples.html">Examples and Sample Problems</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Program Specifications</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../Macros.html">Macros</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Macros.html#macros-by-problem-type">Macros by Problem Type</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../Macros.html#required-macros">Required Macros</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="MacroAnpe.html"><code class="docutils literal notranslate"><span class="pre">anpe</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroBoun.html"><code class="docutils literal notranslate"><span class="pre">boun</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroCond.html"><code class="docutils literal notranslate"><span class="pre">cond</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroCoor.html"><code class="docutils literal notranslate"><span class="pre">coor</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroElem.html"><code class="docutils literal notranslate"><span class="pre">elem</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFdm.html"><code class="docutils literal notranslate"><span class="pre">fdm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFlow.html"><code class="docutils literal notranslate"><span class="pre">flow</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroFtsc.html"><code class="docutils literal notranslate"><span class="pre">ftsc</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroHcon.html"><code class="docutils literal notranslate"><span class="pre">hcon</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroHyco.html"><code class="docutils literal notranslate"><span class="pre">hyco</span></code></a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">init</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroIvfc.html"><code class="docutils literal notranslate"><span class="pre">ivfc</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroPerm.html"><code class="docutils literal notranslate"><span class="pre">perm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroPres.html"><code class="docutils literal notranslate"><span class="pre">pres</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroRock.html"><code class="docutils literal notranslate"><span class="pre">rock</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroStop.html"><code class="docutils literal notranslate"><span class="pre">stop</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="MacroTime.html"><code class="docutils literal notranslate"><span class="pre">time</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Macros.html#optional-macros">Optional Macros</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../InputData.html">Input Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Output.html">Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ProgramConsiderations.html">Program Considerations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">References &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../References.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Support.html">User Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ReleaseNotes/release_notes.html">Release Notes</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">FEHM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../Macros.html">Macros</a> &raquo;</li>
+        
+      <li><code class="docutils literal notranslate"><span class="pre">init</span></code></li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/Macros/MacroInit.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="init">
+<h1><code class="docutils literal notranslate"><span class="pre">init</span></code><a class="headerlink" href="#init" title="Permalink to this headline">¶</a></h1>
+<p>Set initial pressure and temperature at all nodes.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Required if macro <code class="docutils literal notranslate"><span class="pre">pres</span></code> not used.</p>
+</div>
+<p>Group 1 -       PEIN, TIN, TIN1, GRAD1, DEPTH, TIN2, GRAD2, QUAD</p>
+<p>Note that the macro pres may overwrite some of the values that are set by macro init.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="4%" />
+<col width="2%" />
+<col width="94%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Input Variable</th>
+<th class="head">Format</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>PEIN</td>
+<td>real</td>
+<td>Initial value of pressure (MPa). If initial values are read from the read file (iread), then this value is ignored. If gravity is present, this is the value of the pressure at node 1, and the other nodal pressures are adjusted by applying the hydraulic head. Absolute pressures are used. Pressure as a function of depth is calculated with TIN &lt; 0.</td>
+</tr>
+<tr class="row-odd"><td>TIN</td>
+<td>real</td>
+<td>Initial value of temperature (oC). If TIN ≤ 0, then the initial temperatures are calculated using the temperature gradient formulas given below.</td>
+</tr>
+<tr class="row-even"><td>TIN1</td>
+<td>real</td>
+<td>Defined in formulas below (oC)</td>
+</tr>
+<tr class="row-odd"><td>GRAD1</td>
+<td>real</td>
+<td>Defined in formulas below (oC/m)</td>
+</tr>
+<tr class="row-even"><td>DEPTH</td>
+<td>real</td>
+<td>Defined in formulas below (m)</td>
+</tr>
+<tr class="row-odd"><td>TIN2</td>
+<td>real</td>
+<td>Defined in formulas below (oC)</td>
+</tr>
+<tr class="row-even"><td>GRAD2</td>
+<td>real</td>
+<td>Defined in formulas below (oC/m)</td>
+</tr>
+<tr class="row-odd"><td>QUAD</td>
+<td>real</td>
+<td>Defined in formulas below (oC/m2)</td>
+</tr>
+</tbody>
+</table>
+<p><span class="math notranslate nohighlight">\(T = TIN1 + GRAD1 \times Z, 0 \le Z \le DEPTH\)</span></p>
+<p><span class="math notranslate nohighlight">\(T = TIN2 + GRAD2 \times Z + QUAD \times Z^2, Z \gt DEPTH\)</span></p>
+<p>The following are examples of init. In the first example, the initial pressure is 3.6
+MPa and the initial temperature is 240 C over the entire range of depth for the model.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="12%" />
+<col width="15%" />
+<col width="12%" />
+<col width="12%" />
+<col width="15%" />
+<col width="10%" />
+<col width="10%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>init</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>3.6</td>
+<td>0.0</td>
+<td><ol class="first last arabic simple" start="240">
+<li></li>
+</ol>
+</td>
+<td>0.0</td>
+<td>0.0</td>
+<td><ol class="first last arabic simple" start="240">
+<li></li>
+</ol>
+</td>
+<td><ol class="first last arabic simple" start="0">
+<li></li>
+</ol>
+</td>
+<td><ol class="first last arabic simple" start="0">
+<li></li>
+</ol>
+</td>
+</tr>
+</tbody>
+</table>
+<p>In the second example, the initial pressure is 5.0 MPa and the initial temperature
+field is defined using a surface temperature of 20 C and linear gradient of 0.3
+C/m for depths ranging from 0 - 2500 m.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="12%" />
+<col width="12%" />
+<col width="14%" />
+<col width="16%" />
+<col width="12%" />
+<col width="12%" />
+<col width="9%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>init</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>5.0</td>
+<td>0.0</td>
+<td><ol class="first last arabic simple" start="20">
+<li></li>
+</ol>
+</td>
+<td>00.3</td>
+<td><ol class="first last arabic simple" start="2500">
+<li></li>
+</ol>
+</td>
+<td><ol class="first last arabic simple" start="20">
+<li></li>
+</ol>
+</td>
+<td>0.3</td>
+<td><ol class="first last arabic simple" start="0">
+<li></li>
+</ol>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="MacroIvfc.html" class="btn btn-neutral float-right" title="ivfc" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="MacroHyco.html" class="btn btn-neutral float-left" title="hyco" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Los Alamos National Laboratory
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

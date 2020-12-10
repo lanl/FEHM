@@ -1,0 +1,480 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>V3.3.1 &mdash; FEHM 3.3.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="V3.3.0" href="v3.3.0.html" />
+    <link rel="prev" title="V3.4.0" href="v3.4.0.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> FEHM
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.3.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../SystemInterface.html">System Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../SystemInterface.html#installation-instructions">Installation Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DataFiles.html">Data Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DefinitionsAndAcronyms.html">Definitions and Acronyms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ExamplesAndSamples.html">Examples and Sample Problems</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Program Specifications</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Macros.html">Macros</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../InputData.html">Input Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Output.html">Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ProgramConsiderations.html">Program Considerations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">References &amp; Support</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../References.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Support.html">User Support</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="release_notes.html">Release Notes</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="v3.4.0.html">V3.4.0</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">V3.3.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v3.3.0.html">V3.3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v3.2.0.html">V3.2.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v3.1.0.html">V3.1.0</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">FEHM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="release_notes.html">Release Notes</a> &raquo;</li>
+        
+      <li>V3.3.1</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/ReleaseNotes/v3.3.1.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="v3-3-1">
+<h1>V3.3.1<a class="headerlink" href="#v3-3-1" title="Permalink to this headline">¶</a></h1>
+<p>The major changes in the FEHM application from V3.3.0 (2015) to this release V3.3.1 are: further developments for macros SALT and RPL/RLPM. Improvements added related to TRXN, CDEN and CO2 coupling with tracers. GDKM input was modified to have a general formulation equivalent to DPDP and direction-specific fracture formulation. New humidity related boundary conditions were added to BOUN including HUF (flowing humidity), HU (fixed humidity), TH (humidity temperature), and PH (humidity pressure). Minor code modifications were made to improve the performance of FEHM simulations.</p>
+<p>Known code bugs fixed:</p>
+<ol class="arabic simple">
+<li>Fix the pressure BC issue (remember to use PA in BOUN)</li>
+<li>Fixed phase change guess with low water vapor pressure.</li>
+<li>Minor fixes to improve read/write of various files and the handling of input parameters.</li>
+<li>Change in <code class="docutils literal notranslate"><span class="pre">startup.f</span></code> resolved a simulation result discrepancy between AMANZI/analytical solution and FEHM.</li>
+<li>All V3.* versions of FEHM will report negative coupling coefficients if they exist. The older V2 releases do not report on coupling coefficients. This difference in reporting is not a bug in either release, just a difference in the information that is written.</li>
+</ol>
+<p><strong>Known issues:</strong></p>
+<ol class="arabic simple">
+<li>Macro DVA has a forced explicit update to fix possible derivative problems, needs further checking.</li>
+<li>The vector files written for contouring are the control volume interface volumetric flux values mapped back on to the mesh nodes. The algorithm for this mapping will have errors most visible for non-orthogonal meshes.</li>
+<li>This mac test suite was created on Mavericks and some comparison binary files are no longer compatible with OS Yosemite or newer. For these tests, results need to be checked and compared individually. FEHM V3.1.1 results were checked and all tests passed.</li>
+</ol>
+<hr class="docutils" />
+<p>This Version 3.3.1 was used to start a new repository at <a class="reference external" href="https://github.com/lanl/FEHM">https://github.com/lanl/FEHM</a> in
+preparation for Open Source distribution. This was moved from an internal server hosting a
+mercurial repository on https//fehm.lanl.gov that will be closed.</p>
+<p>The major changes in the FEHM application from V3.3.0 (2015) to this release V3.3.1 are:
+further developments for macros SALT and RPL/RLPM. Improvements added related to TRXN,
+CDEN and CO2 coupling with tracers. GDKM input was modified to have a general formulation
+equivalent to DPDP and direction-specific fracture formulation. New humidity related
+boundary conditions were added to BOUN including HUF (flowing humidity), HU (fixed humidity),
+TH (humidity temperature), and PH (humidity pressure). Minor code modifications were made
+to improve the performance of FEHM simulations.</p>
+<p>The User Manual FEHM V3.3.1 is updated to describe code enhancements and added capabilities.
+It now includes a short description on mesh quality and the possible impacts on FEHM solutions.</p>
+<p><strong>Known code bugs fixed:</strong></p>
+<ul class="simple">
+<li>Fix the pressure BC issue (remember to use PA in BOUN)</li>
+<li>Fixed phase change guess with low water vapor pressure.</li>
+<li>Minor fixes to improve read/write of various files and the handling of input parameters.</li>
+<li>Change in startup.f resolved a simulation result discrepancy between AMANZI/analytical
+solution and FEHM. This fixes a code change between Nov 2014 to Aug 2016 and
+preserves the new codes added for salt related problems.</li>
+<li>All V3.x versions of FEHM will report negative coupling coefficients if they exist.
+The older V2 releases do not report on coupling coefficients. This difference in
+reporting is not a bug in either release, just a difference in the information
+that is written.</li>
+</ul>
+<p><strong>Known issues:</strong></p>
+<ul class="simple">
+<li>Macro DVA has a forced explicit update to fix possible derivative problems, needs further checking.</li>
+<li>The vector files written for contouring are the control volume interface volumetric flux values mapped back on to the mesh nodes. The algorithm for this mapping will have errors most visible for non-orthogonal meshes.</li>
+<li>This mac test suite was created on Mavericks and some comparison binary files are no longer compatible with OS Yosemite or newer. For these tests, results need to be checked and compared individually. FEHM V3.1.1 results were checked and all tests passed.</li>
+</ul>
+<hr class="docutils" />
+<p><strong>Code changes from 12/04/2015 to 9/21/2017:</strong></p>
+<p><strong>January, 2016</strong></p>
+<ul class="simple">
+<li>Modify <code class="docutils literal notranslate"><span class="pre">co2h2o_combine.f</span></code>: changed to avoid stack overflow crashes for large problems</li>
+</ul>
+<p>Salt development:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">airctr.f</span></code>- Added coding to check for bad input temperatures for isothermal calculations.</li>
+<li><code class="docutils literal notranslate"><span class="pre">allocmem.f</span></code> - added allocation on new accumulation term storage (changes during phase change, eg deni_ch). algorithm not active yet</li>
+<li><code class="docutils literal notranslate"><span class="pre">bnswer.f</span></code>- added coding to support the normalization restart in gensl4.f</li>
+<li><code class="docutils literal notranslate"><span class="pre">co2ctr.f</span></code> - added coding for new ngas boundary conditions and merged with FEHM V3.3.0.</li>
+<li><code class="docutils literal notranslate"><span class="pre">comai.f</span></code>- added global integer variable that save the total number of gridblocks in each phase and the change for a timestep. added the variable to save the timestep restart criteria (mlz_save)</li>
+<li><code class="docutils literal notranslate"><span class="pre">comci.f</span></code> - added allocatable arrays for mass and energy storage terms (coordinated with those described in allocmem.f</li>
+<li><code class="docutils literal notranslate"><span class="pre">comdi.f</span></code> - added allocatable arrays for variable humidity air inflow in the boun macro (humid, phumid, thumid)</li>
+<li><code class="docutils literal notranslate"><span class="pre">cplxcalc.f</span></code> - dos2unix change from dos format to unix format diskread.f- minor modification to improve code performance</li>
+<li><code class="docutils literal notranslate"><span class="pre">dvacalc.f</span></code>-forced an explicit update for dva(), the derivatives were not working (in GAZ opinion). Have not seen it go unstable yet but need to check. Also need to look harder at derivatives.</li>
+<li><code class="docutils literal notranslate"><span class="pre">fehmn.f</span></code>- coding changed slightly to facilitate restarted timesteps when normalization fails (only for ngas presently)</li>
+<li><code class="docutils literal notranslate"><span class="pre">flow_boun.f</span></code>- added coding for humidified air inflow</li>
+<li><code class="docutils literal notranslate"><span class="pre">flow_boundary_conditions.f</span></code> - added coding for humidified air inflow, minor changes to improve wtsi seepage face calcs.</li>
+<li><code class="docutils literal notranslate"><span class="pre">flow_humidity_bc.f</span></code>- New routine to calculate the inlet flowrates and enthalpy for dry air and water vapor given total flowrate of air(or ngas), T, P, and humidity.</li>
+<li><code class="docutils literal notranslate"><span class="pre">geneqc.f</span></code>- minor modification to improve code performance</li>
+<li><code class="docutils literal notranslate"><span class="pre">gensl4.f</span></code>-added coding so if there is a normalization failure, the timestep is restarted with a smaller timestep size (like when the iterations are exceeded)</li>
+<li><code class="docutils literal notranslate"><span class="pre">headctr.f</span></code> - minor modification to improve code performance h2o_properties.f - fixed a typo in comment line</li>
+<li><code class="docutils literal notranslate"><span class="pre">icectrco2.f</span></code>- Changed some on the initial guessed parameters during phase change calculations. Removed most of the temperature guesses and changes the guess for fl().</li>
+<li><code class="docutils literal notranslate"><span class="pre">initdata2.f</span></code> - nothing substantive (different print out for errors)</li>
+<li><code class="docutils literal notranslate"><span class="pre">model_setup.f</span></code>- Added input for variable input of humidified air.</li>
+<li><code class="docutils literal notranslate"><span class="pre">outbnd.f</span></code>- Zeroed the out of bounds error code mlz.</li>
+<li><code class="docutils literal notranslate"><span class="pre">porosi.f</span></code>- Changed coding so that porosity models 6 and 7 continue to run no chemistry model. (The tracer array has been allocated so that the code does not crash).</li>
+<li><code class="docutils literal notranslate"><span class="pre">psatl.f</span></code>- Added coding for vapor pressure lowering with salt and capillary pressure. (small corrections if this was in an earlier version)</li>
+<li><code class="docutils literal notranslate"><span class="pre">rlp_cap.f</span></code> -Added coding to correct error with VG relative permeability models when the saturation approachies zero. Now identical with older formulation.</li>
+<li><code class="docutils literal notranslate"><span class="pre">saltctr.f</span></code>- Minor additions to functionality.</li>
+<li><code class="docutils literal notranslate"><span class="pre">scanin.f</span></code>- Added code to scan input files for humidity boundary conditiona, modified to search input files for new boun keywords (hu-humidified air inflow).</li>
+<li><code class="docutils literal notranslate"><span class="pre">setparams.f</span></code> - initialed parameters relating to humidified air input startup.f - Added call to airctr. for checking temperatures. thermw.f-nothing substantive (spaces only)</li>
+<li><code class="docutils literal notranslate"><span class="pre">ther_co2_h2o.f</span></code>- added an explanation to the code</li>
+<li><code class="docutils literal notranslate"><span class="pre">thrair.f</span></code> - Added coding improved the consistency and performance for seepage face models with wtsi (simplified water table).</li>
+<li><code class="docutils literal notranslate"><span class="pre">thrmwc.f</span></code>-modifed coding for very low water vapor that is useful when dealing with very low water vapor pressure</li>
+<li><code class="docutils literal notranslate"><span class="pre">user_ymp.f</span></code>- Added some code for fitting solubility parameters and vapor pressure parameters.</li>
+<li><code class="docutils literal notranslate"><span class="pre">vaporl.f</span></code>-Appended routine that calculates vapor pressure lowering from salt. (GAZ fitted curve that replaces Sparrow’s curve)</li>
+<li><code class="docutils literal notranslate"><span class="pre">varchk.f</span></code>- fixed phase change guess with low water vapor pressure</li>
+<li><code class="docutils literal notranslate"><span class="pre">varchk_part.f</span></code>- Used for primitive parallel processing-some minor changes to keep this routine consistent with varchk.f (but still not up-to-date)</li>
+<li><code class="docutils literal notranslate"><span class="pre">wrtout.f</span></code>- Added printout for number of gridblocks in each phase state.</li>
+</ul>
+<p><strong>February, 2016</strong></p>
+<p>Changes for Olivella functions:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">vcon.f</span></code> - Corrected existing model to implement Olivella thermal conductivity function.<ul>
+<li>(still some question as to Temp units K or C (Olivella,2011 seems to be C)</li>
+<li>Can’t find a reference temperature.</li>
+</ul>
+</li>
+<li><code class="docutils literal notranslate"><span class="pre">comai.f</span></code> - added global parameter ‘iaprf’ to manage Olivella intrinsic permeability reduction function</li>
+<li><code class="docutils literal notranslate"><span class="pre">comdi.f</span></code> - added global parameters k0f, bkf, por0f for the Olivella intrinsic permeability reduction function</li>
+<li><code class="docutils literal notranslate"><span class="pre">data.f</span></code> - zeroed parameter ‘iaprf’</li>
+<li><code class="docutils literal notranslate"><span class="pre">porosi.f</span></code> - Added coding to enable call to Olivella permeability function (including perm initialization)</li>
+<li><code class="docutils literal notranslate"><span class="pre">saltctr.f</span></code> - Added input coding for Olivella thermal conductivity (and warning in model 4 or 5 are not used with salt). Also added input for Olivella intrinsic perm function. Appended small subroutine perm_olivella to the end of saltctr.f</li>
+<li><code class="docutils literal notranslate"><span class="pre">startup.f</span></code>- changed comment only near call to porosi()</li>
+<li><code class="docutils literal notranslate"><span class="pre">flow_boundary_conditions.f</span></code> - added code so that a specified saturation entered in the boun macro works with Richards’ equation</li>
+</ul>
+<p><strong>April, 2016</strong></p>
+<p>Following 4 routines are modified so that the vapor flowrates for Richard’s Eq. outputs “0.” for all vapor flowrates in the restart file:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">startup.f</span></code> - turned off vapor flow rate flag for flxz keyword based calculations for Richard’s Eq. (keyword rich)</li>
+<li><code class="docutils literal notranslate"><span class="pre">diskread.f</span></code>- allowed reading of vapor flow rate information with Richards Eq. (fin file maybe from a 2phase problem)</li>
+<li><code class="docutils literal notranslate"><span class="pre">diskwrite.f</span></code>- outputted 0. for vapor flow rate for Richards Eq (fin file may be used for a 2phase problem)</li>
+<li><code class="docutils literal notranslate"><span class="pre">diskwrite_new.f</span></code> - same change as to <code class="docutils literal notranslate"><span class="pre">diskwrite.f</span></code></li>
+<li>Modify <code class="docutils literal notranslate"><span class="pre">air_combine.f</span></code> - to remove the stack overflow</li>
+<li>Modify <code class="docutils literal notranslate"><span class="pre">thrair.f</span></code> - modified for the free drainage. Free drainage flowrate should always be positive (or outflow).</li>
+</ul>
+<p><strong>May, 2016</strong></p>
+<p>Salt development modification:</p>
+<ul class="simple">
+<li>Found a small error when a gridblock that is all gas (S = 0) and it is re-wetting from a flow from another gridblock that is above or below it. In thermal problems, the liquid density is not defined for a s= 0 gridblock. This causes problems for the gravity term which is always equally weighted between gridblocks. Fixed by taking the defined liquid density from the inflowing gridblock and not averaging. Idea motivated by discussion with David Dempsey and John OSullivan (Auckland University).</li>
+<li><code class="docutils literal notranslate"><span class="pre">comji.f</span></code> - added <code class="docutils literal notranslate"><span class="pre">grav_wgt(:)</span></code> to change the weighting for the gravity part on the flow equation</li>
+<li><code class="docutils literal notranslate"><span class="pre">geneq1.f</span></code> - modified gravity weighting term as described above (heat and mass pure h20)</li>
+<li><code class="docutils literal notranslate"><span class="pre">geneqc.f</span></code> - modified gravity weighting term as described above (heat and mass air-water-heat)</li>
+<li><code class="docutils literal notranslate"><span class="pre">varchk.f</span></code> - modified some tolerances for phase changes because with corrections above the phase changes are smoother</li>
+<li><code class="docutils literal notranslate"><span class="pre">flow_boundary_conditions.f</span></code> - corrected error for accessing memory in an array that was larger or smaller than the allocated amount.</li>
+</ul>
+<p><strong>June, 2016</strong></p>
+<ul class="simple">
+<li>Modify <code class="docutils literal notranslate"><span class="pre">psatl.f</span></code> - modified vapor pressure to use Sparrow for salt repository</li>
+<li>Modify <code class="docutils literal notranslate"><span class="pre">vaporl.f</span></code> - added coding to include sparrows 2003 equation</li>
+<li>Fix bug for hist macro:<ul>
+<li><code class="docutils literal notranslate"><span class="pre">inhist.f</span></code>: change line 547 from <code class="docutils literal notranslate"><span class="pre">ishise</span> <span class="pre">=</span> <span class="pre">ishis</span> <span class="pre">+</span> <span class="pre">150</span></code> to <code class="docutils literal notranslate"><span class="pre">ishisef</span> <span class="pre">=</span> <span class="pre">ishis</span> <span class="pre">+</span> <span class="pre">155</span></code></li>
+</ul>
+</li>
+</ul>
+<p><strong>July, 2016</strong></p>
+<ul class="simple">
+<li>Modify <code class="docutils literal notranslate"><span class="pre">ther_co2_h2o.f</span></code>: added energy output for constant water production rate boundary condition for co2 storage problems.</li>
+<li>Modify following five routines: Added temperature boundary condition for CO2 injection using boun macro.</li>
+<li><code class="docutils literal notranslate"><span class="pre">model_setup.f</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">comdi.f</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">flow_boun.f</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">flow_boundary_condition.f</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">scanin.f</span></code></li>
+</ul>
+<p><strong>August, 2016</strong></p>
+<p>New humidity BC development: most of the files were changed to support developments in humidity initiaization, output and boundary conditions. Use ‘humidity’ for the relative humidity fraction.</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">model_setup.f</span></code> - added boun sub keywords ‘huf’ (flowing humidity ),’hu’ (fixed humidity), th(humidity temperature), ph (humidity pressure)</li>
+<li><code class="docutils literal notranslate"><span class="pre">co2ctr.f</span></code> - set relative humidity fraction at input temperature for gas phase, print out relative humidity fraction</li>
+<li><code class="docutils literal notranslate"><span class="pre">csolve.f</span></code> - modified to printout SIA iterations</li>
+<li><code class="docutils literal notranslate"><span class="pre">flow_humidity_bc.f</span></code> (new) - calculates the air and water mass fractions of an inflowing gas flow so that the inflow has a specified relative humidity.</li>
+<li><code class="docutils literal notranslate"><span class="pre">scanin.f</span></code> - added coding to identify new humidity related keywords in the boun macro. thrmwc.f - added coding to implement new humidity related boundary conditions. wrtcon.f - added coding to output more detail on SIA iterations</li>
+<li><code class="docutils literal notranslate"><span class="pre">flow_boun.f</span></code> - added coding for new humidity boundary conditions.</li>
+</ul>
+<p>Changes for Olivella functions:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">porosi.f</span></code> - Added coding to enable call to Olivella permeability function (including perm initialization). Corrected the number of loop calls and improved cpu.</li>
+<li><code class="docutils literal notranslate"><span class="pre">saltctr.f</span></code> - Added conditional to Olivella perm function to enable calculation of a single gridblock to be consistent with loop on porosi.</li>
+</ul>
+<p><strong>September, 2016</strong></p>
+<ul class="simple">
+<li>Modify <code class="docutils literal notranslate"><span class="pre">startup.f</span></code>: replaced line 1319 <code class="docutils literal notranslate"><span class="pre">c</span> <span class="pre">psini</span> <span class="pre">=</span> <span class="pre">ps</span></code> to be <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">(isalt.eq.0)</span> <span class="pre">psini=ps</span></code></li>
+<li>This change resolved one simulation scenario results discrepancy between AMANZI/analytical solution and FEHM for code dated between Nov 13, 2014 to Aug 2, 2016; and meanwhile still preserve salt development for salt related problems.</li>
+<li>Modified <code class="docutils literal notranslate"><span class="pre">diskread.f</span></code>: comment out line 645 and 1216 “psini = ps”. This change allow the model to use restart fin file with or without porosity in all simulation scenarios.</li>
+<li>Modify <code class="docutils literal notranslate"><span class="pre">write_avs_node_mat.f</span></code>: fixed bug when writing material output files during a gdkm run, so that gdkm contour output will work again with geo and material keywords; Another small change to get tecplot output working when using gdkm</li>
+<li>Modify <code class="docutils literal notranslate"><span class="pre">csolve.f</span></code>: concentrations are output at flow time steps now</li>
+<li>Modify <code class="docutils literal notranslate"><span class="pre">start_macro.f</span></code>: zone or zonn file can be used with zone or zonn macro in the input deck, input deck macro name will determine which macro is used</li>
+</ul>
+<p><strong>October-November, 2016</strong></p>
+<ul class="simple">
+<li>Development related to trxn, cden and co2 coupling with tracers: <code class="docutils literal notranslate"><span class="pre">allocmem.f</span></code> - increased size of cpntprt array</li>
+<li><code class="docutils literal notranslate"><span class="pre">cden_cor.f90</span></code> - added indexing variables so that multiple tracer species for density calculation can be specified</li>
+<li><code class="docutils literal notranslate"><span class="pre">comchem.f</span></code> - added improvements to reporting of tracer names</li>
+<li><code class="docutils literal notranslate"><span class="pre">comco2.f</span></code> - added variables required for coupling of CO2 and carbon tracer</li>
+<li><code class="docutils literal notranslate"><span class="pre">concen.f</span></code> - adjusted logic to allow for more cden options</li>
+<li><code class="docutils literal notranslate"><span class="pre">diskread.f</span></code> - overwrite initial dissolved carbon concentrations with tracer concentration read in from restart file if cfrac flag=2 is specified</li>
+<li><code class="docutils literal notranslate"><span class="pre">initchem.f</span></code> - added logic for coupling co2 with carbon tracer</li>
+<li><code class="docutils literal notranslate"><span class="pre">read_rxn.f</span></code> - fixed problem with tracer name reporting, added co2 coupling rdcon.f - fixed cden species indexing</li>
+<li><code class="docutils literal notranslate"><span class="pre">rdtr.f90</span></code> - fixed bugs related to indexing species during read of trxn macro</li>
+<li><code class="docutils literal notranslate"><span class="pre">added</span> <span class="pre">logic</span></code> related to co2/carbon tracer coupling</li>
+<li><code class="docutils literal notranslate"><span class="pre">fixed</span> <span class="pre">bug</span></code> related to selecting which species to print, including the ‘all’ option improved error reporting during assign keyword read</li>
+<li><code class="docutils literal notranslate"><span class="pre">scanin.f</span></code> - improved species name reporting</li>
+<li><code class="docutils literal notranslate"><span class="pre">ss_trans.f</span></code> - added logic for coupling co2 with carbon tracer</li>
+<li><code class="docutils literal notranslate"><span class="pre">trxnvars.f90</span></code> - some of this code has been moved to lookupvars</li>
+<li><code class="docutils literal notranslate"><span class="pre">wrtcon.f</span></code> - improved species name reporting</li>
+<li><code class="docutils literal notranslate"><span class="pre">ther_co2_h2o.f</span></code> - modified following lines so code work with rlpm new development, replace:<ul>
+<li><code class="docutils literal notranslate"><span class="pre">dqh(mi)</span> <span class="pre">=</span> <span class="pre">qdis*denwp</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">deqh(mi)</span> <span class="pre">=</span> <span class="pre">qdis*denwta</span></code></li>
+</ul>
+</li>
+<li>with<ul>
+<li><code class="docutils literal notranslate"><span class="pre">dqh(mi)</span> <span class="pre">=</span> <span class="pre">qdis*denwp</span> <span class="pre">+</span> <span class="pre">enw*dq(mi)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">deqh(mi)</span> <span class="pre">=</span> <span class="pre">qdis*denwt</span> <span class="pre">+</span> <span class="pre">enw*dqt(mi)</span></code></li>
+</ul>
+</li>
+</ul>
+<p><strong>January, 2017</strong></p>
+<ul class="simple">
+<li>Modify <code class="docutils literal notranslate"><span class="pre">flow_boundary_conditions_gaz.f</span></code>: fix the pressure BC issue (remember to use pa in boun). Modified the GDKM input slightly to have a general formulation that is equivalent to dpdp (completed) and direction-specific fracture formulation.</li>
+<li>Modify <code class="docutils literal notranslate"><span class="pre">start_macro.f</span></code>: increase read in file name character length, file names using ‘file’ option in macros can now be 200 characters long</li>
+<li>Modify <code class="docutils literal notranslate"><span class="pre">icectrco2.f</span></code>: corrected enthalpy calculation for constant rate of CO2 release</li>
+</ul>
+<p><strong>February, 2017</strong></p>
+<ul class="simple">
+<li>Modify <code class="docutils literal notranslate"><span class="pre">thrmwc.f</span></code>: initializing variable “htc”, uninitialized htc cause PC debug executable fail, and cause linux executable giving wrong results in salt study simulations</li>
+<li>Modify <code class="docutils literal notranslate"><span class="pre">chemod.f</span></code>: fixed Henry’s constant correction in decay chain reaction</li>
+</ul>
+<p><strong>July-August, 2017</strong></p>
+<ul class="simple">
+<li>rlp and rlpm related development:</li>
+<li><code class="docutils literal notranslate"><span class="pre">rlperm_co2.f</span></code> - call to subroutine vgrlps modified to be consistent with updated version of <code class="docutils literal notranslate"><span class="pre">vgrlps.f</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">brooks_corey_rlp.f</span></code> - equations are now consistent with Miller et al. Adv. Water Resourc. (1998), Table 4</li>
+<li><code class="docutils literal notranslate"><span class="pre">corey.f</span></code> - added comment lines <code class="docutils literal notranslate"><span class="pre">brooks_corey_cap.f</span></code> - modified comment lines</li>
+<li><code class="docutils literal notranslate"><span class="pre">scanin.f</span></code> - corrected problem with reading long lines (increased size of dumstring) and with unallocated species array</li>
+<li><code class="docutils literal notranslate"><span class="pre">vcap-ek</span></code>.f - added comment lines, re-arranged code so that it’s more modular.</li>
+<li><code class="docutils literal notranslate"><span class="pre">check_rlp_carb.f</span></code> - updated headings for relperm/cap pressure table, corrected bugs</li>
+<li><code class="docutils literal notranslate"><span class="pre">rlp_cap_table.f</span></code> - added comments</li>
+<li><code class="docutils literal notranslate"><span class="pre">exponential.f</span></code> - expanded functionality to include non-wetting phase calculation</li>
+<li><code class="docutils literal notranslate"><span class="pre">phase_name.f90</span></code> - new routine, new code to calculate unique index for each phase couple</li>
+<li><code class="docutils literal notranslate"><span class="pre">vgrlps.f</span></code> - star is now calculated inside the subroutine, not passed in as a parameter, for consistency with all other relative perm subroutines</li>
+<li><code class="docutils literal notranslate"><span class="pre">rlp_frac2.f</span></code> - star is now calculated inside the subroutine, not passed in as a parameter, for consistency with all other relative perm subroutines</li>
+<li><code class="docutils literal notranslate"><span class="pre">vgcap_fit3.f</span></code> - new routine, update spline parameter calculation to be consistent with rlpm variable definitions</li>
+<li><code class="docutils literal notranslate"><span class="pre">thrmwc.f</span></code> - additional call to rlp_cap for consistency with new rlpm implementation <code class="docutils literal notranslate"><span class="pre">inrlp.f90</span></code> - replace inrlp.f, new implementation of rlpm input format</li>
+<li><code class="docutils literal notranslate"><span class="pre">cappr2.f90</span></code> - new routine, new variable definitions to support new implementation of rlpm <code class="docutils literal notranslate"><span class="pre">rlp_cap.f90</span></code> - replace <code class="docutils literal notranslate"><span class="pre">rlp_cap.f</span></code>, new implementation of rlpm</li>
+<li><code class="docutils literal notranslate"><span class="pre">check_rlp.f</span></code> - changed a few parameter names to make code more readable, improved headers to make output table more readable</li>
+<li><code class="docutils literal notranslate"><span class="pre">comrlp.f</span></code> - added new variables to support new implementation of rlpm <code class="docutils literal notranslate"><span class="pre">brooks_corey_rlp3.f</span></code> - fixed bug in parameter passing</li>
+<li><code class="docutils literal notranslate"><span class="pre">linear.f</span></code> - very minor improvements to precision</li>
+</ul>
+<p><strong>September, 2017</strong></p>
+<ul class="simple">
+<li>Modify <code class="docutils literal notranslate"><span class="pre">user_ymp.f</span></code>: changed the control to turn off CO2 injector for constant pressure boundary condition</li>
+</ul>
+<p><cite>End Developer Notes 12/04/2015 to 9/21/2017</cite></p>
+<hr class="docutils" />
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="v3.3.0.html" class="btn btn-neutral float-right" title="V3.3.0" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="v3.4.0.html" class="btn btn-neutral float-left" title="V3.4.0" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Los Alamos National Laboratory
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
