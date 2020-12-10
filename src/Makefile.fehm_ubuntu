@@ -18,10 +18,13 @@
 # Edit FC,LIBRARY,FFLAGS for your environment and compiler 
 #***********************************************************************
 # Before starting source GnuDevelEnv.cshrc
-
-SRCDIR = /scratch/ymp/smckinney/fehm_petsc_pull/FEHM/src/
+CURRENTDIR := $(PWD)
+FEHMDIR = ${CURRENTDIR}/..
+SRCDIR = ${FEHMDIR}/src/
+TPLDIR = ${FEHMDIR}/TPL
+export PETSC_DIR=${TPLDIR}/petsc-release/petsc
 WORKDIR = ./
-INCDIR = ./ -I ${PETSC_DIR}/include/ -I ${PETSC_DIR}/arch-linux2-c-debug/include/
+INCDIR = ./ -I${PETSC_DIR}/include/ -I${PETSC_DIR}/${PETSC_ARCH}/include/
 OBJDIR = ./
 DEPEND = ${SRCDIR}Makefile.depends
 
@@ -43,10 +46,11 @@ ifeq (${OPSYS}, Linux)
 OSTAG = lnUbuntu16
 ifeq (${BIT},64)
 FC = ${PETSC_DIR}/${PETSC_ARCH}/bin/mpif90
-LIBRARY =  -L ${PETSC_DIR}/arch-linux2-c-debug/lib/ -lpetsc -Wl,-rpath,${PETSC_DIR}/arch-linux2-c-debug/lib/
+LIBRARY =  -L ${PETSC_DIR}/${PETSC_ARCH}/lib/ -lpetsc -Wl,-rpath,${PETSC_DIR}/${PETSC_ARCH}/lib/
 else
+OSTAG = macOS
 FC = ${PETSC_DIR}/${PETSC_ARCH}/bin/mpif90
-LIBRARY = -Lls -lpetsc -Wl,-rpath,${PETSC_DIR}/arch-linux2-c-debug/lib/
+LIBRARY =  -L ${PETSC_DIR}/${PETSC_ARCH}/lib/ -lpetsc -Wl,-rpath,${PETSC_DIR}/${PETSC_ARCH}/lib/
 endif
 DFLAG =
 LD = ld
@@ -85,6 +89,9 @@ STATIC =
 endif
 # SUN OS ------------------------------
 
+OSTAG = macOS
+FC = ${PETSC_DIR}/${PETSC_ARCH}/bin/mpif90
+LIBRARY =  -L ${PETSC_DIR}/${PETSC_ARCH}/lib/ -lpetsc -Wl,-rpath,${PETSC_DIR}/${PETSC_ARCH}/lib/
 OBJECTS := $(patsubst ${SRCDIR}%.f,%.o,$(wildcard ${SRCDIR}*.f))
 OBJECTS_cap := $(patsubst ${SRCDIR}%.F,%.o,$(wildcard ${SRCDIR}*.F))
 OBJECTS_F90 := $(patsubst ${SRCDIR}%.f90,%.o,$(wildcard ${SRCDIR}*.f90))
@@ -94,8 +101,14 @@ OBJECTS_NEW_cap := $(patsubst ${SRCDIR}src_new/%.F,%.o,$(wildcard ${SRCDIR}src_n
 OBJECTS_NEW_F90 := $(patsubst ${SRCDIR}src_new/%.f90,%.o,$(wildcard ${SRCDIR}src_new/*.f90))
 OBJECTS_NEW_F90_cap := $(patsubst ${SRCDIR}src_new/%.F90,%.o,$(wildcard ${SRCDIR}src_new/*.F90))
 
-all: dated xfehm
+all: petsc-release dated xfehm
 
+.PHONY: petsc-release
+petsc-release:
+	@rm -R  ${TPLDIR}/petsc-release/petsc/
+	@cd ${TPLDIR}/petsc-release && git clone https://github.com/petsc/petsc.git
+	@cd ${TPLDIR}/petsc-release/petsc/ && git branch && ./configure -with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-mpich --download-fblaslapack --with-debugging=0
+	@cd ${TPLDIR}/petsc-release/petsc/ && make
 dated:
 	rm -f  ${SRCDIR}dated.f
 	sed s/OS\ DATE/${OSTAG}\ ${DATETAG}/ ${SRCDIR}dated.template >  ${SRCDIR}dated.f
