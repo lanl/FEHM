@@ -1226,9 +1226,11 @@ c     calculate phase-change pressure and dp/dt
 c           endif                
          elseif(iflg.eq.4) then
 c     call equation generation and load jacobian array
-            
+#ifdef DDFLAG
+			call dd_gensco2h2o
+#else			
             call gensco2h2o      
-            
+#endif            
          elseif(iflg.eq.5) then
             if(ntty.eq.2) then
 c     
@@ -2076,7 +2078,7 @@ c     write surfer or tecplot contour files
  855        format(1x,10(1x,g12.5))
          endif
          
-      endif
-      
+      endif                  
+                           
       return
       end

@@ -3,27 +3,18 @@
 !******************************************************************************
 !
 module petsc_initialize_package
-    
+
 #include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petsc.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-!#include <petsc/finclude/petscsles.h>
-#include <petsc/finclude/petscdmda.h>
-#include <petsc/finclude/petscdmplex.h>
 
     use petscksp
     use comco2
 
     public :: petsc_initialize
-    
+
     Vec    x,b, nnz_seq, global_asize
     Mat    A_matrix
     KSP    ksp
     PC     pc
-    DM     mesh
 
     PetscInt,dimension(:),allocatable :: bp_index,x_index        ! index for right hand vector
     PetscReal,dimension(:),allocatable :: solution,sol_gather    ! index for right hand vector
@@ -37,30 +28,20 @@ module petsc_initialize_package
     PetscInt,dimension(:),allocatable :: nnz,nnz_above            ! nnz: number of nonzero on each row
     PetscInt,dimension(:),allocatable :: nnz_global               ! nnz: number of nonzero on each row
 
-    integer :: nnz_total,nnz_max, nnz_sum, row_nnz, i, j 
+    integer :: nnz_total,nnz_max, nnz_sum, row_nnz, i, j
     integer :: rank_nonzero_num, rank_rows, nnz_block_above
     integer :: idf, neq_inc, idf_cnt, neq_adj, idf_adj, neq_swc, nnz_cnt
     integer(kind=4) :: d_nz, o_nz, Istart, Iend
     integer(kind=4),dimension(:),allocatable :: col_id, d_nnz, o_nnz, row_tmp                    ! for assemble A_matrix
-    REAL(8),dimension(:,:),allocatable :: test_id                   
-    
+    REAL(8),dimension(:,:),allocatable :: test_id
+
     integer(kind=4),dimension(:),allocatable :: row_index, row_nelm       ! for assemble A_matrix
     integer,dimension(:),allocatable :: value_index               ! the index for value vector to assemble
     integer,dimension(:),allocatable :: rank_nonzero_array, global_nonzero        ! just for the order: from 1 to ...
-    
-      
+
+
     double precision info(MAT_INFO_SIZE)
-    double precision mal, nz_a  
-    
-    !METIS
-    Mat             mesh,dual;
-    PetscErrorCode  ierr;
-    PetscInt        Nvertices = 6;       /* total number of vertices */
-    PetscInt        ncells    = 2;       /* number cells on this process */
-    PetscInt        *ii,*jj;
-    PetscMPIInt     size,rank;
-    MatPartitioning part;
-    IS              is;
+    double precision mal, nz_a
 
 contains
 
@@ -71,56 +52,25 @@ contains
        use petscksp
 
        use comai                                                   ! for neq, number of freedom per node
-       use combi   
+       use combi
        use comdti, only : nr
        implicit none
 
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr_3)
-       
-       ! METIS ----------------------------------------------------------------
-       
-		  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-		  ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
-		  if (size != 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example is for exactly two processes");
-		  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
-		
-		  ierr  = PetscMalloc1(3,&ii);CHKERRQ(ierr);
-		  ierr  = PetscMalloc1(6,&jj);CHKERRQ(ierr);
-		  ii[0] = 0; ii[1] = 3; ii[2] = 6;
-		  if (!rank) {
-			jj[0] = 0; jj[1] = 1; jj[2] = 2; jj[3] = 1; jj[4] = 2; jj[5] = 3;
-		  } else {
-			jj[0] = 1; jj[1] = 4; jj[2] = 5; jj[3] = 1; jj[4] = 3; jj[5] = 5;
-		  }
-		  ierr = MatCreateMPIAdj(MPI_COMM_WORLD,ncells,Nvertices,ii,jj,NULL,&mesh);CHKERRQ(ierr);
-		  ierr = MatMeshToCellGraph(mesh,2,&dual);CHKERRQ(ierr);
-		  ierr = MatView(dual,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-		
-		  ierr = MatPartitioningCreate(MPI_COMM_WORLD,&part);CHKERRQ(ierr);
-		  ierr = MatPartitioningSetAdjacency(part,dual);CHKERRQ(ierr);
-		  ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
-		  ierr = MatPartitioningApply(part,&is);CHKERRQ(ierr);
-		  ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-		  ierr = ISDestroy(&is);CHKERRQ(ierr);
-		  ierr = MatPartitioningDestroy(&part);CHKERRQ(ierr);
-		  
-	  ! METIS ----------------------------------------------------------------
-		  
-       !call DMPlexCreate(PETSC_COMM_WORLD, mesh, ierr_3);CHKERRA(ierr_3)
-       
+
        ! set the dof present in he a matrix
        if(idof_co2 .ne. 0)then
            idf = idof_co2
        else
            idf = idof
        endif
-       
+
        if (ierr_3 .ne. 0) then
            print*,'Unable to initialize PETSc'
            stop
        endif
-       
+
        nnz_total = 0
        A_size = neq * idf
 
@@ -162,9 +112,9 @@ contains
        do j = 1,A_size
            bp_index(j) = j-1      ! Assign index values from 0 to n-1
        end do
-       
-       
-       
+
+
+
 
 
        ! obtain coefficient for each block, not the entire A matrix
@@ -172,14 +122,14 @@ contains
 		   do i = 1,neq
 			   nnz(i) = nelm(i+1)-nelm(i)          ! decide how many non-zero values on each row in each block
 			   nnz_total = nnz_total + nnz(i)         ! decide how many non-zero number in each block
-					   
+
 			   if (i == 1) then
 				   nnz_above(i) = 0                   ! deccide how many non-zero number above that row
 			   else
 				   nnz_above(i) = nnz_above(i-1) + nnz(i-1)
 			   endif
 
-			 
+
 			   !nnz_global(i+neq*j) = nnz(i)
 			end do
 		!end do
@@ -211,7 +161,7 @@ contains
        !
        !  Create matrix.  When using MatCreate(), the matrix format can
        !  be specified at runtime.
-       	   
+
        ! More robust algorithm for calculation of nz for unstructured grid !
 !       if (rank_size == 1) then
 !
@@ -245,7 +195,7 @@ contains
 !       end if
        d_nz = 0
        o_nz = 0
-       
+
 
        ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        ! - - - -
@@ -260,23 +210,23 @@ contains
        !call VecSetFromOptions(global_asize,ierr_3)
        !call VecGetOwnershipRange(global_asize, localstart, localend, ierr_3)
        !local_asize = localend - localstart
-       
-       
+
+
        call MatCreate(PETSC_COMM_WORLD,A_matrix,ierr_3);CHKERRA(ierr_3)        ! for entire large matrix
        call MatSetSizes(A_matrix,PETSC_DECIDE,PETSC_DECIDE,A_size,A_size,ierr_3);CHKERRA(ierr_3)
        call MatSetFromOptions(A_matrix,ierr_3);CHKERRA(ierr_3)
-         
+
        call MatSetType(A_matrix,MATMPIAIJ,ierr_3);CHKERRA(ierr_3)
-       
+
        call MatSetUp(A_matrix,ierr_3);CHKERRA(ierr_3)
        !call MatSeqAIJSetPreallocation(A_matrix, d_nz, PETSC_NULL_INTEGER, ierr_3);CHKERRA(ierr_3)
 
-       
-       
+
+
        call MatGetInfo(A_matrix, MAT_LOCAL, info, ierr_3);CHKERRA(ierr_3)
        mal = info(MAT_INFO_MALLOCS)
        nz_a = info(MAT_INFO_NZ_ALLOCATED)
-       
+
        ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        !         Compute the matrix A for the linear system, Ax = b
        ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -301,9 +251,9 @@ contains
 
 ! -----------------------------------------------------------------------------
 !      Decide from which row to which row for each processor
-      
+
        call MatGetOwnershipRange(A_matrix,Istart,Iend,ierr_3)
-       
+
        ! size of diagonal nnz array for preallocation
        nnz_size = Iend - Istart
 
@@ -317,23 +267,23 @@ contains
 	   allocate(value(rank_nonzero_num))
 	   allocate(value_index(rank_nonzero_num))
 	   allocate(rank_nonzero_array(rank_nonzero_num))
-	   
+
        !allocate(row_index(Iend - Istart+1))
-       
+
        ! alloc for using MatSetValues
        allocate(row_index(rank_nonzero_num))
        allocate(row_tmp(rank_nonzero_num))
        allocate(d_nnz(Iend-Istart))
        allocate(o_nnz(Iend-Istart))
-       
+
        row_index   = 0
        row_nnz = 1
        idf_cnt = 0
        neq_inc = 0
        neq_inc = neq
        neq_adj = 0
-       idf_cnt = 0  
-       idf_adj = 0       
+       idf_cnt = 0
+       idf_adj = 0
        rank_nonzero_array = (/ (I, I = 1,rank_nonzero_num) /)
        value_index = 0
        nnz_block_above = 0
@@ -344,19 +294,19 @@ contains
 
        do i  = 1, neq*idf
             neq_swc = 0
-            
+
             row_index(row_nnz:(nnz_global(i)*idf+row_nnz-1)) = i - 1
-            
-            
+
+
             if(i > neq_inc)then
                     idf_adj = idf_adj + (idf-1)
                     idf_cnt = idf_cnt + 1
                     neq_inc = neq_inc + neq
                     neq_adj = neq_adj + neq
-            end if              
-            
+            end if
+
             row_tmp(row_nnz:(nnz_global(i)*idf+row_nnz-1)) = i - neq_adj
-            
+
             do j = 0, idf - 1
                             col_id(row_nnz+nnz_global(i)*j:(nnz_global(i)*(j+1)+row_nnz-1)) = nelm(nelm(i-neq_adj)+1:nelm(i-neq_adj+1)) - 1	+ neq_swc
                             value_index(row_nnz+nnz_global(i)*j:(nnz_global(i)*(j+1)+row_nnz-1)) = rank_nonzero_array(1:nnz_global(i)) + nnz_above(i) + nnz_total*j + nnz_total*idf_adj
@@ -365,25 +315,25 @@ contains
             row_nnz = row_nnz + nnz_global(i) * idf
             nnz_block_above = nnz_block_above + nnz_global(i)
        end do
-       
+
 
        do i = 1, rank_nonzero_num
-       
+
        		if (row_index(i) >= Istart .AND. row_index(i) <= Iend - 1)then
-       			
+
        			if (col_id(i) >= Istart .AND. col_id(i) <= Iend - 1) then
 					d_nnz(row_index(i) - Istart + 1) = d_nnz(row_index(i) - Istart + 1) + 1
 				else
 					o_nnz(row_index(i) - Istart + 1) = o_nnz(row_index(i) - Istart + 1) + 1
 				end if
-       			
+
        		end if
-       		
+
        end do
 
  !      do while (i <= nnz_size - 1)
  !      		if (col_id(nnz_cnt) >= Istart .AND. col_id(nnz_cnt) <= Iend - 1) then
- !      			d_nnz(i+1) = d_nnz(i+1) + 1       		
+ !      			d_nnz(i+1) = d_nnz(i+1) + 1
  !      		else
  !      			o_nnz(i+1) = o_nnz(i+1) + 1
  !      		end if
@@ -395,25 +345,23 @@ contains
 !       end do
 
        !col_id      = 0
-       value       = 0.0       
-       
+       value       = 0.0
+
        nnz_sum = 0
        neq_inc = neq
        neq_adj = 0
        idf_cnt = 0
 
-       call MatMPIAIJSetPreallocation(A_matrix, d_nz, d_nnz, o_nz, o_nnz, ierr_3);CHKERRA(ierr_3)       
-       
+       call MatMPIAIJSetPreallocation(A_matrix, d_nz, d_nnz, o_nz, o_nnz, ierr_3);CHKERRA(ierr_3)
+
        call VecCreate(PETSC_COMM_WORLD,x,ierr_3)
        call VecSetSizes(x,PETSC_DECIDE,A_size,ierr_3)
        call VecSetFromOptions(x,ierr_3)
-       call VecDuplicate(x,b,ierr_3)   
-       
+       call VecDuplicate(x,b,ierr_3)
+
        call KSPCreate(PETSC_COMM_WORLD,ksp,ierr_3)
 
     end subroutine petsc_initialize
 
 
 end module petsc_initialize_package
-
-

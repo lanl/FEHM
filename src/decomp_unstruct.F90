@@ -1,3 +1,4 @@
+#ifdef DDFLAG
 module decomp_unstruct
 
 #include "petsc/finclude/petscvec.h"
@@ -2113,3 +2114,4 @@ end module decomp_unstruct_module
 !!!!!!!!!!!!!!!!!!!!!!  
 ! CALL UGridDecompose()
 	!!!!!!!!!!!!!!!!!!
+#endif
