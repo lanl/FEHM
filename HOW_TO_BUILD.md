@@ -7,13 +7,13 @@ The 64bit version of FEHM-PETSC can handle ~78mil nodes (probably more, just hav
 
 Build this version of FEHM with gcc-7.3.0 or greater.
 
-git clone https://github.com/lanl/FEHM.git --branch PETSC  
+git clone https://github.com/lanl/FEHM.git --branch PETSC_64 
 cd FEHM/src
 make -f Makefile.fehm_ubuntu
 
 ### To build FEHM-PETSC without petsc (Must set $PETSC_DIR and $PETSC_ARCH correctly, must point to a petsc built with same compiler as FEHM):
 
-git clone https://github.com/lanl/FEHM.git --branch PETSC
+git clone https://github.com/lanl/FEHM.git --branch PETSC_64
 make -f Makefile.fehm_ubuntu xfehm
 
 ### To run FEHM-PETSC_64:
