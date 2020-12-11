@@ -57,9 +57,9 @@ LD = ld
 ifeq (${DEBUG}, ON)
 #FFLAGS = -g -frecord-marker=4 -fno-automatic -ffpe-trap=underflow,overflow
 #FFLAGS = -g -frecord-marker=4 -fno-automatic
-FFLAGS = -g -frecord-marker=4 -fbounds-check
+FFLAGS = -g -frecord-marker=4 -fbounds-check -fdefault-integer-8
 else
-FFLAGS = -O2 -frecord-marker=4 -fno-automatic 
+FFLAGS = -O2 -frecord-marker=4 -fno-automatic -fdefault-integer-8
 #You might want that flag below, wierd stuff happening when its on man
 #-ffpe-trap=underflow,overflow
 #FFLAGS = -O2 -frecord-marker=4
@@ -107,7 +107,7 @@ all: petsc-release dated xfehm
 petsc-release:
 	@rm -R  ${TPLDIR}/petsc-release/petsc/
 	@cd ${TPLDIR}/petsc-release && git clone https://github.com/petsc/petsc.git
-	@cd ${TPLDIR}/petsc-release/petsc/ && git branch && ./configure -with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-mpich --download-fblaslapack --with-debugging=0
+	@cd ${TPLDIR}/petsc-release/petsc/ && git branch && ./configure --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-mpich --with-debugging=0 --with-64-bit-indices=1 --with-64-bit-blas-indices --known-64-bit-blas-indices=1
 	@cd ${TPLDIR}/petsc-release/petsc/ && make
 dated:
 	rm -f  ${SRCDIR}dated.f

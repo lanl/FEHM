@@ -22,7 +22,7 @@ module petsc_initialize_package
     PetscInt,dimension(:),allocatable :: recvcounts,displs       ! index for MPI_Gatherv
 
     PetscBool        flg
-    integer(kind=4)   ierr_3
+    integer(kind=4)  ierr_3
 
     PetscInt         A_size, nnz_start, nnz_end, nnz_size, local_asize, localstart, localend
     PetscInt,dimension(:),allocatable :: nnz,nnz_above            ! nnz: number of nonzero on each row
@@ -31,11 +31,11 @@ module petsc_initialize_package
     integer :: nnz_total,nnz_max, nnz_sum, row_nnz, i, j 
     integer :: rank_nonzero_num, rank_rows, nnz_block_above
     integer :: idf, neq_inc, idf_cnt, neq_adj, idf_adj, neq_swc, nnz_cnt
-    integer(kind=4) :: d_nz, o_nz, Istart, Iend
-    integer(kind=4),dimension(:),allocatable :: col_id, d_nnz, o_nnz, row_tmp                    ! for assemble A_matrix
+    integer :: d_nz, o_nz, Istart, Iend
+    integer,dimension(:),allocatable :: col_id, d_nnz, o_nnz, row_tmp                    ! for assemble A_matrix
     REAL(8),dimension(:,:),allocatable :: test_id                   
     
-    integer(kind=4),dimension(:),allocatable :: row_index, row_nelm       ! for assemble A_matrix
+    integer,dimension(:),allocatable :: row_index, row_nelm       ! for assemble A_matrix
     integer,dimension(:),allocatable :: value_index               ! the index for value vector to assemble
     integer,dimension(:),allocatable :: rank_nonzero_array, global_nonzero        ! just for the order: from 1 to ...
     

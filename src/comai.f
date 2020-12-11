@@ -405,7 +405,7 @@
       integer             ivfcal, iw, icons, inapl, iboun, ihead, ichead
       integer             iwelb, iyear, l, lda, m, m2, m3, maxit, mink 
       integer             minkt, mlz, month, n, nbnd, ncntr, nei 
-      integer(kind=4)     neigh, nemx, neq, nflx, nflxz, ni, nicg
+      integer             neigh, nemx, neq, nflx, nflxz, ni, nicg
       integer             north, ns, itotals, nflxt, iflxc, irestart_ts
       integer             nsave, nstep, ntpp, ntty, irsttime 
       integer             ispest, ispst1, ipest, mpest, iexrlp, ivar
