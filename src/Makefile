@@ -37,8 +37,8 @@ DEPEND = ${SRCDIR}Makefile.depends
 OPSYS = $(shell uname -s )
 DATETAG = $(shell date '+%y-%m-%d')
 DATE = $(shell date '+.%d%b%y')
-FFLAGS = -frecord-marker=4
-DEBUGFLAGS = -g -O0 -frecord-marker=4 -fbounds-check -Wall
+FFLAGS = -frecord-marker=4 -fallow-argument-mismatch
+DEBUGFLAGS = -g -O0 -frecord-marker=4 -fbounds-check -Wall -fallow-argument-mistmatch
 
 
 # Define the written OS tag
