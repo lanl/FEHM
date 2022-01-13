@@ -117,7 +117,7 @@ all: hdf5-1.8 silo-4.10.2 dated xfehm
 
 .PHONY: hdf5-1.8
 hdf5-1.8:	
-	@cd ${TPLDIR} && git clone https://github.com/live-clones/hdf5.git --branch 1.8/master $@
+	@cd ${TPLDIR} && git clone git@github.com:HDFGroup/hdf5.git --branch 1.8/master $@
 	@cd ${TPLDIR}/hdf5-1.8/ && git branch && ./configure --prefix=${TPLDIR}/hdf5-1.8_install/ --enable-fortran --enable-cxx
 	@cd ${TPLDIR}/hdf5-1.8/ && make install
 
