@@ -45,8 +45,8 @@ DEPEND = ${SRCDIR}Makefile.depends
 OPSYS = $(shell uname -s )
 DATETAG = $(shell date '+%y-%m-%d')
 DATE = $(shell date '+.%d%b%y')
-FFLAGS = -frecord-marker=4 -ffixed-line-length-132
-DEBUGFLAGS = -g -O0 -frecord-marker=4 -fbounds-check -Wall
+FFLAGS = -frecord-marker=4 -ffixed-line-length-132 -fallow-argument-mismatch
+DEBUGFLAGS = -g -O0 -frecord-marker=4 -fbounds-check -Wall -fallow-argument-mismatch
 
 
 # Define the written OS tag
@@ -89,6 +89,7 @@ define help
     make install                build release FEHM into PREFIX (default: /usr/local/bin)  
     make uninstall              remove release FEHM from PREFIX         
     make clean                  remove all object and mod files
+    make allclean               remove all object, mod and tpl files
     make test                   run FEHM unit tests
     make help                   view this help screen
 
@@ -117,7 +118,7 @@ all: hdf5-1.8 silo-4.10.2 dated xfehm
 
 .PHONY: hdf5-1.8
 hdf5-1.8:	
-	@cd ${TPLDIR} && git clone https://github.com/live-clones/hdf5.git --branch 1.8/master $@
+	@cd ${TPLDIR} && git clone git@github.com:HDFGroup/hdf5.git --branch 1.8/master $@
 	@cd ${TPLDIR}/hdf5-1.8/ && git branch && ./configure --prefix=${TPLDIR}/hdf5-1.8_install/ --enable-fortran --enable-cxx
 	@cd ${TPLDIR}/hdf5-1.8/ && make install
 
@@ -143,6 +144,11 @@ uninstall:
 
 .PHONY: clean
 clean:
+	rm *.o
+	rm *.mod
+
+.PHONY: allclean
+allclean:
 	rm *.o
 	rm *.mod
 	rm -R ${TPLDIR}/hdf5-1.8
