@@ -45,8 +45,8 @@ DEPEND = ${SRCDIR}Makefile.depends
 OPSYS = $(shell uname -s )
 DATETAG = $(shell date '+%y-%m-%d')
 DATE = $(shell date '+.%d%b%y')
-FFLAGS = -frecord-marker=4 -ffixed-line-length-132
-DEBUGFLAGS = -g -O0 -frecord-marker=4 -fbounds-check -Wall
+FFLAGS = -frecord-marker=4 -ffixed-line-length-132 -fallow-argument-mismatch
+DEBUGFLAGS = -g -O0 -frecord-marker=4 -fbounds-check -Wall -fallow-argument-mismatch
 
 
 # Define the written OS tag
@@ -89,6 +89,7 @@ define help
     make install                build release FEHM into PREFIX (default: /usr/local/bin)  
     make uninstall              remove release FEHM from PREFIX         
     make clean                  remove all object and mod files
+    make allclean               remove all object, mod and tpl files
     make test                   run FEHM unit tests
     make help                   view this help screen
 
@@ -143,6 +144,11 @@ uninstall:
 
 .PHONY: clean
 clean:
+	rm *.o
+	rm *.mod
+
+.PHONY: allclean
+allclean:
 	rm *.o
 	rm *.mod
 	rm -R ${TPLDIR}/hdf5-1.8
