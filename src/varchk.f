@@ -561,8 +561,16 @@ c
                         ieosdc = 3 
                         s(ij) = 0.0
                       else if(pl.lt.pcrit_h2o) then
-                         tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,
-     &                             1,an(ij))
+c                         tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,
+c     &                             1,an(ij))
+                          tboil = 3000.   !JPO  test (Mars)
+                          ieosdc = 1      !JPO  test (Mars)
+c***** JPO 09/12/22
+c      (Mars) Force liquid phase if tsa0 (from sther.f) = 1000
+c                   ! else if(pl.lt.pcrit_h2o.and.tsa0.eq.1000) then
+c                           do nothing (keep tboil=2000.) 
+c                      ! tboil = 3000.
+c                      ! ieosdc = 1
                       endif
          
 C*****
