@@ -184,7 +184,7 @@ fd_calc_heat.o: davidi.o
 fehmn.o: comai.o combi.o comci.o comco2.o comcomp.o comdi.o comdti.o comei.o
 fehmn.o: comevap.o comfem.o comfi.o comflow.o comii.o compart.o comriv.o
 fehmn.o: comrtd.o comrxni.o comsi.o comsk.o comsplitts.o comsptr.o comuserc.o
-fehmn.o: comwt.o comxi.o davidi.o interpolate.o interpolate_2.o
+fehmn.o: comwt.o comxi.o davidi.o interpolate.o interpolate_2.o comuserr.o
 fem_DruckerPrager_stiffness.o: comai.o comfem.o comsi.o
 fem_DruckerPrager_stress_update.o: comai.o comdi.o comfem.o comsi.o
 fem_elastic_stiffness.o: comai.o comfem.o comsi.o
@@ -489,13 +489,13 @@ read_avs_io.o: avsio.o comai.o combi.o comco2.o comdi.o comdti.o comflow.o
 read_avs_io.o: davidi.o
 read_rtd.o: comrtd.o
 read_rxn.o: comai.o combi.o comchem.o comco2.o comcouple.o comdi.o comdti.o
-read_rxn.o: comrxni.o
+read_rxn.o: comrxni.o comuserr.o
 read_sx.o: comai.o combi.o
 read_tcurve.o: comai.o comdi.o compfrac.o
 releasemem.o: comai.o combi.o comchem.o comci.o comcouple.o comdi.o comdti.o
 releasemem.o: comei.o comfi.o comflow.o comgi.o comhi.o comii.o comji.o
 releasemem.o: compart.o compfrac.o comrtd.o comrxnb.o comrxni.o comsk.o
-releasemem.o: comsptr.o comuserc.o comzeoli.o davidi.o
+releasemem.o: comsptr.o comuserc.o comzeoli.o davidi.o comuserr.o
 renum.o: comai.o combi.o comdi.o comdti.o comei.o comgi.o comki.o davidi.o
 resettrc.o: comai.o comci.o comdi.o comdti.o
 resetv.o: comai.o comci.o comco2.o comdi.o comdti.o comfi.o davidi.o
@@ -643,6 +643,8 @@ user_ymp.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o comfi.o
 user_ymp.o: comflow.o comhi.o comii.o compart.o
 userc.o: comai.o combi.o comci.o comdi.o comdti.o compart.o comrxni.o
 userc.o: comuserc.o
+userr.o: combi.o comdi.o comdti.o comai.o comci.o compart.o comrxni.o
+userr.o: comuserr.o
 uz_wtctr.o: comai.o combi.o comdi.o comdti.o comii.o
 varchk.o: comai.o combi.o comci.o comco2.o comdi.o comdti.o comei.o comfi.o
 varchk.o: comgi.o comii.o comtable.o davidi.o

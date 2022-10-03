@@ -108,6 +108,7 @@
       use comrtd
       use comsk
       use comuserc
+      use comuserr   !jpo
       implicit none
 
       if(allocated(igdpm)) deallocate(igdpm)
@@ -875,6 +876,10 @@ c zvd 29-Feb-2008 arrays for boun permeabilty and userc models
 cbhl  6/4/08      
       if(allocated(bconf_sav)) deallocate(bconf_sav)
 cbhl  6/4/08      
-                            
+c jpo 23-Sep-2022 arrays for userr rxn models
+      if(allocated(userrtime)) deallocate(userrtime)
+      if(allocated(distcoeffs)) deallocate(distcoeffs)
+      if(allocated(distcoeff_zones)) deallocate(distcoeff_zones)
+    
       return
       end

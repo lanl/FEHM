@@ -107,6 +107,7 @@ C**********************************************************************
       use comdti
 	use comco2
       use davidi, only : irdof
+      use comuserr               ! jpo
       implicit none
       integer info, tol_value
       integer ic,ic2,ic3,im,iv,ix,in,mi
@@ -114,7 +115,29 @@ C**********************************************************************
       integer isolute
       real*8 dt,dum
       real*8 danl_subst,danv_subst,stemp,disco2_flow
+      integer monum, num_models                  ! jpo - for userr
+      logical, allocatable :: userr_calculated(:)           ! jpo - for userr
+c      real*8, allocatable :: distcoeffi(:)      ! jpo - for userr
 
+c.....jpo - for userr in subrxn2
+c     Check all irxn in numrxn for any userr specification
+      do irxn=1,numrxn
+c         if(temp_model_kin(1).eq.'u')then 
+         if(temp_model_kin(irxn).eq.'u')then 
+            num_models = size(distcoeffs,2)
+c           Only want to get distcoeff once for each model (same at each node) 
+            if(.not.allocated(userr_calculated)) then
+               allocate(userr_calculated(num_models))
+               userr_calculated = .FALSE.  ! start with all models as False
+            endif
+            if(.not.allocated(distcoeffi)) then
+               allocate(distcoeffi(num_models))
+            endif
+         else
+            monum=0  !default case for moum
+         endif
+      enddo
+c.......
 
       do in=1,n0
          if(ndconv(in).eq.0)then
@@ -264,8 +287,54 @@ c.........Call user-defined subroutines
  210           call subrxn1(dt,in,irxn)
                goto 299
                
- 220           call subrxn2(dt,in,irxn)
+c 220           call subrxn2(dt,in,irxn)   ! jpo - commented out to test
+c               goto 299                   ! jpo - commented out to test
+
+c............. jpo - Modification of call to subrxn2 (needed for userr)
+c              jpo - for userr in subrxn2
+ 220           if(temp_model_kin(irxn).eq.'u')then 
+                  monum = rxnon_u(irxn,in)  ! model number at current node
+c                 DEBUG PRINTING
+                  write(iout,*)
+                  write(iout,*) '***** days = ', days, ' *****'
+                  write(iout,*) 'chemod monum = ',monum
+                  if (iout.gt.0) write(iout,*)
+     &               'node = ', in
+                  if (iout.gt.0) write(iout,*)
+     &               'chemod MID userr_calculated = ', userr_calculated
+               endif
+c........................
+c              Userr subrxn2
+               if (monum.gt.0) then
+c                 If distcoeff has already been calculated for current monum
+                  if (userr_calculated(monum).eqv..TRUE.) then
+                     write(iout,*) 'TRUE'
+                     write(iout,*) 'pre-subrxn2'
+                     write(iout,*) 'irxn = ', irxn
+                     call subrxn2(dt,in,irxn-10000) !use bogus (neg.) val for irxn
+c                     call subrxn2(dt,in,-999) !use bogus (neg.) val for irxn
+                     write(iout,*) 'post-subrxn2'
+                     write(iout,*) 'irxn = ', irxn
+                     write(iout,*) 'distcoeffi = ', distcoeffi(monum)
+                  else
+                     write(iout,*) 'ELSE'
+                     write(iout,*) 'chemod: distcoeffi = ', 
+     &                              distcoeffi(monum)
+                     write(iout,*) 'pre-subrxn2'
+                     write(iout,*) 'irxn = ', irxn
+                     call subrxn2(dt,in,irxn)
+                     write(iout,*) 'post-subrxn2'
+                     write(iout,*) 'irxn = ', irxn
+                     write(iout,*) 'distcoeffi = ', distcoeffi(monum)
+c                    Now update the userr_calculated array for this monum
+                     userr_calculated(monum)=.TRUE.
+                  endif
+c              Normal subrxn2
+               else
+                  call subrxn2(dt,in,irxn)
+               endif
                goto 299
+c......................................................................
                
  230           call subrxn3(dt,in,irxn)
                goto 299
@@ -1306,6 +1375,8 @@ c ----Inherent statements
       use comdi
       use comdti
       use davidi, only : irdof
+      use comuserr  ! jpo
+      use comai, only : iout,iptty,iatty,days, daysi, day, daycf
       implicit none
 
 c  ...Declarations of variables
@@ -1323,17 +1394,183 @@ c  ...User-introduced variables
       integer ic,im
       real*8 oimm,ckeqlb1,ckmtrn1,simmmx1
       real*8 danl_subst,por
+c      real*8 distcoeffi                 ! jpo - for userr
+      integer num_models, num_times     ! jpo - for userr
+      integer k,monum                   ! jpo - for userr
+      real*8 ku,kl,rslope,delt          ! jpo - for userr
+      real*8 days0   
+      integer irxn_save  !jpo - for userr
+
+c.... jpo - Deal with special case when subrxn2 is called
+      if (irxn<0) then
+         irxn_save = irxn
+         irxn = irxn+10000
+      endif
+c........................................................
 
       ic=irxnic(irxn,1)
       im=irxnim(irxn,1)
       mi = in+(pimm(im)-1)*n0
       oimm=anlo(mi)
-      if(temp_model_kin(irxn).ne.'l')then
-         ckeqlb1=ckeqlb(irxn)
-      else
+c      ! if(temp_model_kin(irxn).ne.'l')then
+c         ! ckeqlb1=ckeqlb(irxn)
+c      ! else
+c         ! ckeqlb1=tcoeff(irxn,1)+t(in)*tcoeff(irxn,2)+t(in)**2*
+c     ! 2        tcoeff(irxn,3)
+c         ! ckeqlb1=10**ckeqlb1
+c     Use lookup table 
+      if(temp_model_kin(irxn).eq.'l')then 
          ckeqlb1=tcoeff(irxn,1)+t(in)*tcoeff(irxn,2)+t(in)**2*
      2        tcoeff(irxn,3)
          ckeqlb1=10**ckeqlb1
+c     jpo - New custom userr input file
+      else if(temp_model_kin(irxn).eq.'u')then 
+         monum = rxnon_u(irxn,in)  ! model number at current node
+         num_models = size(distcoeffs,2)
+         num_times  = size(distcoeffs,1)
+         if(.not.allocated(distcoeffi)) then
+            write(iout,*) 'allocating distcoeffi w/in subrxn2...'
+            allocate(distcoeffi(num_models))
+         endif
+
+c        If there is a  userr rxn distcoeff model num at current node
+         if(monum.ne.0)then
+cc          Only calculate if current monum hasn't been done yet
+c           Use distcoeffi already calculated for this monum (@ curr. t.s.)
+            if (irxn_save.lt.0) then
+c              DEBUG PRINTING
+               if (iout.ne.0) write(iout,*) 
+     &            'THIS monum ALREADY CALCULATED!'
+            else
+c -----------  Constant distcoeff between intervals ------------------
+c              Assumes timesteps in distcoeff are about same as flow model
+c              Search through the userrtime array
+               do k = 1,num_times-1
+c                 Get first userrtime greater than days
+                  ku = userrtime(k+1,1)
+c                 Get userrtime before that one 
+                  kl = userrtime(k,1)
+c                 If this is the start of the simulation
+                  if (days.lt.1d-100) then
+                     distcoeffi(monum) = distcoeffs(1,monum)
+                     exit
+                  elseif (ku.ge.days.and.kl.le.days) then
+                     if (ku.eq.days) then
+                        distcoeffi(monum) = distcoeffs(k+1,monum)
+                        exit
+                     else
+                        distcoeffi(monum) = distcoeffs(k,monum)
+                     endif
+                  elseif (days.gt.userrtime(num_times,1)) then
+                     distcoeffi(monum) = distcoeffs(num_times,monum)
+                     exit
+c                 If above conditions weren't met, checks at next k
+                  endif
+               enddo
+
+            endif 
+            ckeqlb1 = distcoeffi(monum)
+cc          jpo - NOT SURE IF THIS IS WHAT WE WANT TO DO (log)...
+c              - below basically just undoes the log(distcoeff) in read_rxn
+            ckeqlb1 = 10**ckeqlb1
+
+c           DEBUG PRINTOUTS
+c            if (iout .ne. 0) write(iout,*) 
+c     1           '*** monum = ', monum, ' ***'
+c            if (iout .ne. 0) write(iout,*) 
+c     1           '    node = ', in, '    ' 
+            if (iout .ne. 0) write(iout,*) 
+     1           '    distcoeffi = ', distcoeffi(monum), '    ' 
+            if (iout .ne. 0) write(iout,*) 
+     1           '    ckeqlb1    = ', ckeqlb1, '    ' 
+
+         endif
+
+c      endif
+
+
+c       ! IF DOING INTERPOLATION OF DISTCOEFF...
+c         ! if(monum.ne.0)then
+c! cc           Need to interpolate based on time eventually 
+c! c            ckeqlb1 = distcoeffs( 1, rxnon_u(irxn,in) )
+c! c --------- Interpolate distcoeffs based on time --------------------
+c! c           days0 definition from flow_boundary_conditions.f
+c            ! days0=max(days-day,0.0d00)
+c! c            if(days.eq.0.0)then
+c            ! if(days.lt.1d-100)then
+c               ! old_distcoeff(monum) = distcoeffs(1,monum)
+c               ! ckeqlb1 = old_distcoeff(monum)
+c            ! else
+c               ! if (iout .ne. 0) write(iout,*) 
+c     ! 1              '*** old_distcoeff(',monum, ') = ',
+c     ! 2              old_distcoeff(monum), 'at t = ', days0,' ***'
+c! 
+c               ! k=1
+c! c               do while (userrtime(k,monum).le.days)
+c! c               do while (userrtime(k,1).le.days)
+c               ! do while((userrtime(k,1).le.days).and.(k.lt.num_times))
+c                  ! ! Get first userrtime greater than 'days'
+c                  ! ku = userrtime(k+1,1)
+c                  ! ! Get previous userrtime (may not need)
+c                  ! kl = userrtime(k,1)
+c                  ! if (k.eq.1) then
+c                      ! kl = userrtime(1,1)
+c                  ! endif
+c                  ! k=k+1  ! increment k
+c               ! enddo
+c! 
+c! c              Calculate slope of distcoeffs through the current sim time (days)
+c! c              If the userrtime is same as simulation time, no need to interp
+c               ! if(userrtime(k,1).eq.days.or.kl.eq.days)then
+c                  ! if(userrtime(k,1).eq.days)then
+c                     ! distcoeffi = distcoeffs(k,monum)
+c                  ! elseif(kl.eq.days)then
+c                     ! distcoeffi = distcoeffs(k-1,monum)
+c                  ! endif
+c! c              Avoid indexing above end of disceoffs array
+c               ! elseif (k.gt.num_times)then
+c                  ! distcoeffi = distcoeffs(num_times,monum)
+c               ! else
+c! c                 Interpolate distcoeff to current time ('days')
+c                  ! rslope = (distcoeffs(k,monum)-old_distcoeff(monum)) 
+c     ! &                     / (ku-days0)
+c                  ! distcoeffi = old_distcoeff(monum)+rslope*(days-days0)
+c               ! endif
+c               ! if (iout .ne. 0) write(iout,*) 
+c     ! 1              '*** distcoeffi(',monum, ') = ',
+c     ! 2              distcoeffi, 'at t = ', days, ' ***'
+c! 
+c! c              Update the variable old_distcoeff for the next timestep
+c! c              (*** ONLY DO THIS IF TIMESTEP WASN'T RESTARTED... )
+c! c              (***    HOW TO DO??? ***)
+c               ! old_distcoeff(monum) = distcoeffi
+c! 
+c               ! if (iout .ne. 0) write(iout,*) 
+c     ! 1              '*** "new" old_distcoeff(, ',monum, ') = ',
+c     ! 2              old_distcoeff(monum), ' ***'
+c! c               if (iatty .ne. 0)  write(iatty,*)
+c! c     1              '*** "new" old_distcoeff(, ',monum, ') = ',
+c! c     2              old_distcoeff(monum), ' ***'
+c! 
+c! 
+c! 
+c               ! ckeqlb1 = distcoeffi
+c! cc              jpo - NOT SURE IF THIS IS WHAT WE WANT TO DO (log)...
+c! c               ckeqlb1 = 10**ckeqlb1
+c! 
+c            ! endif
+c! 
+c! 
+c             ! 
+c            ! 
+c! 
+c         ! endif
+
+
+
+c     Normal case with a single distribution coefficient
+      else 
+         ckeqlb1=ckeqlb(irxn)
       endif
       ckmtrn1=ckmtrn(irxn)
       simmmx1=simmmx(irxn)
@@ -4528,9 +4765,5 @@ c==================================================================
 *     End of DGETF2
 *
       END
-
-
-
-
 
 

@@ -199,6 +199,7 @@ C**********************************************************************
       use comdi
       use comdti
       use comrxni
+      use comuserr  ! jpo
       implicit none
 
 * local variables
@@ -219,13 +220,17 @@ c ----Users can write codes below----
 c  ...User-defined variables and common blocks
  
 
-      integer i,j 
+      integer i,j,k,nm
       integer igrp
       integer itype
       integer junk
       integer a1,a2,a3
       integer num_temps
       real*8 lkeq(20),eqtemp(20)
+c      real*8 rdum1, rdum2           ![jpo] for userr
+      character*5 user_macro        ![jpo] for userr
+      integer num_models, num_times ![jpo] for userr
+      
 c ----------------------------
 c Chemical species information
 c ----------------------------
@@ -511,9 +516,8 @@ c adsorption (kg water/moles) (add del H)
             read(inpt,*)
             read(inpt,'(a1)')temp_model_kin(j)(1:1)
             backspace inpt
-            if(temp_model_kin(j).ne.'l')then
-               read(inpt,*)ckeqlb(j)
-            else
+c --------- lookup table 
+            if(temp_model_kin(j).eq.'l')then
                read(inpt,'(a)')input_msg
                call parse_string(input_msg,imsg,msg,xmsg,cmsg,nwds)
                num_temps=imsg(2)
@@ -527,6 +531,88 @@ c adsorption (kg water/moles) (add del H)
                   tcoeff(j,i)=lkeq(i)
                enddo
                ckeqlb(j)=tcoeff(j,1)+tcoeff(j,2)*25+tcoeff(j,3)*25**2
+c --------- jpo - userr input file to read in distcoeffs in time ----
+            else if(temp_model_kin(j).eq.'u')then
+               if(.not.allocated(rxnon_u)) then
+                   allocate(rxnon_u(numrxn,n0)) 
+               endif
+c              zero out the rxnon_u array (0 = no user rxn model)
+               rxnon_u = 0
+               read(inpt,'(a5)') user_macro
+               if (user_macro(1:5) .eq. 'userr') then
+                   call userr(0)
+c                  TESTING - see if vars are read from userr
+                   write(iatty,*) 'distcoeffs = ', distcoeffs
+                   write(iatty,*) 'userrtime  = ', userrtime 
+                   write(iatty,*) 'distcoeff_zones  = ', distcoeff_zones 
+                   num_times  = size(distcoeffs,1)
+                   num_models = size(distcoeffs,2)
+                   write(iatty,*) 'num_times  = ', num_times
+                   write(iatty,*) 'num_models = ', num_models
+c                  Read where the userr rxn takes place
+c                  c copied from line 444
+c                  NOTE: may cause issues since most var names are same
+c                  ...Read in where the reaction takes place
+c                  nmloop through num_models (number of userr rxn models)
+c                    - Also overwrite whatever zone/nodes were previously 
+c                      specified on in rxnon(i,j) for this numrxn in the 
+c                      rxn macro (only do this for userr reaction)
+c                  Clear the 'rxnon' nodes for userr model and re-enter
+                   rxnon(j,:)=0
+                   do nm = 1,num_models 
+                      a1=distcoeff_zones(1,nm)
+                      a2=distcoeff_zones(2,nm)
+                      a3=distcoeff_zones(3,nm)
+                      if (a1.lt.0) then
+c                  we are dealing with zone format
+                         a1=abs(a1)
+c                        iloop through all nodes
+                         do i=1,n0
+                            if (izonef(i).eq.a1) then
+                               rxnon(j,i)=1
+                               rxnon_u(j,i)=nm
+                            endif
+                         enddo
+                      else
+c                  nodes are in block format
+                         if(a1.eq.1.and.a2.eq.0)then
+                            do i = 1,n0
+                               rxnon(j,i)=1
+                               rxnon_u(j,i)=nm
+                            enddo
+                         else
+                            do i=a1,a2,a3
+                               rxnon(j,i)=1
+                               rxnon_u(j,i)=nm
+                            enddo
+                         endif
+                      endif
+                   enddo
+c                   do i = 1,num_times
+c                      lkeq(i)=log10(lkeq(i))
+c                   enddo
+cc                  NOT SURE IF WE WANT THIS....
+                   do i = 1,num_models
+                      do k = 1,num_times
+                         distcoeffs(k,i)=log10(distcoeffs(k,i))
+                      enddo
+                   enddo
+c              -----------------------------------
+c                   ???????????????
+c              -----------------------------------
+c              interpolate to times eventually...
+c              jpo - does this lstsq decomposition work for interp??
+c              recall, j is the numrxn  loop
+c               call lstsq(num_temps,lkeq,eqtemp)
+c               do i = 1,3
+c                  tcoeff(j,i)=lkeq(i)
+c               enddo
+
+               endif
+c --------- normal case
+            else
+               read(inpt,*)ckeqlb(j)
+
             endif
 c read in the mass transfer coefficient for rate-limiting 
 c adsorption (1/hr)(add Ea)
@@ -535,6 +621,7 @@ c adsorption (1/hr)(add Ea)
 c read in the maximum sorption capacity (moles/kg rock)
             read(inpt,*)
             read(inpt,*)simmmx(j)
+
 ******************************************************************
 c Elseif Generic (Reversible or Irreversible) Reaction
          elseif(idrxn(j).eq.3)then
@@ -763,9 +850,9 @@ c read in the rate of reaction in moles/(m^2*sec)
 c read in the surface area of the mineral in m^2
             read(inpt,*)
             read(inpt,*)sarea(j)
-		  
          endif
       enddo
+
  999  return
       end
 
