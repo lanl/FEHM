@@ -146,7 +146,10 @@
          cflx_name(1:iroot) = cflx_root(1:iroot)
 
 ! Check if an aqueous or vapor species filename is needed ABJ 3/2012
-            if (icns(nsp).ge.0.or.abs(icns(nsp)).eq.2) then
+c           jpo - add a check for if solid species (don't output flux)
+            if (icns(nsp).eq.0) then
+               exit  ! if solid species, do nothing
+            elseif (icns(nsp).ge.0.or.abs(icns(nsp)).eq.2) then
                 iname = len_trim (cpntnam(num_aq))
                 cflx_name(iroot+1:iroot+iname) = cpntnam(num_aq)
                 num_aq = num_aq + 1
@@ -172,6 +175,10 @@ c     Compute fluxes out of zone (>0), leaving out flues
 c     into other parts of the zone
 
       do nsp = 1, nspeci
+c        jpo - if solid species, skip and do nothing
+         if (icns(nsp).eq.0) then
+            exit
+         endif
          npn = npt(nsp)
          do izone = 1, cflxz
             sumfout = 0.
