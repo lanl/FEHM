@@ -118,11 +118,16 @@ C**********************************************************************
       integer monum, num_models                  ! jpo - for userr
       logical, allocatable :: userr_calculated(:)           ! jpo - for userr
 c      real*8, allocatable :: distcoeffi(:)      ! jpo - for userr
+      character(*),parameter :: nulunix='/dev/null'  ! jpo
+      integer :: u,ios,open_file  !jpo - for /dev/null printing unit
+      logical ex, used
+      integer irfile
 
 c.....jpo - for userr in subrxn2
 c     Check all irxn in numrxn for any userr specification
       do irxn=1,numrxn
 c         if(temp_model_kin(1).eq.'u')then 
+c        Userr subroutine
          if(temp_model_kin(irxn).eq.'u')then 
             num_models = size(distcoeffs,2)
 c           Only want to get distcoeff once for each model (same at each node) 
@@ -133,6 +138,11 @@ c           Only want to get distcoeff once for each model (same at each node)
             if(.not.allocated(distcoeffi)) then
                allocate(distcoeffi(num_models))
             endif
+            monum=0 !new  default starting value
+            u = 999  !try just hard-coding this for now
+            open(u,file=nulunix,status='old',iostat=ios) 
+            exit   !new
+c        Normal rxn
          else
             monum=0  !default case for moum
          endif
@@ -292,46 +302,56 @@ c               goto 299                   ! jpo - commented out to test
 
 c............. jpo - Modification of call to subrxn2 (needed for userr)
 c              jpo - for userr in subrxn2
- 220           if(temp_model_kin(irxn).eq.'u')then 
-                  monum = rxnon_u(irxn,in)  ! model number at current node
+c 220           if(temp_model_kin(irxn).eq.'u') monum = rxnon_u(irxn,in)  
+ 220           if(temp_model_kin(irxn).eq.'u') then 
+                  monum = rxnon_u(irxn,in)
 c                 DEBUG PRINTING
-                  write(iout,*)
-                  write(iout,*) '***** days = ', days, ' *****'
-                  write(iout,*) 'chemod monum = ',monum
-                  if (iout.gt.0) write(iout,*)
-     &               'node = ', in
-                  if (iout.gt.0) write(iout,*)
-     &               'chemod MID userr_calculated = ', userr_calculated
-               endif
+                  write(u,*)  ! writes to /dev/null <-- code seems to need this
+                  flush(u)
+c                  close(u)
+c                  write(iout,*) !<-- CODE SEEMS TO NEED THIS?? 
+                  ! if (iout.lt.0) write(iout,*) !<-- CODE SEEMS TO NEED THIS?? 
+c                 (TRY WRITING TO /dev/null/) ..... !!!
+c                  write(iout,*) '***** days = ', days, ' *****'
+c                  write(iout,*) 'chemod monum = ',monum
+c                  if (iout.gt.0) write(iout,*)
+c     &               'node = ', in
+c                  if (iout.gt.0) write(iout,*)
+c     &               'chemod MID userr_calculated = ', userr_calculated
+c               endif
 c........................
-c              Userr subrxn2
-               if (monum.gt.0) then
-c                 If distcoeff has already been calculated for current monum
-                  if (userr_calculated(monum).eqv..TRUE.) then
-                     write(iout,*) 'TRUE'
-                     write(iout,*) 'pre-subrxn2'
-                     write(iout,*) 'irxn = ', irxn
-                     call subrxn2(dt,in,irxn-10000) !use bogus (neg.) val for irxn
-c                     call subrxn2(dt,in,-999) !use bogus (neg.) val for irxn
-                     write(iout,*) 'post-subrxn2'
-                     write(iout,*) 'irxn = ', irxn
-                     write(iout,*) 'distcoeffi = ', distcoeffi(monum)
-                  else
-                     write(iout,*) 'ELSE'
-                     write(iout,*) 'chemod: distcoeffi = ', 
-     &                              distcoeffi(monum)
-                     write(iout,*) 'pre-subrxn2'
-                     write(iout,*) 'irxn = ', irxn
-                     call subrxn2(dt,in,irxn)
-                     write(iout,*) 'post-subrxn2'
-                     write(iout,*) 'irxn = ', irxn
-                     write(iout,*) 'distcoeffi = ', distcoeffi(monum)
-c                    Now update the userr_calculated array for this monum
-                     userr_calculated(monum)=.TRUE.
+c                 Userr subrxn2
+c                  if (monum.gt.0) then
+                  if (.not.monum.eq.0) then
+c                    If distcoeff has already been calculated for current monum
+                     if (userr_calculated(monum).eqv..TRUE.) then
+                        call subrxn2(dt,in,irxn-10000) !use bogus (neg.) val for irxn
+c                        write(iout,*) 'TRUE'
+c                        write(iout,*) 'pre-subrxn2'
+c                        write(iout,*) 'irxn = ', irxn
+c                        call subrxn2(dt,in,-999) !use bogus (neg.) val for irxn
+c                        write(iout,*) 'post-subrxn2'
+c                        write(iout,*) 'irxn = ', irxn
+c                        write(iout,*) 'distcoeffi = ', distcoeffi(monum)
+                     else
+                        call subrxn2(dt,in,irxn)
+c                        write(iout,*) 'ELSE'
+c                        write(iout,*) 'chemod: distcoeffi = ', 
+c     &                                 distcoeffi(monum)
+c                        write(iout,*) 'pre-subrxn2'
+c                        write(iout,*) 'irxn = ', irxn
+
+c                        write(iout,*) 'post-subrxn2'
+c                        write(iout,*) 'irxn = ', irxn
+c                        write(iout,*) 'distcoeffi = ', distcoeffi(monum)
+cc                       Now update the userr_calculated array for this monum
+                        userr_calculated(monum)=.TRUE.
+                     endif
                   endif
 c              Normal subrxn2
                else
                   call subrxn2(dt,in,irxn)
+c                  write(iout,*) '!!! NORMAL SUBRXN2 !!!'
                endif
                goto 299
 c......................................................................
@@ -1429,7 +1449,7 @@ c     jpo - New custom userr input file
          num_models = size(distcoeffs,2)
          num_times  = size(distcoeffs,1)
          if(.not.allocated(distcoeffi)) then
-            write(iout,*) 'allocating distcoeffi w/in subrxn2...'
+c            write(iout,*) 'allocating distcoeffi w/in subrxn2...'
             allocate(distcoeffi(num_models))
          endif
 
@@ -1437,11 +1457,12 @@ c        If there is a  userr rxn distcoeff model num at current node
          if(monum.ne.0)then
 cc          Only calculate if current monum hasn't been done yet
 c           Use distcoeffi already calculated for this monum (@ curr. t.s.)
-            if (irxn_save.lt.0) then
-c              DEBUG PRINTING
-               if (iout.ne.0) write(iout,*) 
-     &            'THIS monum ALREADY CALCULATED!'
-            else
+c            if (irxn_save.lt.0) then
+cc              DEBUG PRINTING
+c               if (iout.ne.0) write(iout,*) 
+c     &            'THIS monum ALREADY CALCULATED!'
+c            else
+            if (.not.irxn_save.lt.0) then
 c -----------  Constant distcoeff between intervals ------------------
 c              Assumes timesteps in distcoeff are about same as flow model
 c              Search through the userrtime array
@@ -1479,10 +1500,10 @@ c            if (iout .ne. 0) write(iout,*)
 c     1           '*** monum = ', monum, ' ***'
 c            if (iout .ne. 0) write(iout,*) 
 c     1           '    node = ', in, '    ' 
-            if (iout .ne. 0) write(iout,*) 
-     1           '    distcoeffi = ', distcoeffi(monum), '    ' 
-            if (iout .ne. 0) write(iout,*) 
-     1           '    ckeqlb1    = ', ckeqlb1, '    ' 
+c            if (iout .ne. 0) write(iout,*) 
+c     1           '    distcoeffi = ', distcoeffi(monum), '    ' 
+c            if (iout .ne. 0) write(iout,*) 
+c     1           '    ckeqlb1    = ', ckeqlb1, '    ' 
 
          endif
 

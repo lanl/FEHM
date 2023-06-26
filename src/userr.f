@@ -193,7 +193,7 @@ c      write(6,*) 'num_models = ', num_models
       !------------------------------------------------------- 
  10   continue
       read(iread1,'(a80)') key
-      print *, key !jpo
+c      print *, key !jpo
       if(key(1:3).eq.'mod') then
          irmod=irmod+1  !increment the model number
          irsubmod=1

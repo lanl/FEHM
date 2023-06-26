@@ -541,14 +541,14 @@ c              zero out the rxnon_u array (0 = no user rxn model)
                read(inpt,'(a5)') user_macro
                if (user_macro(1:5) .eq. 'userr') then
                    call userr(0)
-c                  TESTING - see if vars are read from userr
-                   write(iatty,*) 'distcoeffs = ', distcoeffs
-                   write(iatty,*) 'userrtime  = ', userrtime 
-                   write(iatty,*) 'distcoeff_zones  = ', distcoeff_zones 
+cc                  TESTING - see if vars are read from userr
+c                   write(iatty,*) 'distcoeffs = ', distcoeffs
+c                   write(iatty,*) 'userrtime  = ', userrtime 
+c                   write(iatty,*) 'distcoeff_zones  = ', distcoeff_zones 
                    num_times  = size(distcoeffs,1)
                    num_models = size(distcoeffs,2)
-                   write(iatty,*) 'num_times  = ', num_times
-                   write(iatty,*) 'num_models = ', num_models
+c                   write(iatty,*) 'num_times  = ', num_times
+c                   write(iatty,*) 'num_models = ', num_models
 c                  Read where the userr rxn takes place
 c                  c copied from line 444
 c                  NOTE: may cause issues since most var names are same
