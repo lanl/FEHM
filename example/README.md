@@ -51,6 +51,11 @@ Tracer Flow & Transport Simulations
     - Simulations with different parameters can be set up in a different directory and modifying the ``run.py`` file. 
     - Ensure that the ``master_model.py`` script is still one directory above the simulation directory 
 4. If you have not set the ``RUNDIR`` or ``FEHM_MARS_EXE`` environment variables, the ``master_model.py`` script will prompt you to set them (with instructions). 
+5. Initialization, spinup, and transport simulations will then run sequentially, as described in the manuscript. 
+    
+    - Please note that the transport simulations can take several days/weeks to complete due to computational time required for solutions to reach a cyclic steady-state condition.
+
+6. Plots will out be placed in ``output`` sub-directory. 
 
 
 1-D Atmospheric Mixing Simulations
@@ -65,6 +70,6 @@ Tracer Flow & Transport Simulations
 
     python pbl_diffusion.py
 
-3. Output is generated and put in ``pbl_output`` directory.
+3. Plots are generated and placed in ``pbl_output`` sub-directory.
 
 

@@ -24,6 +24,7 @@ run.his
 
 # All FEHM output
 *sim_dir*/*
+sim_dir
 *sim_dir*/noSorp*
 *1d_heat_runs*/*
 *1d_heat_runs*/heat_200m_synth/*
