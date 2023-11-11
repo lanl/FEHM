@@ -56,3 +56,15 @@ Tracer Flow & Transport Simulations
 1-D Atmospheric Mixing Simulations
 ----------------------------------
 
+1. Navigate to ``sim_dir`` and Create a symbolic link to the p``pbl_diffusion.py`` script in the ``example/`` directory:
+
+    cd sim_dir
+    ln -s ../pbl_diffusion.py .
+
+2. If you have not already run the script and performed the parameter estimation algorithm, you can run the whole script with the following command:
+
+    python pbl_diffusion.py
+
+3. Output is generated and put in ``pbl_output`` directory.
+
+
