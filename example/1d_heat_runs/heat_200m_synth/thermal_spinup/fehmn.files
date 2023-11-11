@@ -1,0 +1,14 @@
+root: run
+input: run.dat
+grida: /project/gas_seepage/jportiz/mars/mesh/1d/homogeneous_1x200m/grid.inp 
+rsti: ../geo_gradient/run.fin
+rsto: run.fin
+error: run.err
+check: run.chk
+outp: run.out
+
+none
+0
+
+# storo: stor_file
+

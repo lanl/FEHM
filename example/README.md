@@ -10,13 +10,22 @@ Full model description can be found in:
 Please cite if you use any of these scripts in your work. 
 
 
+Building FEHM-mars
+------------------
+
+Build the FEHM-mars executable by following the instructions:
+
+    https://github.com/lanl/FEHM/tree/mars
+
+
 Dependencies
 ------------
 
-Install the MATK (Model Analysis ToolKit) for Python by following the instructions on GitHub:
-    https://github.com/dharp/matk
+Install the MATK (Model Analysis ToolKit; ``http://dharp.github.io/matk/``) for Python by following the instructions on GitHub:
 
+    http://dharp.github.io/matk/
 
+    
 Heat Flow Simulation
 --------------------
 

@@ -4,3 +4,46 @@ debug/*
 build/*
 *.pyc
 *DS_Store
+
+*.swo
+*.swp
+*.swn
+*.fuse*
+
+# FEHM output
+*con_node.dat
+run.out
+run_temp.his
+*_presWAT.his
+*_denWAT.his
+*.chk
+*.temp
+*.err
+run.his
+
+
+# All FEHM output
+*sim_dir*/*
+*1d_heat_runs*/*
+*1d_heat_runs*/heat_200m_synth/*
+# Whitelist the run.py scripts in sim dirs
+!*sim_dir*/*.py
+!*1d_heat_runs*/*.py
+!*1d_heat_runs/heat_200m_synth/*.py
+
+# From my scripts
+v.pkl
+*.csv
+*.pdf
+*.png
+
+
+# ----- PYTHON STUFF -------------------
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
