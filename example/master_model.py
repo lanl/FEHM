@@ -55,9 +55,12 @@ except KeyError:
 #  main_mesh_dir = '/project/gas_seepage/jportiz/mars/mesh/2d_fracture_network/'
 #  tpl_dir = '/project/gas_seepage/jportiz/mars/runs/tpls/thermalAdsorption_tpls'
 #  exe = '/home/jportiz/software/FEHM/src/xfehm_v3.3.1_mars-debug'
-main_mesh_dir = RUNDIR+'mesh/2d_fracture_network/'
-tpl_dir = RUNDIR+'tpls/thermalAdsorption_tpls'
-exe = FEHM_MARS_SRC+'/xfehm_v3.3.1_mars'
+#  main_mesh_dir = RUNDIR+'mesh/2d_fracture_network/'
+#  tpl_dir = RUNDIR+'tpls/thermalAdsorption_tpls'
+#  exe = FEHM_MARS_SRC+'/xfehm_v3.3.1_mars'
+main_mesh_dir = join(RUNDIR,'mesh/2d_fracture_network/')
+tpl_dir = join(RUNDIR,'tpls/thermalAdsorption_tpls')
+exe = join(FEHM_MARS_SRC,'/xfehm_v3.3.1_mars')
 
 sim_dir = os.getcwd()
 print('sim_dir = '+sim_dir)

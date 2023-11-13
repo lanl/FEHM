@@ -34,9 +34,9 @@ except KeyError:
 #  main_mesh_dir = '/project/gas_seepage/jportiz/mars/mesh/1d/'
 #  tpl_dir = '/project/gas_seepage/jportiz/mars/runs/tpls/'
 #  exe = '/home/jportiz/software/FEHM/src/xfehm_v3.3.1_mars'
-main_mesh_dir = RUNDIR+'mesh/1d/'
-tpl_dir = RUNDIR+'/runs/tpls/'
-exe = FEHM_MARS_SRC+'/xfehm_v3.3.1_mars'
+main_mesh_dir = join(RUNDIR,'mesh/1d/')
+tpl_dir = join(RUNDIR,'/runs/tpls/')
+exe = join(FEHM_MARS_SRC,'/xfehm_v3.3.1_mars')
 
 #DIRECTORY OF POTENTIAL MESH FILES 
 mesh_dict = {
