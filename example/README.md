@@ -10,10 +10,14 @@ Full model description can be found in:
 Please cite if you use any of these scripts in your work. 
 
 
-Building FEHM-mars
+Clone and Build FEHM-mars
 ------------------
 
-Build the FEHM-mars executable by following the instructions:
+First, clone the FEHM-mars branch using the following command:
+
+    git clone -b mars git@github.com:lanl/FEHM.git
+
+Then build the FEHM-mars executable by following the instructions:
 
     https://github.com/lanl/FEHM/tree/mars
 
