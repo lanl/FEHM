@@ -18,21 +18,25 @@ from matk import pest_io
 try:
     RUNDIR = os.environ["RUNDIR"]
 except KeyError:
+    print()
     print("Set the RUNDIR evironment variable first, e.g.:")
     print("    export RUNDIR='<FEHM-MARS_REPO_DIRECTORY>/example/' ")
+    print()
 try:
     FEHM_MARS_SRC = os.environ["FEHM_MARS_SRC"]
 except KeyError:
+    print()
     print("Set the FEHM_MARS_SRC evironment variable first, e.g.:")
     print("    export FEHM_MARS_SRC='<FEHM-MARS_REPO_DIRECTORY>/src/' ")
+    print()
 
 
 #  main_mesh_dir = '/project/gas_seepage/jportiz/mars/mesh/1d/'
 #  tpl_dir = '/project/gas_seepage/jportiz/mars/runs/tpls/'
 #  exe = '/home/jportiz/software/FEHM/src/xfehm_v3.3.1_mars'
-main_mesh_dir = RUNDIR+'/mesh/1d/'
+main_mesh_dir = RUNDIR+'mesh/1d/'
 tpl_dir = RUNDIR+'/runs/tpls/'
-exe = FEHM_MARS_SRC+'/xfehm_v3.3.1_mars-debug'
+exe = FEHM_MARS_SRC+'/xfehm_v3.3.1_mars'
 
 #DIRECTORY OF POTENTIAL MESH FILES 
 mesh_dict = {
