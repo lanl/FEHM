@@ -69,7 +69,7 @@ print('sim_dir = '+sim_dir)
 mesh_dict = {
             # 50x200m, fracDen=0.035% (@b=1mm)
             'depth200_fracDen035': {
-                'mesh_file':main_mesh_dir+'levyfractures_50x200m/grid.inp',
+                'mesh_file':join(main_mesh_dir,'levyfractures_50x200m/grid.inp'),
                 'stor_file':main_mesh_dir+'levyfractures_50x200m/grid.stor',
                 'avs_file':main_mesh_dir+'levyfractures_50x200m/fracture_2D.inp', #not used
                 'matzone_file':main_mesh_dir+'levyfractures_50x200m/fracture_material.zone',

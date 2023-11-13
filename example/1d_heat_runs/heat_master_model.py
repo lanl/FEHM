@@ -40,7 +40,7 @@ exe = join(FEHM_MARS_SRC,'/xfehm_v3.3.1_mars')
 
 #DIRECTORY OF POTENTIAL MESH FILES 
 mesh_dict = {
-            1:  {'mesh_file':main_mesh_dir+'homogeneous_1x200m/grid.inp',
+            1:  {'mesh_file':join(main_mesh_dir,'homogeneous_1x200m/grid.inp'),
                 },
             }
 
