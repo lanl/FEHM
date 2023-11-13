@@ -44,6 +44,15 @@ mesh_dict = {
                 },
             }
 
+# Check if mesh name is too long for fehmn.files
+meshname =  mesh_dict['depth200_fracDen035']['mesh_file']
+print(meshname)
+shortened=False
+if len(meshname) > 100:
+    shortened=True
+
+
+
 def node_macro(grid,macro_dir='.',dirxn='vert',spacing='none'):
     '''
     Write ``nodeline.dat`` file for monitoring nodes in FEHM.
@@ -617,6 +626,13 @@ def model(p,init0_dir=None,init_dir=None,spinup_dir=None,m_air_dir=None,conc_ini
     # If init_dir not provided, create it:
     # Run a simulation to test a geothermal gradient (don't restart from it) 
     if init0_dir is None:
+        if shortened==True:
+            curr_sim_dir = join(sim_dir,'geo_gradient')
+            common_prefix = os.path.commonprefix([meshname, os.getcwd()])
+            short_mesh_name = os.path.relpath( meshname, start=curr_sim_dir)
+            print('Shortened mesh_file name due to fehmn.files restriction:')
+            print(short_mesh_name)
+            p['mesh_file'] = short_mesh_name
         #  utils.run_fehm(p,'init0',exe=exe,tpl_dir=local_tpl_dir,macro_dir=macro_dir,verbose=verbose)
         utils.run_fehm(p,'geo_gradient',exe=exe,tpl_dir=tpl_dir,macro_dir=macro_dir,verbose=verbose)
         # Specify init0_dir
@@ -635,6 +651,14 @@ def model(p,init0_dir=None,init_dir=None,spinup_dir=None,m_air_dir=None,conc_ini
         #  p['init_dir'] = init_dir
     # Now do a 'thermal_spinup'  run
     if spinup_dir is None:
+        if shortened==True:
+            curr_sim_dir = join(sim_dir,'thermal_spinup')
+            common_prefix = os.path.commonprefix([meshname, os.getcwd()])
+            short_mesh_name = os.path.relpath( meshname, start=curr_sim_dir)
+            print('Shortened mesh_file name due to fehmn.files restriction:')
+            print(short_mesh_name)
+            p['mesh_file'] = short_mesh_name
+
         utils.run_fehm(p,'thermal_spinup',exe=exe,tpl_dir=tpl_dir,macro_dir=macro_dir,verbose=verbose)
         p['spinup_dir'] = '../thermal_spinup'
     else:

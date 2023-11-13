@@ -55,24 +55,15 @@ except KeyError:
 #  main_mesh_dir = '/project/gas_seepage/jportiz/mars/mesh/2d_fracture_network/'
 #  tpl_dir = '/project/gas_seepage/jportiz/mars/runs/tpls/thermalAdsorption_tpls'
 #  exe = '/home/jportiz/software/FEHM/src/xfehm_v3.3.1_mars-debug'
-main_mesh_dir = RUNDIR+'/mesh/2d_fracture_network/'
-tpl_dir = RUNDIR+'/tpls/thermalAdsorption_tpls'
+main_mesh_dir = RUNDIR+'mesh/2d_fracture_network/'
+tpl_dir = RUNDIR+'tpls/thermalAdsorption_tpls'
 exe = FEHM_MARS_SRC+'/xfehm_v3.3.1_mars'
+
+sim_dir = os.getcwd()
+print('sim_dir = '+sim_dir)
 
 #DIRECTORY OF POTENTIAL MESH FILES 
 mesh_dict = {
-            # 50x200m, fracDen=0.000% (@b=1mm)
-            'depth200_fracDen000': {
-                'mesh_file':main_mesh_dir+'levyfractures_50x200m_fracDen000/grid.inp',
-                'stor_file':main_mesh_dir+'levyfractures_50x200m_fracDen000/grid.stor',
-                'avs_file':main_mesh_dir+'levyfractures_50x200m_fracDen000/fracture_2D.inp', #not used
-                'matzone_file':main_mesh_dir+'levyfractures_50x200m_fracDen000/fracture_material.zone',
-                'matzonn_file':main_mesh_dir+'levyfractures_50x200m_fracDen000/fracture_material.zonn',
-                'outsidezone_file':main_mesh_dir+'levyfractures_50x200m_fracDen000/fracture_2D_outside.zone', #not used
-                'topzone_file':main_mesh_dir+'levyfractures_50x200m_fracDen000/top.zone',
-                'boun_file':'mars_pressTemp.boun',
-                #  'heat_dir': '/lclscratch/jportiz/projects/gas_seepage/mars/runs/1d_heat_runs/heat_200m'},
-                'heat_dir': RUNDIR+'/1d_heat_runs/heat_200m'},
             # 50x200m, fracDen=0.035% (@b=1mm)
             'depth200_fracDen035': {
                 'mesh_file':main_mesh_dir+'levyfractures_50x200m/grid.inp',
@@ -84,139 +75,23 @@ mesh_dict = {
                 'topzone_file':main_mesh_dir+'levyfractures_50x200m/top.zone',
                 'boun_file':'mars_pressTemp.boun',
                 'heat_dir': RUNDIR+'/1d_heat_runs/heat_200m'},
-            # 50x200m, fracDen=0.020% (@b=1mm)
-            'depth200_fracDen020': {
-                'mesh_file':main_mesh_dir+'levyfractures_50x200m_fracDen020/grid.inp',
-                'stor_file':main_mesh_dir+'levyfractures_50x200m_fracDen020/grid.stor',
-                'avs_file':main_mesh_dir+'levyfractures_50x200m_fracDen020/fracture_2D.inp', #not used
-                'matzone_file':main_mesh_dir+'levyfractures_50x200m_fracDen020/fracture_material.zone',
-                'matzonn_file':main_mesh_dir+'levyfractures_50x200m_fracDen020/fracture_material.zonn',
-                'outsidezone_file':main_mesh_dir+'levyfractures_50x200m_fracDen020/fracture_2D_outside.zone', #not used
-                'topzone_file':main_mesh_dir+'levyfractures_50x200m_fracDen020/top.zone',
-                'boun_file':'mars_pressTemp.boun',
-                'heat_dir': RUNDIR+'/1d_heat_runs/heat_200m'},
-            # 50x200m, fracDen=0.010% (@b=1mm)
-            'depth200_fracDen010': {
-                'mesh_file':main_mesh_dir+'levyfractures_50x200m_fracDen010/grid.inp',
-                'stor_file':main_mesh_dir+'levyfractures_50x200m_fracDen010/grid.stor',
-                'avs_file':main_mesh_dir+'levyfractures_50x200m_fracDen010/fracture_2D.inp', #not used
-                'matzone_file':main_mesh_dir+'levyfractures_50x200m_fracDen010/fracture_material.zone',
-                'matzonn_file':main_mesh_dir+'levyfractures_50x200m_fracDen010/fracture_material.zonn',
-                'outsidezone_file':main_mesh_dir+'levyfractures_50x200m_fracDen010/fracture_2D_outside.zone', #not used
-                'topzone_file':main_mesh_dir+'levyfractures_50x200m_fracDen010/top.zone',
-                'boun_file':'mars_pressTemp.boun',
-                'heat_dir': RUNDIR+'/1d_heat_runs/heat_200m'},
-            # 50x200m, fracDen=0.005% (@b=1mm)
-            'depth200_fracDen005': {
-                'mesh_file':main_mesh_dir+'levyfractures_50x200m_fracDen005/grid.inp',
-                'stor_file':main_mesh_dir+'levyfractures_50x200m_fracDen005/grid.stor',
-                'avs_file':main_mesh_dir+'levyfractures_50x200m_fracDen005/fracture_2D.inp', #not used
-                'matzone_file':main_mesh_dir+'levyfractures_50x200m_fracDen005/fracture_material.zone',
-                'matzonn_file':main_mesh_dir+'levyfractures_50x200m_fracDen005/fracture_material.zonn',
-                'outsidezone_file':main_mesh_dir+'levyfractures_50x200m_fracDen005/fracture_2D_outside.zone', #not used
-                'topzone_file':main_mesh_dir+'levyfractures_50x200m_fracDen005/top.zone',
-                'boun_file':'mars_pressTemp.boun',
-                'heat_dir': RUNDIR+'/1d_heat_runs/heat_200m'},
-            # 50x200m, fracDen=0.0035% (@b=1mm)
-            'depth200_fracDen003': {
-                'mesh_file':main_mesh_dir+'levyfractures_50x200m_fracDen003/grid.inp',
-                'stor_file':main_mesh_dir+'levyfractures_50x200m_fracDen003/grid.stor',
-                'avs_file':main_mesh_dir+'levyfractures_50x200m_fracDen003/fracture_2D.inp', #not used
-                'matzone_file':main_mesh_dir+'levyfractures_50x200m_fracDen003/fracture_material.zone',
-                'matzonn_file':main_mesh_dir+'levyfractures_50x200m_fracDen003/fracture_material.zonn',
-                'outsidezone_file':main_mesh_dir+'levyfractures_50x200m_fracDen003/fracture_2D_outside.zone', #not used
-                'topzone_file':main_mesh_dir+'levyfractures_50x200m_fracDen003/top.zone',
-                'boun_file':'mars_pressTemp.boun',
-                'heat_dir': RUNDIR+'/1d_heat_runs/heat_200m'},
-            # 50x200m, fracDen=0.001% (@b=1mm)
-            'depth200_fracDen001': {
-                'mesh_file':main_mesh_dir+'levyfractures_50x200m_fracDen001/grid.inp',
-                'stor_file':main_mesh_dir+'levyfractures_50x200m_fracDen001/grid.stor',
-                'avs_file':main_mesh_dir+'levyfractures_50x200m_fracDen001/fracture_2D.inp', #not used
-                'matzone_file':main_mesh_dir+'levyfractures_50x200m_fracDen001/fracture_material.zone',
-                'matzonn_file':main_mesh_dir+'levyfractures_50x200m_fracDen001/fracture_material.zonn',
-                'outsidezone_file':main_mesh_dir+'levyfractures_50x200m_fracDen001/fracture_2D_outside.zone', #not used
-                'topzone_file':main_mesh_dir+'levyfractures_50x200m_fracDen001/top.zone',
-                'boun_file':'mars_pressTemp.boun',
-                'heat_dir': RUNDIR+'/1d_heat_runs/heat_200m'},
-            #  # 50x500m, fracDen=0.000% (@b=1mm)
-            #  'depth500_fracDen000': {
-                #  'mesh_file':main_mesh_dir+'levyfractures_50x500m_fracDen000/grid.inp',
-                #  'stor_file':main_mesh_dir+'levyfractures_50x500m_fracDen000/grid.stor',
-                #  'avs_file':main_mesh_dir+'levyfractures_50x500m_fracDen000/fracture_2D.inp', #not used
-                #  'matzone_file':main_mesh_dir+'levyfractures_50x500m_fracDen000/fracture_material.zone',
-                #  'matzonn_file':main_mesh_dir+'levyfractures_50x500m_fracDen000/fracture_material.zonn',
-                #  'outsidezone_file':main_mesh_dir+'levyfractures_50x500m_fracDen000/fracture_2D_outside.zone', #not used
-                #  'topzone_file':main_mesh_dir+'levyfractures_50x500m_fracDen000/top.zone',
-                #  'boun_file':'mars_pressTemp.boun',
-                #  'heat_dir': '/lclscratch/jportiz/projects/gas_seepage/mars/runs/1d_heat_runs/heat_200m'},
-            # 50x500m, fracDen=0.035% (@b=1mm)
-            'depth500_fracDen035': {
-                'mesh_file':main_mesh_dir+'levyfractures_50x500m_fracDen035/grid.inp',
-                'stor_file':main_mesh_dir+'levyfractures_50x500m_fracDen035/grid.stor',
-                'avs_file':main_mesh_dir+'levyfractures_50x500m_fracDen035/fracture_2D.inp', #not used
-                'matzone_file':main_mesh_dir+'levyfractures_50x500m_fracDen035/fracture_material.zone',
-                'matzonn_file':main_mesh_dir+'levyfractures_50x500m_fracDen035/fracture_material.zonn',
-                'outsidezone_file':main_mesh_dir+'levyfractures_50x500m_fracDen035/fracture_2D_outside.zone', #not used
-                'topzone_file':main_mesh_dir+'levyfractures_50x500m_fracDen035/top.zone',
-                'boun_file':'mars_pressTemp.boun',
-                'heat_dir': '/lclscratch/jportiz/projects/gas_seepage/mars/runs/1d_heat_runs/heat_200m'},
-            # 50x500m, fracDen=0.010% (@b=1mm)
-            'depth500_fracDen010': {
-                'mesh_file':main_mesh_dir+'levyfractures_50x500m_fracDen010/grid.inp',
-                'stor_file':main_mesh_dir+'levyfractures_50x500m_fracDen010/grid.stor',
-                'avs_file':main_mesh_dir+'levyfractures_50x500m_fracDen010/fracture_2D.inp', #not used
-                'matzone_file':main_mesh_dir+'levyfractures_50x500m_fracDen010/fracture_material.zone',
-                'matzonn_file':main_mesh_dir+'levyfractures_50x500m_fracDen010/fracture_material.zonn',
-                'outsidezone_file':main_mesh_dir+'levyfractures_50x500m_fracDen010/fracture_2D_outside.zone', #not used
-                'topzone_file':main_mesh_dir+'levyfractures_50x500m_fracDen010/top.zone',
-                'boun_file':'mars_pressTemp.boun',
-                'heat_dir': '/lclscratch/jportiz/projects/gas_seepage/mars/runs/1d_heat_runs/heat_200m'},
-            # 50x500m, fracDen=0.001% (@b=1mm)
-            'depth500_fracDen001': {
-                'mesh_file':main_mesh_dir+'levyfractures_50x500m_fracDen001/grid.inp',
-                'stor_file':main_mesh_dir+'levyfractures_50x500m_fracDen001/grid.stor',
-                'avs_file':main_mesh_dir+'levyfractures_50x500m_fracDen001/fracture_2D.inp', #not used
-                'matzone_file':main_mesh_dir+'levyfractures_50x500m_fracDen001/fracture_material.zone',
-                'matzonn_file':main_mesh_dir+'levyfractures_50x500m_fracDen001/fracture_material.zonn',
-                'outsidezone_file':main_mesh_dir+'levyfractures_50x500m_fracDen001/fracture_2D_outside.zone', #not used
-                'topzone_file':main_mesh_dir+'levyfractures_50x500m_fracDen001/top.zone',
-                'boun_file':'mars_pressTemp.boun',
-                'heat_dir': '/lclscratch/jportiz/projects/gas_seepage/mars/runs/1d_heat_runs/heat_200m'},
-            # 50x1000, fracDen=0.035% (@b=1mm)
-            'depth1000_fracDen035': {
-                'mesh_file':main_mesh_dir+'levyfractures_50x1000_fracDen035/grid.inp',
-                'stor_file':main_mesh_dir+'levyfractures_50x1000_fracDen035/grid.stor',
-                'avs_file':main_mesh_dir+'levyfractures_50x1000_fracDen035/fracture_2D.inp', #not used
-                'matzone_file':main_mesh_dir+'levyfractures_50x1000_fracDen035/fracture_material.zone',
-                'matzonn_file':main_mesh_dir+'levyfractures_50x1000_fracDen035/fracture_material.zonn',
-                'outsidezone_file':main_mesh_dir+'levyfractures_50x1000_fracDen035/fracture_2D_outside.zone', #not used
-                'topzone_file':main_mesh_dir+'levyfractures_50x1000_fracDen035/top.zone',
-                'boun_file':'mars_pressTemp.boun',
-                'heat_dir': '/lclscratch/jportiz/projects/gas_seepage/mars/runs/1d_heat_runs/heat_200m'},
-            # 50x1000, fracDen=0.010% (@b=1mm)
-            'depth1000_fracDen010': {
-                'mesh_file':main_mesh_dir+'levyfractures_50x1000_fracDen010/grid.inp',
-                'stor_file':main_mesh_dir+'levyfractures_50x1000_fracDen010/grid.stor',
-                'avs_file':main_mesh_dir+'levyfractures_50x1000_fracDen010/fracture_2D.inp', #not used
-                'matzone_file':main_mesh_dir+'levyfractures_50x1000_fracDen010/fracture_material.zone',
-                'matzonn_file':main_mesh_dir+'levyfractures_50x1000_fracDen010/fracture_material.zonn',
-                'outsidezone_file':main_mesh_dir+'levyfractures_50x1000_fracDen010/fracture_2D_outside.zone', #not used
-                'topzone_file':main_mesh_dir+'levyfractures_50x1000_fracDen010/top.zone',
-                'boun_file':'mars_pressTemp.boun',
-                'heat_dir': '/lclscratch/jportiz/projects/gas_seepage/mars/runs/1d_heat_runs/heat_200m'},
-            # 50x1000, fracDen=0.001% (@b=1mm)
-            'depth1000_fracDen001': {
-                'mesh_file':main_mesh_dir+'levyfractures_50x1000_fracDen001/grid.inp',
-                'stor_file':main_mesh_dir+'levyfractures_50x1000_fracDen001/grid.stor',
-                'avs_file':main_mesh_dir+'levyfractures_50x1000_fracDen001/fracture_2D.inp', #not used
-                'matzone_file':main_mesh_dir+'levyfractures_50x1000_fracDen001/fracture_material.zone',
-                'matzonn_file':main_mesh_dir+'levyfractures_50x1000_fracDen001/fracture_material.zonn',
-                'outsidezone_file':main_mesh_dir+'levyfractures_50x1000_fracDen001/fracture_2D_outside.zone', #not used
-                'topzone_file':main_mesh_dir+'levyfractures_50x1000_fracDen001/top.zone',
-                'boun_file':'mars_pressTemp.boun',
-                'heat_dir': '/lclscratch/jportiz/projects/gas_seepage/mars/runs/1d_heat_runs/heat_200m'},
             }
+
+# Check if mesh name is too long for fehmn.files
+meshname =  mesh_dict['depth200_fracDen035']['mesh_file']
+print(meshname)
+shortened=False
+if len(meshname) > 100:
+    shortened=True
+    #  common_prefix = os.path.commonprefix([meshname, os.getcwd()])
+    #  #  short_mesh_name = os.path.relpath( meshname, startcommon_prefix )
+    #  #  short_mesh_name = os.path.relpath( meshname )
+    #  short_mesh_name = os.path.relpath( meshname, start=sim_dir)
+    #  print('Shortened mesh_file name due to fehmn.files restriction:')
+    #  print(short_mesh_name)
+    #  mesh_dict['depth200_fracDen035']['mesh_file'] = short_mesh_name
+
+
 
 def parse_hist(results_dir, param='temp', mesh_file=None):
     '''
@@ -2034,6 +1909,14 @@ def model(p,init0_dir=None,init_dir=None,spinup_dir=None,m_air_dir=None,conc_ini
     else:
         if init0_dir is None:
             print('Runing init0 simulation...')
+            if shortened==True:
+                curr_sim_dir = join(sim_dir,'init0')
+                common_prefix = os.path.commonprefix([meshname, os.getcwd()])
+                short_mesh_name = os.path.relpath( meshname, start=curr_sim_dir)
+                print('Shortened mesh_file name due to fehmn.files restriction:')
+                print(short_mesh_name)
+                p['mesh_file'] = short_mesh_name
+
             utils.run_fehm(p,'init0',exe=exe,tpl_dir=tpl_dir,macro_dir=macro_dir,verbose=verbose)
             print('    Done.')
             # Specify init0_dir
@@ -2064,10 +1947,24 @@ def model(p,init0_dir=None,init_dir=None,spinup_dir=None,m_air_dir=None,conc_ini
         if p['no_adsorption'] is True:
 
             print('Running noSorp_restart_sim...')
+            if shortened==True:
+                curr_sim_dir = join(sim_dir,'noSorp_restart')
+                common_prefix = os.path.commonprefix([meshname, os.getcwd()])
+                short_mesh_name = os.path.relpath( meshname, start=curr_sim_dir)
+                print('Shortened mesh_file name due to fehmn.files restriction:')
+                print(short_mesh_name)
+                p['mesh_file'] = short_mesh_name
             utils.run_fehm(p,'noSorp_restart',exe=exe,tpl_dir=tpl_dir,macro_dir=macro_dir,verbose=verbose)
             print('    Done.')
         # ADSORPTION
         else:
+            if shortened==True:
+                curr_sim_dir = join(sim_dir,'sorp_tracer_restart')
+                common_prefix = os.path.commonprefix([meshname, os.getcwd()])
+                short_mesh_name = os.path.relpath( meshname, start=curr_sim_dir)
+                print('Shortened mesh_file name due to fehmn.files restriction:')
+                print(short_mesh_name)
+                p['mesh_file'] = short_mesh_name
             utils.run_fehm(p,'sorp_tracer_restart',exe=exe,tpl_dir=tpl_dir,macro_dir=macro_dir,verbose=verbose)
 
     # Otherwise, do the Normal progression  ----------------
@@ -2076,6 +1973,13 @@ def model(p,init0_dir=None,init_dir=None,spinup_dir=None,m_air_dir=None,conc_ini
         # Run noSorp_tracer regardless of adsorption mode
         # Do the noSorp_tracer sim before noSorp_restart or sorp_tracer_restart
         print('Running noSorp_tracer sim...')
+        if shortened==True:
+            curr_sim_dir = join(sim_dir,'noSorp_tracer')
+            common_prefix = os.path.commonprefix([meshname, os.getcwd()])
+            short_mesh_name = os.path.relpath( meshname, start=curr_sim_dir)
+            print('Shortened mesh_file name due to fehmn.files restriction:')
+            print(short_mesh_name)
+            p['mesh_file'] = short_mesh_name
         utils.run_fehm(p,'noSorp_tracer',exe=exe,tpl_dir=tpl_dir,macro_dir=macro_dir,verbose=verbose)
         print('    Done.')
         # Need to assign the noSorp_dir variable (doesn't already exist)
@@ -2088,11 +1992,25 @@ def model(p,init0_dir=None,init_dir=None,spinup_dir=None,m_air_dir=None,conc_ini
         # NO ADSORPTION
         if p['no_adsorption'] is True:
             print('Running noSorp_restart_sim...')
+            if shortened==True:
+                curr_sim_dir = join(sim_dir,'noSorp_restart')
+                common_prefix = os.path.commonprefix([meshname, os.getcwd()])
+                short_mesh_name = os.path.relpath( meshname, start=curr_sim_dir)
+                print('Shortened mesh_file name due to fehmn.files restriction:')
+                print(short_mesh_name)
+                p['mesh_file'] = short_mesh_name
             utils.run_fehm(p,'noSorp_restart',exe=exe,tpl_dir=tpl_dir,macro_dir=macro_dir,verbose=verbose)
             print('    Done.')
         # ADSORPTION
         else:
             print('Running sorp_tracer_restart sim...')
+            if shortened==True:
+                curr_sim_dir = join(sim_dir,'sorp_tracer_restart')
+                common_prefix = os.path.commonprefix([meshname, os.getcwd()])
+                short_mesh_name = os.path.relpath( meshname, start=curr_sim_dir)
+                print('Shortened mesh_file name due to fehmn.files restriction:')
+                print(short_mesh_name)
+                p['mesh_file'] = short_mesh_name
             utils.run_fehm(p,'sorp_tracer_restart',exe=exe,tpl_dir=tpl_dir,macro_dir=macro_dir,verbose=verbose)
             print('    Done.')
 
