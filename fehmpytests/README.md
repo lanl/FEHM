@@ -8,5 +8,14 @@ Future plans are to integrate it into the FEHM build process and provide more mo
 
 [See Fehmpytests Documentation](http://lanl.github.io/FEHM/fehmpytests/html/index.html)
 
+If link does not work, try documentation in this repository at: https://fehm.lanl.gov/Fehmpytests/html/index.html
 
-Note the full FEHM Test Suite is written using perl scripts with over 60 test cases and takes a few hours to run. A compressed archive of the full FEHM Test Suite is available under the releases tab.
+
+Note the full FEHM Test Suite is written using perl scripts with over 60 test cases and takes a few hours to run. A compressed archive of the full FEHM Test Suite is available under the releases tab. See files:
+
+The full FEHM Test Suite can be downloaded from Assets under Releases. https://github.com/lanl/FEHM/releases
+
+- VERIFICATION_V3.3.0lnx.tar.gz
+- VERIFICATION_V3.3.0mac.tar.gz
+- VERIFICATION_V3.3.0win.zip
+
