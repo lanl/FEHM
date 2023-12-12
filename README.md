@@ -96,11 +96,21 @@ https://github.com/lanl/FEHM/releases
 - VERIFICATION_V3.3.0win.zip 
 
 We also started a smaller set of tests driven by python scripts.
-These **fehmpytests** python scripts are in the FEHM repo at:
+**fehmpytests** are python scripts and are included in this FEHM repository:
 https://github.com/lanl/FEHM/tree/master/fehmpytests
 
 See **fehmpytests** documentation:
 https://fehm.lanl.gov/Fehmpytests/html/index.html
+
+
+## PYFEHM ##
+
+PYFEHM is a set of classes and methods to enable use of FEHM and auxiliary tasks within the Python scripting environment.
+
+PYFEHM scripts on GitHub: https://github.com/lanl/PyFEHM
+
+Documentation: https://lanl.github.io/PyFEHM/
+
 
 
 ## FEHM Release Versions ##
