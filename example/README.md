@@ -5,6 +5,9 @@ FEHM-mars
 Citation
 --------
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10455952.svg)](https://doi.org/10.5281/zenodo.10455952)
+
+
 Full model description can be found in:
     <JGR Citation>
 
