@@ -89,6 +89,8 @@ Build FEHM. See src and Makefile in that directory.
 
 ## TEST FEHM ##
 
+The full FEHM Test Suite documentation: https://www.lanl.gov/orgs/ees/fehm/docs/FEHM_VERIFICATION_V3.3.0.pdf
+
 The full FEHM Test Suite can be downloaded from Assets under Releases.
 https://github.com/lanl/FEHM/releases
 - VERIFICATION_V3.3.0lnx.tar.gz
