@@ -133,7 +133,7 @@ function tec_to_df(f,variables=0)
 
 	#d = readdlm(fh)
 	close(fh)
-	df = convert(DataFrame,d)
+	df = DataFrame(d,:auto)
 	var_sym = Array{Symbol,length(variables)}
 	variables = [replace(v,"/"=>"_") for v in variables]
 	variables = [replace(v,"-"=>"_") for v in variables]
@@ -141,27 +141,27 @@ function tec_to_df(f,variables=0)
 	var_sym = [Symbol(v) for v in variables]
 	rename!(df,var_sym)
 
-	if (in(:X_coordinate,names(df)))
-		delete!(df,:X_coordinate)
+	if (in("X_coordinate",names(df)))
+		select!(df, Not(:X_coordinate))
 	end
-	if (in(:Y_coordinate,names(df)))
-		delete!(df,:Y_coordinate)
+	if (in("Y_coordinate",names(df)))
+		select!(df, Not(:Y_coordinate))
 	end
-	if (in(:Z_coordinate,names(df)))
-		delete!(df,:Z_coordinate)
+	if (in("Z_coordinate",names(df)))
+		select!(df, Not(:Z_coordinate))
 	end
 
-	if (in(:X,names(df)))
-		delete!(df,:X)
+	if (in("X",names(df)))
+		select!(df, Not(:X))
 	end
-	if (in(:Y,names(df)))
-		delete!(df,:Y)
+	if (in("Y",names(df)))
+		select!(df, Not(:Y))
 	end
-	if (in(:Z,names(df)))
-		delete!(df,:Z)
+	if (in("Z",names(df)))
+		select!(df, Not(:Z))
 	end
-	if (in(:Zone,names(df)))
-		delete!(df,:Zone)
+	if (in("Zone",names(df)))
+		select!(df, Not(:Zone))
 	end
 
 	return df
@@ -211,7 +211,7 @@ function write_vtk(f,coords, elems; diff_df=DataFrame(), variables=0, fi=-1)
 	end
 	vtkfile = vtk_grid(fname, coords, elems)
 	for v in names(df)
-		vtk_point_data(vtkfile, df[v], string(v))
+		vtk_point_data(vtkfile, df[!,v], string(v))
 		if in(v,names(diff_df))
 			if length(var_diff)>0
 				if in(string(v),var_diff)
