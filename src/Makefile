@@ -117,15 +117,20 @@ all: hdf5-1.8 silo-4.10.2 dated xfehm
 
 .PHONY: hdf5-1.8
 hdf5-1.8:	
-	@cd ${TPLDIR} && git clone https://github.com/live-clones/hdf5.git --branch 1.8/master $@
-	@cd ${TPLDIR}/hdf5-1.8/ && git branch && ./configure --prefix=${TPLDIR}/hdf5-1.8_install/ --enable-fortran --enable-cxx
-	@cd ${TPLDIR}/hdf5-1.8/ && make install
+	#@cd ${TPLDIR} && git clone https://github.com/HDFGroup/hdf5.git --branch hdf5_1_8 $@
+	#@cd ${TPLDIR}/hdf5-1.8/ && git branch && ./configure --prefix=${TPLDIR}/hdf5-1.8_install/ --enable-fortran --enable-cxx
+	#@cd ${TPLDIR}/hdf5-1.8/ && make install
 
 .PHONY: silo-4.10.2 
 silo-4.10.2:
-	@cd ${TPLDIR} && tar -xzvf ${TPLDIR}/silo-4.10.2-bsd.tar.gz && cd ./silo-4.10.2-bsd/
-	@cd ${TPLDIR}/silo-4.10.2-bsd/ && ./configure --enable-fortran --with-hdf5=${TPLDIR}/hdf5-1.8_install/include/,${TPLDIR}/hdf5-1.8_install/lib/ --prefix=${TPLDIR}/silo-4.10.2-bsd_install
-	@cd ${TPLDIR}/silo-4.10.2-bsd/ && make install
+	#@cd ${TPLDIR} && tar -xzvf ${TPLDIR}/silo-4.10.2-bsd.tar.gz && cd ./silo-4.10.2-bsd/
+	#@cd ${TPLDIR}/silo-4.10.2-bsd/ && sed -i '258s/)/);/g' src/hdf5_drv/HH5FDsilo.c
+	#@cd ${TPLDIR}/silo-4.10.2-bsd/ && sed -i '264s/)/);/g' src/hdf5_drv/HH5FDsilo.c
+	#@cd ${TPLDIR}/silo-4.10.2-bsd/ && sed -i '1311s/)/);/g' src/hdf5_drv/HH5FDsilo.c
+	#@cd ${TPLDIR}/silo-4.10.2-bsd/ && sed -i '1339s/)/);/g' src/hdf5_drv/HH5FDsilo.c
+	#@cd ${TPLDIR}/silo-4.10.2-bsd/ && sed -i '1346s/)/);/g' src/hdf5_drv/HH5FDsilo.c
+	#@cd ${TPLDIR}/silo-4.10.2-bsd/ && ./configure --enable-fortran --with-hdf5=${TPLDIR}/hdf5-1.8_install/include/,${TPLDIR}/hdf5-1.8_install/lib/ --prefix=${TPLDIR}/silo-4.10.2-bsd_install
+	#@cd ${TPLDIR}/silo-4.10.2-bsd/ && make install
 	
 
 
