@@ -115,6 +115,13 @@ function tec_to_df(f,variables=0)
 	else
 		n_lines = numnodes
 	end
+
+	ncols = length(split(strip(lns[i])))
+	# Remove x, y, z variable names they don't exist in tec file 
+	# If variables length is 3 more than ncols, assume the first three variables are x,y,z coords and remove
+	if length(variables) == ncols + 3
+		variables = variables[4:end]
+	end
 	dtemp = Array{Float64,2}(undef,n_lines,length(variables))
 	for i in 1:n_lines
 		vs = split(strip(lns[i]))
@@ -133,7 +140,7 @@ function tec_to_df(f,variables=0)
 
 	#d = readdlm(fh)
 	close(fh)
-	df = convert(DataFrame,d)
+	df = DataFrame(d,:auto)
 	var_sym = Array{Symbol,length(variables)}
 	variables = [replace(v,"/"=>"_") for v in variables]
 	variables = [replace(v,"-"=>"_") for v in variables]
@@ -211,14 +218,14 @@ function write_vtk(f,coords, elems; diff_df=DataFrame(), variables=0, fi=-1)
 	end
 	vtkfile = vtk_grid(fname, coords, elems)
 	for v in names(df)
-		vtk_point_data(vtkfile, df[v], string(v))
+		vtk_point_data(vtkfile, df[!,v], string(v))
 		if in(v,names(diff_df))
 			if length(var_diff)>0
 				if in(string(v),var_diff)
-					vtk_point_data(vtkfile, df[v]-diff_df[v], string("Delta ",v))
+					vtk_point_data(vtkfile, df[!,v]-diff_df[!,v], string("Delta ",v))
 				end
 			else
-				vtk_point_data(vtkfile, df[v]-diff_df[v], string("Delta ",v))
+				vtk_point_data(vtkfile, df[!,v]-diff_df[!,v], string("Delta ",v))
 			end
 		end
 	end
@@ -276,7 +283,7 @@ if parsed_args["mesh_file"] == "none"
 	for l in eachline(fh)
 		if (startswith(l,"grid"))
 			print(l)
-		mesh = strip(split(l,":")[2])
+			global mesh = strip(split(l,":")[2])
 			break
 		end
 	end
@@ -317,7 +324,7 @@ elseif ( numconns == 8 )
 end
 j = 1
 for i in numnodes+6:numnodes+5+numelems 
-    vs = split(strip(lns[i]))
+    local vs = split(strip(lns[i]))
 	if ( numconns == 3 )
     	elems[j] = MeshCell(celltype, [parse(Int,vs[2]), parse(Int,vs[3]), parse(Int,vs[4])])
 	elseif ( numconns == 4 )
@@ -389,13 +396,13 @@ if isfile("gdkm.dat")
 	n_gdkm = parse(Int,split(strip(readline(fh)))[2])
 	d = Array{Float64,(n_gdkm,2)}
 	for i in 1:n_gdkm
-		vs = split(strip(readline(fh)))
+		local vs = split(strip(readline(fh)))
 		d[i,:] = [parse(Float64,vs[2]),parse(Float64,vs[3])]
 	end
 	readline(fh)
 	gdkm_map = Array{Float64,(n_gdkm,2)}
 	for i in 1:n_gdkm
-		vs = split(strip(readline(fh)))
+		local vs = split(strip(readline(fh)))
 		gdkm_map[i,:] = [parse(Int,vs[1]),numnodes+parse(Int,vs[4])]
 	end
 	close(fh)
@@ -419,7 +426,7 @@ if isfile("perm.dat")
 	fh = open("perm.dat")
 	readline(fh)
 	for l in eachline(fh)
-		vs = split(strip(l))
+		local vs = split(strip(l))
 		if isempty(strip(l))
 			break
 		end
