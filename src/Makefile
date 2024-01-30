@@ -28,7 +28,7 @@
 
 # Compiletime variables
 FC = gfortran
-EXE = xfehm_v3.3.1
+EXE = xfehm
 SRCDIR = ./
 PREFIX = /usr/local/bin
 
@@ -37,7 +37,7 @@ DEPEND = ${SRCDIR}Makefile.depends
 OPSYS = $(shell uname -s )
 DATETAG = $(shell date '+%y-%m-%d')
 DATE = $(shell date '+.%d%b%y')
-FFLAGS = -frecord-marker=4
+FFLAGS = -frecord-marker=4 -no-pie
 DEBUGFLAGS = -g -O0 -frecord-marker=4 -fbounds-check -Wall
 
 
@@ -69,7 +69,7 @@ endif
 define help
 #====================================================================================
 #
-#   FEHM V3.3.1
+#   FEHM V3.4.0
 #   (c) 2018 LOS ALAMOS NATIONAL LABORATORY
 #
 #====================================================================================
