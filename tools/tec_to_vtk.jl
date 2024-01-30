@@ -8,6 +8,7 @@ The script uses fehmn.files to point to the grid and other outfiles needed for
 node locations.
 
 Command to run: julia path/to/directory/tec_to_vtk.jl        
+Dylan R. Harp (dharp@lanl.gov)
 ================================================================================
 
 USAGE:
@@ -39,20 +40,20 @@ function get_tec_time(f)
 			title = strip(split(l,"=")[2])
         elseif startswith(l,"VARIABLES")
 			variables = split(split(l,"=")[2],"\" \"")
-			variables = [replace(v,"\"","") for v in variables]
-			variables = [strip(replace(v,r"\(.+\)","")) for v in variables]
+			variables = [replace(v,"\""=>"") for v in variables]
+			variables = [strip(replace(v,r"\(.+\)"=>"")) for v in variables]
         elseif startswith(l,"ZONE")
             tm = split(split(l,"\"")[2])[3]
-            if contains(tm,"days\"")
-				tm = replace(tm,"days\"","")
-            elseif contains(tm,"days")
-				tm = replace(tm,"days","")
+            if occursin("days\"",tm)
+				tm = replace(tm,"days\""=>"")
+            elseif occursin("days",tm)
+				tm = replace(tm,"days"=>"")
 			end
         elseif startswith(l,"FILETYPE")
 			continue
         elseif startswith(l,"SOLUTION")
 			continue
-        elseif isalpha(split(l)[1])
+        elseif occursin(r"^[a-z,\s]+$",split(l)[1])
             println(string("ERROR: Unrecognized header: ",split(l)[1],"; currently looks for TITLE, VARIABLES, and ZONE; might need to add it"))
         else
 			header = false
@@ -76,8 +77,8 @@ function tec_to_df(f,variables=0)
 			title = strip(split(l,"=")[2])
         elseif startswith(l,"VARIABLES")
 			variables = split(split(l,"=")[2],"\" \"")
-			variables = [replace(v,"\"","") for v in variables]
-			variables = [strip(replace(v,r"\(.+\)","")) for v in variables]
+			variables = [replace(v,"\""=>"") for v in variables]
+			variables = [strip(replace(v,r"\(.+\)"=>"")) for v in variables]
         elseif startswith(l,"ZONE")
             tm = split(split(l,"\"")[2])
 			if length(tm) <= 2
@@ -86,8 +87,8 @@ function tec_to_df(f,variables=0)
 			else # Probably material file
             	tm = tm[3]
 			end
-            if contains(tm,"days\"")
-				tm = replace(tm,"days\"","")
+            if occursin("days\"",tm)
+				tm = replace(tm,"days\""=>"")
 			end
         elseif startswith(l,"FILETYPE")
         	i = i + 1
@@ -95,7 +96,7 @@ function tec_to_df(f,variables=0)
         elseif startswith(l,"SOLUTION")
         	i = i + 1
 			continue
-        elseif isreal(float(split(l)[1]))
+		elseif isreal(parse(Float64,split(l)[1]))
 			header = false
         else
             println(string("ERROR: Unrecognized header: ",split(l)[1],"; currently looks for TITLE, VARIABLES, and ZONE; might need to add it"))
@@ -109,36 +110,43 @@ function tec_to_df(f,variables=0)
 	end
 	lns = readlines(fh)
 
-	if contains(f,"gdkm")
+	if occursin("gdkm",f)
 		n_lines = n_gdkm
 	else
 		n_lines = numnodes
 	end
-	dtemp = Array(Float64,(n_lines,length(variables)))
+
+	ncols = length(split(strip(lns[i])))
+	# Remove x, y, z variable names they don't exist in tec file 
+	# If variables length is 3 more than ncols, assume the first three variables are x,y,z coords and remove
+	if length(variables) == ncols + 3
+		variables = variables[4:end]
+	end
+	dtemp = Array{Float64,2}(undef,n_lines,length(variables))
 	for i in 1:n_lines
 		vs = split(strip(lns[i]))
 		for j in 1:length(vs)
-			dtemp[i,j] = float(vs[j])
+			dtemp[i,j] = parse(Float64,vs[j])
 		end
 	end
 
-	d = Array(Float64,(numnodes,length(variables)))
-	d[:,:] = 0.
-	if contains(f,"gdkm")
-		d[gdkm_map[:,1],:] = dtemp[:,:]
+	d = Array{Float64,2}(undef,numnodes,length(variables))
+	d[:,:] .= 0.
+	if occursin("gdkm",f)
+		d[gdkm_map[:,1],:] .= dtemp[:,:]
 	else
-		d[:,:] = dtemp[:,:]
+		d[:,:] .= dtemp[:,:]
 	end
 
 	#d = readdlm(fh)
 	close(fh)
-	df = convert(DataFrame,d)
-	var_sym = Array(Symbol,length(variables))
-	variables = [replace(v,"/","_") for v in variables]
-	variables = [replace(v,"-","_") for v in variables]
-	variables = [replace(v," ","_") for v in variables]
-	var_sym[:] = [Symbol(v) for v in variables]
-	names!(df,var_sym)
+	df = DataFrame(d,:auto)
+	var_sym = Array{Symbol,length(variables)}
+	variables = [replace(v,"/"=>"_") for v in variables]
+	variables = [replace(v,"-"=>"_") for v in variables]
+	variables = [replace(v," "=>"_") for v in variables]
+	var_sym = [Symbol(v) for v in variables]
+	rename!(df,var_sym)
 
 	if (in(:X_coordinate,names(df)))
 		delete!(df,:X_coordinate)
@@ -170,31 +178,31 @@ function write_vtk(f,coords, elems; diff_df=DataFrame(), variables=0, fi=-1)
 	println(f)
 	fnlst = split(f,'.')
     root = fnlst[1]
-    if contains(fnlst[2],"sca_node")
+    if occursin("sca_node",fnlst[2])
 		lst = split(fnlst[2],"_")
 		if (fi==-1)
 			fi = lst[1]
 		end
         root = string(root,"_sca_node")
-    elseif contains(fnlst[2],"sca_gdkm_node")
+    elseif occursin(fnlst[2],"sca_gdkm_node")
 		lst = split(fnlst[2],"_")
 		if (fi==-1)
 			fi = lst[1]
 		end
         root = string(root,"_sca_gdkm_node")
-    elseif contains(fnlst[2],"con_node")
+    elseif occursin("con_node",fnlst[2])
 		lst = split(fnlst[2],"_")
 		if (fi==-1)
 			fi = lst[1]
 		end
         root = string(root,"_con_node")
-    elseif contains(fnlst[2],"con_gdkm_node")
+    elseif occursin("con_gdkm_node",fnlst[2])
 		lst = split(fnlst[2],"_")
 		if (fi==-1)
 			fi = lst[1]
 		end
         root = string(root,"_con_gdkm_node")
-    elseif contains(fnlst[2],"mat_node")
+    elseif occursin("mat_node",fnlst[2])
         root = string(root,"_mat_node")
 	end
 
@@ -204,20 +212,20 @@ function write_vtk(f,coords, elems; diff_df=DataFrame(), variables=0, fi=-1)
 		mkdir(parsed_args["output_dir"])
 	end
 	if fi > -1
-		fname = string(parsed_args["output_dir"],"/",root,base(10,fi,4))
+		fname = string(parsed_args["output_dir"],"/",root,lpad(fi,4,"0"))
 	else
 		fname = string(parsed_args["output_dir"],"/",root)
 	end
 	vtkfile = vtk_grid(fname, coords, elems)
 	for v in names(df)
-		vtk_point_data(vtkfile, df[v], string(v))
+		vtk_point_data(vtkfile, df[!,v], string(v))
 		if in(v,names(diff_df))
 			if length(var_diff)>0
 				if in(string(v),var_diff)
-					vtk_point_data(vtkfile, df[v]-diff_df[v], string("Delta ",v))
+					vtk_point_data(vtkfile, df[!,v]-diff_df[!,v], string("Delta ",v))
 				end
 			else
-				vtk_point_data(vtkfile, df[v]-diff_df[v], string("Delta ",v))
+				vtk_point_data(vtkfile, df[!,v]-diff_df[!,v], string("Delta ",v))
 			end
 		end
 	end
@@ -230,7 +238,7 @@ end
 
 s = ArgParseSettings(description = "Convert FEHM gdkm tecplot output to vtu2 files")
 
-@add_arg_table s begin
+@add_arg_table! s begin
     "--sca_diff"
 		help = "Sca file to subtract to create delta variables"
 		arg_type = String
@@ -275,7 +283,7 @@ if parsed_args["mesh_file"] == "none"
 	for l in eachline(fh)
 		if (startswith(l,"grid"))
 			print(l)
-		mesh = strip(split(l,":")[2])
+			global mesh = strip(split(l,":")[2])
 			break
 		end
 	end
@@ -290,10 +298,10 @@ close(fh)
 numnodes = parse(Int,strip(lns[2]))
 
 # Points
-coords = Array(Float64,(3,numnodes))
+coords = zeros(Float64,(3,numnodes))
 for i in 3:numnodes+2
     vs = split(strip(lns[i]))
-    coords[:,i-2] = [float(vs[2]), float(vs[3]), float(vs[4])]
+    coords[:,i-2] = [parse(Float64,vs[2]), parse(Float64,vs[3]), parse(Float64,vs[4])]
 end
 
 # Elements
@@ -301,35 +309,35 @@ vs = split(strip(lns[numnodes+5]))
 
 numconns = parse(Int,vs[1])
 numelems = parse(Int,vs[2])
-elems = Array(MeshCell,numelems)
+elems = Array{MeshCell}(undef,numelems)
 # Determine cell type
 if ( numconns == 3 )
-	celltype = VTKCellType.VTK_TRIANGLE
+	celltype = VTKCellTypes.VTK_TRIANGLE
 elseif ( numconns == 4 )
 	if length(unique(coords[1,:]))>1 && length(unique(coords[2,:]))>1 && length(unique(coords[3,:]))>1
-		celltype = VTKCellType.VTK_TETRA
+		celltype = VTKCellTypes.VTK_TETRA
 	else
-		celltype = VTKCellType.VTK_QUAD
+		celltype = VTKCellTypes.VTK_QUAD
 	end
 elseif ( numconns == 8 )
-	celltype = VTKCellType.VTK_HEXAHEDRON
+	celltype = VTKCellTypes.VTK_HEXAHEDRON
 end
 j = 1
 for i in numnodes+6:numnodes+5+numelems 
-    vs = split(strip(lns[i]))
+    local vs = split(strip(lns[i]))
 	if ( numconns == 3 )
     	elems[j] = MeshCell(celltype, [parse(Int,vs[2]), parse(Int,vs[3]), parse(Int,vs[4])])
 	elseif ( numconns == 4 )
 		# Check for triangle elements for DFNs
 		if parse(Int,vs[5]) == 0
-    			elems[j] = MeshCell(VTKCellType.VTK_TRIANGLE, [parse(Int,vs[2]), parse(Int,vs[3]), parse(Int,vs[4])])
+    			elems[j] = MeshCell(VTKCellTypes.VTK_TRIANGLE, [parse(Int,vs[2]), parse(Int,vs[3]), parse(Int,vs[4])])
 		else
     			elems[j] = MeshCell(celltype, [parse(Int,vs[2]), parse(Int,vs[3]), parse(Int,vs[4]), parse(Int,vs[5])])
 		end
 	elseif ( numconns == 8 )
     	elems[j] = MeshCell(celltype, [parse(Int,vs[2]), parse(Int,vs[3]), parse(Int,vs[4]), parse(Int,vs[5]), parse(Int,vs[6]), parse(Int,vs[7]), parse(Int,vs[8]), parse(Int,vs[9])])
 	end
-	j = j + 1
+	global j = j + 1
 end
 
 # Scalar files
@@ -340,7 +348,7 @@ if (length(fs) > 0)
 	sca_o = tec_to_df(fs[1])
 	#print(names(sca_o))
 	variables = [string(nm) for nm in names(sca_o)]
-	if contains(parsed_args["sca_diff"],"none")
+	if occursin("none",parsed_args["sca_diff"])
 		sca_zero = DataFrame()
 	else
 		println(parsed_args["sca_diff"])
@@ -351,7 +359,7 @@ if (length(fs) > 0)
 	#	fi[fi] = fi
 		vfile = write_vtk(f,coords,elems,diff_df=sca_zero,variables=variables,fi=fi);
 		tm = get_tec_time(f)
-		collection_add_timestep(pvd_sca, vfile, float(tm))
+		collection_add_timestep(pvd_sca, vfile, parse(Float64,tm))
 	end
 	#pmap(write_vtk,fs,fi)
 	vtk_save(pvd_sca)
@@ -368,7 +376,7 @@ if (length(fs) > 0)
 	for (fi,f) in enumerate(fs)
 		vfile = write_vtk(f,coords,elems,diff_df=con_zero,variables=variables,fi=fi)
 		tm = get_tec_time(f)
-		collection_add_timestep(pvd_con, vfile, float(tm))
+		collection_add_timestep(pvd_con, vfile, parse(Float64,tm))
 	end
 	vtk_save(pvd_con)
 end
@@ -386,15 +394,15 @@ if isfile("gdkm.dat")
 	fh = open("gdkm.dat")
 	readline(fh)
 	n_gdkm = parse(Int,split(strip(readline(fh)))[2])
-	d = Array(Float64,(n_gdkm,2))
+	d = Array{Float64,(n_gdkm,2)}
 	for i in 1:n_gdkm
-		vs = split(strip(readline(fh)))
-		d[i,:] = [float(vs[2]),float(vs[3])]
+		local vs = split(strip(readline(fh)))
+		d[i,:] = [parse(Float64,vs[2]),parse(Float64,vs[3])]
 	end
 	readline(fh)
-	gdkm_map = Array(Float64,(n_gdkm,2))
+	gdkm_map = Array{Float64,(n_gdkm,2)}
 	for i in 1:n_gdkm
-		vs = split(strip(readline(fh)))
+		local vs = split(strip(readline(fh)))
 		gdkm_map[i,:] = [parse(Int,vs[1]),numnodes+parse(Int,vs[4])]
 	end
 	close(fh)
@@ -418,12 +426,12 @@ if isfile("perm.dat")
 	fh = open("perm.dat")
 	readline(fh)
 	for l in eachline(fh)
-		vs = split(strip(l))
+		local vs = split(strip(l))
 		if isempty(strip(l))
 			break
 		end
 		if parse(Int,vs[1]) > 1
-			perm_dat[gdkm_dict[parse(Int,vs[1])],:] = [float(vs[4]),float(vs[5]),float(vs[6])]
+			perm_dat[gdkm_dict[parse(Int,vs[1])],:] = [parse(Float64,vs[4]),parse(Float64,vs[5]),parse(Float64,vs[6])]
 		end
 	end
 	close(fh)
@@ -446,7 +454,7 @@ if (length(fs) > 0)
 	sca_o = tec_to_df(fs[1])
 	#print(names(sca_o))
 	variables = [string(nm) for nm in names(sca_o)]
-	if contains(parsed_args["sca_gdkm_diff"],"none")
+	if occursin("none",parsed_args["sca_gdkm_diff"])
 		sca_zero = DataFrame()
 	else
 		println(parsed_args["sca_gdkm_diff"])
@@ -457,7 +465,7 @@ if (length(fs) > 0)
 	#	fi[fi] = fi
 		vfile = write_vtk(f,coords,elems,diff_df=sca_zero,variables=variables,fi=fi);
 		tm = get_tec_time(f)
-		collection_add_timestep(pvd_sca, vfile, float(tm))
+		collection_add_timestep(pvd_sca, vfile, parse(Float64,tm))
 	end
 	#pmap(write_vtk,fs,fi)
 	vtk_save(pvd_sca)
@@ -474,7 +482,7 @@ if (length(fs) > 0)
 	for (fi,f) in enumerate(fs)
 		vfile = write_vtk(f,coords,elems,diff_df=con_zero,variables=variables,fi=fi)
 		tm = get_tec_time(f)
-		collection_add_timestep(pvd_con, vfile, float(tm))
+		collection_add_timestep(pvd_con, vfile, parse(Float64,tm))
 	end
 	vtk_save(pvd_con)
 end
