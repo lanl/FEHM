@@ -24,15 +24,14 @@ Public License for more details.
 import numpy as np
 import os
 from copy import copy,deepcopy
-
-
 import platform
 WINDOWS = platform.system()=='Windows'
 if WINDOWS: slash = '\\'
 else: slash = '/'
 
 
-if True:    cont_var_names_avs=dict([
+if True:    # output variable dictionaries defined in here, indented for code collapse
+    cont_var_names_avs=dict([
     ('X coordinate (m)','x'),
     ('Y coordinate (m)','y'),
     ('Z coordinate (m)','z'),
@@ -255,13 +254,15 @@ if True:    cont_var_names_avs=dict([
     'co2_sinkG',
     'co2_inG',
     'co2_outG']
-class fcontour(object):    '''Contour output information object.
+class fcontour(object):                     # Reading and plotting methods associated with contour output data.
+    '''Contour output information object.
     
     '''
     def __init__(self,filename=None,latest=False,first=False,nearest=None):
         if not isinstance(filename,list):
             self._filename=os_path(filename)
-        self._silent = True        self._times=[]   
+        self._silent = True#dflt.silent
+        self._times=[]   
         self._format = ''
         self._data={}
         self._material = {}
@@ -295,7 +296,8 @@ class fcontour(object):    '''Contour output information object.
             ind = np.argmin(abs(self.times-key))
             return self._data[self.times[ind]]
         else: return None
-    def read(self,filename,latest=False,first=False,nearest=[]):        '''Read in FEHM contour output information.
+    def read(self,filename,latest=False,first=False,nearest=[]):                        # read contents of file
+        '''Read in FEHM contour output information.
         
         :param filename: File name for output data, can include wildcards to define multiple output files.
         :type filename: str
@@ -315,8 +317,11 @@ class fcontour(object):    '''Contour output information object.
         if len(files)==0:   
             print('ERROR: '+filename+' not found')
             return
+        # decision-making
         mat_file = None
         multi_type = None
+        # are there multiple file types? e.g., _con_ and _sca_?
+        # is there a material properties file? e.g., 'mat_nodes'?
         file_types = []
         for file in files:
             if '_sca_node' in file and 'sca' not in file_types: file_types.append('sca')
@@ -331,6 +336,7 @@ class fcontour(object):    '''Contour output information object.
             files.sort(key=lambda x: os.path.getmtime(x))
             files2 = []
             
+            # retrieve first created and same time in group
             if first:
                 files2.append(files[0])
                 for file_type in file_types:
@@ -341,6 +347,7 @@ class fcontour(object):    '''Contour output information object.
                 for file in files:
                     if file.startswith(prefix) and tag not in file: files2.append(file)
                     
+            # retrieve files nearest in time to given (and same time in group)
             if self._nearest:
                 ts = []
                 for file in files:
@@ -366,6 +373,7 @@ class fcontour(object):    '''Contour output information object.
                     for file in files:
                         if file.startswith(prefix) and tag not in file: files2.append(file)                     
                         
+            # retrieve last created and same time in group
             if latest:
                 files2.append(files[-1])
                 for file_type in file_types:
@@ -376,16 +384,19 @@ class fcontour(object):    '''Contour output information object.
                 for file in files:
                     if file.startswith(prefix) and tag not in file: files2.append(file)
                     
+            # removes duplicates
             files = []
             for file in files2:
                 if file not in files: files.append(file)
         
+        # group files into their types
         FILES = []
         for file_type in file_types:
             tag = '_'+file_type+'_node'
             FILES.append(sort_tec_files([file for file in files if tag in file]))
         FILES = np.array(FILES)
         
+        # determine headers for 'tec' output
         for i in range(FILES.shape[1]):
             if not self._variables:
                 files = FILES[:,i]
@@ -404,9 +415,12 @@ class fcontour(object):    '''Contour output information object.
                         fp.close()
                     self._setup_headers_tec(headers)        
         
+        # read in output data
         for i in range(FILES.shape[1]):
             files = FILES[:,i]
+            # Skip -1 file if present
             if '-1' in files[0]: continue
+            #for file in sort_tec_files(files): print(file)
             if not self._variables:
                 headers = []
                 for file in sort_tec_files(files):
@@ -414,6 +428,7 @@ class fcontour(object):    '''Contour output information object.
                     headers.append(fp.readline())
                     fp.close()
                 self._detect_format(headers)
+                #if self._format=='tec': self._setup_headers_tec(headers)
                 if self._format=='avs': self._setup_headers_avs(headers,files)
                 elif self._format=='avsx': self._setup_headers_avsx(headers)
                 elif self._format=='surf': self._setup_headers_surf(headers)
@@ -424,6 +439,7 @@ class fcontour(object):    '''Contour output information object.
             elif self._format == 'avs': self._read_data_avs(files,mat_file)
             elif self._format == 'avsx': self._read_data_avsx(files,mat_file)
         
+        # assemble grid information
         if 'x' in self.variables:
             self._x = np.unique(self[self.times[0]]['x'])
             self._xmin,self._xmax = np.min(self.x), np.max(self.x)
@@ -433,15 +449,42 @@ class fcontour(object):    '''Contour output information object.
         if 'z' in self.variables:
             self._z = np.unique(self[self.times[0]]['z'])
             self._zmin,self._zmax = np.min(self.z), np.max(self.z)
+        #if dflt.parental_cont:
+        #   print('')
+        #   print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        #   print('WARNING:')
+        #   print('')
+        #   print('Contour data is indexed using the Pythonic convention in which the first index is 0. FEHM node numbering convention begins at 1.')
+        #   print('')
+        #   print('THEREFORE, to get the correct contour value for a particular node, you need to pass the node index MINUS 1. Using node index to access contour data will return incorrect values.')
+        #   print('')
+        #   print('For example:')
+        #   print('>>> node10 = dat.grid.node[10]')
+        #   print('>>> c = fcontour(\'*.csv\')')
+        #   print('>>> T_node10 = c[c.times[-1]][\'T\'][node10.index - 1]')
+        #   print('  or')
+        #   print('>>> T_node10 = c[c.times[-1]][\'T\'][9]')
+        #   print('will return the correct value for node 10.')
+        #   print('')
+        #   print('Do not turn off this message unless you understand how to correctly access nodal values from contour data.') 
+        #   print('To turn off this message, open the environment file \'fdflt.py\' and set self.parental_cont = False')
+        #   print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        #   print('')
     def _detect_format(self,headers):
-        if headers[0].startswith('TITLE ='):            self._format = 'tec'
-        if headers[0].startswith('ZONE '):            self._format = 'tec'
+        if headers[0].startswith('TITLE ='):        # check for TEC output
+            self._format = 'tec'
+        if headers[0].startswith('ZONE '):      # check for TEC output
+            self._format = 'tec'
             return False
-        elif headers[0].startswith('node, '):            self._format = 'surf'
-        elif headers[0].startswith('nodes at '):            self._format = 'avsx'
-        elif headers[0].split()[0].isdigit():            self._format = 'avs'
+        elif headers[0].startswith('node, '):       # check for SURF output
+            self._format = 'surf'
+        elif headers[0].startswith('nodes at '):    # check for AVSX output
+            self._format = 'avsx'
+        elif headers[0].split()[0].isdigit():           # check for AVS output
+            self._format = 'avs'
         return True
-    def _setup_headers_avsx(self,headers):        self._variables.append('n')
+    def _setup_headers_avsx(self,headers):      # headers for the AVSX output format
+        self._variables.append('n')
         for header in headers:
             header = header.strip().split(' : ')
             for key in header[1:]: 
@@ -449,8 +492,10 @@ class fcontour(object):    '''Contour output information object.
                     var = cont_var_names_avs[key]
                 else: var = key
                 self._variables.append(var)
-    def _read_data_avsx(self,files,mat_file):        datas = []
-        for file in sorted(files):            fp = open(file,'rU')
+    def _read_data_avsx(self,files,mat_file):               # read data in AVSX format
+        datas = []
+        for file in sorted(files):      # use alphabetical sorting
+            fp = open(file,'rU')
             header = fp.readline()
             if file == sorted(files)[0]:
                 header = header.split('nodes at ')[1]
@@ -471,7 +516,8 @@ class fcontour(object):    '''Contour output information object.
             fp.close()
             data = np.array([[float(d) for d in ln.strip().split(':')[1:]] for ln in lns])
             self._material= dict([(var,data[:,icol]) for icol,var in enumerate(self._material_properties)])
-    def _setup_headers_avs(self,headers,files):        for header,file in zip(headers,files):
+    def _setup_headers_avs(self,headers,files):         # headers for the AVS output format
+        for header,file in zip(headers,files):
             lns_num = int(header.strip().split()[0])
             fp = open(file)
             lns = [fp.readline() for i in range(lns_num+1)][1:]
@@ -483,7 +529,8 @@ class fcontour(object):    '''Contour output information object.
                     var = cont_var_names_avs[varname]
                 else: var = varname
                 if var not in self._variables: self._variables.append(var)
-    def _read_data_avs(self,files,mat_file):        datas = []
+    def _read_data_avs(self,files,mat_file):        # read data in AVS format
+        datas = []
         for file in sorted(files):
             first = (file == sorted(files)[0])
             fp = open(file,'rU')
@@ -509,7 +556,8 @@ class fcontour(object):    '''Contour output information object.
             
         data = np.concatenate(datas,1)
         self._data[time] = dict([(var,data[:,icol]) for icol,var in enumerate(self.variables)])
-    def _setup_headers_surf(self,headers):        for header in headers:
+    def _setup_headers_surf(self,headers):      # headers for the SURF output format
+        for header in headers:
             header = header.strip().split(', ')
             for key in header: 
                 varname = key.split('"')[0]
@@ -518,7 +566,8 @@ class fcontour(object):    '''Contour output information object.
                     var = cont_var_names_surf[varname]
                 else: var = varname
                 if var not in self._variables: self._variables.append(var)
-    def _read_data_surf(self,files,mat_file):        datas = []
+    def _read_data_surf(self,files,mat_file):       # read data in SURF format
+        datas = []
         for file in sorted(files):
             first = (file == sorted(files)[0])
             fp = open(file,'rU')
@@ -558,7 +607,8 @@ class fcontour(object):    '''Contour output information object.
             fp.close()
             data = np.array([[float(d) for d in ln.strip().split(',')[1:]] for ln in lns])
             self._material= dict([(var,data[:,icol]) for icol,var in enumerate(self._material_properties)])
-    def _setup_headers_tec(self,headers):        for header in headers:
+    def _setup_headers_tec(self,headers):       # headers for the TEC output format
+        for header in headers:
             header = header.split(' "')
             for key in header[1:]: 
                 varname = key.split('"')[0].strip()
@@ -567,7 +617,8 @@ class fcontour(object):    '''Contour output information object.
                 else: var = varname
                 
                 if var not in self._variables: self._variables.append(var)
-    def _read_data_tec(self,files,mat_file):        datas = []
+    def _read_data_tec(self,files,mat_file):                        # read data in TEC format
+        datas = []
         for file in sorted(files):
             first = (file == sorted(files)[0])
             fp = open(file,'rU')
@@ -591,7 +642,8 @@ class fcontour(object):    '''Contour output information object.
             
             lns = fp.readlines()
             fp.close()
-            if nds: lns = lns[:nds]            
+            if nds: lns = lns[:nds]         # truncate to remove connectivity information
+            
             if has_xyz:
                 if first: 
                     datas.append(np.array([[float(d) for d in ln.strip().split()] for ln in lns]))
@@ -604,7 +656,8 @@ class fcontour(object):    '''Contour output information object.
                     datas.append(np.array([[float(d) for d in ln.strip().split()[1:]] for ln in lns]))
                         
         data = np.concatenate(datas,1)
-        if data.shape[1]< len(self.variables):            data2 = []
+        if data.shape[1]< len(self.variables):      # insert xyz data from previous read
+            data2 = []
             j = 0
             for var in self.variables:
                 if var == 'x': 
@@ -628,9 +681,11 @@ class fcontour(object):    '''Contour output information object.
             lns = fp.readlines()
             if lns[0].startswith('ZONE'): lns = lns[1:]
             fp.close()
-            if nds: lns = lns[:nds]            data = np.array([[float(d) for d in ln.strip().split()[4:]] for ln in lns[:-1]])
+            if nds: lns = lns[:nds]         # truncate to remove connectivity information
+            data = np.array([[float(d) for d in ln.strip().split()[4:]] for ln in lns[:-1]])
             self._material= dict([(var,data[:,icol]) for icol,var in enumerate(self._material_properties)])
-    def _check_inputs(self,variable, time, slice):        if not variable: 
+    def _check_inputs(self,variable, time, slice):  # assesses whether sufficient input information for slice plot
+        if not variable: 
             s = ['ERROR: no plot variable specified.']
             s.append('Options are')
             for var in self.variables: s.append(var)
@@ -702,6 +757,7 @@ class fcontour(object):    '''Contour output information object.
                 delta=True      
         dat = self[time]
         
+        # check to see if cfs plot requested
         cfs = False
         if isinstance(variable,list):
             if variable[0] in ['cfs','CFS']: cfs = True
@@ -750,14 +806,17 @@ class fcontour(object):    '''Contour output information object.
                     valsI0 =  np.reshape(valsI0,(X.shape[0],X.shape[1]))
                     valsI = valsI - valsI0
             elif isinstance(slice[0],list):
+                # check if horizontal or vertical slice
                 dx,dy,dz = abs(slice[0][0]-slice[1][0]),abs(slice[0][1]-slice[1][1]),abs(slice[0][2]-slice[1][2])
-                if 100*dz<dx and 100*dz<dy:                    xmin,xmax = np.min([slice[0][0],slice[1][0]]),np.max([slice[0][0],slice[1][0]])
+                if 100*dz<dx and 100*dz<dy:     #horizontal
+                    xmin,xmax = np.min([slice[0][0],slice[1][0]]),np.max([slice[0][0],slice[1][0]])
                     ymin,ymax = np.min([slice[0][1],slice[1][1]]),np.max([slice[0][1],slice[1][1]])
                     xrange = np.linspace(xmin,xmax,divisions[0])
                     yrange = np.linspace(ymin,ymax,divisions[1])
                     X,Y = np.meshgrid(xrange,yrange)
                     Z = (X+np.sqrt(1.757))/(X+np.sqrt(1.757))*(slice[0][2]+slice[1][2])/2
-                else:                    xmin,xmax = 0,np.sqrt((slice[0][0]-slice[1][0])**2+(slice[0][1]-slice[1][1])**2)
+                else:                           #vertical 
+                    xmin,xmax = 0,np.sqrt((slice[0][0]-slice[1][0])**2+(slice[0][1]-slice[1][1])**2)
                     ymin,ymax = np.min([slice[0][2],slice[1][2]]),np.max([slice[0][2],slice[1][2]])
                     xrange = np.linspace(xmin,xmax,divisions[0])
                     yrange = np.linspace(ymin,ymax,divisions[1])
@@ -817,10 +876,6 @@ class fcontour(object):    '''Contour output information object.
                 
         return X, Y, Z, valsI
 
-
-
-
-
     def node(self,node,time=None,variable=None):
         '''Returns all information for a specific node.
         
@@ -867,37 +922,66 @@ class fcontour(object):    '''Contour output information object.
             outdat = self[time][variable][nd]
         return outdat
     def _get_variables(self): return self._variables
-    variables = property(_get_variables)    def _get_user_variables(self): return self._user_variables
-    user_variables = property(_get_user_variables)    def _get_format(self): return self._format
-    format = property(_get_format)    def _get_filename(self): return self._filename
-    filename = property(_get_filename)    def _get_times(self): return np.sort(self._times)
-    times = property(_get_times)    def _get_material_properties(self): return self._material_properties
+    variables = property(_get_variables)#: (*lst[str]*) List of variables for which output data are available.
+    def _get_user_variables(self): return self._user_variables
+    user_variables = property(_get_user_variables) #: (*lst[str]*) List of user-defined variables for which output data are available.
+    def _get_format(self): return self._format
+    format = property(_get_format) #: (*str*) Format of output file, options are 'tec', 'surf', 'avs' and 'avsx'.
+    def _get_filename(self): return self._filename
+    filename = property(_get_filename)  #: (*str*) Name of FEHM contour output file. Wildcards can be used to define multiple input files.
+    def _get_times(self): return np.sort(self._times)
+    times = property(_get_times)    #: (*lst[fl64]*) List of times (in seconds) for which output data are available.
+    def _get_material_properties(self): return self._material_properties
     def _set_material_properties(self,value): self._material_properties = value
-    material_properties = property(_get_material_properties, _set_material_properties)    def _get_material(self): return self._material
+    material_properties = property(_get_material_properties, _set_material_properties) #: (*lst[str]*) List of material properties, keys for the material attribute.
+    def _get_material(self): return self._material
     def _set_material(self,value): self._material = value
-    material = property(_get_material, _set_material)    def _get_x(self): return self._x
+    material = property(_get_material, _set_material) #: (*dict[str]*) Dictionary of material properties, keyed by property name, items indexed by node_number - 1. This attribute is empty if no material property file supplied.
+    def _get_x(self): return self._x
     def _set_x(self,value): self._x = value
-    x = property(_get_x, _set_x)    def _get_y(self): return self._y
+    x = property(_get_x, _set_x) #: (*lst[fl64]*) Unique list of nodal x-coordinates for grid.
+    def _get_y(self): return self._y
     def _set_y(self,value): self._y = value
-    y = property(_get_y, _set_y)    def _get_z(self): return self._z
+    y = property(_get_y, _set_y) #: (*lst[fl64]*) Unique list of nodal y-coordinates for grid.
+    def _get_z(self): return self._z
     def _set_z(self,value): self._z = value
-    z = property(_get_z, _set_z)    def _get_xmin(self): return self._xmin
+    z = property(_get_z, _set_z) #: (*lst[fl64]*) Unique list of nodal z-coordinates for grid.
+    def _get_xmin(self): return self._xmin
     def _set_xmin(self,value): self._xmin = value
-    xmin = property(_get_xmin, _set_xmin)    def _get_xmax(self): return self._xmax
+    xmin = property(_get_xmin, _set_xmin) #: (*fl64*) Minimum nodal x-coordinate for grid.
+    def _get_xmax(self): return self._xmax
     def _set_xmax(self,value): self._xmax = value
-    xmax = property(_get_xmax, _set_xmax)    def _get_ymin(self): return self._ymin
+    xmax = property(_get_xmax, _set_xmax) #: (*fl64*) Maximum nodal x-coordinate for grid.
+    def _get_ymin(self): return self._ymin
     def _set_ymin(self,value): self._ymin = value
-    ymin = property(_get_ymin, _set_ymin)    def _get_ymax(self): return self._ymax
+    ymin = property(_get_ymin, _set_ymin) #: (*fl64*) Minimum nodal y-coordinate for grid.
+    def _get_ymax(self): return self._ymax
     def _set_ymax(self,value): self._ymax = value
-    ymax = property(_get_ymax, _set_ymax)    def _get_zmin(self): return self._zmin
+    ymax = property(_get_ymax, _set_ymax) #: (*fl64*) Maximum nodal y-coordinate for grid.
+    def _get_zmin(self): return self._zmin
     def _set_zmin(self,value): self._zmin = value
-    zmin = property(_get_zmin, _set_zmin)    def _get_zmax(self): return self._zmax
+    zmin = property(_get_zmin, _set_zmin) #: (*fl64*) Minimum nodal z-coordinate for grid.
+    def _get_zmax(self): return self._zmax
     def _set_zmax(self,value): self._zmax = value
-    zmax = property(_get_zmax, _set_zmax)class fhistory(object):    '''History output information object.
+    zmax = property(_get_zmax, _set_zmax) #: (*fl64*) Maximum nodal z-coordinate for grid.
+    #def _get_information(self):
+    #    print('FEHM contour output - format '+self._format)
+    #    print(' call format: fcontour[time][variable][node_index-1]')
+    #    prntStr =  '    times ('+str(len(self.times))+'): '
+    #    for time in self.times: prntStr += str(time)+', '
+    #    print(prntStr[:-2]+' days')
+    #    prntStr = ' variables: '
+    #    for var in self.variables: prntStr += str(var)+', '
+    #    for var in self.user_variables: prntStr += str(var)+', '
+    #    print(prntStr)
+    #what = property(_get_information) #:(*str*) Print out information about the fcontour object.
+class fhistory(object):                     # Reading and plotting methods associated with history output data.
+    '''History output information object.
     
     '''
     def __init__(self,filename=None,verbose=True):
         self._filename=None 
+        #self._silent = dflt.silent
         self._silent = True
         self._format = ''
         self._times=[]  
@@ -918,7 +1002,24 @@ class fcontour(object):    '''Contour output information object.
         if key in self.variables or key in self.user_variables:
             return self._data[key]
         else: return None
-    def read(self,filename):        '''Read in FEHM history output information.
+    #def __repr__(self): 
+    #    retStr =  'History output for variables '
+    #    for var in self.variables:
+    #        retStr += var+', '
+    #    retStr = retStr[:-2] + ' at '
+    #    if len(self.nodes)>10:
+    #        retStr += str(len(self.nodes)) + ' nodes.'
+    #    else:
+    #        if len(self.nodes)==1:
+    #            retStr += 'node '
+    #        else:
+    #            retStr += 'nodes '
+    #        for nd in self.nodes:
+    #            retStr += str(nd) + ', '
+    #        retStr = retStr[:-2] + '.'
+    #    return retStr
+    def read(self,filename):                        # read contents of file
+        '''Read in FEHM history output information.
         
         :param filename: File name for output data, can include wildcards to define multiple output files.
         :type filename: str
@@ -930,12 +1031,16 @@ class fcontour(object):    '''Contour output information object.
         files=glob(glob_pattern)
         configured=False
         for i,fname in enumerate(files):
+            #if self._verbose:
+            #   print(fname)
             self._file=open(fname,'rU')
             header=self._file.readline()
-            if header.strip()=='': continue            self._detect_format(header)
+            if header.strip()=='': continue             # empty file
+            self._detect_format(header)
             if self._format=='tec': 
                 header=self._file.readline()
-                if header.strip()=='': continue                i = 0; sum_file = False
+                if header.strip()=='': continue         # empty file
+                i = 0; sum_file = False
                 while not header.startswith('variables'): 
                     header=self._file.readline()
                     i = i+1
@@ -947,7 +1052,8 @@ class fcontour(object):    '''Contour output information object.
             elif self._format=='default': 
                 header=self._file.readline()
                 header=self._file.readline()
-                if header.strip()=='': continue                i = 0; sum_file = False
+                if header.strip()=='': continue         # empty file
+                i = 0; sum_file = False
                 while not header.startswith('Time '): 
                     header=self._file.readline()
                     i = i+1
@@ -1015,14 +1121,35 @@ class fcontour(object):    '''Contour output information object.
         self._times = np.array(data[:,0])
         self._data[hist_var_names[var_key]] = dict([(node,data[:,icol+1]) for icol,node in enumerate(self.nodes)])
     def _get_variables(self): return self._variables
-    variables = property(_get_variables)    def _get_user_variables(self): return self._user_variables
+    variables = property(_get_variables)#: (*lst[str]*) List of variables for which output data are available.
+    def _get_user_variables(self): return self._user_variables
     def _set_user_variables(self,value): self._user_variables = value
-    user_variables = property(_get_user_variables, _set_user_variables)    def _get_format(self): return self._format
-    format = property(_get_format)    def _get_filename(self): return self._filename
-    filename = property(_get_filename)    def _get_times(self): return np.sort(self._times)
-    times = property(_get_times)    def _get_nodes(self): return self._nodes
-    nodes = property(_get_nodes)class fzoneflux(fhistory):    '''Zone flux history output information object.
+    user_variables = property(_get_user_variables, _set_user_variables) #: (*lst[str]*) List of user-defined variables for which output data are available.
+    def _get_format(self): return self._format
+    format = property(_get_format) #: (*str*) Format of output file, options are 'tec', 'surf', 'avs' and 'avsx'.
+    def _get_filename(self): return self._filename
+    filename = property(_get_filename)  #: (*str*) Name of FEHM contour output file. Wildcards can be used to define multiple input files.
+    def _get_times(self): return np.sort(self._times)
+    times = property(_get_times)    #: (*lst[fl64]*) List of times (in seconds) for which output data are available.
+    def _get_nodes(self): return self._nodes
+    nodes = property(_get_nodes)    #: (*lst[fl64]*) List of node indices for which output data are available.
+    #def _get_information(self):
+    #    print('FEHM history output - format '+self._format)
+    #    print(' call format: fhistory[variable][node][time_index]')
+    #    prntStr = ' nodes: '
+    #    for nd in self.nodes: prntStr += str(nd)+', '
+    #    print(prntStr)
+    #    prntStr =  '    times ('+str(len(self.times))+'): '
+    #    for time in self.times: prntStr += str(time)+', '
+    #    print(prntStr[:-2]+' days')
+    #    prntStr = ' variables: '
+    #    for var in self.variables: prntStr += str(var)+', '
+    #    print(prntStr)
+    #what = property(_get_information) #:(*str*) Print out information about the fhistory object.
+class fzoneflux(fhistory):                  # Derived class of fhistory, for zoneflux output
+    '''Zone flux history output information object.
     '''
+#   __slots__ = ['_filename','_times','_verbose','_data','_row','_zones','_variables','_keyrows','column_name','num_columns','_nkeys']
     def __init__(self,filename=None,verbose=True):
         super(fzoneflux,self).__init__(filename, verbose)
         self._filename=None 
@@ -1109,7 +1236,9 @@ class fcontour(object):    '''Contour output information object.
         self._data[hist_var_names[var_key]] = dict([(node,data[:,icol+1]) for icol,node in enumerate(self.nodes)])
     def _get_zones(self): return self._zones
     def _set_zones(self,value): self._zones = value
-    zones = property(_get_zones, _set_zones)class fnodeflux(object):    '''Internode flux information.
+    zones = property(_get_zones, _set_zones) #: (*lst[int]*) List of zone indices for which output data are available.
+class fnodeflux(object):                    # Reading and plotting methods associated with internode flux files.
+    '''Internode flux information.
         
         Can read either water or CO2 internode flux files.
         
@@ -1118,7 +1247,8 @@ class fcontour(object):    '''Contour output information object.
     '''
     def __init__(self,filename=None):
         self._filename = filename
-        self._silent = True        self._nodepairs = []
+        self._silent = True #dflt.silent
+        self._nodepairs = []
         self._times = []
         self._timesteps = []
         self._data = {}
@@ -1140,10 +1270,12 @@ class fcontour(object):    '''Contour output information object.
         lns = fp.readlines()
         N = int(lns[0].split()[1])
         
-        data = np.zeros((N,len(lns)/(N+1),2))        
+        data = np.zeros((N,len(lns)/(N+1),2))       # temporary data storage struc
+        
         for ln in lns[1:N+1]:
             ln = ln.split()
-            self._nodepairs.append((int(float(ln[0])),int(float(ln[1]))))        
+            self._nodepairs.append((int(float(ln[0])),int(float(ln[1]))))   # append node pair
+        
         for i in range(len(lns)/(N+1)):
             ln = lns[(N+1)*i:(N+1)*(i+1)]
             
@@ -1160,13 +1292,18 @@ class fcontour(object):    '''Contour output information object.
             
     def _get_filename(self): return self._filename
     def _set_filename(self,value): self._filename = value
-    filename = property(_get_filename, _set_filename)    def _get_timesteps(self): return np.sort(self._timesteps)
+    filename = property(_get_filename, _set_filename) #: (*str*) filename target for internode flux file.
+    def _get_timesteps(self): return np.sort(self._timesteps)
     def _set_timesteps(self,value): self._timesteps = value
-    timesteps = property(_get_timesteps, _set_timesteps)    def _get_times(self): return np.sort(self._times)
+    timesteps = property(_get_timesteps, _set_timesteps) #: (*lst*) timestep for which node flux information is reported.
+    def _get_times(self): return np.sort(self._times)
     def _set_times(self,value): self._times = value
-    times = property(_get_times, _set_times)    def _get_nodepairs(self): return self._nodepairs
+    times = property(_get_times, _set_times) #: (*lst*) times for which node flux information is reported.
+    def _get_nodepairs(self): return self._nodepairs
     def _set_nodepairs(self,value): self._nodepairs = value
-    nodepairs = property(_get_nodepairs, _set_nodepairs)class ftracer(fhistory):    '''Tracer history output information object.
+    nodepairs = property(_get_nodepairs, _set_nodepairs) #: (*lst*) node pairs for which node flux information is available. Each node pair is represented as a two item tuple of node indices.
+class ftracer(fhistory):                    # Derived class of fhistory, for tracer output
+    '''Tracer history output information object.
     '''
     def __init__(self,filename=None,verbose=True):
         super(ftracer,self).__init__(filename, verbose)
@@ -1193,12 +1330,14 @@ class fcontour(object):    '''Contour output information object.
         if data[-1,0]<data[-2,0]: data = data[:-1,:]
         self._times = np.array(data[:,0])
         self._data[var_key] = dict([(node,data[:,icol+1]) for icol,node in enumerate(self.nodes)])
-class fptrk(fhistory):    '''Tracer history output information object.
+class fptrk(fhistory):                      # Derived class of fhistory, for particle tracking output
+    '''Tracer history output information object.
     '''
     def __init__(self,filename=None,verbose=True):
         super(fptrk,self).__init__(filename, verbose)
         self._filename=None 
-        self._silent = True        self._times=[]  
+        self._silent = True#dflt.silent
+        self._times=[]  
         self._verbose = verbose
         self._data={}
         self._row=None
@@ -1209,7 +1348,8 @@ class fptrk(fhistory):    '''Tracer history output information object.
         self.num_columns=0
         self._nkeys=1
         if filename: self._filename=filename; self.read(filename)
-    def read(self,filename):        '''Read in FEHM particle tracking output information. Index by variable name.
+    def read(self,filename):                        # read contents of file
+        '''Read in FEHM particle tracking output information. Index by variable name.
         
         :param filename: File name for output data, can include wildcards to define multiple output files.
         :type filename: str
@@ -1221,9 +1361,12 @@ class fptrk(fhistory):    '''Tracer history output information object.
         files=glob(glob_pattern)
         configured=False
         for i,fname in enumerate(files):
+            #if self._verbose:
+            #   print(fname)
             self._file=open(fname,'rU')
             header=self._file.readline()
-            if header.strip()=='': continue            header=self._file.readline()
+            if header.strip()=='': continue             # empty file
+            header=self._file.readline()
             self._setup_headers_default(header)
             self._read_data_default()
             self._file.close()
@@ -1239,7 +1382,6 @@ class fptrk(fhistory):    '''Tracer history output information object.
         if data[-1,0]<data[-2,0]: data = data[:-1,:]
         self._times = np.array(data[:,0])
         self._data = dict([(var,data[:,icol+1]) for icol,var in enumerate(self.variables)])
-
 
 def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes=[]):
     '''Take the difference of two fpost objects
@@ -1259,12 +1401,14 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
     :returns: fpost object of same type as in1 and in2
     '''
     
+    # Copy in1 and in2 in case they get modified below
     in1 = copy(in1)
     in2 = copy(in2)
     if type(in1) is not type(in2):
         print("ERROR: fpost objects are not of the same type: "+str(type(in1))+" and "+str(type(in2)))
         return
     if isinstance(in1, fcontour) or isinstance(in1, fhistory) or 'foutput' in str(in1.__class__):
+        # Find common timesclear
         t = np.intersect1d(in1.times,in2.times)
         if len(t) == 0:
             print("ERROR: fpost object times do not have any matching values")
@@ -1278,6 +1422,7 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
             times = t
             
     if isinstance(in1, fcontour):
+        # Find common variables
         v = np.intersect1d(in1.variables,in2.variables)
         if len(v) == 0:
             print("ERROR: fcontour object variables do not have any matching values")
@@ -1302,7 +1447,9 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
                 out._data[t] = dict([(v,100*np.abs((in1[t][v] - in2[t][v])/in2[t][v])) for v in variables])
         return out
     
+    #Takes the difference of two fhistory objects.  
     elif isinstance(in1, fhistory):
+        # Find common variables
         v = np.intersect1d(in1.variables, in2.variables)
         if len(v) == 0:
             print("ERROR: fhistory object variables do not have any matching values")
@@ -1315,6 +1462,7 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
         else:
             variables = v
             
+        #Find common nodes.
         n = np.intersect1d(in1.nodes, in2.nodes)
         if len(n) == 0:
             print("ERROR: fhistory object nodes do not have any matching values")
@@ -1327,18 +1475,21 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
         else:
             nodes = n
         
+        #Set up the out object.
         out = copy(in1)
         out._times = times
         out._variables = variables
         out._nodes = nodes
         out._data = {}
         
+        #Find the difference at each time index for a variable and node.
         for v in variables:
             for n in nodes:
                 i = 0
                 diff = []
                 while i < len(times):
                     if format is 'diff':
+                        #Quick fix to handle ptrk files.
                         if isinstance(in1, fptrk):
                             diff.append(in1[v][n]-in2[v][n]) 
                         else:
@@ -1353,9 +1504,11 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
                 else:
                     out._data[v] = dict([(n, diff)])
                 
+        #Return the difference.     
         return out
             
     elif 'foutput' in str(in1.__class__):
+        # Find common components
         c = np.intersect1d(in1.components,in2.components)
         if len(c) == 0:
             print("ERROR: foutput object components do not have any matching values")
@@ -1392,6 +1545,8 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
         return out
         
 def sort_tec_files(files):
+    # sort first by number, then by type
+    #from string import join
     for file in files:
         if not file.endswith('.dat'): return files
     paths = [os.sep.join(file.split(os.sep)[:-1]) for file in files]
@@ -1413,7 +1568,8 @@ def sort_tec_files(files):
 class foutput(object):
     def __init__(self,filename = None, input=None, grid = None, hide = True, silent=True, write = False):
         self._filename = filename
-        self._silent = True        if self._filename:
+        self._silent = True#dflt.silent
+        if self._filename:
             if input and grid:
                 diag = process_output(filename, hide = hide,silent = silent,input=input,grid=grid,write=write)
             else:
@@ -1421,7 +1577,8 @@ class foutput(object):
         self._node = deepcopy(diag.node)
         self._times = deepcopy(diag.time.data[1:])
     def _get_node(self): return self._node
-    node = property(_get_node)    def _get_nodes(self): 
+    node = property(_get_node) #: (*dict*) Dictionary of node output, keyed first on component ('water','gas','tracer1'), then on node number, then on variable.
+    def _get_nodes(self): 
         for type in ['water','gas','tracer1']:
             if self._node[type] == None: continue
             nds = list(self._node[type].keys())
@@ -1447,17 +1604,21 @@ class foutput(object):
             
         return None
 
-    variables = property(_get_variables)    
+    variables = property(_get_variables) #: (*lst*) List of variables available for the various components.
+    
     def _get_components(self): 
         cpts = []
         for type in ['water','gas','tracer1','tracer2']:        
             if self._node[type] != None: cpts.append(type)
         return cpts
-    components = property(_get_components)    
+    components = property(_get_components) #: (*lst*) Component names for which nodal information available
+    
     def _get_times(self): return self._times
-    times = property(_get_times)    def _get_filename(self): return self._filename
+    times = property(_get_times) #: (*ndarray*) Vector of output times.
+    def _get_filename(self): return self._filename
     def _set_filename(self,value): self._filename = value
-    filename = property(_get_filename, _set_filename)    def _get_information(self):
+    filename = property(_get_filename, _set_filename) #: (*str*) Name of output file
+    def _get_information(self):
         print('FEHM output file \''+self.filename+'\'')
         print('    call format: foutput.node[component][node][variable]')
         prntStr =  '    components: '
@@ -1466,9 +1627,9 @@ class foutput(object):
         prntStr = '    nodes: '
         for nd in self.nodes: prntStr += str(nd)+', '
         print(prntStr[:-2])
-    what = property(_get_information)    
+    what = property(_get_information) #:(*str*) Print out information about the fcontour object.
+    
 def os_path(path):
     if WINDOWS: path = path.replace('/','\\')
     else: path = path.replace('\\','/')
     return path
-
