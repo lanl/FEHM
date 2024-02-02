@@ -33,7 +33,7 @@ FEHMDIR = ${CURRENTDIR}/..
 ###############################################
 # Compiletime variables
 FC = gfortran
-EXE = xfehm_v3.3.1
+EXE = xfehm
 
 SRCDIR = ${FEHMDIR}/src/
 TPLDIR = ${FEHMDIR}/TPL
