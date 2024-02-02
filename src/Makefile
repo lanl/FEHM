@@ -124,11 +124,11 @@ hdf5-1.8:
 .PHONY: silo-4.10.2 
 silo-4.10.2:
 	@cd ${TPLDIR} && tar -xzvf ${TPLDIR}/silo-4.10.2-bsd.tar.gz && cd ./silo-4.10.2-bsd/
-	@cd ${TPLDIR}/silo-4.10.2-bsd/ && sed -i '258s/)/);/g' src/hdf5_drv/HH5FDsilo.c
-	@cd ${TPLDIR}/silo-4.10.2-bsd/ && sed -i '264s/)/);/g' src/hdf5_drv/HH5FDsilo.c
-	@cd ${TPLDIR}/silo-4.10.2-bsd/ && sed -i '1311s/)/);/g' src/hdf5_drv/HH5FDsilo.c
-	@cd ${TPLDIR}/silo-4.10.2-bsd/ && sed -i '1339s/)/);/g' src/hdf5_drv/HH5FDsilo.c
-	@cd ${TPLDIR}/silo-4.10.2-bsd/ && sed -i '1346s/)/);/g' src/hdf5_drv/HH5FDsilo.c
+	@cd ${TPLDIR}/silo-4.10.2-bsd/ && sed -i '258s/)/);/g' src/hdf5_drv/H5FDsilo.c
+	@cd ${TPLDIR}/silo-4.10.2-bsd/ && sed -i '264s/)/);/g' src/hdf5_drv/H5FDsilo.c
+	@cd ${TPLDIR}/silo-4.10.2-bsd/ && sed -i '1311s/)/);/g' src/hdf5_drv/H5FDsilo.c
+	@cd ${TPLDIR}/silo-4.10.2-bsd/ && sed -i '1339s/)/);/g' src/hdf5_drv/H5FDsilo.c
+	@cd ${TPLDIR}/silo-4.10.2-bsd/ && sed -i '1346s/)/);/g' src/hdf5_drv/H5FDsilo.c
 	@cd ${TPLDIR}/silo-4.10.2-bsd/ && ./configure --enable-fortran --with-hdf5=${TPLDIR}/hdf5-1.8_install/include/,${TPLDIR}/hdf5-1.8_install/lib/ --prefix=${TPLDIR}/silo-4.10.2-bsd_install
 	@cd ${TPLDIR}/silo-4.10.2-bsd/ && make install
 	
