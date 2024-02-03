@@ -160,6 +160,7 @@ help:
 test:
 	@echo "Running tests..."
 	$(eval FEHM_CWD:=$(shell pwd))
+	@if ldd xfehm | grep -q 'libhdf5.* => not found'; then export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${TPLDIR}/hdf5-1.8_install/lib; fi
 	cd ${SRCDIR}/../fehmpytests/; python fehmpytests.py ${FEHM_CWD}/${EXE}
 	cd ${FEHM_CWD}
 
