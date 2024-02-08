@@ -9,7 +9,8 @@ Citation
 
 
 Full model description can be found in:
-    <JGR Citation>
+
+Ortiz, J. P., Rajaram, H., Stauffer, P. H., Lewis, K. W., Wiens, R. C., & Harp, D. R. (2024). Sub‐Diurnal Methane Variations on Mars Driven by Barometric Pumping and Planetary Boundary Layer Evolution. _Journal of Geophysical Research: Planets_, 129(1), e2023JE008043. [https://doi.org/10.1029/2023JE008043](https://doi.org/10.1029/2023JE008043)
 
 Please cite if you use the software or any of these scripts in your work. 
 
