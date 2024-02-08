@@ -1,3 +1,19 @@
+# FEHM-mars #
+
+This is the Mars-specific release of FEHM. 
+
+Citation
+--------
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10455952.svg)](https://doi.org/10.5281/zenodo.10455952)
+
+Full model description can be found in:
+
+Ortiz, J. P., Rajaram, H., Stauffer, P. H., Lewis, K. W., Wiens, R. C., & Harp, D. R. (2024). Sub‐Diurnal Methane Variations on Mars Driven by Barometric Pumping and Planetary Boundary Layer Evolution. _Journal of Geophysical Research: Planets_, 129(1), e2023JE008043. [https://doi.org/10.1029/2023JE008043](https://doi.org/10.1029/2023JE008043)
+
+Please cite if you use this version of the software or any of these scripts in your work. 
+
+
 ## FEHM: Finite Element Heat and Mass Transfer Code ##
 **LANL Software: LA-CC-2012-083  No. C13022**
 **LANL Documents: LA-UR-12-24493**
