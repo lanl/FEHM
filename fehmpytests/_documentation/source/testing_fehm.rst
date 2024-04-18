@@ -4,10 +4,10 @@ Testing FEHM
    :depth: 2
    
 Use fehmpytests to test changes to FEHM to ensure correct simulation. 
-Fehmpytests can be run in four different modes, default, admin, developer, and 
+Fehmpytests can be run in four different modes, default, admin, developer (in development), and 
 solo which each run a set of tests. Currently, default and admin mode run the 
 same set of tests and solo mode runs a single test. Developer mode is not
-implemented yet but will run a subset of admin tests.
+implemented yet but will run a subset of admin tests. Please ensure that you are using Python3
 
 Testing in Default Mode
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -33,7 +33,7 @@ To test the admin suite:
    
 Testing in Developer Mode
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-To test the developer suite:
+(In Development) To test the developer suite:
 
 1. Navigate to the folder *fehmpytests* in a terminal.
 2. Type the following command into the terminal:
