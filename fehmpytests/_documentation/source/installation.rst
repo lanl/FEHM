@@ -11,5 +11,4 @@ Installation
        
    ``
    make
-   make install
    ``
