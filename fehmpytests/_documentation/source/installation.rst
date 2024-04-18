@@ -6,7 +6,10 @@ Installation
     
    ``git clone https://github.com/lanl/FEHM.git``
     
-2. Build FEHM. In a terminal, navigate to *fehm-open/source* and type the
+2. Build FEHM. In a terminal, navigate to *FEHM/src* and type the
    following command:
        
-   ``gmake xfehm -f Makefile.fehm``
+   ``
+   make
+   make install
+   ``

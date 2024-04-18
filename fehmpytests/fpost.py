@@ -402,17 +402,17 @@ class fcontour(object):                     # Reading and plotting methods assoc
                 files = FILES[:,i]
                 headers = []
                 for file in sort_tec_files(files):
-                    fp = open(file,'rU')
-                    headers.append(fp.readline())
-                    fp.close()
+                    with open(file, 'r') as fp:
+                        headers.append(fp.readline())
+                    #fp.close()
                 firstFile = self._detect_format(headers)
                 if self._format=='tec' and firstFile: 
                     headers = []
                     for file in sort_tec_files(files):
-                        fp = open(file,'rU')
-                        fp.readline()
-                        headers.append(fp.readline())
-                        fp.close()
+                        with open(file, 'r') as fp:
+                            fp.readline()
+                            headers.append(fp.readline())
+                        #fp.close()
                     self._setup_headers_tec(headers)        
         
         # read in output data
@@ -424,9 +424,9 @@ class fcontour(object):                     # Reading and plotting methods assoc
             if not self._variables:
                 headers = []
                 for file in sort_tec_files(files):
-                    fp = open(file,'rU')
-                    headers.append(fp.readline())
-                    fp.close()
+                    with open(file, 'r') as fp:
+                        headers.append(fp.readline())
+                    #fp.close()
                 self._detect_format(headers)
                 #if self._format=='tec': self._setup_headers_tec(headers)
                 if self._format=='avs': self._setup_headers_avs(headers,files)
@@ -495,25 +495,25 @@ class fcontour(object):                     # Reading and plotting methods assoc
     def _read_data_avsx(self,files,mat_file):               # read data in AVSX format
         datas = []
         for file in sorted(files):      # use alphabetical sorting
-            fp = open(file,'rU')
-            header = fp.readline()
-            if file == sorted(files)[0]:
-                header = header.split('nodes at ')[1]
-                header = header.split('days')[0]
-                time = float(header)*24*2600
-                self._times.append(time)        
-            lns = fp.readlines()
-            fp.close()
+            with open(file, 'r') as fp:
+                header = fp.readline()
+                if file == sorted(files)[0]:
+                    header = header.split('nodes at ')[1]
+                    header = header.split('days')[0]
+                    time = float(header)*24*2600
+                    self._times.append(time)        
+                lns = fp.readlines()
+            #fp.close()
             datas.append(np.array([[float(d) for d in ln.strip().split(':')] for ln in lns]))
         data = np.concatenate(datas,1)
         self._data[time] = dict([(var,data[:,icol]) for icol,var in enumerate(self.variables)])
         
         if mat_file and not self._material_properties:
-            fp = open(mat_file,'rU')
-            header = fp.readline()
-            self._material_properties = header.split(':')[1:]
+            with open(mat_file, 'r') as fp:
+                header = fp.readline()
+                self._material_properties = header.split(':')[1:]
             lns = fp.readlines()
-            fp.close()
+            #fp.close()
             data = np.array([[float(d) for d in ln.strip().split(':')[1:]] for ln in lns])
             self._material= dict([(var,data[:,icol]) for icol,var in enumerate(self._material_properties)])
     def _setup_headers_avs(self,headers,files):         # headers for the AVS output format
@@ -521,7 +521,7 @@ class fcontour(object):                     # Reading and plotting methods assoc
             lns_num = int(header.strip().split()[0])
             fp = open(file)
             lns = [fp.readline() for i in range(lns_num+1)][1:]
-            fp.close()
+            #fp.close()
             self._variables.append('n')
             for ln in lns:
                 varname = ln.strip().split(',')[0]
@@ -533,9 +533,9 @@ class fcontour(object):                     # Reading and plotting methods assoc
         datas = []
         for file in sorted(files):
             first = (file == sorted(files)[0])
-            fp = open(file,'rU')
-            lns = fp.readlines()
-            lns = lns[int(float(lns[0].split()[0]))+1:]
+            with open(file, 'r') as fp:
+                lns = fp.readlines()
+                lns = lns[int(float(lns[0].split()[0]))+1:]
             
             if first: 
                 file = file.split('_node')[0]
@@ -570,43 +570,43 @@ class fcontour(object):                     # Reading and plotting methods assoc
         datas = []
         for file in sorted(files):
             first = (file == sorted(files)[0])
-            fp = open(file,'rU')
-            lni = file.split('.',1)[1]
+            with open(file, 'r') as fp:
+                lni = file.split('.',1)[1]
             
-            if first: 
-                file = file.split('_node')[0]
-                file = file.split('_sca')[0]
-                file = file.split('_con')[0]
-                file = file.split('_vec')[0]
-                file = file.split('_hf')[0]
-                file = file.split('_days')[0]                       
-                file = file.split('.')
-                file = [fl for fl in file if fl.isdigit() or 'E-' in fl]
-                time = float('.'.join(file))
-                self._times.append(time)
+                if first: 
+                    file = file.split('_node')[0]
+                    file = file.split('_sca')[0]
+                    file = file.split('_con')[0]
+                    file = file.split('_vec')[0]
+                    file = file.split('_hf')[0]
+                    file = file.split('_days')[0]                       
+                    file = file.split('.')
+                    file = [fl for fl in file if fl.isdigit() or 'E-' in fl]
+                    time = float('.'.join(file))
+                    self._times.append(time)
             
-            lni=fp.readline()           
-            lns = fp.readlines()
-            fp.close()
+                lni=fp.readline()           
+                lns = fp.readlines()
+                #fp.close()
             
-            if first: 
-                datas.append(np.array([[float(d) for d in ln.strip().split(',')] for ln in lns]))
-            else:
-                datas.append(np.array([[float(d) for d in ln.strip().split(',')[4:]] for ln in lns]))
+                if first: 
+                    datas.append(np.array([[float(d) for d in ln.strip().split(',')] for ln in lns]))
+                else:
+                    datas.append(np.array([[float(d) for d in ln.strip().split(',')[4:]] for ln in lns]))
             
-        data = np.concatenate(datas,1)
-        self._data[time] = dict([(var,data[:,icol]) for icol,var in enumerate(self.variables)])
+            data = np.concatenate(datas,1)
+            self._data[time] = dict([(var,data[:,icol]) for icol,var in enumerate(self.variables)])
         
-        if mat_file and not self._material_properties:
-            fp = open(mat_file,'rU')
-            header = fp.readline()
-            for mat_prop in header.split(',')[1:]:
-                if 'specific heat' not in mat_prop:
-                    self._material_properties.append(mat_prop.strip())
-            lns = fp.readlines()
-            fp.close()
-            data = np.array([[float(d) for d in ln.strip().split(',')[1:]] for ln in lns])
-            self._material= dict([(var,data[:,icol]) for icol,var in enumerate(self._material_properties)])
+            if mat_file and not self._material_properties:
+                with open(mat_file, 'r') as fp:
+                    header = fp.readline()
+                for mat_prop in header.split(',')[1:]:
+                    if 'specific heat' not in mat_prop:
+                        self._material_properties.append(mat_prop.strip())
+                lns = fp.readlines()
+                #fp.close()
+                data = np.array([[float(d) for d in ln.strip().split(',')[1:]] for ln in lns])
+                self._material= dict([(var,data[:,icol]) for icol,var in enumerate(self._material_properties)])
     def _setup_headers_tec(self,headers):       # headers for the TEC output format
         for header in headers:
             header = header.split(' "')
@@ -621,9 +621,9 @@ class fcontour(object):                     # Reading and plotting methods assoc
         datas = []
         for file in sorted(files):
             first = (file == sorted(files)[0])
-            fp = open(file,'rU')
-            ln = fp.readline()
-            has_xyz = False
+            with open(file, 'r') as fp:
+                ln = fp.readline()
+                has_xyz = False
             while not ln.startswith('ZONE'):
                 ln = fp.readline()
                 has_xyz = True
@@ -641,7 +641,7 @@ class fcontour(object):                     # Reading and plotting methods assoc
                     nds = int(ln.split('N = ')[-1].strip().split(',')[0].strip())
             
             lns = fp.readlines()
-            fp.close()
+            #fp.close()
             if nds: lns = lns[:nds]         # truncate to remove connectivity information
             
             if has_xyz:
@@ -673,14 +673,14 @@ class fcontour(object):                     # Reading and plotting methods assoc
             data = np.transpose(np.array(data2))
         self._data[time] = dict([(var,data[:,icol]) for icol,var in enumerate(self.variables)])
         if mat_file and not self._material_properties:
-            fp = open(mat_file,'rU')
-            fp.readline()
-            header = fp.readline()
+            with open(mat_file, 'r') as fp:
+                fp.readline()
+                header = fp.readline()
             for mat_prop in header.split(' "')[5:]:
                 self._material_properties.append(mat_prop.split('"')[0].strip())
             lns = fp.readlines()
             if lns[0].startswith('ZONE'): lns = lns[1:]
-            fp.close()
+            #fp.close()
             if nds: lns = lns[:nds]         # truncate to remove connectivity information
             data = np.array([[float(d) for d in ln.strip().split()[4:]] for ln in lns[:-1]])
             self._material= dict([(var,data[:,icol]) for icol,var in enumerate(self._material_properties)])
@@ -1033,44 +1033,44 @@ class fhistory(object):                     # Reading and plotting methods assoc
         for i,fname in enumerate(files):
             #if self._verbose:
             #   print(fname)
-            self._file=open(fname,'rU')
-            header=self._file.readline()
-            if header.strip()=='': continue             # empty file
-            self._detect_format(header)
-            if self._format=='tec': 
+            with open(fname, 'r') as self._file:
                 header=self._file.readline()
-                if header.strip()=='': continue         # empty file
-                i = 0; sum_file = False
-                while not header.startswith('variables'): 
+                if header.strip()=='': continue             # empty file
+                self._detect_format(header)
+                if self._format=='tec': 
                     header=self._file.readline()
-                    i = i+1
-                    if i==10: sum_file=True; break
-                if sum_file: continue
-                self._setup_headers_tec(header)
-            elif self._format=='surf': 
-                self._setup_headers_surf(header)
-            elif self._format=='default': 
-                header=self._file.readline()
-                header=self._file.readline()
-                if header.strip()=='': continue         # empty file
-                i = 0; sum_file = False
-                while not header.startswith('Time '): 
+                    if header.strip()=='': continue         # empty file
+                    i = 0; sum_file = False
+                    while not header.startswith('variables'): 
+                        header=self._file.readline()
+                        i = i+1
+                        if i==10: sum_file=True; break
+                    if sum_file: continue
+                    self._setup_headers_tec(header)
+                elif self._format=='surf': 
+                    self._setup_headers_surf(header)
+                elif self._format=='default': 
                     header=self._file.readline()
-                    i = i+1
-                    if i==10: sum_file=True; break
-                if sum_file: continue
-                self._setup_headers_default(header)
-            else: print('Unrecognised format');return
-            if not configured:
-                self.num_columns = len(self.nodes)+1
-            if self.num_columns>0: configured=True
-            if self._format=='tec':
-                self._read_data_tec(fname.split('_')[-2])
-            elif self._format=='surf':
-                self._read_data_surf(fname.split('_')[-2])
-            elif self._format=='default':
-                self._read_data_default(fname.split('_')[-1].split('.')[0])
-            self._file.close()
+                    header=self._file.readline()
+                    if header.strip()=='': continue         # empty file
+                    i = 0; sum_file = False
+                    while not header.startswith('Time '): 
+                        header=self._file.readline()
+                        i = i+1
+                        if i==10: sum_file=True; break
+                    if sum_file: continue
+                    self._setup_headers_default(header)
+                else: print('Unrecognised format');return
+                if not configured:
+                    self.num_columns = len(self.nodes)+1
+                if self.num_columns>0: configured=True
+                if self._format=='tec':
+                    self._read_data_tec(fname.split('_')[-2])
+                elif self._format=='surf':
+                    self._read_data_surf(fname.split('_')[-2])
+                elif self._format=='default':
+                    self._read_data_default(fname.split('_')[-1].split('.')[0])
+                #self._file.close()
     def _detect_format(self,header):
         if header.startswith('TITLE'):
             self._format = 'tec'
@@ -1363,13 +1363,13 @@ class fptrk(fhistory):                      # Derived class of fhistory, for par
         for i,fname in enumerate(files):
             #if self._verbose:
             #   print(fname)
-            self._file=open(fname,'rU')
-            header=self._file.readline()
-            if header.strip()=='': continue             # empty file
-            header=self._file.readline()
-            self._setup_headers_default(header)
-            self._read_data_default()
-            self._file.close()
+            with open(fname, 'r') as self._file:
+                header=self._file.readline()
+                if header.strip()=='': continue             # empty file
+                header=self._file.readline()
+                self._setup_headers_default(header)
+                self._read_data_default()
+                #self._file.close()
     def _setup_headers_default(self,header):
         header=header.strip().split('"')[3:-1]
         header = [h for h in header if h != ' ']
@@ -1439,11 +1439,11 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
         out._variables = variables
         out._data = {}
         for t in times:
-            if format is 'diff':
+            if format == 'diff':
                 out._data[t] = dict([(v,in1[t][v] - in2[t][v]) for v in variables])
-            elif format is 'relative':
+            elif format == 'relative':
                 out._data[t] = dict([(v,(in1[t][v] - in2[t][v])/np.abs(in2[t][v])) for v in variables])
-            elif format is 'percent':
+            elif format == 'percent':
                 out._data[t] = dict([(v,100*np.abs((in1[t][v] - in2[t][v])/in2[t][v])) for v in variables])
         return out
     
@@ -1488,15 +1488,15 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
                 i = 0
                 diff = []
                 while i < len(times):
-                    if format is 'diff':
+                    if format == 'diff':
                         #Quick fix to handle ptrk files.
                         if isinstance(in1, fptrk):
                             diff.append(in1[v][n]-in2[v][n]) 
                         else:
                             diff.append(in1[v][n][i]-in2[v][n][i])  
-                    elif format is 'relative':
+                    elif format == 'relative':
                         diff.append((in1[t][v] - in2[t][v])/np.abs(in2[t][v])) 
-                    elif format is 'percent':
+                    elif format == 'percent':
                         diff.append(100*np.abs((in1[t][v] - in2[t][v])/in2[t][v]))  
                     i = i + 1
                 if isinstance(in1, fptrk):
@@ -1526,17 +1526,17 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
         for tp in ['water','gas','tracer1','tracer2']:      
             out._node[tp] = None
         for cp in components:
-            if format is 'diff':
+            if format == 'diff':
                 if len(variables):
                     out._node[cp] = dict([(n,dict([(v,np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v])) for v in list(in1._node[cp][n].keys()) if v in variables])) for n in in1.nodes])
                 else:
                     out._node[cp] = dict([(n,dict([(v,np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v])) for v in list(in1._node[cp][n].keys())])) for n in in1.nodes])
-            elif format is 'relative':
+            elif format == 'relative':
                 if len(variables):
                     out._node[cp] = dict([(n,dict([(v,(np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v]))/np.abs(in2._node[cp][n][v])) for v in list(in1._node[cp][n].keys()) if v in variables])) for n in in1.nodes])
                 else:
                     out._node[cp] = dict([(n,dict([(v,(np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v]))/np.abs(in2._node[cp][n][v])) for v in list(in1._node[cp][n].keys())])) for n in in1.nodes])
-            elif format is 'percent':
+            elif format == 'percent':
                 if len(variables):
                     out._node[cp] = dict([(n,dict([(v,100*np.abs((np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v]))/in2._node[cp][n][v])) for v in list(in1._node[cp][n].keys()) if v in variables])) for n in in1.nodes])
                 else:
