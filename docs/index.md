@@ -43,13 +43,13 @@ users.
 
 * [Macros](program-specification/macros)
 * [Input Data](program-specification/input-data)
-* Output
-* Program Considerations
+* [Output](program-specification/output)
+* [Program Considerations](program-specification/program-considerations)
 
 ### References & Support
 
-* References
-* [Support](references-support/support.md)
-* Release Notes
+* [References](references-support/references)
+* [Support](references-support/support)
+* [Release Notes](references-support/release-notes)
 
 

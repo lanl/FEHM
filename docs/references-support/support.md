@@ -1,7 +1,8 @@
 ---
 title : Support
 layout : default
-permalink: /support
+permalink: /references-support/support
+hero_height: is-small
 ---
 
 # User Support

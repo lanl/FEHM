@@ -13,18 +13,18 @@
 - name: Program Specifications
   dropdown:
     - name: Macros
-      link: /system-interface.md
+      link: /program-specification/macros
     - name: Input Data
-      link: /data-files.md
+      link: /program-specification/input-data
     - name: Output
-      link: /definitions-acronyms.md
+      link: /program-specification/output
     - name: Program Considerations
-      link: /examples-samples.md
+      link: /program-specification/program-considerations
 - name: References & Support
   dropdown:
     - name: References
-      link: /system-interface.md
+      link: /references-support/references
     - name: Support
-      link: /references-support/support.md
+      link: /references-support/support
     - name: Release Notes
-      link: /definitions-acronyms.md
+      link: /references-support/release-notes

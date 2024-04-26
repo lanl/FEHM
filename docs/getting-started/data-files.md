@@ -2,6 +2,7 @@
 title : Data Files
 layout : page_getting-started
 permalink: /getting-started/data-files
+hero_height: is-small
 ---
 
 ## Control file (iocntl) 
@@ -386,7 +387,7 @@ The contour output files each have a unique file name indicating the section typ
 
 ## Contour File Content Tag
 
-|Wall Clock (PT) |  Elapsed Time (min)    | 
+||   | 
 |:---------------|:-----------------------|
 | _avs_log       | Log file from contour output routines                                                               |
 | _geo           | Geometry output file containing coordinates and cell information (AVS UCD geometry file format)     |
@@ -407,6 +408,7 @@ The contour output files each have a unique file name indicating the section typ
 | _vec_dual_node | Data output file with Vector parameter values (velocity) for dual or dpdp.                          |
 | _con_node      | Data output file with Solute concentration.                                                         |
 | _con_dual_node | Data output file with Solute concentration for dual or dpdp.                                        |
+
 
 <img src="../img/avs_ucd_fehm_format.png"/>
     Figure 1: AVS-UCD formatted FEHM output files
