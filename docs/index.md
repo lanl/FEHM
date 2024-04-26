@@ -42,7 +42,7 @@ users.
 ### Program Specifications
 
 * [Macros](program-specification/macros)
-* Input Data
+* [Input Data](program-specification/input-data)
 * Output
 * Program Considerations
 
