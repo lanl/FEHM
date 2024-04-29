@@ -1,6 +1,6 @@
 ---
 title : Support
-layout : default
+layout : page
 permalink: /references-support/support
 hero_height: is-small
 ---

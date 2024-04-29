@@ -1,6 +1,6 @@
 ---
 title : References
-layout : default
+layout : page
 permalink: /references-support/references
 hero_height: is-small
 ---
