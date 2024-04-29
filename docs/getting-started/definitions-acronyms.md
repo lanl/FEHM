@@ -2,6 +2,7 @@
 title : Definitions and Acronyms
 layout : page_getting-started
 permalink: /getting-started/definitions-acronyms
+hero_height : is-small
 ---
 
 

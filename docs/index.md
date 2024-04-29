@@ -1,6 +1,7 @@
 ---
 title: FEHM Users Manual
 layout: page
+hero_height : is-medium
 ---
 
 # Software Users Manual (UM) for the FEHM Application

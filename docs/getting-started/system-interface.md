@@ -2,6 +2,7 @@
 title : System Interface
 layout : page_getting-started
 permalink: /getting-started/system-interface
+hero_height : is-small
 ---
 
 

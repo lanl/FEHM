@@ -10,11 +10,11 @@ hero_height: is-small
 
 **Content**
 
-The control file contains the names of the input and output files needed by the FEHM code. In addition to listing the I/O file names, the terminal (tty) output option and the user subroutine number are given. The control file provides the user an alternate means for inputting file names, terminal output option, and user subroutine number than through the terminal I/O. It is useful when long file names are used or when files are buried in several subdirectories, or for automated program execution. The elements of the file and input requirements are described in [Control File or Terminal I/O Input]().
+The control file contains the names of the input and output files needed by the FEHM code. In addition to listing the I/O file names, the terminal (tty) output option and the user subroutine number are given. The control file provides the user an alternate means for inputting file names, terminal output option, and user subroutine number than through the terminal I/O. It is useful when long file names are used or when files are buried in several subdirectories, or for automated program execution. The elements of the file and input requirements are described in [Control File or Terminal I/O Input](../program-specification/input-data).
 
 **Use by Program**
 
-The control file provides the FEHM application with the names of the input and output files, terminal output units, and user subroutine number to be utilized for a particular run. The default control file name is fehmn.files. If the control file is found, it is read prior to problem initialization. If not present, terminal I/O is initiated and the user is prompted for required information. A control file may use a name other than the default. This alternate control file name would be input during terminal I/O. See [Control File or Terminal I/O Startup]().
+The control file provides the FEHM application with the names of the input and output files, terminal output units, and user subroutine number to be utilized for a particular run. The default control file name is fehmn.files. If the control file is found, it is read prior to problem initialization. If not present, terminal I/O is initiated and the user is prompted for required information. A control file may use a name other than the default. This alternate control file name would be input during terminal I/O. See [Control File or Terminal I/O Startup](../program-specification/input-data).
 
 **Auxiliary Processing**
 
@@ -25,7 +25,7 @@ N/A
 
 **Content**
 
-The input file contains user parameter initialization values and problem control information. The form of the file name is ```filen``` or ```filen.*``` where ```filen``` is a prefix used by the code to name auxiliary files and ```.*``` represents an arbitrary file extension. If a file name is not specified when requested during terminal I/O, the file fehmn.dat is the default. The organization of the file is described in detail in [Individual Input Records or Parameters]().
+The input file contains user parameter initialization values and problem control information. The form of the file name is ```filen``` or ```filen.*``` where ```filen``` is a prefix used by the code to name auxiliary files and ```.*``` represents an arbitrary file extension. If a file name is not specified when requested during terminal I/O, the file fehmn.dat is the default. The organization of the file is described in detail in [Individual Input Records or Parameters](../program-specification/input-data).
 
 **Use by Program**
 
@@ -69,7 +69,7 @@ N/A
 
 **Content**
 
-The optional input files contain user parameter initialization values and problem control information. The names of optional input files are provided in the main input file to direct the code to auxiliary files to be used for data input. Their use is described in detail in `Optional Input Files <InputData#Optional.html>`_
+The optional input files contain user parameter initialization values and problem control information. The names of optional input files are provided in the main input file to direct the code to auxiliary files to be used for data input. Their use is described in detail in [Optional Input Files](../program-specification/input-data).
 
 
 **Use by Program**
@@ -81,7 +81,7 @@ The optional input files provide the FEHM application with user parameter initia
 
 N/A
 
-## Read file (iread)
+## <a id="read-file"></a> Read file (iread)
 
 
 **Content**
@@ -383,9 +383,9 @@ These files may be used to produce history plots by external graphics programs.
 
 The contour output files contain output data for the entire grid or selected zones. The content will depend on output format (avs or avsx [```.avs```], tecplot [```.dat```], or surfer [comma separated variables, ```.csv```]) and parameters selected (material, pressure or head, saturation, temperature, flux, permeability, saturation, porosity, velocity, displacement, stress / strain, and concentration). The geometry based data can be imported into Advanced Visual Systems (AVS) UCD (unstructured cell data), TECPLOT, or SURFER graphics routines. 
 
-The contour output files each have a unique file name indicating the section type, the data type and the time step the files were created. These file names are automatically generated by the code and are of the form ```filen.NumberAVS_id```, where ```filen``` is common to the root file name or contour output file prefix if defined, otherwise it is the input file prefix, Number is a value between 00001 and 99999, and ```AVS_id``` is a string denoting file content (see [Contour File Content Tag]() and [AVS UCD formatted FEHM output files]()). In general, ```_head``` are header files (only used by AVS), ```_geo``` is the geometry file, and ```_node``` the data files. The following, ```_mat```, ```_sca```, ```_vec```, ```_con```, ```_mat_dual```, ```_sca_dual```, ```_vec_dual```, or ```_con_dual```, are pre-appended to ```_head``` and ```_node``` to further identify the data selected for output. Currently all properties are node based rather than cell based.
+The contour output files each have a unique file name indicating the section type, the data type and the time step the files were created. These file names are automatically generated by the code and are of the form ```filen.NumberAVS_id```, where ```filen``` is common to the root file name or contour output file prefix if defined, otherwise it is the input file prefix, Number is a value between 00001 and 99999, and ```AVS_id``` is a string denoting file content (see [Contour File Content Tag](#Contour-File-Content-Tag) and [AVS UCD formatted FEHM output files](#AVS-UCD-formatted-FEHM-output-files)). In general, ```_head``` are header files (only used by AVS), ```_geo``` is the geometry file, and ```_node``` the data files. The following, ```_mat```, ```_sca```, ```_vec```, ```_con```, ```_mat_dual```, ```_sca_dual```, ```_vec_dual```, or ```_con_dual```, are pre-appended to ```_head``` and ```_node``` to further identify the data selected for output. Currently all properties are node based rather than cell based.
 
-## Contour File Content Tag
+## <a id="Contour-File-Content-Tag"></a> Contour File Content Tag
 
 ||   | 
 |:---------------|:-----------------------|
@@ -414,7 +414,7 @@ The contour output files each have a unique file name indicating the section typ
     Figure 1: AVS-UCD formatted FEHM output files
 
 
-## AVS UCD formatted FEHM output files
+## <a id="AVS-UCD-formatted-FEHM-output-files"></a> AVS UCD formatted FEHM output files
 
 
 

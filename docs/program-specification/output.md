@@ -7,7 +7,7 @@ hero_height: is-small
 
  Output is found in the code generated files (output file, write file, history plot file, solute plot file, contour plot file, contour plot file for dual or dpdp, stiffness matrix data file, input check file, submodel output file, PEST output files, streamline particle tracking output files, and AVS output files) described in <a href="/getting-started/data-files"> Data Files </a>. 
 
-Macro commands (input options) dealing with output control are <a class="reference external" href="../Macros/MacroCont ">cont</a>, <a class="reference external"  href="../Macros/MacroCtrl ">ctrl</a>, <a class="reference external"  href="../Macros/MacroNod2 ">nod2</a>, <a class="reference external"  href="../Macros/MacroNode ">node</a>, <a class="reference external"  href="../Macros/MacroMptr ">mptr</a>, <a class="reference external"  href="../Macros/MacroPest ">pest</a>, <a class="reference external"  href="../Macros/MacroPtrk ">ptrk</a>, <a class="reference external"  href="../Macros/MacroSptr ">sptr</a>, <a class="reference external"  href="../Macros/MacroSubm ">subm</a>, <a class="reference external"  href="../Macros/MacroWflo ">wflo</a>, and <a class="reference external"  href="../Macros/MacroTime ">time</a>: cont is used to specify output format and time intervals for contour data output ( ```fehmn.con```,  ```fehmn.dp```); ctrl is used to specify if element coefficients calculated in the code should be saved ( ```fehmn.stor```); node and nod2 are used to provide nodal or coordinate positions for which general information and history data will be output ( ```fehmn.out```,  ```fehmn.his```,  ```fehmn.trc```, and terminal output); mptr has an option to specify whether or not particle tracking information is written to the restart file ( ```fehmn.fin```); pest is used to specify PEST parameter estimation routine output format ( ```fehmn.pest,</span> <span class="pre">fehmn.pest1```); ptrk has an option to specify whether or not particle tracking information is written to the restart file ( ```fehmn.fin```) and what information to output; sptr has options to specify what streamline particle tracking information will be output ( ```fehmn.sptr1,</span> <span class="pre">fehmn.sptr2,</span> <span class="pre">fehmn.sptr3```); submand wflo are used to specify nodes and boundary conditions should be output for an extracted submodel region; and time provides input on the time printout interval for nodal information ( ```fehmn.out``` and terminal output).
+Macro commands (input options) dealing with output control are <a class="reference external" href="../Macros/MacroCont ">cont</a>, <a class="reference external"  href="../Macros/MacroCtrl ">ctrl</a>, <a class="reference external"  href="../Macros/MacroNod2 ">nod2</a>, <a class="reference external"  href="../Macros/MacroNode ">node</a>, <a class="reference external"  href="../Macros/MacroMptr ">mptr</a>, <a class="reference external"  href="../Macros/MacroPest ">pest</a>, <a class="reference external"  href="../Macros/MacroPtrk ">ptrk</a>, <a class="reference external"  href="../Macros/MacroSptr ">sptr</a>, <a class="reference external"  href="../Macros/MacroSubm ">subm</a>, <a class="reference external"  href="../Macros/MacroWflo ">wflo</a>, and <a class="reference external"  href="../Macros/MacroTime ">time</a>: cont is used to specify output format and time intervals for contour data output ( ```fehmn.con```,  ```fehmn.dp```); ctrl is used to specify if element coefficients calculated in the code should be saved ( ```fehmn.stor```); node and nod2 are used to provide nodal or coordinate positions for which general information and history data will be output ( ```fehmn.out```,  ```fehmn.his```,  ```fehmn.trc```, and terminal output); mptr has an option to specify whether or not particle tracking information is written to the restart file ( ```fehmn.fin```); pest is used to specify PEST parameter estimation routine output format ( ```fehmn.pest```,```fehmn.pest1```); ptrk has an option to specify whether or not particle tracking information is written to the restart file ( ```fehmn.fin```) and what information to output; sptr has options to specify what streamline particle tracking information will be output ( ```fehmn.sptr1```,```fehmn.sptr2```,```fehmn.sptr3```); submand wflo are used to specify nodes and boundary conditions should be output for an extracted submodel region; and time provides input on the time printout interval for nodal information ( ```fehmn.out``` and terminal output).
 
  The code itself provides no graphical capabilities. History plots of the energy source, source strength, temperature, pressure, capillary pressure, and saturation are made from the filen.his FEHM output files. Data from the filen.trc files is used to make history tracer plots of the 10 species concentrations. Contour plots can be made from the  ```filen.con```,  ```filen.dp```, and AVS FEHM output files. 
 
@@ -202,7 +202,7 @@ Macro commands (input options) dealing with output control are <a class="referen
 </div>
 
 
-## Alternate History plot files (```filen.his,</span> <span class="pre">filen_param.his```)
+## Alternate History plot files (```filen.his```,```filen_param.his```)
  The history plot file (```filen.his```) contains the following: 
   
 * Code version number, date, time 
@@ -450,10 +450,10 @@ Macro commands (input options) dealing with output control are <a class="referen
 ## Error output file (```fehmn.err```)
  This file contains the code version number, date, and time followed by any error or warning messages issued by the code during a run. 
 
-## Multiple simulations script files (```fehmn.pre,</span> <span class="pre">fehmn.post```)
+## Multiple simulations script files (```fehmn.pre```,```fehmn.post```)
  The multiple simulations script file fehmn.pre contains UNIX shell script style instructions for pre-processing input data, while the script file fehmn.post contains UNIX shell script style instructions for post-processing data. 
 
-## PEST output files (```filen.pest,</span> <span class="pre">filen.pest1```)
+## PEST output files (```filen.pest```,```filen.pest1```)
  The PEST output file is used to output data in a format suitable for use by the Parameter Estimation Program (PEST) (Watermark Computing, 1994). The first file (filen.pest) contains: 
   
 * Heading: “PEST Output:”, code version number, date, time 
@@ -636,7 +636,7 @@ Macro commands (input options) dealing with output control are <a class="referen
 </div>
 
 ## AVS header output files (filen.type_head)
- The AVS ASCII (formatted) header files are identical for AVS and AVS Express output (see <a class="reference external" href="FEHM-UM.7-8.htm#80360">See Example of AVS header output file.</a>). The data types, “mat”, “sca”, “vec” or “con”, are described below. The header files contain: 
+ The AVS ASCII (formatted) header files are identical for AVS and [AVS Express output](#AVS-header). The data types, “mat”, “sca”, “vec” or “con”, are described below. The header files contain: 
  20 lines of text with information about the FEHM AVS output files. The text is followed by a one line AVS UCD file header containing: 
   
 * number of nodes 
@@ -645,7 +645,7 @@ Macro commands (input options) dealing with output control are <a class="referen
 * number of data components for the cells (currently 0) 
 * number of data components for the model (currently 0) 
  
-## Example of AVS header output file
+## <a id="AVS-header"></a>Example of AVS header output file
 
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># FEHM V3.1gf 12-02-02 QA:NA 02/14/2012</span>
 <span class="c1"># AVS UNSTRUCTURED CELL DATA (UCD) FROM FEHM</span>

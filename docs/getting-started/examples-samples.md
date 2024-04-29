@@ -2,11 +2,12 @@
 title : Examples and Sample Problems
 layout : page_getting-started
 permalink: /getting-started/examples-samples
+hero_height : is-small
 ---
 
-The following describes execution of the FEHM code. [Constructing an Input File]() discusses the construction of an input file. [Code Execution]() illustrates the entire procedure for executing the FEHM code using terminal input. Example 1 describes the setup and results from a simple 2-D heat conduction simulation. The remaining sections provide more complex example problems and deal only with problem setup and expected results.
+The following describes execution of the FEHM code. [Constructing an Input File](#Constructing-an-input-file) discusses the construction of an input file. [Code Execution](#Code-execution) illustrates the entire procedure for executing the FEHM code using terminal input. Example 1 describes the setup and results from a simple 2-D heat conduction simulation. The remaining sections provide more complex example problems and deal only with problem setup and expected results.
 
-## Constructing an Input File
+## <a id="Constructing-an-input-file"></a> Constructing an Input File
 
 
 FEHM is a very general simulation code. Thus it is preferable to discuss the construction of an input file from a problem oriented point of view. In what follows the needs of the physical problem (initial conditions, boundary conditions, etc.) will be addressed in terms of the macro statements.
@@ -142,7 +143,7 @@ The following table shows required and optional macros listed by the type of pro
 |                                                                      | [velo](Macros/MacroVelo.html)                                       |
 |                                                                      | [zone](Macros/MacroZone.html) or [zonn](Macros/MacroZonn.html)    |
 
-## Code Execution
+## <a id="Code-execution"></a>Code Execution
 
 To run FEHM, the program executable file name is entered at the system prompt:
 
@@ -162,7 +163,7 @@ After the command ```xfehm_v2.30``` is given, the code queries the user regardin
    Enter name for iocntl -- default file name: not using
    [(name/na or not using), RETURN = DEFAULT]
 ```
-This query asks for a control file name. If a control file name is entered no further terminal input is required. The below example shows the control file that would produce the same results as the terminal responses discussed below and illustrated in TerminalQuery_. Files that are not needed for output can be represented with a blank line. If names are not provided for the write file and/or the data check file, the code will use the following defaults: fehmn.fin and fehmn.chk. Following the file names is the flag that controls terminal output. The last line of the file is the user subroutine number. Omitting these values results in no terminal output and no user subroutine call. For now, we assume a carriage return ``(cr>`` is entered and a control file is not being used. The following query will appear:
+This query asks for a control file name. If a control file name is entered no further terminal input is required. The below example shows the control file that would produce the same results as the terminal responses discussed below and illustrated in [TerminalQuery](#Terminal-query). Files that are not needed for output can be represented with a blank line. If names are not provided for the write file and/or the data check file, the code will use the following defaults: fehmn.fin and fehmn.chk. Following the file names is the flag that controls terminal output. The last line of the file is the user subroutine number. Omitting these values results in no terminal output and no user subroutine call. For now, we assume a carriage return ``(cr>`` is entered and a control file is not being used. The following query will appear:
 
 **Input control file for heat conduction example**
 
@@ -201,7 +202,7 @@ A ```(cr>``` will produce files with identical prefixes, including the subdirect
    Enter name for incoor -- default file name: input/heat2d.in
    [(name/na or not using), RETURN = DEFAULT]
 ```
-(See TerminalQuery_ for the remaining file name queries.) 
+(See [TerminalQuery](#Terminal-query) for the remaining file name queries.) 
 
 Next a query for terminal output appears.
 
@@ -234,7 +235,7 @@ The final query regards the acceptance of the file set just created. A "yes" rep
 Screen output for this example execution using terminal input and a previous version of the code is shown below. The only difference in the output is that the code version identifier and date are updated for the current version. User responses are shown in *italics*.
 
 
-**Terminal query for FEHM example run**
+<a id="Terminal-query"></a> **Terminal query for FEHM example run**
 
 ```
 
@@ -334,7 +335,7 @@ Screen output for this example execution using terminal input and a previous ver
 ## Heat Conduction in a Square
 
 
-This simple 2-D problem is used to illustrate input file construction and basic output. Heat conduction in a 1 meter square with an initial temperature, $$T_0 = 200 ^{\circ}C$$, is modeled after a surface temperature, $$T_s = 100 ^{\circ}C$$, is imposed at time, $$t = 0$$ ([See Schematic diagram of 2-D heat conduction problem](FEHM-UM.9.3.html). The input parameters used for the heat conduction problem are defined in [Input Parameters for the 2-D Heat Conduction Problem](FEHM-UM.9.3.htm#71293).The finite element mesh for this problem is shown in [Finite element mesh used for 2-D heat conduction problem.](FEHM-UM.9.3.htm#49464). Only a quarter of the square needs to be modeled because of problem symmetry. 
+This simple 2-D problem is used to illustrate input file construction and basic output. Heat conduction in a 1 meter square with an initial temperature, $$T_0 = 200 ^{\circ}C$$, is modeled after a surface temperature, $$T_s = 100 ^{\circ}C$$, is imposed at time, $$t = 0$$ ([See Schematic diagram of 2-D heat conduction problem](https://fehm.lanl.gov/pdfs/fehm_umV3.pdf#page=244). The input parameters used for the heat conduction problem are defined in [Input Parameters for the 2-D Heat Conduction Problem](https://fehm.lanl.gov/pdfs/fehm_umV3.pdf#page=245).The finite element mesh for this problem is shown in [Finite element mesh used for 2-D heat conduction problem.](https://fehm.lanl.gov/pdfs/fehm_umV3.pdf#page=244). Only a quarter of the square needs to be modeled because of problem symmetry. 
 
 
 ### Input Parameters for the 2-D Heat Conduction Problem
@@ -351,7 +352,7 @@ This simple 2-D problem is used to illustrate input file construction and basic 
 |  Rock thermal diffusivity               | $$\kappa = \frac{\kappa_r}{\rho_r C_r}$$ |                             |
 
 
-The input file (see [FEHM input file for heat conduction example(heat2d.in). ](FEHM-UM.9.3.htm#26275)) uses optional macro control statement node (output nodes) and the required macro control statements sol (solution specification - heat transfer only), init (initial value data), rock (rock properties), cond (thermal conductivities), perm (permeabilities), time (simulation timing data), ctrl (program control parameters), coor (node coordinates), elem (element node data), and stop. For this problem macro control statement flow is also used to set the temperature boundary conditions. A portion of the output file is reproduced in [FEHM output from the 2-D heat conduction example.](FEHM-UM.9.3.htm#50551).
+The input file (see [FEHM input file for heat conduction example(heat2d.in). ](https://fehm.lanl.gov/pdfs/fehm_umV3.pdf#page=246)) uses optional macro control statement node (output nodes) and the required macro control statements sol (solution specification - heat transfer only), init (initial value data), rock (rock properties), cond (thermal conductivities), perm (permeabilities), time (simulation timing data), ctrl (program control parameters), coor (node coordinates), elem (element node data), and stop. For this problem macro control statement flow is also used to set the temperature boundary conditions. A portion of the output file is reproduced in [FEHM output from the 2-D heat conduction example.](https://fehm.lanl.gov/pdfs/fehm_umV3.pdf#page=247).
 
 ### FEHM input file for heat conduction example (```heat2d.in```)
 
@@ -589,7 +590,7 @@ The below image shows a plot of the simulation results compared to the analytica
 ## DOE Code Comparison Project, Problem 5, Case A
 
 
-This problem involves multiphase flow in a 2-D horizontal reservoir. The problem is characterized by a moving two-phase region, i.e., the fluid produced at the production well is replaced by cold water recharge over one of the outer boundaries. The problem parameters are given below and the geometry and boundary conditions are shown in the below schematic. Of particular note are the variable initial temperature field, provided to the code through a read file (see [iread](DataFiles.html#Readfileiread)), and the prescribed pressure and temperature on the right boundary. A partial listing of the input file is provided in [FEHM input file for DOE problem](FEHM-UM.9.4.htm#30248). In addition to the required macros, macro flow is used to specify the pressure and temperature boundary condition and the production flow rate. Macro rlp is used to set the residual liquid and gas saturations. 
+This problem involves multiphase flow in a 2-D horizontal reservoir. The problem is characterized by a moving two-phase region, i.e., the fluid produced at the production well is replaced by cold water recharge over one of the outer boundaries. The problem parameters are given below and the geometry and boundary conditions are shown in the below schematic. Of particular note are the variable initial temperature field, provided to the code through a read file (see [iread](data-files.md#read-file)), and the prescribed pressure and temperature on the right boundary. A partial listing of the input file is provided in [FEHM input file for DOE problem](https://fehm.lanl.gov/pdfs/fehm_umV3.pdf#page=260). In addition to the required macros, macro flow is used to specify the pressure and temperature boundary condition and the production flow rate. Macro rlp is used to set the residual liquid and gas saturations. 
 
 ### Input Parameters for the DOE Code Comparison Project Problem
 
@@ -651,7 +652,7 @@ FEHM input file for DOE problem
    ... stop
 ```
 
-There is no analytical solution for this problem, but six researchers produced results for the DOE code comparison project (Molloy, 1980). The reader is referred to this reference for a more detailed discussion of this problem and the code comparison. Results from this problem are compared to those for the other codes, obtained from Molloy (1980), as a check on FEHM. The results for the outlet temperature, shown in [Comparison of FEHM production well temperatures with results from other codes](FEHM-UM.9.4.htm#30437), are in excellent agreement with the other codes. The results for the outlet pressure and pressure at an observation well 125 m distant, [Comparison of FEHM production and observation well pressure drops with results from other codes](FEHM-UM.9.4.htm#89269), are also in good agreement with the other codes. Contour plots of pressure and temperature at the end of the simulation were also generated for this problem and are shown in [Contour plot of pressure at ten years for the DOE problem](FEHM-UM.9.4.htm#99688) and [Contour plot of temperature at ten years for the DOE problem](FEHM-UM.9.4.htm#58720). 
+There is no analytical solution for this problem, but six researchers produced results for the DOE code comparison project (Molloy, 1980). The reader is referred to this reference for a more detailed discussion of this problem and the code comparison. Results from this problem are compared to those for the other codes, obtained from Molloy (1980), as a check on FEHM. The results for the outlet temperature, shown in [Comparison of FEHM production well temperatures with results from other codes](https://fehm.lanl.gov/pdfs/fehm_umV3.pdf#page=255), are in excellent agreement with the other codes. The results for the outlet pressure and pressure at an observation well 125 m distant, [Comparison of FEHM production and observation well pressure drops with results from other codes](https://fehm.lanl.gov/pdfs/fehm_umV3.pdf#page=256), are also in good agreement with the other codes. Contour plots of pressure and temperature at the end of the simulation were also generated for this problem and are shown in [Contour plot of pressure at ten years for the DOE problem](https://fehm.lanl.gov/pdfs/fehm_umV3.pdf#page=256) and [Contour plot of temperature at ten years for the DOE problem](https://fehm.lanl.gov/pdfs/fehm_umV3.pdf#page=257). 
 
 <!--
 .. figure: FEHM-UM.9.4-7.gif
@@ -863,7 +864,7 @@ This one-dimensional example demonstrates the use of the reactive transport modu
    stop
 ```
 
-FEHM results for this problem are compared to those of PDREACT (Valocchi et al., 1994), a two-dimensional, isothermal, saturated-zone flow and transport code in [Comparison of FEHM and PDREACT for the breakthrough curves of aqueous species](FEHM-UM.9.5.htm#51118) and [Comparison of FEHM and PDREACT for the exit concentration versus time for solid species](FEHM-UM.9.5.htm#30492). 
+FEHM results for this problem are compared to those of PDREACT (Valocchi et al., 1994), a two-dimensional, isothermal, saturated-zone flow and transport code in [Comparison of FEHM and PDREACT for the breakthrough curves of aqueous species](https://fehm.lanl.gov/pdfs/fehm_umV3.pdf#page=264) and [Comparison of FEHM and PDREACT for the exit concentration versus time for solid species](https://fehm.lanl.gov/pdfs/fehm_umV3.pdf#page=264). 
 
 <!--
 .. figure: FEHM-UM.9.5-25.gif
