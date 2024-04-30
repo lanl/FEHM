@@ -9,10 +9,10 @@ hero_height: is-hidden
 
 ### Topics
 
-* [Installation](../install)
-* [Testing FEHM](../testing)
+* [Installation](/getting-started/fehmpytest-info/install)
+* [Testing FEHM](/getting-started/fehmpytest-info/testing)
 * Creating New Test-Cases
-* [Test-Case Description](../testdesc)
+* [Test-Case Description](/getting-started/fehmpytest-info/testdesc)
 
 ---
 
