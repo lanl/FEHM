@@ -19,7 +19,7 @@ Fehmpytests requires Python 3
 
 ## Topics
 
-* [Installation](../fehmpytests/install)
-* [Testing FEHM](../fehmpytests/testing)
-* [Creating New Test-Cases](../fehmpytests/newtest)
-* [Test-Case Descriptions](../fehmpytests/testdesc)
+* [Installation](../../fehmpytest-info/install)
+* [Testing FEHM](../../fehmpytest-info/testing)
+* [Creating New Test-Cases](../../fehmpytest-info/newtest)
+* [Test-Case Descriptions](../../fehmpytest-info/testdesc)
