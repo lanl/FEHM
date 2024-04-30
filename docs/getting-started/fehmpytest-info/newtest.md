@@ -1,7 +1,7 @@
 ---
 title : Creating New Test Cases
 layout : page_getting-started
-#permalink: /fehmpytest-info/newtest
+permalink: /getting-started/fehmpytest-info/newtest
 hero_height: is-hidden
 ---
 
@@ -9,10 +9,10 @@ hero_height: is-hidden
 
 ### Topics
 
-* [Installation](/getting-started/fehmpytest-info/install)
-* [Testing FEHM](/getting-started/fehmpytest-info/testing)
+* [Installation](../install)
+* [Testing FEHM](../testing)
 * Creating New Test-Cases
-* [Test-Case Description](/getting-started/fehmpytest-info/testdesc)
+* [Test-Case Description](../testdesc)
 
 ---
 
