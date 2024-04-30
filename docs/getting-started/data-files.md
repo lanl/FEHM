@@ -2,8 +2,10 @@
 title : Data Files
 layout : page_getting-started
 permalink: /getting-started/data-files
-hero_height: is-small
+hero_height: is-hidden
 ---
+
+# Data Files
 
 ## Control file (iocntl) 
 

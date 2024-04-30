@@ -2,8 +2,11 @@
 title : Installation
 layout : page_getting-started
 #permalink: /getting-started/testingfehm
-hero_height : is-small
+hero_height: is-hidden
 ---
+
+# Installation
+
 
 ### Topics
 

@@ -2,8 +2,10 @@
 title : Examples and Sample Problems
 layout : page_getting-started
 permalink: /getting-started/examples-samples
-hero_height : is-small
+hero_height: is-hidden
 ---
+
+# Examples and Sample Problems
 
 The following describes execution of the FEHM code. [Constructing an Input File](#Constructing-an-input-file) discusses the construction of an input file. [Code Execution](#Code-execution) illustrates the entire procedure for executing the FEHM code using terminal input. Example 1 describes the setup and results from a simple 2-D heat conduction simulation. The remaining sections provide more complex example problems and deal only with problem setup and expected results.
 

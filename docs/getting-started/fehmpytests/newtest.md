@@ -2,8 +2,10 @@
 title : Creating New Test Cases
 layout : page_getting-started
 #permalink: /getting-started/testingfehm
-hero_height : is-small
+hero_height: is-hidden
 ---
+
+# Creating New Test Cases
 
 ### Topics
 

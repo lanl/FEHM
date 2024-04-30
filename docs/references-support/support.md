@@ -2,7 +2,7 @@
 title : Support
 layout : page
 permalink: /references-support/support
-hero_height: is-small
+hero_height: is-hidden
 ---
 
 # User Support

@@ -1,8 +1,10 @@
 ---
 title : Test-Case Description
 layout : page_getting-started
-hero_height : is-small
+hero_height: is-hidden
 ---
+
+# Test-Case Description
 
 ### Topics
 

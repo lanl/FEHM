@@ -2,7 +2,7 @@
 title : Macros
 layout : page_getting-started
 permalink: /program-specification/macros
-hero_height: is-small
+hero_height: is-hidden
 ---
 
 

@@ -2,8 +2,10 @@
 title : References
 layout : page
 permalink: /references-support/references
-hero_height: is-small
+hero_height: is-hidden
 ---
+
+# References
 
  * Burnett, R. D., and E. O. Frind “Simulation of Contaminant Transport in Three Dimensions. 2. Dimensionality Effects,” Water Resources Res. 23:695-705 (1987). TIC:246359 
  * Carslaw, H. S., and J. C. Jaeger, //Conduction of Heat in Solids//, 2nd Edition, Clarendon Press (1959). TIC:206085 

@@ -2,10 +2,13 @@
 title : Input Data
 layout : page_getting-started
 permalink: /program-specification/input-data
-hero_height: is-small
+hero_height: is-hidden
 ---
 
-# General Considerations
+
+# Input Data
+
+## General Considerations
 
 <p><strong>Techniques</strong></p>
 <p><strong>Control File or Terminal I/O Startup</strong></p>

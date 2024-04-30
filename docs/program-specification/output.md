@@ -2,8 +2,10 @@
 title : Output
 layout : page_getting-started
 permalink: /program-specification/output
-hero_height: is-small
+hero_height: is-hidden
 ---
+
+# Output
 
  Output is found in the code generated files (output file, write file, history plot file, solute plot file, contour plot file, contour plot file for dual or dpdp, stiffness matrix data file, input check file, submodel output file, PEST output files, streamline particle tracking output files, and AVS output files) described in <a href="/getting-started/data-files"> Data Files </a>. 
 

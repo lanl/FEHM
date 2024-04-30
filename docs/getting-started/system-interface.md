@@ -2,9 +2,10 @@
 title : System Interface
 layout : page_getting-started
 permalink: /getting-started/system-interface
-hero_height : is-small
+hero_height: is-hidden
 ---
 
+# System Interface
 
 ## System-Dependent Features
 

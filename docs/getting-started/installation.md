@@ -2,8 +2,10 @@
 title : Installation Instructions
 layout : page_getting-started
 permalink: /getting-started/installation
-hero_height : is-small
+hero_height: is-hidden
 ---
+
+# Installation Instructions
 
 ## Install from Git (Recommended)
 

@@ -2,8 +2,10 @@
 title : Program Considerations
 layout : page_getting-started
 permalink: /program-specification/program-considerations
-hero_height: is-small
+hero_height: is-hidden
 ---
+
+# Program Considerations
 
 ## Program Options
 

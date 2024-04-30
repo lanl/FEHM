@@ -1,11 +1,10 @@
 ---
 title: FEHM Users Manual
 layout: page
-hero_height : is-medium
+hero_height: is-hidden
 ---
-
 # Software Users Manual (UM) for the FEHM Application
-
+<br><br>
 This online version of the FEHM User's Manual documents the use of the FEHM application.
 It is the most current description of FEHM and its use and is continually updated as code is developed.
 

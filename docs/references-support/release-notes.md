@@ -2,8 +2,10 @@
 title : Release Notes
 layout : page
 permalink : /references-support/release-notes
-hero_height : is-small
+hero_height: is-hidden
 ---
+
+#  Release Notes
 
 * [V3.4.0](ReleaseNotes/v3.4.0.md)
 * [V3.3.1](ReleaseNotes/v3.3.1.md)
