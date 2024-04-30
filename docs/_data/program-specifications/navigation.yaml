@@ -4,6 +4,8 @@
       link: /getting-started/system-interface
     - name: Installation Instructions
       link: /getting-started/installation
+    - name: FehmPyTests
+      link: /getting-started/fehmpytests
     - name: Data Files
       link: /getting-started/data-files
     - name: Definitions & Acronyms

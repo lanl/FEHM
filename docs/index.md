@@ -35,6 +35,7 @@ users.
 
 * [System Interface](getting-started/system-interface)
 * [Installation Instructions](getting-started/installation)
+* [FehmPyTests](getting-started/fehmpytests)
 * [Data Files](getting-started/data-files)
 * [Definitions And Acronyms](getting-started/definitions-acronyms)
 * [Examples And Samples](getting-started/examples-samples)
