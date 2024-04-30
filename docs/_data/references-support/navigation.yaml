@@ -1,0 +1,30 @@
+- name:  Getting Started
+  dropdown:
+    - name: System Interface
+      link: /getting-started/system-interface
+    - name: Installation Instructions
+      link: /getting-started/installation
+    - name: Data Files
+      link: /getting-started/data-files
+    - name: Definitions & Acronyms
+      link: /getting-started/definitions-acronyms
+    - name: Examples & Samples
+      link: /getting-started/examples-samples
+- name: Program Specifications
+  dropdown:
+    - name: Macros
+      link: /program-specification/macros
+    - name: Input Data
+      link: /program-specification/input-data
+    - name: Output
+      link: /program-specification/output
+    - name: Program Considerations
+      link: /program-specification/program-considerations
+- name: References & Support
+  dropdown:
+    - name: References
+      link: /references-support/references
+    - name: Support
+      link: /references-support/support
+    - name: Release Notes
+      link: /references-support/release-notes
