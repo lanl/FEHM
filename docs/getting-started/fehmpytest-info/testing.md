@@ -1,7 +1,7 @@
 ---
 title : FehmPyTests Suite
 layout : page_getting-started
-permalink: /fehmpytest-info/testing
+#permalink: /fehmpytest-info/testing
 hero_height: is-hidden
 ---
 
@@ -9,10 +9,10 @@ hero_height: is-hidden
 
 ### Topics
 
-* [Installation](install)
+* [Installation](../install)
 * Testing FEHM
-* [Creating New Test-Cases](newtest)
-* [Test-Case Description](testdesc)
+* [Creating New Test-Cases](../newtest)
+* [Test-Case Description](../testdesc)
 
 ---
 

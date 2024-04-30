@@ -1,7 +1,7 @@
 ---
 title : Test-Case Description
 layout : page_getting-started
-permalink: /fehmpytest-info/testdesc
+#permalink: /fehmpytest-info/testdesc
 hero_height: is-hidden
 ---
 
@@ -9,9 +9,9 @@ hero_height: is-hidden
 
 ### Topics
 
-* [Installation](install)
-* [Testing FEHM](testing)
-* [Creating New Test-Cases](newtest)
+* [Installation](../install)
+* [Testing FEHM](../testing)
+* [Creating New Test-Cases](../newtest)
 * Test-Case Description
 
 |  |  | 
