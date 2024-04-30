@@ -1,7 +1,7 @@
 ---
 title : Creating New Test Cases
 layout : page_getting-started
-permalink: /getting-started/fehmpytest-info/newtest
+#permalink: /getting-started/fehmpytest-info/newtest
 hero_height: is-hidden
 ---
 

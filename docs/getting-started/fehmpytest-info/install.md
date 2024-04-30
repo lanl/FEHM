@@ -1,7 +1,7 @@
 ---
 title : Installation
 layout : page_getting-started
-permalink: /getting-started/fehmpytest-info/install
+#permalink: /getting-started/fehmpytest-info/install
 hero_height: is-hidden
 ---
 

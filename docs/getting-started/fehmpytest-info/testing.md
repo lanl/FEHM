@@ -1,7 +1,7 @@
 ---
 title : FehmPyTests Suite
 layout : page_getting-started
-permalink: /getting-started/fehmpytest-info/testing
+#permalink: /getting-started/fehmpytest-info/testing
 hero_height: is-hidden
 ---
 
