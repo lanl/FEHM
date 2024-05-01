@@ -19,7 +19,7 @@ Fehmpytests requires Python 3
 
 ## Topics
 
-* [Installation](/FEHM/docs/getting-started/fehmpytest-info/install)
-* [Testing FEHM](/FEHM/docs/getting-started/fehmpytest-info/testing)
-* [Creating New Test-Cases](/FEHM/docs/getting-started/fehmpytest-info/newtest)
-* [Test-Case Descriptions](/FEHM/docs/getting-started/fehmpytest-info/testdesc)
+* [Installation](https://lanl.github.io/FEHM/docs/getting-started/fehmpytest-info/install)
+* [Testing FEHM](https://lanl.github.io/FEHM/docs/getting-started/fehmpytest-info/testing)
+* [Creating New Test-Cases](https://lanl.github.io/FEHM/docs/getting-started/fehmpytest-info/newtest)
+* [Test-Case Descriptions](https://lanl.github.io/FEHM/docs/getting-started/fehmpytest-info/testdesc)

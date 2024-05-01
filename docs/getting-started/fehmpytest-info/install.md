@@ -1,7 +1,7 @@
 ---
 title : Installation
 layout : page_getting-started
-permalink: /fehmpytest-info/install
+#permalink: /fehmpytest-info/install
 hero_height: is-hidden
 ---
 
@@ -11,9 +11,9 @@ hero_height: is-hidden
 ### Topics
 
 * Installation
-* [Testing FEHM](/FEHM/docs/getting-started/fehmpytest-info/testing)
-* [Creating New Test-Cases](/FEHM/docs/getting-started/fehmpytest-info/newtest)
-* [Test-Case Description](/FEHM/docs/getting-started/fehmpytest-info/testdesc)
+* [Testing FEHM](https://lanl.github.io/FEHM/docs/getting-started/fehmpytest-info/testing)
+* [Creating New Test-Cases](https://lanl.github.io/FEHM/docs/getting-started/fehmpytest-info/newtest)
+* [Test-Case Description](https://lanl.github.io/FEHM/docs/getting-started/fehmpytest-info/testdesc)
 
 ---
 
