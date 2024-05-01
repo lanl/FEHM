@@ -14,23 +14,23 @@ The following describes execution of the FEHM code. [Constructing an Input File]
 
 FEHM is a very general simulation code. Thus it is preferable to discuss the construction of an input file from a problem oriented point of view. In what follows the needs of the physical problem (initial conditions, boundary conditions, etc.) will be addressed in terms of the macro statements.
 
-**Initial conditions**. These are needed for every problem, even if it is a steady state simulation. If the simulation is comprised of fully saturated water flow or heat conduction only, then the appropriate control statement would be [init](MacroInit.html). The use of ```init``` also allows the specification of initial temperature and pressure (gravity) gradients. If two phase flow is prescribed (thermal or isothermal) then entering the initial conditions through the control statement [pres](MacroPres.html) is more convenient. Initial values for noncondensible gas are handled in the [ngas](MacroNgas.html) control statement. It should be remembered that if a restart file is present, those values will have precedence over values input in control statement ```init``` but not over values input in control statement ```pres``` Solute initial conditions are prescribed through the control statement [trac](MacroTrac.html).
+**Initial conditions**. These are needed for every problem, even if it is a steady state simulation. If the simulation is comprised of fully saturated water flow or heat conduction only, then the appropriate control statement would be [init](../Macros/MacroInit.md). The use of ```init``` also allows the specification of initial temperature and pressure (gravity) gradients. If two phase flow is prescribed (thermal or isothermal) then entering the initial conditions through the control statement [pres](../Macros/MacroPres.md) is more convenient. Initial values for noncondensible gas are handled in the [ngas](../Macros/MacroNgas.md) control statement. It should be remembered that if a restart file is present, those values will have precedence over values input in control statement ```init``` but not over values input in control statement ```pres``` Solute initial conditions are prescribed through the control statement [trac](../Macros/MacroTrac.md).
 
-**Boundary conditions**. Fluid and heat flow boundary conditions can be prescribed through control statements ```pres``` [bound](MacroBoun.html), [flow](MacroFlow.html), and [hflx](MacroHflx.html). Boundary conditions are entered with ```pres``` by specifying a negative phase state designation (the code will actually use the absolute value of the phase state designation). In this case the code will keep the variable values constant at whatever value was prescribed in **pres**. Flowing pressures are input with the boun or ```flow``` control statement. Solute boundary conditions are prescribed through the control statement ```trac```
+**Boundary conditions**. Fluid and heat flow boundary conditions can be prescribed through control statements ```pres``` [bound](../Macros/MacroBoun.md), [flow](../Macros/MacroFlow.md), and [hflx](../Macros/MacroHflx.md). Boundary conditions are entered with ```pres``` by specifying a negative phase state designation (the code will actually use the absolute value of the phase state designation). In this case the code will keep the variable values constant at whatever value was prescribed in **pres**. Flowing pressures are input with the boun or ```flow``` control statement. Solute boundary conditions are prescribed through the control statement ```trac```
 
-**Material and Energy Balance Equations**. The choice of the coupled system equations is made in control statements [sol](MacroSol.html), ```ngas```, and [air](MacroAir.html).
+**Material and Energy Balance Equations**. The choice of the coupled system equations is made in control statements [sol](../Macros/MacroSol.md), ```ngas```, and [air](../Macros/MacroAir.md).
 
-**Rock or Media Properties**. These are found in the [rock](MacroRock.html) and ```perm``` control statements.
+**Rock or Media Properties**. These are found in the [rock](../Macros/MacroRock.md) and ```perm``` control statements.
 
-**Fluid Properties**. These are found in control statement [eos](MacroEos.html), which is optional. If **eos** is not invoked, then the properties of water and air included in the code are used. Relative permeabilities, depending on both the fluid and media type, are found in control statement [rlp](MacroRlp.html).
+**Fluid Properties**. These are found in control statement [eos](../Macros/MacroEos.md), which is optional. If **eos** is not invoked, then the properties of water and air included in the code are used. Relative permeabilities, depending on both the fluid and media type, are found in control statement [rlp](../Macros/MacroRlp.md).
 
-**Mesh Geometry and Nodal Coordinates**. This geometry information is found in control statements [coor](MacroCoor.html) and [elem](MacroElem.html). This information is usually created with a mesh generation program.
+**Mesh Geometry and Nodal Coordinates**. This geometry information is found in control statements [coor](../Macros/MacroCoor.md) and [elem](../Macros/MacroElem.md). This information is usually created with a mesh generation program.
 
-**Simulation Time**. The time stepping information including printout intervals and time step sizing is found in control statement [time](MacroTime.html).
+**Simulation Time**. The time stepping information including printout intervals and time step sizing is found in control statement [time](../Macros/MacroTime.md).
 
-**Numerics**. Convergence criteria, upwinding parameters, fill-in for the preconditioned conjugate gradient solver and geometry type (2-D, 3-D, radial) are entered with control statement [ctrl](MacroCtrl.html).
+**Numerics**. Convergence criteria, upwinding parameters, fill-in for the preconditioned conjugate gradient solver and geometry type (2-D, 3-D, radial) are entered with control statement [ctrl](../Macros/MacroCtrl.md).
 
-**Advanced Iteration Control**. Reduced degree of freedom methods are invoked with the [iter](MacroIter.html) control statement. One important quantity entered with this statement is the maximum time for the job to run on the computer.
+**Advanced Iteration Control**. Reduced degree of freedom methods are invoked with the [iter](../Macros/MacroIter.md) control statement. One important quantity entered with this statement is the maximum time for the job to run on the computer.
 
 **Sources and Sinks**. These are input with the control statements ```boun``` or ```flow``` Care must be taken as the parameters have different meanings for different physical models.
 
@@ -44,46 +44,46 @@ The following table shows required and optional macros listed by the type of pro
 
 |Required Macros |  Optional Macros    | 
 |:---------------|:-----------------------|
-| [title](Macros/MacroTitle.html)| [cont](Macros/MacroCont.html)                                   |
-| [boun](MacroBoun.html) or [flow](Macros/MacroFlow.html) or [hflx](Macros/MacroHflx.html)   | [finv](Macros/MacroFinv.html)                                    |
-| [cond](Macros/MacroCond.html) | [flo2](Macros/MacroFlo2.html)                                    |
-| [coor](Macros/MacroCoor.html) | [flxo](Macros/MacroFlxo.html) or [flxz](Macros/MacroFlxz.html) |
-| [ctrl](Macros/MacroCtrl.html) | [iter](Macros/MacroIter.html)                                   |
-| [elem](Macros/MacroElem.html)                                                                         | [node](Macros/MacroNode.html) or [nod2](Macros/MacroNod2.html) |
-| [init](Macros/MacroInit.html) or [pres](Macros/MacroPres.html)                                      | [renu](Macros/MacroRenu.html)                                    |
-| [rock](Macros/MacroRock.html)                                                                         | [rflx](Macros/MacroRflx.html)                                    |
-| [sol](Macros/MacroSol.html)                                                                           | text or comments (#)                                               |
-| [time](Macros/MacroTime.html)                                                                         | [user](Macros/MacroUser.html)                                    |
-| [stop](Macros/MacroStop.html)                                                                         | [vcon](Macros/MacroVcon.html)                                    |
-|                                                                                                         | [zone](Macros/MacroZone.html) or [zonn](Macros/MacroZonn.html) |
+| title| [cont](../Macros/MacroCont.md)                                   |
+| [boun](../Macros/MacroBoun.md) or [flow](../Macros/MacroFlow.md) or [hflx](../Macros/MacroHflx.md)   | [finv](../Macros/MacroFinv.md)                                    |
+| [cond](../Macros/MacroCond.md) | [flo2](../Macros/MacroFlo2.md)                                    |
+| [coor](../Macros/MacroCoor.md) | [flxo](../Macros/MacroFlxo.md) or [flxz](../Macros/MacroFlxz.md) |
+| [ctrl](../Macros/MacroCtrl.md) | [iter](../Macros/MacroIter.md)                                   |
+| [elem](../Macros/MacroElem.md)                                                                         | [node](../Macros/MacroNode.md) or [nod2](../Macros/MacroNod2.md) |
+| [init](../Macros/MacroInit.md) or [pres](../Macros/MacroPres.md)                                      | [renu](../Macros/MacroRenu.md)                                    |
+| [rock](../Macros/MacroRock.md)                                                                         | [rflx](../Macros/MacroRflx.md)                                    |
+| [sol](../Macros/MacroSol.md)                                                                           | text or comments (#)                                               |
+| [time](../Macros/MacroTime.md)                                                                         | [user](../Macros/MacroUser.md)                                    |
+| [stop](../Macros/MacroStop.md)                                                                         | [vcon](../Macros/MacroVcon.md)                                    |
+|                                                                                                         | [zone](../Macros/MacroZone.md) or [zonn](../Macros/MacroZonn.md) |
 
 
 ### Water / Water Vapor / Heat Equivalent Continuum, Dual Porosity,Dual Permeability
 
 |Required Macros |  Optional Macros    | 
 |:---------------|:-----------------------|
-| [title](Macros/MacroTitle.html) | [cden](Macros/MacroCden.html)                                      |
-| [boun](Macros/MacroBoun.html) or [flow](Macros/MacroFlow.html) or [hflx](Macros/MacroHflx.html)          | [cont](Macros/MacroCont.html) |
-| [cond](Macros/MacroCond.html)   | [eos](Macros/MacroEos.html)                                         |
-| [coor](Macros/MacroCoor.html)   | [exrl](Macros/MacroExrl.html)                                       |
-| [ctrl](Macros/MacroCtrl.html)   | [finv](Macros/MacroFinv.html)                                       |
-| [elem](Macros/MacroElem.html)   | [flo2](Macros/MacroFlo2.html)                                       |
-| [init](Macros/MacroInit.html) or [pres](Macros/MacroPres.html) | [flxo](Macros/MacroFlxo.html) or [flxz](Macros/MacroFlxz.html)    |
-| [perm](Macros/MacroPerm.html)   | [fper](Macros/MacroFper.html)                                       |
-| [rlp](Macros/MacroRlp.html)     | [gdpm](Macros/MacroGdpm.html)                                       |
-| [rock](Macros/MacroRock.html)   | [hflx](Macros/MacroHflx.html)                                       |
-| [sol](Macros/MacroSol.html)     | [iter](Macros/MacroIter.html)                                       |
-| [time](Macros/MacroTime.html)   | [node](Macros/MacroNode.html) or [nod2](Macros/MacroNod2.html)    |
-| [stop](Macros/MacroStop.html)   | [ppor](Macros/MacroPpor.html)                                       |
-|                                 | [renu](Macros/MacroRenu.html)                                       |
-| dual (* only)                   | [rflx](Macros/MacroRflx.html)                                       |
-| dpdp (** only)                  | [rxn](Macros/MacroRxn.html)                                         |
+| title | [cden](../Macros/MacroCden.md)                                      |
+| [boun](../Macros/MacroBoun.md) or [flow](../Macros/MacroFlow.md) or [hflx](../Macros/MacroHflx.md)          | [cont](../Macros/MacroCont.md) |
+| [cond](../Macros/MacroCond.md)   | [eos](../Macros/MacroEos.md)                                         |
+| [coor](../Macros/MacroCoor.md)   | [exrl](../Macros/MacroExrl.md)                                       |
+| [ctrl](../Macros/MacroCtrl.md)   | [finv](../Macros/MacroFinv.md)                                       |
+| [elem](../Macros/MacroElem.md)   | [flo2](../Macros/MacroFlo2.md)                                       |
+| [init](../Macros/MacroInit.md) or [pres](../Macros/MacroPres.md) | [flxo](../Macros/MacroFlxo.md) or [flxz](../Macros/MacroFlxz.md)    |
+| [perm](../Macros/MacroPerm.md)   | [fper](../Macros/MacroFper.md)                                       |
+| [rlp](../Macros/MacroRlp.md)     | [gdpm](../Macros/MacroGdpm.md)                                       |
+| [rock](../Macros/MacroRock.md)   | [hflx](../Macros/MacroHflx.md)                                       |
+| [sol](../Macros/MacroSol.md)     | [iter](../Macros/MacroIter.md)                                       |
+| [time](../Macros/MacroTime.md)   | [node](../Macros/MacroNode.md) or [nod2](../Macros/MacroNod2.md)    |
+| [stop](../Macros/MacroStop.md)   | [ppor](../Macros/MacroPpor.md)                                       |
+|                                 | [renu](../Macros/MacroRenu.md)                                       |
+| dual (* only)                   | [rflx](../Macros/MacroRflx.md)                                       |
+| dpdp (** only)                  | [rxn](../Macros/MacroRxn.md)                                         |
 |                                 | text or comments<br>(#)    |
-|                                 | [trac](Macros/MacroTrac.html)|
-|                                 | [user](Macros/MacroUser.html) or [userc](Macros/MacroUserc.html)  |                                             
-|                                 | [vcon](Macros/MacroVcon.html)                                       |
-|                                 | [velo](Macros/MacroVelo.html)                                       |
-|                                 | [zone](Macros/MacroZone.html) or [zonn](Macros/MacroZonn.html)    |
+|                                 | [trac](../Macros/MacroTrac.md)|
+|                                 | [user](../Macros/MacroUser.md) or [userc](../Macros/MacroUserc.md)  |                                             
+|                                 | [vcon](../Macros/MacroVcon.md)                                       |
+|                                 | velo                                       |
+|                                 | [zone](../Macros/MacroZone.md) or [zonn](../Macros/MacroZonn.md)    |
 
 
 
@@ -92,29 +92,29 @@ The following table shows required and optional macros listed by the type of pro
 
 |Required Macros |  Optional Macros    | 
 |:---------------|:-----------------------|
-| [title](Macros/MacroTitle.html) | [adif](Macros/MacroAdif.html)                                       |
-| [boun](Macros/MacroBoun.html) or [flow](Macros/MacroFlow.html) or [hflx](Macros/MacroHflx.html) | [cden](Macros/MacroCden.html)|
-| [cond](Macros/MacroCond.html) | [cont](Macros/MacroCont.html)                                       |
-| [coor](Macros/MacroCoor.html) | [eos](Macros/MacroEos.html)                                         |
-| [ctrl](Macros/MacroCtrl.html) | [finv](Macros/MacroFinv.html)                                       |
-| [elem](Macros/MacroElem.html)| [flo2](Macros/MacroFlo2.html)                                       |
-| [init](Macros/MacroInit.html) or [pres](Macros/MacroPres.html)                                    | [flxo](Macros/MacroFlxo.html) |
-| [ngas](Macros/MacroNgas.html)| [fper](Macros/MacroFper.html)                                       |
-| [perm](Macros/MacroPerm.html)                                                                       | [gdpm](Macros/MacroGdpm.html) |
-| [rlp](Macros/MacroRlp.html)| [iter](Macros/MacroIter.html)                                       |
-| [rock](Macros/MacroRock.html)| [node](Macros/MacroNode.html) or [nod2](Macros/MacroNod2.html)    |
-| [sol](Macros/MacroSol.html)| [ppor](Macros/MacroPpor.html)                                       |
-| [time](Macros/MacroTime.html)| [renu](Macros/MacroRenu.html)                                       |
-| [stop](Macros/MacroStop.html)| [rflx](Macros/MacroRflx.html)                                       |
-| | [rxn](Macros/MacroRxn.html)                                         |
-| dual *only  | [szna](Macros/MacroSzna.html)                                       |
+| title | [adif](../Macros/MacroAdif.md)                                       |
+| [boun](../Macros/MacroBoun.md) or [flow](../Macros/MacroFlow.md) or [hflx](../Macros/MacroHflx.md) | [cden](../Macros/MacroCden.md)|
+| [cond](../Macros/MacroCond.md) | [cont](../Macros/MacroCont.md)                                       |
+| [coor](../Macros/MacroCoor.md) | [eos](../Macros/MacroEos.md)                                         |
+| [ctrl](../Macros/MacroCtrl.md) | [finv](../Macros/MacroFinv.md)                                       |
+| [elem](../Macros/MacroElem.md)| [flo2](../Macros/MacroFlo2.md)                                       |
+| [init](../Macros/MacroInit.md) or [pres](../Macros/MacroPres.md)                                    | [flxo](../Macros/MacroFlxo.md) |
+| [ngas](../Macros/MacroNgas.md)| [fper](../Macros/MacroFper.md)                                       |
+| [perm](../Macros/MacroPerm.md)                                                                       | [gdpm](../Macros/MacroGdpm.md) |
+| [rlp](../Macros/MacroRlp.md)| [iter](../Macros/MacroIter.md)                                       |
+| [rock](../Macros/MacroRock.md)| [node](../Macros/MacroNode.md) or [nod2](../Macros/MacroNod2.md)    |
+| [sol](../Macros/MacroSol.md)| [ppor](../Macros/MacroPpor.md)                                       |
+| [time](../Macros/MacroTime.md)| [renu](../Macros/MacroRenu.md)                                       |
+| [stop](../Macros/MacroStop.md)| [rflx](../Macros/MacroRflx.md)                                       |
+| | [rxn](../Macros/MacroRxn.md)                                         |
+| dual *only  | [szna](../Macros/MacroSzna.md)                                       |
 | dpdp **only | text or comments (#)                                                  |
-|  | [trac](Macros/MacroTrac.html)                                       |
-|  | [user](Macros/MacroUser.html) or [userc](Macros/MacroUserc.html)  |
-|  | [vapl](Macros/MacroVapl.html)                                       |
-|  | [vcon](Macros/MacroVcon.html)                                       |
-|  | [velo](Macros/MacroVelo.html)                                       |
-|  | [zone](Macros/MacroZone.html) or [zonn](Macros/MacroZone.html)    |
+|  | [trac](../Macros/MacroTrac.md)                                       |
+|  | [user](../Macros/MacroUser.md) or userc  |
+|  | [vapl](../Macros/MacroVapl.md)                                       |
+|  | [vcon](../Macros/MacroVcon.md)                                       |
+|  | velo                                       |
+|  | [zone](../Macros/MacroZone.md) or [zonn](../Macros/MacroZone.md)    |
 
 
 
@@ -122,28 +122,28 @@ The following table shows required and optional macros listed by the type of pro
 
 |Required Macros |  Optional Macros    | 
 |:---------------|:-----------------------|
-| [title](Macros/MacroTitle.html)                                    | [bous](Macros/MacroBous.html)                                       |
-| [airwater](Macros/MacroAirwater.html)                              | [cont](Macros/MacroCont.html)                                       |
-| [boun](Macros/MacroBoun.html) or [flow](Macros/MacroFlow.html)   | [eos](Macros/MacroEos.html)                                         |
-| [coor](Macros/MacroCoor.html)                                      | [exri](Macros/MacroExri.html)                                       |
-| [ctrl](Macros/MacroCtrl.html)                                      | [finv](Macros/MacroFinv.html)                                       |
-| [elem](Macros/MacroElem.html)                                      | [flo2(]Macros/MacroFlo2.html)                                       |
-| [init](Macros/MacroInit.html) or [pres](Macros/MacroPres.html)   | [flxo](Macros/MacroFlxo.html)                                       |
-| [node](Macros/MacroNode.html) or [nod2](Macros/MacroNod2.html)   | [fper](Macros/MacroFper.html)                                       |
-| [perm](Macros/MacroPerm.html)                                      | [gdpm](Macros/MacroGdpm.html)                                       |
-| [rock](Macros/MacroRock.html)                                      | [head](Macros/MacroHead.html)                                       |
-| [sol](Macros/MacroSol.html)                                        | [iter](Macros/MacroIter.html)                                       |
-| [time](Macros/MacroTime.html)                                      | [ppor](Macros/MacroPpor.html)                                       |
-| [stop](Macros/MacroStop.html)                                      | [pres](Macros/MacroPres.html)                                       |
-|                                                                      | [renu](Macros/MacroRenu.html)                                       |
-| dual (*only)                                                         | [rlp](Macros/MacroRlp.html)                                         |
-| dpdp (only)                                                          | [rxn](Macros/MacroRxn.html)                                         |
+| title                                    | [bous](../Macros/MacroBous.md)                                       |
+| [airwater](../Macros/MacroAirwater.md)                              | [cont](../Macros/MacroCont.md)                                       |
+| [boun](../Macros/MacroBoun.md) or [flow](../Macros/MacroFlow.md)   | [eos](../Macros/MacroEos.md)                                         |
+| [coor](../Macros/MacroCoor.md)                                      | [exri](../Macros/MacroExri.md)                                       |
+| [ctrl](../Macros/MacroCtrl.md)                                      | [finv](../Macros/MacroFinv.md)                                       |
+| [elem](../Macros/MacroElem.md)                                      | [flo2(]../Macros/MacroFlo2.md)                                       |
+| [init](../Macros/MacroInit.md) or [pres](../Macros/MacroPres.md)   | [flxo](../Macros/MacroFlxo.md)                                       |
+| [node](../Macros/MacroNode.md) or [nod2](../Macros/MacroNod2.md)   | [fper](../Macros/MacroFper.md)                                       |
+| [perm](../Macros/MacroPerm.md)                                      | [gdpm](../Macros/MacroGdpm.md)                                       |
+| [rock](../Macros/MacroRock.md)                                      | [head](../Macros/MacroHead.md)                                       |
+| [sol](../Macros/MacroSol.md)                                        | [iter](../Macros/MacroIter.md)                                       |
+| [time](../Macros/MacroTime.md)                                      | [ppor](../Macros/MacroPpor.md)                                       |
+| [stop](../Macros/MacroStop.md)                                      | [pres](../Macros/MacroPres.md)                                       |
+|                                                                      | [renu](../Macros/MacroRenu.md)                                       |
+| dual (*only)                                                         | [rlp](../Macros/MacroRlp.md)                                         |
+| dpdp (only)                                                          | [rxn](../Macros/MacroRxn.md)                                         |
 |                                                                      | text or comments                                                      |
-|                                                                      | [trac](Macros/MacroTrac.html)                                       |
-|                                                                      | [user](Macros/MacroUser.html) or [userc](Macros/MacroUserc.html)  |
-|                                                                      | [vapl](Macros/MacroVapl.html)                                       |
-|                                                                      | [velo](Macros/MacroVelo.html)                                       |
-|                                                                      | [zone](Macros/MacroZone.html) or [zonn](Macros/MacroZonn.html)    |
+|                                                                      | [trac](../Macros/MacroTrac.md)                                       |
+|                                                                      | [user](../Macros/MacroUser.md) or userc  |
+|                                                                      | [vapl](../Macros/MacroVapl.md)                                       |
+|                                                                      | velo                                       |
+|                                                                      | [zone](../Macros/MacroZone.md) or [zonn](../Macros/MacroZonn.md)    |
 
 ## <a id="Code-execution"></a>Code Execution
 
