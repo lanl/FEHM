@@ -12,6 +12,12 @@
       link: /getting-started/definitions-acronyms
     - name: Examples & Samples
       link: /getting-started/examples-samples
+- name:  Macros
+  dropdown:
+    - name: Macros Alphabetical List
+      link: /program-specification/input-data/#alpha-macro
+    - name: Macros by Problem
+      link: /program-specification/macros
 - name: Program Specifications
   dropdown:
     - name: Macros
