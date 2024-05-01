@@ -1,6 +1,6 @@
 ---
 title: FEHM Users Manual
-layout: page_getting-started
+layout: page
 permalink: /index
 hero_height: is-hidden
 ---

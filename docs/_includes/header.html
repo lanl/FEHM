@@ -13,8 +13,8 @@
         <div class="navbar-menu" id="navMenu" :class="{ 'is-active': openNav }">
             <div class="navbar-start">
 
-                {% if site.data.getting-started.navigation %}
-                {% for item in site.data.getting-started.navigation %}
+                {% if site.data.main.navigation %}
+                {% for item in site.data.main.navigation %}
                     {% if item.dropdown %}
                     <div class="navbar-item has-dropdown is-hoverable {% if site.fixed_navbar == 'bottom' %} has-dropdown-up {% endif %}">
                         <a href="{{ item.link | relative_url }}" class="navbar-link {% if item.link == page.url %}is-active{% endif %}">{{ item.name }}</a>
@@ -34,7 +34,7 @@
             <div class="navbar-end">
                 {% if site.gh_sponsor %}
                 <a class="navbar-item" href="https://github.com/lanl/{{ site.gh_sponsor }}">
-                    <span class="icon gh-sponsor"><img src="../img/github-mark-white.svg"></img></span>
+                    <span class="icon gh-sponsor"><img src="img/github-mark-white.svg"></img></span>
                 </a>
                 {% endif %}
             </div>
