@@ -15,7 +15,7 @@
 - name:  Macros
   dropdown:
     - name: Macros Alphabetical List
-      link: /program-specification/input-data/#alpha-macro
+      link: /program-specification/input-data#alpha-macro
     - name: Macros by Problem
       link: /program-specification/macros
 - name: Program Specifications
