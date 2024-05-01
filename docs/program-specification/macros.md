@@ -13,7 +13,7 @@ hero_height: is-hidden
 
 | Required Macros |   Optional Macros   | 
 |:---------------|:-----------------------|
-| [title](../Macros/MacroTitle.md)  | [cont](../Macros/MacroCont.md)                                    |
+| title  | [cont](../Macros/MacroCont.md)                                    |
 | [boun](../Macros/MacroBoun.md) or [flow](../Macros/MacroFlow.md) or [hflx](../Macros/MacroHflx.md)   | [finv](../Macros/MacroFinv.md)                                    |
 | [cond](../Macros/MacroCond.md)                                                                         | [flo2](../Macros/MacroFlo2.md)                                    |
 | [coor](../Macros/MacroCoor.md)                                                                         | [flxo](../Macros/MacroFlxo.md) or [flxz](../Macros/MacroFlxz.md) |
@@ -32,7 +32,7 @@ hero_height: is-hidden
 
 | Required Macros |   Optional Macros   | 
 |:---------------|:-----------------------|
-| [title](../Macros/MacroTitle.md)                                                                              | [cden](../Macros/MacroCden.md)                                       |
+| title                                                                              | [cden](../Macros/MacroCden.md)                                       |
 | [boun](../Macros/MacroBoun.md) or [flow](../Macros/MacroFlow.md) or [hflx](../Macros/MacroHflx.md)          | [cont](../Macros/MacroCont.md)                                       |
 | [cond](../Macros/MacroCond.md)                                                                                | [eos](../Macros/MacroEos.md)                                         |
 | [coor](../Macros/MacroCoor.md)                                                                                | [exrl](../Macros/MacroExrl.md)                                       |
@@ -50,9 +50,9 @@ hero_height: is-hidden
 | dpdp (** only)                                                                                                 | [rxn](../Macros/MacroRxn.md)                                         |
 |                                                                                                                | text or comments (#)                                                  |
 |                                                                                                                | [trac](../Macros/MacroTrac.md)                                       |
-|                                                                                                                | [user](../Macros/MacroUser.md) or [userc](../Macros/MacroUserc.md)  |
+|                                                                                                                | [user](../Macros/MacroUser.md) or userc  |
 |                                                                                                                | [vcon](../Macros/MacroVcon.md)                                       |
-|                                                                                                                | [velo](../Macros/MacroVelo.md)                                       |
+|                                                                                                                | velo                                       |
 |                                                                                                                | [zone](../Macros/MacroZone.md) or [zonn](../Macros/MacroZonn.md)    |
 
 
@@ -61,7 +61,7 @@ hero_height: is-hidden
 
 | Required Macros |   Optional Macros   | 
 |:---------------|:-----------------------|
-| [title](../Macros/MacroTitle.md)                                                                     | [adif](../Macros/MacroAdif.md)                                       |
+| title                                                                    | [adif](../Macros/MacroAdif.md)                                       |
 | [boun](../Macros/MacroBoun.md) or [flow](../Macros/MacroFlow.md) or [hflx](../Macros/MacroHflx.md) | [cden](../Macros/MacroCden.md)                                       |
 | [cond](../Macros/MacroCond.md)                                                                       | [cont](../Macros/MacroCont.md)                                       |
 | [coor](../Macros/MacroCoor.md)                                                                       | [eos](../Macros/MacroEos.md)                                         |
@@ -79,10 +79,10 @@ hero_height: is-hidden
 | dual (*only)                                                                                          | [szna](../Macros/MacroSzna.md)                                       |
 | dpdp (**only)                                                                                         | text or comments (#)                                                  |
 |                                                                                                       | [trac](../Macros/MacroTrac.md)                                       |
-|                                                                                                       | [user](../Macros/MacroUser.md) or [userc](../Macros/MacroUserc.md)  |
+|                                                                                                       | [user](../Macros/MacroUser.md) or userc  |
 |                                                                                                       | [vapl](../Macros/MacroVapl.md)                                       |
 |                                                                                                       | [vcon](../Macros/MacroVcon.md)                                       |
-|                                                                                                       | [velo](../Macros/MacroVelo.md)                                       |
+|                                                                                                       | velo                                       |
 |                                                                                                       | [zone](../Macros/MacroZone.md) or [zonn](../Macros/MacroZone.md)    |
 
 
@@ -92,7 +92,7 @@ hero_height: is-hidden
 
 | Required Macros |   Optional Macros   | 
 |:---------------|:-----------------------|
-| [title](../Macros/MacroTitle.md)                                    | [bous](../Macros/MacroBous.md)                                       |
+| title                                    | [bous](../Macros/MacroBous.md)                                       |
 | [airwater](../Macros/MacroAirwater.md)                              | [cont](../Macros/MacroCont.md)                                       |
 | [boun](../Macros/MacroBoun.md) or [flow](../Macros/MacroFlow.md)   | [eos](../Macros/MacroEos.md)                                         |
 | [coor](../Macros/MacroCoor.md)                                      | [exri](../Macros/MacroExri.md)                                       |
@@ -110,9 +110,9 @@ hero_height: is-hidden
 | dpdp (only)                                                          | [rxn](../Macros/MacroRxn.md)                                         |
 |                                                                      | text or comments                                                      |
 |                                                                      | [trac](../Macros/MacroTrac.md)                                       |
-|                                                                      | [user](../Macros/MacroUser.md) or [userc](../Macros/MacroUserc.md)  |
+|                                                                      | [user](../Macros/MacroUser.md) or userc  |
 |                                                                      | [vapl](../Macros/MacroVapl.md)                                       |
-|                                                                      | [velo](../Macros/MacroVelo.md)                                       |
+|                                                                      | velo                                       |
 |                                                                      | [zone](../Macros/MacroZone.md) or [zonn](../Macros/MacroZonn.md)    |
 
 
