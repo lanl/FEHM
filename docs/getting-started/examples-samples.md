@@ -18,7 +18,7 @@ FEHM is a very general simulation code. Thus it is preferable to discuss the con
 
 **Boundary conditions**. Fluid and heat flow boundary conditions can be prescribed through control statements ```pres``` [bound](../Macros/MacroBoun.md), [flow](../Macros/MacroFlow.md), and [hflx](../Macros/MacroHflx.md). Boundary conditions are entered with ```pres``` by specifying a negative phase state designation (the code will actually use the absolute value of the phase state designation). In this case the code will keep the variable values constant at whatever value was prescribed in **pres**. Flowing pressures are input with the boun or ```flow``` control statement. Solute boundary conditions are prescribed through the control statement ```trac```
 
-**Material and Energy Balance Equations**. The choice of the coupled system equations is made in control statements [sol](../Macros/MacroSol.md), ```ngas```, and [air](../Macros/MacroAir.md).
+**Material and Energy Balance Equations**. The choice of the coupled system equations is made in control statements [sol](../Macros/MacroSol.md), ```ngas```, and [air](../Macros/MacroAirwater.md).
 
 **Rock or Media Properties**. These are found in the [rock](../Macros/MacroRock.md) and ```perm``` control statements.
 
