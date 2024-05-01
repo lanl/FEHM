@@ -12,33 +12,18 @@ Email: fehm-help@lanl.gov
 
 Website: [https://fehm.lanl.gov](https://fehm.lanl.gov)
 
+User Manual: [https://lanl.github.io/FEHM/](https://lanl.github.io/FEHM/)
 
-## Code
+Github: [https://github.com/lanl/FEHM](https://github.com/lanl/FEHM)
+
+
+## Code Development
 
 
 * Zyvoloski, George A.
 
-* Robinson, Bruce A.
-
-* Dash, Zora V.
-
-* Kelkar, Sharad
+* Satuffer, Phil
 
 * Viswanathan, Hari
 
 * Pawar, Rajesh
-
-* Stauffer, Phil
-
-
-
-## Documentation
-
-
-* Birdsell, Kay
-
-* Tauxe, Dustin
-
-* Livingston, Daniel
-
-* Miller, Terry Ann
