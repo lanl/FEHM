@@ -1,6 +1,7 @@
 ---
 title: FEHM Users Manual
 layout: page_getting-started
+permalink: index
 hero_height: is-hidden
 ---
 # Software Users Manual (UM) for the FEHM Application
