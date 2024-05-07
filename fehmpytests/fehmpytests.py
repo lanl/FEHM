@@ -72,7 +72,7 @@ class fehmTest(unittest.TestCase):
         
         #If log switch is on, create the fail log file.
         if self.log:
-            self.fail_log = open('fail_log.txt', 'w')
+            self.fail_log = open('fail_log.txt', 'a')
         
         self.maindir = os.getcwd()
     
