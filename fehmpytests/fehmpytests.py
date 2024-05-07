@@ -649,6 +649,11 @@ class fehmTest(unittest.TestCase):
                         test_flag = True
                 os.chdir( '..' )
                 if not test_flag:
+                    #Write to fail log if switch is on.
+                    if self.log:
+                        line = '\nFailed at subcase:'+subcase
+                        line = line+' filetype:'+filetype
+                        self.fail_log.write(line)
                     self.fail("Missing any valid comparison files, no test performed")
                                         
         finally:
@@ -730,7 +735,7 @@ class fehmTest(unittest.TestCase):
                         #Write to fail log if switch is on.
                         if self.log:
                             kvpairs = {'variable':str(v), 'time':str(t)}
-                            line = 'Failed at subcase:'+subcase
+                            line = '\nFailed at subcase:'+subcase
                             line = line+' filetype:'+filetype
                             for key in kvpairs:        
                                 line = line+' '+key+':'+kvpairs[key]
@@ -779,7 +784,7 @@ class fehmTest(unittest.TestCase):
                         #Write to fail log if switch is on.
                         if self.log:
                             kvpairs = {'variable':str(v), 'node':str(n)}
-                            line = 'Failed at subcase:'+subcase
+                            line = '\nFailed at subcase:'+subcase
                             line = line+' filetype:'+filetype
                             for key in kvpairs:        
                                 line = line+' '+key+':'+kvpairs[key]
@@ -831,7 +836,7 @@ class fehmTest(unittest.TestCase):
                         #Write to fail log if switch is on.
                         if self.log:
                             kvpairs = {'variable':str(v), 'node':str(n)}
-                            line = 'Failed at subcase:'+subcase
+                            line = '\nFailed at subcase:'+subcase
                             line = line+' filetype:'+filetype
                             for key in kvpairs:        
                                 line = line+' '+key+':'+kvpairs[key]
@@ -893,7 +898,7 @@ class fehmTest(unittest.TestCase):
                                 kvpairs = { 'component': str(c), 
                                             'node': str(n),
                                             'variable': str(v), }
-                                line = 'Failed at subcase:'+subcase
+                                line = '\nFailed at subcase:'+subcase
                                 line = line+' filetype:'+filetype
                                 for key in kvpairs:        
                                     line = line+' '+key+':'+kvpairs[key]
@@ -937,7 +942,7 @@ class fehmTest(unittest.TestCase):
                     #Write to fail log if switch is on.
                     if self.log:
                         kvpairs = {'variable': str(v)}
-                        line = 'Failed at subcase:'+subcase
+                        line = '\nFailed at subcase:'+subcase
                         line = line+' filetype:'+filetype
                         for key in kvpairs:        
                             line = line+' '+key+':'+kvpairs[key]
