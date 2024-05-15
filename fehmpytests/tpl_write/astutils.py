@@ -145,15 +145,15 @@ class ExceptionHolder(object):
         self.exc    = exc
         self.lineno = lineno
         self.exc_info = exc_info()
-        if self.exc is None and self.exc_info[0] is not None:
+        if self.exc == None and self.exc_info[0] != None:
             self.exc = self.exc_info[0]
-        if self.msg is '' and self.exc_info[1] is not None:
+        if self.msg == '' and self.exc_info[1] != None:
             self.msg = self.exc_info[1]
 
     def get_error(self):
         "retrieve error data"
         col_offset = -1
-        if self.node is not None:
+        if self.node != None:
             try:
                 col_offset = self.node.col_offset
             except AttributeError:
