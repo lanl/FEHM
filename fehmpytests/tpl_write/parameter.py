@@ -26,7 +26,7 @@ def valid_symbol_name(name):
     "input is a valid name"
     if name in RESERVED_WORDS:
         return False
-    return NAME_MATCH(name) is not None
+    return NAME_MATCH(name) != None
 
 
 class Parameters(OrderedDict):
@@ -48,7 +48,7 @@ class Parameters(OrderedDict):
         if key not in self:
             if not valid_symbol_name(key):
                 raise KeyError("'%s' is not a valid Parameters name" % key)
-        if value is not None and not isinstance(value, Parameter):
+        if value != None and not isinstance(value, Parameter):
             raise ValueError("'%s' is not a Parameter" % value)
         OrderedDict.__setitem__(self, key, value)
         value.name = key
@@ -98,24 +98,24 @@ class Parameter(object):
         self.deps   = None
         self.stderr = None
         self.correl = None
-        if self.max is not None and value > self.max:
+        if self.max != None and value > self.max:
             self._val = self.max
-        if self.min is not None and value < self.min:
+        if self.min != None and value < self.min:
             self._val = self.min
         self.from_internal = lambda val: val
 
     def __repr__(self):
         s = []
-        if self.name is not None:
+        if self.name != None:
             s.append("'%s'" % self.name)
         sval = repr(self._val)
-        if self.stderr is not None:
+        if self.stderr != None:
             sval = "value=%s +/- %.3g" % (sval, self.stderr)
-        if not self.vary and self.expr is None:
+        if not self.vary and self.expr == None:
             sval = "value=%s (fixed)" % (sval)
         s.append(sval)
         s.append("bounds=[%s:%s]" % (repr(self.min), repr(self.max)))
-        if self.expr is not None:
+        if self.expr != None:
             s.append("expr='%s'" % (self.expr))
         return "<Parameter %s>" % ', '.join(s)
 
@@ -166,13 +166,13 @@ class Parameter(object):
 
     def _getval(self):
         """get value, with bounds applied"""
-        if (self._val is not nan and
+        if (self._val != nan and
             isinstance(self._val, uncertainties.Variable)):
             self._val = self._val.nominal_value
 
-        if self.min is None:
+        if self.min == None:
             self.min = -inf
-        if self.max is None:
+        if self.max == None:
             self.max =  inf
         if self.max < self.min:
             self.max, self.min = self.min, self.max

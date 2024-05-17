@@ -149,14 +149,14 @@ class Interpreter:
     def raise_exception(self, node, exc=None, msg='', expr=None,
                         lineno=None):
         "add an exception"
-        if self.error is None:
+        if self.error == None:
             self.error = []
-        if expr  is None:
+        if expr  == None:
             expr  = self.expr
 
         if len(self.error) > 0 and not isinstance(node, ast.Module):
             msg = '%s' % msg
-        if self.errmsg is None:
+        if self.errmsg == None:
             self.errmsg = msg
         err = ExceptionHolder(node, exc=exc, msg=self.errmsg,
                               expr=expr, lineno=lineno)
@@ -183,14 +183,14 @@ class Interpreter:
         #    run(None) and expect a None in return.
         if len(self.error)>0:
             return
-        if node is None:
+        if node == None:
             return None
         if isinstance(node, str):
             node = self.parse(node)
-        if lineno is not None:
+        if lineno != None:
             self.lineno = lineno
 
-        if expr   is not None:
+        if expr   != None:
             self.expr   = expr
 
         # get handler for this node:
@@ -256,7 +256,7 @@ class Interpreter:
     def on_return(self, node): # ('value',)
         "return statement: look for None, return special sentinal"
         self.retval = self.run(node.value)
-        if self.retval is None:
+        if self.retval == None:
             self.retval = ReturnedNone
         return
 
@@ -518,7 +518,7 @@ class Interpreter:
             self._interrupt = None
             for tnode in node.body:
                 self.run(tnode)
-                if self._interrupt is not None:
+                if self._interrupt != None:
                     break
             if isinstance(self._interrupt, ast.Break):
                 break
@@ -534,7 +534,7 @@ class Interpreter:
             self._interrupt = None
             for tnode in node.body:
                 self.run(tnode)
-                if self._interrupt is not None:
+                if self._interrupt != None:
                     break
             if isinstance(self._interrupt, ast.Break):
                 break
@@ -571,11 +571,11 @@ class Interpreter:
                 e_type, e_value, e_tback = self.error[-1].exc_info
                 for hnd in node.handlers:
                     htype = None
-                    if hnd.type is not None:
+                    if hnd.type != None:
                         htype = __builtins__.get(hnd.type.id, None)
-                    if htype is None or isinstance(e_type(), htype):
+                    if htype == None or isinstance(e_type(), htype):
                         self.error = []
-                        if hnd.name is not None:
+                        if hnd.name != None:
                             self.node_assign(hnd.name, e_value)
                         for tline in hnd.body:
                             self.run(tline)
@@ -608,7 +608,7 @@ class Interpreter:
             self.raise_exception(node, exc=TypeError, msg=msg)
 
         args = [self.run(targ) for targ in node.args]
-        if node.starargs is not None:
+        if node.starargs != None:
             args = args + self.run(node.starargs)
 
         keywords = {}
@@ -618,7 +618,7 @@ class Interpreter:
                 self.raise_exception(node, msg=msg)
 
             keywords[key.arg] = self.run(key.value)
-        if node.kwargs is not None:
+        if node.kwargs != None:
             keywords.update(self.run(node.kwargs))
 
         try:
@@ -688,7 +688,7 @@ class Procedure(object):
         sig = ""
         if len(self.argnames) > 0:
             sig = "%s%s" % (sig, ', '.join(self.argnames))
-        if self.vararg is not None:
+        if self.vararg != None:
             sig = "%s, *%s" % (sig, self.vararg)
         if len(self.kwargs) > 0:
             if len(sig) > 0:
@@ -696,10 +696,10 @@ class Procedure(object):
             _kw = ["%s=%s" % (k, v) for k, v in self.kwargs]
             sig = "%s%s" % (sig, ', '.join(_kw))
 
-        if self.varkws is not None:
+        if self.varkws != None:
             sig = "%s, **%s" % (sig, self.varkws)
         sig = "<Procedure %s(%s)>" % (self.name, sig)
-        if self.__doc__ is not None:
+        if self.__doc__ != None:
             sig = "%s\n  %s" % (sig, self.__doc__)
         return sig
 
@@ -719,7 +719,7 @@ class Procedure(object):
             n_names = len(self.argnames)
             n_kws = len(kwargs)
 
-        if len(self.argnames) > 0 and kwargs is not None:
+        if len(self.argnames) > 0 and kwargs != None:
             msg = "multiple values for keyword argument '%s' in Procedure %s"
             for targ in self.argnames:
                 if targ in kwargs:
@@ -739,7 +739,7 @@ class Procedure(object):
             symlocals[argname] = args.pop(0)
 
         try:
-            if self.vararg is not None:
+            if self.vararg != None:
                 symlocals[self.vararg] = tuple(args)
 
             for key, val in self.kwargs:
@@ -747,7 +747,7 @@ class Procedure(object):
                     val = kwargs.pop(key)
                 symlocals[key] = val
 
-            if self.varkws is not None:
+            if self.varkws != None:
                 symlocals[self.varkws] = kwargs
 
             elif len(kwargs) > 0:
@@ -771,9 +771,9 @@ class Procedure(object):
             self.interpreter.run(node, expr='<>', lineno=self.lineno)
             if len(self.interpreter.error) > 0:
                 break
-            if self.interpreter.retval is not None:
+            if self.interpreter.retval != None:
                 retval = self.interpreter.retval
-                if retval is ReturnedNone: retval = None
+                if retval == ReturnedNone: retval = None
                 break
 
         self.interpreter.symtable = save_symtable
