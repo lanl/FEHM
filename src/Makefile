@@ -37,7 +37,7 @@ DEPEND = ${SRCDIR}Makefile.depends
 OPSYS = $(shell uname -s )
 DATETAG = $(shell date '+%y-%m-%d')
 DATE = $(shell date '+.%d%b%y')
-FFLAGS = -frecord-marker=4 -no-pie
+FFLAGS = -frecord-marker=4 -no-pie -fallow-argument-mismatch
 DEBUGFLAGS = -g -O0 -frecord-marker=4 -fbounds-check -Wall
 
 
