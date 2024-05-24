@@ -618,14 +618,25 @@ class fehmTest(unittest.TestCase):
         filenames = glob.glob(os.path.join('input','control','*.files'))
         subcases  = []
         for filename in filenames:
-            subcase = re.sub(os.path.join('input','control',''), '', filename)
-            subcase = re.sub('.files', '', subcase)
+            print('\nfilename: ', filename)
+
+            path = os.path.join('input', 'control', ' ')
+            if os.name == 'nt':  # For Windows
+                subcase = re.sub(r'input[\\/]', '', filename)
+                subcase = re.sub(r'control[\\/]', '', subcase)
+                subcase = re.sub(r'\.files$', '', subcase)
+            else:  # For Unix-based systems
+                subcase = re.sub(os.path.join('input','control',''), '', filename)
+                subcase = re.sub('.files', '', subcase)
+            #print('subcase: ', subcase)
             
             #File named 'fehmn.files' to be used for tests with single case.
             if subcase != 'fehmn':
                 subcases.append(subcase)
+                #print('append subases')
             else:
                 subcases = ['']
+                #print('broken subases')
                 break
                 
         try:
@@ -639,25 +650,34 @@ class fehmTest(unittest.TestCase):
                 os.chdir( output_dir )
                 filetypes = ['*.avs','*.csv','*.his','*.out','*.trc','*.ptrk']
                 test_flag = False
+                
                 for filetype in filetypes:
                     parameters['filetype'] = filetype
-                    #Check to make sure there are files of this type.
-                    if len(glob.glob(os.path.join('..','compare','')+'*'+subcase+filetype)) > 0: 
-                        test_method = \
-                          self._test_template(filetype, subcase, parameters)
+                    compare_pattern = (os.path.join('..', 'compare', '*' )+ subcase + filetype)
+                    found_files = glob.glob(compare_pattern)
+                    print('\nsubcase: ', subcase)
+
+                    print('Checking for files with pattern: ', compare_pattern)
+                    print('Found files: ', found_files)
+                    print('Number of found files: ', len(found_files))
+
+                    if len(found_files) > 0:
+                        test_method = self._test_template(filetype, subcase, parameters)
                         test_method()
+                        print('Test method executed for filetype: ', filetype)
                         test_flag = True
-                os.chdir( '..' )
+                    else:
+                        print('Test method NOT executed for filetype: ', filetype)
+
+                os.chdir('..')
                 if not test_flag:
-                    #Write to fail log if switch is on.
                     if self.log:
-                        line = '\nFailed at subcase:'+subcase
-                        line = line+' filetype:'+filetype
+                        line = f'\nFailed at subcase: {subcase} filetype: {filetype}'
                         self.fail_log.write(line)
                     self.fail("Missing any valid comparison files, no test performed")
-                                        
+
         finally:
-            #Allows other tests to be performed after exception.
+            # Allows other tests to be performed after exception.
             os.chdir(self.maindir)
             
     def _test_template(self, filetype, subcase, parameters={}):
