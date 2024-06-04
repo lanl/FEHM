@@ -1039,7 +1039,7 @@ class fhistory(object):                     # Reading and plotting methods assoc
                 if os.name == 'nt':  # For Windows
                     tmp=fname.split('\\')[-1]
                 else:
-                    tmp = fname.rsplit('/', 1)[0]
+                    tmp = fname.split('/')[-1]
                 #print('tmp: ', tmp)
                 if os.path.exists(tmp):
                     #print('valid comparison of: ', fname, ' and ', tmp)
