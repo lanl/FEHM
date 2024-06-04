@@ -1045,7 +1045,7 @@ class fhistory(object):                     # Reading and plotting methods assoc
                     #print('valid comparison of: ', fname, ' and ', tmp)
                     pass
                 else:
-                    #print('No valid comparison file. Skipping file: ', fname)
+                    print('\n    **WARNING**   The file ', tmp , ' is in compare, but not in output. Skipping file...')
                     continue
             elif '..' not in fname:
                 #print('fname is in output: ', fname)
@@ -1055,7 +1055,7 @@ class fhistory(object):                     # Reading and plotting methods assoc
                     #print('valid comparison of: ', fname, ' and ', path)
                     pass
                 else:
-                   # print('No valid comparison file. Skipping file: ', fname)
+                    #print('\n    **WARNING**   The file ', fname , 'is in output, but doesn''t have a valid compare file. Skipping file...')
                     continue
 
             with open(fname, 'r') as self._file:
