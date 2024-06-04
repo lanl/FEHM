@@ -616,16 +616,28 @@ class fehmTest(unittest.TestCase):
         
         #Search for fehmn control files and extract subcases.
         filenames = glob.glob(os.path.join('input','control','*.files'))
+        #print('filenames: ', filenames)
         subcases  = []
         for filename in filenames:
-            subcase = re.sub(os.path.join('input','control',''), '', filename)
-            subcase = re.sub('.files', '', subcase)
+            #print('\nfilename: ', filename)
+
+            path = os.path.join('input', 'control', ' ')
+            if os.name == 'nt':  # For Windows
+                subcase = re.sub(r'input[\\/]', '', filename)
+                subcase = re.sub(r'control[\\/]', '', subcase)
+                subcase = re.sub(r'\.files$', '', subcase)
+            else:  # For Unix-based systems
+                subcase = re.sub(os.path.join('input','control',''), '', filename)
+                subcase = re.sub('.files', '', subcase)
+            #print('subcase: ', subcase)
             
             #File named 'fehmn.files' to be used for tests with single case.
             if subcase != 'fehmn':
                 subcases.append(subcase)
+                #print('append subases')
             else:
                 subcases = ['']
+                #print('broken subcases')
                 break
                 
         try:
@@ -639,25 +651,34 @@ class fehmTest(unittest.TestCase):
                 os.chdir( output_dir )
                 filetypes = ['*.avs','*.csv','*.his','*.out','*.trc','*.ptrk']
                 test_flag = False
+                
                 for filetype in filetypes:
                     parameters['filetype'] = filetype
-                    #Check to make sure there are files of this type.
-                    if len(glob.glob(os.path.join('..','compare','')+'*'+subcase+filetype)) > 0: 
-                        test_method = \
-                          self._test_template(filetype, subcase, parameters)
+                    compare_pattern = (os.path.join('..', 'compare', '*' )+ subcase + filetype)
+                    found_files = glob.glob(compare_pattern)
+
+                    #print('Checking for files with pattern: ', compare_pattern)
+                    #print('Found files: ', found_files)
+                    #print('Number of found files: ', len(found_files))
+
+                    if len(found_files) > 0:
+                        test_method = self._test_template(filetype, subcase, parameters)
                         test_method()
+                        #print('Test method executed for filetype: ', filetype)
                         test_flag = True
-                os.chdir( '..' )
+                    else:
+                        #print('Test method NOT executed for filetype: ', filetype)
+                        pass
+
+                os.chdir('..')
                 if not test_flag:
-                    #Write to fail log if switch is on.
                     if self.log:
-                        line = '\nFailed at subcase:'+subcase
-                        line = line+' filetype:'+filetype
+                        line = f'\nFailed at subcase: {subcase} filetype: {filetype}'
                         self.fail_log.write(line)
                     self.fail("Missing any valid comparison files, no test performed")
-                                        
+
         finally:
-            #Allows other tests to be performed after exception.
+            # Allows other tests to be performed after exception.
             os.chdir(self.maindir)
             
     def _test_template(self, filetype, subcase, parameters={}):
@@ -698,7 +719,7 @@ class fehmTest(unittest.TestCase):
             f_dif = fpost.fdiff(f_new, f_old)
                 
             msg = 'Incorrect %s at time %s.'
-            
+
             #If no pre-specified times, grab them from f_dif.
             if len(values['times']) == 0:
                 times = f_dif.times
@@ -714,6 +735,7 @@ class fehmTest(unittest.TestCase):
             #Check the variables at each time for any significant differences.
             test_flag = False
             for t in times: 
+                #print(subcase)
                 #Its possible some times do not have all variables in f_dif.
                 for v in np.intersect1d(variables, list(f_dif[t].keys())):
                     #Measure the difference into a single quantity.
@@ -729,6 +751,7 @@ class fehmTest(unittest.TestCase):
                             float(len(f_dif[t][v]))
                     }[test_measure]
                     try:
+                       # print('true? ', difference, '<', mxerr, '=', difference<mxerr)
                         self.assertTrue(difference<mxerr, msg%(v, t))
                         test_flag = True
                     except AssertionError as e:
@@ -745,7 +768,7 @@ class fehmTest(unittest.TestCase):
                 self.fail("Missing common nodes in compare and output contour files, no test performed")
         def history_case():
             #Find the difference between the old and new
-            f_old = fpost.fhistory(os.path.join('..','compare','*')+subcase+filetype) 
+            f_old = fpost.fhistory(os.path.join('..','compare','*')+subcase+filetype)
             f_new = fpost.fhistory('*'+subcase+filetype)
             f_dif = fpost.fdiff(f_new, f_old)
 
@@ -971,11 +994,13 @@ class fehmTest(unittest.TestCase):
         
         #Find the control file for the test-case or for the subcase. 
         if subcase == '':
+            #print('subcase empty assume fehm at: \n',  os.path.join('..','input','control','fehmn.files'))
             filesfile = os.path.join('..','input','control','fehmn.files')
         else:
             filesfile = os.path.join('..','input','control',subcase+'.files')
             
         evalstr = exe+' '+filesfile
+        #print('evalstr: ', evalstr)
         
         with open(os.devnull, "w") as f:
             call(evalstr, shell=True, stdout=f)
@@ -1008,7 +1033,8 @@ class fehmTest(unittest.TestCase):
             errstr = open( errfile, 'r' ).read()
         else: 
             errstr = ''
-        # Change to maindir in case assertTrue fails    
+        # Change to maindir in case assertTrue fails 
+        #print('CWD: ',  os.getcwd() )   
         curdir = os.getcwd() 
         os.chdir(self.maindir)
         
