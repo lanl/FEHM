@@ -1026,13 +1026,38 @@ class fhistory(object):                     # Reading and plotting methods assoc
         '''
         from glob import glob
         import re
+        #print('\n*********************************************\nFilename as imported from fehmpytests fhistory: ', filename)
         glob_pattern = re.sub(r'\[','[[]',filename)
         glob_pattern = re.sub(r'(?<!\[)\]','[]]', glob_pattern)
         files=glob(glob_pattern)
         configured=False
         for i,fname in enumerate(files):
+            #print('Names of files: \n', files)
             #if self._verbose:
-            #   print(fname)
+            if '..' in fname:
+                #print('fname is in compare: ', fname)
+                if os.name == 'nt':  # For Windows
+                    tmp=fname.split('\\')[-1]
+                else:
+                    tmp = fname.rsplit('/', 1)[0]
+                #print('tmp: ', tmp)
+                if os.path.exists(tmp):
+                    #print('valid comparison of: ', fname, ' and ', tmp)
+                    pass
+                else:
+                    #print('No valid comparison file. Skipping file: ', fname)
+                    continue
+            elif '..' not in fname:
+                #print('fname is in output: ', fname)
+                path=os.path.join('..', 'compare', '')+fname
+                #print('PATH', path)
+                if os.path.exists(path):
+                    #print('valid comparison of: ', fname, ' and ', path)
+                    pass
+                else:
+                   # print('No valid comparison file. Skipping file: ', fname)
+                    continue
+
             with open(fname, 'r') as self._file:
                 header=self._file.readline()
                 if header.strip()=='': continue             # empty file
@@ -1050,15 +1075,21 @@ class fhistory(object):                     # Reading and plotting methods assoc
                 elif self._format=='surf': 
                     self._setup_headers_surf(header)
                 elif self._format=='default': 
+                    #print('headers1', header)
                     header=self._file.readline()
+                    #print('headers2', header)
                     header=self._file.readline()
+                    #print('headers3', header)
                     if header.strip()=='': continue         # empty file
                     i = 0; sum_file = False
-                    while not header.startswith('Time '): 
+                    while 'Time' not in header: 
                         header=self._file.readline()
+                        #print('iteratin through i = ',i , header)
                         i = i+1
                         if i==10: sum_file=True; break
-                    if sum_file: continue
+                    if sum_file: 
+                        #print('final interation' , header)
+                        continue
                     self._setup_headers_default(header)
                 else: print('Unrecognised format');return
                 if not configured:
@@ -1069,7 +1100,13 @@ class fhistory(object):                     # Reading and plotting methods assoc
                 elif self._format=='surf':
                     self._read_data_surf(fname.split('_')[-2])
                 elif self._format=='default':
-                    self._read_data_default(fname.split('_')[-1].split('.')[0])
+                    if 'temp' in fname:
+                        #print('fname with temp:', fname.split('_')[1].split('.')[0])
+                        self._read_data_default(fname.split('_')[1].split('.')[0])
+                    else: 
+                        #print('fname without temp:', fname.split('_')[-1].split('.')[0])
+                        self._read_data_default(fname.split('_')[-1].split('.')[0])
+                #self._get_information()
                 #self._file.close()
     def _detect_format(self,header):
         if header.startswith('TITLE'):
@@ -1113,12 +1150,15 @@ class fhistory(object):                     # Reading and plotting methods assoc
         self._data[hist_var_names[var_key]] = dict([(node,data[:,icol+1]) for icol,node in enumerate(self.nodes)])
     def _read_data_default(self,var_key):
         self._variables.append(hist_var_names[var_key])
+        #print('These are the variables: ', self._variables)
         lns = self._file.readlines()
+        #print('lns: ', lns)
         data = []
         for ln in lns: data.append([float(d) for d in ln.strip().split()])
         data = np.array(data)
         if data[-1,0]<data[-2,0]: data = data[:-1,:]
         self._times = np.array(data[:,0])
+        #print(' TIMES ', self._times)
         self._data[hist_var_names[var_key]] = dict([(node,data[:,icol+1]) for icol,node in enumerate(self.nodes)])
     def _get_variables(self): return self._variables
     variables = property(_get_variables)#: (*lst[str]*) List of variables for which output data are available.
@@ -1133,19 +1173,19 @@ class fhistory(object):                     # Reading and plotting methods assoc
     times = property(_get_times)    #: (*lst[fl64]*) List of times (in seconds) for which output data are available.
     def _get_nodes(self): return self._nodes
     nodes = property(_get_nodes)    #: (*lst[fl64]*) List of node indices for which output data are available.
-    #def _get_information(self):
-    #    print('FEHM history output - format '+self._format)
-    #    print(' call format: fhistory[variable][node][time_index]')
-    #    prntStr = ' nodes: '
-    #    for nd in self.nodes: prntStr += str(nd)+', '
-    #    print(prntStr)
-    #    prntStr =  '    times ('+str(len(self.times))+'): '
-    #    for time in self.times: prntStr += str(time)+', '
-    #    print(prntStr[:-2]+' days')
-    #    prntStr = ' variables: '
-    #    for var in self.variables: prntStr += str(var)+', '
-    #    print(prntStr)
-    #what = property(_get_information) #:(*str*) Print out information about the fhistory object.
+    def _get_information(self):
+        print('FEHM history output - format '+self._format)
+        print('call format: fhistory[variable][node][time_index]')
+        prntStr = ' nodes: '
+        for nd in self.nodes: prntStr += str(nd)+', '
+        print(prntStr)
+        prntStr =  'times \n('+str(len(self.times))+'): '
+        for time in self.times: prntStr += str(time)+', '
+        print(prntStr[:-2]+' days')
+        prntStr = 'variables: '
+        for var in self.variables: prntStr += str(var)+', '
+        print(prntStr)
+    what = property(_get_information) #:(*str*) Print out information about the fhistory object.
 class fzoneflux(fhistory):                  # Derived class of fhistory, for zoneflux output
     '''Zone flux history output information object.
     '''
@@ -1409,6 +1449,7 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
         return
     if isinstance(in1, fcontour) or isinstance(in1, fhistory) or 'foutput' in str(in1.__class__):
         # Find common timesclear
+        #print('from diff', in1.times , in2.times)
         t = np.intersect1d(in1.times,in2.times)
         if len(t) == 0:
             print("ERROR: fpost object times do not have any matching values")
