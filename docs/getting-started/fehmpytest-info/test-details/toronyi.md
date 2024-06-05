@@ -1,7 +1,6 @@
 ---
 title : toronyi
 layout : page_getting-started
-permalink: /test-details/toronyi
 hero_height: is-hidden
 ---
 

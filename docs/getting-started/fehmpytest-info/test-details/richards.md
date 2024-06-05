@@ -1,7 +1,6 @@
 ---
 title : richards
 layout : page_getting-started
-permalink: /test-details/richards
 hero_height: is-hidden
 ---
 

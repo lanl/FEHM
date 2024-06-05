@@ -1,7 +1,6 @@
 ---
 title : heat_pipe
 layout : page_getting-started
-permalink: /test-details/heat_pipe
 hero_height: is-hidden
 ---
 

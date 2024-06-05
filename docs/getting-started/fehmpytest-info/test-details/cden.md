@@ -1,7 +1,6 @@
 ---
 title : cden
 layout : page_getting-started
-permalink: /test-details/cden
 hero_height: is-hidden
 ---
 

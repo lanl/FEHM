@@ -1,7 +1,6 @@
 ---
 title : boun
 layout : page_getting-started
-permalink: /test-details/boun
 hero_height: is-hidden
 ---
 
@@ -12,6 +11,7 @@ hero_height: is-hidden
 Compares the generated contour files to old contour files that are known to be correct. Only the pressure and hydraulic head values at time 2 are tested.
 
 <pre>
+
 ***Compare wellbore module***
 cont
 avs 1.e6  50.

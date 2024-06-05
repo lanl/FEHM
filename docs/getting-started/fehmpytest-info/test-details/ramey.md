@@ -1,7 +1,6 @@
 ---
 title : ramey
 layout : page_getting-started
-permalink: /test-details/ramey
 hero_height: is-hidden
 ---
 

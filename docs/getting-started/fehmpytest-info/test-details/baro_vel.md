@@ -1,7 +1,6 @@
 ---
 title : Baro_vel
 layout : page_getting-started
-permalink: /test-details/baro_vel
 hero_height: is-hidden
 ---
 

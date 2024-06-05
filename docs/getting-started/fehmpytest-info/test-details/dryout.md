@@ -1,7 +1,6 @@
 ---
 title : dryout
 layout : page_getting-started
-permalink: /test-details/dryout
 hero_height: is-hidden
 ---
 

@@ -1,7 +1,6 @@
 ---
 title : saltvcon
 layout : page_getting-started
-permalink: /test-details/saltvcon
 hero_height: is-hidden
 ---
 

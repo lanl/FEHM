@@ -1,7 +1,6 @@
 ---
 title : mptr
 layout : page_getting-started
-permalink: /test-details/mptr
 hero_height: is-hidden
 ---
 

@@ -1,7 +1,6 @@
 ---
 title : sorption
 layout : page_getting-started
-permalink: /test-details/sorption
 hero_height: is-hidden
 ---
 

@@ -1,7 +1,6 @@
 ---
 title : dissolution
 layout : page_getting-started
-permalink: /test-details/dissolution
 hero_height: is-hidden
 ---
 

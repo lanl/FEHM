@@ -1,7 +1,6 @@
 ---
 title : multi_solute
 layout : page_getting-started
-permalink: /test-details/multi_solute
 hero_height: is-hidden
 ---
 

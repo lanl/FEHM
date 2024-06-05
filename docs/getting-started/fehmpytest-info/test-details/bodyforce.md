@@ -1,7 +1,6 @@
 ---
 title : bodyforce
 layout : page_getting-started
-permalink: /test-details/bodyforce
 hero_height: is-hidden
 ---
 

@@ -1,7 +1,6 @@
 ---
 title : salt_perm_poro
 layout : page_getting-started
-permalink: /test-details/salt_perm_poro
 hero_height: is-hidden
 ---
 

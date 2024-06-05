@@ -1,7 +1,6 @@
 ---
 title : Avdonin
 layout : page_getting-started
-permalink: /test-details/avdonin
 hero_height: is-hidden
 ---
 

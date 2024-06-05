@@ -1,7 +1,6 @@
 ---
 title : cellbased
 layout : page_getting-started
-permalink: /test-details/cellbased
 hero_height: is-hidden
 ---
 

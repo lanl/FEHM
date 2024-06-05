@@ -1,7 +1,6 @@
 ---
 title : head
 layout : page_getting-started
-permalink: /test-details/head
 hero_height: is-hidden
 ---
 

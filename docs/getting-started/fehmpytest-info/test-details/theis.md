@@ -1,7 +1,6 @@
 ---
 title : theis
 layout : page_getting-started
-permalink: /test-details/theis
 hero_height: is-hidden
 ---
 

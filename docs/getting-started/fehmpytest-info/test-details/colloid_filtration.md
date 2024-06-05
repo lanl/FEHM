@@ -1,7 +1,6 @@
 ---
 title : colloid_filtration
 layout : page_getting-started
-permalink: /test-details/colloid_filtration
 hero_height: is-hidden
 ---
 

@@ -1,7 +1,6 @@
 ---
 title : doe
 layout : page_getting-started
-permalink: /test-details/doe
 hero_height: is-hidden
 ---
 
