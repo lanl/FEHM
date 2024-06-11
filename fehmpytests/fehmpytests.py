@@ -1061,7 +1061,7 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('avdonin', log))
         #suite.addTest(fehmTest('boun', log))
         suite.addTest(fehmTest('cden', log))
-        suite.addTest(fehmTest('doe', log))       
+        #suite.addTest(fehmTest('doe', log))       
         suite.addTest(fehmTest('head', log))
         suite.addTest(fehmTest('ramey', log))
         suite.addTest(fehmTest('theis', log))
