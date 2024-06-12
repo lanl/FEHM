@@ -975,7 +975,11 @@ class fcontour(object):                     # Reading and plotting methods assoc
     #    for var in self.user_variables: prntStr += str(var)+', '
     #    print(prntStr)
     #what = property(_get_information) #:(*str*) Print out information about the fcontour object.
-class fhistory(object):                     # Reading and plotting methods associated with history output data.
+class fhistory(object): 
+
+    # fhistory handles Reading and plotting methods associated with history output data.
+    # It handles all .his files including temp.his. 
+    
     '''History output information object.
     
     '''
@@ -1093,6 +1097,7 @@ class fhistory(object):                     # Reading and plotting methods assoc
                     self._setup_headers_default(header)
                 else: print('Unrecognised format');return
                 if not configured:
+                    #print('NOT CONFIGURED', len(self.nodes)+1)
                     self.num_columns = len(self.nodes)+1
                 if self.num_columns>0: configured=True
                 if self._format=='tec':
@@ -1125,7 +1130,9 @@ class fhistory(object):                     # Reading and plotting methods assoc
         if self.nodes: return
         for key in header[1:]: self._nodes.append(int(key))
     def _setup_headers_default(self,header):
+        #print('_setup_headers_default', header)
         header=header.split(' Node')
+        #print('headers after split', header)
         if self.nodes: return
         for key in header[1:]: self._nodes.append(int(key))
     def _read_data_tec(self,var_key):
@@ -1152,14 +1159,33 @@ class fhistory(object):                     # Reading and plotting methods assoc
         self._variables.append(hist_var_names[var_key])
         #print('These are the variables: ', self._variables)
         lns = self._file.readlines()
-        #print('lns: ', lns)
-        data = []
-        for ln in lns: data.append([float(d) for d in ln.strip().split()])
-        data = np.array(data)
-        if data[-1,0]<data[-2,0]: data = data[:-1,:]
-        self._times = np.array(data[:,0])
-        #print(' TIMES ', self._times)
-        self._data[hist_var_names[var_key]] = dict([(node,data[:,icol+1]) for icol,node in enumerate(self.nodes)])
+        if lns == []:
+            #print('No time values in file')
+            data = []
+            #print('self._node', self.nodes)
+            i = 0
+            while i <= len(self._nodes):
+                data.append(np.zeros([1] , dtype=float))
+                i+=1
+            #print('data', data)
+            self._times = np.array(data[0],  dtype=float)
+            #print('times', self._times)
+            #print('dict([(node,data[icol+1]) for icol,node in enumerate(self.nodes)])', dict([(node,data[icol+1]) for icol,node in enumerate(self.nodes)]))
+            self._data[hist_var_names[var_key]] = dict([(node,data[icol+1]) for icol,node in enumerate(self.nodes)])
+            #print('self._data[hist_var_names[var_key]]', self._data[hist_var_names[var_key]])
+        else:
+            #print('lns: ', lns)
+            data = []
+            for ln in lns: data.append([float(d) for d in ln.strip().split()])
+            data = np.array(data)
+            #print('data [-1,0]', data[-1,0])
+            #print('data [-2,0]', data[-2,0])
+            if data[-1,0]<data[-2,0]: data = data[:-1,:]
+            self._times = np.array(data[:,0])
+            #print(' TIMES ', self._times)
+            #print('dict([(node,data[:,icol+1]) for icol,node in enumerate(self.nodes)])', dict([(node,data[:,icol+1]) for icol,node in enumerate(self.nodes)]))
+            self._data[hist_var_names[var_key]] = dict([(node,data[:,icol+1]) for icol,node in enumerate(self.nodes)])
+        #print('self._data[hist_var_names[var_key]]', self._data[hist_var_names[var_key]], 'variables', self._variables)
     def _get_variables(self): return self._variables
     variables = property(_get_variables)#: (*lst[str]*) List of variables for which output data are available.
     def _get_user_variables(self): return self._user_variables
@@ -1186,7 +1212,10 @@ class fhistory(object):                     # Reading and plotting methods assoc
         for var in self.variables: prntStr += str(var)+', '
         print(prntStr)
     what = property(_get_information) #:(*str*) Print out information about the fhistory object.
-class fzoneflux(fhistory):                  # Derived class of fhistory, for zoneflux output
+class fzoneflux(fhistory):
+
+    # Derived class of fhistory, for zoneflux output
+    
     '''Zone flux history output information object.
     '''
 #   __slots__ = ['_filename','_times','_verbose','_data','_row','_zones','_variables','_keyrows','column_name','num_columns','_nkeys']
@@ -1444,13 +1473,20 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
     # Copy in1 and in2 in case they get modified below
     in1 = copy(in1)
     in2 = copy(in2)
+    #print('components', components)
     if type(in1) is not type(in2):
         print("ERROR: fpost objects are not of the same type: "+str(type(in1))+" and "+str(type(in2)))
         return
     if isinstance(in1, fcontour) or isinstance(in1, fhistory) or 'foutput' in str(in1.__class__):
         # Find common timesclear
         #print('from diff', in1.times , in2.times)
+        #print('history: ', isinstance(in1, fhistory))
+        #if isinstance(in1.times, np.ndarray):
+        #    print("in1.times is an array", in1.times)
+        #if isinstance(in2.times, np.ndarray):
+        #    print("in2.times is an array", in2.times)
         t = np.intersect1d(in1.times,in2.times)
+        #print('lenth of t',len(t), 'length of times', len(times) )
         if len(t) == 0:
             print("ERROR: fpost object times do not have any matching values")
             return
@@ -1460,6 +1496,7 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
                 print("ERROR: provided times are not coincident with fpost object times")
                 return
         else:
+            #print('Time reached else.')
             times = t
             
     if isinstance(in1, fcontour):
@@ -1492,19 +1529,26 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
     elif isinstance(in1, fhistory):
         # Find common variables
         v = np.intersect1d(in1.variables, in2.variables)
+        #print('v', v)
+        #print('variables length: ', len(variables))
         if len(v) == 0:
             print("ERROR: fhistory object variables do not have any matching values")
             return
         if len(variables) > 0:
             variables = np.intersect1d(variables,v)
+            #print('variables: ', variables)
             if len(variables) == 0:
                 print("ERROR: provided variables are not coincident with fhistory object variables")
                 return
         else:
             variables = v
-            
+            #print('variables from else: ', variables)
+        
+
         #Find common nodes.
         n = np.intersect1d(in1.nodes, in2.nodes)
+        #print('int.nodes', in1.nodes, 'in2.nodes', in2.nodes)
+        #print('n', len(n))
         if len(n) == 0:
             print("ERROR: fhistory object nodes do not have any matching values")
             return
@@ -1515,6 +1559,7 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
                 return
         else:
             nodes = n
+            #print('nodes from else: ', nodes)
         
         #Set up the out object.
         out = copy(in1)
@@ -1525,16 +1570,25 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
         
         #Find the difference at each time index for a variable and node.
         for v in variables:
+            #print('variables', variables)
+            #print('nodes', nodes)
+            #print(v, ' times', len(times))
+            #print('in1' , len(in1.times))
+
             for n in nodes:
                 i = 0
                 diff = []
-                while i < len(times):
+                for i in range(len(times)):
                     if format == 'diff':
                         #Quick fix to handle ptrk files.
                         if isinstance(in1, fptrk):
-                            diff.append(in1[v][n]-in2[v][n]) 
+                            diff.append(in1[v][n]-in2[v][n])
                         else:
-                            diff.append(in1[v][n][i]-in2[v][n][i])  
+                            try:
+                                diff.append(in1[v][n][i] - in2[v][n][i])
+                            except IndexError:
+                                #print(f"File is truncated at line {i}")
+                                continue  
                     elif format == 'relative':
                         diff.append((in1[t][v] - in2[t][v])/np.abs(in2[t][v])) 
                     elif format == 'percent':
@@ -1542,10 +1596,13 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
                     i = i + 1
                 if isinstance(in1, fptrk):
                     out._data[v] = np.array(diff)
+                    #print('out', out._data[v])
                 else:
                     out._data[v] = dict([(n, diff)])
+                    #print('out', out._data[v])
                 
-        #Return the difference.     
+        #Return the difference.
+        #print('out', out._data[v])     
         return out
             
     elif 'foutput' in str(in1.__class__):
