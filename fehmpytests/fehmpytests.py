@@ -386,6 +386,7 @@ class fehmTest(unittest.TestCase):
         
         arguments = {}
         arguments['variables'] = ['saturation']
+        arguments['maxerr'] = 0.01
         
         self.test_case('dryout', arguments)
         
