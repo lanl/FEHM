@@ -254,9 +254,12 @@ if True:    # output variable dictionaries defined in here, indented for code co
     'co2_sinkG',
     'co2_inG',
     'co2_outG']
-class fcontour(object):                     # Reading and plotting methods associated with contour output data.
-    '''Contour output information object.
-    
+class fcontour(object):                     
+    '''
+    ****************************************************************
+    Reading and plotting methods associated with contour output data.
+    This includes file types avs, tec, & surf.
+    ****************************************************************
     '''
     def __init__(self,filename=None,latest=False,first=False,nearest=None):
         if not isinstance(filename,list):
@@ -297,7 +300,8 @@ class fcontour(object):                     # Reading and plotting methods assoc
             return self._data[self.times[ind]]
         else: return None
     def read(self,filename,latest=False,first=False,nearest=[]):                        # read contents of file
-        '''Read in FEHM contour output information.
+        '''
+        Read in FEHM contour output information.
         
         :param filename: File name for output data, can include wildcards to define multiple output files.
         :type filename: str
@@ -976,12 +980,11 @@ class fcontour(object):                     # Reading and plotting methods assoc
     #    print(prntStr)
     #what = property(_get_information) #:(*str*) Print out information about the fcontour object.
 class fhistory(object): 
-
-    # fhistory handles Reading and plotting methods associated with history output data.
-    # It handles all .his files including temp.his. 
-    
-    '''History output information object.
-    
+    '''
+    ****************************************************************
+    Reading and plotting methods associated with history output data.
+    This includes file types his & temp.his.
+    ****************************************************************
     '''
     def __init__(self,filename=None,verbose=True):
         self._filename=None 
@@ -1023,14 +1026,14 @@ class fhistory(object):
     #        retStr = retStr[:-2] + '.'
     #    return retStr
     def read(self,filename):                        # read contents of file
-        '''Read in FEHM history output information.
+        '''
+        Read in FEHM history output information.
         
         :param filename: File name for output data, can include wildcards to define multiple output files.
         :type filename: str
         '''
         from glob import glob
         import re
-        #print('\n*********************************************\nFilename as imported from fehmpytests fhistory: ', filename)
         glob_pattern = re.sub(r'\[','[[]',filename)
         glob_pattern = re.sub(r'(?<!\[)\]','[]]', glob_pattern)
         files=glob(glob_pattern)
@@ -1079,20 +1082,15 @@ class fhistory(object):
                 elif self._format=='surf': 
                     self._setup_headers_surf(header)
                 elif self._format=='default': 
-                    #print('headers1', header)
                     header=self._file.readline()
-                    #print('headers2', header)
                     header=self._file.readline()
-                    #print('headers3', header)
                     if header.strip()=='': continue         # empty file
                     i = 0; sum_file = False
                     while 'Time' not in header: 
                         header=self._file.readline()
-                        #print('iteratin through i = ',i , header)
                         i = i+1
                         if i==10: sum_file=True; break
                     if sum_file: 
-                        #print('final interation' , header)
                         continue
                     self._setup_headers_default(header)
                 else: print('Unrecognised format');return
@@ -1106,12 +1104,11 @@ class fhistory(object):
                     self._read_data_surf(fname.split('_')[-2])
                 elif self._format=='default':
                     if 'temp' in fname:
-                        #print('fname with temp:', fname.split('_')[1].split('.')[0])
                         self._read_data_default(fname.split('_')[1].split('.')[0])
                     else: 
-                        #print('fname without temp:', fname.split('_')[-1].split('.')[0])
                         self._read_data_default(fname.split('_')[-1].split('.')[0])
-                #self._get_information()
+                
+                #self._get_information()    # Uncomment to print information about each test.
                 #self._file.close()
     def _detect_format(self,header):
         if header.startswith('TITLE'):
@@ -1185,7 +1182,6 @@ class fhistory(object):
             #print(' TIMES ', self._times)
             #print('dict([(node,data[:,icol+1]) for icol,node in enumerate(self.nodes)])', dict([(node,data[:,icol+1]) for icol,node in enumerate(self.nodes)]))
             self._data[hist_var_names[var_key]] = dict([(node,data[:,icol+1]) for icol,node in enumerate(self.nodes)])
-        #print('self._data[hist_var_names[var_key]]', self._data[hist_var_names[var_key]], 'variables', self._variables)
     def _get_variables(self): return self._variables
     variables = property(_get_variables)#: (*lst[str]*) List of variables for which output data are available.
     def _get_user_variables(self): return self._user_variables
@@ -1213,10 +1209,9 @@ class fhistory(object):
         print(prntStr)
     what = property(_get_information) #:(*str*) Print out information about the fhistory object.
 class fzoneflux(fhistory):
-
-    # Derived class of fhistory, for zoneflux output
-    
-    '''Zone flux history output information object.
+    '''
+    Derived class of fhistory, for zoneflux output
+    Zone flux history output information object.
     '''
 #   __slots__ = ['_filename','_times','_verbose','_data','_row','_zones','_variables','_keyrows','column_name','num_columns','_nkeys']
     def __init__(self,filename=None,verbose=True):
@@ -1306,8 +1301,10 @@ class fzoneflux(fhistory):
     def _get_zones(self): return self._zones
     def _set_zones(self,value): self._zones = value
     zones = property(_get_zones, _set_zones) #: (*lst[int]*) List of zone indices for which output data are available.
-class fnodeflux(object):                    # Reading and plotting methods associated with internode flux files.
-    '''Internode flux information.
+class fnodeflux(object):                    
+    '''
+        Reading and plotting methods associated with internode flux files.
+        Internode flux information.
         
         Can read either water or CO2 internode flux files.
         
@@ -1371,8 +1368,10 @@ class fnodeflux(object):                    # Reading and plotting methods assoc
     def _get_nodepairs(self): return self._nodepairs
     def _set_nodepairs(self,value): self._nodepairs = value
     nodepairs = property(_get_nodepairs, _set_nodepairs) #: (*lst*) node pairs for which node flux information is available. Each node pair is represented as a two item tuple of node indices.
-class ftracer(fhistory):                    # Derived class of fhistory, for tracer output
-    '''Tracer history output information object.
+class ftracer(fhistory):                    
+    '''
+    Derived class of fhistory, for tracer output
+    Tracer history output information object.
     '''
     def __init__(self,filename=None,verbose=True):
         super(ftracer,self).__init__(filename, verbose)
@@ -1399,8 +1398,10 @@ class ftracer(fhistory):                    # Derived class of fhistory, for tra
         if data[-1,0]<data[-2,0]: data = data[:-1,:]
         self._times = np.array(data[:,0])
         self._data[var_key] = dict([(node,data[:,icol+1]) for icol,node in enumerate(self.nodes)])
-class fptrk(fhistory):                      # Derived class of fhistory, for particle tracking output
-    '''Tracer history output information object.
+class fptrk(fhistory):                      
+    '''
+    Derived class of fhistory, for particle tracking output
+    Tracer history output information object.
     '''
     def __init__(self,filename=None,verbose=True):
         super(fptrk,self).__init__(filename, verbose)
@@ -1418,7 +1419,8 @@ class fptrk(fhistory):                      # Derived class of fhistory, for par
         self._nkeys=1
         if filename: self._filename=filename; self.read(filename)
     def read(self,filename):                        # read contents of file
-        '''Read in FEHM particle tracking output information. Index by variable name.
+        '''
+        Read in FEHM particle tracking output information. Index by variable name.
         
         :param filename: File name for output data, can include wildcards to define multiple output files.
         :type filename: str
@@ -1453,7 +1455,12 @@ class fptrk(fhistory):                      # Derived class of fhistory, for par
         self._data = dict([(var,data[:,icol+1]) for icol,var in enumerate(self.variables)])
 
 def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes=[]):
-    '''Take the difference of two fpost objects
+    '''
+    ****************************************************************
+
+    Fdiff Takes the difference of two fpost objects
+
+    ****************************************************************
     
     :param in1: First fpost object
     :type filename: fpost object (fcontour)
@@ -1479,12 +1486,6 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
         return
     if isinstance(in1, fcontour) or isinstance(in1, fhistory) or 'foutput' in str(in1.__class__):
         # Find common timesclear
-        #print('from diff', in1.times , in2.times)
-        #print('history: ', isinstance(in1, fhistory))
-        #if isinstance(in1.times, np.ndarray):
-        #    print("in1.times is an array", in1.times)
-        #if isinstance(in2.times, np.ndarray):
-        #    print("in2.times is an array", in2.times)
         t = np.intersect1d(in1.times,in2.times)
         #print('lenth of t',len(t), 'length of times', len(times) )
         if len(t) == 0:
@@ -1529,8 +1530,6 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
     elif isinstance(in1, fhistory):
         # Find common variables
         v = np.intersect1d(in1.variables, in2.variables)
-        #print('v', v)
-        #print('variables length: ', len(variables))
         if len(v) == 0:
             print("ERROR: fhistory object variables do not have any matching values")
             return
@@ -1542,8 +1541,6 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
                 return
         else:
             variables = v
-            #print('variables from else: ', variables)
-        
 
         #Find common nodes.
         n = np.intersect1d(in1.nodes, in2.nodes)
@@ -1570,11 +1567,6 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
         
         #Find the difference at each time index for a variable and node.
         for v in variables:
-            #print('variables', variables)
-            #print('nodes', nodes)
-            #print(v, ' times', len(times))
-            #print('in1' , len(in1.times))
-
             for n in nodes:
                 i = 0
                 diff = []
@@ -1686,9 +1678,12 @@ class foutput(object):
     nodes = property(_get_nodes)
     
     def _get_variables(self):
-        """ Get Variables
+        """ 
+        Get Variables
+        
         Returns the variables in the foutput object or returns None if no 
-        variables. """
+        variables. 
+        """
 
         for type in ['water','gas','tracer1']:
             for node in self.nodes:
