@@ -1073,7 +1073,7 @@ def suite(mode, test_case, log):
         #suite.addTest(fehmTest('cellbased', log))
         #suite.addTest(fehmTest('heat_pipe', log))
         suite.addTest(fehmTest('toronyi', log))
-        #suite.addTest(fehmTest('colloid_filtration', log))
+        suite.addTest(fehmTest('colloid_filtration', log))
         suite.addTest(fehmTest('mptr', log))
         suite.addTest(fehmTest('bodyforce', log))
         suite.addTest(fehmTest('richards', log))
