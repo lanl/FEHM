@@ -219,7 +219,21 @@ class fehmTest(unittest.TestCase):
         arguments['err_msg'] = '\nIncorrect concentration at time %s'
         
         self.test_case('dissolution', arguments)
+    
+    def evaporation(self):
+        """ 
+        **Test the evaporation Macro**
+                 
+        """
+    
+        #arguments = {}
+        #arguments['variables'] = ['Np[aq] (Moles/kg H20)']
         
+        #test_case() does not actually display this custom error message yet.
+        #arguments['err_msg'] = '\nIncorrect concentration at time %s'
+        
+        self.test_case('evaporation')
+
     def salt_perm_poro(self):
         """ 
         **Test the Salt Permeability and Porosity Macro**
@@ -336,6 +350,18 @@ class fehmTest(unittest.TestCase):
         arguments['variables'] = ['P']
         
         self.test_case('head', arguments)
+
+    def heat2d(self):
+        """
+        **Test heat2d**
+         
+        """
+        
+        #arguments = {}
+        #arguments['times'] = [2.0]
+        #arguments['variables'] = ['P']
+        
+        self.test_case('heat2d')
                     
     def ramey(self):
         """
@@ -647,6 +673,7 @@ class fehmTest(unittest.TestCase):
                 parameters['subcase'] = subcase
                 # CD into run directory
                 output_dir = subcase+'_output'
+                #print('Output directory: ', output_dir)
                 if os.path.exists( output_dir ): shutil.rmtree(output_dir)
                 os.mkdir( output_dir )
                 os.chdir( output_dir )
@@ -1040,6 +1067,7 @@ class fehmTest(unittest.TestCase):
         os.chdir(self.maindir)
         
         msg = 'Unsuccessful fehm simulation\nContents of '
+        #print('!!!!!!',self.assertTrue(complete, msg+errfile+':\n\n'+errstr) )
         self.assertTrue(complete, msg+errfile+':\n\n'+errstr)
         os.chdir(curdir)
                      
@@ -1072,6 +1100,7 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('baro_vel', log))
         #suite.addTest(fehmTest('cellbased', log))
         #suite.addTest(fehmTest('heat_pipe', log))
+        suite.addTest(fehmTest('heat2d', log))
         suite.addTest(fehmTest('toronyi', log))
         suite.addTest(fehmTest('colloid_filtration', log))
         suite.addTest(fehmTest('mptr', log))
