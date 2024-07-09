@@ -1039,27 +1039,27 @@ class fhistory(object):
             #print('Names of files: \n', files)
             #if self._verbose:
             if '..' in fname:
-                #print('fname is in compare: ', fname)
+                print('fname is in compare: ', fname)
                 if os.name == 'nt':  # For Windows
                     tmp=fname.split('\\')[-1]
                 else:
                     tmp = fname.split('/')[-1]
                 #print('tmp: ', tmp)
                 if os.path.exists(tmp):
-                    #print('valid comparison of: ', fname, ' and ', tmp)
+                    print('valid comparison of: ', fname, ' and ', tmp)
                     pass
                 else:
                     print('\n    **WARNING**   The file ', tmp , ' is in compare, but not in output. Skipping file...')
                     continue
             elif '..' not in fname:
-                #print('fname is in output: ', fname)
+                print('fname is in output: ', fname)
                 path=os.path.join('..', 'compare', '')+fname
                 #print('PATH', path)
                 if os.path.exists(path):
-                    #print('valid comparison of: ', fname, ' and ', path)
+                    print('valid comparison of: ', fname, ' and ', path)
                     pass
                 else:
-                    #print('\n    **WARNING**   The file ', fname , 'is in output, but doesn''t have a valid compare file. Skipping file...')
+                    print('\n    **WARNING**   The file ', fname , 'is in output, but doesn''t have a valid compare file. Skipping file...')
                     continue
 
             with open(fname, 'r') as self._file:
@@ -1092,7 +1092,7 @@ class fhistory(object):
                         i = i+1
                         if i==10: sum_file=True; break
                     if sum_file: 
-                        #print('final interation' , header)
+                        print('final interation' , header)
                         continue
                     self._setup_headers_default(header)
                 else: print('Unrecognised format');return
@@ -1479,14 +1479,14 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
         return
     if isinstance(in1, fcontour) or isinstance(in1, fhistory) or 'foutput' in str(in1.__class__):
         # Find common timesclear
-        #print('from diff', in1.times , in2.times)
-        #print('history: ', isinstance(in1, fhistory))
-        #if isinstance(in1.times, np.ndarray):
-        #    print("in1.times is an array", in1.times)
-        #if isinstance(in2.times, np.ndarray):
-        #    print("in2.times is an array", in2.times)
+        print('from diff', in1.times , in2.times)
+        print('history: ', isinstance(in1, fhistory))
+        if isinstance(in1.times, np.ndarray):
+            print("in1.times is an array", in1.times)
+        if isinstance(in2.times, np.ndarray):
+            print("in2.times is an array", in2.times)
         t = np.intersect1d(in1.times,in2.times)
-        #print('lenth of t',len(t), 'length of times', len(times) )
+        print('lenth of t',len(t), 'length of times', len(times) )
         if len(t) == 0:
             print("ERROR: fpost object times do not have any matching values")
             return
