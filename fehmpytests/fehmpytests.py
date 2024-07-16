@@ -363,6 +363,18 @@ class fehmTest(unittest.TestCase):
         
         self.test_case('heat2d')
                     
+    def heat2d_quad(self):
+        """
+        **Test heat2d_quad**
+         
+        """
+        
+        #arguments = {}
+        #arguments['times'] = [2.0]
+        #arguments['variables'] = ['P']
+        
+        self.test_case('heat2d_quad')
+
     def ramey(self):
         """
         **Test Temperature in a Wellbore Problem**
@@ -381,6 +393,16 @@ class fehmTest(unittest.TestCase):
         arguments['variables'] = ['T']
         
         self.test_case('ramey', arguments)
+
+    def sptr_btc(self):
+        """
+        **Test sptr_btc**
+        
+        .. Authors: Mark Lange
+        .. Updated: July 2024 by Erica Hinrichs
+        """
+        
+        self.test_case('sptr_btc')
    
     def theis(self):
         """
@@ -590,6 +612,28 @@ class fehmTest(unittest.TestCase):
         arguments = {}
 
         self.test_case('ppor_read',arguments)
+
+    def wvtest(self):
+        """
+        **Test wvtest**
+
+        """
+
+        #arguments = {}
+
+        self.test_case('wvtest')
+
+    def vapor_extraction(self):
+        """
+        **Test vapor_extraction**
+
+        .. Updated: July 2024 by Erica Hinrichs
+
+        """
+
+        #arguments = {}
+
+        self.test_case('vapor_extraction')
 
     def heatflux_1DConvection(self):
         '''
@@ -1085,7 +1129,7 @@ def suite(mode, test_case, log):
     #Default mode is admin for now. Should it be different?
     if mode == 'admin' or mode == 'default':
         #suite.addTest(fehmTest('saltvcon', log))
-        suite.addTest(fehmTest('dissolution', log))
+        #suite.addTest(fehmTest('dissolution', log))
         suite.addTest(fehmTest('salt_perm_poro', log))
         suite.addTest(fehmTest('avdonin', log))
         #suite.addTest(fehmTest('boun', log))
@@ -1108,6 +1152,8 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('richards', log))
         suite.addTest(fehmTest('rad_decay', log))
         #suite.addTest(fehmTest('ppor_read', log))
+        #suite.addTest(fehmTest('sptr_btc', log))
+        #suite.addTest(fehmTest('wvtest', log))
         
         #Works with FEHM V3.2
         #suite.addTest(fehmTest('heatflux_1DConvection', log))

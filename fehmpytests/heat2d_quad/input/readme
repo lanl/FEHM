@@ -1,0 +1,14 @@
+checked the results in heat2d_quad.00003_hf_node.dat (dated Sept 23, 2014),
+it agree with analytical solution as calculated below:
+
+Heat copnduction:
+q = k*delta-T/delta-L
+
+K=2.7 W/m/degK
+deltaT = 100 deg C
+delta-L = 0.5m
+q = 2.7*100/.5 =5.4e+2 (W/m/degK)*(degC)/m = 5.4e+2 W/m^2 
+= 5.4e-4 MW/m^2
+= 0.54e-3 MW/m^2
+
+Check - works

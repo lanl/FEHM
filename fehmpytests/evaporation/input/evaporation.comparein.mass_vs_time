@@ -1,0 +1,14 @@
+Evaporation test
+Comparison of Changes in Mass with Time
+Delta mass
+historfn                Data type
+output/evap_test_glob_his.dat
+input/mass_vs_time.txt
+output/evap_test.comp
+0                       Simulated 1-D
+2	0		Data position file1, and header lines if dimen = 0
+7	2		Data position file2, and header lines if dimen = 0
+0. 1. 0. 1.		Translate X1, Scale X1, Translate Y1, Scale Y1 
+0. 1. 0. 1.		Translate X2, Scale X2, Translate Y2, Scale Y2
+1. 3930.  0.		Low X, high X, minimum Y
+.TRUE.             	Print arrays

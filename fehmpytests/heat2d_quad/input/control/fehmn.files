@@ -1,0 +1,9 @@
+input: ../heat2d_quad.in
+grida: ../heat2d_quad.geom
+
+head2d_quad.out
+root: heat2d_quad
+
+
+none
+0

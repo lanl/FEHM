@@ -1,0 +1,156 @@
+FEHM3.6_VER2                     04/18/2024    14:56:34
+
+Copyright  2015.   Los Alamos National Security, LLC.  This material was
+produced under U.S. Government contract DE-AC52-06NA25396 for Los Alamos
+National  Laboratory  (LANL),  which is operated by  Los Alamos National
+Security, LLC  for the U. S. Department of Energy.  The U. S. Government
+has rights to use, reproduce, and distribute this software.  Neither the
+U. S. Government nor Los Alamos National Security, LLC or persons acting
+on their behalf,  make any warranty,  express or implied, or assumes any
+liability for the accuracy, completeness, or usefulness of the software,
+any information pertaining to the software,  or  represents that its use
+would not infringe privately owned rights.
+
+The  software  being licensed  may  be Export Controlled.  It may not be
+distributed  or  used by individuals  or entities prohibited from having
+access to the software package, pursuant to United States export control
+laws and regulations. An export control review and determination must be
+completed before LANS will provide access to the identified Software.
+
+ n0 =       128775
+
+ *** Validation1 Test Problem: 3-D Homogeneous Flow and Transport ***            
+
+
+
+ File purpose - Variable - Unit number - File name
+
+    control       - iocntl -  1 - fehmn.files                                                                                         
+    input         - inpt   - 11 - input/sptr_long1altxyz.dat                                                                          
+    geometry      - incoor - 12 - ../streamline/input/sptr.geom                                                                       
+    zone          - inzone - 11 - input/sptr_long1altxyz.dat                                                                          
+    output        - iout   - 14 - output/sptr_long1altxyz.out                                                                         
+    initial state - iread  - 15 - ../streamline/input/valid1.ini                                                                      
+    final state   - isave  -  0 - not using                                                                                           
+    time history  - ishis  -  0 - not using                                                                                           
+    time his.(tr) - istrc  -  0 - not using                                                                                           
+    contour plot  - iscon  -  0 - not using                                                                                           
+    con plot (dp) - iscon1 -  0 - not using                                                                                           
+    fe coef stor  - isstor - 21 - ../streamline/input/valid1.stor                                                                     
+    input check   - ischk  -  0 - not using                                                                                           
+    error file    - ierr   - 23 - none                                                                                                
+ Value provided to subroutine user: not using
+
+ **** input title : coor **** incoor =  12 ****
+ **** input title : elem **** incoor =  12 ****
+ **** input title : stop **** incoor =  12 ****
+ **** input title : sol  **** inpt =  11 ****
+ **** input title : node **** inpt =  11 ****
+ **** input title : pres **** inpt =  11 ****
+ **** input title : rock **** inpt =  11 ****
+ **** input title : perm **** inpt =  11 ****
+ **** input title : cond **** inpt =  11 ****
+ **** input title : time **** inpt =  11 ****
+ **** input title : ctrl **** inpt =  11 ****
+ **** input title : iter **** inpt =  11 ****
+ **** input title : zone **** inpt =  11 ****
+ **** input title : flow **** inpt =  11 ****
+ **** input title : zone **** inpt =  11 ****
+ **** input title : sptr **** inpt =  11 ****
+ **** input title : stop **** inpt =  11 ****
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ Coefficients read from file C:\FEHM_DATA\VERIFICATION_TESTS_OCT2021\VERIFICATION_V3.4win_64bit_clean_CP\streamline\input\valid1.stor
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+ storage for geometric coefficients     377375 in common(nr)     377375
+Reading initial condition data from file ../streamline/input/valid1.ini
+ gmres method chosen 
+Number of OMR nodes set to   128775
+Actual number of OMR nodes        0
+ storage available for b matrix resized to     883523<<<<<<
+
+
+ time for reading input, forming coefficients  0.453    
+
+
+       19696  BC to BC connection(s) found (now set=0.0)
+*********************************************************************
+ Time Step         1
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+      1368.92539          500000.000         500000.000    
+ Cpu Sec for Time Step =  0.1406     Current Total =    0.1406    
+
+                    Equation Performance
+ Number of N-R Iterations:          1
+ Avg # of Linear Equation Solver Iterations:  37.0
+ Number of Active Nodes:    128775.
+ Total Number of Iterations, N-R:          1 , Solver:         37
+ Phase Changes This Time Step:        0 Total           0
+ Nodes Liq Phase:   128775 change        0
+ Nodes Two Phase:        0 change        0
+ Nodes Gas Phase:         0 change        0
+ Nodes SC Phase:        0 change        0
+ Number of restarted time steps            0
+                    Largest Residuals
+ EQ1 R=  0.4007E-14 node=  63138 zone=     0 x=0.2000E+05 y= 0.000     z=-245.0    
+ EQ2 R=  0.5468E-14 node=    212 zone=     0 x= 2800.     y=-3200.     z= 0.000    
+   Node   Equation 1 Residual   Equation 2 Residual
+   3163      0.400669E-14           0.467452E-22
+   3175      0.214138E-16          -0.114438E-21
+   3188     -0.675941E-16          -0.114438E-21
+   3200     -0.261659E-17          -0.114436E-21
+   3213     -0.400711E-14          -0.225542E-21
+
+                    Nodal Information (Water)
+                                                  source/sink  E source/sink
+   Node   P (MPa)    E (MJ)    S liq     Temp (C)    (kg/s)       (MJ/s)  State            Zone
+   3163    2.377     0.186     1.000      44.00032 -0.6140E-01 -0.114E-01     1      all   31                     
+   3175    2.286     0.186     1.000      44.00019   0.000       0.00         1      all                          
+   3188    2.188     0.186     1.000      44.00000   0.000       0.00         1      all                          
+   3200    2.098     0.186     1.000      43.99983   0.000       0.00         1      all                          
+   3213    2.000     0.186     1.000      43.99966  0.6140E-01  0.114E-01     1      all   32                     
+
+                    Global Mass & Energy Balances
+ Total mass in system at this time:            0.269399E+13 kg
+ Total mass of steam in system at this time:   0.000000E+00 kg
+ Total enthalpy in system at this time:        0.809974E+33 MJ
+
+ Water discharge this time step:   0.636610E+13 kg (0.147363E+03 kg/s)
+ Water input this time step:       0.636610E+13 kg (0.147363E+03 kg/s)
+ Total water discharge:            0.636610E+13 kg (0.147363E+03 kg/s)
+ Total water input:                0.636610E+13 kg (0.147363E+03 kg/s)
+
+ Enthalpy discharge this time step:  0.118337E+13 MJ (0.273928E+02 MJ/s)
+ Enthalpy input this time step:      0.118546E+13 MJ (0.274413E+02 MJ/s)
+ Total enthalpy discharge:           0.118337E+13 MJ (0.273928E+02 MJ/s)
+ Total enthalpy input:               0.118546E+13 MJ (0.274413E+02 MJ/s)
+
+ Net kg water discharge (total out-total in):   0.000000E+00
+ Net MJ energy discharge (total out-total in):  -0.209649E+10
+ Conservation Errors:  -0.289927E-13 (mass),  -0.176850E-02 (energy)
+
+
+ simulation ended: days   500000.00000000000000000     timesteps     1
+
+
+ total N-R iterations =          1
+ total solver iterations =         37
+
+
+ total code time(timesteps) =      0.171875
+
+ number of unique property calcs       257550
+ total number of prossible calls       386325
+ fraction of calcs to total calls    0.667
+
+
+ ****---------------------------------------------------------****
+ **** This program for                                        ****
+ ****   Finite Element Heat and Mass Transfer in porous media ****
+ ****---------------------------------------------------------****
+ ****               Version  : FEHM3.6_VER2                   ****
+ ****               End Date : 04/18/2024                     ****
+ ****                   Time : 14:56:36                       ****
+ ****---------------------------------------------------------****
