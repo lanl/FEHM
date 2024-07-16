@@ -1479,12 +1479,6 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
         return
     if isinstance(in1, fcontour) or isinstance(in1, fhistory) or 'foutput' in str(in1.__class__):
         # Find common timesclear
-        #print('from diff', in1.times , in2.times)
-        #print('history: ', isinstance(in1, fhistory))
-        #if isinstance(in1.times, np.ndarray):
-            #print("in1.times is an array", in1.times)
-        #if isinstance(in2.times, np.ndarray):
-            #print("in2.times is an array", in2.times)
         t = np.intersect1d(in1.times,in2.times)
         #print('lenth of t',len(t), 'length of times', len(times) )
         if len(t) == 0:
