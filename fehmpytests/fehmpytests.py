@@ -365,14 +365,15 @@ class fehmTest(unittest.TestCase):
                     
     def heat2d_quad(self):
         """
-        **Test heat2d_quad**
-         
+        **Test the Heat 2D Quad Problem**
+
+        Input files copied from heat2d_quad which writes output to heat_flux
+        Compares heat2d_quad 00003 121 Node same as VV compare script
+
+        .. Authors:  Terry Miller
+        .. Updatd: July 2024
         """
-        
-        #arguments = {}
-        #arguments['times'] = [2.0]
-        #arguments['variables'] = ['P']
-        
+
         self.test_case('heat2d_quad')
 
     def ramey(self):
@@ -545,7 +546,7 @@ class fehmTest(unittest.TestCase):
         correct.
         
         .. Authors: Mark Lange
-        .. Updated: July 2014 by Mark Lange
+        .. Updated: July 2024 by Erica Hinrichs
         '''
         
         self.test_case('colloid_filtration')
@@ -616,6 +617,7 @@ class fehmTest(unittest.TestCase):
     def wvtest(self):
         """
         **Test wvtest**
+        .. Updated: July 2024 by Erica Hinrichs
 
         """
 
