@@ -1,0 +1,8 @@
+input: input/heat2d.in
+grida: input/heat2d_quad.geom
+outp: ../heat_flux/output/heat2d_quad.out
+hist: ../heat_flux/output/heat2d_quad.his
+root: ../heat_flux/output/heat2d_quad
+
+none
+0

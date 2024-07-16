@@ -1,0 +1,9 @@
+../input/heat2d.in
+../input/heat2d_tri.geom
+../input/heat2d.in
+heat2d_tri.out
+
+root: heat2d_tri
+
+none
+0

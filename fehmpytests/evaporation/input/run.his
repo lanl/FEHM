@@ -1,0 +1,12 @@
+FEHM V2.30pgi64 08-09-04 QA:NA  09/04/2008  15:24:48
+** Lysimeter 2m grid Case 4 = case3 with diff hydro props
+airw
+Output file format: Tecplot
+Parameters written to individual history files:
+ saturation global
+for the following nodes:
+Number of output nodes:    3
+       9   1.60000000       0.00000000       0.00000000    
+      10   1.80000000       0.00000000       0.00000000    
+      11   2.00000000       0.00000000       0.00000000    
+

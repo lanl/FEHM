@@ -1,0 +1,11 @@
+Truncation Saturation for function
+0.40
+Four sets of A + B*sat + Csat^2  time1 time2
+0.0 -2e-6 6e-5 0.00  1.00
+0.0 9e-6 5e-5 1.00  0.00
+0.0 9e-6 5e-5 1.00  0.00
+0.0 9e-6 5e-5 1.00  0.00
+Number of Evaporation Nodes
+1
+Evaporation nodes  Area
+10   1

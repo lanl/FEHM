@@ -219,7 +219,21 @@ class fehmTest(unittest.TestCase):
         arguments['err_msg'] = '\nIncorrect concentration at time %s'
         
         self.test_case('dissolution', arguments)
+    
+    def evaporation(self):
+        """ 
+        **Test the evaporation Macro**
+                 
+        """
+    
+        #arguments = {}
+        #arguments['variables'] = ['Np[aq] (Moles/kg H20)']
         
+        #test_case() does not actually display this custom error message yet.
+        #arguments['err_msg'] = '\nIncorrect concentration at time %s'
+        
+        self.test_case('evaporation')
+
     def salt_perm_poro(self):
         """ 
         **Test the Salt Permeability and Porosity Macro**
@@ -336,7 +350,32 @@ class fehmTest(unittest.TestCase):
         arguments['variables'] = ['P']
         
         self.test_case('head', arguments)
+
+    def heat2d(self):
+        """
+        **Test heat2d**
+         
+        """
+        
+        #arguments = {}
+        #arguments['times'] = [2.0]
+        #arguments['variables'] = ['P']
+        
+        self.test_case('heat2d')
                     
+    def heat2d_quad(self):
+        """
+        **Test the Heat 2D Quad Problem**
+
+        Input files copied from heat2d_quad which writes output to heat_flux
+        Compares heat2d_quad 00003 121 Node same as VV compare script
+
+        .. Authors:  Terry Miller
+        .. Updatd: July 2024
+        """
+
+        self.test_case('heat2d_quad')
+
     def ramey(self):
         """
         **Test Temperature in a Wellbore Problem**
@@ -355,6 +394,16 @@ class fehmTest(unittest.TestCase):
         arguments['variables'] = ['T']
         
         self.test_case('ramey', arguments)
+
+    def sptr_btc(self):
+        """
+        **Test sptr_btc**
+        
+        .. Authors: Mark Lange
+        .. Updated: July 2024 by Erica Hinrichs
+        """
+        
+        self.test_case('sptr_btc')
    
     def theis(self):
         """
@@ -497,7 +546,7 @@ class fehmTest(unittest.TestCase):
         correct.
         
         .. Authors: Mark Lange
-        .. Updated: July 2014 by Mark Lange
+        .. Updated: July 2024 by Erica Hinrichs
         '''
         
         self.test_case('colloid_filtration')
@@ -564,6 +613,29 @@ class fehmTest(unittest.TestCase):
         arguments = {}
 
         self.test_case('ppor_read',arguments)
+
+    def wvtest(self):
+        """
+        **Test wvtest**
+        .. Updated: July 2024 by Erica Hinrichs
+
+        """
+
+        #arguments = {}
+
+        self.test_case('wvtest')
+
+    def vapor_extraction(self):
+        """
+        **Test vapor_extraction**
+
+        .. Updated: July 2024 by Erica Hinrichs
+
+        """
+
+        #arguments = {}
+
+        self.test_case('vapor_extraction')
 
     def heatflux_1DConvection(self):
         '''
@@ -647,6 +719,7 @@ class fehmTest(unittest.TestCase):
                 parameters['subcase'] = subcase
                 # CD into run directory
                 output_dir = subcase+'_output'
+                #print('Output directory: ', output_dir)
                 if os.path.exists( output_dir ): shutil.rmtree(output_dir)
                 os.mkdir( output_dir )
                 os.chdir( output_dir )
@@ -1040,6 +1113,7 @@ class fehmTest(unittest.TestCase):
         os.chdir(self.maindir)
         
         msg = 'Unsuccessful fehm simulation\nContents of '
+        #print('!!!!!!',self.assertTrue(complete, msg+errfile+':\n\n'+errstr) )
         self.assertTrue(complete, msg+errfile+':\n\n'+errstr)
         os.chdir(curdir)
                      
@@ -1057,7 +1131,7 @@ def suite(mode, test_case, log):
     #Default mode is admin for now. Should it be different?
     if mode == 'admin' or mode == 'default':
         #suite.addTest(fehmTest('saltvcon', log))
-        suite.addTest(fehmTest('dissolution', log))
+        #suite.addTest(fehmTest('dissolution', log))
         suite.addTest(fehmTest('salt_perm_poro', log))
         suite.addTest(fehmTest('avdonin', log))
         #suite.addTest(fehmTest('boun', log))
@@ -1072,13 +1146,16 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('baro_vel', log))
         #suite.addTest(fehmTest('cellbased', log))
         #suite.addTest(fehmTest('heat_pipe', log))
+        suite.addTest(fehmTest('heat2d', log))
         suite.addTest(fehmTest('toronyi', log))
-        #suite.addTest(fehmTest('colloid_filtration', log))
+        suite.addTest(fehmTest('colloid_filtration', log))
         suite.addTest(fehmTest('mptr', log))
         suite.addTest(fehmTest('bodyforce', log))
         suite.addTest(fehmTest('richards', log))
         suite.addTest(fehmTest('rad_decay', log))
         #suite.addTest(fehmTest('ppor_read', log))
+        #suite.addTest(fehmTest('sptr_btc', log))
+        #suite.addTest(fehmTest('wvtest', log))
         
         #Works with FEHM V3.2
         #suite.addTest(fehmTest('heatflux_1DConvection', log))

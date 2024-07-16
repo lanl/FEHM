@@ -1,0 +1,11 @@
+input: ../input/box.dat 
+grida: ../input/grid_1m.fehmn
+outpu: box.out
+rsto:  box.fin
+hist:  box.his
+trac:  box.trc
+root:  box
+stor:  ../input/box.stor
+
+none
+0

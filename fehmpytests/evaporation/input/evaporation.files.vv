@@ -1,0 +1,11 @@
+input: input/evap_base.data
+grida: input/2m.grid
+stor:  input/2m.stor
+outpu: output/evap_base.out
+root:  output/evap_base
+
+none
+0
+
+
+
