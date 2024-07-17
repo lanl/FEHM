@@ -723,7 +723,7 @@ class fehmTest(unittest.TestCase):
                 if os.path.exists( output_dir ): shutil.rmtree(output_dir)
                 os.mkdir( output_dir )
                 os.chdir( output_dir )
-                filetypes = ['*.avs','*.csv','*.his','*.out','*.trc','*.ptrk']
+                filetypes = ['*.avs','*.csv','*.his','*.out','*.trc','*.ptrk','*.dat','*.sptr3']
                 test_flag = False
                 
                 for filetype in filetypes:
@@ -1051,6 +1051,8 @@ class fehmTest(unittest.TestCase):
         #Returns the test method for filetype.
         return { '*.avs':  contour_case,
                  '*.csv':  contour_case,
+                 '*.dat':  contour_case,
+                 '*.sptr3':  contour_case,
                  '*.his':  history_case,
                  '*.trc':  tracer_case,
                  '*.out':  output_case, 

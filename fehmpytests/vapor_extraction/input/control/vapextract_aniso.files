@@ -1,0 +1,8 @@
+input: ../input/vapextract_aniso.in
+grida: ../input/vapextract.geom
+outp: vapextract_aniso.out
+hist: vapextract_aniso.his
+root: vapextract_aniso
+
+none
+0
