@@ -1,0 +1,12 @@
+input: ../input/evap_rlp.dat
+outp: evap_rlp.out
+gridf: ../input/2m.grid
+rsti:
+root: evap_rlp
+stor: ../input/2m.stor
+co2in: 
+
+none
+
+
+

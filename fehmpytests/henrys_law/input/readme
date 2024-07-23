@@ -1,0 +1,64 @@
+
+VV compares values in trc file to input/henry1_out.analyt
+It is unclear how values in trc are converted and compared to analyt
+
+compare/henry1.trc and output/henry1.trc have same number of lines
+Values are close but not equal
+
+tail output/henry1.trc
+   375.01199676572088                1   Aqueous_Species_001
+  0.99947653710491025
+   375.01199776572088                1   Aqueous_Species_001
+  0.99947690605041040
+   375.01199876572088                1   Aqueous_Species_001
+  0.99947727208577453
+   375.01199976572087                1   Aqueous_Species_001
+  0.99947763519678179
+   375.01200000000000                1   Aqueous_Species_001
+  0.99947772010542046
+
+tail ../compare/henry1.trc
+   375.011996765721                1   Aqueous_Species_001
+  0.999476537104910
+   375.011997765721                1   Aqueous_Species_001
+  0.999476906050410
+   375.011998765721                1   Aqueous_Species_001
+  0.999477272085775
+   375.011999765721                1   Aqueous_Species_001
+  0.999477635196782
+   375.012000000000                1   Aqueous_Species_001
+  0.999477720105420
+
+tail ../input/henry1_out.analyt
+     1242.00   0.999978
+     1243.00   0.999978
+     1244.00   0.999978
+     1245.00   0.999979
+     1246.00   0.999979
+     1247.00   0.999979
+     1248.00   0.999980
+     1249.00   0.999980
+     1250.00   0.999980
+     1251.00   0.999981
+
+From henry1.comparein
+It looks like trc values for time and concentration are compared to .analyt 
+after converting values by some number.
+Precision is outside of normal math ie 0.999477720105420 - 0.99947772010542046 = 0
+
+
+Comparison of Model and Analytical Solution for Concentration vs Time
+Liquid Phase Reaction
+tracer
+output/henry1.trc
+input/henry1_out.analyt
+output/henry1.comp
+1			1-D
+1			Coordinate position
+1			Specie
+375.00001 86400. 0. 1.	Translate X1, Scale X1, Translate Y1, Scale Y1
+0. 1. 0. 1.		Translate X2, Scale X2, Translate Y2, Scale Y2
+1. 1000. 0.10		Low X, high X, minimum Y
+.FALSE.			Print arrays
+
+

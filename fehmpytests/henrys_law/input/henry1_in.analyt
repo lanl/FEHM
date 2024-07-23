@@ -1,0 +1,9 @@
+output/solute_out1.analyt
+Analytical Solution for Henry's Law - air movement, sorption
+30.			Peclet number
+237.8			Mean residence time, seconds
+0			Injection flag
+1.			Delta simulation time, seconds
+1250.			Final simulation time, seconds
+1.			Retardation factor
+0.			Rate constant

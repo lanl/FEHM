@@ -1,9 +1,9 @@
 input: ../input/box.dat 
-grida: ../input/grid_1m.fehmn
+grida: ../input/grid_1m.geom
 outpu: box.out
-rsto:  box.fin
-hist:  box.his
-trac:  box.trc
+rsto:  
+hist:  
+trac:  
 root:  box
 stor:  ../input/box.stor
 

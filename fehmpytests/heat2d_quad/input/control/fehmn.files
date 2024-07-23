@@ -1,8 +1,8 @@
 input: ../input/heat2d_quad.in
 grida: ../input/heat2d_quad.geom
-input: ../input/heat2d_quad.in
+outp: heat2d_quad.out
+hist: heat2d_quad.his
 root: heat2d_quad
-
 
 none
 0

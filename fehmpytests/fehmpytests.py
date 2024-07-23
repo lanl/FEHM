@@ -376,6 +376,23 @@ class fehmTest(unittest.TestCase):
 
         self.test_case('heat2d_quad')
 
+    def henrys_law(self):
+        """
+        **Test the Henrys law Problem**
+
+        From henry1.comparein
+        It looks like trc values for time and concentration are compared to input/*.analyt
+        after converting values by some number.
+
+        We should be able to compare trc to trc as the numbers are close to equal
+        Precision is outside of normal math ie 0.999477720105420 - 0.99947772010542046 = 0
+
+        .. Authors:  Terry Miller tam
+        .. Updatd: July 2024
+        """
+
+        self.test_case('henrys_law')
+
     def ramey(self):
         """
         **Test Temperature in a Wellbore Problem**
@@ -520,7 +537,7 @@ class fehmTest(unittest.TestCase):
         """
         
         self.test_case('heat_pipe')
-        
+
     def toronyi(self):
         """
         **Test the Toronyi Two-Phase Problem**
@@ -707,7 +724,7 @@ class fehmTest(unittest.TestCase):
             #File named 'fehmn.files' to be used for tests with single case.
             if subcase != 'fehmn':
                 subcases.append(subcase)
-                #print('append subases')
+                #print('append subases', subcases)
             else:
                 subcases = ['']
                 #print('broken subcases')
@@ -773,7 +790,8 @@ class fehmTest(unittest.TestCase):
         """
             
         #Get pre-specified parameters from call.
-        keys = ['variables', 'times', 'nodes', 'components']
+        #print('\n---- at test template ----')
+        keys = ['variables', 'times', 'nodes', 'components', 'info']
         values = dict.fromkeys(keys, [])
         values['maxerr'] = 1.e-4
         values['test_measure'] = 'max_difference'
@@ -783,6 +801,7 @@ class fehmTest(unittest.TestCase):
         mxerr = values['maxerr']
         components = values['components']
         test_measure = values['test_measure']
+        #print('\nsubcase: ', subcase, ' filetype: ', filetype, ' parameters: ', parameters)
 
         self._run_fehm(subcase)
        
@@ -889,6 +908,32 @@ class fehmTest(unittest.TestCase):
                         raise e
             if not test_flag:
                 self.fail("Missing common nodes in compare and output history files, no test performed")
+
+        #### ADDING FOR COMPARISONS ####
+        def comparison_case():
+            #Find the difference between the old and new
+            #print('---- at comparison in fhmpytests ----')
+            f_old = fpost.fcomparison(os.path.join('..','compare','*')+subcase+filetype)
+            f_new = fpost.fcomparison('*'+subcase+filetype)
+            f_dif = fpost.fdiff(f_new, f_old)
+
+            #print('length of the info values: ', f_dif._info)
+            
+         
+            if f_dif._info == 0 :
+                #print('info is zero')
+                test_flag = True
+            elif f_dif._info > 0 :
+                #print('info is greater than 0')
+                test_flag = False
+            else:
+                print('Error ')
+                test_flag = False
+            
+            if not test_flag:
+                self.fail("There are significant differences between files, no test performed")
+
+        ####################################################
                     
         def tracer_case():
             #Find the difference between the old and new
@@ -1051,10 +1096,10 @@ class fehmTest(unittest.TestCase):
         #Returns the test method for filetype.
         return { '*.avs':  contour_case,
                  '*.csv':  contour_case,
-                 '*.dat':  contour_case,
-                 '*.sptr3':  contour_case,
+                 '*.dat':  comparison_case,
+                 '*.sptr3':  comparison_case,
                  '*.his':  history_case,
-                 '*.trc':  tracer_case,
+                 '*.trc':  comparison_case,
                  '*.out':  output_case, 
                  '*.ptrk': ptrack_case }[filetype]
                                     
@@ -1085,6 +1130,7 @@ class fehmTest(unittest.TestCase):
         errfile = 'fehmn.err'
 
         with open( filesfile, 'r' ) as f:
+            #print('\nchecking for outp and error...')
             lines = f.readlines()
             # Check for new filesfile format
             for line in lines:
@@ -1094,11 +1140,13 @@ class fehmTest(unittest.TestCase):
                     errfile = line.split(':')[1].strip()
                            
             # Assume old format
-            if outfile is None and ':' not in lines[0]: 
+            if outfile is None and ':' not in lines[0]:
                 outfile=lines[3].strip()
+                #print('\nNo outfile found...', outfile)
  
         complete = False
         if outfile:
+            #print('\noutfile found...')
             with open(outfile, 'r' ) as f:
                 for line in reversed(f.readlines()):
                     if 'End Date' in line:
