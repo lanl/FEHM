@@ -21,8 +21,9 @@
         {% include hero.html %}
     {% endunless %}
     {% include callouts.html %}
-    <section class="section">
+    <section class="section" style="padding-top: 10px;">
         <div class="container">
+            {% include search-lunr.html %}<div>
             <div class="columns">
                 {% if page.menubar_toc %}
                 <div class="column is-4-desktop is-4-tablet">
