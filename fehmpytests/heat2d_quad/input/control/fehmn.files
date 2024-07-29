@@ -1,8 +1,14 @@
-input: ../input/heat2d_quad.in
-grida: ../input/heat2d_quad.geom
-outp: heat2d_quad.out
-hist: heat2d_quad.his
-root: heat2d_quad
+../input/heat2d_quad.in
+../input/heat2d_quad.geom
+../input/heat2d_quad.in
+heat2d_quad.out
+
+
+heat2d_quad.his
+
+
+
+
 
 none
 0

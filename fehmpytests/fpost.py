@@ -1508,6 +1508,9 @@ class fcomparison(object):
         glob_pattern = re.sub(r'(?<!\[)\]','[]]', glob_pattern)
         files = glob(glob_pattern)
 
+        # Sort the files to ensure consistent order across platforms
+        files.sort()
+
         for fname in files:
             if '..' in fname:
                 if os.name == 'nt':  # For Windows
@@ -1633,7 +1636,7 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
 
             # Check if arrays are close enough within the tolerance
             if np.allclose(data1_flat, data2_flat, rtol=rtol, atol=atol, equal_nan=True):
-                print(f'Files are EQUAL within tolerance rtol={rtol}, atol={atol}\n')
+                print(f'Files are EQUAL')
                 out._info = 0
             else:
                 # Calculate the differences
@@ -1641,7 +1644,7 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
                 max_difference = np.max(difference)
                 
                 if max_difference <= atol + rtol * np.abs(data1_flat).max():
-                    print(f'Files are considered EQUAL within tolerance rtol={rtol}, atol={atol}')
+                    print(f'Files are considered EQUAL within a relative tolerance of:{rtol}, and an absolute tolerance of:{atol}')
                     print(f'Max difference: {max_difference}\n')
                     out._info = 0
                 else:
@@ -1654,74 +1657,7 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
                     print(f'\nUNEQUAL Comparison for {file1} and {file2}.')
                     print(f'Found {len(differences)} differences.\n')
                     out._info = len(differences)
-
-        '''        
-        atol = 1e-10  # Absolute tolerance
-        rtol = 1e-05  # Relative tolerance
-
-        out = copy(in1)
-        out._info = info
-
-        if len(in1.files_info) != len(in2.files_info):
-            print('ERROR: The number of files in in1 and in2 do not match')
-            return
-
-        #print('in1.files_info: {in1.files_info}')
-        #print('in2.files_info: {in2.files_info}')
-
-        # Check the structure of each entry in files_info
-        '''
-        '''for idx, entry in enumerate(in1.files_info):
-            print('in1.files_info[{idx}]: {entry} (type: {type(entry)})')
-            if isinstance(entry, tuple):
-                print('  Length of tuple: {len(entry)}')
-
-        for idx, entry in enumerate(in2.files_info):
-            print('in2.files_info[{idx}]: {entry} (type: {type(entry)})')
-            if isinstance(entry, tuple):
-                print('  Length of tuple: {len(entry)}')'''
-                
-
-        '''for (file1, data1), (file2, data2) in zip(in1.files_info, in2.files_info):
-            print(f'\nComparing Files... {file1} with {file2}')
-            #print(f'Type of data1: {type(data1)}, Type of data2: {type(data2)}')
-            #print(f'Data1: {data1}')
-            #print(f'Data2: {data2}')
-
-            if data1.size == 0 or data2.size == 0:
-                print(f'Missing data in comparison for files: {file1} and {file2}')
-                continue
-
-            data1_flat = data1.flatten()
-            data2_flat = data2.flatten()
-
-            # print('Data1 Flat:', data1_flat)
-            # print('Data2 Flat:', data2_flat)
-
-            if len(data1_flat) == 0 or len(data2_flat) == 0:
-                print(f'No data to compare in files: {file1} and {file2}')
-                continue
-
-            if np.allclose(data1_flat, data2_flat, rtol=rtol, atol=atol, equal_nan=True):
-                print(f'Files have a significant difference within {atol} for {file1} and {file2}.')
-                out._info = 0
-            else:
-                differences = np.setdiff1d(data1_flat, data2_flat)
-                differences2 = np.setdiff1d(data2_flat, data1_flat)
-
-                # print(f'Differences: {differences}')
-                # print(f'Differences2: {differences2}')
-
-                if len(differences) == 0:
-                    print(f'Files are EQUAL\n')
-                    out._info = 0
-                else:
-                    print(f'\nUNEQUAL Comparison for {file1} and {file2}.')
-                    print(f'Found {len(differences)} differences.\n')
-                    out._info = len(differences)'''
-
         return out
-
 
     elif isinstance(in1, fcontour):
         # Find common variables
