@@ -7,7 +7,7 @@ Unsaturated Diffusion tests
 #   No capillary forcing 
 #
 cont
-tecplot 30000  1000.
+tec 30000  1000.
 geom
 material
 liquid
@@ -18,7 +18,7 @@ temp
 pres
 sat
 endavs
-hist tecplot
+hist tec
 mpa
 saturation
 end

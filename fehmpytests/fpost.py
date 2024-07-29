@@ -1623,13 +1623,13 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
                 print('  Length of tuple: {len(entry)}')'''
 
         for (file1, data1), (file2, data2) in zip(in1.files_info, in2.files_info):
-            print('\nComparing Files... {file1} with {file2}')
-            #print('Type of data1: {type(data1)}, Type of data2: {type(data2)}')
-            #print('Data1: {data1}')
-            #print('Data2: {data2}')
+            print(f'\nComparing Files... {file1} with {file2}')
+            #print(f'Type of data1: {type(data1)}, Type of data2: {type(data2)}')
+            #print(f'Data1: {data1}')
+            #print(f'Data2: {data2}')
 
             if data1.size == 0 or data2.size == 0:
-                print('Missing data in comparison for files: {file1} and {file2}')
+                print(f'Missing data in comparison for files: {file1} and {file2}')
                 continue
 
             data1_flat = data1.flatten()
@@ -1639,26 +1639,26 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
             #print('Data2 Flat: {data2_flat}')
 
             if len(data1_flat) == 0 or len(data2_flat) == 0:
-                print('No data to compare in files: {file1} and {file2}')
+                print(f'No data to compare in files: {file1} and {file2}')
                 continue
 
             differences = np.setdiff1d(data1_flat, data2_flat)
             differences2 = np.setdiff1d(data2_flat, data1_flat)
 
-            #print('Differences: {differences}')
-            #print('Differences2: {differences2}')
+            #print(f'Differences: {differences}')
+            #print(f'Differences2: {differences2}')
 
             if len(differences) == 0:
-                print('Files are EQUAL\n')
+                print(f'Files are EQUAL\n')
                 out._info = len(differences)
             else:
                 if np.allclose(data1_flat, data2_flat, rtol=rtol, atol=atol, equal_nan=True):
-                    print('Files have a significant difference within {atol} for {file1} and {file2}.')
-                    print('Differences between:', differences, 'and', differences2, '\n')
+                    print(f'Files have a significant difference within {atol} for {file1} and {file2}.')
+                    print(f'Differences between:', differences, 'and', differences2, '\n')
                     out._info = 0
                 else:
-                    print('\nUNEQUAL Comparison for {file1} and {file2}.')
-                    print('Found {len(differences)} differences.\n')
+                    print(f'\nUNEQUAL Comparison for {file1} and {file2}.')
+                    print(f'Found {len(differences)} differences.\n')
                     out._info = len(differences)
 
         return out
