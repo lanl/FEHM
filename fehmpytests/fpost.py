@@ -1624,9 +1624,9 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
 
         for (file1, data1), (file2, data2) in zip(in1.files_info, in2.files_info):
             print(f'\nComparing Files... {file1} with {file2}')
-            # print(f'Type of data1: {type(data1)}, Type of data2: {type(data2)}')
-            # print(f'Data1: {data1}')
-            # print(f'Data2: {data2}')
+            #print(f'Type of data1: {type(data1)}, Type of data2: {type(data2)}')
+            #print(f'Data1: {data1}')
+            #print(f'Data2: {data2}')
 
             if data1.size == 0 or data2.size == 0:
                 print(f'Missing data in comparison for files: {file1} and {file2}')
@@ -1643,7 +1643,7 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
                 continue
 
             if np.allclose(data1_flat, data2_flat, rtol=rtol, atol=atol, equal_nan=True):
-                print(f'Files are EQUAL within tolerance {atol}\n')
+                print(f'Files have a significant difference within {atol} for {file1} and {file2}.')
                 out._info = 0
             else:
                 differences = np.setdiff1d(data1_flat, data2_flat)
