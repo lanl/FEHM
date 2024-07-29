@@ -1466,32 +1466,36 @@ class fcomparison(object):
     This includes file types his & temp.his.
     ****************************************************************
     '''
-    def __init__(self,filename=None,verbose=True):
-        self._filename=None 
-        #self._silent = dflt.silent
+    def __init__(self, filename=None, verbose=True):
+        self._filename = None 
         self._silent = True
         self._format = ''
-        self._times=[] 
-        self._info=[] 
+        self._times = [] 
+        self._info = [] 
         self._verbose = verbose
-        self._data={}
-        self._row=None
-        self._nodes=[]  
+        self._data = {}
+        self._row = None
+        self._nodes = []  
         self._zones = []
-        self._variables=[] 
+        self._variables = [] 
         self._user_variables = []
-        self._keyrows={}
-        self.column_name=[]
-        self.num_columns=0
-        self._nkeys=1
+        self._keyrows = {}
+        self.column_name = []
+        self.num_columns = 0
+        self._nkeys = 1
+        self.files_info = [] 
         filename = os_path(filename)
-        if filename: self._filename=filename; self.read(filename)
-    def __getitem__(self,key):
-        if key in self.variables or key in self.user_variables:
-            return self._data[key]
-        else: return None
+        if filename: 
+            self._filename = filename
+            self.read(filename)
 
-    def read(self,filename):                        # read contents of file
+    def __getitem__(self, key):
+        if key in self._variables or key in self._user_variables:
+            return self._data.get(key, None)
+        else:
+            return None
+
+    def read(self, filename):  # read contents of file
         '''
         Read in FEHM history output information.
         
@@ -1502,69 +1506,46 @@ class fcomparison(object):
         import re
         glob_pattern = re.sub(r'\[','[[]',filename)
         glob_pattern = re.sub(r'(?<!\[)\]','[]]', glob_pattern)
-        files=glob(glob_pattern)
+        files = glob(glob_pattern)
 
-        #print('\n---- AT FCOMPARISON IN FPOST ----')
-        for i,fname in enumerate(files):
-            #print('Names of files: \n', files)
-            #if self._verbose:
+        for fname in files:
             if '..' in fname:
-                #print('fname is in compare: ', fname)
                 if os.name == 'nt':  # For Windows
-                    tmp=fname.split('\\')[-1]
+                    tmp = fname.split('\\')[-1]
                 else:
                     tmp = fname.split('/')[-1]
-                #print('tmp: ', tmp)
                 if os.path.exists(tmp):
-                    #print('valid comparison of: ', fname, ' and ', tmp)
                     pass
                 else:
-                    #print('\n    **WARNING**   The file ', tmp , ' is in compare, but not in output. Skipping file...')
                     continue
             elif '..' not in fname:
-                #print('fname is in output: ', fname)
-                path=os.path.join('..', 'compare', '')+fname
-                #print('PATH', path)
+                path = os.path.join('..', 'compare', '') + fname
                 if os.path.exists(path):
-                    #print('valid comparison of: ', fname, ' and ', path)
                     pass
                 else:
-                    #print('\n    **WARNING**   The file ', fname , 'is in output, but doesn''t have a valid compare file. Skipping file...')
                     continue
-            with open(fname, 'r') as self._file:
-                i=0
-                while i < 4:
-                    header=self._file.readline()
-                    i=i+1
-                #print('\nFinal Header: ', header)
-                self._read_data(fname.split('.')[0])   
+            
+            with open(fname, 'r') as file:
+                self._read_data(file, fname)
                 
-    def _read_data(self, var_key):
-        lns = self._file.readlines()
-        data = [ln.strip().split() for ln in lns]  # Creating a list of lists
-        
-        # Determine the maximum length of sublists
-        max_length = max(len(sublist) for sublist in data)
+    def _read_data(self, file, filename):
+        lines = file.readlines()[1:]
+        data = [line.strip().split() for line in lines]
+        #print('DATA', data)
 
-        # Pad sublists to ensure consistent shape
+        max_length = max(len(sublist) for sublist in data)
         data = [sublist + [''] * (max_length - len(sublist)) for sublist in data]
 
-        # Convert to NumPy array with floats, replacing non-numeric values with np.nan
         def to_float(value):
             try:
                 return float(value)
             except ValueError:
-                return np.nan
+                return 0
 
-        # Convert the list of lists to a 2D numpy array of floats
         data = np.array([[to_float(item) for item in sublist] for sublist in data], dtype=float)
-        
-        # Extract the first column
-        #first_column = data[:, 0]
-
-        #print('\n** DATA ** \n', data)
-        self._info = data
-
+        self.files_info.append((filename, data))  # Store the data as a tuple (filename, data)
+        #print('Processed file: {filename}')
+        #print('Data for {filename}: {data}')
 
 
     #########################################################################################                    
@@ -1596,9 +1577,7 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
     # Copy in1 and in2 in case they get modified below
     in1 = copy(in1)
     in2 = copy(in2)
-    #print('components', components)
-    #print('\ntype in1: ', type(in1))
-    #print('\ntype in2: ', type(in2))
+
     if type(in1) is not type(in2):
         print("ERROR: fpost objects are not of the same type: "+str(type(in1))+" and "+str(type(in2)))
         return
@@ -1619,34 +1598,68 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
             times = t
             
     if isinstance(in1, fcomparison):
-        # Find common variables
-        #print('\n------------------------diff comparison---------------------------')
-        
         atol = 1e-10  # Absolute tolerance
+        rtol = 0  # Relative tolerance
 
-        # Copy the input object to maintain immutability
         out = copy(in1)
         out._info = info
 
-        # Check for differences
-        differences = np.setdiff1d(in1._info, in2._info)
+        if len(in1.files_info) != len(in2.files_info):
+            print('ERROR: The number of files in in1 and in2 do not match')
+            return
 
-        print('\n\nComparing Files... ', out._filename)
-        
-        if len(differences) == 0:
-            print('\nFiles are EQUAL.\n')
-            out._info=len(differences)
+        #print('in1.files_info: {in1.files_info}')
+        #print('in2.files_info: {in2.files_info}')
 
-        else:
-            if np.allclose(in1._info, in2._info, atol=atol):
-                print('\nFiles have a significant difference within', atol, '.')
-                print('Continuing...\n')
-                out._info=0
+        # Check the structure of each entry in files_info
+        '''for idx, entry in enumerate(in1.files_info):
+            print('in1.files_info[{idx}]: {entry} (type: {type(entry)})')
+            if isinstance(entry, tuple):
+                print('  Length of tuple: {len(entry)}')
 
+        for idx, entry in enumerate(in2.files_info):
+            print('in2.files_info[{idx}]: {entry} (type: {type(entry)})')
+            if isinstance(entry, tuple):
+                print('  Length of tuple: {len(entry)}')'''
+
+        for (file1, data1), (file2, data2) in zip(in1.files_info, in2.files_info):
+            print('\nComparing Files... {file1} with {file2}')
+            #print('Type of data1: {type(data1)}, Type of data2: {type(data2)}')
+            #print('Data1: {data1}')
+            #print('Data2: {data2}')
+
+            if data1.size == 0 or data2.size == 0:
+                print('Missing data in comparison for files: {file1} and {file2}')
+                continue
+
+            data1_flat = data1.flatten()
+            data2_flat = data2.flatten()
+
+            #print('Data1 Flat: {data1_flat}')
+            #print('Data2 Flat: {data2_flat}')
+
+            if len(data1_flat) == 0 or len(data2_flat) == 0:
+                print('No data to compare in files: {file1} and {file2}')
+                continue
+
+            differences = np.setdiff1d(data1_flat, data2_flat)
+            differences2 = np.setdiff1d(data2_flat, data1_flat)
+
+            #print('Differences: {differences}')
+            #print('Differences2: {differences2}')
+
+            if len(differences) == 0:
+                print('Files are EQUAL\n')
+                out._info = len(differences)
             else:
-                print('\nUNEQUAL Comparison.')
-                print('Found' , len(differences), 'differences.\n')
-                out._info=len(differences)
+                if np.allclose(data1_flat, data2_flat, rtol=rtol, atol=atol, equal_nan=True):
+                    print('Files have a significant difference within {atol} for {file1} and {file2}.')
+                    print('Differences between:', differences, 'and', differences2, '\n')
+                    out._info = 0
+                else:
+                    print('\nUNEQUAL Comparison for {file1} and {file2}.')
+                    print('Found {len(differences)} differences.\n')
+                    out._info = len(differences)
 
         return out
 

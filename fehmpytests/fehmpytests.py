@@ -917,9 +917,7 @@ class fehmTest(unittest.TestCase):
             f_new = fpost.fcomparison('*'+subcase+filetype)
             f_dif = fpost.fdiff(f_new, f_old)
 
-            #print('length of the info values: ', f_dif._info)
             
-         
             if f_dif._info == 0 :
                 #print('info is zero')
                 test_flag = True
@@ -1204,8 +1202,12 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('richards', log))
         suite.addTest(fehmTest('rad_decay', log))
         #suite.addTest(fehmTest('ppor_read', log))
-        #suite.addTest(fehmTest('sptr_btc', log))
-        #suite.addTest(fehmTest('wvtest', log))
+        suite.addTest(fehmTest('sptr_btc', log))
+        suite.addTest(fehmTest('wvtest', log))
+        suite.addTest(fehmTest('heat2d_quad', log))
+        suite.addTest(fehmTest('evaporation', log))
+        suite.addTest(fehmTest('henrys_law', log))
+        suite.addTest(fehmTest('vapor_extraction', log))
         
         #Works with FEHM V3.2
         #suite.addTest(fehmTest('heatflux_1DConvection', log))
