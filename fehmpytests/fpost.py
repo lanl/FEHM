@@ -1624,9 +1624,9 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
 
         for (file1, data1), (file2, data2) in zip(in1.files_info, in2.files_info):
             print(f'\nComparing Files... {file1} with {file2}')
-            #print(f'Type of data1: {type(data1)}, Type of data2: {type(data2)}')
-            #print(f'Data1: {data1}')
-            #print(f'Data2: {data2}')
+            # print(f'Type of data1: {type(data1)}, Type of data2: {type(data2)}')
+            # print(f'Data1: {data1}')
+            # print(f'Data2: {data2}')
 
             if data1.size == 0 or data2.size == 0:
                 print(f'Missing data in comparison for files: {file1} and {file2}')
@@ -1635,26 +1635,25 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
             data1_flat = data1.flatten()
             data2_flat = data2.flatten()
 
-            #print('Data1 Flat: {data1_flat}')
-            #print('Data2 Flat: {data2_flat}')
+            # print('Data1 Flat:', data1_flat)
+            # print('Data2 Flat:', data2_flat)
 
             if len(data1_flat) == 0 or len(data2_flat) == 0:
                 print(f'No data to compare in files: {file1} and {file2}')
                 continue
 
-            differences = np.setdiff1d(data1_flat, data2_flat)
-            differences2 = np.setdiff1d(data2_flat, data1_flat)
-
-            #print(f'Differences: {differences}')
-            #print(f'Differences2: {differences2}')
-
-            if len(differences) == 0:
-                print(f'Files are EQUAL\n')
-                out._info = len(differences)
+            if np.allclose(data1_flat, data2_flat, rtol=rtol, atol=atol, equal_nan=True):
+                print(f'Files are EQUAL within tolerance {atol}\n')
+                out._info = 0
             else:
-                if np.allclose(data1_flat, data2_flat, rtol=rtol, atol=atol, equal_nan=True):
-                    print(f'Files have a significant difference within {atol} for {file1} and {file2}.')
-                    print(f'Differences between:', differences, 'and', differences2, '\n')
+                differences = np.setdiff1d(data1_flat, data2_flat)
+                differences2 = np.setdiff1d(data2_flat, data1_flat)
+
+                # print(f'Differences: {differences}')
+                # print(f'Differences2: {differences2}')
+
+                if len(differences) == 0:
+                    print(f'Files are EQUAL\n')
                     out._info = 0
                 else:
                     print(f'\nUNEQUAL Comparison for {file1} and {file2}.')
