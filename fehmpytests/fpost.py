@@ -1654,11 +1654,10 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
                     # print(f'Differences: {differences}')
                     # print(f'Differences2: {differences2}')
 
-                    print(f'\nUNEQUAL Comparison for {file1} and {file2}.')
-                    print(f'Found {len(differences)} differences.\n')
-                    tmp=len(differences)
-                    out._info.append(tmp)
-                    return
+                    print(f'\nFiles are UNEQUAL.')
+                    print(f'Found {len(differences)} differences.')
+                    out._info.append(1)
+                    return out
         return out
 
     elif isinstance(in1, fcontour):

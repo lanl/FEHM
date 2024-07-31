@@ -929,10 +929,10 @@ class fehmTest(unittest.TestCase):
                 self.assertTrue(total == 0)
                 test_flag = True
             except AssertionError as e:
+                print("Significant differences found, no test performed.")
                 #Write to fail log if switch is on.
                 if self.log:
                     line = '\nThere are significant differences between files, no test performed'
-                    print(line)
                     self.fail_log.write(line)   
                 raise e
             
