@@ -917,16 +917,22 @@ class fehmTest(unittest.TestCase):
             f_new = fpost.fcomparison('*'+subcase+filetype)
             f_dif = fpost.fdiff(f_new, f_old)
 
-            
-            if f_dif._info == 0 :
-                #print('info is zero')
+            total=0
+
+            print('fpost._info: ', f_dif._info)
+            for ele in range(0, len(f_dif._info)):
+                total = total + f_dif._info[ele]
+
+            test_flag = False
+            try:   
+                self.assertTrue(total == 0)
                 test_flag = True
-            elif f_dif._info > 0 :
-                #print('info is greater than 0')
-                test_flag = False
-            else:
-                print('Error ')
-                test_flag = False
+            except AssertionError as e:
+                #Write to fail log if switch is on.
+                if self.log:
+                    line = '\nThere are significant differences between files, no test performed'
+                    self.fail_log.write(line)   
+                raise e
             
             if not test_flag:
                 self.fail("There are significant differences between files, no test performed")

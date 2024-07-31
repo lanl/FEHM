@@ -1637,7 +1637,7 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
             # Check if arrays are close enough within the tolerance
             if np.allclose(data1_flat, data2_flat, rtol=rtol, atol=atol, equal_nan=True):
                 print(f'Files are EQUAL')
-                out._info = 0
+                out._info.append(0)
             else:
                 # Calculate the differences
                 difference = np.abs(data1_flat - data2_flat)
@@ -1646,7 +1646,7 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
                 if max_difference <= atol + rtol * np.abs(data1_flat).max():
                     print(f'Files are considered EQUAL within a relative tolerance of:{rtol}, and an absolute tolerance of:{atol}')
                     print(f'Max difference: {max_difference}\n')
-                    out._info = 0
+                    out._info.append(0)
                 else:
                     differences = np.setdiff1d(data1_flat, data2_flat)
                     differences2 = np.setdiff1d(data2_flat, data1_flat)
@@ -1656,7 +1656,8 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
 
                     print(f'\nUNEQUAL Comparison for {file1} and {file2}.')
                     print(f'Found {len(differences)} differences.\n')
-                    out._info = len(differences)
+                    out._info.append(len(differences))
+                    return
         return out
 
     elif isinstance(in1, fcontour):
