@@ -904,6 +904,7 @@ class fehmTest(unittest.TestCase):
                             line = line+' filetype:'+filetype
                             for key in kvpairs:        
                                 line = line+' '+key+':'+kvpairs[key]
+                            print(line)
                             self.fail_log.write(line)   
                         raise e
             if not test_flag:
@@ -931,6 +932,7 @@ class fehmTest(unittest.TestCase):
                 #Write to fail log if switch is on.
                 if self.log:
                     line = '\nThere are significant differences between files, no test performed'
+                    print(line)
                     self.fail_log.write(line)   
                 raise e
             

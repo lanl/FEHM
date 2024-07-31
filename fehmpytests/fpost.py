@@ -1656,7 +1656,8 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
 
                     print(f'\nUNEQUAL Comparison for {file1} and {file2}.')
                     print(f'Found {len(differences)} differences.\n')
-                    out._info.append(len(differences))
+                    tmp=len(differences)
+                    out._info.append(tmp)
                     return
         return out
 
