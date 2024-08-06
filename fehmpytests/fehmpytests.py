@@ -920,7 +920,6 @@ class fehmTest(unittest.TestCase):
 
             total=0
 
-            print('fpost._info: ', f_dif._info)
             for ele in range(0, len(f_dif._info)):
                 total = total + f_dif._info[ele]
 
@@ -930,6 +929,7 @@ class fehmTest(unittest.TestCase):
                 test_flag = True
             except AssertionError as e:
                 print("Significant differences found, no test performed.")
+                print('fpost._info: ', f_dif._info)
                 #Write to fail log if switch is on.
                 if self.log:
                     line = '\nThere are significant differences between files, no test performed'

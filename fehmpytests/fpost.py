@@ -1532,7 +1532,7 @@ class fcomparison(object):
                 self._read_data(file, fname)
                 
     def _read_data(self, file, filename):
-        lines = file.readlines()[1:]
+        lines = file.readlines()[2:]
         data = [line.strip().split() for line in lines]
         #print('DATA', data)
 
@@ -1611,6 +1611,7 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
             print('ERROR: The number of files in in1 and in2 do not match')
             return
 
+
         #print('in1.files_info: {in1.files_info}')
         #print('in2.files_info: {in2.files_info}')
 
@@ -1655,9 +1656,9 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
                     # print(f'Differences2: {differences2}')
 
                     print(f'\nFiles are UNEQUAL.')
-                    print(f'Found {len(differences)} differences.')
+                    print(f'Found {len(differences)} differences in {file1} and {file2}.')
                     out._info.append(1)
-                    return out
+                    
         return out
 
     elif isinstance(in1, fcontour):
