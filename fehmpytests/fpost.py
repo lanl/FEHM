@@ -1548,7 +1548,7 @@ class fcomparison(object):
         data = np.array([[to_float(item) for item in sublist] for sublist in data], dtype=float)
         self.files_info.append((filename, data))  # Store the data as a tuple (filename, data)
         #print('Processed file: {filename}')
-        #print('Data for {filename}: {data}')
+        #print(f'Data for {filename}: {data}')
 
 
     #########################################################################################                    
@@ -1605,7 +1605,7 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
         rtol = 1e-05  # Relative tolerance
 
         out = copy(in1)
-        out._info = info
+        out._info = []
 
         if len(in1.files_info) != len(in2.files_info):
             print('ERROR: The number of files in in1 and in2 do not match')
@@ -1655,8 +1655,8 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
                     # print(f'Differences: {differences}')
                     # print(f'Differences2: {differences2}')
 
-                    print(f'\nFiles are UNEQUAL.')
-                    print(f'Found {len(differences)} differences in {file1} and {file2}.')
+                    print(f'Files are UNEQUAL.')
+                    print(f'Found {len(differences)} differences in {file1} and {file2}.\nDifferences are {differences} and {differences}')
                     out._info.append(1)
                     
         return out
