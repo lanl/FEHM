@@ -1,0 +1,6 @@
+# FEHM3.6_VER2                     04/18/2024 
+#   LOG AVS OUTPUT
+#  column (100 nodes) 0 m depth (horizontal)                                      
+# Root filename               Output Time (days)
+ output/1d_horizontal_column2p.00001       0.00000000    
+ output/1d_horizontal_column2p.00002      10000000.00    

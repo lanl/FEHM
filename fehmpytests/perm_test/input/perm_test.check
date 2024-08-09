@@ -1,0 +1,7 @@
+Permeability boun macro test
+X Permeability      
+output/pres_kx.out
+Y Permeability      
+output/pres_ky.out
+Z Permeability      
+output/pres_kz.out

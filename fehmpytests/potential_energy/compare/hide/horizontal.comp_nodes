@@ -1,0 +1,6 @@
+Potential Energy Test                                                           
+Comparison of potential energy temperature results                              
+Test case: Node by node comparison: horizontal 
+Time 0.156000E+09
+Maximum Error  Maximum % Error   RMS Error
+   0.4916E-03     0.2453E-02     0.1452E-05

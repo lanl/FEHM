@@ -459,6 +459,18 @@ class fehmTest(unittest.TestCase):
         """
         
         self.test_case('sptr_btc')
+
+    def perm_test(self):
+        """
+        **Test perm_test**
+
+        Comparison of Ratio of Permeabilty Change to Ratio of Change in Flow Rate
+        
+        .. Authors: Mark Lange
+        .. Updated: July 2024 by Erica Hinrichs
+        """
+        
+        self.test_case('perm_test')
    
     def theis(self):
         """
@@ -697,6 +709,20 @@ class fehmTest(unittest.TestCase):
         #arguments = {}
 
         self.test_case('fracture_aperture')
+
+    def potential_energy(self):
+        """
+        **Test potential_energy**
+
+        Comparison of Ratio of Permeabilty Change to Ratio of Change in Flow Rate
+
+        .. Updated: July 2024 by Erica Hinrichs
+
+        """
+
+        #arguments = {}
+
+        self.test_case('potential_energy')
 
     def vapor_extraction(self):
         """
@@ -1262,7 +1288,7 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('sorption', log))
         suite.addTest(fehmTest('baro_vel', log))
         #suite.addTest(fehmTest('cellbased', log))
-        #suite.addTest(fehmTest('heat_pipe', log))
+        suite.addTest(fehmTest('heat_pipe', log))
         suite.addTest(fehmTest('heat2d', log))
         suite.addTest(fehmTest('toronyi', log))
         suite.addTest(fehmTest('colloid_filtration', log))
@@ -1270,7 +1296,7 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('bodyforce', log))
         suite.addTest(fehmTest('richards', log))
         suite.addTest(fehmTest('rad_decay', log))
-        #suite.addTest(fehmTest('ppor_read', log))
+        suite.addTest(fehmTest('potential_energy', log))
         suite.addTest(fehmTest('sptr_btc', log))
         suite.addTest(fehmTest('wvtest', log))
         suite.addTest(fehmTest('heat2d_quad', log))

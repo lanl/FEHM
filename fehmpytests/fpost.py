@@ -1646,7 +1646,7 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
                 
                 if max_difference <= atol + rtol * np.abs(data1_flat).max():
                     print(f'Files are considered EQUAL within a relative tolerance of:{rtol}, and an absolute tolerance of:{atol}')
-                    print(f'Max difference: {max_difference}\n')
+                    #print(f'Max difference: {max_difference}\n')
                     out._info.append(0)
                 else:
                     differences = np.setdiff1d(data1_flat, data2_flat)
@@ -1656,7 +1656,7 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
                     # print(f'Differences2: {differences2}')
 
                     print(f'Files are UNEQUAL.')
-                    print(f'Found {len(differences)} differences in {file1} and {file2}.\nDifferences are {differences} and {differences}')
+                    print(f'Found {len(differences)} differences in {file1} and {file2}.\nDifferences are {differences} and {differences2}')
                     out._info.append(1)
                     
         return out
