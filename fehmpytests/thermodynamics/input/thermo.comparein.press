@@ -1,0 +1,12 @@
+Comparison of Steam Table vs FEHM Values
+Saturation Pressure as a Function of Temperature
+Saturation pressures
+output/sat_pressures.fehm
+input/thermo.saturation_data
+output/sat_press.comp
+1	2		Temperature/Pressure position FEHMN values
+2	1		Temperature/Pressure position Data values
+0. 1. 0. 1.		Translate X1, Scale X1, Translate X2, Scale X2
+0. 1. 0. 1.		Translate Y1, Scale Y1, Translate Y2, Scale Y2
+10. 340. 0.00122813	Low X, high X, minimum Y
+.FALSE.                 Print arrays

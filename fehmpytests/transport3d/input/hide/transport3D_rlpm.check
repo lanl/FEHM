@@ -1,0 +1,9 @@
+Three-Dimensional Radionuclide Transport Problem
+Flow field run (rlp)
+output/3d_trac.init.out
+Transport run (rlp) 
+output/3d_trac.out
+Flow field run (rlpm)
+output/3d_trac_rlpm.init.out
+Transport run (rlpm) 
+output/3d_trac_rlpm.out

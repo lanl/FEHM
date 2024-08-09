@@ -1,0 +1,14 @@
+Three-Dimensional Radionuclide Transport Problem
+Comparison of FEHM and TRACRN for Concentration vs Time 
+isolong Tracer, Point pos
+tracer
+output/3d_trac_rlpm.trc
+input/3d_tracr3d_isot.out
+output/transport3d_rlpm.comp_isot.pos
+3			3-D
+pos			Coordinate position
+num			Specie 
+1.e6 0.002739726 0. 1. 	Translate X1, Scale X1, Translate Y1, Scale Y1 
+0. 1. 0. 1.		Translate X2, Scale X2, Translate Y2, Scale Y2
+10.0 5000. lowy 	Low X, high X, minimum Y
+.FALSE.			Print arrays

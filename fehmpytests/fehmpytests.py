@@ -471,6 +471,19 @@ class fehmTest(unittest.TestCase):
         """
         
         self.test_case('perm_test')
+
+    def transport3d(self):
+        """
+        **Test transport3d**
+
+        Three-Dimensional Radionuclide Transport Problem - trac_rlp                     
+        Comparison of FEHM and TRACRN for Concentration vs Time
+        
+        .. Authors: Mark Lange
+        .. Updated: July 2024 by Erica Hinrichs
+        """
+        
+        self.test_case('transport3d')
    
     def theis(self):
         """
@@ -1306,6 +1319,7 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('cflxz_test', log))
         suite.addTest(fehmTest('fracture_aperture', log))
         suite.addTest(fehmTest('heat3d', log))
+        suite.addTest(fehmTest('transport3d', log))
         
     
     elif mode == 'developer':

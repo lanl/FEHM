@@ -1,0 +1,12 @@
+Comparison of Steam Table vs FEHM Values
+Compressibility as a Function of Pressure and Temperature
+State compressibility
+output/compress_state.fehm
+input/thermo.compress_data.state
+output/compress_state.comp
+3	 3		Total variables/Problem position FEHMN values
+6	 6		Total variables/Problem position Data values
+0. 1. 0. 1.		Translate X1, Scale X1, Translate X2, Scale X2
+0. 1. 0. 1.		Translate Y1, Scale Y1, Translate Y2, Scale Y2
+1 100 0.		Low X, high X, minimum Y
+.FALSE.                  Print arrays
