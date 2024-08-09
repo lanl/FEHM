@@ -1,0 +1,3 @@
+output/Pressure.comp_nodes
+output/Z_displacement.comp_nodes
+output/Z_stress.comp_nodes

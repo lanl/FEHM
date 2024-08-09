@@ -1,0 +1,18 @@
+Fracture Aperture Test
+Comparison of 3D Wellbore Thermal Stress test results
+Node by node comparison: VARIABLE
+contourf               Data type
+input/pmd_all.
+output/pmd_all.
+output/PARAM.comp_nodes
+1			Time
+1                       Time position
+sca                     AVS data type	
+00002                   File number
+100.			Simulation time (days)
+3 5			3D (X,Y coordinates), Node by Node
+POS			Data parameter position
+0. 1. 0. 1.		Translate X1, Scale X1, Translate Y1, Scale Y1
+0. 1. 0. 1.		Translate X2, Scale X2, Translate Y2, Scale Y2
+1 6256 MINY		Low X, high X, minimum Y
+.FALSE.			Print data

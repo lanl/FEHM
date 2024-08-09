@@ -223,6 +223,12 @@ class fehmTest(unittest.TestCase):
     def evaporation(self):
         """ 
         **Test the evaporation Macro**
+
+        Evaporation test                                                                
+        Comparison of Changes in Mass with Time
+
+        .. Authors: Mark Lange
+        .. Updated: 2024 by Erica Hinrichs
                  
         """
     
@@ -317,7 +323,8 @@ class fehmTest(unittest.TestCase):
         """
         **cflxz_test**
         
-        
+        Concentration Zone Flux Test                                                    
+        Comparison of FEHm with 1-D Difusion Model  
         
         .. Authors: Mark Lange
         .. Updated: 2024 by Erica hinrichs
@@ -649,6 +656,10 @@ class fehmTest(unittest.TestCase):
     def wvtest(self):
         """
         **Test wvtest**
+
+        Unsaturated Diffusion test                                                      
+        Comparison of FEHM Saturation vs Time with original run
+
         .. Updated: July 2024 by Erica Hinrichs
 
         """
@@ -657,9 +668,25 @@ class fehmTest(unittest.TestCase):
 
         self.test_case('wvtest')
 
+    def fracture_aperture(self):
+        """
+        **Test fracture_aperture**
+
+        Comparison of 3D Wellbore Thermal Stress test results
+
+        .. Updated: July 2024 by Erica Hinrichs
+
+        """
+
+        #arguments = {}
+
+        self.test_case('fracture_aperture')
+
     def vapor_extraction(self):
         """
         **Test vapor_extraction**
+
+        Comparison of Model and Analytical Solution for Vapor Pressure vs Position
 
         .. Updated: July 2024 by Erica Hinrichs
 
@@ -1232,6 +1259,8 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('evaporation', log))
         suite.addTest(fehmTest('henrys_law', log))
         suite.addTest(fehmTest('vapor_extraction', log))
+        suite.addTest(fehmTest('cflxz_test', log))
+        suite.addTest(fehmTest('fracture_aperture', log))
         
         #Works with FEHM V3.2
         #suite.addTest(fehmTest('heatflux_1DConvection', log))

@@ -1,0 +1,9 @@
+input: ../input/pmd_all.in
+grid: ../input/wo_frac1.grid
+outp: pmd_all.out
+nopf: nop.temp
+root: pmd_all
+stor: ../input/pmd_all.stor
+
+none
+0
