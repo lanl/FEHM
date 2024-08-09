@@ -1,0 +1,8 @@
+input: ../input/heat3d.in
+grida: ../input/heat3d_tets.geom
+outp: heat3d_tets.out
+
+root: heat3d_tets
+
+none
+0

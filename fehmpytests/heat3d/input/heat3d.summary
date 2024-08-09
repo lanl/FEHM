@@ -1,0 +1,7 @@
+output/heat3d_tri.comp_param
+output/heat3d_quad.comp_param
+output/heat3d_tets.comp_param
+output/heat3d_mix.comp_param
+output/heat3d_ref.comp_param
+output/heat3d_quad.finv.comp_param
+output/heat3d_ref.finv.comp_param

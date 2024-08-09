@@ -333,7 +333,23 @@ class fehmTest(unittest.TestCase):
         #arguments = {}
         #arguments['variables'] = ['density']
          
-        self.test_case('cflxz_test') 
+        self.test_case('cflxz_test')
+
+    def heat3d(self):
+        """
+        **heat3d**
+        
+        3-D Heat Conduction Problem                                                     
+        Comparison of Model and Analytical Solution for Temperature vs Time  
+        
+        .. Authors: Mark Lange
+        .. Updated: 2024 by Erica hinrichs
+        """
+        
+        #arguments = {}
+        #arguments['variables'] = ['density']
+         
+        self.test_case('heat3d') 
         
     def doe(self):
         """
@@ -795,9 +811,10 @@ class fehmTest(unittest.TestCase):
                     #print('Number of found files: ', len(found_files))
 
                     if len(found_files) > 0:
+                        #print(f'\n\nfound {len(found_files)} files. Continuing to test template')
                         test_method = self._test_template(filetype, subcase, parameters)
                         test_method()
-                        #print('Test method executed for filetype: ', filetype)
+                        #print(f'Test method executed for filetype: {filetype} on files: {found_files}')
                         test_flag = True
                     else:
                         #print('Test method NOT executed for filetype: ', filetype)
@@ -849,6 +866,7 @@ class fehmTest(unittest.TestCase):
        
         def contour_case():      
             #Find the difference between the old and new
+            #print('Contour Case')
             f_old = fpost.fcontour(os.path.join('..','compare','*')+subcase+'.'+filetype)
             f_new = fpost.fcontour('*'+subcase+'.'+filetype)
             f_dif = fpost.fdiff(f_new, f_old)
@@ -886,7 +904,7 @@ class fehmTest(unittest.TestCase):
                             float(len(f_dif[t][v]))
                     }[test_measure]
                     try:
-                       # print('true? ', difference, '<', mxerr, '=', difference<mxerr)
+                        #print('true? ', difference, '<', mxerr, '=', difference<mxerr, 'for ', (os.path.join('..','compare','*')+subcase+'.'+filetype), ' and ', ('*'+subcase+'.'+filetype))
                         self.assertTrue(difference<mxerr, msg%(v, t))
                         test_flag = True
                     except AssertionError as e:
@@ -1261,6 +1279,7 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('vapor_extraction', log))
         suite.addTest(fehmTest('cflxz_test', log))
         suite.addTest(fehmTest('fracture_aperture', log))
+        suite.addTest(fehmTest('heat3d', log))
         
         #Works with FEHM V3.2
         #suite.addTest(fehmTest('heatflux_1DConvection', log))
