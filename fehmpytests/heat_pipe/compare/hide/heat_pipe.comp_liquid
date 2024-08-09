@@ -1,0 +1,14 @@
+Heat Pipe Problem -- Internode Fluxes                                           
+Comparison of FE and FDM Solution for Flux at 1.e4 days                         
+Test case: liquid                              
+Value  0.00000    
+Maximum Error  Maximum % Error   RMS Error
+   0.8708E-08      2.039         0.4680E-02
+
+Interpolation done with                 FEHMN solution
+XM           YM           X interp     Y interp     Y error      Y % error
+  1.00000000     -0.410320000E-06   1.00000000     -0.410453000E-06  0.133000000E-09  0.324032228E-01
+  2.00000000     -0.418373000E-06   2.00000000     -0.427081000E-06  0.870800000E-08   2.03895748    
+  3.00000000     -0.606013000E-06   3.00000000     -0.599141000E-06 -0.687200000E-08   1.14697542    
+  4.00000000     -0.102383000E-05   4.00000000     -0.102358000E-05 -0.250000000E-09  0.244240802E-01
+  5.00000000     -0.104292000E-05   5.00000000     -0.104304000E-05  0.120000000E-09  0.115048320E-01

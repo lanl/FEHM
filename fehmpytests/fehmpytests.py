@@ -1166,7 +1166,7 @@ class fehmTest(unittest.TestCase):
                  '*.sptr3':  comparison_case,
                  '*.his':  history_case,
                  '*.trc':  comparison_case,
-                 '*.out':  output_case, 
+                 '*.out':  comparison_case, 
                  '*.cflx': comparison_case,
                  '*.ptrk': ptrack_case }[filetype]
                                     
@@ -1281,25 +1281,6 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('fracture_aperture', log))
         suite.addTest(fehmTest('heat3d', log))
         
-        #Works with FEHM V3.2
-        #suite.addTest(fehmTest('heatflux_1DConvection', log))
-        
-        #TODO - Look into why this test takes so long.
-        #suite.addTest(fehmTest('evaporation', log))
-        
-        #TODO - Figure out how to read some other formats.
-        #suite.addTest(fehmTest('sptr_btc', log))
-        #suite.addTest(fehmTest('sorption', log))
-        #suite.addTest(fehmTest('particle_capture', log))
-        #suite.addTest(fehmTest('mptr', log))
-        #suite.addTest(fehmTest('lost_part', log))
-        #suite.addTest(fehmTest('chain', log))
-        #suite.addTest(fehmTest('co2test', log))
-        #suite.addTest(fehmTest('convection', log))
-        #suite.addTest(fehmTest('dpdp_rich', log))
-        #suite.addTest(fehmTest('erosion', log))
-        #suite.addTest(fehmTest('gdpm', log))
-        #suite.addTest(fehmTest('forward', log))
     
     elif mode == 'developer':
         #This mode will be a reduced set that runs faster.

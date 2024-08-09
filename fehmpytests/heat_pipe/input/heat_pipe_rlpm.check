@@ -1,9 +1,0 @@
-Heat Pipe Problem -- Internode Fluxes
-FE formulation (rlp)
-output/heat_pipe_fe.out
-FDM formulation (rlp)
-output/heat_pipe_fdm.out
-FE formulation (rlpm)
-output/heat_pipe_fe_rlpm.out
-FDM formulation (rlpm)
-output/heat_pipe_fdm_rlpm.out
