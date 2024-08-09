@@ -2,12 +2,7 @@ input: ../input/heat2d_quad.in
 grida: ../input/heat2d_quad.geom
 input: ../input/heat2d_quad.in
 outp: heat2d_quad.out
-
-
-
-
-
-
+root: heat2d_quad
 
 
 

@@ -312,6 +312,21 @@ class fehmTest(unittest.TestCase):
         arguments['variables'] = ['density']
          
         self.test_case('cden') 
+
+    def cflxz_test(self):
+        """
+        **cflxz_test**
+        
+        
+        
+        .. Authors: Mark Lange
+        .. Updated: 2024 by Erica hinrichs
+        """
+        
+        #arguments = {}
+        #arguments['variables'] = ['density']
+         
+        self.test_case('cflxz_test') 
         
     def doe(self):
         """
@@ -740,7 +755,7 @@ class fehmTest(unittest.TestCase):
                 if os.path.exists( output_dir ): shutil.rmtree(output_dir)
                 os.mkdir( output_dir )
                 os.chdir( output_dir )
-                filetypes = ['*.avs','*.csv','*.his','*.out','*.trc','*.ptrk','*.dat','*.sptr3']
+                filetypes = ['*.avs','*.csv','*.his','*.out','*.trc','*.ptrk','*.dat','*.sptr3', '*.cflx']
                 test_flag = False
                 
                 for filetype in filetypes:
@@ -1107,6 +1122,7 @@ class fehmTest(unittest.TestCase):
                  '*.his':  history_case,
                  '*.trc':  comparison_case,
                  '*.out':  output_case, 
+                 '*.cflx': comparison_case,
                  '*.ptrk': ptrack_case }[filetype]
                                     
     def _run_fehm(self, subcase):

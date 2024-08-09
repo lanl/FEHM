@@ -1,0 +1,14 @@
+Concentration Zone Flux Test
+Comparison of FEHm with 1-D Difusion Model
+COMP - Time vs Flux TYPE
+historfn                Data type
+output/cflxz_testCOMP_Species_001.cflx
+input/COMP_test_compare.csv
+output/COMP_Species_001_Flux_TYPE.comp
+0			Simulated 1-D
+APOS	1		Data position file2, and header lines
+FPOS	2		Data position file1, and header lines
+0. 1. 0. 1.		Translate X1, Scale X1, Translate Y1, Scale Y1
+0. 1. 0. 1.		Translate X2, Scale X2, Translate Y2, Scale Y2
+1.e-3 5. 0.		Low X, high X, minimum Y
+.false.			Print arrays
