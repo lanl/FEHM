@@ -1,4 +1,4 @@
-FEHM3.6_VER2                     04/18/2024    14:50:06
+FEHM V3.6.2   DATE QA:NA         08/12/2024    08:39:38
 
 Copyright  2015.   Los Alamos National Security, LLC.  This material was
 produced under U.S. Government contract DE-AC52-06NA25396 for Los Alamos
@@ -25,14 +25,14 @@ completed before LANS will provide access to the identified Software.
 
  File purpose - Variable - Unit number - File name
 
-    control       - iocntl -  1 - fehmn.files                                                                                         
-    input         - inpt   - 11 - input/pres_ky.dat                                                                                   
-    geometry      - incoor - 12 - ../head/input/head3D.grid                                                                           
-    zone          - inzone - 11 - input/pres_ky.dat                                                                                   
-    output        - iout   - 14 - output/pres_ky.out                                                                                  
+    control       - iocntl -  1 - ..\input\control\pres_ky.files                                                                      
+    input         - inpt   - 11 - ../input/pres_ky.dat                                                                                
+    geometry      - incoor - 12 - ../input/head3D.grid                                                                                
+    zone          - inzone - 11 - ../input/pres_ky.dat                                                                                
+    output        - iout   - 14 - pres_ky.out                                                                                         
     initial state - iread  -  0 - not using                                                                                           
     final state   - isave  -  0 - not using                                                                                           
-    time history  - ishis  - 17 - output/pres_ky.his                                                                                  
+    time history  - ishis  - 17 - pres_ky.his                                                                                         
     time his.(tr) - istrc  -  0 - not using                                                                                           
     contour plot  - iscon  -  0 - not using                                                                                           
     con plot (dp) - iscon1 -  0 - not using                                                                                           
@@ -78,7 +78,7 @@ completed before LANS will provide access to the identified Software.
  storage available for b matrix resized to       8788<<<<<<
 
 
- time for reading input, forming coefficients   0.00    
+ time for reading input, forming coefficients  0.156E-01
 
 
          224  BC to BC connection(s) found (now set=0.0)
@@ -105,7 +105,7 @@ Initial number of partially filled cells:        0
  Number of restarted time steps            0
                     Largest Residuals
  EQ1 R=  0.2708E-07 node=     68 zone=     0 x= 50.00     y= 75.00     z= 50.00    
- EQ2 R=  0.1266E-26 node=    114 zone=     0 x= 75.00     y= 50.00     z=100.00    
+ EQ2 R=  0.1266E-26 node=    114 zone=     0 x= 75.00     y= 50.00     z= 100.0    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.112659E-16           0.000000E+00
 
@@ -116,8 +116,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -164,7 +164,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.7549E-08 node=    116 zone=     0 x= 0.000     y= 75.00     z=100.00    
+ EQ1 R=  0.7549E-08 node=    116 zone=     0 x= 0.000     y= 75.00     z= 100.0    
  EQ2 R=  0.7397E-26 node=     67 zone=     0 x= 25.00     y= 75.00     z= 50.00    
    Node   Equation 1 Residual   Equation 2 Residual
      73      0.180330E-16           0.000000E+00
@@ -176,8 +176,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -224,7 +224,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.3474E-10 node=     95 zone=     0 x=100.00     y= 75.00     z= 75.00    
+ EQ1 R=  0.3474E-10 node=     95 zone=     0 x= 100.0     y= 75.00     z= 75.00    
  EQ2 R=  0.7558E-28 node=     43 zone=     0 x= 50.00     y= 75.00     z= 25.00    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.191107E-16           0.000000E+00
@@ -236,8 +236,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -285,7 +285,7 @@ Initial number of partially filled cells:        0
  Number of restarted time steps            0
                     Largest Residuals
  EQ1 R=  0.1718E-10 node=     16 zone=     0 x= 0.000     y= 75.00     z= 0.000    
- EQ2 R=  0.1581E-27 node=     65 zone=     0 x=100.00     y= 50.00     z= 50.00    
+ EQ2 R=  0.1581E-27 node=     65 zone=     0 x= 100.0     y= 50.00     z= 50.00    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.199158E-16           0.000000E+00
 
@@ -296,8 +296,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -356,8 +356,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -389,7 +389,7 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-     0.996112252E-01      36.3830000        10.00000000    
+     0.996112252E-01      36.3830000         10.0000000    
  Cpu Sec for Time Step =   0.000     Current Total =     0.000    
 
                     Equation Performance
@@ -404,7 +404,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.1124E-10 node=    114 zone=     0 x= 75.00     y= 50.00     z=100.00    
+ EQ1 R=  0.1124E-10 node=    114 zone=     0 x= 75.00     y= 50.00     z= 100.0    
  EQ2 R=   0.000     node=      1 zone=    60 x= 0.000     y= 0.000     z= 0.000    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.199135E-16           0.000000E+00
@@ -416,8 +416,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -449,7 +449,7 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-     0.181746749          66.3830000        10.00000000    
+     0.181746749          66.3830000         10.0000000    
  Cpu Sec for Time Step =   0.000     Current Total =     0.000    
 
                     Equation Performance
@@ -464,7 +464,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.8112E-11 node=    115 zone=     0 x=100.00     y= 50.00     z=100.00    
+ EQ1 R=  0.8112E-11 node=    115 zone=     0 x= 100.0     y= 50.00     z= 100.0    
  EQ2 R=   0.000     node=      1 zone=    60 x= 0.000     y= 0.000     z= 0.000    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.199129E-16           0.000000E+00
@@ -476,8 +476,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -509,7 +509,7 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-     0.263882272          96.3830000        10.00000000    
+     0.263882272          96.3830000         10.0000000    
  Cpu Sec for Time Step =   0.000     Current Total =     0.000    
 
                     Equation Performance
@@ -524,7 +524,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.5803E-11 node=    114 zone=     0 x= 75.00     y= 50.00     z=100.00    
+ EQ1 R=  0.5803E-11 node=    114 zone=     0 x= 75.00     y= 50.00     z= 100.0    
  EQ2 R=   0.000     node=      1 zone=    60 x= 0.000     y= 0.000     z= 0.000    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.199125E-16           0.000000E+00
@@ -536,8 +536,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -569,7 +569,7 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-     0.346017796          126.383000        10.00000000    
+     0.346017796          126.383000         10.0000000    
  Cpu Sec for Time Step =   0.000     Current Total =     0.000    
 
                     Equation Performance
@@ -584,7 +584,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.4218E-11 node=    115 zone=     0 x=100.00     y= 50.00     z=100.00    
+ EQ1 R=  0.4218E-11 node=    115 zone=     0 x= 100.0     y= 50.00     z= 100.0    
  EQ2 R=   0.000     node=      1 zone=    60 x= 0.000     y= 0.000     z= 0.000    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.199121E-16           0.000000E+00
@@ -596,8 +596,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -629,7 +629,7 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-     0.428153320          156.383000        10.00000000    
+     0.428153320          156.383000         10.0000000    
  Cpu Sec for Time Step =   0.000     Current Total =     0.000    
 
                     Equation Performance
@@ -644,7 +644,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.3055E-11 node=    114 zone=     0 x= 75.00     y= 50.00     z=100.00    
+ EQ1 R=  0.3055E-11 node=    114 zone=     0 x= 75.00     y= 50.00     z= 100.0    
  EQ2 R=   0.000     node=      1 zone=    60 x= 0.000     y= 0.000     z= 0.000    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.199119E-16           0.000000E+00
@@ -656,8 +656,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -689,7 +689,7 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-     0.510288843          186.383000        10.00000000    
+     0.510288843          186.383000         10.0000000    
  Cpu Sec for Time Step =   0.000     Current Total =     0.000    
 
                     Equation Performance
@@ -704,7 +704,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.2232E-11 node=    115 zone=     0 x=100.00     y= 50.00     z=100.00    
+ EQ1 R=  0.2232E-11 node=    115 zone=     0 x= 100.0     y= 50.00     z= 100.0    
  EQ2 R=   0.000     node=      1 zone=    60 x= 0.000     y= 0.000     z= 0.000    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.199117E-16           0.000000E+00
@@ -716,8 +716,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -749,7 +749,7 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-     0.592424367          216.383000        10.00000000    
+     0.592424367          216.383000         10.0000000    
  Cpu Sec for Time Step =   0.000     Current Total =     0.000    
 
                     Equation Performance
@@ -764,7 +764,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.1628E-11 node=    114 zone=     0 x= 75.00     y= 50.00     z=100.00    
+ EQ1 R=  0.1628E-11 node=    114 zone=     0 x= 75.00     y= 50.00     z= 100.0    
  EQ2 R=   0.000     node=      1 zone=    60 x= 0.000     y= 0.000     z= 0.000    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.199116E-16           0.000000E+00
@@ -776,8 +776,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -809,7 +809,7 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-     0.674559890          246.383000        10.00000000    
+     0.674559890          246.383000         10.0000000    
  Cpu Sec for Time Step =   0.000     Current Total =     0.000    
 
                     Equation Performance
@@ -824,7 +824,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.1193E-11 node=    115 zone=     0 x=100.00     y= 50.00     z=100.00    
+ EQ1 R=  0.1193E-11 node=    115 zone=     0 x= 100.0     y= 50.00     z= 100.0    
  EQ2 R=   0.000     node=      1 zone=    60 x= 0.000     y= 0.000     z= 0.000    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.199115E-16           0.000000E+00
@@ -836,8 +836,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -869,7 +869,7 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-     0.756695414          276.383000        10.00000000    
+     0.756695414          276.383000         10.0000000    
  Cpu Sec for Time Step =   0.000     Current Total =     0.000    
 
                     Equation Performance
@@ -884,7 +884,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.8732E-12 node=    114 zone=     0 x= 75.00     y= 50.00     z=100.00    
+ EQ1 R=  0.8732E-12 node=    114 zone=     0 x= 75.00     y= 50.00     z= 100.0    
  EQ2 R=   0.000     node=      1 zone=    60 x= 0.000     y= 0.000     z= 0.000    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.199114E-16           0.000000E+00
@@ -896,8 +896,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -929,7 +929,7 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-     0.838830938          306.383000        10.00000000    
+     0.838830938          306.383000         10.0000000    
  Cpu Sec for Time Step =   0.000     Current Total =     0.000    
 
                     Equation Performance
@@ -944,7 +944,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.6407E-12 node=    115 zone=     0 x=100.00     y= 50.00     z=100.00    
+ EQ1 R=  0.6407E-12 node=    115 zone=     0 x= 100.0     y= 50.00     z= 100.0    
  EQ2 R=   0.000     node=      1 zone=    60 x= 0.000     y= 0.000     z= 0.000    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.199114E-16           0.000000E+00
@@ -956,8 +956,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -989,8 +989,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-     0.920966461          336.383000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+     0.920966461          336.383000         10.0000000    
+ Cpu Sec for Time Step =  0.1562E-01 Current Total =    0.1562E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -1004,7 +1004,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.4699E-12 node=    114 zone=     0 x= 75.00     y= 50.00     z=100.00    
+ EQ1 R=  0.4699E-12 node=    114 zone=     0 x= 75.00     y= 50.00     z= 100.0    
  EQ2 R=   0.000     node=      1 zone=    60 x= 0.000     y= 0.000     z= 0.000    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.199113E-16           0.000000E+00
@@ -1016,8 +1016,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -1050,7 +1050,7 @@ Initial number of partially filled cells:        0
                     Timing Information
            Years              Days         Step Size (Days)
      0.999315537          365.000000         8.61700000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.1562E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -1064,7 +1064,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.3450E-12 node=    115 zone=     0 x=100.00     y= 50.00     z=100.00    
+ EQ1 R=  0.3450E-12 node=    115 zone=     0 x= 100.0     y= 50.00     z= 100.0    
  EQ2 R=   0.000     node=      1 zone=    60 x= 0.000     y= 0.000     z= 0.000    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.199113E-16           0.000000E+00
@@ -1076,8 +1076,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -1112,8 +1112,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      1.08145106          395.000000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      1.08145106          395.000000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.1562E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -1139,8 +1139,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -1172,8 +1172,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      1.16358658          425.000000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      1.16358658          425.000000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.1562E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -1187,7 +1187,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.4653E-13 node=    115 zone=     0 x=100.00     y= 50.00     z=100.00    
+ EQ1 R=  0.4653E-13 node=    115 zone=     0 x= 100.0     y= 50.00     z= 100.0    
  EQ2 R=  0.2686E-32 node=     27 zone=    60 x= 25.00     y= 0.000     z= 25.00    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.241956E-16           0.000000E+00
@@ -1199,8 +1199,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -1232,8 +1232,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      1.24572211          455.000000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      1.24572211          455.000000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.1562E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -1247,7 +1247,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.4454E-13 node=    114 zone=     0 x= 75.00     y= 50.00     z=100.00    
+ EQ1 R=  0.4454E-13 node=    114 zone=     0 x= 75.00     y= 50.00     z= 100.0    
  EQ2 R=  0.2686E-32 node=     28 zone=    60 x= 50.00     y= 0.000     z= 25.00    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.241956E-16           0.000000E+00
@@ -1259,8 +1259,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -1292,8 +1292,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      1.32785763          485.000000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      1.32785763          485.000000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.1562E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -1307,7 +1307,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.4263E-13 node=    115 zone=     0 x=100.00     y= 50.00     z=100.00    
+ EQ1 R=  0.4263E-13 node=    115 zone=     0 x= 100.0     y= 50.00     z= 100.0    
  EQ2 R=  0.2686E-32 node=     54 zone=    60 x= 75.00     y= 0.000     z= 50.00    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.241956E-16           0.000000E+00
@@ -1319,8 +1319,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -1352,8 +1352,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      1.40999316          515.000000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      1.40999316          515.000000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.1562E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -1367,7 +1367,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.4076E-13 node=    114 zone=     0 x= 75.00     y= 50.00     z=100.00    
+ EQ1 R=  0.4076E-13 node=    114 zone=     0 x= 75.00     y= 50.00     z= 100.0    
  EQ2 R=  0.1343E-32 node=     26 zone=    60 x= 0.000     y= 0.000     z= 25.00    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.241956E-16           0.000000E+00
@@ -1379,8 +1379,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -1412,8 +1412,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      1.49212868          545.000000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      1.49212868          545.000000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.1562E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -1427,7 +1427,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.3909E-13 node=     15 zone=     0 x=100.00     y= 50.00     z= 0.000    
+ EQ1 R=  0.3909E-13 node=     15 zone=     0 x= 100.0     y= 50.00     z= 0.000    
  EQ2 R=  0.2686E-32 node=     29 zone=    60 x= 75.00     y= 0.000     z= 25.00    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.241956E-16           0.000000E+00
@@ -1439,8 +1439,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -1472,8 +1472,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      1.57426420          575.000000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      1.57426420          575.000000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.1562E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -1487,7 +1487,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.3745E-13 node=    114 zone=     0 x= 75.00     y= 50.00     z=100.00    
+ EQ1 R=  0.3745E-13 node=    114 zone=     0 x= 75.00     y= 50.00     z= 100.0    
  EQ2 R=  0.2686E-32 node=     77 zone=    60 x= 25.00     y= 0.000     z= 75.00    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.241956E-16           0.000000E+00
@@ -1499,8 +1499,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -1532,8 +1532,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      1.65639973          605.000000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      1.65639973          605.000000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.1562E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -1559,8 +1559,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -1592,8 +1592,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      1.73853525          635.000000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      1.73853525          635.000000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.1562E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -1619,8 +1619,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -1652,8 +1652,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      1.82067077          665.000000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      1.82067077          665.000000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.1562E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -1667,7 +1667,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.3303E-13 node=    115 zone=     0 x=100.00     y= 50.00     z=100.00    
+ EQ1 R=  0.3303E-13 node=    115 zone=     0 x= 100.0     y= 50.00     z= 100.0    
  EQ2 R=  0.2686E-32 node=     52 zone=    60 x= 25.00     y= 0.000     z= 50.00    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.241956E-16           0.000000E+00
@@ -1679,8 +1679,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -1712,8 +1712,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      1.90280630          695.000000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      1.90280630          695.000000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.1562E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -1739,8 +1739,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -1772,8 +1772,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      1.98494182          725.000000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      1.98494182          725.000000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.1562E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -1787,7 +1787,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.3043E-13 node=    111 zone=     0 x= 0.000     y= 50.00     z=100.00    
+ EQ1 R=  0.3043E-13 node=    111 zone=     0 x= 0.000     y= 50.00     z= 100.0    
  EQ2 R=  0.2686E-32 node=     53 zone=    60 x= 50.00     y= 0.000     z= 50.00    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.241956E-16           0.000000E+00
@@ -1799,8 +1799,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -1835,8 +1835,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      2.05338809          750.000000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      2.05338809          750.000000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.1562E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -1862,8 +1862,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -1895,8 +1895,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      2.13552361          780.000000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      2.13552361          780.000000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.1562E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -1922,8 +1922,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -1955,8 +1955,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      2.21765914          810.000000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      2.21765914          810.000000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.1562E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -1970,7 +1970,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.9003E-13 node=    112 zone=     0 x= 25.00     y= 50.00     z=100.00    
+ EQ1 R=  0.9003E-13 node=    112 zone=     0 x= 25.00     y= 50.00     z= 100.0    
  EQ2 R=   0.000     node=      1 zone=    60 x= 0.000     y= 0.000     z= 0.000    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.199113E-16           0.000000E+00
@@ -1982,8 +1982,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -2015,8 +2015,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      2.29979466          840.000000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      2.29979466          840.000000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.1562E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -2042,8 +2042,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -2075,8 +2075,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      2.38193018          870.000000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      2.38193018          870.000000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -2102,8 +2102,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -2135,8 +2135,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      2.46406571          900.000000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      2.46406571          900.000000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -2150,7 +2150,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.3572E-13 node=    111 zone=     0 x= 0.000     y= 50.00     z=100.00    
+ EQ1 R=  0.3572E-13 node=    111 zone=     0 x= 0.000     y= 50.00     z= 100.0    
  EQ2 R=   0.000     node=      1 zone=    60 x= 0.000     y= 0.000     z= 0.000    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.199112E-16           0.000000E+00
@@ -2162,8 +2162,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -2195,8 +2195,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      2.54620123          930.000000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      2.54620123          930.000000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -2222,8 +2222,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -2255,8 +2255,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      2.62833676          960.000000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      2.62833676          960.000000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -2282,8 +2282,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -2315,8 +2315,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      2.71047228          990.000000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      2.71047228          990.000000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -2342,8 +2342,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -2375,8 +2375,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      2.79260780          1020.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      2.79260780          1020.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -2390,7 +2390,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.1047E-13 node=    111 zone=     0 x= 0.000     y= 50.00     z=100.00    
+ EQ1 R=  0.1047E-13 node=    111 zone=     0 x= 0.000     y= 50.00     z= 100.0    
  EQ2 R=   0.000     node=      1 zone=    60 x= 0.000     y= 0.000     z= 0.000    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.199112E-16           0.000000E+00
@@ -2402,8 +2402,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -2435,8 +2435,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      2.87474333          1050.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      2.87474333          1050.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -2462,8 +2462,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -2495,8 +2495,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      2.95687885          1080.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      2.95687885          1080.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -2522,8 +2522,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -2558,8 +2558,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      3.02532512          1105.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      3.02532512          1105.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -2585,8 +2585,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -2618,8 +2618,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      3.10746064          1135.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      3.10746064          1135.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -2645,8 +2645,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -2678,8 +2678,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      3.18959617          1165.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      3.18959617          1165.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -2705,8 +2705,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -2738,8 +2738,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      3.27173169          1195.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      3.27173169          1195.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -2765,8 +2765,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -2798,8 +2798,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      3.35386721          1225.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      3.35386721          1225.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -2825,8 +2825,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -2858,8 +2858,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      3.43600274          1255.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      3.43600274          1255.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -2885,8 +2885,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -2918,8 +2918,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      3.51813826          1285.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      3.51813826          1285.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -2945,8 +2945,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -2978,8 +2978,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      3.60027379          1315.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      3.60027379          1315.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -3005,8 +3005,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -3038,8 +3038,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      3.68240931          1345.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      3.68240931          1345.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -3065,8 +3065,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -3098,8 +3098,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      3.76454483          1375.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      3.76454483          1375.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -3125,8 +3125,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -3158,8 +3158,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      3.84668036          1405.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      3.84668036          1405.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -3185,8 +3185,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -3218,8 +3218,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      3.92881588          1435.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      3.92881588          1435.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -3245,8 +3245,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -3279,7 +3279,7 @@ Initial number of partially filled cells:        0
                     Timing Information
            Years              Days         Step Size (Days)
       3.99726215          1460.00000         5.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -3305,8 +3305,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -3341,8 +3341,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      4.07939767          1490.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      4.07939767          1490.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -3368,8 +3368,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -3401,8 +3401,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      4.16153320          1520.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      4.16153320          1520.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -3428,8 +3428,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -3461,8 +3461,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      4.24366872          1550.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      4.24366872          1550.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -3488,8 +3488,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -3521,8 +3521,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      4.32580424          1580.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      4.32580424          1580.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -3548,8 +3548,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -3581,8 +3581,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      4.40793977          1610.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      4.40793977          1610.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -3608,8 +3608,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -3641,8 +3641,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      4.49007529          1640.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      4.49007529          1640.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -3668,8 +3668,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -3701,8 +3701,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      4.57221081          1670.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      4.57221081          1670.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -3728,8 +3728,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -3761,8 +3761,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      4.65434634          1700.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      4.65434634          1700.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -3788,8 +3788,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -3821,8 +3821,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      4.73648186          1730.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      4.73648186          1730.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -3836,7 +3836,7 @@ Initial number of partially filled cells:        0
  Nodes SC Phase:        0 change        0
  Number of restarted time steps            0
                     Largest Residuals
- EQ1 R=  0.5054E-16 node=    106 zone=     0 x= 0.000     y= 25.00     z=100.00    
+ EQ1 R=  0.5054E-16 node=    106 zone=     0 x= 0.000     y= 25.00     z= 100.0    
  EQ2 R=   0.000     node=      1 zone=    60 x= 0.000     y= 0.000     z= 0.000    
    Node   Equation 1 Residual   Equation 2 Residual
      73     -0.199112E-16           0.000000E+00
@@ -3848,8 +3848,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -3881,8 +3881,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      4.81861739          1760.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      4.81861739          1760.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -3908,8 +3908,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -3941,8 +3941,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      4.90075291          1790.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      4.90075291          1790.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -3968,8 +3968,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -4001,8 +4001,8 @@ Initial number of partially filled cells:        0
 
                     Timing Information
            Years              Days         Step Size (Days)
-      4.98288843          1820.00000        10.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+      4.98288843          1820.00000         10.0000000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -4028,8 +4028,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -4062,7 +4062,7 @@ Initial number of partially filled cells:        0
                     Timing Information
            Years              Days         Step Size (Days)
       4.99657769          1825.00000         5.00000000    
- Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+ Cpu Sec for Time Step =   0.000     Current Total =    0.3125E-01
 
                     Equation Performance
  Number of N-R Iterations:          1
@@ -4088,8 +4088,8 @@ Initial number of partially filled cells:        0
 
                     Nodal Information (Vapor)
          Air                                source/sink
-   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Gas (mfrac)
-     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20
+   Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+     73  0.3906       0.000      0.3906       0.000          0.0000        1.00445E-20     0.0000    
 
                     Global Mass Balances (Vapor)
  Vapor discharge this time step:   0.000000E+00 kg
@@ -4125,14 +4125,14 @@ Initial number of partially filled cells:        0
  total solver iterations =        232
 
 
- total code time(timesteps) =      0.000000
+ total code time(timesteps) =      0.031250
 
 
  ****---------------------------------------------------------****
  **** This program for                                        ****
  ****   Finite Element Heat and Mass Transfer in porous media ****
  ****---------------------------------------------------------****
- ****               Version  : FEHM3.6_VER2                   ****
- ****               End Date : 04/18/2024                     ****
- ****                   Time : 14:50:06                       ****
+ ****               Version  : FEHM V3.6.2   DATE QA:NA       ****
+ ****               End Date : 08/12/2024                     ****
+ ****                   Time : 08:39:38                       ****
  ****---------------------------------------------------------****

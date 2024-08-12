@@ -484,6 +484,17 @@ class fehmTest(unittest.TestCase):
         """
         
         self.test_case('transport3d')
+
+    def uz_test(self):
+        """
+        **Test uz_test**
+
+        
+        .. Authors: Mark Lange
+        .. Updated: July 2024 by Erica Hinrichs
+        """
+        
+        self.test_case('uz_test')
    
     def theis(self):
         """
@@ -1320,6 +1331,7 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('fracture_aperture', log))
         suite.addTest(fehmTest('heat3d', log))
         suite.addTest(fehmTest('transport3d', log))
+        suite.addTest(fehmTest('perm_test', log))
         
     
     elif mode == 'developer':

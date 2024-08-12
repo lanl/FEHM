@@ -1628,8 +1628,8 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
             data1_flat = data1.flatten()
             data2_flat = data2.flatten()
 
-            # print('Data1 Flat:', data1_flat)
-            # print('Data2 Flat:', data2_flat)
+            #print('Data1 Flat:', data1_flat, len(data1_flat))
+            #print('Data2 Flat:', data2_flat, len(data2_flat))
 
             if len(data1_flat) == 0 or len(data2_flat) == 0:
                 print(f'No data to compare in files: {file1} and {file2}')
