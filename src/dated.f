@@ -242,6 +242,6 @@ c      write(jtimex,'(i2.2,1h:,i2.2,1h:,i2.2)')  jjtime
 ! Version number passed to GoldSim
       vernum = 3.6
 ! Code version identifier
-      verno = "FEHM V3.6lnUbuntu16 19-09-12 QA:QA"
+      verno = "FEHM V3.6macOS 24-08-13 QA:NA"
 
       end
