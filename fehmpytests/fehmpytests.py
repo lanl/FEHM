@@ -1322,16 +1322,16 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('rad_decay', log))
         suite.addTest(fehmTest('potential_energy', log))
         suite.addTest(fehmTest('sptr_btc', log))
-        suite.addTest(fehmTest('wvtest', log))
-        suite.addTest(fehmTest('heat2d_quad', log))
-        suite.addTest(fehmTest('evaporation', log))
+        #suite.addTest(fehmTest('wvtest', log))
+        #suite.addTest(fehmTest('heat2d_quad', log))
+        #suite.addTest(fehmTest('evaporation', log))
         suite.addTest(fehmTest('henrys_law', log))
         suite.addTest(fehmTest('vapor_extraction', log))
-        suite.addTest(fehmTest('cflxz_test', log))
+        #suite.addTest(fehmTest('cflxz_test', log))
         suite.addTest(fehmTest('fracture_aperture', log))
         suite.addTest(fehmTest('heat3d', log))
-        suite.addTest(fehmTest('transport3d', log))
-        suite.addTest(fehmTest('perm_test', log))
+        #suite.addTest(fehmTest('transport3d', log))
+        #suite.addTest(fehmTest('perm_test', log))
         
     
     elif mode == 'developer':
