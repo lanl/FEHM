@@ -1458,12 +1458,10 @@ class fptrk(fhistory):
         self._times = np.array(data[:,0])
         self._data = dict([(var,data[:,icol+1]) for icol,var in enumerate(self.variables)])
 
-#### ADDING NEW CLASS FOR COMPARISONS ####
 class fcomparison(object): 
     '''
     ****************************************************************
-    Reading and plotting methods associated with history output data.
-    This includes file types his & temp.his.
+    Comparing files
     ****************************************************************
     '''
     def __init__(self, filename=None, verbose=True):
@@ -1497,7 +1495,7 @@ class fcomparison(object):
 
     def read(self, filename):  # read contents of file
         '''
-        Read in FEHM history output information.
+        Read in FEHM output information.
         
         :param filename: File name for output data, can include wildcards to define multiple output files.
         :type filename: str
@@ -1548,11 +1546,7 @@ class fcomparison(object):
         data = np.array([[to_float(item) for item in sublist] for sublist in data], dtype=float)
         self.files_info.append((filename, data))  # Store the data as a tuple (filename, data)
         #print('Processed file: {filename}')
-        #print(f'Data for {filename}: {data}')
-
-
-    #########################################################################################                    
-
+        #print(f'Data for {filename}: {data}')                 
 
 def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes=[], info=[]):
     '''
