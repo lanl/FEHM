@@ -319,7 +319,7 @@ class fehmTest(unittest.TestCase):
          
         self.test_case('cden') 
 
-    def cflxz_test(self):
+    def cflxz(self):
         """
         **cflxz_test**
         
@@ -1303,7 +1303,7 @@ def suite(mode, test_case, log):
         #suite.addTest(fehmTest('boun', log))
         suite.addTest(fehmTest('cden', log))
         #suite.addTest(fehmTest('cellbased', log))
-        suite.addTest(fehmTest('cflxz_test', log))
+        suite.addTest(fehmTest('cflxz', log))
         suite.addTest(fehmTest('colloid_filtration', log))
         #suite.addTest(fehmTest('dissolution', log))
         #suite.addTest(fehmTest('doe', log))
