@@ -1337,6 +1337,45 @@ def suite(mode, test_case, log):
     elif mode == 'developer':
         #This mode will be a reduced set that runs faster.
         pass
+
+    elif mode == 'full':
+        print(f'\n***********************************************\n* Running full tests, some failures expected. *\n***********************************************\n')
+        suite.addTest(fehmTest('avdonin', log))
+        suite.addTest(fehmTest('baro_vel', log))
+        suite.addTest(fehmTest('bodyforce', log))
+        suite.addTest(fehmTest('boun', log))
+        suite.addTest(fehmTest('cden', log))
+        suite.addTest(fehmTest('cellbased', log))
+        suite.addTest(fehmTest('cflxz', log))
+        suite.addTest(fehmTest('colloid_filtration', log))
+        suite.addTest(fehmTest('dissolution', log))
+        suite.addTest(fehmTest('doe', log))
+        suite.addTest(fehmTest('dryout', log))
+        suite.addTest(fehmTest('evaporation', log))
+        suite.addTest(fehmTest('fracture_aperture', log))
+        suite.addTest(fehmTest('head', log))
+        suite.addTest(fehmTest('heat2d', log))
+        suite.addTest(fehmTest('heat2d_quad', log))
+        suite.addTest(fehmTest('heat3d', log))
+        suite.addTest(fehmTest('heat_pipe', log))
+        suite.addTest(fehmTest('henrys_law', log))
+        suite.addTest(fehmTest('mptr', log))
+        suite.addTest(fehmTest('multi_solute', log))
+        suite.addTest(fehmTest('perm_test', log))
+        suite.addTest(fehmTest('potential_energy', log))
+        suite.addTest(fehmTest('ramey', log))
+        suite.addTest(fehmTest('richards', log))
+        suite.addTest(fehmTest('salt_perm_poro', log))
+        suite.addTest(fehmTest('saltvcon', log))
+        suite.addTest(fehmTest('sorption', log))
+        suite.addTest(fehmTest('sptr_btc', log))
+        suite.addTest(fehmTest('theis', log))
+        suite.addTest(fehmTest('toronyi', log))
+        suite.addTest(fehmTest('transport3d', log))
+        suite.addTest(fehmTest('uz_test', log))
+        suite.addTest(fehmTest('vapor_extraction', log))
+        suite.addTest(fehmTest('wvtest', log))
+        suite.addTest(fehmTest('rad_decay', log))
              
     elif mode == 'solo':
         suite.addTest(fehmTest(test_case, log))
@@ -1362,6 +1401,8 @@ if __name__ == '__main__':
     h = 'Run a portion of the test-suite.'
     group.add_argument('-d', '--dev', help=h, action=a)
     h = 'Run a single test-case.'
+    group.add_argument('-f', '--full', help=h, action=a)
+    h = 'Run the entire test-suite including known failures.'
     group.add_argument('-s', '--solo', help=h, action=a)
     h = "Create a fail statistics file 'fail_log.txt'"
     parser.add_argument('-l', '--log', help=h, action=a)
@@ -1396,6 +1437,8 @@ if __name__ == '__main__':
                 mode = 'admin'
             elif args['dev']:
                 mode = 'developer'
+            elif args['full']:
+                mode = 'full'
             else:
                 mode = 'default'
         else:
