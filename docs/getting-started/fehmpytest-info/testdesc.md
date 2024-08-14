@@ -15,16 +15,14 @@ hero_height: is-hidden
 * Test-Case Description
 
 
-Run All Test cases:  ```python fehmpytests.py <fehm-path> ```
+Run Required Test cases:  ```python fehmpytests.py <fehm-path> ```
 
-Run All Test cases:  ```python fehmpytests.py <fehm-path> ```
+Run Single Test case:  ```python fehmpytests.py <fehm-path> <test-name>```
 
-Run Single Test cases:  ```python fehmpytests.py <fehm-path> <test-name>```
-
-For Developers Run Full including tests under development: ```python fehmpytests.py <fehm-path> full```
+For Developers, Run Full to include tests under development: ```python fehmpytests.py <fehm-path> full```
 
 
-| TEST NAMES<br>Click bold for input examples | DESCRIPTIONS |
+| TEST CASE NAMES<br>Click for input examples | DESCRIPTIONS |
 |:--------------------|:---------------------------|
 | [**avdonin**](/test-details/avdonin.md) ```*```|**Test the Radial Heat and Mass Transfer Problem**<br>Compares the generated contour and history files to old contour and history files that are known to be correct. For contour files, only the temperature values at time 2 are tested. For history files, all temperature values are tested.|
 |[**baro_vel**](/test-details/baro_vel.md)|**Test Pore-Scale Velocity in a Homogeneous Media**<br>Compares the generated contour files with the old files known to be correct. Tests times 3-6 for a root mean square difference of less than 0.01.|
