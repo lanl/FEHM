@@ -1401,6 +1401,8 @@ if __name__ == '__main__':
     h = 'Run a portion of the test-suite.'
     group.add_argument('-d', '--dev', help=h, action=a)
     h = 'Run a single test-case.'
+    group.add_argument('-f', '--full', help=h, action=a)
+    h = 'Run the entire test-suite including known failures.'
     group.add_argument('-s', '--solo', help=h, action=a)
     h = "Create a fail statistics file 'fail_log.txt'"
     parser.add_argument('-l', '--log', help=h, action=a)
