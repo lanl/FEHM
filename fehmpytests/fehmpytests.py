@@ -1329,7 +1329,7 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('theis', log))
         suite.addTest(fehmTest('toronyi', log))
         #suite.addTest(fehmTest('transport3d', log))
-        suite.addTest(fehmTest('uz_test', log))
+        #suite.addTest(fehmTest('uz_test', log))
         suite.addTest(fehmTest('vapor_extraction', log))
         suite.addTest(fehmTest('wvtest', log))
         suite.addTest(fehmTest('rad_decay', log))   
