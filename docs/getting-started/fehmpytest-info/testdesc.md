@@ -14,6 +14,13 @@ hero_height: is-hidden
 * [Creating New Test-Cases](newtest.md)
 * Test-Case Description
 
+## Test Cases
+
+Run Single Test cases:  '''python fehmpytests.py <fehm-path> <test-case>'''
+
+Click on Test case name for example FEHMN input files.
+
+
 |  |  | 
 |:---------------|:-----------------------|
 |[fehmTest.**avdonin()**](/test-details/avdonin.md)|**Test the Radial Heat and Mass Transfer Problem**<br>Compares the generated contour and history files to old contour and history files that are known to be correct. For contour files, only the temperature values at time 2 are tested. For history files, all temperature values are tested.|
