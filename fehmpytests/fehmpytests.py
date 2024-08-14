@@ -1435,6 +1435,8 @@ if __name__ == '__main__':
                 mode = 'admin'
             elif args['dev']:
                 mode = 'developer'
+            elif args['full']:
+                mode = 'full'
             else:
                 mode = 'default'
         else:
