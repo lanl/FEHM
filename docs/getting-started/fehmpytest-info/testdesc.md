@@ -17,10 +17,11 @@ hero_height: is-hidden
 
 Run All Test cases:  ```python fehmpytests.py <fehm-path> ```
 
+Run All Test cases:  ```python fehmpytests.py <fehm-path> ```
+
 Run Single Test cases:  ```python fehmpytests.py <fehm-path> <test-name>```
 
 For Developers Run Full including tests under development: ```python fehmpytests.py <fehm-path> full```
-
 
 
 | TEST NAMES<br>Click bold for input examples | DESCRIPTIONS |
@@ -59,6 +60,7 @@ For Developers Run Full including tests under development: ```python fehmpytests
 | **rad_decay**| **Test radioactive decay option in rxn macro**<br> The simulation is a batch reactor without flow and comparison is made to the Bateman equation. Decay of 135I->135Xe->135Cs is modeled. The test ensures that FEHM matches the bateman equation within 10% relative error for all concentrations greater than 1e-6 moles/kg vapor. |
 
 
+
 ## Test Cases Pending
 
 |  |  |
@@ -69,5 +71,6 @@ For Developers Run Full including tests under development: ```python fehmpytests
 |[**saltvcon**](/test-details/saltvcon.md)|**Test the Salt Variable Conductivity Macro**<br>Tests the calculations of thermal conductivity of crushed and intact salt.<br><br>Intact salt:<br>``kxi = k_{t-300}(300/T)^1.14`` *Munson et al. (1990) Overtest for Simulate Defense High-Level* *Waste (*Laboratories, SAND89-2671*<br><br>Thermal conductivity of crushed salt from Asse mine:<br>``kx_asse = -270*phi^4+370*phi^3-136*phi^2+1.5*phi+5`` *Bechtold et al. (2004) Backfilling and sealing of underground* *respositories for radioactive waste in salt *(BAMBUS II project), EUR 20621, ISBN 92-894-7767-9*<br><br>``kx = (k_{t-300}/kx_asse)*(300/T)^1.14`` if kx is less then 1.e-6, set to 1.e-6. If porosity is greater than 0.4, it is truncated as 0.4 since the Kx relationship is only valid within this range.<br><br>The excel spreadsheet /information/saltvcon.xlsx contains the associated calculations. |
 | **transport3d** *|  **Test transport3d**<br> Comparison of Ratio of Permeabilty Change to Ratio of Change in Flow Rate|
 | **uz_test** *| france uz setup |
+
 
  ```*```  Indicates tests from FEHM Test Suite VERIFICATION_V3.4win_64bit_clean May 2024
