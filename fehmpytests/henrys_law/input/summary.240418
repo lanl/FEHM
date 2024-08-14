@@ -1,0 +1,9 @@
+1-D Henry's Law Species                                                         
+Comparison of Model and Analytical Solution for Concentration vs Time           
+At R coordinate (m)  1.00000                                   
+
+Test Case                             Maximum Error  Maximum % Error  RMS Error
+Air Movement Through Stagnant Water     3.930E-03       3.0980        8.031E-05
+Water Movement Through Stagnant Air     3.738E-03       0.8334        1.016E-04
+Liquid Phase Reaction                   8.135E-04       1.2760        4.568E-05
+ 

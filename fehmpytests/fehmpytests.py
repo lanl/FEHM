@@ -223,6 +223,12 @@ class fehmTest(unittest.TestCase):
     def evaporation(self):
         """ 
         **Test the evaporation Macro**
+
+        Evaporation test                                                                
+        Comparison of Changes in Mass with Time
+
+        .. Authors: Mark Lange
+        .. Updated: 2024 by Erica Hinrichs
                  
         """
     
@@ -312,6 +318,38 @@ class fehmTest(unittest.TestCase):
         arguments['variables'] = ['density']
          
         self.test_case('cden') 
+
+    def cflxz_test(self):
+        """
+        **cflxz_test**
+        
+        Concentration Zone Flux Test                                                    
+        Comparison of FEHm with 1-D Difusion Model  
+        
+        .. Authors: Mark Lange
+        .. Updated: 2024 by Erica hinrichs
+        """
+        
+        #arguments = {}
+        #arguments['variables'] = ['density']
+         
+        self.test_case('cflxz_test')
+
+    def heat3d(self):
+        """
+        **heat3d**
+        
+        3-D Heat Conduction Problem                                                     
+        Comparison of Model and Analytical Solution for Temperature vs Time  
+        
+        .. Authors: Mark Lange
+        .. Updated: 2024 by Erica hinrichs
+        """
+        
+        #arguments = {}
+        #arguments['variables'] = ['density']
+         
+        self.test_case('heat3d') 
         
     def doe(self):
         """
@@ -376,6 +414,23 @@ class fehmTest(unittest.TestCase):
 
         self.test_case('heat2d_quad')
 
+    def henrys_law(self):
+        """
+        **Test the Henrys law Problem**
+
+        From henry1.comparein
+        It looks like trc values for time and concentration are compared to input/*.analyt
+        after converting values by some number.
+
+        We should be able to compare trc to trc as the numbers are close to equal
+        Precision is outside of normal math ie 0.999477720105420 - 0.99947772010542046 = 0
+
+        .. Authors:  Terry Miller tam
+        .. Updatd: July 2024
+        """
+
+        self.test_case('henrys_law')
+
     def ramey(self):
         """
         **Test Temperature in a Wellbore Problem**
@@ -404,6 +459,42 @@ class fehmTest(unittest.TestCase):
         """
         
         self.test_case('sptr_btc')
+
+    def perm_test(self):
+        """
+        **Test perm_test**
+
+        Comparison of Ratio of Permeabilty Change to Ratio of Change in Flow Rate
+        
+        .. Authors: Mark Lange
+        .. Updated: July 2024 by Erica Hinrichs
+        """
+        
+        self.test_case('perm_test')
+
+    def transport3d(self):
+        """
+        **Test transport3d**
+
+        Three-Dimensional Radionuclide Transport Problem - trac_rlp                     
+        Comparison of FEHM and TRACRN for Concentration vs Time
+        
+        .. Authors: Mark Lange
+        .. Updated: July 2024 by Erica Hinrichs
+        """
+        
+        self.test_case('transport3d')
+
+    def uz_test(self):
+        """
+        **Test uz_test**
+
+        
+        .. Authors: Mark Lange
+        .. Updated: July 2024 by Erica Hinrichs
+        """
+        
+        self.test_case('uz_test')
    
     def theis(self):
         """
@@ -520,7 +611,7 @@ class fehmTest(unittest.TestCase):
         """
         
         self.test_case('heat_pipe')
-        
+
     def toronyi(self):
         """
         **Test the Toronyi Two-Phase Problem**
@@ -617,6 +708,10 @@ class fehmTest(unittest.TestCase):
     def wvtest(self):
         """
         **Test wvtest**
+
+        Unsaturated Diffusion test                                                      
+        Comparison of FEHM Saturation vs Time with original run
+
         .. Updated: July 2024 by Erica Hinrichs
 
         """
@@ -625,9 +720,39 @@ class fehmTest(unittest.TestCase):
 
         self.test_case('wvtest')
 
+    def fracture_aperture(self):
+        """
+        **Test fracture_aperture**
+
+        Comparison of 3D Wellbore Thermal Stress test results
+
+        .. Updated: July 2024 by Erica Hinrichs
+
+        """
+
+        #arguments = {}
+
+        self.test_case('fracture_aperture')
+
+    def potential_energy(self):
+        """
+        **Test potential_energy**
+
+        Comparison of Ratio of Permeabilty Change to Ratio of Change in Flow Rate
+
+        .. Updated: July 2024 by Erica Hinrichs
+
+        """
+
+        #arguments = {}
+
+        self.test_case('potential_energy')
+
     def vapor_extraction(self):
         """
         **Test vapor_extraction**
+
+        Comparison of Model and Analytical Solution for Vapor Pressure vs Position
 
         .. Updated: July 2024 by Erica Hinrichs
 
@@ -707,7 +832,7 @@ class fehmTest(unittest.TestCase):
             #File named 'fehmn.files' to be used for tests with single case.
             if subcase != 'fehmn':
                 subcases.append(subcase)
-                #print('append subases')
+                #print('append subases', subcases)
             else:
                 subcases = ['']
                 #print('broken subcases')
@@ -723,7 +848,7 @@ class fehmTest(unittest.TestCase):
                 if os.path.exists( output_dir ): shutil.rmtree(output_dir)
                 os.mkdir( output_dir )
                 os.chdir( output_dir )
-                filetypes = ['*.avs','*.csv','*.his','*.out','*.trc','*.ptrk']
+                filetypes = ['*.avs','*.csv','*.his','*.out','*.trc','*.ptrk','*.dat','*.sptr3', '*.cflx']
                 test_flag = False
                 
                 for filetype in filetypes:
@@ -736,9 +861,10 @@ class fehmTest(unittest.TestCase):
                     #print('Number of found files: ', len(found_files))
 
                     if len(found_files) > 0:
+                        #print(f'\n\nfound {len(found_files)} files. Continuing to test template')
                         test_method = self._test_template(filetype, subcase, parameters)
                         test_method()
-                        #print('Test method executed for filetype: ', filetype)
+                        #print(f'Test method executed for filetype: {filetype} on files: {found_files}')
                         test_flag = True
                     else:
                         #print('Test method NOT executed for filetype: ', filetype)
@@ -773,7 +899,8 @@ class fehmTest(unittest.TestCase):
         """
             
         #Get pre-specified parameters from call.
-        keys = ['variables', 'times', 'nodes', 'components']
+        #print('\n---- at test template ----')
+        keys = ['variables', 'times', 'nodes', 'components', 'info']
         values = dict.fromkeys(keys, [])
         values['maxerr'] = 1.e-4
         values['test_measure'] = 'max_difference'
@@ -783,11 +910,13 @@ class fehmTest(unittest.TestCase):
         mxerr = values['maxerr']
         components = values['components']
         test_measure = values['test_measure']
+        #print('\nsubcase: ', subcase, ' filetype: ', filetype, ' parameters: ', parameters)
 
         self._run_fehm(subcase)
        
         def contour_case():      
             #Find the difference between the old and new
+            #print('Contour Case')
             f_old = fpost.fcontour(os.path.join('..','compare','*')+subcase+'.'+filetype)
             f_new = fpost.fcontour('*'+subcase+'.'+filetype)
             f_dif = fpost.fdiff(f_new, f_old)
@@ -825,7 +954,7 @@ class fehmTest(unittest.TestCase):
                             float(len(f_dif[t][v]))
                     }[test_measure]
                     try:
-                       # print('true? ', difference, '<', mxerr, '=', difference<mxerr)
+                        #print('true? ', difference, '<', mxerr, '=', difference<mxerr, 'for ', (os.path.join('..','compare','*')+subcase+'.'+filetype), ' and ', ('*'+subcase+'.'+filetype))
                         self.assertTrue(difference<mxerr, msg%(v, t))
                         test_flag = True
                     except AssertionError as e:
@@ -885,10 +1014,42 @@ class fehmTest(unittest.TestCase):
                             line = line+' filetype:'+filetype
                             for key in kvpairs:        
                                 line = line+' '+key+':'+kvpairs[key]
+                            print(line)
                             self.fail_log.write(line)   
                         raise e
             if not test_flag:
                 self.fail("Missing common nodes in compare and output history files, no test performed")
+
+        #### ADDING FOR COMPARISONS ####
+        def comparison_case():
+            #Find the difference between the old and new
+            #print('---- at comparison in fhmpytests ----')
+            f_old = fpost.fcomparison(os.path.join('..','compare','*')+subcase+filetype)
+            f_new = fpost.fcomparison('*'+subcase+filetype)
+            f_dif = fpost.fdiff(f_new, f_old)
+
+            total=0
+
+            for ele in range(0, len(f_dif._info)):
+                total = total + f_dif._info[ele]
+
+            test_flag = False
+            try:   
+                self.assertTrue(total == 0)
+                test_flag = True
+            except AssertionError as e:
+                print("Significant differences found, no test performed.")
+                print('fpost._info: ', f_dif._info)
+                #Write to fail log if switch is on.
+                if self.log:
+                    line = '\nThere are significant differences between files, no test performed'
+                    self.fail_log.write(line)   
+                raise e
+            
+            if not test_flag:
+                self.fail("There are significant differences between files, no test performed")
+
+        ####################################################
                     
         def tracer_case():
             #Find the difference between the old and new
@@ -1051,9 +1212,12 @@ class fehmTest(unittest.TestCase):
         #Returns the test method for filetype.
         return { '*.avs':  contour_case,
                  '*.csv':  contour_case,
+                 '*.dat':  comparison_case,
+                 '*.sptr3':  comparison_case,
                  '*.his':  history_case,
-                 '*.trc':  tracer_case,
-                 '*.out':  output_case, 
+                 '*.trc':  comparison_case,
+                 '*.out':  comparison_case, 
+                 '*.cflx': comparison_case,
                  '*.ptrk': ptrack_case }[filetype]
                                     
     def _run_fehm(self, subcase):
@@ -1083,6 +1247,7 @@ class fehmTest(unittest.TestCase):
         errfile = 'fehmn.err'
 
         with open( filesfile, 'r' ) as f:
+            #print('\nchecking for outp and error...')
             lines = f.readlines()
             # Check for new filesfile format
             for line in lines:
@@ -1092,11 +1257,13 @@ class fehmTest(unittest.TestCase):
                     errfile = line.split(':')[1].strip()
                            
             # Assume old format
-            if outfile is None and ':' not in lines[0]: 
+            if outfile is None and ':' not in lines[0]:
                 outfile=lines[3].strip()
+                #print('\nNo outfile found...', outfile)
  
         complete = False
         if outfile:
+            #print('\noutfile found...')
             with open(outfile, 'r' ) as f:
                 for line in reversed(f.readlines()):
                     if 'End Date' in line:
@@ -1130,52 +1297,42 @@ def suite(mode, test_case, log):
     
     #Default mode is admin for now. Should it be different?
     if mode == 'admin' or mode == 'default':
-        #suite.addTest(fehmTest('saltvcon', log))
-        #suite.addTest(fehmTest('dissolution', log))
-        suite.addTest(fehmTest('salt_perm_poro', log))
         suite.addTest(fehmTest('avdonin', log))
+        suite.addTest(fehmTest('baro_vel', log))
+        suite.addTest(fehmTest('bodyforce', log))
         #suite.addTest(fehmTest('boun', log))
         suite.addTest(fehmTest('cden', log))
-        #suite.addTest(fehmTest('doe', log))       
-        suite.addTest(fehmTest('head', log))
-        suite.addTest(fehmTest('ramey', log))
-        suite.addTest(fehmTest('theis', log))
-        suite.addTest(fehmTest('dryout', log))
-        suite.addTest(fehmTest('multi_solute', log))
-        suite.addTest(fehmTest('sorption', log))
-        suite.addTest(fehmTest('baro_vel', log))
         #suite.addTest(fehmTest('cellbased', log))
-        #suite.addTest(fehmTest('heat_pipe', log))
-        suite.addTest(fehmTest('heat2d', log))
-        suite.addTest(fehmTest('toronyi', log))
+        suite.addTest(fehmTest('cflxz_test', log))
         suite.addTest(fehmTest('colloid_filtration', log))
+        #suite.addTest(fehmTest('dissolution', log))
+        #suite.addTest(fehmTest('doe', log))
+        suite.addTest(fehmTest('dryout', log))
+        suite.addTest(fehmTest('evaporation', log))
+        suite.addTest(fehmTest('fracture_aperture', log))
+        suite.addTest(fehmTest('head', log))
+        suite.addTest(fehmTest('heat2d', log))
+        suite.addTest(fehmTest('heat2d_quad', log))
+        suite.addTest(fehmTest('heat3d', log))
+        suite.addTest(fehmTest('heat_pipe', log))
+        suite.addTest(fehmTest('henrys_law', log))
         suite.addTest(fehmTest('mptr', log))
-        suite.addTest(fehmTest('bodyforce', log))
+        suite.addTest(fehmTest('multi_solute', log))
+        suite.addTest(fehmTest('perm_test', log))
+        suite.addTest(fehmTest('potential_energy', log))
+        suite.addTest(fehmTest('ramey', log))
         suite.addTest(fehmTest('richards', log))
-        suite.addTest(fehmTest('rad_decay', log))
-        #suite.addTest(fehmTest('ppor_read', log))
-        #suite.addTest(fehmTest('sptr_btc', log))
-        #suite.addTest(fehmTest('wvtest', log))
-        
-        #Works with FEHM V3.2
-        #suite.addTest(fehmTest('heatflux_1DConvection', log))
-        
-        #TODO - Look into why this test takes so long.
-        #suite.addTest(fehmTest('evaporation', log))
-        
-        #TODO - Figure out how to read some other formats.
-        #suite.addTest(fehmTest('sptr_btc', log))
-        #suite.addTest(fehmTest('sorption', log))
-        #suite.addTest(fehmTest('particle_capture', log))
-        #suite.addTest(fehmTest('mptr', log))
-        #suite.addTest(fehmTest('lost_part', log))
-        #suite.addTest(fehmTest('chain', log))
-        #suite.addTest(fehmTest('co2test', log))
-        #suite.addTest(fehmTest('convection', log))
-        #suite.addTest(fehmTest('dpdp_rich', log))
-        #suite.addTest(fehmTest('erosion', log))
-        #suite.addTest(fehmTest('gdpm', log))
-        #suite.addTest(fehmTest('forward', log))
+        suite.addTest(fehmTest('salt_perm_poro', log))
+        #suite.addTest(fehmTest('saltvcon', log))
+        suite.addTest(fehmTest('sorption', log))
+        suite.addTest(fehmTest('sptr_btc', log))
+        suite.addTest(fehmTest('theis', log))
+        suite.addTest(fehmTest('toronyi', log))
+        #suite.addTest(fehmTest('transport3d', log))
+        #suite.addTest(fehmTest('uz_test', log))
+        suite.addTest(fehmTest('vapor_extraction', log))
+        suite.addTest(fehmTest('wvtest', log))
+        suite.addTest(fehmTest('rad_decay', log))   
     
     elif mode == 'developer':
         #This mode will be a reduced set that runs faster.

@@ -1,0 +1,8 @@
+input: ../input/heat3d.in
+grida: ../input/heat3d_quad.geom
+outp: heat3d_quad.out
+
+root: heat3d_quad
+
+none
+0

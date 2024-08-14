@@ -1,0 +1,15 @@
+3-D Heat Conduction Problem
+6-node TriangularPrisms
+output/heat3d_tri.out
+8-node Quad Polyhedrons
+output/heat3d_quad.out
+4-node Tetrahedrals  
+output/heat3d_tets.out
+Mixed Elements       
+output/heat3d_mix.out
+Refined Elements    
+output/heat3d_ref.out
+Polyhedrons, finv   
+output/heat3d_quad.finv.out
+Ref. Elements, finv  
+output/heat3d_ref.finv.out

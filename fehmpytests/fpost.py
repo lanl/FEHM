@@ -628,38 +628,40 @@ class fcontour(object):
             with open(file, 'r') as fp:
                 ln = fp.readline()
                 has_xyz = False
-            while not ln.startswith('ZONE'):
-                ln = fp.readline()
-                has_xyz = True
-            
-            if first: 
-                lni = ln.split('"')[1]
-                time = lni.split('days')[0].strip()
-                time = float(time.split()[-1].strip())
-                try:
-                    if time<self._times[0]: return
-                except: pass
-                self._times.append(time)
-                nds = None
-                if 'N =' in ln: 
-                    nds = int(ln.split('N = ')[-1].strip().split(',')[0].strip())
-            
-            lns = fp.readlines()
-            #fp.close()
-            if nds: lns = lns[:nds]         # truncate to remove connectivity information
-            
-            if has_xyz:
+                while not ln.startswith('ZONE'):
+                    ln = fp.readline()
+                    has_xyz = True
+                
                 if first: 
-                    datas.append(np.array([[float(d) for d in ln.strip().split()] for ln in lns]))
+                    lni = ln.split('"')[1]
+                    time = lni.split('days')[0].strip()
+                    time = float(time.split()[-1].strip())
+                    try:
+                        if time<self._times[0]: return
+                    except: pass
+                    self._times.append(time)
+                    nds = None
+                    if 'N =' in ln: 
+                        nds = int(ln.split('N = ')[-1].strip().split(',')[0].strip())
+            
+                lns = fp.readlines()
+                #fp.close()
+                if nds: lns = lns[:nds]         # truncate to remove connectivity information
+                
+                if has_xyz:
+                    if first: 
+                        datas.append(np.array([[float(d) for d in ln.strip().split()] for ln in lns]))
+                    else:
+                        datas.append(np.array([[float(d) for d in ln.strip().split()[4:]] for ln in lns]))
                 else:
-                    datas.append(np.array([[float(d) for d in ln.strip().split()[4:]] for ln in lns]))
-            else:
-                if first: 
-                    datas.append(np.array([[float(d) for d in ln.strip().split()] for ln in lns]))
-                else:
-                    datas.append(np.array([[float(d) for d in ln.strip().split()[1:]] for ln in lns]))
+                    if first: 
+                        datas.append(np.array([[float(d) for d in ln.strip().split()] for ln in lns]))
+                    else:
+                        datas.append(np.array([[float(d) for d in ln.strip().split()[1:]] for ln in lns]))
                         
         data = np.concatenate(datas,1)
+        #print('data ', data)
+        #print('times: ', self._times)
         if data.shape[1]< len(self.variables):      # insert xyz data from previous read
             data2 = []
             j = 0
@@ -1092,6 +1094,7 @@ class fhistory(object):
                         if i==10: sum_file=True; break
                     if sum_file: 
                         continue
+                    #print('header is: ', header)
                     self._setup_headers_default(header)
                 else: print('Unrecognised format');return
                 if not configured:
@@ -1127,9 +1130,9 @@ class fhistory(object):
         if self.nodes: return
         for key in header[1:]: self._nodes.append(int(key))
     def _setup_headers_default(self,header):
-        #print('_setup_headers_default', header)
+        #print('\n_setup_headers_default', header)
         header=header.split(' Node')
-        #print('headers after split', header)
+        #print('\nheaders after split', header)
         if self.nodes: return
         for key in header[1:]: self._nodes.append(int(key))
     def _read_data_tec(self,var_key):
@@ -1398,6 +1401,7 @@ class ftracer(fhistory):
         if data[-1,0]<data[-2,0]: data = data[:-1,:]
         self._times = np.array(data[:,0])
         self._data[var_key] = dict([(node,data[:,icol+1]) for icol,node in enumerate(self.nodes)])
+
 class fptrk(fhistory):                      
     '''
     Derived class of fhistory, for particle tracking output
@@ -1454,7 +1458,97 @@ class fptrk(fhistory):
         self._times = np.array(data[:,0])
         self._data = dict([(var,data[:,icol+1]) for icol,var in enumerate(self.variables)])
 
-def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes=[]):
+class fcomparison(object): 
+    '''
+    ****************************************************************
+    Comparing files
+    ****************************************************************
+    '''
+    def __init__(self, filename=None, verbose=True):
+        self._filename = None 
+        self._silent = True
+        self._format = ''
+        self._times = [] 
+        self._info = [] 
+        self._verbose = verbose
+        self._data = {}
+        self._row = None
+        self._nodes = []  
+        self._zones = []
+        self._variables = [] 
+        self._user_variables = []
+        self._keyrows = {}
+        self.column_name = []
+        self.num_columns = 0
+        self._nkeys = 1
+        self.files_info = [] 
+        filename = os_path(filename)
+        if filename: 
+            self._filename = filename
+            self.read(filename)
+
+    def __getitem__(self, key):
+        if key in self._variables or key in self._user_variables:
+            return self._data.get(key, None)
+        else:
+            return None
+
+    def read(self, filename):  # read contents of file
+        '''
+        Read in FEHM output information.
+        
+        :param filename: File name for output data, can include wildcards to define multiple output files.
+        :type filename: str
+        '''
+        from glob import glob
+        import re
+        glob_pattern = re.sub(r'\[','[[]',filename)
+        glob_pattern = re.sub(r'(?<!\[)\]','[]]', glob_pattern)
+        files = glob(glob_pattern)
+
+        # Sort the files to ensure consistent order across platforms
+        files.sort()
+
+        for fname in files:
+            if '..' in fname:
+                if os.name == 'nt':  # For Windows
+                    tmp = fname.split('\\')[-1]
+                else:
+                    tmp = fname.split('/')[-1]
+                if os.path.exists(tmp):
+                    pass
+                else:
+                    continue
+            elif '..' not in fname:
+                path = os.path.join('..', 'compare', '') + fname
+                if os.path.exists(path):
+                    pass
+                else:
+                    continue
+            
+            with open(fname, 'r') as file:
+                self._read_data(file, fname)
+                
+    def _read_data(self, file, filename):
+        lines = file.readlines()[2:]
+        data = [line.strip().split() for line in lines]
+        #print('DATA', data)
+
+        max_length = max(len(sublist) for sublist in data)
+        data = [sublist + [''] * (max_length - len(sublist)) for sublist in data]
+
+        def to_float(value):
+            try:
+                return float(value)
+            except ValueError:
+                return 0
+
+        data = np.array([[to_float(item) for item in sublist] for sublist in data], dtype=float)
+        self.files_info.append((filename, data))  # Store the data as a tuple (filename, data)
+        #print('Processed file: {filename}')
+        #print(f'Data for {filename}: {data}')                 
+
+def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes=[], info=[]):
     '''
     ****************************************************************
 
@@ -1480,7 +1574,7 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
     # Copy in1 and in2 in case they get modified below
     in1 = copy(in1)
     in2 = copy(in2)
-    #print('components', components)
+
     if type(in1) is not type(in2):
         print("ERROR: fpost objects are not of the same type: "+str(type(in1))+" and "+str(type(in2)))
         return
@@ -1500,7 +1594,68 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
             #print('Time reached else.')
             times = t
             
-    if isinstance(in1, fcontour):
+    if isinstance(in1, fcomparison):
+        atol = 1e-10  # Absolute tolerance
+        rtol = 1e-05  # Relative tolerance
+
+        out = copy(in1)
+        out._info = []
+
+        if len(in1.files_info) != len(in2.files_info):
+            print('ERROR: The number of files in in1 and in2 do not match')
+            return
+
+
+        #print('in1.files_info: {in1.files_info}')
+        #print('in2.files_info: {in2.files_info}')
+
+        for (file1, data1), (file2, data2) in zip(in1.files_info, in2.files_info):
+            print(f'\nComparing Files... {file1} with {file2}')
+            #print(f'Type of data1: {type(data1)}, Type of data2: {type(data2)}')
+            #print(f'Data1: {data1}')
+            #print(f'Data2: {data2}')
+
+            if data1.size == 0 or data2.size == 0:
+                print(f'Missing data in comparison for files: {file1} and {file2}')
+                continue
+
+            data1_flat = data1.flatten()
+            data2_flat = data2.flatten()
+
+            #print('Data1 Flat:', data1_flat, len(data1_flat))
+            #print('Data2 Flat:', data2_flat, len(data2_flat))
+
+            if len(data1_flat) == 0 or len(data2_flat) == 0:
+                print(f'No data to compare in files: {file1} and {file2}')
+                continue
+
+            # Check if arrays are close enough within the tolerance
+            if np.allclose(data1_flat, data2_flat, rtol=rtol, atol=atol, equal_nan=True):
+                print(f'Files are EQUAL')
+                out._info.append(0)
+            else:
+                # Calculate the differences
+                difference = np.abs(data1_flat - data2_flat)
+                max_difference = np.max(difference)
+                
+                if max_difference <= atol + rtol * np.abs(data1_flat).max():
+                    print(f'Files are considered EQUAL within a relative tolerance of:{rtol}, and an absolute tolerance of:{atol}')
+                    #print(f'Max difference: {max_difference}\n')
+                    out._info.append(0)
+                else:
+                    differences = np.setdiff1d(data1_flat, data2_flat)
+                    differences2 = np.setdiff1d(data2_flat, data1_flat)
+
+                    # print(f'Differences: {differences}')
+                    # print(f'Differences2: {differences2}')
+
+                    print(f'Files are UNEQUAL.')
+                    print(f'Found {len(differences)} differences in {file1} and {file2}.\nDifferences are {differences} and {differences2}')
+                    out._info.append(1)
+                    
+        return out
+
+    elif isinstance(in1, fcontour):
         # Find common variables
         v = np.intersect1d(in1.variables,in2.variables)
         if len(v) == 0:
@@ -1646,7 +1801,7 @@ def sort_tec_files(files):
     for file in files: 
         for type in ['_days_sca_node','_days_vec_node','_days_hf_node','_days_con_node','_sca_node','_vec_node','_hf_node','_con_node']:
             if type in file:                
-                times.append(float(join(file.split(type)[0].split('.')[1:],'.')))
+                times.append(float('.'.join(file.split(type)[0].split('.')[1:])))
                 break
     times = sorted(enumerate(times), key=lambda x: x[1])
     

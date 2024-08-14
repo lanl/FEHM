@@ -1,0 +1,1581 @@
+FEHM3.6_VER2                     04/18/2024    14:49:45
+
+Copyright  2015.   Los Alamos National Security, LLC.  This material was
+produced under U.S. Government contract DE-AC52-06NA25396 for Los Alamos
+National  Laboratory  (LANL),  which is operated by  Los Alamos National
+Security, LLC  for the U. S. Department of Energy.  The U. S. Government
+has rights to use, reproduce, and distribute this software.  Neither the
+U. S. Government nor Los Alamos National Security, LLC or persons acting
+on their behalf,  make any warranty,  express or implied, or assumes any
+liability for the accuracy, completeness, or usefulness of the software,
+any information pertaining to the software,  or  represents that its use
+would not infringe privately owned rights.
+
+The  software  being licensed  may  be Export Controlled.  It may not be
+distributed  or  used by individuals  or entities prohibited from having
+access to the software package, pursuant to United States export control
+laws and regulations. An export control review and determination must be
+completed before LANS will provide access to the identified Software.
+
+ n0 =          102
+
+ title: 1-d heat pipe calculation                5-04-2001                       
+
+
+
+ File purpose - Variable - Unit number - File name
+
+    control       - iocntl -  1 - fehmn.files                                                                                         
+    input         - inpt   - 11 - input/heat_pipe_fe.dat                                                                              
+    geometry      - incoor - 12 - input/fe.grid                                                                                       
+    zone          - inzone - 11 - input/heat_pipe_fe.dat                                                                              
+    output        - iout   - 14 - output/heat_pipe_fe.out                                                                             
+    initial state - iread  -  0 - not using                                                                                           
+    final state   - isave  -  0 - not using                                                                                           
+    time history  - ishis  -  0 - not using                                                                                           
+    time his.(tr) - istrc  -  0 - not using                                                                                           
+    contour plot  - iscon  -  0 - not using                                                                                           
+    con plot (dp) - iscon1 -  0 - not using                                                                                           
+    fe coef stor  - isstor -  0 - not using                                                                                           
+    input check   - ischk  -  0 - not using                                                                                           
+    error file    - ierr   - 23 - none                                                                                                
+ Value provided to subroutine user: not using
+
+ **** input title : coor **** incoor =  12 ****
+ **** input title : elem **** incoor =  12 ****
+ **** input title : stop **** incoor =  12 ****
+ **** input title : zone **** inpt =  11 ****
+ **** input title : node **** inpt =  11 ****
+ **** input title : grad **** inpt =  11 ****
+ **** input title : perm **** inpt =  11 ****
+ **** input title : rlp  **** inpt =  11 ****
+ **** input title : rock **** inpt =  11 ****
+ **** input title : cond **** inpt =  11 ****
+ **** input title : pres **** inpt =  11 ****
+ **** input title : zone **** inpt =  11 ****
+ **** input title : flxo **** inpt =  11 ****
+ **** input title : text **** inpt =  11 ****
+Time Parameters                                                                 
+ **** input title : text **** inpt =  11 ****
+ **** input title : time **** inpt =  11 ****
+ **** input title : text **** inpt =  11 ****
+Numerics                                                                        
+ **** input title : text **** inpt =  11 ****
+ **** input title : ctrl **** inpt =  11 ****
+ **** input title : iter **** inpt =  11 ****
+ **** input title : sol  **** inpt =  11 ****
+ **** input title : ngas **** inpt =  11 ****
+ **** input title : hflx **** inpt =  11 ****
+ **** input title : adif **** inpt =  11 ****
+ **** input title : stop **** inpt =  11 ****
+ >>>>>> Starting connectivity calcs <<<<<< 
+ >>>>>> Finished connectivity calcs <<<<<< 
+ >>>>>> Starting FE coef. calcs <<<<<< 
+ calcs for coef number =     1 percent complete =    10
+ calcs for coef number =     1 percent complete =    20
+ calcs for coef number =     1 percent complete =    30
+ calcs for coef number =     1 percent complete =    40
+ calcs for coef number =     1 percent complete =    50
+ calcs for coef number =     1 percent complete =    60
+ calcs for coef number =     1 percent complete =    70
+ calcs for coef number =     1 percent complete =    80
+ calcs for coef number =     1 percent complete =    90
+ calcs for coef number =     1 percent complete =   100
+ calcs for coef number =     3 percent complete =    10
+ calcs for coef number =     3 percent complete =    20
+ calcs for coef number =     3 percent complete =    30
+ calcs for coef number =     3 percent complete =    40
+ calcs for coef number =     3 percent complete =    50
+ calcs for coef number =     3 percent complete =    60
+ calcs for coef number =     3 percent complete =    70
+ calcs for coef number =     3 percent complete =    80
+ calcs for coef number =     3 percent complete =    90
+ calcs for coef number =     3 percent complete =   100
+ >>>>>> Finished FE coef. calcs <<<<<< 
+ bcgstab method chosen 
+ storage available for b matrix resized to       4536<<<<<<
+
+
+ time for reading input, forming coefficients   0.00    
+
+
+*********************************************************************
+ Time Step         1
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+     0.273785079E-04     0.100000000E-01    0.100000000E-01
+ Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+
+                    Equation Performance
+ Number of N-R Iterations:          2
+ Avg # of Linear Equation Solver Iterations:   1.0
+ Number of Active Nodes:       102.
+ Total Number of Iterations, N-R:          2 , Solver:          2
+ Phase Changes This Time Step:        0 Total           0
+ Nodes Liq Phase:        0 change        0
+ Nodes Two Phase:      102 change        0
+ Nodes Gas Phase:         0 change        0
+ Nodes SC Phase:        0 change        0
+ Number of restarted time steps            0
+                    Largest Residuals
+ EQ1 R=  0.1530E-10 node=      1 zone=     1 x= 0.000     y= 0.000     z=1.0000    
+ EQ2 R=  0.6742E-09 node=    101 zone=     2 x= 0.000     y=-.1000E+00 z=1.0000    
+ EQ3 R=  0.1009E-08 node=     99 zone=     0 x= 0.000     y=-.9800E-01 z=1.0000    
+   Node   Equation 1 Residual   Equation 2 Residual
+      1      0.153007E-10           0.645652E-10
+      3     -0.108232E-11          -0.127613E-09
+      5     -0.994689E-12           0.207293E-10
+     11     -0.749528E-12           0.240665E-10
+     21     -0.400211E-12           0.268521E-10
+     31     -0.131017E-12           0.295841E-10
+     41      0.514481E-13           0.326320E-10
+     71      0.200132E-14           0.291666E-10
+     81     -0.250504E-12           0.367093E-11
+    101      0.120346E-10          -0.674228E-09
+
+                    Nodal Information (Water)
+                                                  source/sink  E source/sink
+   Node   P (MPa)    E (MJ)    S liq     Temp (C)    (kg/s)       (MJ/s)  State            Zone
+      1   0.9901E-01 0.433E-01 0.281      10.00011   0.000      0.112E-03     2         1 all                     
+      3   0.9905E-01 0.446E-01 0.280      10.30126   0.000       0.00         2         1 all                     
+      5   0.9909E-01 0.458E-01 0.280      10.60231   0.000       0.00         2         1 all                     
+     11   0.9921E-01 0.496E-01 0.280      11.50495   0.000       0.00         2         1 all                     
+     21   0.9941E-01 0.559E-01 0.280      13.00807   0.000       0.00         2         1 all                     
+     31   0.9961E-01 0.621E-01 0.280      14.51013   0.000       0.00         2         1 all                     
+     41   0.9981E-01 0.684E-01 0.280      16.01148   0.000       0.00         2         1 all                     
+     71   0.1004     0.872E-01 0.280      20.51201   0.000       0.00         2         1 all                     
+     81   0.1006     0.934E-01 0.280      22.01033   0.000       0.00         2         1 all                     
+    101   0.1010     0.106     0.279      24.99989   0.000     -0.114E-03     2         1 all    2                
+
+                    Nodal Information (Gas)
+        Partial P   Capillary   Liquid      Gas source/sink
+   Node Gas (MPa)   Pres (MPa)  Pres (MPa)     (kg/s)          Residual R humidity  ngas m frac
+      1  0.9779E-01  0.2583E-01  0.7318E-01  0.5116E-04     -0.3090E-12     1.0000   0.3093E-02
+      3  0.9780E-01  0.2593E-01  0.7312E-01   0.000          0.1047E-10     1.0000   0.3099E-02
+      5  0.9782E-01  0.2594E-01  0.7315E-01   0.000          0.1184E-09     1.0000   0.3097E-02
+     11  0.9786E-01  0.2594E-01  0.7327E-01   0.000          0.1450E-09     1.0000   0.3089E-02
+     21  0.9791E-01  0.2594E-01  0.7347E-01   0.000          0.1615E-09     1.0000   0.3075E-02
+     31  0.9796E-01  0.2594E-01  0.7367E-01   0.000          0.1788E-09     1.0000   0.3061E-02
+     41  0.9799E-01  0.2594E-01  0.7387E-01   0.000          0.1989E-09     1.0000   0.3046E-02
+     71  0.9800E-01  0.2594E-01  0.7447E-01   0.000          0.1805E-09     1.0000   0.3002E-02
+     81  0.9797E-01  0.2594E-01  0.7468E-01   0.000          0.2047E-10     1.0000   0.2987E-02
+    101  0.9787E-01  0.2619E-01  0.7485E-01 -0.5116E-04     -0.1236E-11     1.0000   0.2977E-02
+
+                    Global Gas (Air Only) Balances
+Total air mass at this time (kg):    8.480113E-02
+Total gas inflow (kg):               8.840448E-02
+Total gas discharge (kg):            8.840448E-02
+Gas discharge this time step (kg):   8.840448E-02
+Balance error gas:                   0.107244E-10
+
+                    Internode Fluxes
+ Node1  Node2           X,Y,Z Vapor Flux(kg/sec)          X,Y,Z Liquid Flux (kg/sec)
+                   1         5   (call number,number of pairs)
+     1      3 0.000000E+00 0.515619E-04 0.000000E+00 0.000000E+00 -.488007E-07 0.000000E+00
+     3      5 0.000000E+00 0.515599E-04 0.000000E+00 0.000000E+00 0.258550E-07 0.000000E+00
+    41     43 0.000000E+00 0.516354E-04 0.000000E+00 0.000000E+00 0.411884E-07 0.000000E+00
+    97     99 0.000000E+00 0.521575E-04 0.000000E+00 0.000000E+00 0.156886E-07 0.000000E+00
+    99    101 0.000000E+00 0.521862E-04 0.000000E+00 0.000000E+00 -.215025E-06 0.000000E+00
+ Node1            X,Y,Z      Coordinates  Node2          X,Y,Z        Coordinates
+                   1         5   (call number,number of pairs)
+     1        0.0        0.0        0.0      3        0.0       -0.0        0.0
+     3        0.0       -0.0        0.0      5        0.0       -0.0        0.0
+    41        0.0       -0.0        0.0     43        0.0       -0.0        0.0
+    97        0.0       -0.1        0.0     99        0.0       -0.1        0.0
+    99        0.0       -0.1        0.0    101        0.0       -0.1        0.0
+
+                    Global Mass & Energy Balances
+ Total mass in system at this time:            0.278927E+02 kg
+ Total mass of steam in system at this time:   0.110211E-02 kg
+ Total enthalpy in system at this time:        0.497269E+01 MJ
+
+ Water discharge this time step:   0.000000E+00 kg (0.000000E+00 kg/s)
+ Water input this time step:       0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water discharge:            0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water input:                0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Enthalpy discharge this time step:  0.194089E+00 MJ (0.224640E-03 MJ/s)
+ Enthalpy input this time step:      0.196543E+00 MJ (0.227480E-03 MJ/s)
+ Total enthalpy discharge:           0.194089E+00 MJ (0.224640E-03 MJ/s)
+ Total enthalpy input:               0.196543E+00 MJ (0.227480E-03 MJ/s)
+
+ Net kg water discharge (total out-total in):   0.000000E+00
+ Net MJ energy discharge (total out-total in):  -0.245387E-02
+ Conservation Errors:   0.000000E+00 (mass),   0.401875E-10 (energy)
+*********************************************************************
+ Time Step         2
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+     0.684462697E-04     0.250000000E-01    0.150000000E-01
+ Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+
+                    Equation Performance
+ Number of N-R Iterations:          2
+ Avg # of Linear Equation Solver Iterations:   1.0
+ Number of Active Nodes:       102.
+ Total Number of Iterations, N-R:          4 , Solver:          4
+ Phase Changes This Time Step:        0 Total           0
+ Nodes Liq Phase:        0 change        0
+ Nodes Two Phase:      102 change        0
+ Nodes Gas Phase:         0 change        0
+ Nodes SC Phase:        0 change        0
+ Number of restarted time steps            0
+                    Largest Residuals
+ EQ1 R=  0.1457E-16 node=     82 zone=     0 x= 2.000     y=-.8000E-01 z=1.0000    
+ EQ2 R=  0.1232E-10 node=      2 zone=     1 x= 2.000     y= 0.000     z=1.0000    
+ EQ3 R=  0.2425E-10 node=    100 zone=     0 x= 2.000     y=-.9800E-01 z=1.0000    
+   Node   Equation 1 Residual   Equation 2 Residual
+      1     -0.846511E-18           0.123205E-10
+      3      0.274477E-17          -0.709106E-11
+      5     -0.247547E-17          -0.313940E-11
+     11      0.259526E-17          -0.129784E-11
+     21     -0.407366E-17          -0.674108E-12
+     31      0.431180E-17          -0.175425E-13
+     41     -0.699662E-17           0.652031E-12
+     71     -0.244777E-17           0.174318E-11
+     81      0.696471E-18           0.842842E-12
+    101     -0.855785E-17          -0.754382E-12
+
+                    Nodal Information (Water)
+                                                  source/sink  E source/sink
+   Node   P (MPa)    E (MJ)    S liq     Temp (C)    (kg/s)       (MJ/s)  State            Zone
+      1   0.9902E-01 0.433E-01 0.281      10.00011   0.000      0.113E-03     2         1 all                     
+      3   0.9906E-01 0.446E-01 0.280      10.30213   0.000       0.00         2         1 all                     
+      5   0.9909E-01 0.459E-01 0.280      10.60403   0.000       0.00         2         1 all                     
+     11   0.9921E-01 0.496E-01 0.280      11.50911   0.000       0.00         2         1 all                     
+     21   0.9941E-01 0.559E-01 0.280      13.01574   0.000       0.00         2         1 all                     
+     31   0.9961E-01 0.622E-01 0.280      14.52045   0.000       0.00         2         1 all                     
+     41   0.9981E-01 0.684E-01 0.280      16.02353   0.000       0.00         2         1 all                     
+     71   0.1004     0.872E-01 0.280      20.52309   0.000       0.00         2         1 all                     
+     81   0.1006     0.935E-01 0.280      22.01878   0.000       0.00         2         1 all                     
+    101   0.1010     0.106     0.277      24.99989   0.000     -0.113E-03     2         1 all    2                
+
+                    Nodal Information (Gas)
+        Partial P   Capillary   Liquid      Gas source/sink
+   Node Gas (MPa)   Pres (MPa)  Pres (MPa)     (kg/s)          Residual R humidity  ngas m frac
+      1  0.9779E-01  0.2571E-01  0.7330E-01  0.5116E-04     -0.7976E-14     1.0000   0.3082E-02
+      3  0.9780E-01  0.2590E-01  0.7316E-01   0.000          0.1005E-10     1.0000   0.3096E-02
+      5  0.9782E-01  0.2593E-01  0.7316E-01   0.000         -0.1439E-10     1.0000   0.3096E-02
+     11  0.9786E-01  0.2594E-01  0.7327E-01   0.000         -0.5762E-11     1.0000   0.3089E-02
+     21  0.9792E-01  0.2594E-01  0.7347E-01   0.000         -0.3032E-11     1.0000   0.3075E-02
+     31  0.9796E-01  0.2594E-01  0.7367E-01   0.000         -0.9306E-13     1.0000   0.3060E-02
+     41  0.9799E-01  0.2594E-01  0.7387E-01   0.000          0.2965E-11     1.0000   0.3046E-02
+     71  0.9801E-01  0.2594E-01  0.7448E-01   0.000          0.8226E-11     1.0000   0.3002E-02
+     81  0.9798E-01  0.2594E-01  0.7469E-01   0.000          0.4030E-11     1.0000   0.2986E-02
+    101  0.9787E-01  0.2646E-01  0.7459E-01 -0.5116E-04     -0.1784E-15     1.0000   0.3000E-02
+
+                    Global Gas (Air Only) Balances
+Total air mass at this time (kg):    8.480113E-02
+Total gas inflow (kg):               2.210112E-01
+Total gas discharge (kg):            2.210112E-01
+Gas discharge this time step (kg):   1.326067E-01
+Balance error gas:                   0.428971E-11
+
+                    Internode Fluxes
+ Node1  Node2           X,Y,Z Vapor Flux(kg/sec)          X,Y,Z Liquid Flux (kg/sec)
+                   1         5   (call number,number of pairs)
+     1      3 0.000000E+00 0.515671E-04 0.000000E+00 0.000000E+00 -.131075E-06 0.000000E+00
+     3      5 0.000000E+00 0.515749E-04 0.000000E+00 0.000000E+00 0.443151E-08 0.000000E+00
+    41     43 0.000000E+00 0.517597E-04 0.000000E+00 0.000000E+00 0.413674E-07 0.000000E+00
+    97     99 0.000000E+00 0.521727E-04 0.000000E+00 0.000000E+00 -.644054E-07 0.000000E+00
+    99    101 0.000000E+00 0.521916E-04 0.000000E+00 0.000000E+00 -.445955E-06 0.000000E+00
+ Node1            X,Y,Z      Coordinates  Node2          X,Y,Z        Coordinates
+                   1         5   (call number,number of pairs)
+     1        0.0        0.0        0.0      3        0.0       -0.0        0.0
+     3        0.0       -0.0        0.0      5        0.0       -0.0        0.0
+    41        0.0       -0.0        0.0     43        0.0       -0.0        0.0
+    97        0.0       -0.1        0.0     99        0.0       -0.1        0.0
+    99        0.0       -0.1        0.0    101        0.0       -0.1        0.0
+
+                    Global Mass & Energy Balances
+ Total mass in system at this time:            0.278927E+02 kg
+ Total mass of steam in system at this time:   0.110269E-02 kg
+ Total enthalpy in system at this time:        0.497496E+01 MJ
+
+ Water discharge this time step:   0.000000E+00 kg (0.000000E+00 kg/s)
+ Water input this time step:       0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water discharge:            0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water input:                0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Enthalpy discharge this time step:  0.291807E+00 MJ (0.225160E-03 MJ/s)
+ Enthalpy input this time step:      0.294073E+00 MJ (0.226908E-03 MJ/s)
+ Total enthalpy discharge:           0.485896E+00 MJ (0.224952E-03 MJ/s)
+ Total enthalpy input:               0.490616E+00 MJ (0.227137E-03 MJ/s)
+
+ Net kg water discharge (total out-total in):   0.000000E+00
+ Net MJ energy discharge (total out-total in):  -0.471969E-02
+ Conservation Errors:   0.000000E+00 (mass),   0.218652E-10 (energy)
+*********************************************************************
+ Time Step         3
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+     0.130047912E-03     0.475000000E-01    0.225000000E-01
+ Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+
+                    Equation Performance
+ Number of N-R Iterations:          2
+ Avg # of Linear Equation Solver Iterations:   1.0
+ Number of Active Nodes:       102.
+ Total Number of Iterations, N-R:          6 , Solver:          6
+ Phase Changes This Time Step:        0 Total           0
+ Nodes Liq Phase:        0 change        0
+ Nodes Two Phase:      102 change        0
+ Nodes Gas Phase:         0 change        0
+ Nodes SC Phase:        0 change        0
+ Number of restarted time steps            0
+                    Largest Residuals
+ EQ1 R=  0.1294E-16 node=    100 zone=     0 x= 2.000     y=-.9800E-01 z=1.0000    
+ EQ2 R=  0.2188E-10 node=      1 zone=     1 x= 0.000     y= 0.000     z=1.0000    
+ EQ3 R=  0.6472E-10 node=     99 zone=     0 x= 0.000     y=-.9800E-01 z=1.0000    
+   Node   Equation 1 Residual   Equation 2 Residual
+      1      0.128431E-16           0.218753E-10
+      3     -0.541594E-17          -0.101840E-10
+      5     -0.775801E-18          -0.461150E-11
+     11     -0.413985E-17          -0.168044E-11
+     21     -0.542493E-17          -0.895616E-12
+     31     -0.392398E-17          -0.152376E-13
+     41      0.417463E-17           0.893516E-12
+     71      0.845327E-17           0.194713E-11
+     81     -0.844968E-18           0.721578E-12
+    101     -0.116524E-16          -0.819189E-11
+
+                    Nodal Information (Water)
+                                                  source/sink  E source/sink
+   Node   P (MPa)    E (MJ)    S liq     Temp (C)    (kg/s)       (MJ/s)  State            Zone
+      1   0.9902E-01 0.433E-01 0.282      10.00011   0.000      0.113E-03     2         1 all                     
+      3   0.9906E-01 0.446E-01 0.281      10.30281   0.000       0.00         2         1 all                     
+      5   0.9910E-01 0.459E-01 0.280      10.60538   0.000       0.00         2         1 all                     
+     11   0.9922E-01 0.496E-01 0.280      11.51244   0.000       0.00         2         1 all                     
+     21   0.9941E-01 0.559E-01 0.280      13.02206   0.000       0.00         2         1 all                     
+     31   0.9961E-01 0.622E-01 0.280      14.52912   0.000       0.00         2         1 all                     
+     41   0.9981E-01 0.685E-01 0.280      16.03373   0.000       0.00         2         1 all                     
+     71   0.1004     0.873E-01 0.280      20.53201   0.000       0.00         2         1 all                     
+     81   0.1006     0.935E-01 0.280      22.02534   0.000       0.00         2         1 all                     
+    101   0.1010     0.106     0.275      24.99989   0.000     -0.113E-03     2         1 all    2                
+
+                    Nodal Information (Gas)
+        Partial P   Capillary   Liquid      Gas source/sink
+   Node Gas (MPa)   Pres (MPa)  Pres (MPa)     (kg/s)          Residual R humidity  ngas m frac
+      1  0.9779E-01  0.2558E-01  0.7344E-01  0.5116E-04     -0.1030E-13     1.0000   0.3070E-02
+      3  0.9781E-01  0.2584E-01  0.7322E-01   0.000          0.1588E-10     1.0000   0.3091E-02
+      5  0.9782E-01  0.2591E-01  0.7319E-01   0.000         -0.1235E-10     1.0000   0.3095E-02
+     11  0.9786E-01  0.2593E-01  0.7328E-01   0.000         -0.5694E-11     1.0000   0.3088E-02
+     21  0.9792E-01  0.2593E-01  0.7348E-01   0.000         -0.3085E-11     1.0000   0.3074E-02
+     31  0.9796E-01  0.2593E-01  0.7368E-01   0.000         -0.6521E-13     1.0000   0.3060E-02
+     41  0.9800E-01  0.2593E-01  0.7388E-01   0.000          0.3140E-11     1.0000   0.3046E-02
+     71  0.9801E-01  0.2593E-01  0.7449E-01   0.000          0.7168E-11     1.0000   0.3001E-02
+     81  0.9798E-01  0.2593E-01  0.7470E-01   0.000          0.2705E-11     1.0000   0.2986E-02
+    101  0.9787E-01  0.2675E-01  0.7430E-01 -0.5116E-04      0.1502E-13     1.0000   0.3024E-02
+
+                    Global Gas (Air Only) Balances
+Total air mass at this time (kg):    8.480113E-02
+Total gas inflow (kg):               4.199213E-01
+Total gas discharge (kg):            4.199213E-01
+Gas discharge this time step (kg):   1.989101E-01
+Balance error gas:                   0.225771E-11
+
+                    Internode Fluxes
+ Node1  Node2           X,Y,Z Vapor Flux(kg/sec)          X,Y,Z Liquid Flux (kg/sec)
+                   1         5   (call number,number of pairs)
+     1      3 0.000000E+00 0.515672E-04 0.000000E+00 0.000000E+00 -.203000E-06 0.000000E+00
+     3      5 0.000000E+00 0.515749E-04 0.000000E+00 0.000000E+00 -.311689E-07 0.000000E+00
+    41     43 0.000000E+00 0.517602E-04 0.000000E+00 0.000000E+00 0.414753E-07 0.000000E+00
+    97     99 0.000000E+00 0.521729E-04 0.000000E+00 0.000000E+00 -.179713E-06 0.000000E+00
+    99    101 0.000000E+00 0.521917E-04 0.000000E+00 0.000000E+00 -.619444E-06 0.000000E+00
+ Node1            X,Y,Z      Coordinates  Node2          X,Y,Z        Coordinates
+                   1         5   (call number,number of pairs)
+     1        0.0        0.0        0.0      3        0.0       -0.0        0.0
+     3        0.0       -0.0        0.0      5        0.0       -0.0        0.0
+    41        0.0       -0.0        0.0     43        0.0       -0.0        0.0
+    97        0.0       -0.1        0.0     99        0.0       -0.1        0.0
+    99        0.0       -0.1        0.0    101        0.0       -0.1        0.0
+
+                    Global Mass & Energy Balances
+ Total mass in system at this time:            0.278927E+02 kg
+ Total mass of steam in system at this time:   0.110318E-02 kg
+ Total enthalpy in system at this time:        0.497674E+01 MJ
+
+ Water discharge this time step:   0.000000E+00 kg (0.000000E+00 kg/s)
+ Water input this time step:       0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water discharge:            0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water input:                0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Enthalpy discharge this time step:  0.438503E+00 MJ (0.225567E-03 MJ/s)
+ Enthalpy input this time step:      0.440284E+00 MJ (0.226483E-03 MJ/s)
+ Total enthalpy discharge:           0.924399E+00 MJ (0.225243E-03 MJ/s)
+ Total enthalpy input:               0.930900E+00 MJ (0.226827E-03 MJ/s)
+
+ Net kg water discharge (total out-total in):   0.000000E+00
+ Net MJ energy discharge (total out-total in):  -0.650068E-02
+ Conservation Errors:   0.000000E+00 (mass),   0.701937E-11 (energy)
+*********************************************************************
+ Time Step         4
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+     0.222450376E-03     0.812500000E-01    0.337500000E-01
+ Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+
+                    Equation Performance
+ Number of N-R Iterations:          2
+ Avg # of Linear Equation Solver Iterations:   1.0
+ Number of Active Nodes:       102.
+ Total Number of Iterations, N-R:          8 , Solver:          8
+ Phase Changes This Time Step:        0 Total           0
+ Nodes Liq Phase:        0 change        0
+ Nodes Two Phase:      102 change        0
+ Nodes Gas Phase:         0 change        0
+ Nodes SC Phase:        0 change        0
+ Number of restarted time steps            0
+                    Largest Residuals
+ EQ1 R=  0.2423E-16 node=     99 zone=     0 x= 0.000     y=-.9800E-01 z=1.0000    
+ EQ2 R=  0.1624E-10 node=      2 zone=     1 x= 2.000     y= 0.000     z=1.0000    
+ EQ3 R=  0.1129E-09 node=    100 zone=     0 x= 2.000     y=-.9800E-01 z=1.0000    
+   Node   Equation 1 Residual   Equation 2 Residual
+      1     -0.117862E-17           0.162380E-10
+      3      0.502866E-18          -0.806942E-11
+      5      0.104537E-17          -0.605815E-12
+     11     -0.305054E-17          -0.173274E-11
+     21     -0.527586E-20          -0.846610E-12
+     31     -0.276133E-17          -0.738182E-14
+     41      0.466479E-17           0.853138E-12
+     71      0.525641E-17           0.165127E-11
+     81     -0.571654E-17           0.476771E-12
+    101      0.168325E-17          -0.578233E-11
+
+                    Nodal Information (Water)
+                                                  source/sink  E source/sink
+   Node   P (MPa)    E (MJ)    S liq     Temp (C)    (kg/s)       (MJ/s)  State            Zone
+      1   0.9902E-01 0.433E-01 0.283      10.00011   0.000      0.113E-03     2         1 all                     
+      3   0.9906E-01 0.446E-01 0.281      10.30326   0.000       0.00         2         1 all                     
+      5   0.9910E-01 0.459E-01 0.280      10.60630   0.000       0.00         2         1 all                     
+     11   0.9922E-01 0.496E-01 0.280      11.51470   0.000       0.00         2         1 all                     
+     21   0.9942E-01 0.559E-01 0.280      13.02634   0.000       0.00         2         1 all                     
+     31   0.9961E-01 0.622E-01 0.280      14.53502   0.000       0.00         2         1 all                     
+     41   0.9981E-01 0.685E-01 0.280      16.04067   0.000       0.00         2         1 all                     
+     71   0.1004     0.873E-01 0.280      20.53795   0.000       0.00         2         1 all                     
+     81   0.1006     0.935E-01 0.280      22.02967   0.000       0.00         2         1 all                     
+    101   0.1011     0.106     0.274      24.99989   0.000     -0.113E-03     2         1 all    2                
+
+                    Nodal Information (Gas)
+        Partial P   Capillary   Liquid      Gas source/sink
+   Node Gas (MPa)   Pres (MPa)  Pres (MPa)     (kg/s)          Residual R humidity  ngas m frac
+      1  0.9779E-01  0.2543E-01  0.7359E-01  0.5116E-04     -0.1335E-13     1.0000   0.3057E-02
+      3  0.9781E-01  0.2574E-01  0.7332E-01   0.000          0.2288E-10     1.0000   0.3083E-02
+      5  0.9782E-01  0.2587E-01  0.7323E-01   0.000         -0.4248E-11     1.0000   0.3091E-02
+     11  0.9786E-01  0.2593E-01  0.7329E-01   0.000         -0.4655E-11     1.0000   0.3088E-02
+     21  0.9792E-01  0.2593E-01  0.7349E-01   0.000         -0.2322E-11     1.0000   0.3074E-02
+     31  0.9797E-01  0.2593E-01  0.7369E-01   0.000         -0.3139E-13     1.0000   0.3060E-02
+     41  0.9800E-01  0.2593E-01  0.7389E-01   0.000          0.2407E-11     1.0000   0.3045E-02
+     71  0.9801E-01  0.2592E-01  0.7450E-01   0.000          0.4932E-11     1.0000   0.3001E-02
+     81  0.9798E-01  0.2592E-01  0.7471E-01   0.000          0.1456E-11     1.0000   0.2985E-02
+    101  0.9788E-01  0.2707E-01  0.7398E-01 -0.5116E-04      0.4203E-13     1.0000   0.3052E-02
+
+                    Global Gas (Air Only) Balances
+Total air mass at this time (kg):    8.480113E-02
+Total gas inflow (kg):               7.182864E-01
+Total gas discharge (kg):            7.182864E-01
+Gas discharge this time step (kg):   2.983651E-01
+Balance error gas:                   0.131993E-11
+
+                    Internode Fluxes
+ Node1  Node2           X,Y,Z Vapor Flux(kg/sec)          X,Y,Z Liquid Flux (kg/sec)
+                   1         5   (call number,number of pairs)
+     1      3 0.000000E+00 0.515673E-04 0.000000E+00 0.000000E+00 -.258348E-06 0.000000E+00
+     3      5 0.000000E+00 0.515750E-04 0.000000E+00 0.000000E+00 -.778968E-07 0.000000E+00
+    41     43 0.000000E+00 0.517605E-04 0.000000E+00 0.000000E+00 0.416238E-07 0.000000E+00
+    97     99 0.000000E+00 0.521730E-04 0.000000E+00 0.000000E+00 -.309958E-06 0.000000E+00
+    99    101 0.000000E+00 0.521919E-04 0.000000E+00 0.000000E+00 -.736734E-06 0.000000E+00
+ Node1            X,Y,Z      Coordinates  Node2          X,Y,Z        Coordinates
+                   1         5   (call number,number of pairs)
+     1        0.0        0.0        0.0      3        0.0       -0.0        0.0
+     3        0.0       -0.0        0.0      5        0.0       -0.0        0.0
+    41        0.0       -0.0        0.0     43        0.0       -0.0        0.0
+    97        0.0       -0.1        0.0     99        0.0       -0.1        0.0
+    99        0.0       -0.1        0.0    101        0.0       -0.1        0.0
+
+                    Global Mass & Energy Balances
+ Total mass in system at this time:            0.278927E+02 kg
+ Total mass of steam in system at this time:   0.110354E-02 kg
+ Total enthalpy in system at this time:        0.497780E+01 MJ
+
+ Water discharge this time step:   0.000000E+00 kg (0.000000E+00 kg/s)
+ Water input this time step:       0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water discharge:            0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water input:                0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Enthalpy discharge this time step:  0.658556E+00 MJ (0.225842E-03 MJ/s)
+ Enthalpy input this time step:      0.659618E+00 MJ (0.226206E-03 MJ/s)
+ Total enthalpy discharge:           0.158295E+01 MJ (0.225492E-03 MJ/s)
+ Total enthalpy input:               0.159052E+01 MJ (0.226569E-03 MJ/s)
+
+ Net kg water discharge (total out-total in):   0.000000E+00
+ Net MJ energy discharge (total out-total in):  -0.756281E-02
+ Conservation Errors:   0.000000E+00 (mass),   0.341754E-12 (energy)
+*********************************************************************
+ Time Step         5
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+     0.361054073E-03     0.131875000        0.506250000E-01
+ Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+
+                    Equation Performance
+ Number of N-R Iterations:          2
+ Avg # of Linear Equation Solver Iterations:   1.0
+ Number of Active Nodes:       102.
+ Total Number of Iterations, N-R:         10 , Solver:         10
+ Phase Changes This Time Step:        0 Total           0
+ Nodes Liq Phase:        0 change        0
+ Nodes Two Phase:      102 change        0
+ Nodes Gas Phase:         0 change        0
+ Nodes SC Phase:        0 change        0
+ Number of restarted time steps            0
+                    Largest Residuals
+ EQ1 R=  0.3069E-16 node=    100 zone=     0 x= 2.000     y=-.9800E-01 z=1.0000    
+ EQ2 R=  0.6946E-10 node=    102 zone=     2 x= 2.000     y=-.1000E+00 z=1.0000    
+ EQ3 R=  0.1550E-09 node=     99 zone=     0 x= 0.000     y=-.9800E-01 z=1.0000    
+   Node   Equation 1 Residual   Equation 2 Residual
+      1     -0.287412E-17           0.961653E-12
+      3      0.438290E-17           0.188390E-11
+      5     -0.124679E-17           0.306478E-12
+     11      0.614568E-17          -0.212508E-11
+     21      0.672169E-17          -0.626558E-12
+     31      0.815020E-17          -0.543441E-13
+     41      0.373576E-17           0.518433E-12
+     71      0.529705E-17           0.922212E-12
+     81      0.315751E-17           0.124362E-12
+    101     -0.680292E-17           0.694563E-10
+
+                    Nodal Information (Water)
+                                                  source/sink  E source/sink
+   Node   P (MPa)    E (MJ)    S liq     Temp (C)    (kg/s)       (MJ/s)  State            Zone
+      1   0.9902E-01 0.433E-01 0.284      10.00011   0.000      0.113E-03     2         1 all                     
+      3   0.9906E-01 0.446E-01 0.282      10.30351   0.000       0.00         2         1 all                     
+      5   0.9910E-01 0.459E-01 0.281      10.60679   0.000       0.00         2         1 all                     
+     11   0.9922E-01 0.497E-01 0.280      11.51590   0.000       0.00         2         1 all                     
+     21   0.9942E-01 0.560E-01 0.280      13.02862   0.000       0.00         2         1 all                     
+     31   0.9962E-01 0.623E-01 0.280      14.53815   0.000       0.00         2         1 all                     
+     41   0.9982E-01 0.685E-01 0.280      16.04435   0.000       0.00         2         1 all                     
+     71   0.1004     0.873E-01 0.280      20.54108   0.000       0.00         2         1 all                     
+     81   0.1006     0.935E-01 0.280      22.03194   0.000       0.00         2         1 all                     
+    101   0.1011     0.106     0.272      24.99989   0.000     -0.113E-03     2         1 all    2                
+
+                    Nodal Information (Gas)
+        Partial P   Capillary   Liquid      Gas source/sink
+   Node Gas (MPa)   Pres (MPa)  Pres (MPa)     (kg/s)          Residual R humidity  ngas m frac
+      1  0.9780E-01  0.2526E-01  0.7376E-01  0.5116E-04     -0.1726E-13     1.0000   0.3042E-02
+      3  0.9781E-01  0.2562E-01  0.7345E-01   0.000          0.2584E-10     1.0000   0.3071E-02
+      5  0.9783E-01  0.2580E-01  0.7331E-01   0.000          0.1022E-10     1.0000   0.3084E-02
+     11  0.9787E-01  0.2592E-01  0.7330E-01   0.000         -0.4691E-11     1.0000   0.3087E-02
+     21  0.9792E-01  0.2592E-01  0.7350E-01   0.000         -0.1425E-11     1.0000   0.3073E-02
+     31  0.9797E-01  0.2592E-01  0.7370E-01   0.000         -0.1317E-12     1.0000   0.3059E-02
+     41  0.9800E-01  0.2592E-01  0.7390E-01   0.000          0.1221E-11     1.0000   0.3044E-02
+     71  0.9801E-01  0.2591E-01  0.7452E-01   0.000          0.2328E-11     1.0000   0.3000E-02
+     81  0.9798E-01  0.2591E-01  0.7472E-01   0.000          0.3226E-12     1.0000   0.2984E-02
+    101  0.9788E-01  0.2744E-01  0.7361E-01 -0.5116E-04      0.8321E-13     1.0000   0.3082E-02
+
+                    Global Gas (Air Only) Balances
+Total air mass at this time (kg):    8.480113E-02
+Total gas inflow (kg):               1.165834E+00
+Total gas discharge (kg):            1.165834E+00
+Gas discharge this time step (kg):   4.475477E-01
+Balance error gas:                   0.813276E-12
+
+                    Internode Fluxes
+ Node1  Node2           X,Y,Z Vapor Flux(kg/sec)          X,Y,Z Liquid Flux (kg/sec)
+                   1         5   (call number,number of pairs)
+     1      3 0.000000E+00 0.515673E-04 0.000000E+00 0.000000E+00 -.297129E-06 0.000000E+00
+     3      5 0.000000E+00 0.515751E-04 0.000000E+00 0.000000E+00 -.128954E-06 0.000000E+00
+    41     43 0.000000E+00 0.517606E-04 0.000000E+00 0.000000E+00 0.418360E-07 0.000000E+00
+    97     99 0.000000E+00 0.521732E-04 0.000000E+00 0.000000E+00 -.434742E-06 0.000000E+00
+    99    101 0.000000E+00 0.521919E-04 0.000000E+00 0.000000E+00 -.812999E-06 0.000000E+00
+ Node1            X,Y,Z      Coordinates  Node2          X,Y,Z        Coordinates
+                   1         5   (call number,number of pairs)
+     1        0.0        0.0        0.0      3        0.0       -0.0        0.0
+     3        0.0       -0.0        0.0      5        0.0       -0.0        0.0
+    41        0.0       -0.0        0.0     43        0.0       -0.0        0.0
+    97        0.0       -0.1        0.0     99        0.0       -0.1        0.0
+    99        0.0       -0.1        0.0    101        0.0       -0.1        0.0
+
+                    Global Mass & Energy Balances
+ Total mass in system at this time:            0.278927E+02 kg
+ Total mass of steam in system at this time:   0.110379E-02 kg
+ Total enthalpy in system at this time:        0.497813E+01 MJ
+
+ Water discharge this time step:   0.000000E+00 kg (0.000000E+00 kg/s)
+ Water input this time step:       0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water discharge:            0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water input:                0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Enthalpy discharge this time step:  0.988472E+00 MJ (0.225988E-03 MJ/s)
+ Enthalpy input this time step:      0.988795E+00 MJ (0.226062E-03 MJ/s)
+ Total enthalpy discharge:           0.257143E+01 MJ (0.225683E-03 MJ/s)
+ Total enthalpy input:               0.257931E+01 MJ (0.226375E-03 MJ/s)
+
+ Net kg water discharge (total out-total in):   0.000000E+00
+ Net MJ energy discharge (total out-total in):  -0.788580E-02
+ Conservation Errors:   0.000000E+00 (mass),  -0.171209E-11 (energy)
+*********************************************************************
+ Time Step         6
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+     0.568959617E-03     0.207812500        0.759375000E-01
+ Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+
+                    Equation Performance
+ Number of N-R Iterations:          2
+ Avg # of Linear Equation Solver Iterations:   1.0
+ Number of Active Nodes:       102.
+ Total Number of Iterations, N-R:         12 , Solver:         12
+ Phase Changes This Time Step:        0 Total           0
+ Nodes Liq Phase:        0 change        0
+ Nodes Two Phase:      102 change        0
+ Nodes Gas Phase:         0 change        0
+ Nodes SC Phase:        0 change        0
+ Number of restarted time steps            0
+                    Largest Residuals
+ EQ1 R=  0.3740E-16 node=     99 zone=     0 x= 0.000     y=-.9800E-01 z=1.0000    
+ EQ2 R=  0.2378E-09 node=    102 zone=     2 x= 2.000     y=-.1000E+00 z=1.0000    
+ EQ3 R=  0.1985E-09 node=    100 zone=     0 x= 2.000     y=-.9800E-01 z=1.0000    
+   Node   Equation 1 Residual   Equation 2 Residual
+      1     -0.527833E-17          -0.191145E-10
+      3      0.106348E-16           0.168412E-10
+      5     -0.195859E-17          -0.137131E-11
+     11      0.219848E-17          -0.334289E-11
+     21     -0.367924E-18          -0.501013E-12
+     31      0.812990E-17          -0.213540E-12
+     41     -0.252150E-17           0.167957E-13
+     71     -0.541470E-17          -0.408147E-13
+     81      0.304565E-18          -0.832432E-13
+    101      0.138401E-16           0.237806E-09
+
+                    Nodal Information (Water)
+                                                  source/sink  E source/sink
+   Node   P (MPa)    E (MJ)    S liq     Temp (C)    (kg/s)       (MJ/s)  State            Zone
+      1   0.9903E-01 0.433E-01 0.285      10.00011   0.000      0.113E-03     2         1 all                     
+      3   0.9906E-01 0.446E-01 0.283      10.30360   0.000       0.00         2         1 all                     
+      5   0.9910E-01 0.459E-01 0.282      10.60698   0.000       0.00         2         1 all                     
+     11   0.9922E-01 0.497E-01 0.280      11.51638   0.000       0.00         2         1 all                     
+     21   0.9942E-01 0.560E-01 0.280      13.02953   0.000       0.00         2         1 all                     
+     31   0.9962E-01 0.623E-01 0.280      14.53941   0.000       0.00         2         1 all                     
+     41   0.9982E-01 0.685E-01 0.280      16.04582   0.000       0.00         2         1 all                     
+     71   0.1004     0.873E-01 0.280      20.54233   0.000       0.00         2         1 all                     
+     81   0.1006     0.935E-01 0.280      22.03284   0.000       0.00         2         1 all                     
+    101   0.1011     0.106     0.269      24.99989   0.000     -0.113E-03     2         1 all    2                
+
+                    Nodal Information (Gas)
+        Partial P   Capillary   Liquid      Gas source/sink
+   Node Gas (MPa)   Pres (MPa)  Pres (MPa)     (kg/s)          Residual R humidity  ngas m frac
+      1  0.9780E-01  0.2508E-01  0.7395E-01  0.5116E-04     -0.2487E-13     1.0000   0.3025E-02
+      3  0.9781E-01  0.2545E-01  0.7362E-01   0.000          0.2712E-10     1.0000   0.3056E-02
+      5  0.9783E-01  0.2568E-01  0.7343E-01   0.000          0.2509E-10     1.0000   0.3074E-02
+     11  0.9787E-01  0.2589E-01  0.7333E-01   0.000         -0.6150E-11     1.0000   0.3085E-02
+     21  0.9792E-01  0.2591E-01  0.7351E-01   0.000         -0.9824E-12     1.0000   0.3072E-02
+     31  0.9797E-01  0.2591E-01  0.7371E-01   0.000         -0.4322E-12     1.0000   0.3058E-02
+     41  0.9800E-01  0.2590E-01  0.7391E-01   0.000          0.3080E-13     1.0000   0.3043E-02
+     71  0.9801E-01  0.2589E-01  0.7453E-01   0.000         -0.9088E-13     1.0000   0.2998E-02
+     81  0.9798E-01  0.2589E-01  0.7474E-01   0.000         -0.1738E-12     1.0000   0.2983E-02
+    101  0.9788E-01  0.2788E-01  0.7318E-01 -0.5116E-04      0.1484E-12     1.0000   0.3119E-02
+
+                    Global Gas (Air Only) Balances
+Total air mass at this time (kg):    8.480113E-02
+Total gas inflow (kg):               1.837156E+00
+Total gas discharge (kg):            1.837156E+00
+Gas discharge this time step (kg):   6.713215E-01
+Balance error gas:                   0.516101E-12
+
+                    Internode Fluxes
+ Node1  Node2           X,Y,Z Vapor Flux(kg/sec)          X,Y,Z Liquid Flux (kg/sec)
+                   1         5   (call number,number of pairs)
+     1      3 0.000000E+00 0.515673E-04 0.000000E+00 0.000000E+00 -.323499E-06 0.000000E+00
+     3      5 0.000000E+00 0.515751E-04 0.000000E+00 0.000000E+00 -.177642E-06 0.000000E+00
+    41     43 0.000000E+00 0.517607E-04 0.000000E+00 0.000000E+00 0.421486E-07 0.000000E+00
+    97     99 0.000000E+00 0.521733E-04 0.000000E+00 0.000000E+00 -.542741E-06 0.000000E+00
+    99    101 0.000000E+00 0.521920E-04 0.000000E+00 0.000000E+00 -.864142E-06 0.000000E+00
+ Node1            X,Y,Z      Coordinates  Node2          X,Y,Z        Coordinates
+                   1         5   (call number,number of pairs)
+     1        0.0        0.0        0.0      3        0.0       -0.0        0.0
+     3        0.0       -0.0        0.0      5        0.0       -0.0        0.0
+    41        0.0       -0.0        0.0     43        0.0       -0.0        0.0
+    97        0.0       -0.1        0.0     99        0.0       -0.1        0.0
+    99        0.0       -0.1        0.0    101        0.0       -0.1        0.0
+
+                    Global Mass & Energy Balances
+ Total mass in system at this time:            0.278927E+02 kg
+ Total mass of steam in system at this time:   0.110398E-02 kg
+ Total enthalpy in system at this time:        0.497786E+01 MJ
+
+ Water discharge this time step:   0.000000E+00 kg (0.000000E+00 kg/s)
+ Water input this time step:       0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water discharge:            0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water input:                0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Enthalpy discharge this time step:  0.148309E+01 MJ (0.226046E-03 MJ/s)
+ Enthalpy input this time step:      0.148282E+01 MJ (0.226005E-03 MJ/s)
+ Total enthalpy discharge:           0.405452E+01 MJ (0.225815E-03 MJ/s)
+ Total enthalpy input:               0.406213E+01 MJ (0.226240E-03 MJ/s)
+
+ Net kg water discharge (total out-total in):   0.000000E+00
+ Net MJ energy discharge (total out-total in):  -0.761592E-02
+ Conservation Errors:   0.000000E+00 (mass),   0.137617E-11 (energy)
+*********************************************************************
+ Time Step         7
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+     0.880817933E-03     0.321718750        0.113906250    
+ Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+
+                    Equation Performance
+ Number of N-R Iterations:          2
+ Avg # of Linear Equation Solver Iterations:   1.0
+ Number of Active Nodes:       102.
+ Total Number of Iterations, N-R:         14 , Solver:         14
+ Phase Changes This Time Step:        0 Total           0
+ Nodes Liq Phase:        0 change        0
+ Nodes Two Phase:      102 change        0
+ Nodes Gas Phase:         0 change        0
+ Nodes SC Phase:        0 change        0
+ Number of restarted time steps            0
+                    Largest Residuals
+ EQ1 R=  0.3472E-16 node=     99 zone=     0 x= 0.000     y=-.9800E-01 z=1.0000    
+ EQ2 R=  0.5489E-09 node=    102 zone=     2 x= 2.000     y=-.1000E+00 z=1.0000    
+ EQ3 R=  0.2518E-09 node=     99 zone=     0 x= 0.000     y=-.9800E-01 z=1.0000    
+   Node   Equation 1 Residual   Equation 2 Residual
+      1      0.126184E-17          -0.453326E-10
+      3      0.360973E-17           0.301730E-10
+      5      0.276768E-17           0.374681E-12
+     11      0.399811E-17          -0.110309E-10
+     21     -0.110518E-16          -0.660216E-12
+     31      0.223972E-17          -0.305264E-12
+     41      0.111924E-16          -0.275154E-12
+     71     -0.426851E-17          -0.535561E-12
+     81     -0.250052E-17           0.168691E-11
+    101      0.156248E-17           0.548887E-09
+
+                    Nodal Information (Water)
+                                                  source/sink  E source/sink
+   Node   P (MPa)    E (MJ)    S liq     Temp (C)    (kg/s)       (MJ/s)  State            Zone
+      1   0.9903E-01 0.433E-01 0.287      10.00011   0.000      0.113E-03     2         1 all                     
+      3   0.9907E-01 0.446E-01 0.284      10.30363   0.000       0.00         2         1 all                     
+      5   0.9910E-01 0.458E-01 0.283      10.60703   0.000       0.00         2         1 all                     
+     11   0.9922E-01 0.497E-01 0.281      11.51651   0.000       0.00         2         1 all                     
+     21   0.9942E-01 0.560E-01 0.280      13.02979   0.000       0.00         2         1 all                     
+     31   0.9962E-01 0.623E-01 0.280      14.53977   0.000       0.00         2         1 all                     
+     41   0.9982E-01 0.685E-01 0.280      16.04625   0.000       0.00         2         1 all                     
+     71   0.1004     0.873E-01 0.280      20.54269   0.000       0.00         2         1 all                     
+     81   0.1006     0.935E-01 0.280      22.03310   0.000       0.00         2         1 all                     
+    101   0.1011     0.106     0.266      24.99989   0.000     -0.113E-03     2         1 all    2                
+
+                    Nodal Information (Gas)
+        Partial P   Capillary   Liquid      Gas source/sink
+   Node Gas (MPa)   Pres (MPa)  Pres (MPa)     (kg/s)          Residual R humidity  ngas m frac
+      1  0.9780E-01  0.2486E-01  0.7417E-01  0.5116E-04     -0.3299E-13     1.0000   0.3005E-02
+      3  0.9781E-01  0.2524E-01  0.7383E-01   0.000          0.2449E-10     1.0000   0.3037E-02
+      5  0.9783E-01  0.2550E-01  0.7360E-01   0.000          0.3452E-10     1.0000   0.3058E-02
+     11  0.9787E-01  0.2584E-01  0.7339E-01   0.000         -0.1136E-10     1.0000   0.3080E-02
+     21  0.9792E-01  0.2589E-01  0.7353E-01   0.000         -0.1154E-11     1.0000   0.3071E-02
+     31  0.9797E-01  0.2589E-01  0.7373E-01   0.000         -0.5517E-12     1.0000   0.3056E-02
+     41  0.9800E-01  0.2588E-01  0.7393E-01   0.000         -0.5140E-12     1.0000   0.3041E-02
+     71  0.9801E-01  0.2587E-01  0.7456E-01   0.000         -0.1082E-11     1.0000   0.2996E-02
+     81  0.9799E-01  0.2587E-01  0.7476E-01   0.000          0.3938E-11     1.0000   0.2981E-02
+    101  0.9788E-01  0.2841E-01  0.7264E-01 -0.5116E-04      0.2444E-12     1.0000   0.3163E-02
+
+                    Global Gas (Air Only) Balances
+Total air mass at this time (kg):    8.480113E-02
+Total gas inflow (kg):               2.844138E+00
+Total gas discharge (kg):            2.844138E+00
+Gas discharge this time step (kg):   1.006982E+00
+Balance error gas:                   0.333378E-12
+
+                    Internode Fluxes
+ Node1  Node2           X,Y,Z Vapor Flux(kg/sec)          X,Y,Z Liquid Flux (kg/sec)
+                   1         5   (call number,number of pairs)
+     1      3 0.000000E+00 0.515674E-04 0.000000E+00 0.000000E+00 -.341984E-06 0.000000E+00
+     3      5 0.000000E+00 0.515752E-04 0.000000E+00 0.000000E+00 -.220171E-06 0.000000E+00
+    41     43 0.000000E+00 0.517607E-04 0.000000E+00 0.000000E+00 0.426156E-07 0.000000E+00
+    97     99 0.000000E+00 0.521734E-04 0.000000E+00 0.000000E+00 -.631625E-06 0.000000E+00
+    99    101 0.000000E+00 0.521920E-04 0.000000E+00 0.000000E+00 -.900602E-06 0.000000E+00
+ Node1            X,Y,Z      Coordinates  Node2          X,Y,Z        Coordinates
+                   1         5   (call number,number of pairs)
+     1        0.0        0.0        0.0      3        0.0       -0.0        0.0
+     3        0.0       -0.0        0.0      5        0.0       -0.0        0.0
+    41        0.0       -0.0        0.0     43        0.0       -0.0        0.0
+    97        0.0       -0.1        0.0     99        0.0       -0.1        0.0
+    99        0.0       -0.1        0.0    101        0.0       -0.1        0.0
+
+                    Global Mass & Energy Balances
+ Total mass in system at this time:            0.278927E+02 kg
+ Total mass of steam in system at this time:   0.110418E-02 kg
+ Total enthalpy in system at this time:        0.497713E+01 MJ
+
+ Water discharge this time step:   0.000000E+00 kg (0.000000E+00 kg/s)
+ Water input this time step:       0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water discharge:            0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water input:                0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Enthalpy discharge this time step:  0.222480E+01 MJ (0.226063E-03 MJ/s)
+ Enthalpy input this time step:      0.222407E+01 MJ (0.225989E-03 MJ/s)
+ Total enthalpy discharge:           0.627931E+01 MJ (0.225903E-03 MJ/s)
+ Total enthalpy input:               0.628621E+01 MJ (0.226151E-03 MJ/s)
+
+ Net kg water discharge (total out-total in):   0.000000E+00
+ Net MJ energy discharge (total out-total in):  -0.689405E-02
+ Conservation Errors:   0.000000E+00 (mass),   0.685892E-11 (energy)
+*********************************************************************
+ Time Step         8
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+     0.134860541E-02     0.492578125        0.170859375    
+ Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+
+                    Equation Performance
+ Number of N-R Iterations:          2
+ Avg # of Linear Equation Solver Iterations:   1.0
+ Number of Active Nodes:       102.
+ Total Number of Iterations, N-R:         16 , Solver:         16
+ Phase Changes This Time Step:        0 Total           0
+ Nodes Liq Phase:        0 change        0
+ Nodes Two Phase:      102 change        0
+ Nodes Gas Phase:         0 change        0
+ Nodes SC Phase:        0 change        0
+ Number of restarted time steps            0
+                    Largest Residuals
+ EQ1 R=  0.4297E-16 node=     97 zone=     0 x= 0.000     y=-.9600E-01 z=1.0000    
+ EQ2 R=  0.1172E-08 node=    102 zone=     2 x= 2.000     y=-.1000E+00 z=1.0000    
+ EQ3 R=  0.3297E-09 node=     99 zone=     0 x= 0.000     y=-.9800E-01 z=1.0000    
+   Node   Equation 1 Residual   Equation 2 Residual
+      1     -0.257505E-17          -0.815076E-10
+      3      0.772449E-17           0.413816E-10
+      5     -0.292242E-18           0.119561E-10
+     11     -0.131183E-17           0.787036E-11
+     21      0.403996E-17          -0.203228E-11
+     31      0.385973E-17          -0.658327E-12
+     41     -0.883193E-17          -0.649248E-12
+     71     -0.470656E-17          -0.621578E-12
+     81     -0.483471E-17           0.636356E-11
+    101     -0.283358E-16           0.117246E-08
+
+                    Nodal Information (Water)
+                                                  source/sink  E source/sink
+   Node   P (MPa)    E (MJ)    S liq     Temp (C)    (kg/s)       (MJ/s)  State            Zone
+      1   0.9903E-01 0.433E-01 0.288      10.00011   0.000      0.113E-03     2         1 all                     
+      3   0.9907E-01 0.446E-01 0.286      10.30364   0.000       0.00         2         1 all                     
+      5   0.9911E-01 0.458E-01 0.284      10.60704   0.000       0.00         2         1 all                     
+     11   0.9922E-01 0.496E-01 0.281      11.51654   0.000       0.00         2         1 all                     
+     21   0.9942E-01 0.560E-01 0.280      13.02984   0.000       0.00         2         1 all                     
+     31   0.9962E-01 0.623E-01 0.280      14.53984   0.000       0.00         2         1 all                     
+     41   0.9982E-01 0.685E-01 0.281      16.04633   0.000       0.00         2         1 all                     
+     71   0.1004     0.873E-01 0.281      20.54275   0.000       0.00         2         1 all                     
+     81   0.1006     0.935E-01 0.280      22.03314   0.000       0.00         2         1 all                     
+    101   0.1011     0.106     0.263      24.99989   0.000     -0.113E-03     2         1 all    2                
+
+                    Nodal Information (Gas)
+        Partial P   Capillary   Liquid      Gas source/sink
+   Node Gas (MPa)   Pres (MPa)  Pres (MPa)     (kg/s)          Residual R humidity  ngas m frac
+      1  0.9780E-01  0.2459E-01  0.7443E-01  0.5116E-04     -0.4730E-13     1.0000   0.2981E-02
+      3  0.9781E-01  0.2498E-01  0.7409E-01   0.000          0.1932E-10     1.0000   0.3013E-02
+      5  0.9783E-01  0.2527E-01  0.7383E-01   0.000          0.3956E-10     1.0000   0.3037E-02
+     11  0.9787E-01  0.2573E-01  0.7349E-01   0.000         -0.2628E-11     1.0000   0.3070E-02
+     21  0.9793E-01  0.2586E-01  0.7356E-01   0.000         -0.3203E-11     1.0000   0.3068E-02
+     31  0.9797E-01  0.2586E-01  0.7376E-01   0.000         -0.1098E-11     1.0000   0.3054E-02
+     41  0.9800E-01  0.2585E-01  0.7397E-01   0.000         -0.1117E-11     1.0000   0.3039E-02
+     71  0.9801E-01  0.2583E-01  0.7460E-01   0.000         -0.1155E-11     1.0000   0.2993E-02
+     81  0.9799E-01  0.2586E-01  0.7477E-01   0.000          0.1582E-10     1.0000   0.2980E-02
+    101  0.9788E-01  0.2908E-01  0.7197E-01 -0.5116E-04      0.3968E-12     1.0000   0.3218E-02
+
+                    Global Gas (Air Only) Balances
+Total air mass at this time (kg):    8.480113E-02
+Total gas inflow (kg):               4.354611E+00
+Total gas discharge (kg):            4.354611E+00
+Gas discharge this time step (kg):   1.510473E+00
+Balance error gas:                   0.217768E-12
+
+                    Internode Fluxes
+ Node1  Node2           X,Y,Z Vapor Flux(kg/sec)          X,Y,Z Liquid Flux (kg/sec)
+                   1         5   (call number,number of pairs)
+     1      3 0.000000E+00 0.515674E-04 0.000000E+00 0.000000E+00 -.355617E-06 0.000000E+00
+     3      5 0.000000E+00 0.515752E-04 0.000000E+00 0.000000E+00 -.255661E-06 0.000000E+00
+    41     43 0.000000E+00 0.517607E-04 0.000000E+00 0.000000E+00 0.433086E-07 0.000000E+00
+    97     99 0.000000E+00 0.521735E-04 0.000000E+00 0.000000E+00 -.703459E-06 0.000000E+00
+    99    101 0.000000E+00 0.521920E-04 0.000000E+00 0.000000E+00 -.927950E-06 0.000000E+00
+ Node1            X,Y,Z      Coordinates  Node2          X,Y,Z        Coordinates
+                   1         5   (call number,number of pairs)
+     1        0.0        0.0        0.0      3        0.0       -0.0        0.0
+     3        0.0       -0.0        0.0      5        0.0       -0.0        0.0
+    41        0.0       -0.0        0.0     43        0.0       -0.0        0.0
+    97        0.0       -0.1        0.0     99        0.0       -0.1        0.0
+    99        0.0       -0.1        0.0    101        0.0       -0.1        0.0
+
+                    Global Mass & Energy Balances
+ Total mass in system at this time:            0.278927E+02 kg
+ Total mass of steam in system at this time:   0.110445E-02 kg
+ Total enthalpy in system at this time:        0.497598E+01 MJ
+
+ Water discharge this time step:   0.000000E+00 kg (0.000000E+00 kg/s)
+ Water input this time step:       0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water discharge:            0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water input:                0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Enthalpy discharge this time step:  0.333724E+01 MJ (0.226066E-03 MJ/s)
+ Enthalpy input this time step:      0.333608E+01 MJ (0.225987E-03 MJ/s)
+ Total enthalpy discharge:           0.961655E+01 MJ (0.225959E-03 MJ/s)
+ Total enthalpy input:               0.962229E+01 MJ (0.226094E-03 MJ/s)
+
+ Net kg water discharge (total out-total in):   0.000000E+00
+ Net MJ energy discharge (total out-total in):  -0.573909E-02
+ Conservation Errors:   0.000000E+00 (mass),   0.339818E-11 (energy)
+*********************************************************************
+ Time Step         9
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+     0.136892539E-02     0.500000000        0.742187500E-02
+ Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+
+                    Equation Performance
+ Number of N-R Iterations:          2
+ Avg # of Linear Equation Solver Iterations:   0.5
+ Number of Active Nodes:        51.
+ Total Number of Iterations, N-R:         18 , Solver:         17
+ Phase Changes This Time Step:        0 Total           0
+ Nodes Liq Phase:        0 change        0
+ Nodes Two Phase:      102 change        0
+ Nodes Gas Phase:         0 change        0
+ Nodes SC Phase:        0 change        0
+ Number of restarted time steps            0
+                    Largest Residuals
+ EQ1 R=  0.1580E-14 node=    100 zone=     0 x= 2.000     y=-.9800E-01 z=1.0000    
+ EQ2 R=  0.4726E-09 node=     99 zone=     0 x= 0.000     y=-.9800E-01 z=1.0000    
+ EQ3 R=  0.1069E-08 node=     95 zone=     0 x= 0.000     y=-.9400E-01 z=1.0000    
+   Node   Equation 1 Residual   Equation 2 Residual
+      1      0.678625E-16           0.774246E-10
+      3      0.133622E-14           0.752593E-10
+      5     -0.168597E-15           0.245971E-10
+     11     -0.323615E-15          -0.364622E-10
+     21     -0.186644E-16          -0.160946E-11
+     31     -0.287554E-17          -0.518451E-13
+     41      0.296542E-17           0.105302E-12
+     71      0.772086E-17           0.346178E-12
+     81     -0.240871E-16          -0.219644E-11
+    101      0.844779E-15           0.119149E-09
+
+                    Nodal Information (Water)
+                                                  source/sink  E source/sink
+   Node   P (MPa)    E (MJ)    S liq     Temp (C)    (kg/s)       (MJ/s)  State            Zone
+      1   0.9903E-01 0.433E-01 0.288      10.00011   0.000      0.113E-03     2         1 all                     
+      3   0.9907E-01 0.446E-01 0.286      10.30364   0.000       0.00         2         1 all                     
+      5   0.9911E-01 0.458E-01 0.284      10.60704   0.000       0.00         2         1 all                     
+     11   0.9922E-01 0.496E-01 0.281      11.51654   0.000       0.00         2         1 all                     
+     21   0.9942E-01 0.560E-01 0.280      13.02985   0.000       0.00         2         1 all                     
+     31   0.9962E-01 0.623E-01 0.280      14.53984   0.000       0.00         2         1 all                     
+     41   0.9982E-01 0.685E-01 0.281      16.04633   0.000       0.00         2         1 all                     
+     71   0.1004     0.873E-01 0.281      20.54276   0.000       0.00         2         1 all                     
+     81   0.1006     0.935E-01 0.280      22.03315   0.000       0.00         2         1 all                     
+    101   0.1011     0.106     0.263      24.99989   0.000     -0.113E-03     2         1 all    2                
+
+                    Nodal Information (Gas)
+        Partial P   Capillary   Liquid      Gas source/sink
+   Node Gas (MPa)   Pres (MPa)  Pres (MPa)     (kg/s)          Residual R humidity  ngas m frac
+      1  0.9780E-01  0.2458E-01  0.7444E-01  0.5116E-04     -0.2308E-13     1.0000   0.2980E-02
+      3  0.9781E-01  0.2497E-01  0.7410E-01   0.000         -0.9412E-10     1.0000   0.3012E-02
+      5  0.9783E-01  0.2526E-01  0.7384E-01   0.000         -0.1578E-09     1.0000   0.3037E-02
+     11  0.9787E-01  0.2572E-01  0.7350E-01   0.000         -0.1872E-09     1.0000   0.3070E-02
+     21  0.9793E-01  0.2586E-01  0.7356E-01   0.000         -0.2822E-10     1.0000   0.3068E-02
+     31  0.9797E-01  0.2586E-01  0.7376E-01   0.000          0.8343E-12     1.0000   0.3054E-02
+     41  0.9800E-01  0.2585E-01  0.7397E-01   0.000          0.5215E-11     1.0000   0.3039E-02
+     71  0.9801E-01  0.2583E-01  0.7460E-01   0.000         -0.1846E-11     1.0000   0.2993E-02
+     81  0.9799E-01  0.2586E-01  0.7477E-01   0.000         -0.1651E-09     1.0000   0.2980E-02
+    101  0.9788E-01  0.2911E-01  0.7194E-01 -0.5116E-04     -0.2696E-12     1.0000   0.3220E-02
+
+                    Global Gas (Air Only) Balances
+Total air mass at this time (kg):    8.480113E-02
+Total gas inflow (kg):               4.420224E+00
+Total gas discharge (kg):            4.420224E+00
+Gas discharge this time step (kg):   6.561270E-02
+Balance error gas:                   0.199670E-12
+
+                    Internode Fluxes
+ Node1  Node2           X,Y,Z Vapor Flux(kg/sec)          X,Y,Z Liquid Flux (kg/sec)
+                   1         5   (call number,number of pairs)
+     1      3 0.000000E+00 0.515674E-04 0.000000E+00 0.000000E+00 -.356191E-06 0.000000E+00
+     3      5 0.000000E+00 0.515752E-04 0.000000E+00 0.000000E+00 -.257176E-06 0.000000E+00
+    41     43 0.000000E+00 0.517607E-04 0.000000E+00 0.000000E+00 0.433387E-07 0.000000E+00
+    97     99 0.000000E+00 0.521735E-04 0.000000E+00 0.000000E+00 -.706376E-06 0.000000E+00
+    99    101 0.000000E+00 0.521920E-04 0.000000E+00 0.000000E+00 -.929031E-06 0.000000E+00
+ Node1            X,Y,Z      Coordinates  Node2          X,Y,Z        Coordinates
+                   1         5   (call number,number of pairs)
+     1        0.0        0.0        0.0      3        0.0       -0.0        0.0
+     3        0.0       -0.0        0.0      5        0.0       -0.0        0.0
+    41        0.0       -0.0        0.0     43        0.0       -0.0        0.0
+    97        0.0       -0.1        0.0     99        0.0       -0.1        0.0
+    99        0.0       -0.1        0.0    101        0.0       -0.1        0.0
+
+                    Global Mass & Energy Balances
+ Total mass in system at this time:            0.278927E+02 kg
+ Total mass of steam in system at this time:   0.110446E-02 kg
+ Total enthalpy in system at this time:        0.497593E+01 MJ
+
+ Water discharge this time step:   0.000000E+00 kg (0.000000E+00 kg/s)
+ Water input this time step:       0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water discharge:            0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water input:                0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Enthalpy discharge this time step:  0.144965E+00 MJ (0.226066E-03 MJ/s)
+ Enthalpy input this time step:      0.144914E+00 MJ (0.225987E-03 MJ/s)
+ Total enthalpy discharge:           0.976151E+01 MJ (0.225961E-03 MJ/s)
+ Total enthalpy input:               0.976720E+01 MJ (0.226093E-03 MJ/s)
+
+ Net kg water discharge (total out-total in):   0.000000E+00
+ Net MJ energy discharge (total out-total in):  -0.568883E-02
+ Conservation Errors:   0.000000E+00 (mass),  -0.660505E-09 (energy)
+*********************************************************************
+ Time Step        10
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+     0.273785079E-02     1.000000000        0.500000000    
+ Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+
+                    Equation Performance
+ Number of N-R Iterations:          2
+ Avg # of Linear Equation Solver Iterations:   1.0
+ Number of Active Nodes:       102.
+ Total Number of Iterations, N-R:         20 , Solver:         19
+ Phase Changes This Time Step:        0 Total           0
+ Nodes Liq Phase:        0 change        0
+ Nodes Two Phase:      102 change        0
+ Nodes Gas Phase:         0 change        0
+ Nodes SC Phase:        0 change        0
+ Number of restarted time steps            0
+                    Largest Residuals
+ EQ1 R=  0.2205E-14 node=    101 zone=     2 x= 0.000     y=-.1000E+00 z=1.0000    
+ EQ2 R=  0.2411E-07 node=    101 zone=     2 x= 0.000     y=-.1000E+00 z=1.0000    
+ EQ3 R=  0.1541E-08 node=     99 zone=     0 x= 0.000     y=-.9800E-01 z=1.0000    
+   Node   Equation 1 Residual   Equation 2 Residual
+      1      0.197097E-15          -0.602999E-09
+      3     -0.166404E-16           0.543486E-09
+      5     -0.140340E-16           0.286835E-09
+     11      0.219701E-16          -0.874846E-10
+     21     -0.625199E-17          -0.315255E-10
+     31      0.132695E-17          -0.943997E-11
+     41     -0.935024E-17          -0.413425E-11
+     71      0.513729E-17           0.574950E-11
+     81      0.377138E-16           0.261381E-10
+    101     -0.220504E-14           0.241069E-07
+
+                    Nodal Information (Water)
+                                                  source/sink  E source/sink
+   Node   P (MPa)    E (MJ)    S liq     Temp (C)    (kg/s)       (MJ/s)  State            Zone
+      1   0.9903E-01 0.433E-01 0.292      10.00011   0.000      0.113E-03     2         1 all                     
+      3   0.9907E-01 0.445E-01 0.289      10.30364   0.000       0.00         2         1 all                     
+      5   0.9911E-01 0.458E-01 0.287      10.60704   0.000       0.00         2         1 all                     
+     11   0.9923E-01 0.496E-01 0.283      11.51653   0.000       0.00         2         1 all                     
+     21   0.9942E-01 0.560E-01 0.281      13.02984   0.000       0.00         2         1 all                     
+     31   0.9962E-01 0.623E-01 0.281      14.53983   0.000       0.00         2         1 all                     
+     41   0.9982E-01 0.685E-01 0.281      16.04633   0.000       0.00         2         1 all                     
+     71   0.1004     0.873E-01 0.281      20.54274   0.000       0.00         2         1 all                     
+     81   0.1006     0.935E-01 0.280      22.03313   0.000       0.00         2         1 all                     
+    101   0.1011     0.106     0.256      24.99989   0.000     -0.113E-03     2         1 all    2                
+
+                    Nodal Information (Gas)
+        Partial P   Capillary   Liquid      Gas source/sink
+   Node Gas (MPa)   Pres (MPa)  Pres (MPa)     (kg/s)          Residual R humidity  ngas m frac
+      1  0.9780E-01  0.2404E-01  0.7499E-01  0.5116E-04     -0.2529E-12     1.0000   0.2931E-02
+      3  0.9782E-01  0.2442E-01  0.7465E-01   0.000          0.2879E-10     1.0000   0.2962E-02
+      5  0.9783E-01  0.2473E-01  0.7438E-01   0.000          0.1171E-09     1.0000   0.2988E-02
+     11  0.9787E-01  0.2537E-01  0.7386E-01   0.000          0.1059E-09     1.0000   0.3038E-02
+     21  0.9793E-01  0.2572E-01  0.7371E-01   0.000         -0.3118E-10     1.0000   0.3055E-02
+     31  0.9797E-01  0.2577E-01  0.7386E-01   0.000         -0.1270E-10     1.0000   0.3045E-02
+     41  0.9801E-01  0.2576E-01  0.7406E-01   0.000         -0.6326E-11     1.0000   0.3031E-02
+     71  0.9802E-01  0.2577E-01  0.7467E-01   0.000          0.4887E-10     1.0000   0.2987E-02
+     81  0.9799E-01  0.2596E-01  0.7468E-01   0.000          0.1330E-09     1.0000   0.2989E-02
+    101  0.9789E-01  0.3061E-01  0.7045E-01 -0.5116E-04      0.2513E-11     1.0000   0.3341E-02
+
+                    Global Gas (Air Only) Balances
+Total air mass at this time (kg):    8.480113E-02
+Total gas inflow (kg):               8.840448E+00
+Total gas discharge (kg):            8.840448E+00
+Gas discharge this time step (kg):   4.420224E+00
+Balance error gas:                   0.100405E-12
+
+                    Internode Fluxes
+ Node1  Node2           X,Y,Z Vapor Flux(kg/sec)          X,Y,Z Liquid Flux (kg/sec)
+                   1         5   (call number,number of pairs)
+     1      3 0.000000E+00 0.515674E-04 0.000000E+00 0.000000E+00 -.370906E-06 0.000000E+00
+     3      5 0.000000E+00 0.515753E-04 0.000000E+00 0.000000E+00 -.298701E-06 0.000000E+00
+    41     43 0.000000E+00 0.517606E-04 0.000000E+00 0.000000E+00 0.446500E-07 0.000000E+00
+    97     99 0.000000E+00 0.521735E-04 0.000000E+00 0.000000E+00 -.789564E-06 0.000000E+00
+    99    101 0.000000E+00 0.521920E-04 0.000000E+00 0.000000E+00 -.959230E-06 0.000000E+00
+ Node1            X,Y,Z      Coordinates  Node2          X,Y,Z        Coordinates
+                   1         5   (call number,number of pairs)
+     1        0.0        0.0        0.0      3        0.0       -0.0        0.0
+     3        0.0       -0.0        0.0      5        0.0       -0.0        0.0
+    41        0.0       -0.0        0.0     43        0.0       -0.0        0.0
+    97        0.0       -0.1        0.0     99        0.0       -0.1        0.0
+    99        0.0       -0.1        0.0    101        0.0       -0.1        0.0
+
+                    Global Mass & Energy Balances
+ Total mass in system at this time:            0.278927E+02 kg
+ Total mass of steam in system at this time:   0.110519E-02 kg
+ Total enthalpy in system at this time:        0.497270E+01 MJ
+
+ Water discharge this time step:   0.000000E+00 kg (0.000000E+00 kg/s)
+ Water input this time step:       0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water discharge:            0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water input:                0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Enthalpy discharge this time step:  0.976599E+01 MJ (0.226065E-03 MJ/s)
+ Enthalpy input this time step:      0.976276E+01 MJ (0.225990E-03 MJ/s)
+ Total enthalpy discharge:           0.195275E+02 MJ (0.226013E-03 MJ/s)
+ Total enthalpy input:               0.195300E+02 MJ (0.226041E-03 MJ/s)
+
+ Net kg water discharge (total out-total in):   0.000000E+00
+ Net MJ energy discharge (total out-total in):  -0.246227E-02
+ Conservation Errors:   0.000000E+00 (mass),  -0.327690E-09 (energy)
+*********************************************************************
+ Time Step        13
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+     0.136892539E-01      5.00000000        0.924531250    
+ Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+
+                    Equation Performance
+ Number of N-R Iterations:          2
+ Avg # of Linear Equation Solver Iterations:   1.0
+ Number of Active Nodes:       102.
+ Total Number of Iterations, N-R:         26 , Solver:         25
+ Phase Changes This Time Step:        0 Total           0
+ Nodes Liq Phase:        0 change        0
+ Nodes Two Phase:      102 change        0
+ Nodes Gas Phase:         0 change        0
+ Nodes SC Phase:        0 change        0
+ Number of restarted time steps            0
+                    Largest Residuals
+ EQ1 R=  0.8600E-15 node=    101 zone=     2 x= 0.000     y=-.1000E+00 z=1.0000    
+ EQ2 R=  0.2027E-07 node=    102 zone=     2 x= 2.000     y=-.1000E+00 z=1.0000    
+ EQ3 R=  0.1383E-08 node=     99 zone=     0 x= 0.000     y=-.9800E-01 z=1.0000    
+   Node   Equation 1 Residual   Equation 2 Residual
+      1      0.169459E-16          -0.174841E-09
+      3      0.209715E-18          -0.106144E-10
+      5      0.232482E-17           0.284402E-11
+     11     -0.274760E-17           0.150420E-10
+     21      0.454874E-17           0.589212E-11
+     31      0.623089E-17           0.251244E-11
+     41     -0.388448E-17          -0.621608E-11
+     71      0.109335E-16           0.234289E-10
+     81     -0.106263E-16           0.248934E-10
+    101     -0.859989E-15           0.202686E-07
+
+                    Nodal Information (Water)
+                                                  source/sink  E source/sink
+   Node   P (MPa)    E (MJ)    S liq     Temp (C)    (kg/s)       (MJ/s)  State            Zone
+      1   0.9905E-01 0.432E-01 0.308      10.00011   0.000      0.113E-03     2         1 all                     
+      3   0.9909E-01 0.445E-01 0.305      10.30362   0.000       0.00         2         1 all                     
+      5   0.9913E-01 0.457E-01 0.303      10.60702   0.000       0.00         2         1 all                     
+     11   0.9925E-01 0.496E-01 0.298      11.51647   0.000       0.00         2         1 all                     
+     21   0.9945E-01 0.559E-01 0.292      13.02974   0.000       0.00         2         1 all                     
+     31   0.9964E-01 0.622E-01 0.288      14.53971   0.000       0.00         2         1 all                     
+     41   0.9984E-01 0.685E-01 0.286      16.04618   0.000       0.00         2         1 all                     
+     71   0.1005     0.873E-01 0.278      20.54259   0.000       0.00         2         1 all                     
+     81   0.1007     0.936E-01 0.270      22.03300   0.000       0.00         2         1 all                     
+    101   0.1011     0.106     0.223      24.99989   0.000     -0.113E-03     2         1 all    2                
+
+                    Nodal Information (Gas)
+        Partial P   Capillary   Liquid      Gas source/sink
+   Node Gas (MPa)   Pres (MPa)  Pres (MPa)     (kg/s)          Residual R humidity  ngas m frac
+      1  0.9782E-01  0.2180E-01  0.7725E-01  0.5116E-04     -0.6793E-13     1.0000   0.2720E-02
+      3  0.9784E-01  0.2210E-01  0.7700E-01   0.000         -0.2781E-10     1.0000   0.2745E-02
+      5  0.9785E-01  0.2238E-01  0.7675E-01   0.000         -0.1804E-10     1.0000   0.2770E-02
+     11  0.9789E-01  0.2314E-01  0.7611E-01   0.000          0.1113E-10     1.0000   0.2834E-02
+     21  0.9795E-01  0.2408E-01  0.7537E-01   0.000          0.2158E-10     1.0000   0.2907E-02
+     31  0.9800E-01  0.2463E-01  0.7501E-01   0.000          0.2108E-11     1.0000   0.2945E-02
+     41  0.9803E-01  0.2496E-01  0.7489E-01   0.000         -0.8543E-11     1.0000   0.2960E-02
+     71  0.9804E-01  0.2631E-01  0.7414E-01   0.000          0.3583E-10     1.0000   0.3035E-02
+     81  0.9801E-01  0.2777E-01  0.7289E-01   0.000         -0.9668E-11     1.0000   0.3143E-02
+    101  0.9791E-01  0.3938E-01  0.6170E-01 -0.5116E-04      0.1998E-11     1.0000   0.4003E-02
+
+                    Global Gas (Air Only) Balances
+Total air mass at this time (kg):    8.480113E-02
+Total gas inflow (kg):               4.420224E+01
+Total gas discharge (kg):            4.420224E+01
+Gas discharge this time step (kg):   8.173270E+00
+Balance error gas:                   0.242067E-13
+
+                    Internode Fluxes
+ Node1  Node2           X,Y,Z Vapor Flux(kg/sec)          X,Y,Z Liquid Flux (kg/sec)
+                   1         5   (call number,number of pairs)
+     1      3 0.000000E+00 0.515673E-04 0.000000E+00 0.000000E+00 -.391889E-06 0.000000E+00
+     3      5 0.000000E+00 0.515752E-04 0.000000E+00 0.000000E+00 -.361233E-06 0.000000E+00
+    41     43 0.000000E+00 0.517606E-04 0.000000E+00 0.000000E+00 -.133409E-07 0.000000E+00
+    97     99 0.000000E+00 0.521734E-04 0.000000E+00 0.000000E+00 -.908327E-06 0.000000E+00
+    99    101 0.000000E+00 0.521919E-04 0.000000E+00 0.000000E+00 -.100054E-05 0.000000E+00
+ Node1            X,Y,Z      Coordinates  Node2          X,Y,Z        Coordinates
+                   1         5   (call number,number of pairs)
+     1        0.0        0.0        0.0      3        0.0       -0.0        0.0
+     3        0.0       -0.0        0.0      5        0.0       -0.0        0.0
+    41        0.0       -0.0        0.0     43        0.0       -0.0        0.0
+    97        0.0       -0.1        0.0     99        0.0       -0.1        0.0
+    99        0.0       -0.1        0.0    101        0.0       -0.1        0.0
+
+                    Global Mass & Energy Balances
+ Total mass in system at this time:            0.278927E+02 kg
+ Total mass of steam in system at this time:   0.110991E-02 kg
+ Total enthalpy in system at this time:        0.495166E+01 MJ
+
+ Water discharge this time step:   0.000000E+00 kg (0.000000E+00 kg/s)
+ Water input this time step:       0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water discharge:            0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water input:                0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Enthalpy discharge this time step:  0.180573E+02 MJ (0.226056E-03 MJ/s)
+ Enthalpy input this time step:      0.180528E+02 MJ (0.226000E-03 MJ/s)
+ Total enthalpy discharge:           0.976534E+02 MJ (0.226049E-03 MJ/s)
+ Total enthalpy input:               0.976348E+02 MJ (0.226006E-03 MJ/s)
+
+ Net kg water discharge (total out-total in):   0.000000E+00
+ Net MJ energy discharge (total out-total in):   0.185815E-01
+ Conservation Errors:   0.000000E+00 (mass),  -0.644687E-10 (energy)
+*********************************************************************
+ Time Step        14
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+     0.273785079E-01     10.00000000         5.00000000    
+ Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+
+                    Equation Performance
+ Number of N-R Iterations:          3
+ Avg # of Linear Equation Solver Iterations:   1.0
+ Number of Active Nodes:       102.
+ Total Number of Iterations, N-R:         29 , Solver:         28
+ Phase Changes This Time Step:        0 Total           0
+ Nodes Liq Phase:        0 change        0
+ Nodes Two Phase:      102 change        0
+ Nodes Gas Phase:         0 change        0
+ Nodes SC Phase:        0 change        0
+ Number of restarted time steps            0
+                    Largest Residuals
+ EQ1 R=  0.5343E-16 node=    100 zone=     0 x= 2.000     y=-.9800E-01 z=1.0000    
+ EQ2 R=  0.1299E-08 node=    102 zone=     2 x= 2.000     y=-.1000E+00 z=1.0000    
+ EQ3 R=  0.4290E-09 node=     99 zone=     0 x= 0.000     y=-.9800E-01 z=1.0000    
+   Node   Equation 1 Residual   Equation 2 Residual
+      1     -0.285232E-17           0.323356E-12
+      3      0.266059E-17          -0.323590E-12
+      5      0.268606E-17          -0.269831E-12
+     11      0.640932E-17           0.147249E-12
+     21      0.109268E-17           0.662891E-12
+     31      0.294694E-17           0.962668E-13
+     41     -0.204720E-17          -0.620830E-12
+     71     -0.117616E-17           0.974758E-12
+     81      0.572200E-17           0.631006E-11
+    101     -0.299559E-16           0.129923E-08
+
+                    Nodal Information (Water)
+                                                  source/sink  E source/sink
+   Node   P (MPa)    E (MJ)    S liq     Temp (C)    (kg/s)       (MJ/s)  State            Zone
+      1   0.9907E-01 0.431E-01 0.319      10.00011   0.000      0.113E-03     2         1 all                     
+      3   0.9911E-01 0.444E-01 0.317      10.30361   0.000       0.00         2         1 all                     
+      5   0.9915E-01 0.457E-01 0.315      10.60700   0.000       0.00         2         1 all                     
+     11   0.9927E-01 0.495E-01 0.310      11.51643   0.000       0.00         2         1 all                     
+     21   0.9946E-01 0.558E-01 0.302      13.02965   0.000       0.00         2         1 all                     
+     31   0.9966E-01 0.622E-01 0.296      14.53958   0.000       0.00         2         1 all                     
+     41   0.9986E-01 0.685E-01 0.291      16.04604   0.000       0.00         2         1 all                     
+     71   0.1005     0.873E-01 0.273      20.54246   0.000       0.00         2         1 all                     
+     81   0.1007     0.936E-01 0.260      22.03291   0.000       0.00         2         1 all                     
+    101   0.1011     0.107     0.195      24.99989   0.000     -0.113E-03     2         1 all    2                
+
+                    Nodal Information (Gas)
+        Partial P   Capillary   Liquid      Gas source/sink
+   Node Gas (MPa)   Pres (MPa)  Pres (MPa)     (kg/s)          Residual R humidity  ngas m frac
+      1  0.9784E-01  0.2033E-01  0.7874E-01  0.5116E-04      0.6396E-15     1.0000   0.2576E-02
+      3  0.9786E-01  0.2057E-01  0.7854E-01   0.000         -0.6188E-12     1.0000   0.2598E-02
+      5  0.9787E-01  0.2081E-01  0.7834E-01   0.000         -0.5094E-12     1.0000   0.2619E-02
+     11  0.9791E-01  0.2150E-01  0.7777E-01   0.000          0.2617E-12     1.0000   0.2678E-02
+     21  0.9797E-01  0.2251E-01  0.7695E-01   0.000          0.1179E-11     1.0000   0.2763E-02
+     31  0.9802E-01  0.2336E-01  0.7630E-01   0.000          0.1527E-12     1.0000   0.2829E-02
+     41  0.9805E-01  0.2410E-01  0.7577E-01   0.000         -0.1030E-11     1.0000   0.2883E-02
+     71  0.9806E-01  0.2726E-01  0.7321E-01   0.000          0.1492E-11     1.0000   0.3117E-02
+     81  0.9803E-01  0.2976E-01  0.7092E-01   0.000          0.9141E-11     1.0000   0.3309E-02
+    101  0.9793E-01  0.5007E-01  0.5103E-01 -0.5116E-04      0.3410E-12     1.0000   0.4730E-02
+
+                    Global Gas (Air Only) Balances
+Total air mass at this time (kg):    8.480113E-02
+Total gas inflow (kg):               8.840448E+01
+Total gas discharge (kg):            8.840448E+01
+Gas discharge this time step (kg):   4.420224E+01
+Balance error gas:                   0.120625E-13
+
+                    Internode Fluxes
+ Node1  Node2           X,Y,Z Vapor Flux(kg/sec)          X,Y,Z Liquid Flux (kg/sec)
+                   1         5   (call number,number of pairs)
+     1      3 0.000000E+00 0.515672E-04 0.000000E+00 0.000000E+00 -.397198E-06 0.000000E+00
+     3      5 0.000000E+00 0.515752E-04 0.000000E+00 0.000000E+00 -.377614E-06 0.000000E+00
+    41     43 0.000000E+00 0.517606E-04 0.000000E+00 0.000000E+00 -.135996E-06 0.000000E+00
+    97     99 0.000000E+00 0.521733E-04 0.000000E+00 0.000000E+00 -.935288E-06 0.000000E+00
+    99    101 0.000000E+00 0.521917E-04 0.000000E+00 0.000000E+00 -.100970E-05 0.000000E+00
+ Node1            X,Y,Z      Coordinates  Node2          X,Y,Z        Coordinates
+                   1         5   (call number,number of pairs)
+     1        0.0        0.0        0.0      3        0.0       -0.0        0.0
+     3        0.0       -0.0        0.0      5        0.0       -0.0        0.0
+    41        0.0       -0.0        0.0     43        0.0       -0.0        0.0
+    97        0.0       -0.1        0.0     99        0.0       -0.1        0.0
+    99        0.0       -0.1        0.0    101        0.0       -0.1        0.0
+
+                    Global Mass & Energy Balances
+ Total mass in system at this time:            0.278927E+02 kg
+ Total mass of steam in system at this time:   0.111406E-02 kg
+ Total enthalpy in system at this time:        0.493306E+01 MJ
+
+ Water discharge this time step:   0.000000E+00 kg (0.000000E+00 kg/s)
+ Water input this time step:       0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water discharge:            0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water input:                0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Enthalpy discharge this time step:  0.976536E+02 MJ (0.226050E-03 MJ/s)
+ Enthalpy input this time step:      0.976350E+02 MJ (0.226007E-03 MJ/s)
+ Total enthalpy discharge:           0.195307E+03 MJ (0.226050E-03 MJ/s)
+ Total enthalpy input:               0.195270E+03 MJ (0.226007E-03 MJ/s)
+
+ Net kg water discharge (total out-total in):   0.000000E+00
+ Net MJ energy discharge (total out-total in):   0.371753E-01
+ Conservation Errors:   0.000000E+00 (mass),  -0.252362E-10 (energy)
+*********************************************************************
+ Time Step        19
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+      1.41951403          518.477500         262.440000    
+ Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+
+                    Equation Performance
+ Number of N-R Iterations:          2
+ Avg # of Linear Equation Solver Iterations:   1.0
+ Number of Active Nodes:       102.
+ Total Number of Iterations, N-R:         45 , Solver:         44
+ Phase Changes This Time Step:        0 Total           0
+ Nodes Liq Phase:        0 change        0
+ Nodes Two Phase:      102 change        0
+ Nodes Gas Phase:         0 change        0
+ Nodes SC Phase:        0 change        0
+ Number of restarted time steps            0
+                    Largest Residuals
+ EQ1 R=  0.4901E-15 node=    100 zone=     0 x= 2.000     y=-.9800E-01 z=1.0000    
+ EQ2 R=  0.1777E-06 node=    101 zone=     2 x= 0.000     y=-.1000E+00 z=1.0000    
+ EQ3 R=  0.3387E-08 node=     99 zone=     0 x= 0.000     y=-.9800E-01 z=1.0000    
+   Node   Equation 1 Residual   Equation 2 Residual
+      1      0.298687E-17           0.469681E-11
+      3     -0.492936E-17          -0.182729E-13
+      5      0.360452E-17          -0.168737E-13
+     11      0.608314E-17          -0.893156E-14
+     21      0.833724E-17           0.244382E-13
+     31     -0.501222E-17           0.974379E-13
+     41     -0.688406E-17           0.241695E-12
+     71     -0.113616E-17           0.268226E-11
+     81      0.287183E-17           0.784591E-11
+    101     -0.116108E-16          -0.177727E-06
+
+                    Nodal Information (Water)
+                                                  source/sink  E source/sink
+   Node   P (MPa)    E (MJ)    S liq     Temp (C)    (kg/s)       (MJ/s)  State            Zone
+      1   0.9914E-01 0.430E-01 0.357      10.00011   0.000      0.113E-03     2         1 all                     
+      3   0.9918E-01 0.443E-01 0.355      10.30358   0.000       0.00         2         1 all                     
+      5   0.9922E-01 0.455E-01 0.353      10.60693   0.000       0.00         2         1 all                     
+     11   0.9934E-01 0.493E-01 0.348      11.51627   0.000       0.00         2         1 all                     
+     21   0.9954E-01 0.557E-01 0.339      13.02934   0.000       0.00         2         1 all                     
+     31   0.9974E-01 0.620E-01 0.328      14.53917   0.000       0.00         2         1 all                     
+     41   0.9994E-01 0.684E-01 0.316      16.04555   0.000       0.00         2         1 all                     
+     71   0.1005     0.874E-01 0.263      20.54204   0.000       0.00         2         1 all                     
+     81   0.1008     0.938E-01 0.233      22.03261   0.000       0.00         2         1 all                     
+    101   0.1012     0.161     0.627E-02  24.99989   0.000     -0.113E-03     2         1 all    2                
+
+                    Nodal Information (Gas)
+        Partial P   Capillary   Liquid      Gas source/sink
+   Node Gas (MPa)   Pres (MPa)  Pres (MPa)     (kg/s)          Residual R humidity  ngas m frac
+      1  0.9792E-01  0.1654E-01  0.8260E-01  0.5116E-04      0.3831E-14     1.0000   0.2187E-02
+      3  0.9793E-01  0.1669E-01  0.8250E-01   0.000         -0.4611E-13     1.0000   0.2201E-02
+      5  0.9795E-01  0.1684E-01  0.8239E-01   0.000         -0.4249E-13     1.0000   0.2215E-02
+     11  0.9799E-01  0.1732E-01  0.8202E-01   0.000         -0.1778E-13     1.0000   0.2260E-02
+     21  0.9804E-01  0.1823E-01  0.8130E-01   0.000          0.7131E-13     1.0000   0.2344E-02
+     31  0.9809E-01  0.1934E-01  0.8039E-01   0.000          0.2484E-12     1.0000   0.2446E-02
+     41  0.9812E-01  0.2074E-01  0.7920E-01   0.000          0.5569E-12     1.0000   0.2570E-02
+     71  0.9813E-01  0.2902E-01  0.7153E-01   0.000          0.3939E-11     1.0000   0.3267E-02
+     81  0.9810E-01  0.3628E-01  0.6447E-01   0.000          0.8542E-11     1.0000   0.3821E-02
+    101  0.9800E-01   13.93      -13.83     -0.5116E-04      0.1791E-11     1.0000   0.1536    
+
+                    Global Gas (Air Only) Balances
+Total air mass at this time (kg):    8.480113E-02
+Total gas inflow (kg):               4.583573E+03
+Total gas discharge (kg):            4.583573E+03
+Gas discharge this time step (kg):   2.320087E+03
+Balance error gas:                   0.199984E-15
+
+                    Internode Fluxes
+ Node1  Node2           X,Y,Z Vapor Flux(kg/sec)          X,Y,Z Liquid Flux (kg/sec)
+                   1         5   (call number,number of pairs)
+     1      3 0.000000E+00 0.515669E-04 0.000000E+00 0.000000E+00 -.410316E-06 0.000000E+00
+     3      5 0.000000E+00 0.515749E-04 0.000000E+00 0.000000E+00 -.418360E-06 0.000000E+00
+    41     43 0.000000E+00 0.517607E-04 0.000000E+00 0.000000E+00 -.605847E-06 0.000000E+00
+    97     99 0.000000E+00 0.521726E-04 0.000000E+00 0.000000E+00 -.102373E-05 0.000000E+00
+    99    101 0.000000E+00 0.521909E-04 0.000000E+00 0.000000E+00 -.104289E-05 0.000000E+00
+ Node1            X,Y,Z      Coordinates  Node2          X,Y,Z        Coordinates
+                   1         5   (call number,number of pairs)
+     1        0.0        0.0        0.0      3        0.0       -0.0        0.0
+     3        0.0       -0.0        0.0      5        0.0       -0.0        0.0
+    41        0.0       -0.0        0.0     43        0.0       -0.0        0.0
+    97        0.0       -0.1        0.0     99        0.0       -0.1        0.0
+    99        0.0       -0.1        0.0    101        0.0       -0.1        0.0
+
+                    Global Mass & Energy Balances
+ Total mass in system at this time:            0.278927E+02 kg
+ Total mass of steam in system at this time:   0.113018E-02 kg
+ Total enthalpy in system at this time:        0.486273E+01 MJ
+
+ Water discharge this time step:   0.000000E+00 kg (0.000000E+00 kg/s)
+ Water input this time step:       0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water discharge:            0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water input:                0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Enthalpy discharge this time step:  0.512514E+04 MJ (0.226028E-03 MJ/s)
+ Enthalpy input this time step:      0.512514E+04 MJ (0.226028E-03 MJ/s)
+ Total enthalpy discharge:           0.101253E+05 MJ (0.226029E-03 MJ/s)
+ Total enthalpy input:               0.101252E+05 MJ (0.226027E-03 MJ/s)
+
+ Net kg water discharge (total out-total in):   0.000000E+00
+ Net MJ energy discharge (total out-total in):   0.107513E+00
+ Conservation Errors:   0.000000E+00 (mass),  -0.500797E-11 (energy)
+*********************************************************************
+ Time Step        24
+
+                    Timing Information
+           Years              Days         Step Size (Days)
+      27.3785079         10000.00000         1608.32250    
+ Cpu Sec for Time Step =   0.000     Current Total =     0.000    
+
+                    Equation Performance
+ Number of N-R Iterations:          2
+ Avg # of Linear Equation Solver Iterations:   0.5
+ Number of Active Nodes:        51.
+ Total Number of Iterations, N-R:         55 , Solver:         50
+ Phase Changes This Time Step:        0 Total           0
+ Nodes Liq Phase:        0 change        0
+ Nodes Two Phase:      102 change        0
+ Nodes Gas Phase:         0 change        0
+ Nodes SC Phase:        0 change        0
+ Number of restarted time steps            0
+                    Largest Residuals
+ EQ1 R=  0.4862E-16 node=     99 zone=     0 x= 0.000     y=-.9800E-01 z=1.0000    
+ EQ2 R=  0.1125E-08 node=     99 zone=     0 x= 0.000     y=-.9800E-01 z=1.0000    
+ EQ3 R=  0.2523E-10 node=     94 zone=     0 x= 2.000     y=-.9200E-01 z=1.0000    
+   Node   Equation 1 Residual   Equation 2 Residual
+      1     -0.382278E-17          -0.882183E-11
+      3      0.557026E-17          -0.661804E-11
+      5      0.686387E-17          -0.899092E-11
+     11      0.567114E-17          -0.882359E-11
+     21      0.812162E-18          -0.972558E-11
+     31      0.604078E-17          -0.995271E-11
+     41      0.584781E-17          -0.990605E-11
+     71      0.410795E-17          -0.491708E-11
+     81     -0.153609E-17           0.439240E-11
+    101     -0.150958E-16          -0.577164E-09
+
+                    Nodal Information (Water)
+                                                  source/sink  E source/sink
+   Node   P (MPa)    E (MJ)    S liq     Temp (C)    (kg/s)       (MJ/s)  State            Zone
+      1   0.9914E-01 0.430E-01 0.357      10.00011   0.000      0.113E-03     2         1 all                     
+      3   0.9918E-01 0.443E-01 0.355      10.30358   0.000       0.00         2         1 all                     
+      5   0.9922E-01 0.455E-01 0.353      10.60693   0.000       0.00         2         1 all                     
+     11   0.9934E-01 0.493E-01 0.348      11.51627   0.000       0.00         2         1 all                     
+     21   0.9954E-01 0.557E-01 0.339      13.02934   0.000       0.00         2         1 all                     
+     31   0.9974E-01 0.620E-01 0.328      14.53917   0.000       0.00         2         1 all                     
+     41   0.9994E-01 0.684E-01 0.316      16.04555   0.000       0.00         2         1 all                     
+     71   0.1005     0.874E-01 0.263      20.54204   0.000       0.00         2         1 all                     
+     81   0.1008     0.938E-01 0.233      22.03261   0.000       0.00         2         1 all                     
+    101   0.1012     0.163     0.611E-02  24.99989   0.000     -0.113E-03     2         1 all    2                
+
+                    Nodal Information (Gas)
+        Partial P   Capillary   Liquid      Gas source/sink
+   Node Gas (MPa)   Pres (MPa)  Pres (MPa)     (kg/s)          Residual R humidity  ngas m frac
+      1  0.9792E-01  0.1654E-01  0.8261E-01  0.5116E-04      0.3791E-15     1.0000   0.2187E-02
+      3  0.9793E-01  0.1668E-01  0.8250E-01   0.000          0.9043E-13     1.0000   0.2201E-02
+      5  0.9795E-01  0.1684E-01  0.8239E-01   0.000          0.1825E-12     1.0000   0.2215E-02
+     11  0.9799E-01  0.1732E-01  0.8202E-01   0.000          0.2875E-12     1.0000   0.2259E-02
+     21  0.9804E-01  0.1823E-01  0.8131E-01   0.000          0.2252E-12     1.0000   0.2344E-02
+     31  0.9809E-01  0.1934E-01  0.8039E-01   0.000          0.8907E-13     1.0000   0.2445E-02
+     41  0.9812E-01  0.2073E-01  0.7920E-01   0.000         -0.1101E-12     1.0000   0.2570E-02
+     71  0.9813E-01  0.2901E-01  0.7153E-01   0.000         -0.1872E-11     1.0000   0.3266E-02
+     81  0.9810E-01  0.3628E-01  0.6447E-01   0.000         -0.5058E-11     1.0000   0.3821E-02
+    101  0.9800E-01   14.09      -13.99     -0.5116E-04     -0.4707E-14     1.0000   0.1570    
+
+                    Global Gas (Air Only) Balances
+Total air mass at this time (kg):    8.480113E-02
+Total gas inflow (kg):               8.840448E+04
+Total gas discharge (kg):            8.840448E+04
+Gas discharge this time step (kg):   1.421829E+04
+Balance error gas:                   0.199984E-15
+
+                    Internode Fluxes
+ Node1  Node2           X,Y,Z Vapor Flux(kg/sec)          X,Y,Z Liquid Flux (kg/sec)
+                   1         5   (call number,number of pairs)
+     1      3 0.000000E+00 0.515669E-04 0.000000E+00 0.000000E+00 -.410320E-06 0.000000E+00
+     3      5 0.000000E+00 0.515749E-04 0.000000E+00 0.000000E+00 -.418373E-06 0.000000E+00
+    41     43 0.000000E+00 0.517607E-04 0.000000E+00 0.000000E+00 -.606013E-06 0.000000E+00
+    97     99 0.000000E+00 0.521726E-04 0.000000E+00 0.000000E+00 -.102383E-05 0.000000E+00
+    99    101 0.000000E+00 0.521909E-04 0.000000E+00 0.000000E+00 -.104292E-05 0.000000E+00
+ Node1            X,Y,Z      Coordinates  Node2          X,Y,Z        Coordinates
+                   1         5   (call number,number of pairs)
+     1        0.0        0.0        0.0      3        0.0       -0.0        0.0
+     3        0.0       -0.0        0.0      5        0.0       -0.0        0.0
+    41        0.0       -0.0        0.0     43        0.0       -0.0        0.0
+    97        0.0       -0.1        0.0     99        0.0       -0.1        0.0
+    99        0.0       -0.1        0.0    101        0.0       -0.1        0.0
+
+                    Global Mass & Energy Balances
+ Total mass in system at this time:            0.278927E+02 kg
+ Total mass of steam in system at this time:   0.113019E-02 kg
+ Total enthalpy in system at this time:        0.486269E+01 MJ
+
+ Water discharge this time step:   0.000000E+00 kg (0.000000E+00 kg/s)
+ Water input this time step:       0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water discharge:            0.000000E+00 kg (0.000000E+00 kg/s)
+ Total water input:                0.000000E+00 kg (0.000000E+00 kg/s)
+
+ Enthalpy discharge this time step:  0.314086E+05 MJ (0.226028E-03 MJ/s)
+ Enthalpy input this time step:      0.314086E+05 MJ (0.226028E-03 MJ/s)
+ Total enthalpy discharge:           0.195288E+06 MJ (0.226028E-03 MJ/s)
+ Total enthalpy input:               0.195288E+06 MJ (0.226028E-03 MJ/s)
+
+ Net kg water discharge (total out-total in):   0.000000E+00
+ Net MJ energy discharge (total out-total in):   0.107372E+00
+ Conservation Errors:   0.000000E+00 (mass),  -0.900927E-09 (energy)
+
+
+ simulation ended: days  10000.0000000000000000000     timesteps    24
+
+
+ total N-R iterations =         55
+ total solver iterations =         50
+
+
+ total code time(timesteps) =      0.000000
+
+ number of unique property calcs         8000
+ total number of prossible calls         8160
+ fraction of calcs to total calls    0.980
+
+
+ ****---------------------------------------------------------****
+ **** This program for                                        ****
+ ****   Finite Element Heat and Mass Transfer in porous media ****
+ ****---------------------------------------------------------****
+ ****               Version  : FEHM3.6_VER2                   ****
+ ****               End Date : 04/18/2024                     ****
+ ****                   Time : 14:49:45                       ****
+ ****---------------------------------------------------------****

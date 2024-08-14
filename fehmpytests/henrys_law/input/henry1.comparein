@@ -1,0 +1,14 @@
+1-D Henry's Law Species
+Comparison of Model and Analytical Solution for Concentration vs Time
+Air Movement Through Stagnant Water
+tracer
+output/henry1.trc
+input/henry1_out.analyt
+output/henry1.comp
+1			1-D
+1			Coordinate position
+1			Specie 
+375.00001 86400. 0. 1.	Translate X1, Scale X1, Translate Y1, Scale Y1 
+0. 1. 0. 1.		Translate X2, Scale X2, Translate Y2, Scale Y2
+1. 1000. 0.10		Low X, high X, minimum Y
+.FALSE.			Print arrays

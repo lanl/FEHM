@@ -1,0 +1,142 @@
+***** Test Suite 3.1: TEST Henry's Law with reaction  (old 3.3)*******
+#    The same two phase simulation used in test suite 2 was used 
+#  for the following simulation.  These runs are designed to 
+#  test whether the chemical reaction portion of the code works
+#  for a Henry's law species.
+#    See Bruce for full documentation
+#  Test Suite 3.2 was run again but the reaction is run in the 
+#  reverse direction to confirm the reverse reaction capability
+#  of the reaction module.  Test suite 3.2 and 3.3 should produce
+#  identical breakthrough curves (except for round off error).
+node
+  1
+  201
+perm
+  1  402 1 1.e-12 1.e-12 1.e-12
+000
+rock
+  1  402 1    2500.   1000.   0.05
+000
+rlp
+   1   0.0 0.6 0.3 0.0 0.0  0.0  0.0
+000
+  1  402 1    1
+000
+cond
+  1  402 1  1.73   1.73   1.73
+000
+pres
+  1  402 1   .1     0.5   2
+000
+airwater
+   -2
+   20.0   0.1
+flow
+  1  402 201   -1.e-4     1.   0.
+201  402 201    1.e-4     1.   0.
+000
+sol
+    1    -1
+#cont
+#  999999999999  1.0
+ctrl
+   40   1.e-8   8
+   1   402   1   1
+000
+   1.0   0.0   0.75
+   10000   2.0  .01   2000.0
+1   0
+time
+   25.0  106.   5000   1   9999   01
+000
+trac
+0. 1. 1.e-8 .5
+100. 106. 100. 106.
+10000 1.0 2.9e-3 5.8e-3
+2
+2
+0 0 0 1  1.e-9 .033333 .033333 .033333
+0 0 0 1  1.e-9 .033333 .033333 .033333
+
+1 402 1 1
+
+1 0 0
+1 402 1 0.
+
+1 402 201 1. 100. 109.
+
+2
+0 0 0 1  1.e-9 .033333 .033333 .033333
+0 0 0 1  1.e-9 .033333 .033333 .033333
+
+1 402 1 1
+
+1 134.0127 0
+1 402 1 0.
+
+1 402 201 1. 100. 109.
+
+rxn
+** NCPLX,NUMRXN
+         0, 2
+** Coupling of the aqueous components (dRi/dUj)
+2
+1 0
+0 1
+** IDCPNT(IC),CPNTNAM(IC),IFXCONC(IC),CPNTPRT(IC) (comp,name,cond.; NCPNT rows)
+    1     sp1    1      0    1.e-9
+    2     sp2    1      0    1.e-9
+** IDCPLX(IX), CPLXNAM(IX),CPLXPRT(IX) (ID # and name of complex, NCPLX rows)
+** IDIMM(IM), IMMNAM(IM),IMMPRT(IM)(ID # and name of immobile spec, NIMM rows)
+** IDVAP(IV), VAPNAM(IM),VAPPRT(IV) (ID # and name of vapor species, NVAP rows)
+** Skip nodes
+0
+** RSDMAX
+   1.0e-10    -1
+******  Chemical reaction information  ********
+** LOGKEQ (=0 if stability constants are given as K, =1 if given as log(K))
+** CKEQ(IX), HEQ(IX) (Stability constants and Enthalpys, NCPLX rows)
+** STOIC(IX,IC) (Stoichiometric coeff: NCPLX rows, NCPNT columns)
+** Group12- IDRXN type 5 DECAY REACTION   RXN #1: H3O - >  **
+         5
+** Group 13 Where does the reaction take place? **
+   1 0 0
+
+** GROUP 14   HALF LIFE (years)
+2.746e-3
+** Group 15 RXNTYPE
+1
+** GROUP 16  Parent Daughter
+    1      0
+** Group12- IDRXN type 5 DECAY REACTION   RXN #1: H3O - >  **
+         5
+** Group 13 Where does the reaction take place? **
+   1 0 0
+
+** GROUP 14   HALF LIFE (years)
+5.491e-3
+** Group 15 RXNTYPE
+1
+** GROUP 16  Parent Daughter
+    2      0
+stop
+rxn 
+4 0
+0 0 8.0e-6 0 
+0 0 4.0e-6 0 
+0 0 4.0e-6 0 
+0 0 8.0e-6 0  
+-1 0 
+0 -1 
+0 -1 
+0 0 
+-1 0 
+0 -1 
+0 -1 
+0 0
+
+1 1 
+1 1 
+1 -1 
+1 1 
+stop

@@ -1,0 +1,8 @@
+input: ../input/heat3d.in
+grida: ../input/heat3d_ref.finv.geom
+outp: heat3d_ref.finv.out
+
+root: heat3d_ref.finv
+
+none
+0

@@ -1,0 +1,9 @@
+output/solute_out2.analyt
+Analytical Solution for Henry's Law - water movement, sorption
+30.			Peclet number
+1.25e5			Mean residence time, seconds
+0			Injection flag
+1.e3			Delta simulation time, seconds
+8.e5			Final simulation time, seconds
+1.			Retardation factor
+0.			Rate constant

@@ -8,7 +8,7 @@ node
   61
   11 22 66  110 121
 cont
-tec 1000 10.
+tecplot 1000 10.
 geom
 temperature
 heatflux

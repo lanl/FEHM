@@ -1,0 +1,8 @@
+input: ../input/heat3d.in
+grida: ../input/heat3d_mix.geom
+outp: heat3d_mix.out
+
+root: heat3d_mix
+
+none
+0

@@ -1,4 +1,0 @@
-TITLE = "FEHM3.6_VER2                    04/18/2024  15:11:25"
-variables = " Time (days)" "    Node       1" "    Node       3" "    Node       5" "    Node       7" "    Node       9" "    Node      11" 
-text X=50.0 Y=95.0 AN=center T="Unsaturated Diffusion tests"
-text X=50.0 Y=90.0 AN=center T="Vapor pressure (MPa)"

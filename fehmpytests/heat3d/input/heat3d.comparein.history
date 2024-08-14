@@ -1,0 +1,14 @@
+3-D Heat Conduction Problem
+Comparison of Model and Analytical Solution for Temperature vs Time
+BASE
+history
+output/heatbase.his
+input/heat3dout.analyt_time
+output/heatbase.comp_time
+3			3-D problem
+1			Coordinate position
+4			Temperature
+0. 86400. 0. 1.		Translate X1, Scale X1, Translate X2, Scale X2 
+0. 1. 0. 1.		Translate Y1, Scale Y1, Translate Y2, Scale Y2
+0. 259204. 100.		Low X, high X, minimum Y
+.FALSE.			Print data
