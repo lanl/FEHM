@@ -10,6 +10,11 @@ hero_height: is-hidden
 
 Compares the generated output files with the old files known be correct. All values are tested for a root mean square difference of less than 0.05.
 
+Test Directory: [FEHM/fehmpytests/cellbased](https://github.com/lanl/FEHM/tree/master/fehmpytests/cellbased)
+
+
+### Example File chain.in
+
 <pre>
 
 Problem 1: Check of FEHMN dispersion particle tracking - Pe = 20

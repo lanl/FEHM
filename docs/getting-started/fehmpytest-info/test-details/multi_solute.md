@@ -10,6 +10,10 @@ hero_height: is-hidden
 
 Compares the generated tracer files to old tracer files known to be correct. All concentraction values are tested.
 
+Test Directory: [FEHM/fehmpytests/multi_solute](https://github.com/lanl/FEHM/tree/master/fehmpytests/multi_solute)
+
+
+### Example File multi_solute.in
 <pre>
 
 COMPARE FEHMN and PDREACT: Linear Sorption w/ Surface Exchange  

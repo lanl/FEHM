@@ -10,6 +10,12 @@ hero_height: is-hidden
 
 Compares the generated tracer files to old tracer files known to be correct. All concentraction values are tested.
 
+
+Test Directory: [FEHM/fehmpytests/sorption](https://github.com/lanl/FEHM/tree/master/fehmpytests/sorption)
+
+
+### Example File sorption_trac.in
+
 <pre>
 
 Check of FEHMN against SORBEQ, All isotherms

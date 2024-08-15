@@ -10,6 +10,11 @@ hero_height: is-hidden
 
 Comparison of Richards equation with 2-phase solution Node by node comparison.
 
+Test Directory: [FEHM/fehmpytests/richards](https://github.com/lanl/FEHM/tree/master/fehmpytests/richards)
+
+
+### Example File rich_rlp.dat 
+
 <pre>
 
 NER_DATA March 2008 

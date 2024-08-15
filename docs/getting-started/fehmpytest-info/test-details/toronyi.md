@@ -10,6 +10,11 @@ hero_height: is-hidden
 
 Compares the generated contour files with the old contour files known to be correct. Tests all values at time 2.0.
 
+Test Directory: [FEHM/fehmpytests/toronyi](https://github.com/lanl/FEHM/tree/master/fehmpytests/toronyi)
+
+
+### Example File toronyi.in
+
 <pre>
 
 **** Toronyi Two-Phase Problem ****

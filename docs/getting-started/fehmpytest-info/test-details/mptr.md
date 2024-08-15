@@ -10,6 +10,10 @@ hero_height: is-hidden
 
 Compares the generated ptrk files with the old ptrk files knonw to be correct.
 
+Test Directory: [FEHM/fehmpytests/mptr](https://github.com/lanl/FEHM/tree/master/fehmpytests/mptr)
+
+
+### Example File fehm_test_mptr1.dat 
 <pre>
 
 Present-day mean inf ysw 8/30/2002; Update porosity and rock density gplu 5/8/20

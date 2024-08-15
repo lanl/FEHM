@@ -10,6 +10,11 @@ hero_height: is-hidden
 
 Compares the generated contour files to old contour files known to be correct. Only the pressure values at time 2 are tested.
 
+Test Directory: [FEHM/fehmpytests/theis](https://github.com/lanl/FEHM/tree/master/fehmpytests/theis)
+
+
+### Example File theis.in
+
 <pre>
 
 ****** 1-D Theis solution test (42 nodes, pure water) *****

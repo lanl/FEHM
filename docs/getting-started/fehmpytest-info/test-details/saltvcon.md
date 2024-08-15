@@ -22,6 +22,11 @@ Thermal conductivity of crushed salt from Asse mine:
 
 The excel spreadsheet /information/saltvcon.xlsx contains the associated calculations. 
 
+Test Directory: [FEHM/fehmpytests/saltvcon](https://github.com/lanl/FEHM/tree/master/fehmpytests/saltvcon)
+
+
+### Example File intact.dat 
+
 <pre>
 
 title: 1-d heat pipe calculation               11/28/12

@@ -12,6 +12,11 @@ Compares the generated output files with the old files known to be correct. All 
 
 RLPM subcases were excluded because they caused FEHM to produce too many negative volumes.
 
+Test Directory: [FEHM/fehmpytests/heat_pipe](https://github.com/lanl/FEHM/tree/master/fehmpytests/heat_pipe)
+
+
+### Example File heat_pipe_fdm.dat 
+
 <pre>
 
 title: 1-d heat pipe calculation                5-04-2001

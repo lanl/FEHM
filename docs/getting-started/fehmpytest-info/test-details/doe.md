@@ -10,6 +10,11 @@ hero_height: is-hidden
 
 Compares the generated contour and history files to old contour and history files that are known to be correct. For contour files, only the pressure, temperature, and saturation values at time 3 are tested. For history files, all pressure, temperature, and saturation values are tested.
 
+Test Directory: [FEHM/fehmpytests/doe](https://github.com/lanl/FEHM/tree/master/fehmpytests/doe)
+
+
+### Example File doe_rlp.dat 
+
 <pre>
 
 *** DOE Code Comparison Project, Problem 5, Case A ***

@@ -10,6 +10,11 @@ hero_height: is-hidden
 
 Compares the generated contour files to old contour files known to be correct. The saturation is tested for all times.
 
+Test Directory: [FEHM/fehmpytests/dryout](https://github.com/lanl/FEHM/tree/master/fehmpytests/dryout)
+
+
+### Example File dryout1.in
+
 <pre>
 
 Dry out medium using ngas to flow air through stagnant water

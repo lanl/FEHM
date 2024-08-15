@@ -10,6 +10,11 @@ hero_height: is-hidden
 
 Compares the generated contour and history files to old contour and history file that are known to be correct. For the contour files, only the temperature values at time 2 are tested. For the history files, all temperature values are tested.
 
+Test Directory: [FEHM/fehmpytests/ramey](https://github.com/lanl/FEHM/tree/master/fehmpytests/ramey)
+
+
+### Example File ramey.in
+
 <pre>
 
 ***** Temperature in a Wellbore (Ramey) *****

@@ -10,6 +10,11 @@ hero_height: is-hidden
 
 Compares the generated contour files with the old files known to be correct. Tests times 3-6 for a root mean square difference of less than 0.01.
 
+Test Directory: [FEHM/fehmpytests/baro_vel](https://github.com/lanl/FEHM/tree/master/fehmpytests/baro_vel)
+
+
+### Example File baro_vel.in
+
 <pre>
 Barometric Pumping Test - effects on pore-scale velocity
 #************************************************************************

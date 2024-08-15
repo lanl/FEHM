@@ -10,6 +10,11 @@ hero_height: is-hidden
 
 Compares the generated ptrk files with the old ptrk files known to be correct.
 
+Test Directory: [FEHM/fehmpytests/colloid_filtration](https://github.com/lanl/FEHM/tree/master/fehmpytests/colloid_filtration)
+
+
+### Example File fehm_TSPA_base1.dat 
+
 <pre>
 
 Main data input file for FEHM in TSPA calculations

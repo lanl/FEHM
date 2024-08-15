@@ -10,6 +10,11 @@ hero_height: is-hidden
 
 Compares generated history files to old history files that are known to be correct. Only the density values are tested.
 
+Test Directory: [FEHM/fehmpytests/cden](https://github.com/lanl/FEHM/tree/master/fehmpytests/cden)
+
+
+### Example File static-multi1.dat 
+
 <pre>
 
 ***Compare wellbore module***

@@ -12,6 +12,11 @@ The porosity-permeability function for compacted salt from Cinar et at. (2006) i
 
 Cinar, Y, G Pusch and V Reitenbach (2006) Petrophysical and capillary properties of compacted salt. Transport in Porous Media. 64, p. 199-228, doi: 10.1007/s11242-005-2848-1
 
+Test Directory: [FEHM/fehmpytests/salt_perm_poro](https://github.com/lanl/FEHM/tree/master/fehmpytests/salt_perm_poro)
+
+
+### Example File run.dat 
+
 <pre>
 
 title: 1-d heat pipe calculation               11/28/12

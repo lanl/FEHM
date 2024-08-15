@@ -10,6 +10,10 @@ hero_height: is-hidden
 
 Compares the generated contour files to old contour files that are known to be correct. Only the pressure values at day 2 are tested.
 
+Test Directory: [FEHM/fehmpytests/head](https://github.com/lanl/FEHM/tree/master/fehmpytests/head)
+
+
+### Example File head.dat
 <pre>
 
 Head versus Pressure Test - Head formulation
