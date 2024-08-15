@@ -6,6 +6,13 @@ hero_height: is-hidden
 
 # Avdonin
 
+## Test Directory
+
+[FEHM/fehmpytests/avdonin](https://github.com/lanl/FEHM/tree/master/fehmpytests/avdonin)
+
+
+## Example Input File avdonin.in
+ 
 **Test the Radial Heat and Mass Transfer Problem**
 
 Compares the generated contour and history files to old contour and history files that are known to be correct. For contour files, only the temperature values at time 2 are tested. For history files, all temperature values are tested.
