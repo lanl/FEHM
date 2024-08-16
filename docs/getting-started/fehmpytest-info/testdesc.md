@@ -22,7 +22,7 @@ Run Single Test case:  ```python fehmpytests.py <fehm-path> <test-name>```
 For Developers, Run Full to include tests under development: ```python fehmpytests.py --full <fehm-path>```
 
 
-| TEST CASE NAMES<br>Click for name more info | DESCRIPTIONS |
+| TEST CASE NAMES<br>Click name for more details | DESCRIPTIONS |
 |:--------------------|:---------------------------|
 | [**avdonin**](/test-details/avdonin.md) ```*```|**Test the Radial Heat and Mass Transfer Problem**<br>Compares the generated contour and history files to old contour and history files that are known to be correct. For contour files, only the temperature values at time 2 are tested. For history files, all temperature values are tested.|
 | [**baro_vel**](/test-details/baro_vel.md)|**Test Pore-Scale Velocity in a Homogeneous Media**<br>Compares the generated contour files with the old files known to be correct. Tests times 3-6 for a root mean square difference of less than 0.01.|
@@ -61,7 +61,7 @@ For Developers, Run Full to include tests under development: ```python fehmpytes
 These test cases are under construction or have problems with the input/output files that need to be resolved.
 
 
-| TEST CASE NAMES<br>Click name for more info | Description | Status and Known Issues |
+| TEST CASE NAMES<br>Click name for more details | Description | Status and Known Issues |
 |:---------------------|:-----------------------|:--------------------|
 | [**barometric**](/test-details/barometric.md) ```*```| **Barometric Pumping Test**<br>Barometric Pumping Test Pore-scale Velocity<br>Note VV test in barometric checks output from baro_trans and baro_vel  | add baro_trans and baro_vel seperately |
 | [**boun**](/test-details/boun.md) ```*```|**Test the Boundry Functionality**<br>Compares the generated contour files to old contour files that are known to be correct. Only the pressure and hydraulic head values at time 2 are tested.| compare scripts fail |
