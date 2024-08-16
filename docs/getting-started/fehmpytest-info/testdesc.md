@@ -22,7 +22,7 @@ Run Single Test case:  ```python fehmpytests.py <fehm-path> <test-name>```
 For Developers, Run Full to include tests under development: ```python fehmpytests.py --full <fehm-path>```
 
 
-| TEST CASE NAMES<br>Click for more info | DESCRIPTIONS |
+| TEST CASE NAMES<br>Click for name more info | DESCRIPTIONS |
 |:--------------------|:---------------------------|
 | [**avdonin**](/test-details/avdonin.md) ```*```|**Test the Radial Heat and Mass Transfer Problem**<br>Compares the generated contour and history files to old contour and history files that are known to be correct. For contour files, only the temperature values at time 2 are tested. For history files, all temperature values are tested.|
 | [**baro_vel**](/test-details/baro_vel.md)|**Test Pore-Scale Velocity in a Homogeneous Media**<br>Compares the generated contour files with the old files known to be correct. Tests times 3-6 for a root mean square difference of less than 0.01.|
@@ -33,7 +33,7 @@ For Developers, Run Full to include tests under development: ```python fehmpytes
 | [**dryout**](/test-details/dryout.md) ```*``` |**Test Dry-Out of a Partially Saturated Medium**<br>Compares the generated contour files to old contour files known to be correct. The saturation is tested for all times.|
 | [**evaporation**](/test-details/evaporation.md) ```*``` | **Test the evaporation Macro** <br>Comparison of Changes in Mass with Time |
 | [**fracture_aperture**](/test-details/fracture_aperture.md) ```*``` | Comparison of 3D Wellbore Thermal Stress test results |
-| [**head**](/test-details/head.md) * |**Test Head Pressure Problem**<br>Compares the generated contour files to old contour files that are known to be correct. Only the pressure values at day 2 are tested.|
+| [**head**](/test-details/head.md) ```*``` |**Test Head Pressure Problem**<br>Compares the generated contour files to old contour files that are known to be correct. Only the pressure values at day 2 are tested.|
 | [**heat2d**](/test-details/heat2d.md) ```*``` | **Test heat2d** <br> 2-D Heat Conduction Model |
 | [**heat2d_quad**](/test-details/heat2d_quad.md) ```*``` | **Test the Heat 2D Quad Problem** <br> results in heat2d_quad.00003_hf_node.dat agree with analytical solution |
 | [**heat3d**](/test-details/heat3d.md) ```*``` | **3-D Heat Conduction Problem** <br> Comparison of Model and Analytical Solution for Temperature vs Time |
@@ -45,12 +45,12 @@ For Developers, Run Full to include tests under development: ```python fehmpytes
 | [**potential_energy**](/test-details/potential_energy.md) ```*``` | **Test potential_energy** <br> Comparison of Ratio of Permeabilty Change to Ratio of Change in Flow Rate |
 | [**ramey**](/test-details/ramey.md) ```*``` |**Test Temperature in a Wellbore Problem**<br>Compares the generated contour and history files to old contour and history file that are known to be correct. For the contour files, only the temperature values at time 2 are tested. For the history files, all temperature values are tested.|
 | [**richards**](/test-details/richards.md) ```*``` |**Richards equation test**<br>Comparison of Richards equation with 2-phase solution Node by node comparison.|
-| [**salt_perm_poro**](/test-details/salt_perm_poro.md)|**Test the Salt Permeability and Porosity Macro**<br>The porosity-permeability function for compacted salt from Cinar et at. (2006) is tested using a six node problem with porosities from 0.01 to 0.2. The excel spreadsheet in information/salt-perm-poro.xlsx contains calculations of the perm-poro function.<br><br>Cinar, Y, G Pusch and V Reitenbach (2006) Petrophysical and capillary properties of compacted salt. Transport in Porous Media. 64, p. 199-228, doi: 10.1007/s11242-005-2848-1|
+| [**salt_perm_poro**](/test-details/salt_perm_poro.md)|**Test the Salt Permeability and Porosity Macro**<br>The porosity-permeability function for compacted salt from Cinar et at. (2006) is tested using a six node problem with porosities from 0.01 to 0.2. The excel spreadsheet in information/salt-perm-poro.xlsx contains calculations of the perm-poro function. |
 | [**sorption**](/test-details/sorption.md) ```*``` | **Test One Dimensional Reactive Solute Transport** <br>  Compares the generated tracer files to old tracer files known to be correct. All concentraction values are tested.|
 | [**sptr_btc**](/test-details/sptr_btc.md) ```*``` | **Test sptr_btc** <br> Streamline Particle Tracking Breakthrough Output Test for Default BTC output, Alternate BTC output, Alternate BTC out w/xyz |
 | [**theis**](/test-details/theis.md) ```*``` | **Test Pressure Transient Analysis Problem**<br> Compares the pressure values in generated contour files to old contour files known to be correct.|
 | [**toronyi**](/test-details/toronyi.md) ```*``` | **Test the Toronyi Two-Phase Problem**<br> Comparison of FEHM and Thomas & Pierson Solution for Final Saturation. Coordinate grid and FDM grid node comparisons|
-| [**vapor_extraction**](/test-details/vapor_extraction.md) * | **Test vapor_extraction**<br> Comparison of Model and Analytical Solution for Vapor Pressure vs Position|
+| [**vapor_extraction**](/test-details/vapor_extraction.md) ```*``` | **Test vapor_extraction**<br> Comparison of Model and Analytical Solution for Vapor Pressure vs Position|
 | [**wvtest**](/test-details/wvtest.md) ```*``` | **Unsaturated Diffusion test**<br> 1)  Water vapor mass flux via diffusion 2)  Calculation of the water vapor diffusion coefficient |
 | [**rad_decay**](/test-details/rad_decay.md)| **Test radioactive decay option in rxn macro**<br> The simulation is a batch reactor without flow and comparison is made to the Bateman equation. Decay of 135I->135Xe->135Cs is modeled. The test ensures that FEHM matches the bateman equation within 10% relative error for all concentrations greater than 1e-6 moles/kg vapor. |
 
