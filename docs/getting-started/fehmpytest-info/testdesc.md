@@ -63,7 +63,7 @@ These test cases are under construction or have problems with the input/output f
 
 | TEST CASE NAMES<br>Click name for more info | Description | Status and Known Issues |
 |:---------------------|:-----------------------|:--------------------|
-| [**barometric**](/test-details/barometric.md) ```*```| **Barometric Pumping Test**<br>Barometric Pumping Test Pore-scale Velocity| VV test not working, on hold re GAZ |
+| [**barometric**](/test-details/barometric.md) ```*```| **Barometric Pumping Test**<br>Barometric Pumping Test Pore-scale Velocity<br>Note VV test in barometric checks output from baro_trans and baro_vel  | add baro_trans and baro_vel seperately |
 | [**boun**](/test-details/boun.md) ```*```|**Test the Boundry Functionality**<br>Compares the generated contour files to old contour files that are known to be correct. Only the pressure and hydraulic head values at time 2 are tested.| compare scripts fail |
 | [**cellbased**](/test-details/cellbased.md) ```*``` |**Test the Cell-Based Particle Tracking Model**<br>Compares the generated output files with the old files known be correct. All values are tested for a root mean square difference of less than 0.05.| compare scripts fail |
 | [**dispersion**](/test-details/dispersion.md)| New Analytic Test from Xiang | Needs python driver |
