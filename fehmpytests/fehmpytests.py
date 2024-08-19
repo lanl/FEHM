@@ -19,6 +19,7 @@ import re
 import numpy as np
 import glob
 import itertools
+import warnings
 from subprocess import call
 from subprocess import PIPE
 from contextlib import contextmanager
@@ -35,6 +36,9 @@ except ImportError as err:
 
 #Suppresses tracebacks
 __unittest = True 
+
+# Suspress Future Warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 class fehmTest(unittest.TestCase):
     """
