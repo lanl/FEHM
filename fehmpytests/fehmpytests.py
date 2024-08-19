@@ -321,7 +321,7 @@ class fehmTest(unittest.TestCase):
 
     def cflxz(self):
         """
-        **cflxz_test**
+        **cflxz**
         
         Concentration Zone Flux Test                                                    
         Comparison of FEHm with 1-D Difusion Model  
@@ -333,7 +333,7 @@ class fehmTest(unittest.TestCase):
         #arguments = {}
         #arguments['variables'] = ['density']
          
-        self.test_case('cflxz_test')
+        self.test_case('cflxz')
 
     def heat3d(self):
         """
