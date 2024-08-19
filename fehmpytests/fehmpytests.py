@@ -860,18 +860,20 @@ class fehmTest(unittest.TestCase):
                     compare_pattern = (os.path.join('..', 'compare', '*' )+ subcase + filetype)
                     found_files = glob.glob(compare_pattern)
 
-                    #print('Checking for files with pattern: ', compare_pattern)
-                    #print('Found files: ', found_files)
-                    #print('Number of found files: ', len(found_files))
+                    if args['verbose'] >= 3:
+                        print(f'Checking for files with pattern: {compare_pattern}. Found {len(found_files)} files.')
+                        #print('Found files: ', found_files)
 
                     if len(found_files) > 0:
                         #print(f'\n\nfound {len(found_files)} files. Continuing to test template')
                         test_method = self._test_template(filetype, subcase, parameters)
                         test_method()
-                        #print(f'Test method executed for filetype: {filetype} on files: {found_files}')
+                        if args['verbose'] >= 3:
+                            print(f'Test method executed for filetype: {filetype} on files: {found_files}')
                         test_flag = True
                     else:
-                        #print('Test method NOT executed for filetype: ', filetype)
+                        if args['verbose'] >= 3:
+                            print(f'Test method NOT executed for filetype: {filetype}')
                         pass
 
                 os.chdir('..')
@@ -921,9 +923,10 @@ class fehmTest(unittest.TestCase):
         def contour_case():      
             #Find the difference between the old and new
             #print('Contour Case')
-            f_old = fpost.fcontour(os.path.join('..','compare','*')+subcase+'.'+filetype)
-            f_new = fpost.fcontour('*'+subcase+'.'+filetype)
-            f_dif = fpost.fdiff(f_new, f_old)
+            verbose = args['verbose']
+            f_old = fpost.fcontour(verbose, (os.path.join('..','compare','*')+subcase+'.'+filetype))
+            f_new = fpost.fcontour(verbose, ('*'+subcase+'.'+filetype))
+            f_dif = fpost.fdiff(verbose, f_new, f_old)
                 
             msg = 'Incorrect %s at time %s.'
 
@@ -975,9 +978,10 @@ class fehmTest(unittest.TestCase):
                 self.fail("Missing common nodes in compare and output contour files, no test performed")
         def history_case():
             #Find the difference between the old and new
-            f_old = fpost.fhistory(os.path.join('..','compare','*')+subcase+filetype)
-            f_new = fpost.fhistory('*'+subcase+filetype)
-            f_dif = fpost.fdiff(f_new, f_old)
+            verbose = args['verbose']
+            f_old = fpost.fhistory(verbose, (os.path.join('..','compare','*')+subcase+filetype))
+            f_new = fpost.fhistory(verbose, ('*'+subcase+filetype))
+            f_dif = fpost.fdiff(verbose, f_new, f_old)
 
             #If no pre-specified variables, grab them from f_dif.         
             if len(values['variables']) == 0:
@@ -1024,13 +1028,13 @@ class fehmTest(unittest.TestCase):
             if not test_flag:
                 self.fail("Missing common nodes in compare and output history files, no test performed")
 
-        #### ADDING FOR COMPARISONS ####
         def comparison_case():
             #Find the difference between the old and new
             #print('---- at comparison in fhmpytests ----')
-            f_old = fpost.fcomparison(os.path.join('..','compare','*')+subcase+filetype)
-            f_new = fpost.fcomparison('*'+subcase+filetype)
-            f_dif = fpost.fdiff(f_new, f_old)
+            verbose = args['verbose']
+            f_old = fpost.fcomparison(verbose, (os.path.join('..','compare','*')+subcase+filetype))
+            f_new = fpost.fcomparison(verbose, ('*'+subcase+filetype))
+            f_dif = fpost.fdiff(verbose, f_new, f_old)
 
             total=0
 
@@ -1052,14 +1056,13 @@ class fehmTest(unittest.TestCase):
             
             if not test_flag:
                 self.fail("There are significant differences between files, no test performed")
-
-        ####################################################
                     
         def tracer_case():
             #Find the difference between the old and new
-            f_old = fpost.ftracer(os.path.join('..','compare','*')+subcase+filetype) 
-            f_new = fpost.ftracer('*'+subcase+filetype)
-            f_dif = fpost.fdiff(f_new, f_old)
+            verbose = args['verbose']
+            f_old = fpost.ftracer(verbose, (os.path.join('..','compare','*')+subcase+filetype)) 
+            f_new = fpost.ftracer(verbose, ('*'+subcase+filetype))
+            f_dif = fpost.fdiff(verbose, f_new, f_old)
             
             #If no pre-specified variables, grab them from f_dif.         
             if len(values['variables']) == 0:
@@ -1109,11 +1112,12 @@ class fehmTest(unittest.TestCase):
             
         def output_case():
             #Find difference between old and new file assume 1 file per subcase.
+            verbose = args['verbose']
             old_filename = glob.glob(os.path.join('..','compare','*')+subcase+filetype)[0]
             new_filename = glob.glob('*'+subcase+filetype)[0]
-            f_old = fpost.foutput(old_filename)
-            f_new = fpost.foutput(new_filename)
-            f_dif = fpost.fdiff(f_new, f_old)
+            f_old = fpost.foutput(verbose, old_filename)
+            f_new = fpost.foutput(verbose, new_filename)
+            f_dif = fpost.fdiff(verbose, f_new, f_old)
             
             #If no pre-specified variables, grab them from f_dif.         
             if len(values['variables']) == 0:
@@ -1171,9 +1175,10 @@ class fehmTest(unittest.TestCase):
         
         def ptrack_case():
             #Find the difference between the old and new
-            f_old = fpost.fptrk(os.path.join('..','compare','*')+subcase+filetype)
-            f_new = fpost.fptrk('*'+subcase+filetype)  
-            f_dif = fpost.fdiff(f_new, f_old)
+            verbose = args['verbose']
+            f_old = fpost.fptrk(verbose, (os.path.join('..','compare','*')+subcase+filetype))
+            f_new = fpost.fptrk(verbose, ('*'+subcase+filetype)) 
+            f_dif = fpost.fdiff(verbose, f_new, f_old)
             
             msg = 'Incorrect %s.'
             
@@ -1410,6 +1415,8 @@ if __name__ == '__main__':
     group.add_argument('-s', '--solo', help=h, action=a)
     h = "Create a fail statistics file 'fail_log.txt'"
     parser.add_argument('-l', '--log', help=h, action=a)
+    h = "Verbosity level: 0 = No output, 1 = Minimal Output, 2 = Detailed Output, 3 = Developer"
+    parser.add_argument('-v', '--verbose', type=int, choices=[0, 1, 2, 3], default=2, help=h)
     h = "Clean up fehm output files"
     parser.add_argument( '--clean', help=h, action=a)
     #Positional Arguments
@@ -1419,6 +1426,7 @@ if __name__ == '__main__':
     parser.add_argument('testcase', nargs='?', help=h, default=None)
      
     args = vars(parser.parse_args())
+    #print(f'Verbosity level: {args['verbose']}')
     
     exe = os.path.abspath(args['exe'])
     
@@ -1459,11 +1467,6 @@ if __name__ == '__main__':
         log = True
     
     #Run the test suite.    
-    runner = unittest.TextTestRunner(verbosity=2)
+    runner = unittest.TextTestRunner(verbosity=args['verbose'])
     test_suite = suite(mode, test_case, log)
     runner.run(test_suite)
-    
-
-
-
-

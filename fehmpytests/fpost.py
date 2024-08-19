@@ -23,12 +23,12 @@ Public License for more details.
 
 import numpy as np
 import os
+import argparse
 from copy import copy,deepcopy
 import platform
 WINDOWS = platform.system()=='Windows'
 if WINDOWS: slash = '\\'
 else: slash = '/'
-
 
 if True:    # output variable dictionaries defined in here, indented for code collapse
     cont_var_names_avs=dict([
@@ -261,7 +261,7 @@ class fcontour(object):
     This includes file types avs, tec, & surf.
     ****************************************************************
     '''
-    def __init__(self,filename=None,latest=False,first=False,nearest=None):
+    def __init__(self, verbose, filename=None,latest=False,first=False,nearest=None):
         if not isinstance(filename,list):
             self._filename=os_path(filename)
         self._silent = True#dflt.silent
@@ -988,7 +988,7 @@ class fhistory(object):
     This includes file types his & temp.his.
     ****************************************************************
     '''
-    def __init__(self,filename=None,verbose=True):
+    def __init__(self, verbose, filename=None):
         self._filename=None 
         #self._silent = dflt.silent
         self._silent = True
@@ -1217,7 +1217,7 @@ class fzoneflux(fhistory):
     Zone flux history output information object.
     '''
 #   __slots__ = ['_filename','_times','_verbose','_data','_row','_zones','_variables','_keyrows','column_name','num_columns','_nkeys']
-    def __init__(self,filename=None,verbose=True):
+    def __init__(self, verbose, filename=None):
         super(fzoneflux,self).__init__(filename, verbose)
         self._filename=None 
         self._times=[]  
@@ -1376,8 +1376,8 @@ class ftracer(fhistory):
     Derived class of fhistory, for tracer output
     Tracer history output information object.
     '''
-    def __init__(self,filename=None,verbose=True):
-        super(ftracer,self).__init__(filename, verbose)
+    def __init__(self, verbose, filename=None):
+        super(ftracer,self).__init__(verbose, filename)
         self._filename=None 
         self._times=[]  
         self._verbose = verbose
@@ -1407,8 +1407,8 @@ class fptrk(fhistory):
     Derived class of fhistory, for particle tracking output
     Tracer history output information object.
     '''
-    def __init__(self,filename=None,verbose=True):
-        super(fptrk,self).__init__(filename, verbose)
+    def __init__(self, verbose, filename=None):
+        super(fptrk,self).__init__(verbose, filename)
         self._filename=None 
         self._silent = True#dflt.silent
         self._times=[]  
@@ -1464,7 +1464,7 @@ class fcomparison(object):
     Comparing files
     ****************************************************************
     '''
-    def __init__(self, filename=None, verbose=True):
+    def __init__(self, verbose, filename=None):
         self._filename = None 
         self._silent = True
         self._format = ''
@@ -1548,7 +1548,7 @@ class fcomparison(object):
         #print('Processed file: {filename}')
         #print(f'Data for {filename}: {data}')                 
 
-def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes=[], info=[]):
+def fdiff( verbose, in1, in2, format='diff', times=[], variables=[], components=[], nodes=[], info=[]):
     '''
     ****************************************************************
 
@@ -1610,7 +1610,8 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
         #print('in2.files_info: {in2.files_info}')
 
         for (file1, data1), (file2, data2) in zip(in1.files_info, in2.files_info):
-            print(f'\nComparing Files... {file1} with {file2}')
+            if verbose >= 3:
+                print(f'\nComparing Files... {file1} with {file2}')
             #print(f'Type of data1: {type(data1)}, Type of data2: {type(data2)}')
             #print(f'Data1: {data1}')
             #print(f'Data2: {data2}')
@@ -1631,7 +1632,8 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
 
             # Check if arrays are close enough within the tolerance
             if np.allclose(data1_flat, data2_flat, rtol=rtol, atol=atol, equal_nan=True):
-                print(f'Files are EQUAL')
+                if verbose >= 3:
+                    print(f'Files are EQUAL')
                 out._info.append(0)
             else:
                 # Calculate the differences
@@ -1639,7 +1641,8 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
                 max_difference = np.max(difference)
                 
                 if max_difference <= atol + rtol * np.abs(data1_flat).max():
-                    print(f'Files are considered EQUAL within a relative tolerance of:{rtol}, and an absolute tolerance of:{atol}')
+                    if verbose >= 3:
+                        print(f'Files are considered EQUAL within a relative tolerance of:{rtol}, and an absolute tolerance of:{atol}')
                     #print(f'Max difference: {max_difference}\n')
                     out._info.append(0)
                 else:
@@ -1649,8 +1652,9 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
                     # print(f'Differences: {differences}')
                     # print(f'Differences2: {differences2}')
 
-                    print(f'Files are UNEQUAL.')
-                    print(f'Found {len(differences)} differences in {file1} and {file2}.\nDifferences are {differences} and {differences2}')
+                    if verbose >= 3:
+                        print(f'Files are UNEQUAL.')
+                        print(f'Found {len(differences)} differences in {file1} and {file2}.\nDifferences are {differences} and {differences2}')
                     out._info.append(1)
                     
         return out
