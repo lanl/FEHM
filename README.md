@@ -18,7 +18,7 @@ The numerical background of the FEHM computer code can be traced to the early 19
 Download the Https repo to your current directory by running:
 
 ```bash
-git clone https://github.com/lanl/FEHM.gitt
+git clone https://github.com/lanl/FEHM.git
 cd FEHM/
 ```
 
@@ -54,7 +54,7 @@ python fehmpytests.py <FEHM executable path>
 # python fehmpytests.py ../src/xfehm
 
 # Example Windows
-# python fehmpytests.py ../src/PC/x64/release/FEHM3.6_VER2.exe
+# python fehmpytests.py ../src/PC/x64/release/FEHM3.4_VER2.exe
 ```
 
 This will run a series of tests and will look similar to this:
