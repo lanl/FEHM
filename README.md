@@ -4,12 +4,10 @@
 
 [![Build Status](https://travis-ci.org/lanl/FEHM.svg?branch=master)](https://travis-ci.org/lanl/FEHM) [![PyPI](https://img.shields.io/pypi/l/Django.svg)](https://github.com/lanl/FEHM/LICENSE.md)
 
-[![readthedocs](https://img.shields.io/static/v1?label=LaGriT%20Home&message=Read%20online&color=blue&style=for-the-badge&logo=read-the-docs)](https://lagrit.lanl.gov/) <br/>
+[![readthedocs](https://img.shields.io/static/v1?label=Documentation&message=Read%20online&color=blue&style=for-the-badge&logo=read-the-docs)](http://lanl.github.io/FEHM/) <br/>
+[![readthedocs](https://img.shields.io/static/v1?label=FEHM%20Home&message=Read%20online&color=blue&style=for-the-badge&logo=read-the-docs)](https://fehm.lanl.gov/) <br/>
 
 The numerical background of the FEHM computer code can be traced to the early 1970s when it was used to simulate geothermal and hot dry rock reservoirs. The primary use over a number of years was to assist in the understanding of flow fields and mass transport in the saturated and unsaturated zones below the potential Yucca Mountain repository. Today FEHM is used to simulate groundwater and contaminant flow and transport in deep and shallow, fractured and un-fractured porous media throughout the US DOE complex. FEHM has proved to be a valuable asset on a variety of projects of national interest including Environmental Remediation of the Nevada Test Site, the LANL Groundwater Protection Program, geologic CO2 sequestration, Enhanced Geothermal Energy (EGS) programs, Oil and Gas production, Nuclear Waste Isolation, and Arctic Permafrost. Subsurface physics has ranged from single fluid/single phase fluid flow when simulating basin scale groundwater aquifers to complex multifluid/ multi-phase fluid flow that includes phase change with boiling and condensing in applications such as unsaturated zone surrounding nuclear waste storage facility or leakage of CO2/brine through faults or wellbores. The numerical method used in FEHM is the control volume method (CV) for fluid flow and heat transfer equations which allows FEHM to exactly enforce energy/mass conservation; while an option is available to use the finite element (FE) method for displacement equations to obtain more accurate stress calculations. In addition to these standard methods, an option to use FE for flow is available, as well as a simple Finite Difference scheme.
-
-
-#### [FEHM Homepage](https://fehm.lanl.gov) • [FEHM Documentation](http://lanl.github.io/FEHM/) 
 
 ---
 
@@ -26,25 +24,24 @@ cd FEHM/
 
 Next, you will need to create the executable. This is different depending on your operating system.
 
-**Linux/Mac**
+*	**Linux/Mac**
 
-This uses a MakeFile to create an executable.
+	This uses a MakeFile to create an executable.
 
-```bash
-cd src/
-make
-```
-This will create an executable named `xfehm` in the `/src` directory.
+	```bash
+	cd src/
+	```
+	This will create an executable named `xfehm` in the `/src` directory.
 
 
-**Windows**
+*	**Windows**
 
-This requires that you have Visual Studio installed along with Fortran extensions enabled.
+	This requires that you have Visual Studio installed along with Fortran extensions enabled.
 
-1. Using your File Explorer, navigate to the location where you downloaded FEHM.
-2. Navigate to `FEHM/src/PC/`
-3. Double click on the `.vfproj` file. You may need to manually select Visual Studio as the correct program to run it. This will open Visual Studio with the file listed under the Solution Explorer.
-4. Make sure the "Release" and "x64" are selected in the drop downs on the menu bar and then click "Start". This will create an executable in the `/src/x64/release` directory.
+	1. Using your File Explorer, navigate to the location where you downloaded FEHM.
+	2. Navigate to `FEHM/src/PC/`
+	3. Double click on the `.vfproj` file. You may need to manually select Visual Studio as the correct program to run it. This will open Visual Studio with the file listed under the Solution Explorer.
+	4. Make sure the "Release" and "x64" are selected in the drop downs on the menu bar and then click "Start". This will create an executable in the `/src/x64/release` directory.
 
 ### Testing ###
 
@@ -83,15 +80,20 @@ External Collaborators must sign a Contribution Agreement. [Contribution Agreeme
 The following are reminders for FEHM code developers using this repository.
 
 A Git workflow follows these basic steps:
+
 * Make changes to files
 * Test changes by adding them to fehmpytests and running to verify compatibility
 * Add the files (‘stage’ files)
 * ‘Commit’ the staged files
 * Push the commit (containing all modified files) to the central repo
- 
+
+To get started:
+
 1. Clone repo and create executable as above.
  
 2. Let’s say you’ve done some editing. The next step is to add your new test to fehmpytests (if not already there) and run the test suite to confirm that the code works correctly.
+
+To run Tests:
 
 * Add test files under `/fehmpytests`
 * Add Test Case to `fehmpytests.py`
