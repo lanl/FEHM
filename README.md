@@ -2,7 +2,7 @@
 **LANL Software: LA-CC-2012-083  No. C13022**
 **LANL Documents: LA-UR-12-24493**
 
-[![Build Status](https://travis-ci.org/lanl/FEHM.svg?branch=master)](https://travis-ci.org/lanl/FEHM) [![PyPI](https://img.shields.io/pypi/l/Django.svg)](https://github.com/lanl/FEHM/LICENSE.md)
+[![Build Status](https://travis-ci.org/lanl/FEHM.svg?branch=master)](https://travis-ci.org/lanl/FEHM) [![PyPI](https://img.shields.io/pypi/l/Django.svg)](https://github.com/lanl/FEHM/blob/master/LICENSE.md)
 
 [![readthedocs](https://img.shields.io/static/v1?label=Documentation&message=Read%20online&color=blue&style=for-the-badge&logo=read-the-docs)](http://lanl.github.io/FEHM/) <br/>
 [![readthedocs](https://img.shields.io/static/v1?label=FEHM%20Home&message=Read%20online&color=blue&style=for-the-badge&logo=read-the-docs)](https://fehm.lanl.gov/) <br/>
