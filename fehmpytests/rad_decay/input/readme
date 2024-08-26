@@ -1,0 +1,65 @@
+This test case rad_decay is not in the VV Test Suite, it was created for fehmpytests
+This method is different than the majority of tests which uses reference files in compare folder.
+Author Dylan Harp and Michelle Bourret
+
+There are no /compare files used to evaluate the rad_decay results.
+Python is used to create both input and output files, and then evaluate results.
+Files that are read and compared to solution are
+  2093   lines run_135cesium.dat
+  2093   lines run_135iodine.dat
+  2093   lines run_135xenon.dat
+
+Mismatches are read into assert
+print statements were added to report failures or success
+
+fehmpytests.py
+
+Routine copied from python scripts to describe how rad_decay is run and evaluated.
+
+rad_decay in fehmpytests.py
+
+       **Test radioactive decay option in rxn macro**
+
+        The simulation is a batch reactor without flow and comparison is
+        made to the Bateman equation. Decay of 135I->135Xe->135Cs is modeled.
+        The test ensures that FEHM matches the bateman equation within 10%
+        relative error for all concentrations greater than 1e-6 moles/kg vapor.
+
+        H. Bateman. "Solution of a System of Differential Equations Occurring in the
+            Theory of Radio-active Transformations," Proc. Cambridge Phil. Soc. IS,
+            423 (1910) https://archive.org/details/cbarchive_122715_solutionofasystemofdifferentia1843
+
+        .. Authors: Dylan Harp, Michelle Bourret
+        .. Updated May 2016 by Dylan Harp
+        """
+
+...
+
+      # Collect results
+        CI_fehm = np.genfromtxt('run_135iodine.dat',skip_header=4)
+        CXe_fehm = np.genfromtxt('run_135xenon.dat',skip_header=4)
+        CCs_fehm = np.genfromtxt('run_135cesium.dat',skip_header=4)
+        times = CI_fehm[:,0]/365.
+
+        # Run bateman equation
+        thalf = np.array([pars['thalf_I'], pars['thalf_Xe'], 1.])
+        lmbda = np.log(2)/thalf
+        lmbda[2] = 0
+        C0 = np.array([pars['C0_I'], pars['C0_Xe'], pars['C0_Cs']])
+
+        CI_b = bateman(times,[C0[0]],[lmbda[0]])
+        CXe_b = bateman(times,C0[0:2],lmbda[0:2])
+        CCs_b = bateman(times,C0,lmbda)
+
+...
+
+       if CI_fail == 0 and CX_fail == 0 and CC_fail == 0:
+            print('\nSuccessful evaluation of rad_decay.')
+
+        elif CI_fail > 0:
+            print('\nFailures evaluating rad_decay run_135iodine.dat',CI_fail)
+        elif CX_fail > 0:
+            print('\nFailures evaluating rad_decay run_135xenon.dat',CX_fail)
+        elif CC_fail > 0:
+            print('\nFailures evaluating rad_decay run_135cesium.dat',CC_fail)
+
