@@ -1,0 +1,60 @@
+readme notes regarding heat_pipe test case
+Test case constructed from /project/eesdev/FEHM/VV_TESTS/VERIFICATION_V3.4win_64bit_runs_050724/heat_pipe
+
+uses heat_pipe_fe.internode_fluxes.out and heat_pipe_fdm.internode_fluxes.out
+extract vapor, liquid pair at days .1000E+05 (made positive)
+
+VV fluxout.pl writes *.flux pairs from *internode_fluxes.out
+VV compheat.pl writes flux pairs to heat_pipe.comp_* with %error
+The comparison error is probably computed in the COMPARE program
+(I do not know where the reference values are found)
+
+==> heat_pipe_fdm.internode_fluxes.out <==
+     1     5    24   0.100000E+05 (call number,number of pairs,time step,days)
+     1      2 -.515670E-04 0.410453E-06
+     3      4 -.515835E-04 0.427081E-06
+    20     21 -.517538E-04 0.599141E-06
+    48     49 -.521724E-04 0.102358E-05
+    49     50 -.521911E-04 0.104304E-05
+
+==> heat_pipe_fe.internode_fluxes.out <==
+     1     5    24   0.100000E+05 (call number,number of pairs,time step,days)
+     1      3 -.515669E-04 0.410320E-06
+     3      5 -.515749E-04 0.418373E-06
+    41     43 -.517607E-04 0.606013E-06
+    97     99 -.521726E-04 0.102383E-05
+    99    101 -.521909E-04 0.104292E-05
+
+These are VV files created from VV perl scripts.
+Note the change in precision and roundoff for easier comparisons.
+
+==> ../output/heat_pipe_fdm.flux <==
+Internode Fluxes (kg/s) for heat pipe problem
+Days 0.100000E+05
+Count	Vapor flux	Liquid flux
+    1	5.156700e-005	-4.104530e-007
+    2	5.158350e-005	-4.270810e-007
+    3	5.175380e-005	-5.991410e-007
+    4	5.217240e-005	-1.023580e-006
+    5	5.219110e-005	-1.043040e-006
+    6	5.219110e-005	-1.043040e-006
+
+==> ../output/heat_pipe_fe.flux <==
+Internode Fluxes (kg/s) for heat pipe problem
+Days 0.100000E+05
+Count	Vapor flux	Liquid flux
+    1	5.156690e-005	-4.103200e-007
+    2	5.157490e-005	-4.183730e-007
+    3	5.176070e-005	-6.060130e-007
+    4	5.217260e-005	-1.023830e-006
+    5	5.219090e-005	-1.042920e-006
+    6	5.219090e-005	-1.042920e-006
+
+
+From VV summary.240418
+Heat Pipe Problem -- Internode Fluxes
+Comparison of FE and FDM Solution for Flux at 1.e4 days
+
+Test Case                             Maximum Error  Maximum % Error  RMS Error
+vapor                                   8.600E-09       1.667E-02     4.271E-05
+liquid                                  8.708E-09       2.0390        4.680E-03
