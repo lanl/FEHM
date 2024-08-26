@@ -1,0 +1,21 @@
+The fracture_aperture test case is constructed from the VV Test Suite
+
+VV Test Compares Liquid Pressure, Z displacement, Z stress at TIME 100.00
+Use pmd_all.00002_sca_node.avs
+These are the columns expected in the sca_node.avs files
+
+Node ID
+Liquid Pressure (MPa)
+Temperature (deg C)
+X Permeability (log m**2)
+Y Permeability (log m**2)
+Z Permeability (log m**2)
+X displacement (m)
+Y displacement (m)
+Z displacement (m)
+X stress (MPa)
+Y stress (MPa)
+Z stress (MPa)
+XY stress (MPa)
+XZ stress (MPa)
+YZ stress (MPa)
