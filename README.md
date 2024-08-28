@@ -95,13 +95,11 @@ https://github.com/lanl/FEHM/releases
 - VERIFICATION_V3.3.0win.zip 
 
 
-## PYFEHM ##
+## FEHM Applications ##
 
-PYFEHM is a set of classes and methods to enable use of FEHM and auxiliary tasks within the Python scripting environment. This is maintained outside of LANL is is no longer supported.
+**dfnWorks** is a python driven parallelized computational suite to generate three-dimensional discrete fracture networks (DFN) and simulate flow and transport. It uses LagriT, PETSC, PFLOTRAN, Python, and FEHM. See dfnWorks [Documentation](https://dfnworks.lanl.gov) and [github](https://github.com/lanl/dfnWorks)
 
-PYFEHM scripts on GitHub: https://github.com/lanl/PyFEHM
-
-Documentation: https://lanl.github.io/PyFEHM/
+**PYFEHM** is a set of classes and methods to enable use of FEHM and auxiliary tasks within the Python scripting environment. This is maintained outside of LANL is is no longer supported. See PYFEHM scripts on GitHub: https://github.com/lanl/PyFEHM
 
 
 ## FEHM Release Versions ##
