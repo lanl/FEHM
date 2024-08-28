@@ -101,4 +101,24 @@ Run the command
 	git push origin master
 	```
 
+## FEHMPYTESTS Development
+
+The python scripts and test cases are located in FEHM/fehmpytests. Each directory has a test case with subsets defined in files under test_case/input/controls. By default, all tests run by fehmpytests.py are expected to succeed. Test cases under development can be run singly or with the option --full which will run all test cases, even those that fail.
+
+This is the folder structure of FEHM/fehmpytests
+
+    [test-case]
+        |
+        |_[input]
+        |   |_[control] (fehmn.files or *.files for each subset)
+        |  
+        |_[compare] (expected output files to check results)
+        |  
+        |_[output_sub1] [output_sub2] <= created by fehmpytests.py with fehmn.files copied from input/control
+	
+
+See documentation for adding new test cases at [New Test](https://lanl.github.io/FEHM/fehmpytest-info/newtest) or on repo at FEHM/docs/getting-started/fehmpytest-info/newtest.md It is recommended that new test cases first be confirmed by running FEHM without the python scripts, then evaluate results with expected output files in the compare directory. 
+
+To run FEHM without scripts, create a temporary test directory ie newtest/test_output. Copy ../input/fehmn.files into the test directory and run FEHM.
+
 
