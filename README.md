@@ -19,7 +19,7 @@ FEHM Developers follow instructions at [Developers](develop.md)
 
 External Collaborators must sign a Contribution Agreement. [Contribution Agreement for External Collaborators](CONTRIBUTING.md)
 
-## Downloading & Building FEHM ##
+## Build FEHM ##
 
 Download the Https repo to your current directory by running:
 
@@ -35,10 +35,9 @@ Next, you will need to create the executable. This is different depending on you
 	This uses a MakeFile to create an executable.
 
 	```bash
-	cd src
- make
+	cd src; make
 	```
-	This will create an executable named `xfehm` in the `/src` directory.
+	This will create an executable named `xfehm` in the `/src` directory. *Note. Makefile will overwrite dated.f using dated.template.* 
 
 
 *	**Windows**
@@ -83,7 +82,7 @@ See **fehmpytests** documentation:
 
 ## V&V Verification Test Suite ##
 
-This large test suite was created under the YMP QA program and has been the main source for testing and development over the years. The disadvantage of this test suite is its large size, complicated perl scripts, fortran compare executables, and platform dependency. The Windows version of the test suite is most up to date, runs over 80 test problems, and takes over 1.5 hours to run. Test cases in FEHMPYTESTS are constructed from problems in this V&V test suite.
+This large test suite was created under the YMP QA program and has been the main source for testing and development over the years. The disadvantage of this test suite is its large size, complicated perl scripts, fortran compare executables, and platform dependency. The Windows version of the test suite is most up to date, runs over 80 test problems, and takes over 1.5 hours to run. Most test cases in FEHMPYTESTS are constructed from problems in the Windows V&V test suite.
 
 
 The V&V FEHM Test Suite documentation: https://www.lanl.gov/orgs/ees/fehm/docs/FEHM_VERIFICATION_V3.3.0.pdf
