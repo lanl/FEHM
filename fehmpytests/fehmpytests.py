@@ -139,18 +139,51 @@ class fehmTest(unittest.TestCase):
         CXe_b = bateman(times,C0[0:2],lmbda[0:2])
         CCs_b = bateman(times,C0,lmbda)
         
+        # tam add output if success
+        CI_fail = 0
+        CX_fail = 0
+        CC_fail = 0
         for t,f,b in np.column_stack([CI_fehm, CI_b]):
             if b > 1e-6:
-                self.assertTrue(abs(f-b)/f<0.1, "Concentration mismatch for Iodine at time %g, FEHM: %g, Bateman: %f"%(t,f,b))
+                #print(f"The calculate value of abs(f-b)/f<0.1 is : {abs((f-b)/f)<0.1}. f-b= {abs((f-b)/f)}")
+                self.assertTrue(abs((f-b)/f)<0.1, "Concentration mismatch for Iodine at time %g, FEHM: %g, Bateman: %f"%(t,f,b))
+                if abs(f-b)/f<0.1:
+                    CI_fail += 0
+                elif abs(f-b)/f>=0.1:
+                    CI_fail += 1
+                else:
+                    CI_fail += 1
 
         for t,f,b in np.column_stack([CXe_fehm, CXe_b]):
             if b > 1e-6:
                 self.assertTrue(abs(f-b)/f<0.1, "Concentration mismatch for Xenon at time %g, FEHM: %g, Bateman: %f"%(t,f,b))
+                if abs(f-b)/f<0.1:
+                    CX_fail += 0
+                elif abs(f-b)/f>=0.1:
+                    CX_fail += 1
+                else:
+                    CX_fail += 1
 
         for t,f,b in np.column_stack([CCs_fehm, CCs_b]):
             if b > 1e-6:
                 self.assertTrue(abs(f-b)/f<0.1, "Concentration mismatch for Cesium at time %g, FEHM: %g, Bateman: %f"%(t,f,b))
+                if abs(f-b)/f<0.1:
+                    CC_fail += 0
+                elif abs(f-b)/f>=0.1:
+                    CC_fail += 1
+                else:
+                    CC_fail += 1
 
+        if CI_fail == 0 and CX_fail == 0 and CC_fail == 0:
+            print('\nSuccessful evaluation of rad_decay.')
+
+        elif CI_fail > 0:
+            print('\nFailures evaluating rad_decay run_135iodine.dat',CI_fail)
+        elif CX_fail > 0:
+            print('\nFailures evaluating rad_decay run_135xenon.dat',CX_fail)
+        elif CC_fail > 0:
+            print('\nFailures evaluating rad_decay run_135cesium.dat',CC_fail)
+        
         os.chdir(self.maindir)
 
     def saltvcon(self):
