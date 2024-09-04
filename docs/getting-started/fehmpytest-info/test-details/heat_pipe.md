@@ -6,11 +6,13 @@ hero_height: is-hidden
 
 # heat_pipe
 
-**Test the Heat Pipe Problem**
+**Test Internode Fluxes (kg/s) for heat pipe problem**
 
-Compares the generated output files with the old files known to be correct. All values are tested.
+Comparison of FE and FDM Solution for Flux at 1.e4 days. RLPM subcases were excluded because they caused FEHM to produce too many negative volumes.
 
-RLPM subcases were excluded because they caused FEHM to produce too many negative volumes.
+Compares the generated output files with the old files known to be correct. 
+Files checked are heat_pipe_fe.internode_fluxes.out and heat_pipe_fdm.internode_fluxes.out
+Look at vapor, liquid flux pairs at Days .1000E+05 (made positive)
 
 Test Directory: [FEHM/fehmpytests/heat_pipe](https://github.com/lanl/FEHM/tree/master/fehmpytests/heat_pipe)
 
