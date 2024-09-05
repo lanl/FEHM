@@ -12,9 +12,14 @@ hero_height: is-hidden
 Three-Dimensional Radionuclide Transport Problem - trac_rlp.
         Comparison of FEHM and TRACRN for Concentration vs Time
 
-Run 3 tests using 3d_trac_rlp.dat,  3d_trac_rlpm.dat, and  3d_trxn_rlp.dat.
+Run 3 tests using 3d_trac_rlp.trc,  3d_trac_rlpm.trc, and  3d_trxn_rlp.trc for comparisons.
 
 Test Directory: [FEHM/fehmpytests/transport3d](https://github.com/lanl/FEHM/tree/master/fehmpytests/transport3d)
+
+Note: The VV windows and VV linux transport3d tests and perl scripts are very different. Use this test case to test both.
+The VV test problem consists of 2 parts, the first generates a flow field which is used as input. Here the .ini file is read as input.
+
+Issues: Depending on version, the .trc file formats may differ. Old versions use a single line for 6 data values, new windows uses double lines with 3 values each.
 
 
 ### Example File 3d_trac_rlp.dat 
