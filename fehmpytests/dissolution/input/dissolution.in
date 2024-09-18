@@ -1,6 +1,6 @@
 Check FEHM dissolution versus analytical solution: Matches Peter 51 node
 cont
-surf 10000 1.e20
+avs 10000 1.e20
 geom
 liquid
 concentration
