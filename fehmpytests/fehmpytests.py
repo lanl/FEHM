@@ -336,7 +336,7 @@ class fehmTest(unittest.TestCase):
         
         arguments = {}
         arguments['times'] = [2.0]
-        arguments['variables'] = ['P', 'Hydraulic Head (m)']
+        arguments['variables'] = ['P', 'H']
 
         self.test_case('boun', arguments) 
         
