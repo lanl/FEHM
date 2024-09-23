@@ -8,6 +8,7 @@ hero_height: is-hidden
 
 **Test the Radial Heat and Mass Transfer Problem**
 
+Run test for 84, 400, and 800 nodes. Compare Model and Analytical Solution for Temperature vs Time and for Temperature vs Position.
 
 Compares the generated contour and history files to old contour and history files that are known to be correct. For contour files, only the temperature values at time 2 are tested. For history files, all temperature values are tested.
 
