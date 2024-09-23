@@ -8,7 +8,19 @@ hero_height: is-hidden
 
 **Test Pore-Scale Velocity in a Homogeneous Media**
 
+Barometric Pumping Test - effects on pore-scale velocity
+Comparison of Model and Analytical Solution for Velocity vs Depth during cycle (rlp and rlpm)
+
 Compares the generated contour files with the old files known to be correct. Tests times 3-6 for a root mean square difference of less than 0.01.
+
+<pre>
+For fehm simulation 22.75 days == 1.75 days in cycle (file 3)
+    24.5  days == 7    days in cycle (file 6)
+    26.25 days == 5.25 days in cycle (file 5)
+    28    days == 3.5  days in cycle (file 4)
+</pre>
+
+    
 
 Test Directory: [FEHM/fehmpytests/baro_vel](https://github.com/lanl/FEHM/tree/master/fehmpytests/baro_vel)
 
