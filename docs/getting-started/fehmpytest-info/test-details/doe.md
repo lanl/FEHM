@@ -8,7 +8,13 @@ hero_height: is-hidden
 
 **Test the DOE Code Comparison Project, Problem 5, Case A**
 
-Compares the generated contour and history files to old contour and history files that are known to be correct. For contour files, only the pressure, temperature, and saturation values at time 3 are tested. For history files, all pressure, temperature, and saturation values are tested.
+Compares the generated contour files that are known to be correct. For contour files, only the pressure, temperature, and saturation values at time 3 are tested. 
+
+See compare files:
+
+    doe_rlp.00003_sca_node.avs  
+    doe_rlpm.00003_sca_node.avs  
+    doe_table.00003_sca_node.avs
 
 Test Directory: [FEHM/fehmpytests/doe](https://github.com/lanl/FEHM/tree/master/fehmpytests/doe)
 
