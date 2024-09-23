@@ -8,7 +8,14 @@ hero_height: is-hidden
 
 **Test the Boundry Functionality**
 
-Compares the generated contour files to old contour files that are known to be correct. Only the pressure and hydraulic head values at time 2 are tested.
+Compares the generated contour files to old contour files that are known to be correct. Comparison of boun test results (flow macro vs boun macro). Only the pressure and hydraulic head values at time 2 are tested.
+
+See compare files:
+
+    prob_well_boun1.00002_sca_node.avs  
+    prob_well_boun2.00002_sca_node.avs	
+    prob_well_boun3.00002_sca_node.avs
+
 
 Test Directory: [FEHM/fehmpytests/boun](https://github.com/lanl/FEHM/tree/master/fehmpytests/boun)
 
