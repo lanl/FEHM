@@ -8,6 +8,10 @@ hero_height: is-hidden
 
 **Test the Cell-Based Particle Tracking Model**
 
+Cell-Based Particle Tracking w/Advection, Dispersion & Matrix Diffusion
+
+Comparison of Model and Analytical Solution for Breakthrough Conc. vs Time
+
 Compares the generated output files with the old files known be correct. All values are tested for a root mean square difference of less than 0.05.
 
 Test Directory: [FEHM/fehmpytests/cellbased](https://github.com/lanl/FEHM/tree/master/fehmpytests/cellbased)
