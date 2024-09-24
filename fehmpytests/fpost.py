@@ -1544,6 +1544,7 @@ class fcomparison(object):
                 return 0
 
         data = np.array([[to_float(item) for item in sublist] for sublist in data], dtype=float)
+        data = np.reshape(data,(-1,1))
         self.files_info.append((filename, data))  # Store the data as a tuple (filename, data)
         #print('Processed file: {filename}')
         #print(f'Data for {filename}: {data}')                 
@@ -1606,8 +1607,8 @@ def fdiff( verbose, in1, in2, format='diff', times=[], variables=[], components=
             return
 
 
-        #print('in1.files_info: {in1.files_info}')
-        #print('in2.files_info: {in2.files_info}')
+        #print(f'in1.files_info: {in1.files_info}')
+        #print(f'in2.files_info: {in2.files_info}')
 
         for (file1, data1), (file2, data2) in zip(in1.files_info, in2.files_info):
             if verbose >= 3:
