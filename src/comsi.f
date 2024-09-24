@@ -47,7 +47,8 @@
 c gaz 031017    
       integer isbiotNonLin
       integer flag_excess_shear
-
+c gaz 061123
+      integer cnum_sv
      
       real*8 friction_out,strength_out, pp_fac_out
       real*8 daystr,fpor,fric,wo,fwght,fupwt,fdnwt,tol_stress

@@ -632,15 +632,19 @@ c     Read the element connectivity and write to tec file
 c     Do nothing, no connectivity defined
          else 
             il = open_file(geoname,'old')
-c     avsx geometry file has an initial line that starts with neq_primary
-            read(il,*) i
+c tec geometry file has 4 initial lines 
+c gaz 041922 changed to tec            
+            read(il,*) 
+            read(il,*)
+            read(il,*)
+            read(il,'(a20,i9)') char_temp(1:20),i
             if (i .ne. neq_primary) backspace il
             do i = 1, neq
                read(il,*)
             end do
             allocate (nelm2(ns_in))
             do i = 1, nei_in
-               read (il,*) i1,i2,char_type,(nelm2(j), j=1,ns_in)
+               read (il,*) (nelm2(j), j=1,ns_in)
                write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
             end do
             deallocate(nelm2)

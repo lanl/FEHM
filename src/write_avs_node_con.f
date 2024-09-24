@@ -703,7 +703,8 @@ c iz is the increment of the zone loop
             if (icall_sv .eq. 1 .or. iogrid .eq. 1) then
               if(iz.eq.1) then  
                write(lu, 98) verno, jdate, jtime, trim(wdd)
-               if (iogrid .eq. 1) write(lu, 100) 
+c gaz 071022 removed solution line - need to check               
+c               if (iogrid .eq. 1) write(lu, 100) 
                write (fstring, 99) itotal2
                write(lu, fstring) 'VARIABLES = ', (trim(title(i)), 
      &              i=1,itotal2)
@@ -1164,7 +1165,8 @@ c------CHU 12/02/2015  change so when rxn on, anv output correctly in con files
             if (icall .eq. 1 .or. iogrid .eq. 1) then
                write (fstring, 99) itotal2+1
                write(lu, 98) verno, jdate, jtime, trim(wdd)
-               write(lu, 100)
+c gaz 071022 removed 'SOLUTION'               
+c               write(lu, 100)
                write(lu, fstring) 'VARIABLES = ', (trim(title(i)), 
      &              i=1,iocord), 'node', (trim(title(i)), 
      &              i=iocord+1,itotal2)
@@ -1196,9 +1198,15 @@ c     Node loop
                if (iozone .eq. 0 .or. iogrid .eq. 1) then
 c gaz writes   every ii should be ii = start  
                 if(ii.eq.istart) then
-                  write (lu, 94) trim(timec_string), trim(tecstring),
-     &                 trim(gridstring), trim(times_string)
-                endif
+c gaz 071122 tecstring duplicates other strings                    
+                 if(icall.eq.1) then
+                  write (lu, 94) trim(timec_string), 
+     &                 trim(gridstring), trim(times_string) 
+                 else
+                  write (lu, 94) trim(timec_string), 
+     &                 trim(gridstring), trim(sharestring)                  
+                 endif
+                 endif
                else
                   if (icall .gt. 1 .and. iozone .ne. 0) then
                      write (tecstring, 125) trim(sharestring), iz
@@ -1395,7 +1403,24 @@ c     avsx geometry file has an initial line that starts with neq_primary
           endif
          else if(irivp.eq.0) then
             il = open_file(geoname,'old')
-c     avsx geometry file has an initial line that starts with neq_primary
+c     tec geometry file has an initial line that starts TITLE
+c gaz 050522 adding tec and other if blocks            
+           if(altc(1:3).eq.'tec') then
+            read(il,*) 
+            read(il,*) 
+            read(il,*) 
+            read(il,*) 
+            do i = 1, neq
+               read(il,*)
+            end do
+            allocate (nelm2(ns_in))
+            do i = 1, nei_in
+               read (il,*) (nelm2(j), j=1,ns_in)
+               write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
+            end do
+            deallocate(nelm2)
+            close (il)          
+           else
             read(il,*) i
             if (i .ne. neq_primary) backspace il
             do i = 1, neq
@@ -1408,6 +1433,7 @@ c     avsx geometry file has an initial line that starts with neq_primary
             end do
             deallocate(nelm2)
             close (il)
+           endif
          else
 c     river segments (2 node elements)
             do i = 1,nnelm_riv

@@ -291,6 +291,7 @@ C***********************************************************************
 
       use davidi
       use comfi
+      use comci, only : dstm
       use comdi
       use combi
       use comdti
@@ -304,14 +305,17 @@ C***********************************************************************
      .	      crzmin, denmmn, denmmx, dfctor, perimn, perimx, permmn, 
      .	      permmx, pormax, pormin, prcmax, prcmin, prsmax, prsmin, 
      .	      satmax, satmin, temmax, temmin, thcimn, thcimx, thcmmn, 
-     .       thcmmx, volmax, volmin, voltot, zdiff, vol_fac, den_vap
+     .          thcmmx, volmax, volmin, voltot, zdiff, vol_fac, den_vap,
+     .          perm_fac
       
       integer i, icprmn, icprmx, icrxmn, icrxmx, icrymn, icrymx, icrzmn,
      .	      icrzmx, idenmn, idenmx, ipermn, ipermx, ipormn, ipormx,
      .	      iprcmn, iprcmx, iprsmn, iprsmx, isatmn, isatmx, itemmn,
      .	      itemmx, ithcmn, ithcmx, ivolmn, ivolmx, min_nr
-      integer icsub
-
+      integer icsub, j, ivol_old
+c gaz 022419        
+      parameter (vol_fac = 1.d-8, perm_fac = 1.d3, ivol_old = 0)
+      
       prsmin =  120.0
       prsmax = -120.0
       iprsmn =    1
@@ -392,7 +396,8 @@ c**** search for maximum and minimum values ****
                call min_max (pci(i), i, prcmin, iprcmn, prcmax, iprcmx)
             end if
             call min_max (t  (i), i, temmin, itemmn, temmax, itemmx)
-            if (irdof .ne. 13 .or. ifree .ne. 0) then
+c gaz 110120 
+            if (irdof .ne. 13 .and. ifree .ne. 0.and.idoff.ne.-1) then
                call min_max (s  (i), i, satmin, isatmn, satmax, isatmx)
             else
                satmin = 1.0d0
@@ -554,15 +559,16 @@ C**** print reference values for air/water problem ****
  6053    format(1x, 'reference temperature, pressure for isothermal ',
      &        'EOS problems')      
          write(ischk, 6053)
-         write(ischk, 6055) crl(6,1), crl(4,1) 
+c gaz 110819 changed crl(4,1) and crl(6,1) pref and tref         
+         write(ischk, 6055) tref, pref
  6054    format(5x,"liquid : density, viscosity, compressibility ")
  6055    format(10x,3(1x, g15.7))
          write(ischk, 6054)
          write(ischk, 6055) crl(1,1), crl(2,1), crl(3,1) 
  6056    format(5x,"gas    : density, viscosity, compressibility ")
          write(ischk, 6056)
-         den_vap = 1.292864*(273.0/(crl(6,1)+273.0))*crl(4,1)/0.101325
-         write(ischk, 6055) den_vap, crl(5,1), 1./crl(4,1)           
+         den_vap = roc0*(273.0/(tref+273.0))*pref/0.101325
+         write(ischk, 6055) den_vap, crl(5,1), den_vap/pref          
 c**** print out max and min values ****
  6100    format(3x, g16.8, 3x, i8, 3(3x, g10.3))
         else
@@ -962,13 +968,75 @@ c this can happen for multiply defined nodes
 c set the volume(i) array to non zero to distinguish it
 c from reservoir nodes
 c
-         vol_fac=1.d-6
          do i=1,n
-            if(sx1(i).eq.0.0) then
-               sx1(i)=vol_fac*volmin
+c gaz 021919 added hi perm for flow pass through             
+            if(sx1(i).le.0.0) then
+               sx1(i)=vol_fac
+               pnx(i) = perm_fac*pnx(i)
+               pny(i) = perm_fac*pny(i)
+               pnz(i) = perm_fac*pnz(i)
+c gaz 022319 correct initial mass and energy
+               ame = ame - deneh(i)*volume(i)
+               am0 = am0 - denh(i)*volume(i)
+               astmo = astmo - dstm (i)
                volume(i)=sx1(i)
             endif
          enddo
+      else
+c check  read-in connectivity 
+         if(irun.eq.1.and.ianpe.eq.0) then
+            call check_sx(neq,ianpe,nr,nelm,istrw,nelmdg,ischk,iptty,
+     &           iout,ierr,min_nr,isox,isoy,isoz,intg,sx1,sx)
+            if (ischk .ne. 0) then
+               write(ischk,9000) min_nr,nr
+               write(ischk,*) ' '
+            end if
+            if (iptty .ne. 0) then
+               write(iptty,9000) min_nr,nr
+               write(iptty,*) ' '
+            end if
+c 9000       format(/,'storage for fe coefficients ',i10,
+c     &           ' allocated ',i10)
+         else
+            if (iptty .ne. 0) then
+               write(iptty,*)'anisotrpic case: coefficients not checked'
+               write(iptty,*) ' '
+            endif
+         endif 
+c checking for negative volumes 
+         write(ierr,9002)
+ 9002 format('ckecking for (and zeroing) negative volumes',/,
+     &   t13,'node',t26,'zone',t37,'volume',t55,'X',t70,'Y',t85,'Z')
+         j = 0
+         do i=1,n
+            if(sx1(i).le.0.0) then  
+             j = j+1
+             write(ierr,9001) i,izonef(i),sx1(i),cord(i,1),cord(i,2),
+     &         cord(i,3)
+             if(ivol_old.gt.0) then             
+               sx1(i) = 0.
+               volume(i) = 0.
+               pnx(i) = 1.e-20
+               pny(i) = 1.e-20
+               pnz(i) = 1.e-20
+c gaz 021919 added hi perm for flow pass through             
+            else
+               sx1(i)= vol_fac
+               pnx(i) = perm_fac*pnx(i)
+               pny(i) = perm_fac*pny(i)
+               pnz(i) = perm_fac*pnz(i)
+c gaz 022319 correct initial mass and energy
+               ame = ame - deneh(i)*volume(i)
+               am0 = am0 - denh(i)*volume(i)
+               astmo = astmo - dstm (i)
+               volume(i)=sx1(i)
+            endif 
+            endif
+         enddo
+         write(ierr,*)
+         write(ierr,*) 'number of neg vol nodes = ',j
+9001     format('neg vol',1x,i10,1x,i7,1x,1p,g14.3,1x,g14.3,
+     &           1x,g14.3,1x,g14.3)
       end if
 
 c     With the new particle tracking option (mptr),

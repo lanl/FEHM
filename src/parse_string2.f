@@ -82,15 +82,30 @@ C***********************************************************************
       line_length = len(line)
       entrynum=1
       begin=1
+
+c tam debug linux runtime errors
+c memory is being overwritten somewhere
+c parse_string is sensitive to garbage in the input line
+c so add a warning regarding long lines gt 180
+
+      if (line_length .gt. 180) then
+        print *, "Warning: parse_string2 line longer than 180 char"
+        print *, "  parse line len: ", line_length
+        print *, "  parse line: ", line
+      endif
+
       do i=1,line_length
          if (((line(i:i).eq.' ').or.(line(i:i).eq.achar(9)))
      &        .and.(begin.eq.0)) then
             ndex(entrynum,2)=i-1
             begin=1
             entrynum=entrynum+1
+
+c tam debug
             if (entrynum .gt. max_entries) then
-                entrynum = max_entries
-                exit
+              print *, "Warning: parse_string2 entries gt ",max_entries
+              entrynum = max_entries
+              exit
             end if
          else if ((line(i:i).eq.' ').or.(line(i:i).eq.achar(9))) then
             continue

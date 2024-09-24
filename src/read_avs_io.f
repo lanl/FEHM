@@ -151,7 +151,7 @@ C***********************************************************************
 
       use avsio
       use comai, only : altc, ichead, ihead, ierr, iptty, icnl, istrs,
-     &     idpdp, idualp, gdkm_flag, sv_combine
+     &     idpdp, idualp, gdkm_flag, sv_combine, i_vtk
       use combi, only : izonef
       use comco2, only : icarb
       use comdi, only : nsurf, izone_surf, izone_surf_nodes, ifree
@@ -431,14 +431,19 @@ c     output gdkm node data, keyword: gdkm
                iogdkm = 1
                if (iptty .ne. 0) 
      &              write(iptty, *) ' iogdkm          ', iogdkm 
-               if ((chdum(5:5) .eq. 'b').or.(chdum(5:5) .eq. 'B'))then
-                iogdkmblank = 1
-                if (iptty .ne. 0)   
-     &              write(iptty, *) ' blanking option for gdkm enabled '
-               endif
+               if ((chdum(5:5) .eq. 'b').or.(chdum(5:5) .eq. 'B')
+     &          .or.i_vtk.eq.1) then
+                 iogdkmblank = 1
+                if (iptty .ne. 0.and.i_vtk.eq.1) then
+                   write(iptty, *) 
+     &           ' blanking option for gdkm enabled(vtk) '
+                else if (iptty .ne. 0) then
+                   write(iptty, *) ' blanking option for gdkm enabled '
+                endif
+              endif  
             else if ((chdum(2:2) .eq. 'e').or.(chdum(2:2) .eq. 'E'))then
 c     output avs geometry file, keyword: geo
-               iogeo = 1
+               iogeo =1
                if (iptty .ne. 0) 
      &              write(iptty, *) ' iogeo           ', iogeo
             elseif((chdum(2:2) .eq. 'r').or.(chdum(2:2) .eq. 'R'))then

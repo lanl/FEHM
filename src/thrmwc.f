@@ -1018,9 +1018,13 @@ c mixture of water and air,co2
       use comii
       use comrlp, only : rlpnew
       use comrxni
-
+c gaz 123020
+      use com_exphase
+c gaz 060820
+      use com_prop_data, only : den_h2o, enth_h2o, visc_h2o, humid_h2o,
+     & psat_h2o, den_ngas, enth_ngas, visc_ngas, xnl_ngas, ieval_flag
       implicit none
-
+   
       integer ndummy
       integer iieosl
       integer mid
@@ -1161,6 +1165,8 @@ c mixture of water and air,co2
       real*8 vvpt2b
       real*8 tl
       real*8 pcl
+c gaz 071420      
+      real*8 pcl_in
       real*8 pl
       real*8 x
       real*8 x2
@@ -1346,6 +1352,9 @@ c      real*8 roc0
       real*8 dhcgpc
       real*8 xvisc
       real*8 dxvsct
+c gaz 070820      
+      real*8 dxvscpc
+      real*8 dxvscp
       real*8 dtpcs
       real*8 siid
       real*8 siie
@@ -1426,6 +1435,8 @@ c      real*8 fimped
       real*8 cden_correction, cden_cor
       real*8 spec1, fracc,ms,xf,af,bf,cf,df,ef,dumf,tltemp
       real*8 pv_tol, satdif
+c gaz 092419 added pa_tol (set in parameter statement)      
+      real*8 pa_tol
 c gaz debug 121714
       real*8 dum_gaz
       real*8 xair, pflowa_tol
@@ -1440,17 +1451,22 @@ c gaz 062916
       real*8  sk_humf, dsk_humfp, dsk_humfpc, dsk_humft
       real*8  sk_airhf, dsk_airhfp, huma_tol
       real*8 pv_hum, t_hum, p_hum   
+c gaz 033021
+      real*8 pc_hum, dsk_airhfpc
 c gaz  081317,082917  
       real*8 ur, dur_dt
       integer kang, ipv_tol
-c gaz 110715
-      real*8 dum1,dumb,dumc,value(9)
-      integer istate, ifail        
+c gaz 110715 
+c gaz 070820 added value_a      
+      real*8 dum1,dumb,dumc,value(9), value_a(9)
+      integer istate, ifail, isol_print    
+      parameter (isol_print= 1)
       parameter (kang = 1, pflowa_tol= 1.d-12, huma_tol = 1.d-12)
-      parameter (permd_air_mult = 1.d-2, permd_hum_mult = 1.d-3)
+      parameter (permd_air_mult = 1.d-2, permd_hum_mult = 1.d-0)
 c gaz 010519      
-       real*8 pcrit_h2o, tcrit_h2o
-       parameter(pcrit_h2o=22.00d0, tcrit_h2o=373.95)      
+c 0923219 h2o_crit   moved to comai
+c      real*8 pcrit_h2o, tcrit_h2o
+c      parameter(pcrit_h2o=22.00d0, tcrit_h2o=373.95)     
 c gaz  081917  
       real*8 dcp_dt, dcprt_dum
 c gaz 010719
@@ -1458,6 +1474,11 @@ c gaz 010719
 c gaz 112718
       integer isk_key
       save isk_key
+c gaz 123020
+      integer loop_start, loop_end
+c gaz 060821 testing
+      integer il,im,io,iprop_test,iprop_testa
+      parameter (iprop_test = 0,iprop_testa =0)
 c
 c     rol  -  density liquid
 c     ros  -  density steam
@@ -1481,7 +1502,8 @@ c     sl   -  saturation liquid
 c
       parameter(xtol=1.d-16)
       parameter(flow_tol=1.d-31)
-      parameter(pv_tol=1.e-9)
+c gaz   092419 (pa_tol)    
+      parameter(pv_tol=1.d-9, pa_tol = 1.d-16) 
 c note flow_tol=1.d-31 because of default dqpc=1.d-30
 c and default dqpc should look like 0.0 but specified flow
 c
@@ -1495,9 +1517,10 @@ c
       real*8, allocatable :: drlfs0(:)
       real*8, allocatable :: rvf0(:)
       real*8, allocatable :: drvfs0(:)
+c gaz 062221 testing  line length extention
+cDEC$ FIXEDFORMLINESIZE:132
 c gaz 112818 
       dcp_dt = 0.0
-
       if(abs(iexrlp).ne.0.and.i_mem_rlp.eq.0) then
         i_mem_rlp=1
         allocate(s0(n),pcp0(n),dpcps0(n),rlf0(n))
@@ -1553,8 +1576,22 @@ c gaz 111118
 c allocate temp storage for sources/sinks
 c      
       if(.not.allocated(sk_temp)) allocate(sk_temp(neq))   
-      
-       do 100 mid=1,neq
+c gaz 060721 poly testing
+c initialize and allocate memory   
+       call fluid_props_control(0, 0, 0, fluid(1), 
+     &      'all      ', '         ')
+       call fluid_props_control(0, 0, 0, fluid(2),
+     &      'all      ', '         ')
+c gaz 123020 manage explicit update 
+       if(i_ex_update.ne.0.and.ieq_ex.gt.0) then
+         loop_start = ieq_ex
+         loop_end = ieq_ex
+       else
+         loop_start = 1
+         loop_end = neq          
+       endif  
+     
+       do 100 mid=loop_start,loop_end
          mi=mid+ndummy
          if(igrav.ne.0) then
           p_energy = -grav*cord(mi,igrav)
@@ -1592,8 +1629,13 @@ c
                xrl = 0.0
                xrv = 1.0
             else if (ieosd.eq.4) then
-               xrl = 0.0
-               xrv = 0.0
+c   gaz 102119 xrl = .0
+c  gaz 102119 added pcp(mi) = 0.0 and dpcef(mi) = 0.0 for sc    
+c gaz 072420 vap phase sc                
+               xrl =0.0
+               xrv = 1.0
+               pcp(mi) = 0.0
+               dpcef(mi) = 0.0
             end if
             drl = 0.0
             drlp = 0.0
@@ -1615,619 +1657,77 @@ c
          dcqc(mi)=0.0
 c gaz debug 082115
          dqpc(mi) = 0.0
-c
-c adjust coefficients for thermo fits
-c
-         if(iieosd.ge.0) then
-c iieos(mi) refers to the thermo set
-            if(iieosd.ne.iieosl) then
-c
-c  liquid phase coefficients
-c
-c liquid enthalpy
-c numerator coefficients
-      ela0=cel(1,iieosd)
-      elpa1=cel(2,iieosd)
-      elpa2=cel(3,iieosd)
-      elpa3=cel(4,iieosd)
-      elta1=cel(5,iieosd)
-      elta2=cel(6,iieosd)
-      elta3=cel(7,iieosd)
-      elpta=cel(8,iieosd)
-      elp2ta=cel(9,iieosd)
-      elpt2a=cel(10,iieosd)
-c denomenator coefficients
-      elb0=cel(11,iieosd)
-      elpb1=cel(12,iieosd)
-      elpb2=cel(13,iieosd)
-      elpb3=cel(14,iieosd)
-      eltb1=cel(15,iieosd)
-      eltb2=cel(16,iieosd)
-      eltb3=cel(17,iieosd)
-      elptb=cel(18,iieosd)
-      elp2tb=cel(19,iieosd)
-      elpt2b=cel(20,iieosd)
-c
-c liquid density
-c numerator coefficients
-      dla0=crl(1,iieosd)
-      dlpa1=crl(2,iieosd)
-      dlpa2=crl(3,iieosd)
-      dlpa3=crl(4,iieosd)
-      dlta1=crl(5,iieosd)
-      dlta2=crl(6,iieosd)
-      dlta3=crl(7,iieosd)
-      dlpta=crl(8,iieosd)
-      dlp2ta=crl(9,iieosd)
-      dlpt2a=crl(10,iieosd)
-c denomenator coefficients
-      dlb0=crl(11,iieosd)
-      dlpb1=crl(12,iieosd)
-      dlpb2=crl(13,iieosd)
-      dlpb3=crl(14,iieosd)
-      dltb1=crl(15,iieosd)
-      dltb2=crl(16,iieosd)
-      dltb3=crl(17,iieosd)
-      dlptb=crl(18,iieosd)
-      dlp2tb=crl(19,iieosd)
-      dlpt2b=crl(20,iieosd)
-c
-c
-c liquid viscosity
-c numerator coefficients
-      vla0=cvl(1,iieosd)
-      vlpa1=cvl(2,iieosd)
-      vlpa2=cvl(3,iieosd)
-      vlpa3=cvl(4,iieosd)
-      vlta1=cvl(5,iieosd)
-      vlta2=cvl(6,iieosd)
-      vlta3=cvl(7,iieosd)
-      vlpta=cvl(8,iieosd)
-      vlp2ta=cvl(9,iieosd)
-      vlpt2a=cvl(10,iieosd)
-c denomenator coefficients
-      vlb0=cvl(11,iieosd)
-      vlpb1=cvl(12,iieosd)
-      vlpb2=cvl(13,iieosd)
-      vlpb3=cvl(14,iieosd)
-      vltb1=cvl(15,iieosd)
-      vltb2=cvl(16,iieosd)
-      vltb3=cvl(17,iieosd)
-      vlptb=cvl(18,iieosd)
-      vlp2tb=cvl(19,iieosd)
-      vlpt2b=cvl(20,iieosd)
-c
-c
-c  vapor phase coefficients
-c
-c vapor enthalpy
-c numerator coefficients
-      eva0=cev(1,iieosd)
-      evpa1=cev(2,iieosd)
-      evpa2=cev(3,iieosd)
-      evpa3=cev(4,iieosd)
-      evta1=cev(5,iieosd)
-      evta2=cev(6,iieosd)
-      evta3=cev(7,iieosd)
-      evpta=cev(8,iieosd)
-      evp2ta=cev(9,iieosd)
-      evpt2a=cev(10,iieosd)
-c denomenator coefficients
-      evb0=cev(11,iieosd)
-      evpb1=cev(12,iieosd)
-      evpb2=cev(13,iieosd)
-      evpb3=cev(14,iieosd)
-      evtb1=cev(15,iieosd)
-      evtb2=cev(16,iieosd)
-      evtb3=cev(17,iieosd)
-      evptb=cev(18,iieosd)
-      evp2tb=cev(19,iieosd)
-      evpt2b=cev(20,iieosd)
-c
-c vapor density
-c numerator coefficients
-      dva0=crv(1,iieosd)
-      dvpa1=crv(2,iieosd)
-      dvpa2=crv(3,iieosd)
-      dvpa3=crv(4,iieosd)
-      dvta1=crv(5,iieosd)
-      dvta2=crv(6,iieosd)
-      dvta3=crv(7,iieosd)
-      dvpta=crv(8,iieosd)
-      dvp2ta=crv(9,iieosd)
-      dvpt2a=crv(10,iieosd)
-c denomenator coefficients
-      dvb0=crv(11,iieosd)
-      dvpb1=crv(12,iieosd)
-      dvpb2=crv(13,iieosd)
-      dvpb3=crv(14,iieosd)
-      dvtb1=crv(15,iieosd)
-      dvtb2=crv(16,iieosd)
-      dvtb3=crv(17,iieosd)
-      dvptb=crv(18,iieosd)
-      dvp2tb=crv(19,iieosd)
-      dvpt2b=crv(20,iieosd)
-c
-c vapor viscosity
-c numerator coefficients
-c
-      vva0=cvv(1,iieosd)
-      vvpa1=cvv(2,iieosd)
-      vvpa2=cvv(3,iieosd)
-      vvpa3=cvv(4,iieosd)
-      vvta1=cvv(5,iieosd)
-      vvta2=cvv(6,iieosd)
-      vvta3=cvv(7,iieosd)
-      vvpta=cvv(8,iieosd)
-      vvp2ta=cvv(9,iieosd)
-      vvpt2a=cvv(10,iieosd)
-c denomenator coefficients
-      vvb0=cvv(11,iieosd)
-      vvpb1=cvv(12,iieosd)
-      vvpb2=cvv(13,iieosd)
-      vvpb3=cvv(14,iieosd)
-      vvtb1=cvv(15,iieosd)
-      vvtb2=cvv(16,iieosd)
-      vvtb3=cvv(17,iieosd)
-      vvptb=cvv(18,iieosd)
-      vvp2tb=cvv(19,iieosd)
-      vvpt2b=cvv(20,iieosd)
-      iieosl=iieosd
-      endif
-c evaluate variables
+c evaluate variables 
       tl=t(mi)
       pcl=pci(mi)
-      pl=phi(mi)
-c
-c evaluate thermo functions and derivatives
-c
-c use total pressure in compressed liquid equations
-c GAZ 5/8/97
-c     if(ieosd.ne.3) then
-        x=pl
-        x2=x*x
-        x3=x2*x
-c     endif
-c
-c two phase conditions
-c
-      dpsatt=0.0
-      dpct = 0.0
-      psatl_100 = 0.0
-      if(ieosd.eq.2) then
-c        if(isalt.ne.0) then
-c DRH 12/03/12
-c gaz 070813 call added saltctr
-c            call saltctr(1,mi,dpsatt,dpsats)
-c            pcl = pci(mi)
-c            pv=pl-pcl
-c            dpct=-dpsatt
-c         else
-            pcl=pl-psatl(tl,pcp(mi),dpcef(mi),dpsatt,dpsats,
-     &                   0,an(mi))
-            pv=pl-pcl
-            pci(mi)=pcl
-            dpct=-dpsatt
-            dtdp = 1./dpsatt
-      else if(ieosd.eq.3) then
-c calculate water vapor pressure at 100 % humidity
-c needed for rel perm calc
-          if(tl.ge.tcrit_h2o) then
-              psatl_100 = pcrit_h2o
-          else
-            psatl_100 = psatl(tl,pcp(mi),dpcef(mi),dpsatt_100,dpsats,
-     &                   0,an(mi))
-          endif
-      endif
-c 
-c calculate vapor pressure
-c
-c GAZ 5/8/97
-c     if(ieosd.ne.1) then
-      pv=pl-pcl
-      if(pv.lt.pv_tol) then
-       ipv_tol = 0
-       xv= pv_tol
-      else
-       xv= pv
-       ipv_tol = 0
-      endif
-      if(ieosd.eq.3) then          
-       humida(mi) = xv/max(psatl_100,1.d-15)
-       dhumidp = 1./max(psatl_100,1.d-15)
-       dhumidpc = -dhumidp
-       dhumidt = (-xv/max(psatl_100,1.d-15)**2)*dpsatt_100
-      else 
-       humida(mi) = 1.  
-       dhumidp = 0.0
-       dhumidpc = 0.0
-       dhumidt = 0.0       
-      endif    
-      xv2=xv*xv
-      xv3=xv2*xv
-c     endif
-      dtps=0.0
-c
-c calculate liquid terms
-c
-c GAZ 5/8/97
-c     if(ieosd.ne.3) then
-      tl2=tl*tl
-      tl3=tl2*tl
-      tlx=x*tl
-      tl2x=tl2*x
-      tlx2=tl*x2
-c     endif
-c
-c calculate vapor terms
-c
-c GAZ 5/8/97
-c     if(ieosd.ne.1) then
-      tl2=tl*tl
-      tl3=tl2*tl
-      tlxv=xv*tl
-      tl2xv=tl2*xv
-      tlxv2=tl*xv2
-c     endif
-c GAZ 5/8/97
-c     if(ieosd.ne.3) then
-c
-c liquid enthalpy
-c
-            if(iwater_table.ne.1) then
-c*****
-c     liquid enthalpy
-      enwn1=ela0+elpa1*x+elpa2*x2+elpa3*x3
-      enwn2=elta1*tl+elta2*tl2+elta3*tl3
-      enwn3=elpta*tlx+elpt2a*tl2x+elp2ta*tlx2
-      enwn=enwn1+enwn2+enwn3
-      enwd1=elb0+elpb1*x+elpb2*x2+elpb3*x3
-      enwd2=eltb1*tl+eltb2*tl2+eltb3*tl3
-      enwd3=elptb*tlx+elpt2b*tl2x+elp2tb*tlx2
-      enwd=enwd1+enwd2+enwd3
-      enw=enwn/enwd
-      enl=enw + p_energy
-c
-c derivatives of enthalpy
-c
-      dhwpn1=elpa1+2*elpa2*x+3*elpa3*x2+elpta*tl
-      dhwpn1=enwd*(dhwpn1+elpt2a*tl2+elp2ta*2*tlx)
-      dhwpn2=elpb1+2*elpb2*x+3*elpb3*x2+elptb*tl
-      dhwpn2=enwn*(dhwpn2+elpt2b*tl2+elp2tb*2*tlx)
-      dhwpn=dhwpn1-dhwpn2
-      dhwpd=enwd**2
-      dhwp=dhwpn/dhwpd
-      dhwtn1=elta1+2*elta2*tl+3*elta3*tl2+elpta*x
-      dhwtn1=enwd*(dhwtn1+elpt2a*2*tlx+elp2ta*x2)
-      dhwtn2=eltb1+2*eltb2*tl+3*eltb3*tl2+elptb*x
-      dhwtn2=enwn*(dhwtn2+elpt2b*2*tlx+elp2tb*x2)
-      dhwtn=dhwtn1-dhwtn2
-      dhwtd=enwd**2
-      dhwt=dhwtn/dhwtd
-      dhlt=dhwt
-      dhlp=dhwp
-      dhlpc=0.0
-c
-c liquid density
-c
-      rnwn1=dla0+dlpa1*x+dlpa2*x2+dlpa3*x3
-      rnwn2=dlta1*tl+dlta2*tl2+dlta3*tl3
-      rnwn3=dlpta*tlx+dlpt2a*tl2x+dlp2ta*tlx2
-      rnwn=rnwn1+rnwn2+rnwn3
-      rnwd1=dlb0+dlpb1*x+dlpb2*x2+dlpb3*x3
-      rnwd2=dltb1*tl+dltb2*tl2+dltb3*tl3
-      rnwd3=dlptb*tlx+dlpt2b*tl2x+dlp2tb*tlx2
-      rnwd=rnwd1+rnwd2+rnwd3
-      rnw=rnwn/rnwd
-      rol=rnw
-      if(cden) then
-c     Add correction for liquid species
-         cden_cor = cden_correction(mi)
-         rol = rol + cden_cor
-      end if
+      pl=phi(mi)  
 
-c
-c       derivatives of density
-c
-      drlpn1=dlpa1+2*dlpa2*x+3*dlpa3*x2+dlpta*tl
-      drlpn1=rnwd*(drlpn1+2*dlp2ta*tlx+dlpt2a*tl2)
-      drlpn2=dlpb1+2*dlpb2*x+3*dlpb3*x2+dlptb*tl
-      drlpn2=rnwn*(drlpn2+2*dlp2tb*tlx+dlpt2b*tl2)
-      drlpn=drlpn1-drlpn2
-      drolpd=rnwd**2
-      drolp=drlpn/drolpd
-      drlen1=dlta1+2*dlta2*tl+3*dlta3*tl2+dlpta*x
-      drlen1=rnwd*(drlen1+dlp2ta*x2+2*dlpt2a*tlx)
-      drlen2=dltb1+2*dltb2*tl+3*dltb3*tl2+dlptb*x
-      drlen2=rnwn*(drlen2+dlp2tb*x2+2*dlpt2b*tlx)
-      drlen=drlen1-drlen2
-      droled=rnwd**2
-      drolt=drlen/droled
-      drolpc=0.0
-c
-c liquid viscosity
-c
-      viln1=vla0+vlpa1*x+vlpa2*x2+vlpa3*x3
-      viln2=vlta1*tl+vlta2*tl2+vlta3*tl3
-      viln3=vlpta*tlx+vlpt2a*tl2x+vlp2ta*tlx2
-      viln=viln1+viln2+viln3
-      vild1=vlb0+vlpb1*x+vlpb2*x2+vlpb3*x3
-      vild2=vltb1*tl+vltb2*tl2+vltb3*tl3
-      vild3=vlptb*tlx+vlpt2b*tl2x+vlp2tb*tlx2
-      vild=vild1+vild2+vild3
-      vil=viln/vild
-      xvisl=vil
-c
-c derivatives of liquid viscosity
-c
-      dvlpn1=vlpa1+2*vlpa2*x+3*vlpa3*x2+vlpta*tl
-      dvlpn1=vild*(dvlpn1+2*vlp2ta*tlx+vlpt2a*tl2)
-      dvlpn2=vlpb1+2*vlpb2*x+3*vlpb3*x2+vlptb*tl
-      dvlpn2=viln*(dvlpn2+2*vlp2tb*tlx+vlpt2b*tl2)
-      dvlpn=dvlpn1-dvlpn2
-      dvilpd=vild**2
-      dvislp=dvlpn/dvilpd
-      dvlen1=vlta1+2*vlta2*tl+3*vlta3*tl2+vlpta*x
-      dvlen1=vild*(dvlen1+vlp2ta*x2+2*vlpt2a*tlx)
-      dvlen2=vltb1+2*vltb2*tl+3*vltb3*tl2+vlptb*x
-      dvlen2=viln*(dvlen2+vlp2tb*x2+2*vlpt2b*tlx)
-      dvlen=dvlen1-dvlen2
-      dviled=vild**2
-      dvislt=dvlen/dviled
-      dvlpc=0.0
-      
-c gaz 110715
-c new supercritical table similiar to doherty fast table as modified by rajesh pawar
-            else if(iwater_table.ne.0) then
-c subroutine h2o_properties_new(iflg,iphase,var1,var2,var3,istate,var4,var5,var6)  
-c    real*8 var1,var2,var3,var4,var5(9),var6
-              if(ieosd.eq.1.or.ieosd.eq.4)then
-                  call h2o_properties_new(4,ieosd,pl,tl,dum1,istate,
-     &                 dumb,value,dumc)
+c      
+c gaz 060721 poly unification
 
-              elseif (ieosd.eq.2) then                  
-c                  call h2o_properties_new(5,ieosd,pl,tl,dum1,istate,
-c     &                 dumb,value,dumc)
-c gaz 120618 call with ieosd = 1 and use chain rule 
-c might need to do something else                  
-                  call h2o_properties_new(4,1,pl,tl,dum1,istate,
-     &                 dumb,value,dumc)
-             endif    
-                   rol = value(1)
-                   drolt = value(2)
-                   drolp = value(3)
-                   enl = value(4) + p_energy
-c gaz 120518 enw has slight (grav) correction                   
-                   enw = enl
-                   dhlt = value(5)
-                   dhlp = value(6)
-                   xvisl = value(7)
-                   dvislt = value(8)
-                   dvislp = value(9)  
-c gaz 120518                   
-                   dhlpc=0.0
-                   drolpc=0.0 
-                   dvlpc=0.0
-c chain rule not needed for table (d/dp already includes)
-c gaz 120618 need d/dp now                   
-c                 if(ieosd.eq.2) then
-c                 drolt = 0.0
-c                  dhlt = 0.0
-c                  dvislt = 0.0  
-c                 endif
-c gaz 110117
-c might need the following un commented
-c     if(ieosd.ne.3) then
-c      drolpc=0.
-c      dhlpc=0.
-c      dvlpc=0.
-c     endif
-c-----------------------------------------------------------------------
-C*****
-         endif      
-c
-c set derivatives wrt pc equal to 0 in compressed liquid
-c
-c GAZ 5/8/97
-c     if(ieosd.ne.3) then
-c     drolpc=0.
-c     dhlpc=0.
-c     dvlpc=0.
-c     endif
-c
-c       calculate mass fraction of air in liquid
-c
-c gaz 010519
-        call air_sol(tl,pl,pcl,xnl,dxnlp,dxnlpc,dxnlt)
-        go to 130
-        alpha=1.6111e-04
-        dalpca=0.0
-        xnl=alpha*pcl + xtol
-c
-c       derivatives of liquid mass fraction
-c
-         dxnlp=0.0
-         dxnlpc=alpha
-         dxnlt=0.0
-130     continue         
-c           if(xnl.le.0.0) then
-c              xnl=0.0
-c next line is new 4/13/98
-c              dxnlpc=0.0   
-c           endif
-c
-c       enthalpies of mixture
-c
-c enthalpy of air
-c
-         hsol=0.0
-c
-c  Added routine to compute air heat capacity and derivative, old 
-c  correlation was for water! (BAR - 8-15-94)
-c
-      call air_cp(tl, cpa, dcpat)
-        hcg=1.e-6*cpa*tl
-        hcl=hcg+hsol
-        enl=xnl*hcl+(1.d0-xnl)*enw
-c
-c derivatives of enthalpy of air
-c
-      dhsolt=0.0
-      dhsolp=0.0
-c
-c  Use new correlation for air heat capacity (BAR - 8-15-94)
-c
-      dhcgt = 1.e-6 * (cpa + dcpat * tl)
-        dhcgp=0.0
-        dhlp=dxnlp*hcl+xnl*(dhsolp+dhcgp)+(1.d0-xnl)*dhlp-dxnlp*enw
-        dhlt=dxnlt*hcl+xnl*(dhsolt+dhcgt)+(1.d0-xnl)*dhlt-dxnlt*enw
-c
-        dhslpc=-dhsolp
-        dhcgpc=-dhcgp
-        dhlpc=dxnlpc*hcl+xnl*(dhslpc+dhcgpc)+(1.d0-xnl)*dhlpc-dxnlpc*enw
-c     endif
-c
-c GAZ 5/8/97
-c     if(ieosd.ne.1) then
-c
-c water vapor enthalpy
-c
-          if(iwater_table.eq.0) then
-c     vapor enthalpy
-      ensn1=eva0+evpa1*xv+evpa2*xv2+evpa3*xv3
-      ensn2=evta1*tl+evta2*tl2+evta3*tl3
-      ensn3=evpta*tlxv+evpt2a*tl2xv+evp2ta*tlxv2
-      ensn=ensn1+ensn2+ensn3
-      ensd1=evb0+evpb1*xv+evpb2*xv2+evpb3*xv3
-      ensd2=evtb1*tl+evtb2*tl2+evtb3*tl3
-      ensd3=evptb*tlxv+evpt2b*tl2xv+evp2tb*tlxv2
-      ensd=ensd1+ensd2+ensd3
-      ens=ensn/ensd
-      env=ens + p_energy
-c
-c       derivatives of water vapor enthalpy
-c
-      dhvp1=evpa1+2*evpa2*xv+3*evpa3*xv2+evpta*tl
-      dhvp1=ensd*(dhvp1+2*evp2ta*tlxv+evpt2a*tl2)
-      dhvp2=evpb1+2*evpb2*xv+3*evpb3*xv2+evptb*tl
-      dhvp2=ensn*(dhvp2+2*evp2tb*tlxv+evpt2b*tl2)
-      dhvpn=dhvp1-dhvp2
-      dhvpd=ensd**2
-      dhvp=dhvpn/dhvpd
-      dhvt1=evta1+2*evta2*tl+3*evta3*tl2+evpta*xv
-      dhvt1=ensd*(dhvt1+evp2ta*xv2+2*evpt2a*tlxv)
-      dhvt2=evtb1+2*evtb2*tl+3*evtb3*tl2+evptb*xv
-      dhvt2=ensn*(dhvt2+evp2tb*xv2+2*evpt2b*tlxv)
-      dhvtn=dhvt1-dhvt2
-      dhvtd=ensd**2
-      dhvt=dhvtn/dhvtd
-      dhvpc=-dhvp
-c
-c water vapor density
-c
-      rnsn1=dva0+dvpa1*xv+dvpa2*xv2+dvpa3*xv3
-      rnsn2=dvta1*tl+dvta2*tl2+dvta3*tl3
-      rnsn3=dvpta*tlxv+dvpt2a*tl2xv+dvp2ta*tlxv2
-      rnsn=rnsn1+rnsn2+rnsn3
-      rnsd1=dvb0+dvpb1*xv+dvpb2*xv2+dvpb3*xv3
-      rnsd2=dvtb1*tl+dvtb2*tl2+dvtb3*tl3
-      rnsd3=dvptb*tlxv+dvpt2b*tl2xv+dvp2tb*tlxv2
-      rnsd=rnsd1+rnsd2+rnsd3
-      rns=rnsn/rnsd
-      ros=rns
-      rov=ros
-c
-c       water derivatives of vapor density
-c
-      drspn1=dvpa1+2*dvpa2*xv+3*dvpa3*xv2+dvpta*tl
-      drspn1=rnsd*(drspn1+2*dvp2ta*tlxv+dvpt2a*tl2)
-      drspn2=dvpb1+2*dvpb2*xv+3*dvpb3*xv2+dvptb*tl
-      drspn2=rnsn*(drspn2+2*dvp2tb*tlxv+dvpt2b*tl2)
-      drspn=drspn1-drspn2
-      drospd=rnsd**2
-      drovp=drspn/drospd
-      drsen1=dvta1+2*dvta2*tl+3*dvta3*tl2+dvpta*xv
-      drsen1=rnsd*(drsen1+dvp2ta*xv2+2*dvpt2a*tlxv)
-      drsen2=dvtb1+2*dvtb2*tl+3*dvtb3*tl2+dvptb*xv
-      drsen2=rnsn*(drsen2+dvp2tb*xv2+2*dvpt2b*tlxv)
-      drsen=drsen1-drsen2
-      drostd=rnsd**2
-      drovt=drsen/drostd
-      drovpc=-drovp
-c
-c water vapor viscosity
-c
-      visn1=vva0+vvpa1*xv+vvpa2*xv2+vvpa3*xv3
-      visn2=vvta1*tl+vvta2*tl2+vvta3*tl3
-      visn3=vvpta*tlxv+vvpt2a*tl2xv+vvp2ta*tlxv2
-      visn=visn1+visn2+visn3
-      visd1=vvb0+vvpb1*xv+vvpb2*xv2+vvpb3*xv3
-      visd2=vvtb1*tl+vvtb2*tl2+vvtb3*tl3
-      visd3=vvptb*tlxv+vvpt2b*tl2xv+vvp2tb*tlxv2
-      visd=visd1+visd2+visd3
-      vis=visn/visd
-      xvisv=vis
-c
-c derivatives of water vapor viscosity
-c
-      dvspn1=vvpa1+2*vvpa2*xv+3*vvpa3*xv2+vvpta*tl
-      dvspn1=visd*(dvspn1+2*vvp2ta*tlxv+vvpt2a*tl2)
-      dvspn2=vvpb1+2*vvpb2*xv+3*vvpb3*xv2+vvptb*tl
-      dvspn2=visn*(dvspn2+2*vvp2tb*tlxv+vvpt2b*tl2)
-      dvspn=dvspn1-dvspn2
-      dvispd=visd**2
-      dvisvp=dvspn/dvispd
-      dvsen1=vvta1+2*vvta2*tl+3*vvta3*tl2+vvpta*xv
-      dvsen1=visd*(dvsen1+vvp2ta*xv2+2*vvpt2a*tlxv)
-      dvsen2=vvtb1+2*vvtb2*tl+3*vvtb3*tl2+vvptb*xv
-      dvsen2=visn*(dvsen2+vvp2tb*xv2+2*vvpt2b*tlxv)
-      dvsen=dvsen1-dvsen2
-      dvised=visd**2
-      dvisvt=dvsen/dvised
-      dvvpc=-dvisvp
-           else if(iwater_table.ne.0) then
-c subroutine h2o_properties_new(iflg,iphase,var1,var2,var3,istate,var4,var5,var6)  
-c    real*8 var1,var2,var3,var4,var5(9),var6
-                if(ieosd.eq.3)then
-                  call h2o_properties_new(4,ieosd,pv,tl,dum1,istate,
-     &                 dumb,value,dumc)
+c start calculations    
 
-                elseif (ieosd.eq.2) then
-c gaz 120718  derivatives match rat polynomials                
-c                  call h2o_properties_new(6,ieosd,pl,tl,dum1,istate,
-c     &                 dumb,value,dumc)
-                  call h2o_properties_new(4,3,pv,tl,dum1,istate,
-     &                 dumb,value,dumc)
-               endif    
-                   rov = value(1)
-c gaz  120418                  
-                   ros = rov
-                   drovt = value(2)
-                   drovp = value(3)
-                   env = value(4) + p_energy
-c gaz  120418                   
-                   ens = env
-                   dhvt = value(5)
-                   dhvp = value(6)
-                   xvisv = value(7)
-                   vis = xvisv
-                   dvisvt = value(8)
-                   dvisvp = value(9)  
-                   dhvpc=-dhvp
-                   drovpc=-drovp
-                   dvvpc=-dvisvp
-                   
-c chain rule not needed for table (d/dp already includes)
-c gaz 120718 need to have d/dp                   
-c               if(ieosd.eq.2) then
-c                drovt = 0.0
-c                dhvt = 0.0
-c                dvisvt = 0.0  
-c               endif
-          endif           
-c gaz 111915
-c also changed pv_tol to 1.e-3
+c gaz 070321       
+       call fluid_props_control(1, mi, mi,fluid(1), 
+     &      'all      ', '         ')
+       if(iprop_testa.ne.0.and.l.eq.iprop_testa) then
+        write(ierr,676) mi,ieos(mi),phi(mi),t(mi),pci(mi)
+        write(ierr,677)
+        write(ierr,678) 'den',(den_h2o(mi,im),im=1,6)
+        write(ierr,678) 'enth',(enth_h2o(mi,im),im=1,6)
+        write(ierr,678) 'visc',(visc_h2o(mi,im),im=1,6)
+        write(ierr,678) 'huma',(humid_h2o(mi,im),im=1,3)
+       endif 
+676   format(1p,'node ',
+     &    i8,' ieos ',i3,' P ',g16.8,1x,'T ',g16.8,1x,'PC ',g16.8) 
+677   format('var ',t9,'varl',t23,'dvarlp',t37,'dvarlt',t53,'varv',
+     & t69,'dvarvp',t82,'dvarvt',t95,'dvarvpc')   
+678   format(1p,a,7(1x,g14.5))   
+
+c     
+c gaz 062521 set variables to new code values from fluid_props_control
 c
+        rol   =  den_h2o(mi,1) 
+        drolp	=  den_h2o(mi,2) 
+        drolt	=  den_h2o(mi,3) 
+        rov	=  den_h2o(mi,4) 
+        ros   =  rov
+        drovp	=  den_h2o(mi,5) 
+        drovt =  den_h2o(mi,6) 
+        enw	=  enth_h2o(mi,1)
+        dhlp	=  enth_h2o(mi,2)
+        dhlt	=  enth_h2o(mi,3)
+        env	=  enth_h2o(mi,4)
+        ens   =  env
+        dhvp	=  enth_h2o(mi,5)
+        dhvt	=  enth_h2o(mi,6)
+        xvisl   =  visc_h2o(mi,1)
+        dvislp  =  visc_h2o(mi,2)
+        dvislt  =  visc_h2o(mi,3)
+        xvisv   =  visc_h2o(mi,4)
+        vis     =  xvisv
+        dvisvp  =  visc_h2o(mi,5)  
+        dvisvt  =  visc_h2o(mi,6)
+        
+       humida(mi) = humid_h2o(mi,1)
+       dhumidp    = humid_h2o(mi,2)
+       dhumidpc   = -dhumidp
+       dhumidt    = humid_h2o(mi,3)
+       
+       pv         = psat_h2o(mi,1)  
+       pcl        = pci(mi)
+       dtdp       = psat_h2o(mi,2)
+       dpct       = psat_h2o(mi,3)
+c gaz 100721 (dpsats needed for vapor pressure lowering)       
+       dpsats     = psat_h2o(mi,4)
+       dtps       = 0.0d0
+       dhvpc      = -dhvp
+       drovpc     = -drovp
+       dvvpc      = -dvisvp 
+       dhlpc      = 0.0
+       drolpc     = 0.0 
+       dvlpc      = 0.0  
+        
       if(ipv_tol.eq.1) then
        dhvpc = 0.0
        dhvp = 0.0
@@ -2236,14 +1736,81 @@ c
        dvvpc = 0.0
        dvisvp = 0.0
       endif
+c gaz 072520 force ieosd to stay = 3, changes from 4 to 1 in h2o_properties_new      
+      if(ieosd.eq.3.or.ieosd.eq.4)then
+       ieosd = 3
+       xrv = 1
+       xrl = 1
+       drl = 0
+       drv = 0
+       drlp = 0
+       drvp = 0 
+      endif                  
+c      
+c
+c gaz moved cden correction here
+c
+      if(cden) then
+c     Add correction for liquid species
+         cden_cor = cden_correction(mi)
+         rol = rol + cden_cor
+      end if
+c
+c gaz 071821 new call fluid_props_control
+        call fluid_props_control(1, mi, mi,fluid(2), 
+     &      'all      ', '         ')
+c
+
+         xnl    = xnl_ngas(mi,1)
+         dxnlp  = xnl_ngas(mi,2)
+         dxnlpc = xnl_ngas(mi,4)
+         dxnlt  = xnl_ngas(mi,3)
+         
+         hcg    = enth_ngas(mi,1) + p_energy
+         dhcgp =  enth_ngas(mi,2) 
+         dhcgpc = -dhcgp
+         dhcgt  = enth_ngas(mi,3)
+c gaz 071821 set heat of solution (and derivatives) = 0         
+         
+         hsol   = 0.0
+         dhsolp = 0.0
+         dhsolt = 0.0
+         dhslpc = 0.0
+         hcl    = hcg + hsol
+         
+        roc    = den_ngas(mi,1)
+        drocp  = 0.0
+        drocpc = den_ngas(mi,2) 
+        droct  = den_ngas(mi,3)
+        
+        xvisc   = visc_ngas(mi,1)
+        dxvscpc = visc_ngas(mi,2)
+        dxvsct  = visc_ngas(mi,3)
+        dxvscp  = 0.0
+c
+c  Added routine to compute air heat capacity and derivative, old 
+c  correlation was for water! (BAR - 8-15-94)
+c gaz 070820 just add enthalpies   (heat of solution assumed = 0.0 , see above: hsol = 0)    
+c
+
+        enl=xnl*hcl+(1.d0-xnl)*enw
+c
+c derivatives of enthalpy of dissolved air
+c
+
+        dhlp=dxnlp*hcl+xnl*(dhsolp+dhcgp)+(1.d0-xnl)*dhlp-dxnlp*enw
+        dhlt=dxnlt*hcl+xnl*(dhsolt+dhcgt)+(1.d0-xnl)*dhlt-dxnlt*enw
+c
+c        dhslpc=-dhsolp
+        dhcgpc=-dhcgp
+        dhlpc=dxnlpc*hcl+xnl*(dhslpc+dhcgpc)+(1.d0-xnl)*dhlpc-dxnlpc*enw
+c     endif
+c
+      
 c
 c density of air
 c
-      pcl0=0.101325
-      roc0=1.292864
-**** density of air eqn (31)
-      drocpc=roc0*(273./(tl+273.))/pcl0
-      roc=drocpc*pcl
+
       rov = roc + ros
       xnv = roc / rov + xtol
 **** molar densities used for avg. mol wt. calculation
@@ -2257,14 +1824,14 @@ c
 c
 c derivatives of the density of air and mixture
 c
-      droct=-roc/(tl+273.)
+c gaz 070820 moved droct into if block above      
+c      droct=-roc/(tl+273.)
       drocp=0.0
       drovp=drovp+drocp
       drovt=drovt+droct
       drovpc=drovpc+drocpc
 c
 c vapor mass fraction
-c
 c
 c       derivatives of mass fraction
 c
@@ -2278,9 +1845,15 @@ c
 c  Added routine to compute air heat capacity and derivative, old 
 c  correlation was for water! (BAR - 8-15-94)
 c
-        call air_cp(tl, cpa, dcpat)
-        hcg=1.e-6*cpa*tl
-        env=xnv*hcg+ens*(1.d0-xnv)
+c gaz 070820 if identical to earlier code remove
+      if(iair_table.eq.1) then     
+c use values with air partial pressure (with 'no' table can skip because hcg(T) only
+       hcg = enth_ngas(mi,4) + p_energy
+       dhcgpc = enth_ngas(mi,5) 
+       dhcgt = enth_ngas(mi,6)
+      endif 
+      
+      env=xnv*hcg+ens*(1.d0-xnv)
 c
 c derivatives of enthalpy of air
 c      
@@ -2288,35 +1861,42 @@ c
         dhvst=dhvt
         dhvspc=dhvpc
 c
-        dhcgpc=0.0
-c
-c  Use new correlation for air heat capacity (BAR - 8-15-94)
-c
-        dhcgt = 1.e-6 * (cpa + dcpat * tl)
-c        dhcgt=(-11.76+0.0354*(tl+273.))*1.e-6*tl+cpa
-        dhcgp=0.0
-c
         dhvt=dxnvt*hcg+xnv*dhcgt+(1.d0-xnv)*dhvt-dxnvt*ens
         dhvp=dxnvp*hcg+(1.d0-xnv)*dhvp-dxnvp*ens
         dhvpc=dxnvpc*hcg+(1.d0-xnv)*dhvpc-dxnvpc*ens
 c
 c vapor viscosity
 c
-      xvisc=182.7e-07+0.41e-07*(tl-18.0)
-      dxvsct=0.41e-07
+
       xvisv=(1.00-xnv)*vis+xnv*xvisc
 c
 c dervatives of vapor viscosity
 c
       dvisvt=(1.d0-xnv)*dvisvt-dxnvt*(vis-xvisc)+xnv*dxvsct
-      dvisvp=(1.d0-xnv)*dvisvp-dxnvp*(vis-xvisc)
-      dvvpc=(1.d0-xnv)*dvvpc-dxnvpc*(vis-xvisc)
+      dvisvp=(1.d0-xnv)*dvisvp-dxnvp*(vis-xvisc)+xnv*dxvscp
+      dvvpc=(1.d0-xnv)*dvvpc-dxnvpc*(vis-xvisc)+xnv*dxvscpc
 c
-c GAZ 5/8/97
-c     else
-c        avgmolwt(mi) = mw_air   PHS 4/2/04  removed this line
-c GAZ 5/8/97
-c     endif
+c test of fluid_prop_control for air
+c gaz 070321   
+       if(iprop_testa.ne.0.and.l.eq.iprop_testa) then
+        if (mi.eq.1) write(ierr,*) 'air test old l = ',l
+        write(ierr,676) mi,ieos(mi),phi(mi),t(mi),pci(mi)
+        write(ierr,677)
+        write(ierr,678) 'den',0.,0.,0.,roc,drocp,droct,drocpc
+        write(ierr,678) 'enth',0.,0.,0.,hcg,dhcgp,dhcgt,dhcgpc
+        write(ierr,678) 'visc',0.,0.,0.,xvisc,dxvscp,dxvsct,dxvscpc
+        write(ierr,678) 'xnl ',0.,0.,0.,xnl, dxnlp, dxnlt, dxnlpc
+       endif 
+c       call fluid_props_control(1, mi, mi, 'air      ', 'all      ', '         ')
+       if(iprop_testa.ne.0.and.l.eq.iprop_testa) then
+        if (mi.eq.1) write(ierr,*) 'air test l = ',l
+        write(ierr,676) mi,ieos(mi),phi(mi),t(mi),pci(mi)
+        write(ierr,677)
+        write(ierr,678) 'den',0.,0.,0.,(den_ngas(mi,im),im=1,3)
+        write(ierr,678) 'enth',0.,0.,0.,(enth_ngas(mi,im),im=1,3)
+        write(ierr,678) 'visc',0.,0.,0.,(visc_ngas(mi,im),im=1,3)
+        write(ierr,678) 'xnl ',0.,0.,0.,(xnl_ngas(mi,im),im=1,3)
+       endif       
 c
 c modify derivatives for 2-phase
 c
@@ -2388,6 +1968,8 @@ c
 c derivative wrt pc contain wrt t terms (remember ieos(mi)=2)
 c drolpc (for example) is now the temperature derivative
 c
+c  gaz 110220 dividing 2 phase region
+      if(ieos_sc(mi).ne.-1) then
       drolp=drolp+drolpc
       drovp=drovp+drovpc
       dhlp=dhlp+dhlpc
@@ -2408,7 +1990,7 @@ c
       dxnvpc0=dxnvpc
       dhcgpc0=dhcgpc
       dhvspc0=dhvspc
-c
+c all these 'pc' derivatives at 't' derivatives
       drolpc=drolt+drolpc0*dpct
       drovpc=drovt+drovpc0*dpct
       dhlpc=dhlt+dhlpc0*dpct
@@ -2443,19 +2025,90 @@ c
          dhcgt=0.0
          dhvst=0.0
       end if
+      else
+c coding for p-pcl ge Pcrit tl lt Tcrit (ieos_sc(mi).eq.1)   
+c variables   (ieos_sc(mi).eq.1  means pressure higher that sat pressure)      
+      drolp=drolp+drolpc
+      drovp=drovp+drovpc
+      dhlp=dhlp+dhlpc
+      dhvp=dhvp+dhvpc
+      dvisvp=dvisvp+dvvpc
+      dvislp=dvislp+dvlpc
+      dxnlp=dxnlp+dxnlpc
+      dxnvp=dxnvp+dxnvpc
+      dhcgp=dhcgp+dhcgpc
+      dhvsp=dhvsp+dhvspc
+      drolpc0=drolpc
+      drovpc0=drovpc
+      dhlpc0=dhlpc
+      dhvpc0=dhvpc
+      dvlpc0=dvlpc
+      dvvpc0=dvvpc
+      dxnlpc0=dxnlpc
+      dxnvpc0=dxnvpc
+      dhcgpc0=dhcgpc
+      dhvspc0=dhvspc
+c all these 'pc' derivatives at 't' derivatives
+c      drolpc=drolt+drolpc0*dpct
+c      drovpc=drovt+drovpc0*dpct
+c      dhlpc=dhlt+dhlpc0*dpct
+c      dhvpc=dhvt+dhvpc0*dpct
+c      dvvpc=dvisvt+dvvpc0*dpct
+c      dvlpc=dvislt+dvlpc0*dpct
+c      dxnlpc=dxnlt+dxnlpc0*dpct
+c      dxnvpc=dxnvt+dxnvpc0*dpct
+c      dhcgpc=dhcgt+dhcgpc0*dpct
+c      dhvspc=dhvst+dhvspc0*dpct
+c      
+      drolpc=drolt
+      drovpc=drovt
+      dhlpc=dhlt
+      dhvpc=dhvt
+      dvvpc=dvisvt
+      dvlpc=dvislt
+      dxnlpc=dxnlt
+      dxnvpc=dxnvt
+      dhcgpc=dhcgt
+      dhvspc=dhvst
 c
-      dtd=0.0
-      endif
+c      if( ivapl .ne. 0 ) then
+c         drolt=drolpc0*dpsats
+c         drovt=drovpc0*dpsats
+c         dhlt=dhlpc0*dpsats
+c         dhvt=dhvpc0*dpsats
+c         dvisvt=dvvpc0*dpsats
+c         dvislt=dvlpc0*dpsats
+c         dxnlt=dxnlpc0*dpsats
+c         dxnvt=dxnvpc0*dpsats
+c         dhcgt=dhcgpc0*dpsats
+c         dhvst=dhvspc0*dpsats
+c      else
+c         drolt=0.0
+c         drovt=0.0
+c        dhlt=0.0
+c         dhvt=0.0
+c         dvisvt=0.0
+c         dvislt=0.0
+c         dxnlt=0.0
+c         dxnvt=0.0
+c         dhcgt=0.0
+c         dhvst=0.0
+c      end if          
+
+      endif 
+      
+      dtd=0.0 
+      endif 
       sl=s(mi)
       cp=denr(mi)*cpr(mi)
       por=ps(mi)
       vol=volume(mi)
 c      
-      endif
+c      endif
 c      
 c     two phase conditions
 c
-      if(ieosd.eq.2) then
+      if(ieosd.eq.2) then 
 c
 c       saturation and relative permeabilities
 c
@@ -2690,10 +2343,10 @@ c
 c ********** source term code start *****************
 c
 c gaz debug terms (so intel debugger recognizes fdum and l from use module)
-      dum_gaz=fdum+l 
+      dum_gaz=fdum+l+iad
 c
 c gaz  110218 fix for not zeroing out qng(mi)     
-       if(abs(pflowa(mi)).gt.pflowa_tol) qng(mi) = 0.0
+       if(abs(pflowa(mi)).gt.pflowa_tol) qng(mi) = 0.0      
        if(xairfl(mi).gt.0.0) qng(mi) = 0.0
 c gaz 111418 can now set qc for specified air flowrate(qng ne 0)
        qc(mi)=qng(mi)
@@ -2835,7 +2488,7 @@ c
        if(xairfl(mi).gt.0.0.and.sk(mi).lt.0.0) then
           if(iad.eq.0) then
 c save source info   
-            sk_temp(mi) = sk(mi)
+           sk_temp(mi) = sk(mi)
           endif
           sk(mi) = sk_temp(mi)
           qdis = sk(mi)
@@ -2849,7 +2502,7 @@ c save source info
        endif
        continue
       end if
-c end loop specified pressure
+c end loop specified water pressure
 c
 c start section on air inflow with specified humidity (inflow only)
 c no derivatives because of inflow only condition
@@ -2918,6 +2571,7 @@ c entha() is correct mixture enthalpy
 c if qc() is from a specified air pressure then permsda ne 0
 c if qc() is from a specified air flowrate then permsda eq 0  
 c at this point sk is calculated and if qc <0 , then qc is split  
+c duplicate code below?  see lines 2893-2902         
          if(pflowa(mi).gt.pflowa_tol) then
 c specified air pressure             
           if(ieosd.eq.2) then
@@ -2963,6 +2617,7 @@ c
 c end section on air inflow with specified humidity
 c
 c gaz 070516
+c boun keyword hu
 c start section on specified humidity (inflow only and outflow)
 c water flows in or out
 c       
@@ -2972,32 +2627,31 @@ c
               huma_fixed = 0.0
               if(iha.ne.0) then
                if(huma(mi).lt.0) then
-                 huma_fixed = abs(huma(mi))                         
+c gaz  033021 
+c pchuma() was calculated in flow_boundary_conditions from thuma,phuma, using psat(thuma) and huma             
+                 huma_fixed = abs(huma(mi))  
                  permsd=abs(wellim(mi))*permd_hum_mult
                  t_hum = thuma(mi)
-                 p_hum = phuma(mi) 
-                 pv_hum = psatl(t_hum,pcp(mi),dpcef(mi),dpsatt_100,
-     &                   dpsats,0,an(mi))
-                 pdiff = p_hum-pci(mi)
-                 sk_humf = permsd*(pdiff-huma_fixed*pv_hum)  
-                 if(ieosd.eq.2) then
-                  dsk_humfp = -permsd
+                 p_hum = phuma(mi)                  
+                 pc_hum = pchuma(mi) 
+                  sk_humf = permsd*(phi(mi)-p_hum)
+                  dsk_humfp = permsd
                   dsk_humfpc = 0.0
-c  dsk_humft uses pci = p - pv(t)  (pci is not a variable for ieosd = 2)              
-                  dsk_humft = -permsd*dpct
-                 else
-                  dsk_humfp = 0.0
-                  dsk_humfpc = -permsd
                   dsk_humft = 0.0                   
-                 endif
+
                 if(p_hum.gt.pflowa_tol) then
                  permsda = permsd*permd_air_mult
-                 sk_airhf = permsda*(phi(mi)-p_hum)
-                 dsk_airhfp =  permsda 
+c gaz  033021                
+                  sk_airhf = permsda*(pci(mi)-pc_hum)
+                  dsk_airhfpc =  permsda 
+                  dsk_airhfp = 0.0
                 else
                  sk_airhf = 0.0
+                 dsk_airhfpc = 0.0
                  dsk_airhfp = 0.0
-                endif                
+                endif 
+c gaz 082520 temperature constrained via hflx terms below
+c added coding there to use t_hum                
                endif
               endif   
 555           continue 
@@ -3200,10 +2854,17 @@ c gaz 112518  inflow or outflow
         else if(sk_hum.le.0.0) then
          sk(mi) = sk(mi) + sk_hum
          dqt(mi) = dqt(mi) + dsk_hums
-         qh(mi) = qh(mi) + sk_hum*enl
-         dqh(mi) = dqh(mi) + dhlp*sk_hum 
-         deqh(mi)=deqh(mi) + enl*dsk_hums
-         dcqh(mi)=dcqh(mi) + dhlpc*sk_hum            
+c gaz 082420  "sk_hum*enl" might need to be zero (eh_air contains water vapor enthalpy)  
+c gaz 082420 removed        
+c         qh(mi) = qh(mi) + sk_hum*enl
+c         dqh(mi) = dqh(mi) + dhlp*sk_hum 
+c         deqh(mi)=deqh(mi) + enl*dsk_hums
+c         dcqh(mi)=dcqh(mi) + dhlpc*sk_hum  
+c gaz 082420  so no change!         
+         qh(mi) = qh(mi)  
+         dqh(mi) = dqh(mi) 
+         deqh(mi)=deqh(mi) 
+         dcqh(mi)=dcqh(mi)          
         endif 
 c air and water leave in the gas phase (outflow)
 c need energy term here
@@ -3247,12 +2908,15 @@ c
              dqpc(mi) = dqpc(mi) + dsk_humfpc
              dqt(mi) = dqt(mi) + dsk_humft
              qc(mi) = qc(mi) + sk_airhf
-             dqc(mi) = dqc(mi) + dsk_airhfp    
+             dqc(mi) = dqc(mi) + dsk_airhfp 
+             dcqc(mi) = dcqc(mi) + dsk_airhfpc 
           else
              sk(mi) = sk(mi) + sk_humf
+             dq(mi) = dq(mi) + dsk_humfp
              dqpc(mi) = dqpc(mi) + dsk_humfpc  
              qc(mi) = qc(mi) + sk_airhf
-             dqc(mi) = dqc(mi) + dsk_airhfp  
+             dqc(mi) = dqc(mi) + dsk_airhfp 
+             dcqc(mi) = dcqc(mi) + dsk_airhfpc 
           endif
          endif
 c
@@ -3319,14 +2983,14 @@ c
 c modify accumulation terms for volume changes
 c
       if(ivfcal.eq.0) then
-      do 105 mid=1,neq
+      do 105 mid=loop_start,loop_end
       mi=mid+ndummy
       deni(mi)=(a(mi)   -denh(mi))*dtin
       denei(mi)=(a(mi+neq)-deneh(mi))*dtin
       denpci(mi)=(a(mi+neq+neq)-denpch(mi))*dtin
 105   continue
       else
-      do 110 mid=1,neq
+      do 110 mid=loop_start,loop_end
       mi=mid+ndummy
       den=a(mi)
       dene=a(mi+neq)
@@ -3351,7 +3015,7 @@ c
 c check for mass and energy balance decrepencies
 c 
 c     call check_balance_eq()
-      do mi = 1, neq
+      do mi = loop_start,loop_end
         if(ieos_bal(mi).ne.0) then
         diff_w = deni(mi)-deni_ch(mi)
         diff_e = denei(mi)-denei_ch(mi)
@@ -3370,3 +3034,642 @@ c
 
       return
       end
+
+      subroutine phase_chk(iflg,mi,var_dum,var_dum1,ieosd,va)
+c gaz 081420
+c estimate pcl(air partial pressure) during phase change)
+c      
+      use comai
+      use comci
+      use comdi
+      use comfi
+      use comii
+      implicit none
+      integer iflg,mi,i,ieosd,maxit_phase
+      real*8 pcl,tl,pl,sl,air_mass0,air_mass1,pcl0,roc,drocpc
+      real*8 water_mass1
+c gaz 101020 alpha0 now global comfi            
+      real*8 droct,rov,ros,xnl,xnv,alpha
+      real*8 dxnlp,dxnlpc,dxnlt
+      real*8 sl_chng,pcl_in,residual,pcl1,roc1,tol_resid
+      real*8 delpcl,dresid_dpcl,drovpc,drovt,pv1,rov1,pv_in
+      real*8 pcl_orig,roc_orig,pv_h2o, rol_liq, rol_vap, por
+      real*8 dresid_sl,delsl,var_dum,var_dum1,sl_best, sl_best32
+c gaz 100120 added value_a for air_properties call     
+      real*8 dum1,dumb,dumc,value(9),value_a(9)  
+      integer istate
+c
+      character*3 va
+      logical pcl_calc, sl_calc
+c gaz 101020 alpha0 now global comfi      parameter (alpha0 = 1.6111d-04) 
+      parameter (maxit_phase = 10)
+      parameter (tol_resid = 1.d-8, sl_best = 0.98d00)
+      parameter (sl_best32 = 0.005)
+c**** density of air (ideal gas) at several reference pressures
+c ideal fit at 5 mpa and 273 C   
+      parameter (pcl1=5.0, roc1=62.6, pv1 = 5, rov1 = 48.6)
+      parameter (pcl_orig=0.101325, roc_orig=1.292864)
+      if(va(1:2).eq.'sl') then
+       pcl_calc=.false.
+       sl_calc=.true.
+      else
+       pcl_calc=.true.
+       sl_calc=.false.         
+      endif
+      por = ps(mi)
+c gaz 101420 calculate air mass 
+c gaz 101420 if air_mass1 (accumulation term) used por must be include in calcs   
+       air_mass1=(denpci(mi)*dtot+denpch(mi))
+      if(iflg.eq.0) then
+c calculate equivalent gas pressure for dissolved gas in liquid phase 
+       air_mass1=(denpci(mi)*dtot+denpch(mi))   
+       if(ieosd.eq.1) then
+        pcl_in = pci(mi)
+         tl = t(mi)
+         pl = phi(mi)
+          pcl=pcl_in
+c xnl is dissolved gas concentration         
+
+          do i = 1, maxit_phase
+           call air_sol(tl,pl,pcl,xnl,dxnlp,dxnlpc,dxnlt)
+           residual = air_mass1-por*xnl*rolf(mi)
+           dresid_dpcl = -por*dxnlpc*rolf(mi)
+           delpcl = residual/dresid_dpcl
+           pcl = pcl -delpcl 
+           if (abs(residual).le.tol_resid) then
+             var_dum= pcl
+            return
+           endif
+          enddo
+          go to 101         
+       else
+c ieosd = 3 calc new partial pressure      
+          air_mass1=(denpci(mi)*dtot+denpch(mi))  
+          pcl_in = pci(mi)
+          tl = t(mi)
+          pl = phi(mi)
+          pcl=pcl_in
+          do i = 1, maxit_phase
+           call air_eos_sol_props(1,pcl,tl,istate,value_a)
+           roc = value_a(1)
+           droct = value_a(2)
+           drocpc = value_a(3)  
+           residual = air_mass1-por*roc
+           dresid_dpcl = -por*drocpc
+           delpcl = residual/dresid_dpcl
+           pcl = pcl -delpcl 
+           if (abs(residual).le.tol_resid) then
+             var_dum= pcl
+            return
+           endif
+          enddo  
+         endif
+      else if(iflg.eq.1) then
+c
+      if(ieosd.eq.1) then
+c possible phase change from liquid phase to two phase   
+        if (pci(mi).gt.0.0) then  
+         alpha=alpha0    
+         pcl_in = pci(mi)
+         tl = t(mi)
+         pl = phi(mi)
+         air_mass0 = pcl_in*alpha*rolf(mi)       
+        else 
+         pcl_in =  air_mass1/(alpha0*rolf(mi))       
+         roc = air_mass0
+        endif           
+
+      if(ieosd.eq.1.and.pcl_calc) then
+c gaz 100420  sl guess pass in from varchk         
+       pcl = pcl_in
+       sl_chng = var_dum1
+      else
+       pcl = pcl_in
+       sl_chng = 1.
+      endif
+c            
+c pv_in = sat pressure at tl       
+c
+       do i = 1, maxit_phase
+        call air_eos_sol_props(1,pcl,tl,istate,value_a)
+        roc = value_a(1)
+        droct = value_a(2)
+        drocpc = value_a(3)  
+       if(pcl_calc) then
+c change pcl with fixed saturation           
+       residual = air_mass0-(pcl*alpha*rolf(mi)*sl_chng + 
+     &  roc*(1.0-sl_chng))
+       dresid_dpcl = -(alpha*rolf(mi)*sl_chng+ drocpc*(1.0-sl_chng))
+        delpcl = residual/dresid_dpcl
+       pcl = pcl -delpcl 
+       else if(sl_calc) then
+c change s with fixed pcl  
+       residual = air_mass0-(pcl_in*alpha*rolf(mi)*sl_chng + 
+     &  roc-roc*sl_chng)
+        dresid_sl = -(pcl*alpha*rolf(mi)-roc)
+        delsl = residual/dresid_sl
+        sl_chng = sl_chng - delsl
+       endif    
+       if (abs(residual).le.tol_resid) go to 100
+       enddo
+       go to 101
+100    continue
+      else if(ieosd.eq.3) then
+c possible phase change from gas only to 2 phase       
+       air_mass1=(denpci(mi)*dtot+denpch(mi))    
+       pcl_in = pci(mi)
+       tl = t(mi)
+       pl = phi(mi)
+       if(pcl_in.eq.0.0) then
+        air_mass0=air_mass1
+
+       else
+c need call to get rolf and other fluid props   
+c air_mass0 is air mass in gas phase
+c       drocpc=roc1*(273./(tl+273.))/pcl1
+c       roc=drocpc*pcl_in
+        call air_eos_sol_props(1,pcl_in,tl,istate,value_a)
+        roc = value_a(1)
+        air_mass0 = roc*por
+      endif  
+      if(pcl_calc) then
+       pcl = pcl_in
+       sl_chng = sl_best32
+       sl_chng = 0.1
+       var_dum1 = sl_chng
+      else if(sl_calc) then
+       pcl = pci(mi)
+       sl_chng = 1. 
+      endif
+c            
+c pv_in = sat pressure at tl       
+c
+       do i = 1, maxit_phase
+        call air_eos_sol_props(1,pcl,tl,istate,value_a)
+        roc = value_a(1)
+        droct = value_a(2)
+        drocpc = value_a(3) 
+       if(pcl_calc) then
+c gaz 102420            
+c change pcl with fixed saturation 
+       call air_sol(tl,pl,pcl,xnl,dxnlp,dxnlpc,dxnlt)               
+c       call h2o_properties_new(4,1,pl,tl,dum1,istate,
+c     &                 dumb,value,dumc)
+       call water_eos_sol_props
+     &        (1,mi,pl,pcl,tl,istate,value,value_a)       
+       rol_liq = value(1)
+       residual = air_mass0-(xnl*rol_liq*por*sl_chng + 
+     &  por*roc*(1.0-sl_chng))
+       dresid_dpcl = -por*(dxnlpc*rol_liq*sl_chng+ drocpc*(1.0-sl_chng))
+        delpcl = residual/dresid_dpcl
+       pcl = pcl -delpcl 
+       else if(sl_calc) then
+c change s with fixed pcl  
+       residual = air_mass0-(pcl*alpha*rolf(mi)*sl_chng + 
+     &  roc-roc*sl_chng)
+        dresid_sl = -(pcl*alpha*rolf(mi)-roc)
+        delsl = residual/dresid_sl
+        sl_chng = sl_chng - delsl
+       endif    
+       if (abs(residual).le.tol_resid) go to 200
+       enddo
+       go to 101
+200    continue   
+       else if(ieosd.eq.4) then
+c possible phase change from Sc to liquid only 
+        pcl = pci(mi)
+        tl = t(mi)
+        pl = phi(mi)
+        alpha=alpha0 
+        call air_eos_sol_props(1,pcl,tl,istate,value_a)      
+        roc = value_a(1)
+c mass of air in liquid phase = alpha*rol_liq*pcl_liq
+       call h2o_properties_new(4,1,pl,tl,dum1,istate,
+     &                 dumb,value,dumc)
+       rol_liq = value(1)   
+       pcl = roc/(alpha*rol_liq)
+       else if(ieosd.eq.2) then
+c possible phase change calcs for 2 phase to saturated liquid 
+       alpha=alpha0    
+       pcl_in = pci(mi)
+       tl = t(mi)
+       pl = phi(mi)
+       sl = s(mi)
+c check if rolf(mi) defined and not "0"   
+       drocpc=roc1*(273./(tl+273.))/pcl1
+       roc=drocpc*pcl_in
+       air_mass0 = pcl_in*alpha*rolf(mi)*sl + roc*(1.0-sl)
+      if(pcl_calc) then
+       pcl = 0.0
+      else
+       pcl = pci(mi)
+       sl_chng = 1.
+      endif
+c            
+c pv_in = sat pressure at tl       
+c
+       do i = 1, maxit_phase
+c air and water vapor refereneced to 5 Mpa (see parameter statements)           
+        drocpc=roc1*(273./(tl+273.))/pcl1
+        roc=drocpc*pcl
+        droct=-roc/(tl+273.)
+        pv_h2o = pl-pcl
+        drovpc=rov1*(273./(tl+273.))/pv1
+        ros=drovpc*pv_h2o
+        drovt=-rov/(tl+273.)
+c    mass fraction rules for gas  
+        rov = roc + ros
+        xnv = roc / rov 
+       if(pcl_calc) then
+c change pcl with fixed saturation 
+       rol_liq = 990.    
+       residual = air_mass0-pcl*alpha*rol_liq
+       dresid_dpcl = -alpha*rol_liq
+        delpcl = residual/dresid_dpcl
+       pcl = pcl -delpcl 
+       else if(sl_calc) then
+c change s with fixed pcl  
+       residual = air_mass0-(pcl*alpha*rolf(mi)*sl_chng + 
+     &  roc-roc*sl_chng)
+        dresid_sl = -(pcl*alpha*rolf(mi)-roc)
+        delsl = residual/dresid_sl
+        sl_chng = sl_chng - delsl
+       endif    
+       if (abs(residual).le.tol_resid) go to 300
+       enddo
+       go to 101
+       endif
+       else if (iflg.eq.2) then
+c calculate equivalent gas phase pcl when changing from 2 phase to gas
+c gaz 101420 (air_mass1 calculated at top of routine)
+         pcl = pci(mi)
+         tl = t(mi)
+         pl = phi(mi)
+         pcl = 0.1 
+        do i = 1, maxit_phase  
+        call air_eos_sol_props(1,pcl,tl,istate,value_a)
+         roc = value_a(1)
+         droct = value_a(2)
+         drocpc = value_a(3)
+         residual = air_mass1-roc*por
+         dresid_dpcl = -drocpc*por
+         delpcl = residual/dresid_dpcl
+         pcl = pcl-delpcl
+         if (abs(residual).le.tol_resid) go to 300
+        enddo
+       else if (iflg.eq.3) then
+c calculate equivalent gas phase pcl when changing from 2 phase to liquid
+         air_mass1=denpci(mi)*dtot+denpch(mi)
+         pcl = pci(mi)
+         tl = t(mi)
+         pl = phi(mi)
+        do i = 1, maxit_phase  
+c        call air_eos_sol_props(1,pcl,tl,istate,value_a)
+         call air_sol(tl,pl,pcl,xnl,dxnlp,dxnlpc,dxnlt)            
+         residual = air_mass1-xnl*rolf(mi)*por
+         dresid_dpcl = -dxnlpc*rolf(mi)*por
+         delpcl = residual/dresid_dpcl
+         pcl = pcl-delpcl
+         if (abs(residual).le.tol_resid) go to 300
+        enddo
+        else if (iflg.eq.4) then
+c calculate equivalent gas phase pcl when changing from liquid to 2 phase
+c special case of pcl.ge.pl (hence air_mass1)    sl(constant)        
+         air_mass1=denpci(mi)*dtot+denpch(mi)
+c gaz 040823 update  mass 
+        call awh_accumulation_calc(0,mi,mi,0)
+        call awh_accumulation_calc(1,mi,mi,0)
+         air_mass1 = mass_ngas(mi)
+         pcl = pci(mi)
+         tl = t(mi)
+         pl = phi(mi)
+         sl_chng = var_dum1       
+        do i = 1, maxit_phase  
+           call air_eos_sol_props(1,pcl,tl,istate,value_a)
+           roc = value_a(1)
+           droct = value_a(2)
+           drocpc = value_a(3)  
+           call air_sol(tl,pl,pcl,xnl,dxnlp,dxnlpc,dxnlt)  
+         residual = air_mass1-por*(xnl*rolf(mi)*sl_chng +
+     &              roc*(1.-sl_chng))  
+         dresid_dpcl = -por*(dxnlpc*rolf(mi)*sl_chng + 
+     &                drocpc*(1.-sl_chng))
+         delpcl = residual/dresid_dpcl
+         pcl = pcl-delpcl
+         if (abs(residual).le.tol_resid) go to 300
+        enddo
+        else if (iflg.eq.5) then
+c possible phase change from Sc to liquid only 
+        pcl = pci(mi)
+        tl = t(mi)
+        pl = phi(mi)
+        air_mass1=denpci(mi)*dtot+denpch(mi)
+       do i = 1, maxit_phase 
+         call air_eos_sol_props(1,pcl,tl,istate,value_a)      
+         roc = value_a(1)
+         droct = value_a(2)
+         drocpc = value_a(3)  
+         residual = air_mass1-por*roc
+         dresid_dpcl = -por*drocpc
+         delpcl = residual/dresid_dpcl
+         pcl = pcl-delpcl
+        if (abs(residual).le.tol_resid) go to 300
+       enddo 
+        else if (iflg.eq.6) then
+c gaz 102520 calculate sl based on air mass
+c possible phase change from Sc to 2 phase (assume zero solubility)
+        pcl = pci(mi)
+        tl = t(mi)
+        pl = phi(mi)
+c sl_chng = 0.5 is a 1st guess        
+        sl_chng = 0.5
+c gaz 102720 try  newer mass       
+        air_mass1=denpci(mi)*dtot+denpch(mi)
+c         air_mass1=denpch(mi)
+         call air_eos_sol_props(1,pcl,tl,istate,value_a)      
+         roc = value_a(1)
+         droct = value_a(2)
+         drocpc = value_a(3)
+       do i = 1, maxit_phase   
+         residual = air_mass1-por*(1.-sl_chng)*roc
+        dresid_sl = por*roc
+        delsl = residual/dresid_sl
+        sl_chng = sl_chng - delsl
+        if (abs(residual).le.tol_resid) go to 300
+       enddo 
+        else if (iflg.eq.7) then
+c gaz 102520 get sat change from water balance
+c possible phase change from Sc to 2 phase (assume zero solubility)
+        pcl = pci(mi)
+        tl = t(mi)
+        pl = phi(mi)
+c sl_chng = 0.5 is a 1st guess        
+        sl_chng = 0.5
+        water_mass1=deni(mi)*dtot+denh(mi)
+c mass of water in liquid phase = sl_chng*rolf
+       call h2o_properties_new(4,1,pl,tl,dum1,istate,
+     &                 dumb,value,dumc)
+       rol_liq = value(1)    
+      call h2o_properties_new(4,3,pl-pcl,tl,dum1,istate,
+     &                 dumb,value,dumc)
+      rol_vap = value(1)
+       do i = 1, maxit_phase   
+         residual = water_mass1-por*((1.-sl_chng)*rol_vap +
+     &   sl_chng*rol_liq)
+        dresid_sl = -por*(-rol_vap+rol_liq)
+        delsl = residual/dresid_sl
+        sl_chng = sl_chng - delsl
+        if (abs(residual).le.tol_resid) go to 300
+       enddo       
+
+       else if (iflg.eq.8) then
+c gaz 103120 compare liq and gas air fractions
+        pcl = pci(mi)
+        tl = t(mi)
+        pl = phi(mi)
+c sl_chng = 0.5 is a 1st guess        
+        sl_chng = 0.5
+        air_mass1=denpci(mi)*dtot+denpch(mi)
+c mass of air in gas phase =roc
+         call air_eos_sol_props(1,pcl,tl,istate,value_a)      
+         roc = value_a(1)
+         droct = value_a(2)
+         drocpc = value_a(3)        
+       call h2o_properties_new(4,1,pl,tl,dum1,istate,
+     &                 dumb,value,dumc)
+       rol_liq = value(1)    
+      call h2o_properties_new(4,3,pl-pcl,tl,dum1,istate,
+     &                 dumb,value,dumc)
+      rol_vap = value(1)
+      call air_sol(tl,pl,pcl,xnl,dxnlp,dxnlpc,dxnlt)  
+       residual = xnl*rol_liq-roc
+        if(residual.ge.0.0) go to 300     
+       endif
+300    continue
+        if(pcl_calc) var_dum= pcl
+        if(sl_calc) var_dum1= sl_chng
+       return
+c  
+101    continue
+c gaz 040122
+c      write (ierr,*) 'failed to converge phase_chk pcl ',pcl,
+c     &  ' sl ', sl_chng    
+
+      return
+      end
+      subroutine air_eos_sol_props(iflg,pcl,tl,istate,value_a)
+c
+c subroutine to manage air properties (for no table, only density)
+c gaz 100220  for use with subroutine phase_chk
+      use comai
+      use comci
+      use comdi
+      use comfi
+      use comii
+      implicit none
+      real*8 pcl,pcl_in,tl,dum1,dumb,dumc,value(9),value_a(9)  
+      real*8 pcl0
+      integer istate, iflg
+c      
+      if(iflg.eq.1) then
+       if(iair_table.eq.1) then           
+c air table EOS  (contains density, enthalpy, and viscosity)   
+c value_a(1) = density
+c value_a(2) = d(density)/dp
+c value_a(3) = d(density/dt  
+c value_a(4) = enthalpy
+c value_a(5) = d(enthalpy)/dp
+c value_a(6) = d(enthalpy/dt   
+c value_a(7) = viscosity
+c value_a(8) = d(viscosity)/dp
+c value_a(9) = d(viscosity/dt           
+c
+        if(pcl.le.pmin_air_tabl(1)) then
+         pcl_in = pmin_air_tabl(1)
+        else
+         pcl_in = pcl
+        endif    
+        call air_properties_new(4,3,pcl_in,tl,dum1,istate,
+     &                 dumb,value_a,dumc)            
+       else 
+c perfect gas law           
+        pcl0=0.101325
+        roc0=1.292864
+c       **** density of air eqn (31)
+        value_a(3)=roc0*(273./(tl+273.))/pcl0
+        value_a(1)=value_a(3)*pcl
+        value_a(2)=-value_a(1)/(tl+273.)           
+       endif 
+      else if(iflg.eq.2) then
+c solubility equation
+
+      endif
+      return
+      end
+            subroutine water_eos_sol_props
+     &        (iflg,mi,pl,pcl,tl,istate,value,value_a)
+c
+c subroutine to manage water properties (for no table, only density)
+c gaz 100220  
+      use comai
+      use comci
+      use comdi
+      use comfi
+      use comii
+      implicit none
+      real*8 pl,pcl,pcl_in,tl,dum1,dumb,dumc,value(9),value_a(9) 
+      real*8 cden_cor, cden_correction, rol_liq, rol_vap
+      real*8 pcl0
+      real*8 dla0
+      real*8 dlpa1
+      real*8 dlpa2
+      real*8 dlpa3
+      real*8 dlta1
+      real*8 dlta2
+      real*8 dlta3
+      real*8 dlpta
+      real*8 dlp2ta
+      real*8 dlpt2a
+      real*8 dlb0
+      real*8 dlpb1
+      real*8 dlpb2
+      real*8 dlpb3
+      real*8 dltb1
+      real*8 dltb2
+      real*8 dltb3
+      real*8 dlptb
+      real*8 dlp2tb
+      real*8 dlpt2b
+      real*8 x
+      real*8 x2
+      real*8 x3
+      real*8 pv
+      real*8 xv
+      real*8 xv2
+      real*8 xv3
+      real*8 tl2
+      real*8 tl3
+      real*8 tlx
+      real*8 tl2x
+      real*8 tlx2
+      real*8 tlxv
+      real*8 tl2xv
+      real*8 tlxv2
+      real*8 rnwn1
+      real*8 rnwn2
+      real*8 rnwn3
+      real*8 rnwd1
+      real*8 rnwd2
+      real*8 rnwd3
+      real*8 rnwn
+      real*8 rnwd
+      real*8 rnw
+      real*8 rol
+      real*8 drlpn1
+      real*8 drlpn2
+      real*8 drlpn
+      real*8 drolpd
+      real*8 drolp
+      real*8 drlen1
+      real*8 drlen2
+      real*8 drlen
+      real*8 droled
+      real*8 drolt
+      real*8 drolpc
+      integer istate, iflg, iieosd, mi
+c      
+      if(iflg.eq.1) then
+       if(iwater_table.eq.1) then           
+c table EOS  (contains density, enthalpy, and viscosity)   
+c value(1) = density
+c value(2) = d(density)/dp
+c value(3) = d(density/dt  
+c value(4) = enthalpy
+c value(5) = d(enthalpy)/dp
+c value(6) = d(enthalpy/dt   
+c value(7) = viscosity
+c value(8) = d(viscosity)/dp
+c value(9) = d(viscosity/dt           
+c
+      call h2o_properties_new(4,1,pl,tl,dum1,istate,
+     &            dumb,value,dumc)
+      rol_liq = value(1)  
+    
+      else 
+c
+c liquid density
+c numerator coefficients
+      iieosd=1
+      dla0=crl(1,iieosd)
+      dlpa1=crl(2,iieosd)
+      dlpa2=crl(3,iieosd)
+      dlpa3=crl(4,iieosd)
+      dlta1=crl(5,iieosd)
+      dlta2=crl(6,iieosd)
+      dlta3=crl(7,iieosd)
+      dlpta=crl(8,iieosd)
+      dlp2ta=crl(9,iieosd)
+      dlpt2a=crl(10,iieosd)
+c denomenator coefficients
+      dlb0=crl(11,iieosd)
+      dlpb1=crl(12,iieosd)
+      dlpb2=crl(13,iieosd)
+      dlpb3=crl(14,iieosd)
+      dltb1=crl(15,iieosd)
+      dltb2=crl(16,iieosd)
+      dltb3=crl(17,iieosd)
+      dlptb=crl(18,iieosd)
+      dlp2tb=crl(19,iieosd)
+      dlpt2b=crl(20,iieosd)
+c
+c
+c liquid density
+c
+      rnwn1=dla0+dlpa1*x+dlpa2*x2+dlpa3*x3
+      rnwn2=dlta1*tl+dlta2*tl2+dlta3*tl3
+      rnwn3=dlpta*tlx+dlpt2a*tl2x+dlp2ta*tlx2
+      rnwn=rnwn1+rnwn2+rnwn3
+      rnwd1=dlb0+dlpb1*x+dlpb2*x2+dlpb3*x3
+      rnwd2=dltb1*tl+dltb2*tl2+dltb3*tl3
+      rnwd3=dlptb*tlx+dlpt2b*tl2x+dlp2tb*tlx2
+      rnwd=rnwd1+rnwd2+rnwd3
+      rnw=rnwn/rnwd
+      rol=rnw
+      value(1) = rol
+      if(cden) then
+c     Add correction for liquid species
+         cden_cor = cden_correction(mi)
+         rol = rol + cden_cor
+         value(1) = rol
+      end if
+
+c
+c       derivatives of density
+c
+      drlpn1=dlpa1+2*dlpa2*x+3*dlpa3*x2+dlpta*tl
+      drlpn1=rnwd*(drlpn1+2*dlp2ta*tlx+dlpt2a*tl2)
+      drlpn2=dlpb1+2*dlpb2*x+3*dlpb3*x2+dlptb*tl
+      drlpn2=rnwn*(drlpn2+2*dlp2tb*tlx+dlpt2b*tl2)
+      drlpn=drlpn1-drlpn2
+      drolpd=rnwd**2
+      drolp=drlpn/drolpd
+      value(2) = drolp
+      drlen1=dlta1+2*dlta2*tl+3*dlta3*tl2+dlpta*x
+      drlen1=rnwd*(drlen1+dlp2ta*x2+2*dlpt2a*tlx)
+      drlen2=dltb1+2*dltb2*tl+3*dltb3*tl2+dlptb*x
+      drlen2=rnwn*(drlen2+dlp2tb*x2+2*dlpt2b*tlx)
+      drlen=drlen1-drlen2
+      droled=rnwd**2
+      drolt=drlen/droled
+      value(3) = drolt
+      drolpc=0.0
+      endif
+      else if(iflg.eq.2) then
+c solubility equation     
+      call h2o_properties_new(4,3,pl,tl,dum1,istate,
+     &            dumb,value_a,dumc)
+      rol_vap = value_a(1)       
+      endif
+      return
+      end
+

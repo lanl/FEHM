@@ -220,7 +220,7 @@ C***********************************************************************
       logical null1
       parameter (tol_divisor= 1.d-8)
 
-      if(isteady.eq.0) return
+      if(isteady.eq.0) return 
       if(iflg .eq. 0) then
 c     Reading steady input parameters
          toldh = tolerance
@@ -332,7 +332,9 @@ c 'steady macro overrides usual stopping time tims (gaz 032405)
 	 dayhs_save=dayhs 
        dayhf = 1.d50
 	 dayhs = 1.d50
+c gaz 033020       
        daycs = 1.d50
+       daycf = 1.d50
 	 day_save_ss = day
          if (sday .ne. 0) day = sday
          if (shtl .ne. 0.0) shtl0 = head_tol
@@ -341,6 +343,8 @@ c 'steady macro overrides usual stopping time tims (gaz 032405)
          nstep = snstep
          aiaa_save = aiaa
          aiaa = smult
+c gaz 010222 added  tmch_save
+         tmch_save = tmch
 
       else if(iflg.eq.1) then
         divisor = 1.
@@ -634,7 +638,7 @@ c                  ratio = flow_max/balance_tol
                   endif 
 c gaz 080519 tolerance should decrease monotonically                     
                   tmch = min(tmch1,tmch_old)   
-             write(ierr,*) ' tmch ', tmch,' tmch_old ',tmch_old   
+                  write(ierr,*) ' tmch ', tmch,' tmch_old ',tmch_old   
                   tmch_old = tmch  
                endif			 		 
 c            endif
@@ -689,17 +693,22 @@ c               return
             end if
 c     If we have reached steady state or reached our maximum
 c     time limit, make sure we output information
-            if(itt .eq. 0) then
+c gaz 033020             
+            if(itt .eq. 0.and.isteady.ge.1) then
                if (iout .ne. 0) write(iout,50) days, trim(info_string)
                if(iptty.ne.0) write(iptty,50) days, trim(info_string) 
+               if(isteady.eq.1) write(iout,57)
+               if(isteady.eq.1) write(iptty,57)
             else
                if (iout .ne. 0) then
                   write (iout, 52) snstep, time_ss, days
                   write (iout, 53) trim(info_string)
+
                end if
                if(iptty.ne.0) then
                   write (iptty, 52) snstep, time_ss, days
                   write (iptty, 53) trim(info_string)
+                  if(isteady.eq.1) write(iptty,57)
                end if
                balance_tol = btol_save
                tolde = tolde_save
@@ -725,8 +734,9 @@ c     time limit, make sure we output information
                dayhs=dayhs_save 
                day = day_save_ss
                daymax = daymax_save
-               nstep = nstep_save
+               nstep = nstep_save               
                aiaa = aiaa_save
+               tmch = tmch_save
             end if
          end if
       else if(iflg.eq.3) then
@@ -755,7 +765,7 @@ c     time limit, make sure we output information
  56   format('>>>>> Total Mass ',1x,1p,g15.6
      &     'Max timesteps: ', i6, ' Specified Time: ',
      &     g15.6,' Simulated Time: ',g15.6, /)   
-
+ 57   format(/,'>>>>> Min steady state timesteps not met <<<<<')
       contains 
 
       subroutine write_steady_state
@@ -789,7 +799,8 @@ c     time limit, make sure we output information
          if (tolde .ne. tolerance) write(iout, 40) 
      &        'enthalpy balance (IN-OUT)', enth_rate, tolde
             write(iout,42) tmch
-         if (isty .ne. 0) write(iout,51)
+c gaz 033020            
+         if (isty .ne. 0.and.isteady.eq.2) write(iout,51)
       end if
       if(iptty.ne.0) then
          if (isteady .ne. 2 .and. iflg .ne. 3) 
@@ -818,7 +829,7 @@ c     time limit, make sure we output information
          if (tolde .ne. tolerance) write(iptty, 40) 
      &        'enthalpy balance (IN-OUT)', enth_rate, tolde
          write(iptty,42) tmch
-         if (isty .ne. 0) write(iptty,51)
+         if (isty .ne. 0.and.isteady.eq.2) write(iptty,51)
       endif 
       
  40   format ('>>>>> Max change in ', a, 1pg12.4, ' tolerance',
@@ -833,7 +844,8 @@ c     time limit, make sure we output information
      &       g12.4,' Total Mass change ',g14.6,' Zone ',i6,' <<<<<')     
  41   format (/, '>>>>> Steady state check (', a, ') <<<<<')
  42   format ('>>>>> Equation tolerance (',1p,g12.4, ') <<<<<')    
- 51   format(/,'>>>>> Starting transient with steady solution <<<<<',/)
+ 51   format(/,'>>>>> Starting transient simulation',
+     &           ' after steady solution <<<<<',/)
      
       end subroutine write_steady_state
 

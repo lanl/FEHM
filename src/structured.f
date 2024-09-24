@@ -783,8 +783,16 @@ c     write coordinates to a file
      &           i,(cord(i,j),j=1,3),sx1(i)
          enddo
       else if (iflg.eq.4) then
-c generate a write element info to file 'fdm_coor_elem.macro'           
-           call generate_elements(nx,ny,nz)    
+c generate a write element info to file 'fdm_coor_elem.macro'      
+         if(nx.gt.1.and.ny.gt.1.and.nz.eq.1) then     
+           call generate_elements(nx,ny,nz)  
+         else
+          if(iout.ne.0) write(iout,411) 
+
+          if(iptty.ne.0) write(iptty,411) 
+411       format('>>> generated element connectivity not available for', 
+     &          ' non-3D FDM grid, request ignored <<<')
+         endif  
       end if
 
       end
@@ -811,23 +819,28 @@ c
 c     
 c     write out generated element connectivity 
 c     for equivalent 3D hex elements
-c    
+c 
+      use comai, only: ns_in, nei_in
+      use combi, only: elem_geo, nact_elem_geo
+      implicit none
       integer nx,ny,nz,nxny,kk
-      integer i,j,k,ne,ns,npoint,il
+      integer i,ii,j,k,ne,ns,npoint,il
       integer, allocatable :: nelm_temp(:)
-      integer open_file
+      integer open_file, unit_fdm_elem
       character*14  fdm_elem_file
-      logical opnd
+      character*80 dum_elem
+      logical opnd, exists
       fdm_elem_file = 'fdm_elem.macro'
       if(nx.le.1) then
       else if(ny.le.1) then
       else if(nz.le.1) then  
       else
 c 3D hex elements
-      inquire (file = fdm_elem_file, OPENED=opnd)
-      if(.not.opnd) then
-       il = open_file(fdm_elem_file,'unknown')
+      inquire (file = fdm_elem_file, exist=exists)
+      if(.not.exists) then
+       il = open_file(fdm_elem_file,'new')
       else
+       il = open_file(fdm_elem_file,'old')
        go to 100
       endif
       ne = (nz-1)*(ny-1)*(nx-1)
@@ -855,10 +868,39 @@ c 3D hex elements
       do i = 1,kk
        write(il,'(9(1x,i8))') i,(nelm_temp((i-1)*ns +j),j=1,8)
       enddo
+c gaz 061022 populate elem_geo
+       nei_in = kk
+       ns_in = 8
+       if(.not.allocated(elem_geo)) then
+        allocate(elem_geo(nei_in*ns_in))
+       else
+        deallocate(elem_geo)
+        allocate(elem_geo(nei_in*ns_in))
+       endif
+       nei_in = kk
+       ns_in = 8
+       elem_geo(1:nei_in*ns_in) = nelm_temp(1:nei_in*ns_in)
       write(il,*)
       write(il,'(a4)') 'stop'
       close(il)
+      nact_elem_geo = 1
       endif        
       if (allocated(nelm_temp)) deallocate(nelm_temp)
-100   return      
+      return
+100   continue
+      inquire(file = fdm_elem_file, number = unit_fdm_elem)
+      read(unit_fdm_elem,*) dum_elem
+      read(unit_fdm_elem,*) ns_in, nei_in
+c check ns_in for consistency      
+       if(.not.allocated(elem_geo)) then
+        allocate(elem_geo(ns_in*nei_in))
+       else
+        deallocate(elem_geo)
+        allocate(elem_geo(ns_in*nei_in))
+       endif
+       do ii = 1, nei_in
+        read (unit_fdm_elem,*) i, (elem_geo((i-1)*ns_in +j),j=1, ns_in)
+       enddo
+       nact_elem_geo = 1
+      return      
       end

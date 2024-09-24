@@ -20,11 +20,13 @@
 !D1
 !***********************************************************************
       
-      use comai, only : form_flag, idpdp, ierr, neq, nrlp, wdd
+      use comai, only : form_flag, idpdp, ierr, neq, nrlp, wdd,
+     & gdkm_flag,jdate,jtime,verno
       use comrlp, only : ishisrlp, rlpnew, delta_sat, num_sat, sat_out,
      &     rlp_type2, rlp_fparam,max_rp,max_cp,cap_param
       use comci, only : rlf, rvf
       use comdi, only : ieos, irlp, pcp, s, icap, irlpt
+      use comxi, only : nmfil
 
       implicit none
       integer i, j, ndummy, neqtemp,mm
@@ -35,9 +37,17 @@
       real*8, allocatable  :: pcptemp(:)
       real*8, allocatable  :: rlftemp(:)
       real*8, allocatable  :: rvftemp(:)
+c gaz 071423 s_test to deal with real to integer  conversion
+      integer ii,jj,ishisrlpn
+      real*8 s_test, s_comtol
+      logical s_last
+      logical op
+      character*120  dum_tbl, input_file_string
+c gaz 101023 changed character*120 to character*200
+      character*200 fname, fname_new, model_string
       logical :: frac_model = .false.
       character*100 form_string, title_string
-
+      parameter (s_comtol = 1.d-8)
       neqtemp = neq      
       if (idpdp .ne. 0) then
          allocate (stemp(2*neq), ieostemp(2*neq), irlptemp(2*neq))
@@ -59,57 +69,104 @@
       rvftemp(1:neq)  = rvf(1:neq)
 
       if (num_sat .eq. 0) then
-         neq = 1 / delta_sat + 1
+c gaz 071423 made sure there are enough s increments
+         neq = int(1 / delta_sat) + 2
       else
          neq = num_sat
+         sat_out(num_sat) = 1.d0
       end if
-
+      s_last = .false.
       do i = 1, neq
          if (num_sat .eq. 0) then
             s(i) = (i - 1) * delta_sat
+            if(s(i).ge.1.0d0) then
+             if(abs(s(i)-s(i-1)).lt.s_comtol) then
+              neq = i-1
+              s_last = .true.
+              go to 100
+             else
+              s(i) = 1.d0
+              neq = i
+              go to 100
+              s_last = .true.
+            endif
+          endif
          else
-            s(i) = sat_out(i)
+            s(i) = sat_out(i)       
          end if
-         ieos(i) = 2
-         if (idpdp .ne. 0) then
+      enddo
+100      continue
+         do i = 1, neq
+          ieos(i) = 2
+c gaz 071423 added gdkm flag
+          if (idpdp .ne. 0.or.gdkm_flag.ne.0) then
             s(i + neq) = s(i)
             ieos(i + neq) = 2
-         end if
-      end do
-      
+          end if
+         end do
+c get file name
+      inquire(unit = ishisrlp, name = fname, opened = op) 
+      if(op) then
+      fname_new = trim(fname)
+      close(unit = ishisrlp,status='delete')
+      endif
+      do j = 1, nrlp 
+c gaz 071623 get file name 
+      ishisrlpn = ishisrlp + j
+      fname = fname_new
+      write(model_string,'(a6,i4)')  '_model',1000+j 
+      model_string(7:7)='_' 
+      ii = len_trim(fname)
+      write(fname(ii+1:ii+10),'(a)') model_string(1:10)
+      select case (form_flag)
+      case (0)
+                fname = trim(fname) // '.tbl'
+      case (1)
+               fname = trim(fname) // '_tbl.dat'
+      case (2)
+               fname = trim(fname) // '_tbl.csv'
+      end select 
+      open (unit=ishisrlpn, file=fname, form='formatted')
+      select case (form_flag)
+      case (0)
+               write(ishisrlpn, 6001) verno, jdate, jtime
+      case (1)
+               write(ishisrlpn, 6005) verno, jdate, jtime
+      end select    
 c form_flag = 1 tecplot; 2 csv or sur      
       title_string = "Relative permeability and " //
      &     "Capillary pressure"
+      input_file_string ='Table generated from ' // nmfil(2)
       if (form_flag .eq. 1) then
 c tecplot style
          form_string = 'variables = "Saturation" ' //
      &        '"Liquid" "Vapor" "Capillary pressure"'
-         write(ishisrlp, '(a)') trim(form_string)
-         write(ishisrlp, 230) 50., 95., trim(title_string)
-         write(ishisrlp, 230) 50., 90., trim(wdd)
+         write(ishisrlpn, '(a)') trim(form_string)
+         write(ishisrlpn, 230) 50., 95., trim(title_string)
+         write(ishisrlpn, 230) 50., 90., trim(wdd)
       else if (form_flag .eq. 2) then
          form_string = 'Saturation, Liquid, Vapor, ' //
      &        'Capillary pressure'
-         write(ishisrlp, '(a)') trim(form_string)
+         write(ishisrlpn, '(a)') trim(form_string)
       else
          form_string = '"Saturation" "Liquid" "Vapor" ' //
      &        '"Capillary pressure"'
-         write(ishisrlp, '(a)') trim(title_string)
-         write(ishisrlp, '(a)') trim(form_string)
+         write(ishisrlpn, '(a)') trim(title_string)
+         write(ishisrlpn, '(a)') trim(input_file_string)
+         write(ishisrlpn, '(a)') trim(form_string)
       end if
          
-      do j = 1, nrlp
-	 	 if (form_flag .ne. 1) write(ishisrlp,'(a8,1x,i6)')  'Model ',j
          do i = 1, neq
             irlp(i) = j
             icap(i) = j
-            if (idpdp .ne. 0) then
+c gaz 071623 add gdkm_flag
+            if (idpdp .ne. 0.or.gdkm_flag.ne.0) then
                irlp(i+neq) = j
                icap(i+neq) = j
             end if
          end do
          if (form_flag .eq. 1) then
-            write (ishisrlp, 240) j
+            write (ishisrlpn, 240) j
          else if (form_flag .eq. 2) then
          else
          end if  
@@ -135,20 +192,35 @@ c     This is a Van Genuchten fracture model
          end if
 c output values         
 ! fracture   
-		if(frac_model) write (ishisrlp,*) 'Fracture nodes:'      
+		if(frac_model) write (ishisrlpn,*) 'Fracture nodes:'      
          do i = 1, neq
-            write (ishisrlp, '(4(g16.9, 1x))') s(i), rlf(i), rvf(i),
+c gaz 071523 
+            write (dum_tbl, '(4(g16.9, 1x))') s(i), rlf(i), rvf(i),
      &           pcp(i)
+            ii = len_trim(dum_tbl)
+            do jj = 1,ii
+             if(dum_tbl(jj:jj).ne.' ') then
+              go to 101
+             endif
+            enddo
+101         write (ishisrlpn, '(t1,a)') dum_tbl(jj:ii)
          end do
 ! Matrix         
         if (frac_model) then
-		write (ishisrlp,*) 'Matrix nodes:'
-
-            do i = neq + 1, 2*neq
-               write (ishisrlp, '(4(g16.9, 1x))') s(i), rlf(i), rvf(i),
+		  write (ishisrlpn,*) 'Matrix nodes:'        
+         do i = neq + 1, 2*neq
+               write (dum_tbl, '(4(g16.9, 1x))') s(i), rlf(i), rvf(i),
      &              pcp(i)
-            end do
+             do jj = 1,180
+              if(dum_tbl(jj:jj).ne.' ') then
+               go to 102
+              endif
+             enddo
+102         write (ishisrlpn, '(t1,a)') dum_tbl(jj:80)
+         end do
         end if
+c gaz 071723 close each individual rlp table
+      close (ishisrlpn)
       end do
 
       neq = neqtemp
@@ -163,9 +235,12 @@ c output values
 
       deallocate (stemp, ieostemp, irlptemp,  icaptemp,  
      &     pcptemp, rlftemp, rvftemp)
-      close (ishisrlp)
+      close (ishisrlpn)
  230  format ("text X=", f4.1, " Y=", f4.1, " AN=center T=", '"',
      &     a, '"')
  240  format ('zone t = "model ', i4, '"')
  245  format ('zone t = "model ', i4, ' matrix"')
+ 6000 format(a30, 2x, a10, 2x, a8, /, a)
+ 6001 format(a30, 2x, a10, 2x, a8)
+ 6005 format('TITLE = "', a30, 2x, a10, 2x, a8,'"')
       end subroutine check_rlp

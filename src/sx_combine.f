@@ -12,7 +12,7 @@
 !  assumes any liability or responsibility for the use of this software.
 C***********************************************************************
 CD1
-CD1  PURPOSE
+CD1  PURPOSE 
 CD1
 CD1  This subroutine combines the dimensions of a variable, used in 
 CD1  generating the finite element coefficients. It also breaks
@@ -79,12 +79,14 @@ C***********************************************************************
       implicit none
 
       real*8, allocatable :: sxtot(:)
+      real*8, allocatable :: sum_itfc(:)
 c
       real*8  xi,yi,zi,xkb,ykb,zkb,dis2
-      real*8  area_dis 
+      real*8  area_dis, sx2c,sx2c_tol
       integer iflg,i,i1,i2
-      integer jj,kb,neqp1,icon
+      integer jj,kb,neqp1,icon, iw_con
       integer icode
+      parameter (sx2c_tol=1.d-10)
 c
 c  return if stress solution enabled
 c
@@ -227,7 +229,7 @@ C  zvd 09-09-2005 use istrw_itfc instead of istrw to store broken connections
                      kb=nelm(jj)
                      if(ka(kb).lt.0) then
                         istrw_itfc(jj-neqp1)=nitfcpairs+1
-                        icon=1
+                        icon=icon+1
                      endif
                   enddo
                endif
@@ -240,7 +242,7 @@ C  zvd 09-09-2005 use istrw_itfc instead of istrw to store broken connections
                      kb=nelm(jj)
                      if(ka(kb).ne.0.and.ka(kb).ne.-3) then
                         istrw_itfc(jj-neqp1)=nitfcpairs+1
-                        icon=1
+                        icon=icon+1
                      endif
                   enddo
                endif
@@ -255,7 +257,7 @@ C  zvd 09-09-2005 use istrw_itfc instead of istrw to store broken connections
                      kb=nelm(jj)
                      if(ka(kb).eq.-1) then
                         istrw_itfc(jj-neqp1) = nitfcpairs+1
-                        icon=1
+                        icon=icon+1
                      endif
                   enddo
                endif
@@ -268,7 +270,7 @@ C  zvd 09-09-2005 use istrw_itfc instead of istrw to store broken connections
                      kb=nelm(jj)
                      if(ka(kb).ne.0.and.ka(kb).ne.-3) then
                         istrw_itfc(jj-neqp1) = nitfcpairs+1
-                        icon=1
+                        icon=icon+1
                      endif
                   enddo
                endif
@@ -277,14 +279,63 @@ C  zvd 09-09-2005 use istrw_itfc instead of istrw to store broken connections
 c     
 c     write out warning that connections have been broken
 c     
-         if(icon.eq.1) then
+         if(icon.gt.0) then
             if (iout .ne. 0) 
-     &           write(iout,*) 'BC to BC connection(s) found ',
+     &           write(iout,*) icon,' BC to BC connection(s) found ',
      &           '(now set=0.0)'
             if(iptty.ne.0)
-     &           write(iptty,*) 'BC to BC connection(s) found ',
+     &           write(iptty,*) icon,' BC to BC connection(s) found ',
      &           '(now set=0.0)'
          endif
+c         go to 678
+            allocate(sum_itfc(neq))
+            sum_itfc = 0.0
+            do i=1,neq
+                  i1=nelmdg(i)+1 
+                  i2=nelm(i+1)
+                  do jj=i1,i2                                          
+                     iw = istrw(jj-neqp1)
+                     sx2c=sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz)
+                     if(istrw_itfc(jj-neqp1).ne.nitfcpairs+1) then
+                      kb = nelm(jj)
+                      sum_itfc(i) = sum_itfc(i) + sx2c
+                      sum_itfc(kb) = sum_itfc(kb) + sx2c                      
+                     endif
+                  enddo
+            enddo 
+            icon = 0
+            do i = 1, neq
+               if(abs(sum_itfc(i)).lt.sx2c_tol) then
+                write(ierr,678) i,sum_itfc (i)   
+                icon = icon + 1
+               endif
+            enddo     
+ 678   format('warning: all area connections to node ',i5,
+     &    ' are near zero',', sum of area connections = ', 1pg13.4)
+         if(icon.gt.0) then
+            if (ierr .ne. 0) 
+     &           write(ierr,*) icon,' isolated gridblocks(s) found ',
+     &       '           connections restored for isolated gridblocks'      
+            if (iout .ne. 0) 
+     &           write(iout,*) icon,' isolated gridblocks(s) found ',
+     &       '           connections restored for isolated gridblocks'             
+            if(iptty.ne.0)
+     &           write(iptty,*) icon,' isolated gridblocks(s) found ',
+     &       '           connections restored for isolated gridblocks'             
+         endif
+
+            do i = 1, neq
+                i1 = nelm(i)+1
+                i2 = nelm(i+1)
+                do jj = i1, i2
+                 kb = nelm(jj)               
+                 if(abs(sum_itfc(kb)).lt.sx2c_tol.or.
+     &            abs(sum_itfc(i)).lt.sx2c_tol) then
+                   istrw_itfc(jj-neqp1) = 0
+                 endif
+               enddo 
+            enddo           
+          
 c     
       else if(iflg.eq.2) then
 c     

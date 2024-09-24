@@ -326,7 +326,8 @@ C***********************************************************************
       integer imodel, j, n_n_n, zmaxtmp
 c gaz 022818
       integer neq_t
-      integer zone_dpadd, i3d_2d, i3d_rad, num_zones, lsize
+c gaz 080320 zone_dpadd now in combi      
+      integer i3d_2d, i3d_rad, num_zones, lsize
       integer, allocatable :: znumtmp(:)
 c ncord now in combi
 c      integer, allocatable :: ncord(:)
@@ -334,22 +335,30 @@ c      integer, allocatable :: ncord(:)
       integer, allocatable :: zone_list(:), tmp_list(:)
       character*20 zonetmp
       character*30 zonesavename
+      character*5 dumzone
       integer k, curzone
       logical ex, zone_check
+c gaz 042523
+      integer ierr_wrt
+      parameter (ierr_wrt = 0 )
+c gaz 080320 save izonn
+      save zmaxtmp,izonn
 
-      save zmaxtmp
-      allocate(ncord(n0))
-
+c gaz 062920 might need to save   zone_dpadd    (080320 move to combi)
+c      save zone_dpadd
 c     Dual perm or dual porosity value to add to get zones
       zonesavename(1:4) = 'zone'
       izone_save = 0
       zone_dpadd = 100
       lsize = 100
-      allocate (zone_list(lsize))
       num_zones = 0
-
       izonel = 0
       nin = 0
+c gaz 062920 add capability to add gdpm zones after call to gdpm or gdkm
+      if(igdpm_add.eq.1) go to 600
+      allocate (zone_list(lsize))
+c gaz 061123 only allocate if n0 > 0
+      if(.not.allocated(ncord)) allocate(ncord(n0))
       backspace infile
 
       if (icnl .eq. 0)  then
@@ -366,9 +375,10 @@ c     Dual perm or dual porosity value to add to get zones
       do i = 5,77
          if(wdd1(i:i+3).eq.'conv') i3d_2d = 1
          if(wdd1(i:i+2).eq.'rad') i3d_rad = 1
-         if(wdd1(i:i+3).eq.'save') izone_save = 1
+c gaz 061323 mo0ved lower to zone nunber entry
+c         if(wdd1(i:i+3).eq.'save') izone_save = 1
       enddo
-      if(i3d_2d.eq.1.and.icnl.eq.0) then
+      if(i3d_2d.eq.1.and.icnl.eq.0.and.ierr_wrt.ne.0) then
          write(ierr,*) 'i3d_2d parameter ignored for 3d problem'
          if(iout.ne.0) 
      &        write(iout,*) 'i3d_2d parameter ignored for 3d problem'
@@ -408,7 +418,7 @@ c     Dual perm or dual porosity value to add to get zones
       enddo
       curzone = numzones + 1
       if (zonetmp(1:1) .ne. '-') numzones = numzones + 1
- 63   if (curzone .gt. zmaxtmp) then
+ 63   if (curzone .gt. zmaxtmp) then                                                               
          allocate (znametmp(zmaxtmp),znumtmp(zmaxtmp))
          znametmp = zonenames
          znumtmp = zonenums 
@@ -445,7 +455,7 @@ c     Determine if zone_dpadd needs to be increased to 1000
       if (izone .gt. 0) then
 c     first check if saved already  
 c     check if list or nnum occurs          
-        call check_save_zone(1,izone,zone_check)     
+        call check_save_zone(1,izone,0,zone_check)     
          read(infile, '(a4)') macro
          if (macro .ne. 'list' .and. macro .ne. 'nnum' .and.
      &        macro .ne. 'xyli'.and. macro.ne. 'all ' .and.
@@ -496,7 +506,7 @@ c     read in nodes in zone from xy list
                i_old = i
                icnl_old=icnl
                icnl=1
-               call near3(xg,yg,0.0,i,0)
+               call near3(xg,yg,0.0d00,i,0)
                icnl=icnl_old
                if(i_old.eq.i) go to 71
                xg=cord(i,1)
@@ -567,8 +577,8 @@ c     read in nodes belonging to zone
             read(infile, *) nin, (ncord (i), i = 1, nin)
             do i = 1, nin
                if (ncord(i) .gt. n0) then
-                  write (ierr, 6008) cmacro
-                  write (ierr, 6009) ncord(i), n0
+                  if(ierr_wrt.ne.0) write (ierr, 6008) cmacro
+                  if(ierr_wrt.ne.0) write (ierr, 6009) ncord(i), n0
                   if (iout .ne. 0) write (iout, 6009) ncord(i), n0
                   if (iptty .gt. 0) write (iptty, 6009) ncord(i), n0
                   stop
@@ -614,6 +624,7 @@ c     Change to n0 (used to be neq) - BAR 12-15-99
                ncord(nin) = i
             endif
          end do
+         call check_save_zone(2,izone,nin,zone_check)
          if (ischk .ne. 0) then
             write(ischk, 6010) nin, izone
  6010       format(/, 1x, i8,' nodes contained in zone = ',
@@ -621,6 +632,21 @@ c     Change to n0 (used to be neq) - BAR 12-15-99
             write(ischk, 6011) (ncord(i), i = 1, nin)
  6011       format (10i8)
          end if
+c gaz 062723  write nodes to zone_char 
+          write(dumzone(1:5),'(i5)') izone 
+          do i = 1, nin
+           jb = ncord(i)
+           do jc = 1,25           
+            if(zones_char(jb)(jc:jc+4).eq.dumzone(1:5)) then
+             go to 8001
+            else if(zones_char(jb)(jc:jc+4).eq.'    ') then
+             write( zones_char(jb)(jc:jc+4),'(i5)') izone
+             go to 8001
+            endif
+           enddo
+8001      continue
+          enddo
+        
 c if zonesave ne 0, then save it to a file
 c first check if saved already
 c         call check_save_zone(1,izone,zone_check)
@@ -630,7 +656,7 @@ c create a file to save the zone information
           zonesavename(5:5) = '0'
           zonesavename(10:14) = '.save'
           ex = .false.
-c          inquire (file = zonesavename, exist = ex)
+c         inquire (file = zonesavename, exist = ex)
           if(ex) then
 c abort zone save because zonefile exists
           if (ischk .ne. 0) then
@@ -697,16 +723,21 @@ c     write(ischk, 6011) (ncord(i), i = 1, nin)
 
 
 c     Assign zones for GDPM nodes
-
-      if(gdpm_flag.ne.0.and.gdkm_flag.eq.0) then
-
+c gaz 081020 added gdkm to this part
+600   if(gdpm_flag.ne.0.or.gdkm_flag.ne.0) then
+c gaz 042121  need to allocate izonef_old if not already allocated
+      if(.not.allocated(izonef_old)) then
+c follow protocol for izonef
+          allocate(izonef_old(max(2*neq_primary,neq)))
+          izonef_old=izonef
+      endif
 c     Set zones for GDPM nodes for the case in which zone has
 c     already been called
 c     Convention: all GDPM nodes are assigned a zone that
 c     is 100 + the zone number of the primary node
 c     unless the zone numbers declared are greater than 100,
 c     then we use 1000 (zone_dpadd is the variable)
-
+       if(igdpm_add.ne.1.and.gdkm_flag.eq.0) then
          n_n_n = neq_primary
          do i = 1, neq_primary
             
@@ -730,7 +761,65 @@ c gaz new 061817 to make consistent with dpdp
                endif       
             end do 
          end do
-
+        else if(gdkm_flag.eq.0) then 
+c gaz 062920 called from ingdpm    
+      n_n_n = neq_primary
+      do i = 1, neq_primary
+c     Loop over all GDPM nodes for primary node i
+c     ngdpm_layers(imodel) = 0 for imodel = 0 (i.e. no GDPM nodes)
+         imodel = igdpm(i)
+         do j = 1, ngdpm_layers(imodel)
+            n_n_n = n_n_n + 1
+c     Only assign the zone number this way if
+c     it hasn't already been assigned a non-zero value
+c     for example, in a zone with the nnum option
+            if(izonef(n_n_n).eq.0.and.
+     &           j.eq.ngdpm_layers(imodel).and.
+     &                ngdpm_layers(imodel).gt.1) then
+               izonef(n_n_n) = izonef(i) + zone_dpadd*2
+               izone_out_gdpm(n_n_n-neq_primary,1) = i 
+               izone_out_gdpm(n_n_n-neq_primary,2) = izonef(n_n_n) 
+            else if(izonef(n_n_n).eq.0) then
+               izonef(n_n_n) = izonef(i) + zone_dpadd
+               izone_out_gdpm(n_n_n-neq_primary,1) = i 
+               izone_out_gdpm(n_n_n-neq_primary,2) = izonef(n_n_n) 
+            else
+               izone_out_gdpm(n_n_n-neq_primary,1) = i 
+               izone_out_gdpm(n_n_n-neq_primary,2) = izonef(n_n_n)  
+            end if
+         end do
+       end do
+c gaz 062920 return to ingdpm
+       return
+      else if(gdkm_flag.ne.0.and.igdpm_add.eq.1) then 
+c add coding for gdkm details
+c called from ingdpm          
+        n_n_n = neq_primary
+        do i = 1, neq_primary
+         imodel = igdpm(i)
+         if(imodel.gt.0) then    
+            n_n_n = n_n_n + 1
+            if(izonef(n_n_n).eq.0) then
+c gaz 042521                 
+c if primary gdkm node zone = 0, set to zone = 1, and secondary node zone = 101  
+               if(izonef(i).eq.0) then
+                izonef(i) = 1
+                if(ierr_wrt.ne.0) then
+                 write(ierr,*)'>> gdkm primary node ',i,' has no zone: '
+     &            ,'setting zone(node)= 1, secondary node zone = 101'
+                endif
+               endif
+               izonef(n_n_n) = izonef(i) + zone_dpadd
+               izone_out_gdpm(n_n_n-neq_primary,1) = i 
+               izone_out_gdpm(n_n_n-neq_primary,2) = izonef(n_n_n) 
+            else
+               izone_out_gdpm(n_n_n-neq_primary,1) = i 
+               izone_out_gdpm(n_n_n-neq_primary,2) = izonef(n_n_n)  
+            end if
+         endif
+        enddo
+        continue
+      endif         
       end if
 
 
@@ -853,9 +942,9 @@ c first check for gdkm primary node
 c     end if
       go  to  50
  100  continue
-      deallocate(zone_list)  
+      if(allocated(zone_list)) deallocate(zone_list)  
       macroread(18) = .TRUE.
-      deallocate(ncord)
+      if(allocated(ncord)) deallocate(ncord)
       if(allocated(izonef_old)) deallocate(izonef_old)
       return
       end
@@ -869,8 +958,8 @@ c
       implicit none
       integer iflg,izone,izunit,i_elem_cover
       integer i,ii,j,ie,nin,ic,ic1,k,ib,id
-c      ncord now in combi
-c      integer ncord(*)
+c gaz 042523
+      integer ierr_wrt
       integer, allocatable :: nopdum(:,:)
       integer, allocatable :: noodum(:,:)
       integer, allocatable :: iplace(:) 
@@ -882,6 +971,7 @@ c      integer ncord(*)
       save nopdum,noodum,iplace,ielem_used,iplace1
       save nei_list,ncord_new
       parameter(i_elem_cover = 0)
+      parameter(ierr_wrt = 0)
       if(iflg.eq.1) then
 c          
 c find elements associated with each node 
@@ -954,15 +1044,17 @@ c decide on elemnt coverage option (i_elem_cover)
           nei_list(ic) = ie
           go to 202
 201       continue  
-          write(ierr,*) 'zone = ',izone,' elem no = ',ie,' node = ',i,
-     &      ' mixed zones'
+          if(ierr_wrt.ne.0) write(ierr,*) 'zone = ',izone,
+     &      ' elem no = ',ie,' node = ',i,' mixed zones'
 202       continue          
         endif
        enddo
+         if(ierr_wrt.ne.0) then
           write(ierr,*) 'number of elements that contain at least one '
      &     ,'node in zone ', izone, ' num elements ', ib
           write(ierr,*) 'number of elements that contain only  '
      &     ,'nodes in zone ', izone, ' num elements ', id
+         endif
 c now add element information
        write(izunit,*) 'elem'
        write(izunit,*) ic, ns
@@ -1011,39 +1103,78 @@ c gz 103018 check allocate status (some arrays may not have been allocated)
       endif
       return 
       end
-      subroutine check_save_zone(iflg,izone,zone_check)
+      subroutine check_save_zone(iflg,izone,idum,zone_check)
 c
 c check for saved zones
 c 
       use comai
-      use combi, only : izonesavenum, izone_save, maxsvzone 
+      use combi, only : izonesavenum, izone_save, maxsvzone, izonef,
+     & ncord 
+      use comdti, only : n0
       
       implicit none
       
-      integer iflg,izone,i 
-      logical zone_check
+      integer iflg,izone,i,nin,izunit,open_file,idum  
+      logical zone_check,zone_saved
+      character*30 zonesavename
+
       if(iflg.eq.1) then
         if(.not.allocated(izonesavenum)) 
      &       allocate(izonesavenum(maxsvzone))           
-c check for previous zone usage for a saved zone           
+         
           do i = 1, num_sv_zones
            if(izone.eq.izonesavenum(i)) then
-c write error messages if a preveous saved zone exists     
-            write(ierr,10) izone
-            if(iout.ne.0) write(iout,10) izone
-            if(iptty.ne.0) write(iptty,10) izone
-            stop
+c create file name
+            zonesavename(1:14) = 'zone00000.save'
+            write(zonesavename(5:9),'(i5)') izone+10000
+            zonesavename(5:5) = '0'
+            if(iout.ne.0) write(iout,10) izone,  zonesavename
+            if(iptty.ne.0) write(iptty,10) izone, zonesavename
+            zone_check = .true.
+            zone_saved =.false.
+            inquire(file = zonesavename, exist = zone_saved)
+            if(zone_saved) then
+             izunit=open_file(zonesavename,'old')
+             close(izunit,status ='delete')
+            endif
+            return
            endif
            enddo
-c increment the number of saved zones if this is a sved zone        
-       if(izone_save.ne.0) then
-          num_sv_zones = num_sv_zones + 1
-          izonesavenum(num_sv_zones) = izone           
+           zone_check = .false.
+      else if(iflg.eq.2) then
+c gaz 061723 need to check if saved zone exists
+          if(.not.zone_check) then
+c gaz izone is empty or does not exist
+           zone_saved =.false.
+          else
+           inquire(file = zonesavename, exist = zone_saved)
+           if(.not.zone_saved) then
+            izunit=open_file(zonesavename,'unknown')
+            zone_saved=.true.
+           else
+           endif
+c write zone in nnum style
+          if (ischk .ne. 0.and.zone_saved) then
+           write(ischk, 6013)  izone, zonesavename(1:14)
+6013      format(1x, 'zone 'i5,' saved in file  ', a14)          
+          endif
+          write(izunit,*) izone
+          write(izunit,*) 'nnum'
+c   write out nodes belonging to zone
+c gaz 061523
+c          nin = idum
+          ncord = 0
+          nin = 0
+          do i = 1, n0
+            if(izonef(i) .eq. izone) then
+               nin = nin + 1
+               ncord(nin) = i
+            endif
+         end do
+          write(izunit,*) nin, (ncord(i), i = 1,nin)
        endif
-      else
       endif
-10    format('saved zone',1x,i6,1x,'exists, cannot define again',
-     &       ' stopping')      
+10    format('zone',1x,i6,1x,'saved in file ',a30)    
       return
       end
       subroutine zone_saved_manage(iflg,izunit,idz,nin,
@@ -1382,4 +1513,79 @@ c delete saved zone files
       return
       end
       
-      
+      subroutine zone_out_gdpm
+c
+c gaz 080320 create separate subroution to output multiple porosity nodes
+c    
+      use comai
+      use combi
+      implicit none
+      integer i,j,n_n_n,imodel
+c     Set zones for GDPM nodes for the case in which zone has
+c     already been called
+c     Convention: all GDPM nodes are assigned a zone that
+c     is 100 + the zone number of the primary node
+c     and last added node for each gdpm node is 200 + zone number
+c gaz 062920 added call to zone to id gdpm zones
+      if(gdpm_flag.ne.0.and.igdpm_add.ne.2) return
+       if(.not.allocated(izone_out_gdpm))
+     &  allocate(izone_out_gdpm(ngdpm_actual,2))
+c gaz 062820 add gdpm zone info to check file(unit = ischk)
+      n_n_n = neq_primary
+      do i = 1, neq_primary
+c     Loop over all GDPM nodes for primary node i
+c     ngdpm_layers(imodel) = 0 for imodel = 0 (i.e. no GDPM nodes)
+c     no need for zone_dpadd*2 as BCs   are ided during gdpm setup      
+         imodel = igdpm(i)
+         do j = 1, ngdpm_layers(imodel)
+            n_n_n = n_n_n + 1
+c     Only assign the zone number this way if
+c     it hasn't already been assigned a non-zero value
+c     for example, in a zone with the nnum option
+            if(izonef(n_n_n).eq.0.and.
+     &           j.eq.ngdpm_layers(imodel).and.
+     &                ngdpm_layers(imodel).gt.1) then
+c               izonef(n_n_n) = izonef(i) + zone_dpadd*2
+               izonef(n_n_n) = izonef(i) + zone_dpadd               
+               izone_out_gdpm(n_n_n-neq_primary,1) = i 
+               izone_out_gdpm(n_n_n-neq_primary,2) = izonef(n_n_n) 
+            else if(izonef(n_n_n).eq.0) then
+               izonef(n_n_n) = izonef(i) + zone_dpadd
+               izone_out_gdpm(n_n_n-neq_primary,1) = i 
+               izone_out_gdpm(n_n_n-neq_primary,2) = izonef(n_n_n) 
+            else
+               izone_out_gdpm(n_n_n-neq_primary,1) = i 
+               izone_out_gdpm(n_n_n-neq_primary,2) = izonef(n_n_n)  
+            end if
+         end do
+       end do
+c gaz 062920 return to ingdpm            
+      igdpm_add = 2
+      if(.not.allocated(izone_out_gdpm))
+     &  allocate(izone_out_gdpm(ngdpm_actual,2))
+c gaz 062820 add gdpm zone info to check file(unit = ischk)
+      if(ischk.ne.0) then
+c gaz 050721          
+c         if(gdkm_flag) then shaoping email 050421       
+          if(gdkm_flag.ne.0) then
+        write(ischk,250)
+        write(ischk,251) (izone_out_gdpm(j,1),j+neq_primary,        
+     &   izone_out_gdpm(j,2), j= 1,ngdpm_actual)
+c gaz 050721          
+c         elseif(gdpm_flag) then shaoping email 050421          
+        elseif (gdpm_flag.ne.0) then 
+        write(ischk,150)
+        write(ischk,151) (izone_out_gdpm(j,1),j+neq_primary,        
+     &   izone_out_gdpm(j,2), j= 1,ngdpm_actual)   
+       endif 
+150    format(1x,'Summary of GDPM zone info:',
+     &  ' (gdpm primary node,gdpm added node,zone)',/)
+151   format(10(3x,'(',i6,',',1x,i6,',',1x,i4,')'))   
+250    format(1x,'Summary of GDKM zone info:',
+     &  ' (gdkm primary node,gdkm added node,zone)',/)
+251   format(10(3x,'(',i6,',',1x,i6,',',1x,i4,')'))         
+      endif
+      deallocate(izone_out_gdpm)
+
+      return
+      end

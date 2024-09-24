@@ -247,19 +247,26 @@ C***********************************************************************
       implicit none
 
       logical null1, opnd
-      integer i, j, flen, numfil(13), itest, istat
+      integer i, j, flen, numfil(32), itest, istat
       character*1 dummy1
       character*4 macro
       character*6 dummy
       character*100 filename
       character*120 input_string
-
+c gaz 070720 need to zero out water table here because scanin called later      
+      iwater_table = 0
+      iair_table = 0
+      ico2WH_table = 0
+      itable_files = 0
+      num_eos_table = 0
       numfil(1) = iocntl 
 
       do i = 2,nmmax-1
          nmfil(i) = ''
 c         nmfil(i) = blank
       end do
+c gaz 082521  think
+      nmfil(33) = ''
       root_name = ''
 c      root_name = blank
       read (iocntl, '(a6)') dummy
@@ -284,9 +291,15 @@ c      root_name = blank
                stop
             end if
             do
+
+! tam Fortran runtime error: Substring out of bounds:
+! upper bound (121) of 'input_string' exceeds string length (120)
+! add check and exit if len is longer than 120
                j = j + 1
+               if (j > len(input_string)) exit
                if (input_string(j:j) .ne. " " .and.
-     &              input_string(j:j) .ne. achar(9)) exit
+     &             input_string(j:j) .ne. achar(9)) exit
+
             end do  
             flen = len_trim (input_string)
             filename = input_string(j:flen)
@@ -334,6 +347,13 @@ c      root_name = blank
                nmfil(29) = filename
             case ('h2oi')
                nmfil(31) = filename
+               iwater_table = 1
+            case ('airi')
+               nmfil(32) = filename  
+               iair_table = 1
+            case ('co2w')
+               nmfil(33) = filename  
+               ico2wh_table = 1               
             case ('look')
                lookup_file = filename
             case default
@@ -353,7 +373,11 @@ c      root_name = blank
  1000       format(a100)
  5       enddo
       end if
-
+c gaz 111621 if no error file read in create 'fehmn.err'
+      if(nmfil(14)(1:20).eq.'                    ') then
+       ierr = 23
+       nmfil(14)(1:9) = 'fehmn.err'
+      endif    
  101  do i=2,nmmax-1
          if (.not. null1(nmfil(i))) then
 

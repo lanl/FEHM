@@ -137,6 +137,7 @@ C***********************************************************************
       use combi
       use comdti
       use comai
+      use comcouple
       implicit none
       
       integer ndex(3),idiag,j,k
@@ -146,8 +147,17 @@ C***********************************************************************
       real*8, allocatable :: dumn(:)
       real*8  facr, fdm, fdum2, tollr, tolls
       parameter(fdm=20.0)
-c gaz debug
-      i = l
+c gaz debug 063021      
+      integer ik,i1,i2,iarray_test
+      parameter(iarray_test = 0)
+c gaz 032522 added stopping on variable change instead of equation tolerance  
+c changes calculated in update   nr_stop = 3 means all variable changes less than tolerance   
+       if(iad.ge.1) then         
+        if(nr_stop.eq.3) then        
+          fdum=-1.0
+          go to 999
+        endif
+      endif
       neqp1=neq+1
 c     zero out arrays
       do i=1,neq
@@ -155,6 +165,13 @@ c     zero out arrays
          bp(i+nrhs(2))=0.0d00
          bp(i+nrhs(3))=0.0d00
       enddo
+c gaz 032522 added stopping on variable change instead of equation tolerance      
+       if(iad.ge.1) then         
+        if(nr_stop.eq.3) then        
+          fdum=-1.0
+        go to 999
+       endif
+      endif      
       nsizea1=nelm(neqp1)-neqp1
       nsizea=9*nsizea1
       do i=1,nsizea
@@ -176,6 +193,47 @@ c
          endif
       enddo
 
+c 
+c determine NR stopping based on conservation eqs
+c
+       if(con_eq_stop.and.iad.ge.1) then   
+        call nr_stop_ctr(2)
+        write(ierr,90) l, iad, water_mass_err_max,
+     &        energy_err_max, ngas_mass_err_max, nr_stop,days,day,
+     &    node_water_err_max, node_energy_err_max,node_ngas_err_max
+90      format('l ',i6,' iad ',i3,' w',1p,1x,g12.4,1x,' e',
+     &      1x,g12.4,1x,' n',1x,g12.4,1x,i3,1x,g12.5,1x,g11.3,
+     &      1x,i7,1x,i7,1x,i7)   
+c
+        if(nr_stop.eq.-4) then    
+c     zero out arrays
+         do i=1,neq
+          bp(i+nrhs(1))=0.0d00
+          bp(i+nrhs(2))=0.0d00
+          bp(i+nrhs(3))=0.0d00
+         enddo                    
+          fdum=-1.0
+          go to 999
+        endif
+      endif
+      if(iarray_test.ne.0.and.l.le.iarray_test) then
+      write(iout,*) 'l = ', l,' iad  ', iad
+c gaz 063021 write 'a' array for testing
+      do id = 1, neq
+        i1 = nelmdg(id)
+        i2 = nelm(id+1)
+        write(iout,765)  id,ieos(id),(nelm(ik), ik = i1,i2)
+        write(iout,764)  bp(id), bp(id+neq), bp(id+neq+neq)
+       do j = 1,9
+         write(iout,766) j, (a(ik-neqp1+nmat(j)),ik = i1,i2)
+       enddo
+      enddo
+      continue
+765   format(' node ',i3,' ieos ', i3,10(10x,i4))
+764   format(' bp ',1p,3(1x,g14.4))
+766   format('a, j = ',i2,1p,10(1x,g14.4)) 
+c gaz end array testing 
+      endif
 c     call md_modes to complete equations for multiply defined nodes
 c     
 c don't need to call geneqmdnode (through md_nodes)
@@ -284,19 +342,36 @@ c         iad=abs(maxit)
 
 c     full solution
          allocate(dum(neq*3*4))
-         if (igauss .gt. 1) then
-            call solve_new(neq,a,b,bp,nmat,nb,nrhs,nelm,nop,north
-     *           ,tollr,irb,iirb,npvt,gmres,dum,piv
-     *           ,h,c,ss,g,y,iter,iback,3,iptty,maxor,accm)
+         if(gdpm_flag.eq.0) then
+            if (igauss .gt. 1) then
+               call solve_new(neq,a,b,bp,nmat,nb,nrhs,nelm,nop,
+     &              north,tollr,irb,iirb,npvt,gmres,dum,piv,
+     &              h,c,ss,g,y,iter,iback,3,iptty,maxor,accm)
+            else
+               call solve_new(neq,a,b,bp,nmat,nmat,nrhs,nelm,nelm,
+     &              north,tollr,irb,iirb,npvt,gmres,dum,piv,
+     &              h,c,ss,g,y,iter,iback,3,iptty,maxor,accm)
+            end if
          else
-            call solve_new(neq,a,b,bp,nmat,nmat,nrhs,nelm,nelm,north
-     *           ,tollr,irb,iirb,npvt,gmres,dum,piv
-     *           ,h,c,ss,g,y,iter,iback,3,iptty,maxor,accm)
-         end if
+            if (igauss .gt. 1) then
+               call solve_dual(neq_primary,neq,a,b,bp,nmat,nb,nrhs,
+     &              nelm,nelm_primary,nop,north,tollr,irb,iirb,
+     &              npvt,gmres,dum,piv,h,c,ss,g,y,iter,iback,3,
+     &              iptty,maxor,igdpm,maxgdpmlayers,ngdpm_layers,
+     &              nelmdg,accm,mdof_sol)
+            else
+               call solve_dual(neq_primary,neq,a,b,bp,nmat,nmat,nrhs,
+     &              nelm,nelm_primary,nelm_primary,north,tollr,irb,iirb,
+     &              npvt,gmres,dum,piv,h,c,ss,g,y,iter,iback,3,iptty,
+     &              maxor,igdpm,maxgdpmlayers,ngdpm_layers,nelmdg,
+     &              accm,mdof_sol)
+            end if
+         endif
+	   deallocate(dum)
          itert=itert+iter
          itotals=itotals+iter
          minkt=minkt+mink
-         deallocate(dum)
+
       else if(irdof.eq.-3) then
 c     reduced degree of freedom with full grmres
          allocate(dum(neq*3*4))
@@ -352,7 +427,8 @@ c
 
       call dual(11)
       
- 999  continue
+c gaz added 999 for max variable change 
+999      continue
       
       return
       end

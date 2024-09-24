@@ -262,10 +262,22 @@
       real*8, allocatable ::  pmin(:) 
       real*8, allocatable ::  tmax(:) 
       real*8, allocatable ::  tmin(:)
+! gaz 070720 add (p,t)info for air_tables      
+      real*8, allocatable ::  pmax_air_tabl(:) 
+      real*8, allocatable ::  pmin_air_tabl(:) 
+      real*8, allocatable ::  tmax_air_tabl(:) 
+      real*8, allocatable ::  tmin_air_tabl(:)
+! gaz 0081421 add (p,t)info for co2_tables      
+      real*8, allocatable ::  pmax_co2wh_tabl(:) 
+      real*8, allocatable ::  pmin_co2wh_tabl(:) 
+      real*8, allocatable ::  tmax_co2wh_tabl(:) 
+      real*8, allocatable ::  tmin_co2wh_tabl(:)      
 
 !     ***** Variables in COMMON Block coeff2 *****
       real*8  ew1, ew2, ew3, ew4, ew5, ew6, ew7, ew8, ew9, ew10, ew11
       real*8  ev1, ev2, ev3, ev4, ev5, ev6, ev7, ev8, ev9, ev10, ev11
       real*8 dennapl, viscnapl
+! gaz 082621 fluids for ngas
+      character*9 fluid(3)
 
       end module comii

@@ -23,17 +23,24 @@
       implicit none
       
       integer inunit, nwds, imsg(20), msg(20)
-
       real*8 xmsg(20)
       character*4 macro, macroend
       character*32 cmsg(20)
       character*80 line
       logical :: found_end, end_macro
 
+c     initialize parse_string2 parameters
+      nwds = 0
+      msg = 0
+      imsg = 0
+      xmsg = 0.
+      cmsg = ''
+
       do
 c     Find the end of input for this macro
 
          read (inunit, '(a80)', end = 100) line
+         nwds=0
          call parse_string2(line,imsg,msg,xmsg,cmsg,nwds)
 
          if (msg(1) .eq. 3) then

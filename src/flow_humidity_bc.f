@@ -39,6 +39,7 @@ C**********************************************************************
       use comii
       use comdti
       use comai
+      use combi
       implicit none
 
 c tl-input temperature (input variable)
@@ -49,14 +50,17 @@ c qin_ng- dry air inflow rate (output variable)
 c qin_h2o- h2o inflow rate (output variable)
 c qin_enth- enthalpy inflow rate (output variable)
 c enth_avg- average enthapy inflow (output variable)
+c calculated enthalpy does not include grav term
 
       integer iflg
-      real*8 tl,pl,h,qin,qin_ng,qin_h2o,qin_enth,enth_avg
+      real*8 tl,pl,pl_in,h,qin,qin_ng,qin_h2o,qin_enth,enth_avg
       real*8 w_vap_pres,h_vap_pres,w_vap_den,a_vap_density
       real*8 xnv_a,xnv_h2o,dcpat,w_vap_enth,xtol
       real*8 a_vap_enth,cpa,drocpc,pcl0,v_den,v_enth
       real*8 dumv
       real*8 psatl
+      real*8 dum1,dumb,dumc,value(9),value_a(9)
+      integer istate, ifail  
       parameter(xtol=1.d-16)      
 c      
        pcl0=0.101325
@@ -67,20 +71,44 @@ c
 c initialization
 c
        else if(iflg.eq.1) then
-c calculate input water vapor density
+c calculate input water vapor density and enthalpy
          w_vap_pres = psatl(tl,0.d0,0.d0,dumv,dumv,0,0.d0)
          h_vap_pres = h*w_vap_pres
-         call h2o_v_den(1,h_vap_pres,tl,w_vap_den)
+c gaz 060820 use table when available  
+         if(iwater_table.eq.0) then  
+          call h2o_v_den(1,h_vap_pres,tl,w_vap_den)
+         else
+          call h2o_properties_new(4,3,h_vap_pres,tl,dum1,istate,
+     &                 dumb,value,dumc) 
+c both w_vap_den  and  ew_vap_enth available from one call to  h2o_properties_new    
+          w_vap_den = value(1)
+          w_vap_enth = value(4)
+         endif
 c         
 c calculate input air fraction
 c
+c gaz 070820 added air table EOS
+      if(iair_table.eq.1) then 
+       if(pl.le.pmin_air_tabl(1)) then
+        pl_in = pmin_air_tabl(1)
+       else
+        pl_in = pl
+       endif    
+       call air_properties_new(4,3,pl_in,tl,dum1,istate,
+     &                 dumb,value_a,dumc)            
+       a_vap_density = value_a(1) 
+       a_vap_enth = value_a(4)
+      else             
 **** density of air eqn (31)
-      drocpc=roc0*(273./(tl+273.))/pcl0
-      a_vap_density=drocpc*pl
-      v_den = a_vap_density + w_vap_den
+       pcl0=0.101325
+       roc0=1.292864    
+       drocpc=roc0*(273./(tl+273.))/pcl0
+       a_vap_density=drocpc*pl
+      endif
 c      
 c air mass fraction 
 c
+      v_den = a_vap_density + w_vap_den
       xnv_a = a_vap_density / v_den + xtol
       xnv_h2o = 1.0-xnv_a
 c
@@ -90,9 +118,13 @@ c
 c
 c air heat capacity and derivative, (BAR - 8-15-94)
 c
-        call air_cp(tl, cpa, dcpat)
-        a_vap_enth=1.e-6*cpa*tl
-        call h2o_v_enth(1,h_vap_pres,tl,w_vap_enth)
+        if(iair_table.eq.0) then
+         call air_cp(tl, cpa, dcpat)
+         a_vap_enth=1.e-6*cpa*tl
+        endif
+c gaz 060820 use table (enthapy available from previous h2o_properties_new call 
+        if(iwater_table.eq.0) 
+     &  call h2o_v_enth(1,h_vap_pres,tl,w_vap_enth)
         v_enth=xnv_a*a_vap_enth+xnv_h2o*w_vap_enth
 
 c       
@@ -113,6 +145,7 @@ c
 c calculates water vapor density as a function of t and p
 c vapor density
 c
+      use comai 
       use combi
       use comii
       implicit none
@@ -124,9 +157,9 @@ c
       real*8 dvb0,dvpb1,dvpb2,dvpb3,dvtb1,dvtb2,dvtb3,dvptb,dvp2tb
       real*8 rnsd3,rnsn,rnsd,rns,rov,rnsn1,rnsn2,rnsn3,rnsd1,rnsd2
       real*8 tlx,tl2x,tlx2,tl2,tl3,tlxv,tlxv2,tl2xv
-      real*8 xv,xv2,xv3
+      real*8 xv,xv2,xv3 
       parameter (iieosd = 1)
-      
+     
 c numerator coefficients
       dva0=crv(1,iieosd)
       dvpa1=crv(2,iieosd)
@@ -167,8 +200,7 @@ c
       rnsd3=dvptb*tlxv+dvpt2b*tl2xv+dvp2tb*tlxv2
       rnsd=rnsd1+rnsd2+rnsd3
       rns=rnsn/rnsd
-      denv=rns
-
+      denv=rns                 
       return
       end
       

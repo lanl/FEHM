@@ -391,6 +391,8 @@ c
       use comwt
       use comriv
       use comwellphys
+c gaz 040724
+      use com_prop_data, only : ihenryiso, ctest, xnl_ngas, xnl_max 
       implicit none
 
       real*8, allocatable :: sto5(:,:)
@@ -413,6 +415,14 @@ c
       real*8, allocatable :: dum(:)
       real*8, allocatable :: a_save(:)
       real*8 a11, a22, adiag_tol, bp_max, bp_maxc, bp_tol
+c gaz debug 112019  
+      real*8 dumdb1, dumdb2
+      real*8, allocatable :: dumdb3(:)
+      real*8, allocatable :: dumdb4(:)   
+      integer, allocatable :: ieosdum(:)  
+c gaz 112419      
+      integer i_uzsz_re
+      parameter(i_uzsz_re=1)
       parameter(adiag_tol=1.d-10)
       parameter(iparchek = 0)
       integer jj
@@ -474,6 +484,10 @@ c	if(ifree.ne.0) write(*,*) nsat,' dry nodes are frozen'
       endif
 c GAZ 11/01/08 get drift flux info (must be call after rel perms)
       call wellphysicsctr(1,0) 
+c gaz 120323 added coding for boundary flow from gas diffusion
+         if(idiff_iso.ne.0)  then
+          q_gas = 0.0d0
+         endif
       do 101 id=1,neq
 c     
 c     decide on equation type
@@ -513,6 +527,9 @@ c do we need to make sure this is a wtsi node?
                   a(nelmdg(id)-neqp1+nmat(1))=sx1(id)
                   bp(id+nrhs(1))=0.0d00
                endif
+            else if(ihenryiso.ne.0) then
+               call geneq2_sol(id)
+               call add_accumulation(id)
             else
                call geneq2(id)
                call add_accumulation(id)
@@ -730,7 +747,8 @@ c
 c check if fluxes are small enough to quit
          mink=n
          if(g1.lt.0.) then
-            if(bp_max.le.abs(g1)) then
+c gaz 110519 added coding to insure that at least one iteration is performed           
+            if(bp_max.le.abs(g1).and.iad.gt.0) then
                fdum = -999.0
                fdum1 = bp_max
                go to 999
@@ -762,12 +780,12 @@ c          bp_tol = bp_max/a(nelmdg(ibp_max)+nmat(1)-neqp1)
                enddo
             endif
             fdum=-1.0
-            minkt=minkt+mink
-            go to 999
+
+
  995        continue
             f0=-1.0
          endif
- 996     if(fdum.gt.f0.or.iad.eq.0) then
+ 996     if(fdum.gt.f0.or.iad.lt.iad_min) then
             facr=1.0
 c            tolls=max(facr*f0,min(g1*fdum,g2*fdum2))
 c            tollr=g3*max(tolls,tmch)
@@ -839,6 +857,7 @@ c***************************Change 3/2/94 gaz       .
             itert=itert+iter
             itotals=itotals+iter
             minkt=minkt+mink
+        
 c     
 c     zero out saturation change
 c     
@@ -852,10 +871,24 @@ c
          
 c
 c     first call air_rdof to rearrange equations
-c     
+c  
+c gaz debug 112019
+c      dumdb1 = 0.0
+c      dumdb2 = 0.0
+c      if(.not.allocated(dumdb3)) allocate(dumdb3(neq))
+c      if(.not.allocated(dumdb4)) allocate(dumdb4(neq))
+c      if(.not.allocated(ieosdum)) allocate(ieosdum(neq))
+c     do i = 1, neq
+c        dumdb1 = dumdb1 +abs(bp(i))
+c        dumdb2 = dumdb2 +abs(bp(i+neq))
+c        dumdb3(i) = bp(i)
+c        dumdb4(i) = bp(i)
+c        ieosdum(i) = ieos(i)
+c      enddo
 
          call dual(10)
          call air_rdof(0,irdof,0,nelm,nmat,nrhs,a,bp,sx1)
+         if(i_uzsz_re.eq.1) call reorder_uzsz(1)
          if(islord.ne.0) then
             call switch(nmat,nmatb,islord,2,1,nsizea1)
             call switchb(bp,nrhs,nrhsb,islord,2,1,neq)
@@ -879,7 +912,9 @@ c
                if(irdof.ne.-11.and.abs(bp(i+nrhs(2))).gt.tmch) go to 993
             enddo
             fdum=-1.0
-            go to 998
+c gaz 111319 make sure iad_min iterations occur        
+c            pause
+            if(iad.ge.iad_min) go to 998
  993        continue
             f0=-1.0
          endif
@@ -887,7 +922,7 @@ c
          call explicit(mink)
          minkt=minkt+mink
 c     
-         if(fdum.gt.f0.or.iad.eq.0) then
+         if(fdum.gt.f0.or.iad.le.iad_min-1) then
             facr=1.0
 c            tolls=max(facr*f0,min(g1*fdum,g2*fdum2))
 c            tollr=g3*max(tolls,tmch)
@@ -950,6 +985,7 @@ c
          endif
  998     continue
          call air_rdof(1,irdof,0,nelm,nmat,nrhs,a,bp,sx1)
+         if(i_uzsz_re.eq.1) call reorder_uzsz(2)
          if(islord.ne.0) then
             call switch(nmat,nmatb,islord,2,2,nsizea1)
             call switchb(bp,nrhs,nrhsb,islord,2,2,neq)
@@ -1005,7 +1041,7 @@ c first check if saturation change(to 0r from 2-phase) occurs
       bp(iz+nrhs(1))=bp(iz+nrhs(1))+sx1d*deni(i)+sk(i)
       a(jmia+nmat(1))=a(jmia+nmat(1))+sx1d*dmpf(i)+dq(i)
 	if(jswitch.ne.0) then
-         a(jmia+nmat(2))=a(jmia+nmat(2))+sx1d*dmef(i)+dqh(i)
+         a(jmia+nmat(2))=a(jmia+nmat(2))+sx1d*+dmef(i)+dqh(i)
          bp(iz+nrhs(2))=bp(iz+nrhs(2))+sx1d*denei(i)+qh(i)
       else if(irdof.ne.13) then
          a(jmia+nmat(2))=a(jmia+nmat(2))+sx1d*dmef(i)+dqh(i)
@@ -1102,5 +1138,63 @@ c     need to get this in
       enddo
       isplitts = 2
       return
+      end
+      subroutine reorder_uzsz(iflg)  
+c
+c subroutine to reorder uzsz
+c on a node by node basis reorders equations      
+c  
+      use comai
+      use comdi
+      use combi
+      use comgi
+      use comei
+      use davidi
+      implicit none
+      integer iflg, idofm, nmatd, neqp1
+      integer i, icoupl_iter, id, idl, i1, i2, jj, j, kb
+      integer icd,ii1,ii2
+c
+      real*8 a_line11, a_line21, bpsave
+          if(iflg.eq.1) then
+c     
+            neqp1=neq+1
+c     nmatd is size of one subarray
+            nmatd=nelm(neqp1)-neqp1
+c     
+c     uzsz  switch columns
+c     
+            do i = 1,n
+               i1=nelm(i)+1
+               i2=nelm(i+1)
+
+               do j = i1,i2
+                  kb = nelm(j)  
+                  if(ieos(kb).ne.1) then 
+                     jj = j - neqp1
+                     a_line11 = a(jj+nmat(1))
+                     a(jj+nmat(1)) = a(jj+nmat(2))
+                     a(jj+nmat(2)) = a_line11
+                     a_line21 = a(jj+nmat(3))
+                     a(jj+nmat(3)) = a(jj+nmat(4))
+                     a(jj+nmat(4)) = a_line21                     
+                  endif
+               enddo 
+            enddo
+c     
+  
+         else if(iflg.eq.2) then
+c     
+c     replace variables in correct arrays
+c     
+            do i = 1, n
+               if(ieos(i).ne.1) then
+                  bpsave = bp(i+nrhs(1))
+                  bp(i+nrhs(1)) = bp(i+nrhs(2))
+                  bp(i+nrhs(2)) = bpsave    	   
+               endif	  
+            enddo
+        endif    
+      return 
       end
       

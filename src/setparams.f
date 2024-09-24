@@ -311,7 +311,7 @@ CPS
 CPS END setparams
 CPS
 C***********************************************************************
-
+c gaz050223 setparameters_2b is thesame as 2c
       use comchem
       use comdi
       use comzeoli
@@ -351,7 +351,8 @@ c	gdpm nodes
       i_rlp = 0
 
       call scanin
-
+c gaz 101023 added  rewind incoor
+      rewind incoor
       if (neq .eq. 0) then
          macro = '    '   
          do while (macro .ne. 'coor' .and. macro .ne. 'fdm ')
@@ -491,18 +492,26 @@ c
        if(ngdpmnodes.ne.0.and.iout.gt.0)
      &  write(iout,*) ngdpmnodes,' gdpm nodes'
       else
-       if (iptty .gt. 0) write(iptty, *) 'n0 = ', n0
+c gaz 092822 gdkm new calculates gdkm nodes later          
+c       if (iptty .gt. 0) write(iptty, *) 'n0 = ', n0
+        if (iptty .gt. 0) write(iptty, *)
+     &  'total nodes(neq_primary + gdkm nodes calculated later)'
        if(iptty.gt.0)
      &  write(iptty,'(t1,i10,1x,a20)') neq_primary,'primary nodes'
        if(iptty.gt.0)
      &  write(iptty,'(t12,a)') 
-     &  'number gdkm nodes calculated after gdkm macro'        
-       if (iout .gt. 0) write(iout, *) 'n0 = ', n0
+     &  'gdkm node count is calculated after',
+     &  'reading gdkm macro see "input title : gdkm"'       
+c gaz 092822 gdkm new calculates gdkm nodes later          
+c       if (iout .gt. 0) write(iptty, *) 'n0 = ', n0
+        if (iout .gt. 0) write(iptty, *)
+     &  'total nodes(neq_primary + gdkm nodes calculated later)'
        if(iout.gt.0)
      &  write(iout,'(t1,i10,1x,a)') neq_primary,'primary nodes'
        if(iout.gt.0)
      &  write(iout,'(t12,a)') 
-     &  'number gdkm nodes calculated after gdkm macro'   
+     &  'gdkm node count is calculated after',
+     &  'reading gdkm macro see "input title : gdkm"'    
       endif
       if (nspeci .ne. 0) then
          n7 = nspeci * n0

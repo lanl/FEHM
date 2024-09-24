@@ -237,6 +237,8 @@ C***********************************************************************
 
       real*8 simnum
       integer cnum
+c gaz 062823
+      integer nzone_saved, icall_sv
       character*4 macro
 
       cnum = 0
@@ -284,7 +286,14 @@ c**** set zone information ****
      *           inzone
  6010       format(1x, '**** input title : ', a4, ' **** ', a6, ' = ',
      *           i3, ' ****')
-
+c gaz 062823 check if zone file contains save zones
+            nzone_saved = 0
+            icall_sv = 0
+            read(inzone,'(a30)') wdd(1:30)
+            rewind inzone
+c gaz 110123 added    'infi'
+            call zone_saved(1,'infi',nzone_saved,icall_sv,inzone)
+            rewind inzone
             cnum = cnum + 1
             call zone(cnum, inzone)
             goto 105

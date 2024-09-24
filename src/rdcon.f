@@ -534,6 +534,10 @@ C**********************************************************************
       character*3 nstring
 c     SPC
       character*3 string3
+c gaz 040420 
+      character*4 back_trac
+      integer iback_trac
+c      
       character*80 input_msg
       character*100 zone_file
       integer msg(16)
@@ -1322,7 +1326,31 @@ c     read the original way
          end do
 
       end if
-
+c gaz 031520 added cnsk_background
+      read(inpt,'(a4)') back_trac
+      if(back_trac.eq.'back') then
+c new code with extra background tracer inflow
+      narrays = 4
+      itype(1) = 8
+      itype(2) = 8
+      itype(3) = 8
+      itype(4) = 8
+      default(1) = 0.
+      default(2) = 0.
+      default(3) = 0.
+      default(4) = 0.
+      macro = "trac"
+      igroup = 16
+      call initdata2( inpt, ischk, n0, narrays,
+     2     itype, default, macroread(5), macro, igroup, 
+     3     ireturn, r8_1=cnsk(1+(nsp-1)*n0:nsp*n0),
+     4     r8_2=t1sk(1+(nsp-1)*n0:nsp*n0), 
+     5     r8_3=t2sk(1+(nsp-1)*n0:nsp*n0),
+     6     r8_4=cnsk_background(1+(nsp-1)*n0:nsp*n0))       
+          
+      else
+c old code
+      backspace inpt
       narrays = 3
       itype(1) = 8
       itype(2) = 8
@@ -1336,7 +1364,8 @@ c     read the original way
      2     itype, default, macroread(5), macro, igroup, 
      3     ireturn, r8_1=cnsk(1+(nsp-1)*n0:nsp*n0),
      4     r8_2=t1sk(1+(nsp-1)*n0:nsp*n0), 
-     5     r8_3=t2sk(1+(nsp-1)*n0:nsp*n0) )
+     5     r8_3=t2sk(1+(nsp-1)*n0:nsp*n0))
+      endif
       
       do mim = 1,n0
          mi=mim+(nsp-1)*n0

@@ -1267,11 +1267,21 @@ c      read(inpt,*) itm, ist
          write(isptr2)  ptitle
          if (iprto .lt. 0) write(isptr2) num_part
       else if (abs(iprto) .eq. 3) then
+
+! comment this binary code for linux/mac compiles with gfortran
          open(isptr2, file = nmfil(18), status = cstats(18),
      2        form='binary')
          write(isptr2)  verno, jdate, jtime
          write(isptr2)  ptitle         
          if (iprto .lt. 0) write(isptr2) num_part
+! uncomment this Warning for linux/mac compile with gfortran
+!        write(ierr, 120)
+!        if (iout .ne. 0)  write(iout, 120)
+!        if (iptty .ne. 0)  write(iptty, 120)
+!        stop
+ 120     format ('Binary output not supported in this version ',
+     &        '-- STOPPING (try unformatted)')
+
       end if
       if (nzbtc .gt. 0) then
          open(isptr3, file = nmfil(19), status = cstats(19))

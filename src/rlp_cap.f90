@@ -418,7 +418,9 @@ subroutine water_air_phase(ieosd,k)
   implicit none      	
   integer phase(3),k,mi,it,ieosd
   real*8 sw
-  if (ieosd.eq.1) then
+  if(ico2.lt.0) then
+    k=25  ! water/air  
+  else if (ieosd.eq.1) then
      !     single phase (water)
      k=2
   else if (ieosd .eq. 3) then
@@ -670,7 +672,8 @@ subroutine rlp3(itype,it,ir,mi,sw,hp,dhp,rw,drww,rnw,drnw_w)
        	iflag=2
        endif
     if (rlp_fparam(it,kf+1).lt.0.) then  ! this will be -99 if fracture parameters were not specified
-       ! No fracture model      
+       ! No fracture model 
+! gaz 041424   
        	call vgrlps(iflag, sw,  slr, smax, lambda, tol_l, tol_u, &  
             rw, drww, rnw, dummy)
          drnw_w = -1.*dummy            

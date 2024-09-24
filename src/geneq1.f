@@ -185,6 +185,7 @@ C***********************************************************************
       integer neighc, neqp1, nmatavw
       integer imd,iwd
       integer edge
+      integer i_pri
       real*8 dis2,dis_tol,sx_min
       real*8 delx2
       real*8 dely2
@@ -207,8 +208,11 @@ C***********************************************************************
       real*8  thxi, thxkb, thyi, thykb, thzi, thzkb, ti
       real*8  vexy, vexyf, vxy, vxyd, vxyf
       real*8 heatt
+c gaz 110822 debug
+      real*8 red_tmp(20), sx_tmp(20)
       integer kb_pri,i_dir_gdkm
-      parameter(dis_tol=1.d-12)
+      integer igdkm_test
+      parameter(dis_tol=1.d-12, igdkm_test = 0) 
 c
 c
 ! Guessed at value for grav_air
@@ -257,7 +261,10 @@ c determine direction of model (define for both materials) in geneg2 and other g
        if(i.le.neq_primary) then
         i_dir_gdkm = gdkm_dir(igdpm(i))
        else 
-        i_dir_gdkm = gdkm_dir(igdpm(i-neq_primary))
+        i_pri = nelm(nelm(i)+1)
+c gaz debug 113022 i_pri not i-neq_primary        
+c        i_dir_gdkm = gdkm_dir(igdpm(i-neq_primary))
+        i_dir_gdkm = gdkm_dir(igdpm(i_pri))
        endif
       else
         i_dir_gdkm = -1
@@ -435,11 +442,15 @@ c
             alxkb=axkb
             alykb=aykb
             reduction_factor = red_factor(istrw_itfc(it11(jm)))
+c gaz 110822            
+            red_tmp(jm) = reduction_factor
             reduction_factor_t = reduction_factor
             perml(1)=2.*alxkb*alxi/(alxkb+alxi)
             perml(2)=2.*alykb*alyi/(alykb+alyi)
             radkb=0.5*(radi+cord(kz,3))
             sx2c=radkb*(sx(iw,isox)+sx(iw,isoy))
+c  gaz 110822 
+            sx_tmp(jm) = sx2c
             thxkb=thx(kb)
             thykb=thy(kb)
             sx2t=2.*thxi*thxkb/(thxi+thxkb)
@@ -461,7 +472,7 @@ c                 pxy = sx2c*pnx(kb_pri)
                   pxy = sx2c*perml(2)
                else if(dis2.gt.dis_tol) then
                 pxy=sx2c*dis2/(delx2/perml(1)+
-     &              dely2/perml(2)+delz2/perml(3))
+     &              dely2/perml(2))
                endif                                    
             elseif(dis2.gt.dis_tol.and.iwd.gt.0) then
                pxy=sx2c*dis2/(delx2/perml(1)+
@@ -486,6 +497,7 @@ c                 pxy = sx2c*pnx(kb_pri)
      &          (delx2/sx2t+dely2/sx3t)
                endif                                    
             elseif(dis2.gt.dis_tol.and.iwd.gt.0) then
+c gaz 092922 had extra 3d term in sx3c (removed it)                
               sx3c=sx2c*dis2/
      &          (delx2/sx2t+dely2/sx3t)
             else
@@ -502,6 +514,38 @@ c                 pxy = sx2c*pnx(kb_pri)
             t7(neighc)=-grav_air*t4(neighc)
  69      continue
 c
+            endif
+c gaz 110822 debug print out gdkm connections
+      if(igdkm_test.ne.0) then
+      if(i.eq.1) then
+       write(ierr,399) 
+       write(ierr,400) 
+      endif
+      if(i.le.neq_primary) then
+        if(gdkm_dir(igdpm(i)).gt.0) then
+         write(ierr,401) i,(it8(jm),jm = 1,iq)
+         write(ierr,402) 'redfac',(red_tmp(jm),jm = 1,iq)
+         write(ierr,403) gdkm_dir(igdpm(i)),(sx_tmp(jm),jm = 1,iq)
+        endif
+      else if(i.gt.neq_primary) then
+        if(gdkm_dir(igdpm(nelm(nelm(i)+1))).gt.0) then
+         write(ierr,401) i,(it8(jm),jm = 1,iq)
+         write(ierr,402) 'redfac',(red_tmp(jm),jm = 1,iq)
+         write(ierr,403) gdkm_dir(igdpm(nelm(nelm(i)+1))),
+     %                  (sx_tmp(jm),jm = 1,iq)
+        endif
+      endif
+399   format(/,'>>>>> Check Eq connections with GDKM   <<<<<<',/)
+400   format(t1,'node',t15,'n1',t30,'n2',t45,'n3',t60,'n4',t75,'n5')
+401   format(t1,i6,t15,i6,t30,i6,t45,i6,t60,i6,t75,i6)  
+402   format(t1,a6,t15,g14.5,t30,g14.5,t45,g14.5,t60,g14.5,
+     &       t75,g14.5) 
+403   format(t1,'f dir ',i6,t15,g14.5,t30,g14.5,t45,g14.5,t60,g14.5,
+     &       t75,g14.5)       
+404   format('>>>>> End Check Eq connections with GDKM   <<<<<<',/)      
+      if(i.eq.neq) then
+       write(ierr,404) 
+      endif
       endif
 c
 c liquid phase calculations
@@ -777,6 +821,7 @@ c     a(jmia+nmat(1))=a(jmia+nmat(1))+sx1d*(aw*dmpf(i))+dq(i)
 c     a(jmia+nmat(2))=a(jmia+nmat(2))+sx1d*(aw*dmef(i))+dqt(i)
 c     a(jmia+nmat(3))=a(jmia+nmat(3))+sx1d*(depf(i)*aw)+dqh(i)
 c     a(jmia+nmat(4))=a(jmia+nmat(4))+sx1d*(aw*deef(i))+deqh(i)
+c gaz 092922 debug   
       bp(iz+nrhs(1))=bp(iz+nrhs(1))+sx1d*deni(i)+sk(i)
       bp(iz+nrhs(2))=bp(iz+nrhs(2))+sx1d*denei(i)+qh(i)
       a(jmia+nmat(1))=a(jmia+nmat(1))+sx1d*dmpf(i)+dq(i)

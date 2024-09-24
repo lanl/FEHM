@@ -183,9 +183,12 @@ c     zero out arrays
 c
 c  check for possible stopping on variable changes
 c
+       
       if(iad.ge.1) then
-       if(nr_stop.eq.2) then
-        fdum=-1.0
+c gaz 113021          
+c       if(nr_stop.eq.2) then
+        if(nr_stop.gt.2) then        
+          fdum=-1.0
         go to 999
        endif
       endif
@@ -225,11 +228,7 @@ c
 c possible correction for rate-limited gdpm model
 c
       call gdpm_corr(1)
-c
-c s kelkar for debugging 3/20/12
-c      call extract_adiag
-c      call extract_nodal_equations(2627)
-c
+
       if(islord.ne.0) call switch(nmat,nmatb,islord,2,1,nsizea1)
       if(islord.ne.0) call switchb(bp,nrhs,nrhsb,islord,2,1,neq)
 c    
@@ -247,7 +246,42 @@ c
          if(iptty.ne.0) then
           write(iptty,*) 
      & '>>> cannot normalize, stopping, i=',abs(ndex(1)),'<<<'
-         endif         
+         endif 
+c gaz 112521 added more information   
+       if(iout.ne.0) then  
+        id = abs(ndex(1))
+        write(iout,*) 'id ',id,' vol ', sx1(id)
+        write(iout,*)
+        write(iout, 9010) l, day
+        write(iout, 9011) id,cord(id,1),cord(id,2),
+     &           cord(id,3)
+        write(iout, 9012) phi(id), t(id), s(id)  
+        write(iout, 9015) ps(id),pnx(id)*1.d-6,ieos(id),iad,izonef(id)
+       endif 
+       if(iptty.ne.0) then  
+        id = abs(ndex(1))
+        write(iptty,*)
+        write(iptty, 9010) l, day
+        write(iptty, 9011) id,cord(id,1),cord(id,2),
+     &           cord(id,3)
+        write(iptty, 9012) phi(id), t(id), s(id) 
+        write(iptty, 9015) ps(id),pnx(id)*1.d-6,ieos(id),iad,izonef(id)
+       endif  
+       if(iptty.ne.0) then  
+        id = abs(ndex(1))
+        write(ierr,*)
+        write(ierr, 9010) l, day
+        write(ierr, 9011) id,cord(id,1),cord(id,2),
+     &           cord(id,3)
+        write(ierr, 9012) phi(id), t(id), s(id) 
+        write(ierr, 9015) ps(id),pnx(id)*1.d-6,ieos(id),iad,izonef(id)
+       endif  
+ 9010 format (1p,'time step = ', i8, ' time step size = ', g21.14)
+ 9011 format (1p,'out of bounds : node ', i8,
+     &     ' x = ', g12.4, ' y = ', g12.4, ' z = ', g12.4)
+ 9012 format (1p,' p = ', g16.9, ' t =', g16.9, ' s = ', g16.9)       
+ 9015 format (1p,' porosity = ',g16.8,' permx ',g16.8,
+     & ' phase state ',i3, ' iter ',i3,' zone ', i7)       
          stop
       endif
 
@@ -261,7 +295,9 @@ c
          do i=1,neq
             bp_max= max(abs(bp(i+nrhs(1))),abs(bp(i+nrhs(2))),bp_max) 
          enddo
-	 if(bp_max.lt.tmch.and.nr_stop.eq.0) then
+c gaz 113121 modified to work with changes in nr_stop_ctr1         
+c	 if(bp_max.lt.tmch.and.nr_stop.eq.0) then         
+	 if(bp_max.lt.tmch.and.nr_stop.le.2) then
          fdum=-1.0
          go to 999
        else
@@ -358,20 +394,26 @@ c.............................................................
 
       subroutine extract_adiag
 c s kelkar 3/20/12. extract diagonal elements of 'a'
-      use comai, only : neq
-      use combi, only : nelmdg
+      use comai, only : neq, ierr
+      use combi, only : nelmdg, sx1
       use comei, only : a
+      use comdi, only : ps, pnx
       use davidi, only : nmat
       implicit none
 
-      integer idisk
+      integer idisk,j
 
-      real*8 adiagsk(2*neq)
-
+c      real*8 adiagsk(2*neq)
+      write(ierr,99) 
       do idisk=1,neq
-         adiagsk(idisk) = a(nelmdg(idisk)-neq-1+nmat(1))
-         adiagsk(idisk+neq) = a(nelmdg(idisk)-neq-1+nmat(4))
+c         adiagsk(idisk) = a(nelmdg(idisk)-neq-1+nmat(1))
+c         adiagsk(idisk+neq) = a(nelmdg(idisk)-neq-1+nmat(4))
+         write(ierr,100) idisk, (a(nelmdg(idisk)-neq-1+nmat(j)),j = 1,4)
+     &   ,ps(idisk),sx1(idisk), pnx(idisk)*1.e-6
       enddo
+99    format('node',t14,'a11',t29,'a12',t44,'a21',t59,'a22',t74,'ps',
+     &        t89,'sx1',t104,'pnx')
+100   format(i6,1p,7(1x,g14.6))
 
       return
       end 
@@ -379,7 +421,7 @@ c...........................................................
 
       subroutine extract_nodal_equations(idisk)
 c s kelkar 3/20/12. extract rows of a corrosponding 
-c to the node is]disk from the 'a' matrix
+c to the node is idisk from the 'a' matrix
       use comai, only : neq, ierr, l
       use combi, only : nelmdg, nelm
       use comei, only : a

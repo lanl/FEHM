@@ -524,8 +524,13 @@ c..................................................................
 c***  allocate memory to all arrays in combi ***
       if(gdkm_flag.ne.0) then
         allocate(izonef(max(2*neq_primary,neq)))
+        allocate(zones_char(max(2*neq_primary,neq)))
+        zones_char(1:max(2*neq_primary,neq))
+     &    = '                             ' 
       else
-        allocate(izonef(n0))  
+        allocate(izonef(n0))
+        allocate(zones_char(n0)) 
+        zones_char(1:n0) = '                             ' 
       endif
       izonef = 0
       if(interface_flag.ne.0) then
@@ -685,8 +690,9 @@ c     end pjjohnson edits
       else
         allocate(pcp(1))
         allocate(dpcef(1))
-      end if     
-      if(irdof.ne.13) then
+      end if  
+c gaz 110123 modified for heat conduction   
+      if(irdof.ne.13.or.idoff.eq.-1) then
         allocate(deneh(n0))
         allocate(denej(n0))
       else
@@ -739,6 +745,8 @@ c gaz 021517  (added just in case of soilvision combining of countour files)
          allocate(so(1))
       end if
       allocate(sk(n0))
+c gaz 120120
+      allocate(sk0(n0))
       allocate(t(n0))
       allocate(cpr(n0))
       allocate(denr(n0))
@@ -788,7 +796,8 @@ c     ***** COMMON Block fdd1 *****
       allocate(a2adfv(totcomalloc,totnum),an(n7))
       allocate(anl(n7),anlo(n7),anv(n7),betadfl(totcomalloc,totnum))
       allocate(betadfv(totcomalloc,totnum),cm(totcomalloc),
-     2     cm0(totcomalloc),cnsk(n7),pcnsk(n7))
+     2     cm0(totcomalloc),cnsk(n7),pcnsk(n7),
+     3     cnsk_background(n7))
       allocate(henry_model(totcomalloc),hawwa(totcomalloc,5))
       allocate(a_henry(totcomalloc),dh_henry(totcomalloc))
       allocate(conc_read(totcomalloc))
@@ -888,6 +897,8 @@ c     ***** COMMON Block iice *****
       end if
 c     ***** COMMON Block fddi1 *****
       allocate(ieos(n0),ieos_ch(n0),iieos(n0),iporf(n0))
+c gaz 072020 allocate sc array ieos_sc
+      allocate(ieos_sc(n0))
       if (rlp_flag .eq. 1 .or. nrlp .ne. 0) then
          allocate(icap(n0), irlp(n0))
       else
@@ -913,8 +924,11 @@ c     ***** COMMON Block co2 *****
          allocate(pci(1),pcio(1))
          n4 = 1
       end if
-      allocate(cnlf(n4),cnvf(n4),dcc(n4),dce(n4))
-      allocate(dclcf(n4),dclef(n4),dclf(n4),dcp(n4))
+c gaz 040624 allow allocation for cnlf,dclf,dclef size = n0
+c      allocate(cnlf(n4),cnvf(n4),dcc(n4),dce(n4))
+c gaz 042024 added cnlof(n0)
+      allocate(cnlf(n0),cnlof(n0),cnvf(n4),dcc(n4),dce(n4))
+      allocate(dclcf(n4),dclef(n0),dclf(n0),dcp(n4))
       allocate(dcqc(n4),dcqh(n4),dcvcf(n4),dcvef(n4))
       allocate(dcvf(n4),dec(n4),delcf(n4),denpch(n4))
       allocate(denpci(n4),denpcj(n4),deqc(n4),devcf(n4))
@@ -950,6 +964,12 @@ c     ***** COMMON Block coeff *****
       allocate(cvv(20,4))
 c     ***** COMMON Block coeff1 ***** 
       allocate(pmax(3),pmin(3),tmax(3),tmin(3)) 
+c gaz 070720 added (p,t)  info for air HT tables    
+      allocate(pmax_air_tabl(3),pmin_air_tabl(3),
+     & tmax_air_tabl(3),tmin_air_tabl(3))
+c gaz 081421 added (p,t)  info for co2 HT tables    
+      allocate(pmax_co2wh_tabl(3),pmin_co2wh_tabl(3),
+     & tmax_co2wh_tabl(3),tmin_co2wh_tabl(3))       
 c***  allocate memory to all arrays in comrxnb ***
 c     ***** COMMON Block comrxnb ***** 
       allocate(avgmolwt(n0))

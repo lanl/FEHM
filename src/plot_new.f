@@ -78,7 +78,7 @@
       character*28 vt_string
       character*80 formcs_string
       character*14 time_string, file_format, dumv_string
-      character*15, allocatable :: var_string(:), var_tmp(:)
+      character*18, allocatable :: var_string(:), var_tmp(:)
       character*10 zone_string
       character*3 dls
       logical time2print
@@ -144,9 +144,9 @@ c            write(ishis, '(a4)')  '    '
          if (time_flag .eq. 1) then
             time_string = 'Time (years)'
          else if (time_flag .eq. 2) then
-            time_string = 'Time (days)'
+            time_string = ' Time (days)'
          else if (time_flag .eq. 3) then
-            time_string = 'Time (seconds)'
+            time_string = 'Time(seconds)'
          else if (time_flag .eq. 4) then
             time_string = 'Time (hours)'
          end if
@@ -173,10 +173,12 @@ c            write(ishis, '(a4)')  '    '
 
          var_num = max (m + node_azones, 1)
          allocate (var_string(var_num), var_tmp(var_num))
+c gaz 081023 adjust spacing for easier reading
          do i = 1, m
             dumv_string = ''
-            write (dumv_string, '(i8)') nskw(i)
-            var_string(i) = 'Node' // trim(dumv_string)
+            write (dumv_string(1:8), '(i8)') nskw(i)
+            var_string(i) = '    Node' // dumv_string(1:8)
+            continue
          end do
          if (out_zones) then
             do i = m+1, var_num
@@ -325,6 +327,7 @@ c            write(ishis, '(a4)')  '    '
             ic2 = len_trim(info_string) + 1
             title_string = 'Saturation'
             call plot_header(ishiss, m, form1_string)
+            continue
          end if
 	   if (ishiswc .ne. 0 ) then
 ! Ouput water content
@@ -1026,7 +1029,7 @@ c**** write number of plot nodes, node numbers and coordinates ****
          if (pres_flag .eq. 3 .or. pres_flag .eq. 5 .or. 
      &        pres_flag .eq. 6 .or. pres_flag .eq. 7) then
             do i = 1, m
-               if(abs(pcp(nskw(i))).lt.1.d-20) then
+               if(abs(pcp(nskw(i))).lt.1.d-98) then
                   dumv(i) = 0.0
                else
                   dumv(i) = pcp(nskw(i))
@@ -1038,37 +1041,55 @@ c**** write number of plot nodes, node numbers and coordinates ****
 ! Output total/water pressure
             if (out_zones) then
                write(ishisp, form2_string) ptime,  
-     &              (max(phi(nskw(i))-phi_inc,1.d-20), i=1,m),
+     &              (max(phi(nskw(i))-phi_inc,1.d-98), i=1,m),
      &              (avg_values(j,pflag), j=1,node_azones)
             else
                write(ishisp, form2_string) ptime,  
-     &              (max(phi(nskw(i))-phi_inc,1.d-20), i=1,m)
+     &              (max(phi(nskw(i))-phi_inc,1.d-98), i=1,m)
             end if
             if (pres_flag .eq. 2 .or. pres_flag .eq. 3) then
-               write(ishisp2, form1_string) ptime, 
-     &              (max(pci(nskw(i)),1.d-20), i=1,m)
-               if (pres_flag .eq. 3)
+c gaz 080923 added pa output for isothermal 2 phase
+             if(ico2.gt.0) then
+              write(ishisp, form1_string) ptime,  
+     &           (max(pci(nskw(i)),1.d-98), i=1,m)
+             else
+              write(ishisp, form1_string) ptime,  
+     &           (max(phi(nskw(i))-pcp(nskw(i)),1.d-98), i=1,m)
+             endif
+            if (pres_flag .eq. 3)
      &             write(ishisp3, form1_string) ptime, (dumv(i), i=1,m)
             end if
          else if (pres_flag .eq. 4) then
-            write(ishisp, form1_string) ptime,  
-     &           (max(pci(nskw(i)),1.d-20), i=1,m)
+c gaz 080923 added pa output for isothermal 2 phase
+            if(ico2.gt.0) then
+             write(ishisp, form1_string) ptime,  
+     &           (max(pci(nskw(i)),1.d-98), i=1,m)
+            else
+             write(ishisp, form1_string) ptime,  
+     &           (max(phi(nskw(i))-pcp(nskw(i)),1.d-98), i=1,m)
+            endif
          else if (pres_flag .eq. 5) then
             write(ishisp, form1_string) ptime, (dumv(i), i=1,m)
          else if (pres_flag .eq. 6 .or. pres_flag .eq. 7) then
             if (pres_flag .eq. 6) then
                write(ishisp, form1_string) ptime, (max(phi(nskw(i)),
-     &              1.d-20), i=1,m)
+     &              1.d-98), i=1,m)
             else
-               write(ishisp, form1_string) ptime, (max(pci(nskw(i)),
-     &              1.d-20), i=1,m)
+c gaz 080923 added pa output for isothermal 2 phase
+            if(ico2.gt.0) then
+             write(ishisp, form1_string) ptime,  
+     &           (max(pci(nskw(i)),1.d-98), i=1,m)
+            else
+             write(ishisp, form1_string) ptime,  
+     &           (max(phi(nskw(i))-pcp(nskw(i)),1.d-98), i=1,m)
+            endif
             end if
             write(ishisp2, form1_string) ptime, (dumv(i), i=1,m)
          else if (pres_flag .eq. 8 .or. pres_flag .eq. 9) then
             write(ishisp, form1_string) ptime, (max(phico2(nskw(i)),
-     &              1.d-20), i = 1, m)
+     &              1.d-98), i = 1, m)
             if (pres_flag .eq. 9) write(ishisp2, form1_string) ptime, 
-     &           (max(phi(nskw(i)), 1.d-20), i = 1, m)
+     &           (max(phi(nskw(i)), 1.d-98), i = 1, m)
          end if
          call flush(ishisp)
          if (ishisp2 .ne. 0) call flush(ishisp2)
@@ -1078,11 +1099,11 @@ c**** write number of plot nodes, node numbers and coordinates ****
 ! Output temperature in degrees C
          if (out_zones) then
             write(ishist, form2_string) ptime, 
-     &           (max(t(nskw(i)), 1.d-20), i= 1, m),
+     &           (max(t(nskw(i)), 1.d-98), i= 1, m),
      &           (avg_values(j,tflag), j=1,node_azones)
          else
             write(ishist, form2_string) ptime, 
-     &           (max(t(nskw(i)), 1.d-20), i= 1, m)
+     &           (max(t(nskw(i)), 1.d-98), i= 1, m)
          end if
          call flush(ishist)
       end if
@@ -1179,6 +1200,7 @@ c
          call flush(ishishd)
       end if
       if (ishiss .ne. 0 ) then
+c gaz 081223 s zero threshold set to 1.d-98
 ! Output saturations
          do i = 1, m
             if (ps(nskw(i)) .le. 0.) then
@@ -1186,12 +1208,12 @@ c zero porosity node
                dumv(i) = 0.d0
             else if (icarb .ne. 0) then
 c water saturation for CO2 problem
-               dumv(i) = fw(nskw(i))
+               dumv(i) = max(fw(nskw(i)),1.d-98)
             else if (irdof .ne. 13 .or. ifree .ne. 0) then
 c               dumv(i) = max(s(nskw(i)), rlptol)
 c               if (dumv(i) .le. rlptol) dumv(i) = 0.d0
 c saturations are never zeroed out, report what is in array
-               dumv(i) = s(nskw(i))
+               dumv(i) = max(s(nskw(i)),1.d-98)
             else
 c water only problem
                dumv(i) = 1.0d0
@@ -1208,7 +1230,7 @@ c water only problem
 	         dumv(i) = dumv(i)*ps(nskw(i))
                if (dumv(i) .le. rlptol) dumv(i) = 0.d0
             else
-               dumv(i) = max(s(nskw(i)), 1.d-20)
+               dumv(i) = max(s(nskw(i)), 1.d-98)
 	         dumv(i) = dumv(i)*ps(nskw(i))
             end if
          end do
@@ -1220,14 +1242,14 @@ c water only problem
          do i = 1, m
            if(ico2.lt.0) then
 c isothermal case
-            if (abs(qh(nskw(i))).lt.1.d-20) then
+            if (abs(qh(nskw(i))).lt.1.d-98) then
                dumv(i) = 0.0
             else
                dumv(i)=qh(nskw(i))
             endif
            else if(ico2.gt.0) then
 c non isothermal case
-            if (abs(qc(nskw(i))).lt.1.d-20) then
+            if (abs(qc(nskw(i))).lt.1.d-98) then
                dumv(i) = 0.0
             else
                dumv(i)=qc(nskw(i))
@@ -1240,7 +1262,7 @@ c non isothermal case
       if (ishisf .ne. 0 ) then
 ! Output flow in kg/s
          do i = 1, m
-            if (abs(sk(nskw(i))).lt.1.d-20) then
+            if (abs(sk(nskw(i))).lt.1.d-98) then
                dumv(i) = 0.0
             else
                dumv(i)=sk(nskw(i))
@@ -1365,11 +1387,17 @@ c     &           (avg_values(j,eflag), j=1,node_azones)
       end if
       if (ishishm .ne. 0 ) then
 ! Output humidity
-         do i = 1, m
-            pwatersat =  psat(t(nskw(i)),dpdummy,0)
-            dumv(i) = phi(nskw(i))-pci(nskw(i))/pwatersat
+c gaz 021421  humidity available only for ngas)          
+       if(ico2.le.0.or..not.allocated(humida)) then
+          write(ishishm,*) 
+     &     'humidity output not available-need "ngas" or eqiv)'
+       endif
+         do i = 1, m          
+c            pwatersat =  psat(t(nskw(i)),dpdummy,0)            
+c            dumv(i) = phi(nskw(i))-pci(nskw(i))/pwatersat
+         dumv(i) = humida(nskw(i))   
          end do
-         write(ishishm, form1_string) ptime, (max(dumv(i), 1.d-20), 
+         write(ishishm, form1_string) ptime, (max(dumv(i), 1.d-98), 
      &        i= 1, m) 
          call flush(ishishm)
       end if

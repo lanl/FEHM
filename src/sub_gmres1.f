@@ -367,9 +367,7 @@ c acceleration routine
       integer k, jneq, jm1, jm1neq, im1neq
       integer nrhs_dum(1)
       logical done
-c     parameter (tols=1.d-15)
-c     Raj change
-      parameter (tols=1.d-30)
+      parameter (tols=1.d-15)
 c     
 c     define some parameters
 c     
@@ -426,9 +424,7 @@ c
 *     compute v1 in natural order
 *     -------------------------------
       do 1800 i=1,neq
-c        sorthm(i) = dum(i)/max(rnorm,1.d-20)
-c        Raj change
-         sorthm(i) = dum(i)/max(rnorm,1.d-60)
+         sorthm(i) = dum(i)/max(rnorm,1.d-20)
  1800 continue
       
       do 3500 j = 1,north

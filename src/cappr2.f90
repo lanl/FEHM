@@ -163,6 +163,7 @@ subroutine cap_pressure(cap_select,sw,it,iphase,mi,cp,dpcp)
      !     values from table, called with wetting phase saturation, table number
      itbl = iphase
      call rlp_cap_table (sw, itbl, 4, cp, dpcp)
+     continue
 !                  
   end select 
   return

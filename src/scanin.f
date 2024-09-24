@@ -1,6 +1,6 @@
       subroutine scanin
 !***********************************************************************
-!  Copyright, 1993, 2004,  The  Regents of the University of California.
+!  Copyright, 1993, 2004,  The  Regents of the University of California.                        
 !  This program was prepared by the Regents of the University of 
 !  California at Los Alamos National Laboratory (the University) under  
 !  contract No. W-7405-ENG-36 with the U.S. Department of Energy (DOE). 
@@ -300,11 +300,14 @@ C***********************************************************************
       use comcouple
       use comdi
       use comdti
+      use comfi, only: idiff_iso
+      use comii, only: fluid
       use compart
       use comriv
       use comrlp, only: rlpnew, ntable, ntblines,nphases,rlp_phase,
      +  rlp_group
       use comrxni
+      use com_prop_data, only : ihenryiso
       use comsi
       use comsk
       use comsplitts
@@ -315,6 +318,7 @@ C***********************************************************************
       use comzeoli
       use davidi
 	use trxnvars
+      use commass_AWH, only : imass_phase, ivar_mass
 
       implicit none
 
@@ -336,6 +340,7 @@ C***********************************************************************
       real*8 xmsg(20)
       integer imsg(20)
       character*32 cmsg(20)
+      character*80 table_name
       integer kz,iz2,iz2p,i1,i2,ipivt,sehindexl,sehindexv,neqp1
       integer ireaddum, inptread, open_file
       integer locunitnum, kk, j
@@ -344,22 +349,32 @@ C***********************************************************************
       integer idum1, idum2, ilines, i
       integer icount, tprp_num
       integer jjj, isimnum, realization_num,maxrp
-      logical nulldum, found_end
-c      logical gdkm_new
-
+      logical nulldum, found_end, intfile_ex
+c gaz 051823
+      integer wdd1_len
+c gaz 061223
+      integer nzone_saved, icall_sv
       real*8 rflag
         maxrp = 30
         if(.not.allocated (rlp_phase)) then
          allocate (rlp_phase(20, maxrp),rlp_group(20))
         endif
+c gaz 061123
+        if(.not.allocated(izonesavenum)) 
+     &       allocate(izonesavenum(maxsvzone))    
 c**** read startup parameters ****
       rewind inpt
+c gaz 021521
+      idfehm = 0
       iccen = 0
       ice = 0
       ico2 = 0
       icarb = 0
-c gaz 112817      
-      iwater_table = 0 
+c gaz 082821
+      fluid(1) = 'h2o      ' 
+      fluid(2) = 'air      '
+      fluid(3) = 'co2wh    '
+c gaz 112817       
       icgts = 0
       idoff = 1
       ihead = 0
@@ -397,6 +412,7 @@ c gaz 112817
       ipermstr11 = 0
       ipermstr31 = 0
       iactive = 0
+      cnum_sv = 0
 
 c zvd 17-Aug-09 move boun flag initializations here
       iqa=0
@@ -416,6 +432,9 @@ c zvd 17-Aug-09 move boun flag initializations here
       its=0
       ifd=0
       isf=0
+c gaz 012122      
+      itsmax = 0
+      ieqtol = 0
       ixperm = 0
       iyperm = 0
       izperm = 0
@@ -429,13 +448,19 @@ c new initial value stuff 12/3/98 GAZ
       iwght = 1
       isty = 0
       icoef_neg = 0
+      jswitch = 0
       nflxz = 0
       sv_hex_tet = .false.
       ipr_tets = 0
 c gaz 100118 set nrlp here to enable mulpiple rlp macros      
       nrlp = 0
+c gaz 062920 igdpm_add used in setting gdpm secondary zones
+      igdpm_add = 0
+      itable_files = 0
 c zvd 17-Aug-09 move boun flag initializations here
-
+c gaz 120323 
+      idiff_iso  = 0
+      ihenryiso = 0
       if(allocated(izone_free_nodes)) izone_free_nodes = 0
       if(allocated(move_type)) move_type=0
       compute_flow = .true.
@@ -448,8 +473,18 @@ c zvd 17-Aug-09 move boun flag initializations here
 c gaz 070619 variables used in newer itfc      
       nitf_use = .false.
       ncol_use = .false.
-
+c gaz 052322 initialize imass_phase      
+      imass_phase = 0
+      ivar_mass = 0
  10   continue
+
+c     initialize parse_string2 parameters
+      nwds = 0
+      msg = 0
+      imsg = 0
+      xmsg = 0.
+      cmsg = ''
+
       filename = ''
       read (inpt, '(a80)', END = 50) dumstring
       if (dumstring(1:1) .eq. '#') go to 10
@@ -490,9 +525,11 @@ c Check for "OFF" keyword for skipping macro
       else if (macro .eq. 'cont') then
          call start_macro(inpt, locunitnum, macro)
 ! Read over keywords if avs, tecplot or surfer
+c gaz 092822 added vtk to if statement
          read (locunitnum, '(a3)', END = 50) macro
          if(macro(1:3) .eq. 'avs' .or. macro(1:3) .eq. 'tec' .or.
-     &        macro(1:3) .eq. 'sur' .or. macro .eq. 'csv') then
+     &        macro(1:3) .eq. 'sur' .or. macro(1:3) .eq. 'csv'
+     &        .or. macro(1:3) .eq. 'vtk') then
             ok = .false.
             do
                read (locunitnum, *, END = 60) dumstring
@@ -549,11 +586,11 @@ c Check for "OFF" keyword for skipping macro
          end if
          call done_macro(locunitnum)
       else if(macro.eq.'zone') then
-         call start_macro(inpt, locunitnum, macro)
+         call start_macro(inpt, locunitnum, macro)       
          call done_macro(locunitnum)
       else if(macro.eq.'zonn') then
-         call start_macro(inpt, locunitnum, macro)
-         call done_macro(locunitnum)
+         call start_macro(inpt, locunitnum, macro)    
+599    call done_macro(locunitnum)
       else if(macro.eq.'rflo') then
          compute_flow = .false.
          backspace inpt
@@ -574,6 +611,9 @@ c Read zones to name flxz output files in inhist if necessary
          read (locunitnum, *) irdof, islord, iback, icoupl, rnmax
          if (ihead .eq. 1 .and. irdof .ne. 13) then
             irdof = 13
+         end if
+          if (jswitch .ne. 0 .and. irdof .eq. 13) then
+            irdof = 0
          end if
          call done_macro(locunitnum)
       else if (macro.eq.'sol ') then
@@ -756,8 +796,11 @@ c     and number of entries in each table
                      read (idum, '(a80)', end = 24) dumstring
                      if (null_new(dumstring) .or.  dumstring(1:3) .eq. 
      &                    'end' .or. dumstring(1:3) .eq. 'END') exit
+
+                     nwds=0
                      call parse_string2(dumstring, imsg, msg, xmsg, 
      &                    cmsg, nwds)
+
 c Don't count header lines (header lines should start with a character)
                      if (msg(1) .ne. 3) ntblines = ntblines + 1
                   end do
@@ -857,13 +900,19 @@ c            backspace locunitnum
             ipresa=1
             isatb=1
          else if(wdd1(1:4).eq.'tran') then
-            isty=1
+c gaz 062620 turn off tran             
+            if(wdd1(6:8).ne.'off') isty=1
          else if(wdd1(1:3).eq.'tmi') then
             itempb_ini=1
          else if(wdd1(1:2).eq.'tc') then
             itempb2=1
+c gaz 012522 added timestepmax         
+         else if(wdd1(1:4).eq.'tsma') then
+            itsmax=1             
          else if(wdd1(1:2).eq.'ts') then
             its=1
+         else if(wdd1(1:4).eq.'eqto') then
+            ieqtol=1            
          else if(wdd1(1:2).eq.'t') then
             itempb=1
          else if(wdd1(1:2).eq.'hd') then
@@ -914,7 +963,12 @@ c**** We need to know number of nodes if alternate geometry data is used ****
          call start_macro(inpt, locunitnum, macro)
          read (locunitnum, *) cdumm, neq
          call done_macro(locunitnum)
-
+c gaz 021521 need  fehm verno         
+      else if (macro(1:4) .eq. 'idfe') then
+          idfehm = 1
+          call start_macro(inpt, locunitnum, macro)
+          read(locunitnum,'(a30)') verno_fehmid
+         call done_macro(locunitnum)  
       else if (macro(1:3) .eq. 'nap' .or. macro .eq. 'szna')  then
 c     need to know if napl-water  is envoked
          ico2 = -3  
@@ -922,13 +976,100 @@ c gaz 112817
       else if (macro(1:3)  .eq.  'eos')  then
 c     need to know if a table with water props is read
          call start_macro(inpt, locunitnum, macro)
-          read(locunitnum,'(a80)') wdd1(1:80)
-         call done_macro(locunitnum)
-         if(wdd1(1:5).eq.'table') iwater_table = 1          
+           num_eos_table = 0
+601       read(locunitnum,'(a80)') wdd1(1:80)
+           if(wdd1(1:9).eq.'table h2o') then
+            iwater_table = 1   
+c gaz 051823
+            wdd1_len = len_trim(wdd1(10:80))
+            table_name = wdd1(10:wdd1_len+10)
+c gaz 041621 write err mesg if specified table does nor exist  
+            intfile_ex = .false.      
+            inquire(file=table_name, exist=intfile_ex)
+            if(intfile_ex)  then
+              iwater_table = 2  
+            else
+             if(iptty.ne.0)  write(iptty,290) 'h2o', table_name
+             if(iout.ne.0)  write(iout,290) 'h2o', table_name
+             if(ierr.ne.0)  write(ierr,290) 'h2o', table_name  
+             stop
+            endif
+290         format(' Named ',a3,' table not found: ',a70,/,
+     &        '>>>>> Stopping <<<<<<')   
+            if(iwater_table.eq.2) nmfil(31) = table_name
+             num_eos_table = num_eos_table + 1
+             fluid(num_eos_table) ='h2o      '
+           else if(wdd1(1:11).eq.'table water') then
+            iwater_table = 1   
+            table_name = trim(wdd1(12:80))
+            inquire(file=table_name, exist=intfile_ex)
+            if(intfile_ex) iwater_table = 2    
+            if(iwater_table.eq.2) nmfil(31) = table_name  
+             num_eos_table = num_eos_table + 1
+             fluid(num_eos_table) ='h2o      '
+           else if(wdd1(1:9).eq.'table air') then
+            iair_table = 1   
+            table_name = trim(wdd1(10:80))
+            wdd1_len = len_trim(wdd1(10:80))
+            table_name = wdd1(10:wdd1_len+10)
+c gaz 041621 write err mesg if specified table does nor exist      
+            intfile_ex = .false.   
+            inquire(file=table_name, exist=intfile_ex)
+            if(intfile_ex)  then
+              iair_table = 2  
+            else
+             if(iptty.ne.0)  write(iptty,290) 'air', table_name
+             if(iout.ne.0)  write(iout,290) 'air', table_name
+             if(ierr.ne.0)  write(ierr,290) 'air', table_name  
+             stop
+            endif            
+            if(intfile_ex) iair_table = 2    
+            if(iair_table.eq.2) nmfil(32) = table_name 
+             num_eos_table = num_eos_table + 1
+             fluid(2) ='air      '
+           else if(wdd1(1:11).eq.'table co2wh') then
+c adding new HT co2 table               
+            ico2wh_table = 1   
+            table_name = trim(wdd1(12:80))
+c gaz 041621 write err mesg if specified table does nor exist        
+            inquire(file=table_name, exist=intfile_ex)
+            if(intfile_ex)  then
+              ico2wh_table = 2  
+            else
+             if(iptty.ne.0)  write(iptty,290) 'co2', table_name
+             if(iout.ne.0)  write(iout,290) 'co2', table_name
+             if(ierr.ne.0)  write(ierr,290) 'co2', table_name  
+             stop
+            endif            
+            if(intfile_ex) ico2wh_table = 2    
+            if(ico2wh_table.eq.2) nmfil(33) = table_name 
+             num_eos_table = num_eos_table + 1   
+             fluid(3) ='co2wh    '
+           else if(wdd1(1:11).eq.'table      ') then  
+c  tables read from control file (if available)
+               itable_files = 1
+           else  
+            backspace locunitnum
+            go to 602
+           endif    
+          go to 601
+602       call done_macro(locunitnum)
+         
       else if (macro(1:3)  .eq.  'air')  then
 c     need to know if air-water  is envoked
          ico2 = -2 
-           
+c gaz 110819 reading tref, pref here (these variables are now global)          
+         call start_macro(inpt, locunitnum, macro)
+          read(locunitnum,'(a80)') wdd1(1:80)
+c gaz 030924 read more if solubility in included          
+         read(locunitnum,'(a80)') wdd1(1:80)
+          read(wdd1,*) tref, pref
+          do i = 1,75
+           if(wdd1(i:i+4).eq.'henry') then
+            ihenryiso = 1
+           endif
+          enddo
+         call done_macro(locunitnum)           
       else if (macro .eq. 'ice ' .or. macro .eq. 'meth') then
          ice = 1
          
@@ -1022,6 +1163,8 @@ c	and Generalized Dual Permeability Model (GDKM) parameters
       else if(macro .eq. 'gdpm' .or. macro .eq. 'gdkm') then
          if(macro .eq. 'gdkm') then
           gdkm_flag = 1
+c gaz 080320 zero out  igdpm_add used in printing secondary nodes         
+          igdpm_add = 0 
           backspace locunitnum
           read(locunitnum,'(a80)') dumstring
           gdkm_new = .false.
@@ -1358,7 +1501,9 @@ c check for file keyword, and read past filename if present
                   isorp = isorp + 1
 ! Liquid or vapor, abs(ispeci).eq.1, do nothing else
                   if (abs(ispeci).eq.2) then
+
 ! Henry's law species read additional input line if data is on two lines
+                     nwds=0
                      call parse_string(dumstring, imsg, msg, xmsg, 
      &                    cmsg, nwds)
                      if ((numd .eq. 0 .and. nwds .lt. 16) .or. 
@@ -1649,6 +1794,7 @@ c find max_probdivs
                backspace locunitnum
             end if
             read(locunitnum,'(a80)') dummy_line
+            nwds=0
             call parse_string(dummy_line,imsg,msg,xmsg,cmsg,nwds)
             tprp_num = imsg(1)
 ! Use multiple simulation number - irun for GoldSim or msim run
@@ -1867,6 +2013,7 @@ c find max_probdivs
                backspace locunitnum
             end if
             read(locunitnum,'(a80)') dummy_line
+            nwds=0
             call parse_string(dummy_line,imsg,msg,xmsg,cmsg,nwds)
             tprp_num = imsg(1)
 ! Use multiple simulation number - irun for GoldSim or msim run
@@ -2225,6 +2372,7 @@ c Jan 27, 05 S kelkar read past "spring" node list
 ! The first non-character line read should contain courant factor, etc.
                if (itensor .eq. -999) then
                   done = .false.
+                  nwds=0
                   call parse_string(dummy_line, imsg, msg, xmsg, cmsg,
      &                 nwds)
                   if(nwds.ge.3) then
@@ -2247,6 +2395,7 @@ c Jan 27, 05 S kelkar read past "spring" node list
 c...................................................................
  
          read (locunitnum, '(a80)') dumstring
+         nwds=0
          call parse_string(dumstring, imsg, msg, xmsg, cmsg, nwds)
          if (msg(2).eq.1) then
             ist=imsg(2)
@@ -2331,7 +2480,15 @@ c need porosity model
          call start_macro(inpt, locunitnum, macro)
          read (locunitnum,*) iporos
          call done_macro(locunitnum)
-
+c gaz 041620 (need two phases to work with)
+      else if(macro .eq. 'rich') then
+         jswitch = 1
+         if(irdof.eq.13) irdof = 0
+c gaz 052322 check for mass variable input for AWH
+      else if(macro .eq. 'mcpc') then
+         call start_macro(inpt, locunitnum, macro)
+         read (locunitnum,*) imass_phase, ivar_mass
+         call done_macro(locunitnum)       
       else if (macro .eq. 'vcon') then
 ! need number of variable conductivity models
          call start_macro(inpt, locunitnum, macro)
@@ -2441,6 +2598,11 @@ c                     open(unit=97,file='debug_permmodel_91.dat')
       go to 10
       
  40   rewind locunitnum
+c gaz 100923
+c      call zone_saved(1,nzone_saved,icall_sv,locunitnum)
+      rewind inpt
+c gaz 110123 added 'scan'
+      call zone_saved(1,'scan',nzone_saved,icall_sv,inpt)
       if(ngroups.eq.0)then
          ngroups=ncpnt
          if(irun.eq.1) then

@@ -55,7 +55,7 @@
       use comco2
       implicit none
 
-      integer iad_min, iad_ck
+      integer  iad_ck
       integer zone
       real*8 fdum_tot,strd_part
       real*4 caz(2)   
@@ -65,7 +65,8 @@
       itert=0
       minkt=0
       strd=1.
-      if(g1.lt.0.0) then
+c gaz 110919 moved iad_min to comai (global variable now)     
+      if(g1.lt.0.0.and.jswitch.eq.0) then
 	 iad_min = 0.0
       else if(maxit.ge.0) then
          iad_min=1

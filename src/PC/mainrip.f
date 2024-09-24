@@ -162,7 +162,7 @@ CPS
 C***********************************************************************
 
 c	PC Version
-c      use ifport
+      use ifport
 C      use compart, only : ripfehm
 C      use comai, only : irun
       implicit none
@@ -228,11 +228,11 @@ C            call system(post_string)
 
 
 c	UNIX Version
- 1000 format(a13, 1x, i10, 1x, i10)
- 1001 format(a14, 1x, i10, 1x, i10)
+c 1000 format(a13, 1x, i10, 1x, i10)
+c 1001 format(a14, 1x, i10, 1x, i10)
 c	PC Version
-C 1000 format(a10, 1x, i10, 1x, i10)
-C 1001 format(a11, 1x, i10, 1x, i10)
+ 1000 format(a10, 1x, i10, 1x, i10)
+ 1001 format(a11, 1x, i10, 1x, i10)
 
       stop
 

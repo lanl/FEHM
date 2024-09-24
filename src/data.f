@@ -238,10 +238,16 @@ C***********************************************************************
       use compart
       use comrtd
       use comrxni
+c gaz 050421      
+      use comsi, only : ihms
       use comsplitts
       use comwt, only : head_id, irich
       use comzone
       use davidi
+c gaz 123020      
+      use com_exphase
+c gaz 041222      
+      use commass_AWH, only : imass_phase
       implicit none
 
       integer i
@@ -255,7 +261,8 @@ c initialize scalar integers in comzone
       eflag = 0
 c initialize number of saved zones      
       izone_sv_cnt = 0
-      num_sv_zones = 0
+c gaz 061323 num_sv_zones initialized in scanin
+c      num_sv_zones = 0
 c initialize number of flux countour files       
       icflux = 0
       icconc = 0
@@ -309,6 +316,10 @@ c ico2 set in scanin.f
 !      ihead = 0
       ichead = 0
       ivar = 0
+c gaz 052322 added ivar_switch
+      ivar_switch = 0
+c gaz 061422      
+      nact_elem_geo = 0
       iexrlp = 0
       iboun = 0
       iflux_ts = 0
@@ -372,6 +383,8 @@ c zero iden_vis and ideng_vis
       flux_flag = 'no fluxes  '
       maxmix_flag = 0
       sat_ich = 0
+c gaz 111520 initialize new variable iter_intrvl  
+      iter_intrvl = 0
       header_flag = 'new'
 C *** integer in comrxni.h
 C *** integers in davidi.h 
@@ -389,14 +402,19 @@ C *** integers in davidi.h
       nconv = 0
       isteady = 0
       ipini = 0
-      jswitch = 0
+c gaz 052323 initialized in scanin
+c      jswitch = 0
       joff = 0
 C from comwt
       irich = 0
       ifdm_elem = 0
       ibcfar = 0
       nr_stop = 0
-
+      
+c gaz 082622 nr_completed indicates status of NR update      
+      nr_completed = 0
+c gaz 050223 initialized  imass_chk
+      imass_chk = 0     
 c initialize scalar reals in comai
       aiaa   =   1.0
       am0    =   0.0
@@ -442,6 +460,11 @@ c initialize scalar reals in comai
       dtot   =   0.0
       dtotc  =   0.0
       dtotdm =   0.0
+c gaz 121319 updated 100723   (1.d-5, overwritten if Richard's Eq)  
+      pchng = 1.d-3
+c gaz 010924 for h2 amanzi problem
+c      schng = 1.d-3
+       schng = 1.d-4
 c gaz 100318
       initdata_pad = 0
 C new variables in comsplitts
@@ -469,6 +492,9 @@ C from comwt
       pein   =   0.0
 C added phi_inc to comai so it only needs to be computed in one place
       phi_inc =  0.0
+c gaz 110919 initialized perf,tref      
+      pref = 0.101325
+      tref = 20.0
       pow    =   0.0
       qt     =   0.0
       qte    =   0.0
@@ -503,7 +529,25 @@ C added phi_inc to comai so it only needs to be computed in one place
       s_stop = 0.0 
       s2_stop = 0.0
       co2f_stop = 0.0
-      h_stop = 0.0     
+      h_stop = 0.0  
+c gaz 032722 initialize more variables used in nr_stop_ctr.f  
+      eqwm_stop =0.0
+      eqen_stop = 0.0
+      eqnm_stop = 0.0
+      node_water_err_max = 0
+      node_energy_err_max = 0 
+      node_ngas_err_max = 0
+c gaz 112721 added   critical pt parameters - used in h2o EOS tables   
+      pcrit_h2o_true=22.064d0
+      tcrit_h2o_true=373.946
+      pcrit_h2o=22.064d0
+      tcrit_h2o=373.946
+c gaz 112021 added tolerance parameters for EOS sampling      
+      p_tol = 1.d-19
+      pc_tol = 1.d-19
+      t_tol = 1.d-19      
+c gaz 120421 for fluid_prop_control.f      
+      eval_test_h2o = 0      
 c logical variables in comai
       wflux_flag = .false.
       vflux_flag = .false.
@@ -680,11 +724,18 @@ c zero out include comdi
       icap=0
       ices=0
       ieos=0
+c gaz 072120 zero ieos_sc
+      ieos_sc=0
       iieos=0
       iporf=0
       irlp=1
       itrc=0
       itrcdsp=0
+c gaz 113020 (initialize AWH henry's law to old model)
+      imod_sol = 0
+      alpha0 = 1.6111d-4
+c gaz 123020 intialize i_ex_update = 0 (no explicit update)
+      i_ex_update = 0
 c zvd 17-Aug-09 initialize mmodel here
       mmodel=0     
       nskw=0
@@ -786,11 +837,13 @@ c     itc=0
       s=1.
       sii=1.
       sio=1.
-      sk=0
-      so=0
-      t=0
-      t1sk=0
-      t2sk=0
+      sk=0.
+c gaz 120120      
+      sk0=0.
+      so=0.
+      t=0.
+      t1sk=0.
+      t2sk=0.
       if (allocated (tclx)) tclx=0
       if (allocated (tcly)) tcly=0
       if (allocated (tclz)) tclz=0
@@ -832,6 +885,8 @@ c zero out include comei
          nopt=0
          npvt=0
       end if
+c gaz 050421 zero out ihms
+      ihms = 0
       c=0
       g=0
       h=0
@@ -877,6 +932,8 @@ c zero out include comfi
       difc=0.0
       qtc=0.0
       qtotc=0.0
+c gaz 040621      
+      qtotin = 0.0
 
 c zero out include comgi
       dfee=0

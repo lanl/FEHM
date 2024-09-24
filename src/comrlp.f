@@ -43,7 +43,8 @@
       real(8), allocatable :: cp1s(:,:), cp2s(:,:), cp3s(:,:), cp4s(:,:)
       real(8), allocatable :: rlp_table(:,:)
       real(8), allocatable :: sat_out(:)
-
+c gaz 070423
+      character*30, allocatable :: table_file_names(:)
       logical :: rlpnew = .false.
 
       parameter(max_rp = 4, max_rpf = 8, max_cp = 6)

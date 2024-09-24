@@ -68,10 +68,12 @@
       real*8 cord1,cord2,cord3,cord1j,cord2j,cord3j
       real*8 dil_dum,perm, disx1, disy1, disz1, disx2, disy2, disz2
       parameter (rlp_min=1.d-2)
+
 c isothermal default density/viscosity 
 c might want to make a function of fluid and conditions     
       dil_dum = 997.d0/1.d-3
       neqp1 = neq +1
+
       if(iflg.eq.1) then 
 c find areas for BCs, physically based impedances      
        do i = 1, n0
@@ -313,21 +315,37 @@ c find lengths of all connecting primary gridblocks
           disz2 = 1.e20
           i1 = nelm(i)+1
           i2 = nelm(i+1)
+
+c tam Fortran runtime error: 
+c Index '3007' of dimension 1 of array 'cord' above upper bound of 3006
+c debug not fixed but error report added
+
           do jj = i1,i2
-           kb = nelm(jj)
-           cord1j = cord(kb,1)
-           cord2j = cord(kb,2)
-           cord3j = 0.0
-           if(icnl.eq.0) then
-            cord3j = cord(kb,3)
-           endif 
-              disx1=max(cord1j-cord1,disx1)
-              disx2=min(cord1j-cord1,disx2)
-              disy1=max(cord2j-cord2,disy1)
-              disy2=min(cord2j-cord2,disy2) 
-              disz1=max(cord3j-cord3,disz1)
-              disz2=min(cord3j-cord3,disz2)                           
+            kb = nelm(jj)
+
+c tam commented out because of too many error reports
+c this will need to be fixed so it does not occur
+c           check for out of bounds index
+c           if (kb .gt. n0) then
+c             print*,"ERROR area_length_calc"
+c             print*,"cord index out of bounds: ",kb
+c             print*,"expected boundary: ",n0
+c           endif
+
+            cord1j = cord(kb,1)
+            cord2j = cord(kb,2)
+            cord3j = 0.0
+            if(icnl.eq.0) then
+              cord3j = cord(kb,3)
+            endif 
+            disx1=max(cord1j-cord1,disx1)
+            disx2=min(cord1j-cord1,disx2)
+            disy1=max(cord2j-cord2,disy1)
+            disy2=min(cord2j-cord2,disy2) 
+            disz1=max(cord3j-cord3,disz1)
+            disz2=min(cord3j-cord3,disz2)                           
           enddo  
+
             if(ivf.eq.-1) then
                if(disx1.eq.0.0.and.disx2.eq.0.0)
      &             disx1 = abs(cord1-x_orig)*2.

@@ -321,8 +321,8 @@ C***********************************************************************
       use comai
       use comxi
       implicit none
-
-      integer i, numfil(13)
+c gaz 052222 changed dim of numfil from 13 to 14
+      integer i, numfil(14)
       character*1 yesno
       character*100 namfil
       

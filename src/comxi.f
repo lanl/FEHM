@@ -188,10 +188,11 @@
       logical ex
 
       integer nmmax
-      parameter(nmmax = 14)
+! gaz 071020 increased size  of nmmaxa , increased to 15 081921 for co2wh     
+      parameter(nmmax = 15)
 
       integer nmmaxa
-      parameter(nmmaxa = 17)
+      parameter(nmmaxa = 18)
 
       integer isw(nmmax+nmmaxa), nufilb(nmmax+nmmaxa)
 

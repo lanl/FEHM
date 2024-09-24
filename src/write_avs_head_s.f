@@ -56,7 +56,7 @@ C************************************************************************
 
       use avsio
       use comai, only : altc, contim, days, iadif, icnl, jdate, jtime, 
-     &     verno, wdd
+     &     verno, wdd, i_vtk
       use comdi, only : head
       use comsi, only : iPlastic,flag_excess_shear, flag_principal
       use davidi
@@ -133,11 +133,12 @@ C     calculation done in avs_io()
             else if (iogdkm .eq. 1) then
                dual_char = 'GDKM '
                tailstring = '_sca_gdkm_node'
-               if (icnl .eq. 0) then
-                  iocord = 3
-               else
-                  iocord = 2
-               end if
+c gaz 051821 debug               
+c               if (icnl .eq. 0) then
+c                  iocord = 3
+c               else
+c                  iocord = 2
+c               end if
             end if               
          else
             dual_char = 'Dual '
@@ -161,7 +162,10 @@ c     Header is only written to the first tecplot file
       
       title( 1) = trim(dual_char) // 'Liquid Pressure (MPa)'
       title( 2) = trim(dual_char) // 'Vapor Pressure (MPa)'
-      if (altc(1:3) .eq. 'tec') then
+      if (altc(1:3) .eq. 'tec'.and. i_vtk.ne.0) then
+c gaz 122722 added heading change for vtk
+         title( 3) = trim(dual_char) // 'Temperature (deg C)'
+      else if (altc(1:3) .eq. 'tec') then
          title( 3) = trim(dual_char) // 'Temperature (<sup>o</sup>C)'
       else
          title( 3) = trim(dual_char) // 'Temperature (deg C)'
@@ -242,34 +246,36 @@ C---  Max number of scalars is number of parameters + 3 coordinates
          write(lu, '(a)') string(1:length)
 
          string = ''
-         if (iocord .ne. 0) then
+         if (iocord .ne. 0) then 
+c gaz 051621 modfying use of units() to avoid duplication for avs
+c will leave variables with no units as the unit array is relevant             
 c     Write X coordinate
             if (icnl .ne. 3 .and. icnl .ne. 6) 
-     &           write(lu,200) trim(title(14)), trim(units(14))
+     &           write(lu,201) trim(title(14))
 c     Write Y coordinate
             if (icnl .ne. 2 .and. icnl .ne. 5) 
-     &           write(lu,200) trim(title(15)), trim(units(15))
+     &           write(lu,201) trim(title(15))
 c     Write Z coordinate
             if (icnl .ne. 1 .and. icnl .ne. 4) 
-     &           write(lu,200) trim(title(16)), trim(units(16))
+     &           write(lu,201) trim(title(16))
          end if
          if (iozid .eq. 1) then
             write(lu,200) trim(title(17)), trim(units(17))
          end if
          if (iopressure .eq. 1 .and. ioliquid .eq. 1) then
-            write(lu,200) trim(title(1)), trim(units(1))
+            write(lu,201) trim(title(1))
          end if
          if (iopressure .eq. 1 .and. iovapor .eq. 1) then
-            write(lu,200) trim(title(2)), trim(units(2))
+            write(lu,201) trim(title(2))
             if (iadif .eq. 1) then
-               write(lu,200) trim(title(6)), trim(units(6))
+               write(lu,201) trim(title(6))
             end if
          end if
          if (iocapillary .eq. 1) then
-            write(lu,200) trim(title(20)), trim(units(20))
+            write(lu,201) trim(title(20))
          end if         
          if (iotemperature .eq. 1) then
-            write(lu,200) trim(title(3)), trim(units(3))
+            write(lu,201) trim(title(3))
          end if
          if (iosaturation .eq. 1) then
             write(lu,200) trim(title(4)), trim(units(4))
@@ -284,55 +290,56 @@ c     Write Z coordinate
             write(lu,200) trim(title(25)), trim(units(25)) 
          end if
          if (iohead .eq. 1 .and. size_head .ne. 1) then
-            write(lu,200) trim(title(5)), trim(units(5))
+            write(lu,201) trim(title(5))
          end if
          if (ioporosity .eq. 1) then
             write(lu,200) trim(title(7)), trim(units(7))
          end if
          if (iodensity .eq. 1 .and. ioliquid .eq. 1) then
-            write(lu,200) trim(title(9)), trim(units(9))
+            write(lu,201) trim(title(9))
          end if
          if (iodensity .eq. 1 .and. iovapor .eq. 1) then
-            write(lu,200) title(10)
+            write(lu,201) title(10)
          end if
          if (iopermeability .eq. 1) then
-            write(lu,200) trim(title(11)), trim(units(11))
-            write(lu,200) trim(title(12)), trim(units(12))
-            write(lu,200) trim(title(13)), trim(units(13))
+            write(lu,201) trim(title(11))
+            write(lu,201) trim(title(12))
+            write(lu,201) trim(title(13))
          end if
          if (iosource .eq. 1 ) then
-            write(lu,200) trim(title(8)), trim(units(8))
+            write(lu,201) trim(title(8))
          end if
          if (ioflx .eq. 1 .and. ioliquid .eq. 1) then
-            write(lu,200) trim(title(18)), trim(units(18))
+            write(lu,201) trim(title(18))
          end if
          if (ioflx .eq. 1 .and. iovapor .eq. 1) then
-            write(lu,200) trim(title(19)), trim(units(19))
+            write(lu,201) trim(title(19))
+            
          end if         
          if (iodisp .eq. 1) then
-            write(lu,200) trim(title(26)), trim(units(26))
-            write(lu,200) trim(title(27)), trim(units(27))
+            write(lu,201) trim(title(26))
+            write(lu,201) trim(title(27))
             if (icnl .eq. 0) 
-     &           write(lu,200) trim(title(28)), trim(units(28))
+     &           write(lu,201) trim(title(28))
          end if 
          if (iostress .ne. 0) then
-            write(lu,200) trim(title(29)), trim(units(29))
-            write(lu,200) trim(title(30)), trim(units(30))
+            write(lu,201) trim(title(29))
+            write(lu,201) trim(title(30))
             if (icnl .eq. 0) then
-               write(lu,200) trim(title(31)), trim(units(31))
+             write(lu,201) trim(title(31))
             end if
-            write(lu,200) trim(title(33)), trim(units(33))
+            write(lu,201) trim(title(33))
             if (icnl .eq. 0) then
-               write(lu,200) trim(title(34)), trim(units(34))
-               write(lu,200) trim(title(35)), trim(units(35))
+               write(lu,201) trim(title(34))
+               write(lu,201) trim(title(35))
             end if
             if(iPlastic.eq.1) then
-               write(lu,200) trim(title(36)), trim(units(36)) 
+               write(lu,201) trim(title(36))
             endif
             if (flag_excess_shear.eq.1) then
-               write(lu,200) trim(title(36)), trim(units(37))
-               write(lu,200) trim(title(37)), trim(units(38))
-               write(lu,200) trim(title(38)), trim(units(39))
+               write(lu,201) trim(title(36))
+               write(lu,201) trim(title(37))
+               write(lu,201) trim(title(38))
             end if
          end if  	    
          if (iostrain .eq. 1) then
@@ -595,6 +602,7 @@ c     Write Z coordinate
 
  100  format("('", a, "', a)")
  200  format(a, ', ', a)
+ 201  format(a)    
  300  format("('",' "', "', a, '",'"',"')")
  400  format('TITLE = "', a30, 1x, a11, 1x, a8, 1x, a, '"')
  500  format('VARIABLES = "node" ', a)

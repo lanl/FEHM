@@ -236,10 +236,15 @@ c gaz 102716 saving zones
       character*30, allocatable ::  zonesavenames(:)
       character*200, allocatable ::  contour_flux_files(:)
       character*200, allocatable ::  contour_conc_files(:)
+c gaz 062723 zones assigned to node
+      character*30, allocatable ::  zones_char(:)
       integer maxsvzone 
       parameter (maxsvzone = 200)
-      
+c gaz 062920 added array for zone output to check file 
+      integer, allocatable :: izone_out_gdpm(:,:)
       integer, allocatable ::  izonef_itfc(:)
+c gaz 080320 added  zone_dpadd for global access
+      integer zone_dpadd
 c zone related integers
       integer izone_save
       integer, allocatable ::  ka(:)
@@ -399,6 +404,11 @@ c
       integer, allocatable :: ibc_far_zone(:)
       real*8, allocatable :: acorr_far(:)
       real*8, allocatable :: sumfar(:,:)      
-      
+c gaz 050822
+c element saves for geo files
+c      
+      integer, allocatable :: elem_geo(:)
+c gaz 061422 added nact_elem_geo, parameter that indicates elem_geo is available  
+      integer nact_elem_geo
       end module combi
 

@@ -201,7 +201,7 @@ C Allowed file names to be 125 characters (rest of code uses 100)
 C***********************************************************************
 
       use avsio
-      use comai, only : altc, contim, days
+      use comai, only : altc, contim, days, ierr
       implicit none
 
       integer i, icall, lund, iformat, idz, open_file
@@ -219,7 +219,15 @@ C***********************************************************************
          write(ch5, '(i5.5)') icall
       else
          daychar = ''
-         write(daychar,'(1p,g16.9)') days
+c gaz 102623 g16.9 tp g16.8
+         if(days.eq.0.0) then
+          days = 0.0
+          write(daychar,'(1p,g16.9)') days 
+         else
+c xhua 05202024 revised for VV test problem "stress_bodyforce"
+c          write(daychar,'(1p,g16.8)') days  ! this is orginal 
+          write(daychar,'(1p,g16.9)') days
+         endif
          k1 = 0
          do 
             k1 = k1 + 1
@@ -275,7 +283,6 @@ c     open to output file
 !         open(unit=lund,file=fname(1:nchar),form='formatted')
          lund = open_file(fname(1:nchar),'unknown')
       endif         
-
 
       return
       end

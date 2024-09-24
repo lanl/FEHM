@@ -37,7 +37,7 @@ C***********************************************************************
       use avsio
       use comai, only : altc, days, icnl, jdate, jtime, verno, wdd,
      &     nei_in, ns_in, neq_primary, idoff
-      use combi, only : corz, izonef, nelm
+      use combi, only : corz, izonef, nelm, elem_geo
       use comdi, only : nsurf, izone_surf, izone_surf_nodes
       use comflow, only : e_adv_nodal, e_cond_nodal
       implicit none
@@ -393,21 +393,13 @@ c     Read the element connectivity and write to tec file
          if(ifdual .eq. 1 .and. iogdkm .eq. 1) then
 c     Do nothing, no connectivity defined
          else 
-            il = open_file(geoname,'old')
-c     avsx geometry file has an initial line that starts with neq_primary
-            read(il,*) i
-            if (i .ne. neq_primary) backspace il
-            do i = 1, neq
-               read(il,*)
-            end do
-            allocate (nelm2(ns_in))
+
+c gaz 052222 adding tec and other if blocks            
+c gaz 060822 using elem_geo              
             do i = 1, nei_in
-               read (il,*) i1,i2,char_type,(nelm2(j), j=1,ns_in)
-               write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
-            end do
-            deallocate(nelm2)
-            close (il)
-         endif
+               write(lu, '(8(i8))') (elem_geo((i-1)*ns_in+j), j=1,ns_in)
+            end do          
+          endif
       end if
 
       iocord = iocord_temp

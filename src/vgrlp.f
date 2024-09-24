@@ -274,7 +274,9 @@ c
 c
 c check for minumum capillary pressure
 c
+c gaz debug 020824
       if(iflg.le.1) then
+c      if(iflg.eq.2) then
          if (hp .lt. hmin ) hp=hmin
          if(sl .gt.0.0.and.sl .lt.1.00) then
 c     calculate the relative permeability
@@ -335,20 +337,27 @@ c     calculate the relative permeability
 c     lower residual cutoff
             rl = 0.0
             drls= 0.0
-c     upper residual cutoff
+            rv =1.0
+            drvs = 0.0
+c     upper residual cutoff                                                            X
          else
             rl = 1.0
             drls= 0.0
+            rv = 1.0
+            drvs= 0.0
          endif
 c     part added by rosangela (sept 2002)
-         term3=term1*term1
-         term4=(1-term3)**(1/2)
-         term5=term3**(1./alamda)
-         term6=(1-term5)**(2*alamda)
-         term7=term3**(1./beta-1.)
-         term8=(1/(1-term3))+4*term7*(1/(1-term5))
-         rv=term4*term6
-         drvs=(-0.5)*rv*term8
+         if(sl .gt.0.0.and.sl .lt.1.00) then
+c     calculate the relative permeability
+          term3=term1*term1
+          term4=(1-term3)**(1/2)
+          term5=term3**(1./alamda)
+          term6=(1-term5)**(2*alamda)
+          term7=term3**(1./beta-1.)
+          term8=(1/(1-term3))+4*term7*(1/(1-term5))       
+          rv=term4*term6
+          drvs=(-0.5)*rv*term8
+         endif
       endif
       return
       end

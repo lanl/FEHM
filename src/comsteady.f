@@ -14,7 +14,7 @@
 !***********************************************************************
 
       integer snstep, sminstep, i_pdiff, i_sdiff,i_accdif
-c gaz 090119 added parameters for new stea macro inputs 
+
       real*8 tolerance, toldp, tolds, toldt, toldc, tolde, toldh
       real*8 balance_tol, smult, sday, sdmx, smass, stsstr
       real*8 accdif_i, amass_ch, amass0

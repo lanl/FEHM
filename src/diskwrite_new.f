@@ -146,8 +146,10 @@
       use comsi
       use comxi
       use davidi
+c gaz 031124      
+      use com_prop_data, only : ihenryiso
       implicit none
-
+c
       real*8 dummyreal,tolw,sat_dum
       character*4 dum_type
       character*11 dummy_string
@@ -164,6 +166,8 @@
       logical :: write_co2  = .FALSE.
       logical :: write_pini = .FALSE.
       logical :: write_por = .FALSE.
+c gaz 031124 added restart with isothermal 2 phase w solubility      
+      logical :: write_mfrac_iso = .FALSE.
       logical :: write_disp(3) = .FALSE.
       logical :: write_strs(6) = .FALSE.
 
@@ -210,6 +214,8 @@ c Use value of numflux that was read in
                if (irdof .ne. 13 .and. ihead .eq. 0) write_sat  = .TRUE.
                if (ico2 .gt. 0) write_gasp = .TRUE.
                if (iporos .ne. 0) write_por = .TRUE.
+c gaz 031124 added mass frac for isothermal   
+               if (ihenryiso .ne. 0) write_mfrac_iso = .TRUE.
             end if
             if (iccen .ne. 0) write_trac = .TRUE.
             if (ptrak) write_ptrk = .TRUE.
@@ -331,7 +337,11 @@ c            write(isave, 6002)  (max(to(mi),tolw),   mi=1,n )
          end if
          if (write_sat .and. irdof .ne. 13 .and. ihead .eq. 0) then
             write(isave, '(a11)') 'saturation '
-            write(isave, 6002)  (max(s(mi),tolw),    mi=1,n )
+            if(idoff.eq.-1) then
+             write(isave, 6002)  (1.0d0,    mi=1,n )
+            else
+             write(isave, 6002)  (max(s(mi),tolw),    mi=1,n )
+            endif
          else
          end if
          if (write_pres) then
@@ -347,6 +357,13 @@ c            write(isave, 6002)  (max(to(mi),tolw),   mi=1,n )
             write(isave, 6002)  (max(pcio(mi),tolw), mi=1,n )
          else
          end if
+c gaz 031124 added restart with mass fraction         
+         if (write_mfrac_iso .and. irdof .ne. 13) then
+           write(isave, '(a10)') 'mfrac_iso '  
+c gaz 040424, fo now, just simple isothermal 
+c           write(isave, 6002)  (max(frac_gas_iso(mi),tolw), mi=1,n )
+           write(isave, 6002)  (max(cnlf(mi),tolw), mi=1,n )
+         endif    
          if (write_co2) then
             write(isave, '(a11)') 'co2temperat'
             write(isave, 6002)  (max(toco2(mi),tolw),   mi=1,n )

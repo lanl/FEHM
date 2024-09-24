@@ -15,6 +15,8 @@ CD1
 CD1 PURPOSE
 CD1
 CD1 To enable a spatially variable density and viscosity that does not change in time
+CD1 gaz 121921 this routine reads in density, viscosity, and compressibility of water
+CD1 used in isothermal applications, need to make more automatic      
 CD1
 C**********************************************************************
 CD2

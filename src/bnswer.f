@@ -273,8 +273,8 @@ C**********************************************************************
       use davidi
       use comfem
       implicit none
-
-      integer iad_min, iad_mult, i
+c gaz 110919 moved iad_min to comai (global variable now)
+      integer iad_mult, i
       real*8 fdum_mult
       parameter (fdum_mult=1.d02,iad_mult= 100)
 
@@ -285,7 +285,7 @@ C**********************************************************************
       mlz_save= 0
 c gaz 110715
       mlz = 0
-      if(g1.lt.0.0) then
+      if(g1.lt.0.0.and.jswitch.eq.0) then
 	 iad_min = 0
       else if(maxit.ge.0) then
          iad_min=1
@@ -440,9 +440,16 @@ c add stress equations and derivatives
 c uncoupled stress equations
          call  stressctr(8,0)
          do i = 1,neq
-           delta_u(i) = delta_u(i) - bp(i + nrhs(1))
-           delta_v(i) = delta_v(i) - bp(i + nrhs(2))
-           delta_w(i) = delta_w(i) - bp(i + nrhs(3))
+           if(icnl.eq.0) then
+            delta_u(i) = delta_u(i) - bp(i + nrhs(1))
+            delta_v(i) = delta_v(i) - bp(i + nrhs(2))
+            delta_w(i) = delta_w(i) - bp(i + nrhs(3))
+           else 
+c gaz 052222 bp only allocated 2*neq for 2 dof HM 
+c stress needs bp by dimensions                
+            delta_u(i) = delta_u(i) - bp(i + nrhs(1))
+            delta_v(i) = delta_v(i) - bp(i + nrhs(2))               
+           endif
          enddo
 
       else if(idoff.eq.-1) then

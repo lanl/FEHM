@@ -287,7 +287,9 @@ C***********************************************************************
       nufilb(28)=37
       nufilb(29)=38
       nufilb(30)=39 
-      nufilb(31)=40      
+      nufilb(31)=40 
+c gaz 072220 added unit nunber for air EOS table      
+      nufilb(32)=41
       suffix(1)='.files'
       suffix(2)='.dat'
       suffix(3)='.dat'
@@ -319,6 +321,7 @@ C***********************************************************************
       suffix(29)='.txt'
       suffix(30)='.well2'
       suffix(31)='.txt'
+      suffix(32)='.txt'
       iowork(1)='iocntl'
       iowork(2)='inpt  '
       iowork(3)='incoor'
@@ -349,7 +352,8 @@ C***********************************************************************
       iowork(28)='ionop '
       iowork(29)='ioco2 '
       iowork(30)='well2 ' 
-      iowork(31)='ioh2o '      
+      iowork(31)='ioh2o '   
+      iowork(32)='ioair '   
       cstats(1)='old    '
       cstats(2)='old    '
       cstats(3)='old    '
@@ -380,7 +384,9 @@ C***********************************************************************
       cstats(28)='unknown'
       cstats(29)='old    '
       cstats(30)='unknown'  
-      cstats(31)='old    '     
+      cstats(31)='old    '   
+c gaz 072220 air table modification      
+      cstats(32)='old    '   
       cform(1)='formatted'
       cform(2)='formatted'
 ! Coordinate file can be formatted or unformatted
@@ -411,7 +417,8 @@ C***********************************************************************
       cform(27)='formatted'
       cform(28)='unformatted'
       cform(29)='formatted'
-      cform(31)='unformatted'     
+      cform(31)='formatted'  
+      cform(32)='formatted'   
       blank=' '
       if(in(4).NE.666) nmfil( 1) = 'fehmn.files'
       nmfil( 2) = 'fehmn.dat'
@@ -443,7 +450,9 @@ C***********************************************************************
       nmfil(28) = 'nop.temp'
       nmfil(29) = 'co2_interp_table.txt'
       nmfil(30) = 'fehmn.well2' 
-      nmfil(31) = 'h2o_interp_table.txt'     
+c gaz 122020   changed 31 and 32 (EOS tables) to blank   
+      nmfil(31) = '' 
+      nmfil(32) = '' 
       nmfily( 1) = 'terminal console input'
       nmfily( 2) = 'terminal console output'
       nmfily( 3) = 'not using'
@@ -476,12 +485,14 @@ C***********************************************************************
 
 ! Open error output file [if not already open for msim] 
       if(in(4).NE.666) ierr = nufilb(14)
-      inquire (ierr, opened = opnd)
-      if (.not. opnd) then
+      if(nmfil(14)(1:9).eq.'not using') go to 444
+       inquire (ierr, opened = opnd)
+       if (.not. opnd) then
          open (ierr, file = nmfil(14), status = cstats(14),
      *        form = cform(14))
          write (ierr, 1000)  verno, jdate, jtime
-      end if
+       end if
+444    continue       
 
 ! No longer create default save or fin files
 

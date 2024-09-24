@@ -48,6 +48,7 @@
       use comdi
       use comci, only : rolf
       use comdti
+      use comfi, only : qc
       use comflow
       use davidi
 
@@ -158,8 +159,18 @@ c     Add boundary condition sources
                else
                   if (wflux_flag) 
      &                 sumboun(izone,ii) = sumboun(izone,ii) + sk(inode)
-                  if (vflux_flag) sumboun(izone,iv) = 
+c gaz debug hack 041321
+                  i1 = l +izonef(inode) + qc(inode)                 
+                  if (vflux_flag) then
+                   if(ico2.le.0) then
+                    sumboun(izone,iv) = 
      &                 sumboun(izone,iv) + (1.0-s_dum)*sk(inode)
+                   else
+                      sumboun(izone,iv) =                        
+c  gaz 041321correction for vapor boundary term for ngas                 
+     &                 sumboun(izone,iv) + qc(inode)  
+                   endif
+                  endif 
                end if
                      
                      summass(izone,1) = summass(izone,1) +
@@ -449,11 +460,11 @@ c     &           sumboun(izone,iv) = 0.d0
          end do
       end if
 
- 1000 format ('Zone  (# nodes)   Source       Sink',
-     &           '         Net          Boundary      Water Mass',
+ 1000 format ('Zone   (#  nodes)       Source       Sink',
+     &           '         Net       Boundary     Water Mass',
      &       '    Avg Saturation' )
- 1045 format(1x,i4,' (',i7,')',1x,1p,4(1x,e12.5))
- 1046 format(1x,i4,' (',i6,')',2x,1p,5(1x,e12.5),4x,e12.5)
+ 1045 format(1x,i7,' (',i8,')',1x,1p,4(1x,e12.5))
+ 1046 format(1x,i7,' (',i8,')',1x,1p,5(1x,e12.5),4x,e12.5)
  1047 format('(g16.9, ', i3, '(a))')
  1050 format(4(g16.9, 1x), g16.9)
  1051 format(g16.9, 1x, a)

@@ -217,7 +217,8 @@ c
                   ibp=i
                endif
             enddo
-            if (ibp.eq.0.and.ibp1.eq.0.and.ibp2.eq.0.and.
+            
+            if (ibp.eq.0.or.ibp1.eq.0.or.ibp2.eq.0.or.
      &          ibp3.eq.0) then
              if (iptty .ne. 0) 
      &        write(iptty,*)"Nans for all residuals: stopping"
@@ -414,7 +415,7 @@ c gaz 080819  added zone ino to output
             end if
          else if(idof.eq.3 .or. idof_co2.eq.3) then
 
-            if (ibp.eq.0.and.ibp1.eq.0.and.ibp2.eq.0.and.
+            if (ibp.eq.0.or.ibp1.eq.0.or.ibp2.eq.0.or.
      &          ibp3.eq.0) then
              if (iptty .ne. 0) 
      &        write(iptty,*)"Nans for all residuals: stopping"
@@ -526,11 +527,14 @@ c     endif
       else if(iflg.eq.2) then
          do i=1,n
             if (irdof .ne. 13 .or. ifree .ne. 0) then
+c gaz 110123
+              if(idoff.ne.-1) then
                if(s(i).gt.s_upper.and.strd.lt.1.0) then
                   s(i)=1.0
                else if(s(i).lt.s_lower.and.strd.lt.1.0) then
                   s(i)=0.0
                endif
+              endif
             end if
          enddo
       endif

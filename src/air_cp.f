@@ -194,15 +194,16 @@ C**********************************************************************
 c gaz 121418
 c need to add solubility as function of temperature      
       subroutine air_sol(tl,pl,pcl,xnl,dxnlp,dxnlpc,dxnlt)
-c calculate air solubility in water      
+c calculate air solubility in water 
+       use com_prop_data, only :   xnl_max  
+       implicit none
        real*8 tl,pl,pcl,xnl,dxnlp,dxnlpc,dxnlt, alpha0
-       real*8 xtol,alpha, dalpca,dalphat,tsolmax, alpha_tol
-       real*8 xnl_max
-       
+       real*8 xtol,alpha, dalpca,dalphat,tsolmax, alpha_tol       
        integer imod_sol
-        parameter (imod_sol = 0)
-        parameter (alpha0 = 1.6111d-04, xnl_max=0.1)     
-        parameter(xtol=1.d-16, tsolmax = 300., alpha_tol = 1.d-9)        
+        parameter (imod_sol = 1)
+        parameter (alpha0 = 1.6111d-04)     
+        parameter(xtol=1.d-16, tsolmax = 300., alpha_tol = 1.d-9)  
+        xnl_max=0.1      
 c gaz 121618 disable temperature dependant Henry's law   
         if(imod_sol.ne.0) then           
          if(tl.le.tsolmax) then
@@ -233,7 +234,7 @@ c gaz 121618 disable temperature dependant Henry's law
           endif
         endif
         return
-c gaz 112018 accpunt for pcl < 0    (this produces the old model)    
+c gaz 112018 account for pcl < 0    (this produces the old model)    
           if(pcl.gt.-100.) then
            xnl=alpha0*pcl
            dxnlp=0.0
@@ -251,6 +252,78 @@ c
          
       return
       end
+      subroutine gas_frac_2phase_iso(iflg)
+c
+c gaz 040224 
+c convert total mass fraction to gas and dissolved gas      
+c
+      use comdti
+      use comai
+      use combi
+      use comci
+      use comdi
+      use comei
+      use comfi
+      use comgi
+      use comii
+      use comxi
+      use comwt
+      use davidi
+      use comflow 
+      use comsplitts 
+      use com_prop_data, only : xnl_ngas, ihenryiso, xnl_max, xnl_ini,
+     &   xnl_chng_low,xnl_chng_high
+      implicit none
 
+      integer iflg,ndummy,ico2d,ndum,nndum,ieoss,iieoss,iwelbs,i,mid
+c gaz 121821 added n0dum for iso water properties using fluid_control_prop.f
+      integer n0dum
+      integer mi,i1,i2,ilev,mlev,il,md,irlpsv,irlptsv,icapsv,nr1
+      integer nr2,irdofsv 
+      integer  ii,ij,im,inode,iwm,j,ja,k,kb
+c gaz 110819 removed tref, pref (now global)       
+      real*8 pssv,ssv,phisv,dmpfd,dmefd,dqd,rqd,qcd
+      real*8 inflow_thstime,inen_thstime,denht,deneht
+      real*8 dels,delp,dfdum11,dfdum12,dfdum21,dfdum22
+      real*8 dfdum11i,dfdum12i,dfdum21i,dfdum22i,detdf
+      real*8 fdum01,fdum02,sx1d,phidum,phi_dif,phi_1,phi_2
+      real*8 hmax, hmin, hmid
+      real*8 cden_correction
+      character*80 form_string
+      character*80 dum_air
+      real*8 pref_1_2,pref_2_1,s_1_2
+      real*8 t_low
+c gaz 103019 added strd_satneg for under relaxation when neg saturations 
+c gaz 081623   
+      real*8 strd_satneg, strd_old, phi_unsat_to_sat, p_uzmin
+      real*8 strd1, strd2, phi_old
+c gaz 040424
+      real*8 mass_tot, gas_tot
+c gaz 081823 ieosd
+      integer ieosd,nr_test
+      integer i_t_bad 
+c gaz debug 112119      
+      integer ieos_c
+c gaz 071223
+      integer ico2_sv
+c gaz 092723
+      integer isotherup  
+      if(iflg.eq.1) then
+c gaz 040424 for now, just isothermal with dissolved gas
+c gaz 0402024 added  cnlof(i)
+       do i = 1, n0 
+        if(ihenryiso.ne.0.and.s(i).gt.0.0d0) then
+         cnlf(i) = frac_gas_iso(i)
+         cnlof(i) =  cnlf(i)
+        else 
+         cnlf(i) =  0.0d0
+         cnlof(i) =  cnlf(i)
+        endif     
+       enddo
+25    continue
+      else
+      endif
+          
+      end
 
 

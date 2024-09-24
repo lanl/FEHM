@@ -211,6 +211,7 @@ c--------------------------------------------------------------------
       use comgi
       use comdti
       use comai
+      use com_exphase
       implicit none
 
       real*8 dva0,theta,p0,t0,rat,dratp,dratt,dva0d,dva0p,dva0c,dva0e
@@ -220,6 +221,8 @@ c      real*8,  allocatable :: dva_save(:)
       real*8 dpsatt,dpsats,pv,dum_dva, psatl
       real*8 dva_t
       integer i
+c gaz 123021  for explicit update   
+      integer loop_start, loop_end
       parameter(dva0=2.23e-5)
       parameter(theta=1.810)
       parameter(p0=0.1)
@@ -230,7 +233,16 @@ c      save dva_save
       if(.not.allocated(dva_save)) allocate (dva_save(n))
 
       if(iadif.ne.0.and.tort.ge.0.0.and.tort.le.1.0) then
-         do i=1,n
+c gaz 123020 manage explicit update 
+       if(i_ex_update.ne.0.and.ieq_ex.gt.0) then
+         loop_start = ieq_ex
+         loop_end = ieq_ex
+       else
+         loop_start = 1
+         loop_end = n         
+       endif    
+       do i=loop_start,loop_end
+c         do i=1,n
 
 c              PHS attempting to put in dratc     3/18/04
 c                  using phi = pci + pvap (water vapor pressure)
@@ -406,9 +418,14 @@ c   section of code from the top of this routine.
 c-------------------------------------------------------
 
       else if(tort.EQ.333) then
-
-        do i=1,n
-
+       if(i_ex_update.ne.0.and.ieq_ex.gt.0) then
+         loop_start = ieq_ex
+         loop_end = ieq_ex
+       else
+         loop_start = 1
+         loop_end = n          
+       endif 
+       do i = loop_start, loop_end
            temp=(1-s(i))*ps(i)
            if(ps(i).GT.0) then
             tort2 = temp**2.3333/(ps(i)**2)
@@ -487,7 +504,15 @@ c              ddvap(i)=dva0d*(dratp )
 c - - - - - - - - 7/17/13  PHS  Load dva/(air content) into dvas - - - - - 
 c gaz debug 090314
       if(irdof.ne.13) then
-       do i = 1,n
+c gaz 123020 manage explicit update 
+       if(i_ex_update.ne.0.and.ieq_ex.gt.0) then
+         loop_start = ieq_ex
+         loop_end = ieq_ex
+       else
+         loop_start = 1
+         loop_end = n          
+       endif    
+       do i=loop_start,loop_end          
          if((s(i).LT.1).AND.(ps(i).GT.0)) then
           dvas(i) = dva(i)/(ps(i)*(1-s(i))+dvas_denom_min)
          else

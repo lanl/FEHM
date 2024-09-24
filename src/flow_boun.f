@@ -249,7 +249,8 @@ c node_ch_model_type - specified model number change
 c
 c node_model - model number for each node
 c
-      use comai, only : boun_out, neq_primary
+      use comai, only : boun_out, neq_primary, daymaxboun, daymax,
+     &      tmch,tmchboun
       use combi
       use comci
       use comdi
@@ -263,6 +264,8 @@ c
       integer inpt,iptty,iout,ierr,l,ihead
       integer iimodel,istea,pump_node(1000),zmax(1000)
       integer igrav
+c gaz 090820
+      integer mod1,mod2
       
       real*8 day,days0,days,daynew,daym1,vfac,tmdum
       real*8 time_factor1, time_factor2, if_time_interpolate
@@ -660,15 +663,34 @@ c     daym1=days
                            write(iptty,10) i,days0,timchar,tmdum
                            write(iptty ,*) ' '
                         endif
-                     else
+                   else
+c gaz 090820 added output for boun keyword chmo(correction 092920)
+                    if(icm.ne.0) then
+                     mod2 = 0
+                     mod1 = 0                         
+                     if(node_ch_model_type(min_model(i)).ne.0) then
+                      mod2=node_ch_model(abs(time_type(i)),min_model(i))
+                      mod1=node_ch_model(abs(time_type(i))-1,
+     &                  min_model(i))
+                     endif
+                    else
+                     mod2 = 0
+                     mod1 = 0 
+                    endif
                         if (iout .ne. 0 .and. boun_out) then
                            write(iout ,*) ' '
                            write(iout ,11) i,days0
+                           if(mod2.ne.0) then
+                            write(iout ,12) i,mod2, mod1  
+                           endif
                            write(iout ,*) ' '
                         end if
                         if(iptty.ne.0 .and. boun_out) then
                            write(iptty ,*) ' '
                            write(iptty,11) i,days0
+                           if(mod2.ne.0) then
+                            write(iptty,12) i,mod2, mod1  
+                           endif
                            write(iptty ,*) ' '
                         endif
                      endif
@@ -676,6 +698,8 @@ c     daym1=days
      *                    i3, ' time(days) ',g20.13, a9, g12.5)
  11                  format(1x,'BOUNDARY CONDITION CHANGE : model # ',
      *                    i3, ' time(days) ',g20.13)
+ 12                  format(1x,'MODEL ',i5,' : BOUN MODEL CHANGE :'
+     &                      , ' model ',i5,' replaces model ',i5)
                   endif
                end if
             enddo
@@ -731,10 +755,39 @@ c     check for timestep size change
 c     
                   if(timestep_type(i).ne.0) then
                      day=timestep(abs(time_type(i)),i)
+c gaz 111720 modification for first 'ts'  at time = 0
                      daynew=day
-                     days=days0+day
-                     dtot_next = 0.0
+                     if(l.ne.0) then
+                      days=days0+day
+                      dtot_next = 0.0
+                     endif
                   endif
+c gaz 012322
+c     
+c     check for equation tolerance change
+c
+                  if(ieqtol.ne.0) then
+                   if(eqtol_type(i).ne.0) then
+                     tmchboun=eqtolerance(abs(time_type(i)),i)
+                     tmch = tmchboun
+                   endif
+                  endif                   
+c gaz 012122
+c     
+c     check for timestep maximum size change
+c
+                  if(itsmax.ne.0) then
+                   if(tsmax_type(i).ne.0) then
+                     daymaxboun=timestepmax(abs(time_type(i)),i)
+                     daymax = daymaxboun
+                     daynew=min(day,daymaxboun)
+                     day = daynew
+                     if(l.ne.0) then
+                      days=days0+day
+                      dtot_next = 0.0
+                     endif
+                   endif
+                  endif                   
                endif
             enddo
 

@@ -488,9 +488,15 @@ c check for saved zonefile
           inquire (file = zonesavename, exist = ex)
           if(ex) then
            inquire (file = zonesavename, opened = op)   
-           if(.not.op) izunit=open_file(zonesavename,'unknown')
-           read(izunit,*)
-           read(izunit,*)
+           if(.not.op) then
+            izunit=open_file(zonesavename,'unknown')
+           else
+            inquire(file = zonesavename, number=izunit)
+            close(izunit)
+            izunit=open_file(zonesavename,'unknown')
+           endif
+           read(izunit,*)  ja
+           read(izunit,*)  wdd
            read(izunit,*) nin
            if(allocated(ncord)) deallocate(ncord)
            allocate(ncord(nin))
@@ -504,6 +510,7 @@ c check for saved zonefile
                   ifind(inode) = 1
                   n_realcount = 0
                   n_intcount = 0
+                  call zone_char_fill(1,inode,abs(ja))
                   do iarray = 1, narrays
                      if( itype(iarray) .eq. 8 ) then
                         n_realcount = n_realcount + 1
@@ -535,6 +542,7 @@ c check for saved zonefile
                      end if
                   end do
                end if
+c gaz 103118 set to             
             end do
            else
 c gaz 111716  
@@ -582,10 +590,10 @@ c                end if
                ja = 1
                jb = npoints
                jc = 1
+               call zone_char_fill(2,1,npoints)
             end if
             if( jb .gt. npoints ) jb = npoints
             ifind(ja:jb:jc) = 1
-
             n_realcount = 0
             n_intcount = 0
             
@@ -690,3 +698,169 @@ c     Error checking for irregular input (missing nodes, etc.)
  9003 format ('Line number - ', i8, /, 'Bad input, check this line')
  9004 format (1x,10i8) 
       end
+         subroutine zone_char_fill(iflg,inode,nzone_used)
+c 
+c gaz 101323 intial coding (tract zones used be a given node)
+c
+        use comai
+        use combi
+        use comdti, only : n0
+        implicit none
+        integer  jb, jc, iflg, nzone_used, inode
+        character*5 dumzone
+
+c allocate memory if needed
+        if(.not.allocated(zones_char)) allocate(zones_char(n0))
+        if(iflg.eq.1) then 
+c gaz 062723  write nodes to zone_char  for no saved zone
+          write(dumzone(1:5),'(i5)') nzone_used    
+           jb = inode      
+           do jc = 1,25           
+            if(zones_char(jb)(jc:jc+4).eq.dumzone(1:5)) then
+             go to 8001
+            else if(zones_char(jb)(jc:jc+4).eq.'    ') then
+             write( zones_char(jb)(jc:jc+4),'(i5)') nzone_used
+             go to 8001
+            endif
+           enddo
+8001      continue                           
+       
+        else if(iflg.eq.2) then
+c gaz 101523  write nodes to zone_char  for ja,jb,jc =' 1 0 0'
+          write(dumzone(1:5),'(a5)') ' all ' 
+c gaz 101523  inode = 1, nzone_use = n0
+          do jb  = inode, nzone_used
+           do jc = 1,25           
+            if(zones_char(jb)(jc:jc+4).eq.dumzone(1:5)) then
+             go to 8002
+            else if(zones_char(jb)(jc:jc+4).eq.'    ') then
+             write( zones_char(jb)(jc:jc+4),'(a5)') ' all '
+             go to 8002
+            endif
+           enddo
+8002      continue           
+          enddo                          
+
+        endif
+        return
+        end
+      subroutine zone_saved(iflg,macr,nzone_saved,icall_sv,input_unit)
+c subroutine created gaz 060523
+c gaz 060617 algoithm created        
+c manage saved zones 
+      use combi
+      use comdti, only : n0
+      use comai
+      use comdi, only : izone_conv_nodes
+      implicit none
+      integer i,ii,izunit,nin,j
+      integer iflg,nzone_saved,icall_sv
+c gaz 061223
+      integer input_unit, maxlines
+      integer open_file
+      character*30 zonesavename
+c gaz 110123
+      character*4 macr
+      logical ex,op
+      parameter (maxlines = 10000)
+        if(iflg.eq.0) then
+c initialize if necessary   
+        else if(iflg.eq.1) then 
+c identify and count saved zones
+c gaz 061223                   
+         icall_sv = 0
+         do ii = 1, maxlines
+         read(input_unit,'(a80)') wdd(1:80)
+         if(wdd(1:4).eq.'stop') go to 600
+120      if(wdd(1:4).eq.'zone') then
+         read(input_unit,'(a80)') wdd(1:80)
+121      do i = 1, 76
+           if(wdd(i:i+3).eq.'save') then
+            icall_sv = icall_sv +1
+            read(wdd(1:i-1),*) izonesavenum(icall_sv)
+            go to 122
+           endif
+          enddo
+122       read(input_unit,'(a80)') wdd(1:80)
+          if(wdd(1:4).eq.'zone') then
+           go to 120
+          else if(wdd(1:4).eq.'stop') then
+           go to 600
+          else
+           go to 121
+          endif
+         endif
+         enddo
+600      num_sv_zones = icall_sv
+         return
+        else if(iflg.eq.2) then   
+          zonesavename(1:14) = 'zone00000.save'
+          write(zonesavename(5:9),'(i5)') abs(nzone_saved)+10000
+          zonesavename(5:5) = '0'
+          ex = .false.
+          op = .false.
+          inquire (file = zonesavename, exist = ex)
+c gaz 061523 
+          if(ex) then
+           inquire (file = zonesavename, opened = op)   
+           if(.not.op) then
+            izunit=open_file(zonesavename,'unknown')
+           else
+            inquire(file = zonesavename, number=izunit)
+            close(izunit)
+            izunit=open_file(zonesavename,'unknown')
+           endif
+           read(izunit,*)  nzone_saved
+           read(izunit,*)  wdd
+           read(izunit,*) nin
+           if(allocated(ncord)) deallocate(ncord)
+           allocate(ncord(nin))
+           backspace izunit
+           read(izunit,*) nin, (ncord(i), i =1, nin)
+           close(izunit)
+c gaz 090523 don't need conv info here
+c send info to innode to read zones in ncord
+           input_unit = nin
+           if(macr.eq.'conv') then
+            do i = 1, nin
+             ii = ncord(i)
+             izone_conv_nodes(ii+n0*(icall_sv-1)) = nzone_saved
+            enddo
+           else if(macr.eq.'node') then
+c gaz node is singe call
+c zone info used from ncord
+            continue
+           else
+           endif
+          else
+c gaz 101023 input_unit = 0 means not a saved zone 
+           input_unit = 0
+          endif
+          else if(iflg.eq.3) then
+c gaz 062723  close files
+           do i = 1, num_sv_zones 
+              ii = izonesavenum(i)
+              zonesavename(1:14) = 'zone00000.save'
+              write(zonesavename(5:9),'(i5)') abs(ii)+10000
+              zonesavename(5:5) = '0'
+              ex = .false.
+              op = .false.
+              inquire (file = zonesavename, exist = ex)
+              if(ex) then
+               inquire (file = zonesavename, opened = op)
+               if(op) then
+                inquire(file = zonesavename, number = izunit)
+                close (izunit,status='delete')
+               else
+                izunit=open_file(zonesavename,'old')
+                close (izunit,status='delete')
+               endif
+              endif
+           enddo
+          continue
+         else
+          nzone_saved = 0
+         endif
+         return
+         end
+

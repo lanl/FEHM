@@ -239,3 +239,46 @@ c
  2000 continue
       return
       end
+      subroutine elem_geo_ctr(iflg)
+c
+c gaz 050822 new routine to save element data for geo file
+c
+      use comai, only : ns_in, nei_in, ns, nei, ivf, ifdm_elem
+      use combi
+      use avsio
+      implicit none
+c      
+      integer iflg, i, elem_stor_size
+c   
+      if(iogeo.eq.0) return
+      if(iflg.eq.0.and.ivf.ne.-1) then
+c allocate storage          
+       if(.not.allocated(elem_geo)) then
+        if(ns_in.ne.0.and.nei_in.ne.0) then
+         allocate(elem_geo(ns_in*nei_in))       
+        endif
+       endif
+      else if(iflg.eq.0.and.ivf.eq.-1) then
+c gaz 122622 added element generation for fdm
+       ifdm_elem = 1
+       call structured(4)
+       if(.not.allocated(elem_geo)) then
+        if(ns_in.ne.0.and.nei_in.ne.0) then
+         allocate(elem_geo(ns_in*nei_in))       
+        endif
+       endif
+      else if(iflg.eq.-1) then 
+c  gaz 061522 wait until after vtk calcs to deallocate
+c       deallocate(elem_geo)
+      else if(iflg.eq.1.and.ivf.ne.-1) then 
+       elem_stor_size = ns_in*nei_in
+       do i = 1, elem_stor_size
+         elem_geo(i) = nelm(i)  
+       enddo
+       nact_elem_geo = 1
+       continue
+      else if(iflg.eq.2) then
+      else
+      endif
+      return
+      end

@@ -392,8 +392,9 @@
 !PS None
 !PS
 !***********************************************************************
-
-      integer             iab, iac, iaccmx, iad, iad_up, iadif, iamm 
+c gaz 102919 added iad_min(calculated in bnswer)
+      integer             iad_min
+      integer             iab, iac, iaccmx, iad, iad_up, iadif, iamm
       integer             iamx, iatty, icapp, iccen, ice, icf, icgts 
       integer             ichng, icnl, ico2, icontr, ics, idof, idpdp 
       integer             idualp, ierr, ifinsh, iflag, igauss, igrav 
@@ -410,6 +411,10 @@
       integer             north, ns, itotals, nflxt, iflxc, irestart_ts
       integer             nsave, nstep, ntpp, ntty, irsttime 
       integer             ispest, ispst1, ipest, mpest, iexrlp, ivar
+c gaz 052322  added global varible ivar_switch      
+      integer             ivar_switch
+c gaz_082622 added global var nr_completed indicates in NR update just finished     
+      integer             nr_completed
       integer             isptr1, isptr2, isptr3, isptr4, isptr5, isptr6
       integer             isptr7, isptr8, isptr9, idoff, rlp_flag
       integer             nprttrc, irlp_fac, interface_flag
@@ -441,8 +446,6 @@ c GAZ 11/02/08
       integer             ishisstr, ishisstrx, ishisstry, ishisstrz
       integer             ishisstrxy, ishisstrxz, ishisstryz
       integer             ishisdisx, ishisdisy, ishisdisz
-c 090119 gaz made  sat_ich real*8 (sat value below head is set to zero)     
-c     integer             ich_max, ich_m1, ich_m2, sat_ich 
       integer             ich_max, ich_m1, ich_m2
       integer             jswitch, joff
       integer             iwellp_flag, icoef_neg, numcoef_neg
@@ -460,7 +463,8 @@ c GAZ 072513
 c GAZ 011014
 c GAZ 012214
       integer             iden_vis, ideng_vis, iphase3
-      integer             itype_air,itype_meth,itype_co2
+c gaz 110823 added itype_h2
+      integer             itype_air,itype_meth,itype_co2,itype_h2
       real*8              pchng, schng 
 c gaz 121314
       integer              nrestart_ts
@@ -471,8 +475,10 @@ c gaz 081415
       integer              nphase_sc_0
       integer              dnphase_liq, dnphase_2, dnphase_gas
       integer              dnphase_sc
-c gaz 110715
-      integer              iwater_table
+c gaz 110715, 070720, 081921 
+      integer              iwater_table, iair_table, num_eos_table
+      integer              ico2wh_table
+      integer              itable_files 
       integer :: irun = 0
 c gaz 013116
       integer              iaprf
@@ -486,6 +492,10 @@ c gaz 100318
       integer             initdata_pad
 c gaz 042119              neq_active added to report active varables when porosity <0 nodes are disabled      
       integer             neq_active
+c gaz 062920              added igdpm_add to facilitate adding gdpm nodes in zone call (after gdpm nodes read)
+      integer             igdpm_add
+c gaz 111520
+      integer             iter_intrvl
       real*8              aener, aiaa, am0, amass, ame, an0, asteam
       real*8              astmo, aw, awc, awt, ay, ayc, contim, day
       real*8              daycf, daycm, daycmm, daycmx, daycs, dayhf
@@ -502,8 +512,10 @@ c gaz 042119              neq_active added to report active varables when porosi
       real*8              contim_rip, histime, aiar, tims_trans
       real*8              daycs_save, daycf_save, dayhf_save, dayhs_save
       real*8              day_save_ss, fdum_last, aiaa_save, daymax_save
+      real*8              tmch_save
+c gaz 012521 add some boun macro variables     
+      real*8              tmchboun, daymaxboun
 c gaz 11-06-2007
-c gaz 090119 made sat_ich a real*8 from integer
       real*8              rho1grav, h_to_p, sat_ich
 c gaz 01-06-2014
       real*8              roc0, visc_gas
@@ -511,21 +523,41 @@ c gaz 01-06-2014
 c gaz 11-29-2009   
       real*8              p_stop,t_stop,s_stop,pa_stop,s2_stop
       real*8              co2f_stop,h_stop    
+c gaz 070821
+      real*8              p_tol, t_tol, pc_tol
+c gaz 032622 nr stopping criteria on raw or fractional equation balance errors
+      real*8              eqwm_stop,eqen_stop,eqnm_stop
+      real*8              water_mass_err, energy_err, ngas_mass_err
+      real*8              water_mass_err_max, energy_err_max 
+      real*8              ngas_mass_err_max
+      integer             node_water_err_max, node_energy_err_max
+      integer             node_ngas_err_max
+      logical             var_stop, con_eq_stop
 c gaz 090113
       real*8              permavg_salt, poravg_salt
 
       real*8              strd_iter, strd_rich, tol_phase
-
-      character* 3        header_flag
+c gaz 122623
+      real*8              strd_mass 
+      character* 3        header_flag                    
       character* 4        altc, accm
       character* 5        sssol
       character* 8        jtime
       character*11        jdate, flux_flag
       character*30        verno
+c gaz 021521 overwrite verno in dated with verno read in data file (scanin checked also)    
+      character*30        verno_fehmid
+      integer             idfehm
 c gaz 100318 added wdd2      
       character*80        wdd, wdd1,wdd2
       character*80        salt_read_file, salt_write_file
-
+c gaz 092319 h2o crit T and P moved here
+c gaz 110819 pref, tref moved here (now global)  
+      real*8 pcrit_h2o, tcrit_h2o, pref, tref
+c gaz 112721 removed parameter line because pcrit_h2o=22.064d0, tcrit_h2o=373.946  
+c can be changed (slightly) by SC water EOS table    
+c      parameter(pcrit_h2o=22.064d0, tcrit_h2o=373.946) 
+      real*8 pcrit_h2o_true, tcrit_h2o_true
       integer nmacros
       parameter( nmacros = 60 )
       logical macroread(nmacros) 
@@ -534,6 +566,10 @@ c gaz 100318 added wdd2
       logical out_zones, spercent, mass_read, pres_read, co2_read
       logical connect_out, resid_out, wflux_flag, vflux_flag
       logical eflux_flag,fperm_flag
+c gaz 120421 moved eval_test_h2o from fluid control routines    
+      integer eval_test_h2o
+c gaz 020522
+      integer i_vtk
 
       end module comai
 

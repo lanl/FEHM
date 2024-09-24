@@ -314,22 +314,25 @@ c Isothermal
                      if (iatty.gt.0)  write(iatty,6330)
                   end if
                endif
+c gaz 110121 added State (ieos()_ info
 c Heat and mass w/o head output
  6030          format(50x, 'source/sink', 2x, 'E source/sink', /, 3x,
-     &              'Node', 2x, ' P (MPa)', 3x, ' E (MJ)', 4x, 'L sat',
-     &     5x, 'Temp (C)', 4x, '(kg/s)', 7x, '(MJ/s)')
+     &              'Node', 2x, ' P (MPa)', 3x, ' E (MJ)', 4x, 'S liq',
+     &     5x, 'Temp (C)', 4x, '(kg/s)', 7x, '(MJ/s)',2x,'State',
+     &     12x,'Zone')
 c Heat and mass w/ head output
  6330          format(61x, 'source/sink', 2x, 'E source/sink', /,
      &              3x, 'Node', 2x, 'Head (m)', 3x, 'P (MPa)', 4x,
-     &              'E (MJ)', 4x, 'L sat', 5x, 'Temp (C)', 5x,
-     &              '(kg/s)', 7x, '(MJ/s)')
+     &              'E (MJ)', 4x, 'S liq', 5x, 'Temp (C)', 5x,
+     &              '(kg/s)', 7x, '(MJ/s)',2x,'State',
+     &                12x,'Zone')
 c Isothermal output w/ head
  6130          format(62x,'source/sink', /, 3x, 'Node', 2x, 'Head (m)',
-     &              4x, 'P (MPa)', 4x, 'E (MJ)', 4x, '  L sat',3x,
+     &              4x, 'P (MPa)', 4x, 'E (MJ)', 4x, '  S liq',3x,
      &              'Temp (C)', 4x, '(kg/s)','     State','  Zone' )
 c Isothermal output w/o head
  6230          format(52x, 'source/sink', /, 3x,'Node',2x,' P (MPa) ',
-     &              3x, ' E (MJ)', 4x, 'L sat', 5x, 'Temp (C)', 5x,
+     &              3x, ' E (MJ)', 4x, 'S liq', 5x, 'Temp (C)', 5x,
      &              '(kg/s)','      State','  Zone')
                
 c     
@@ -364,11 +367,17 @@ c
                   endif
                   do i=1,mlev
                      md=nskw(i+(il-1)*mlev)
+c gaz 110123
+                     if(idoff.eq.-1)then 
+                      sl =1.0
+c                     else
+c                      sl = s(md)
+                     endif
                      if (irdof .eq. 13 .and. ifree .ne. 0) then
                         if(izone_free_nodes(md).gt.1) then        
                            sl=min(s(md)-rlptol,1.00d0)     
                         else
-	                   sl = s(md) 
+c	                   sl = s(md) 
                          if(abs(sl).lt.1.d-98) sl = 1.d-98
                         endif
                      else if(irdof .ne. 13) then
@@ -401,23 +410,26 @@ c     CHANGE ABOVE TO JUST PRINT OUT qh ARRAY
                      if(ico2.lt.0) then
 	                pres_out = pho(md)-crl(1,1)*head0*(-grav)
                      else
-	                pres_out = pho(md)
+	                pres_out = pho(md)                                
                      endif
                      if(ihead.eq.0.and.ichead.eq.0) then
                         phod=pho(md)
                         if (ico2.lt.0) then
-                           write(iout, 6031)  md ,
+c gaz 062723 changed izonef(:) to zones_char(:)
+                           write(iout, 6029)  md ,
      *                          phod , eqd , sl , t(md) , rqd, ieos(md),
-     &                          izonef(md)                      
-                           if ( iatty .gt. 0 )  write(iatty ,6031) md ,
+     &                          zones_char(md)                      
+                           if ( iatty .gt. 0 )  write(iatty ,6029) md ,
      *                          phod , eqd , sl , t(md) , rqd, ieos(md),
-     &                          izonef(md)                      
+     &                          zones_char(md)                      
                         else
                            write(iout, 6031)  md ,
-     *             phod , eqd , sl , t(md) , rqd , qh(md)
+     *             phod , eqd , sl , t(md) , rqd , qh(md), ieos(md),
+     &             zones_char(md) 
                            if ( iatty .gt. 0 )  write(iatty ,6031) md ,
-     *             phod , eqd , sl , t(md) , rqd , qh(md)
-                        end if
+     *             phod , eqd , sl , t(md) , rqd , qh(md), ieos(md),
+     &             zones_char(md) 
+                        end if 
                      else
                         if(ichead.eq.0) then
                            call headctr(4,md,pho(md),phod)
@@ -428,22 +440,28 @@ c     CHANGE ABOVE TO JUST PRINT OUT qh ARRAY
 c     phod is head with offset removed
                         if (ico2 .lt. 0) then
                           write(iout, 6031)  md , phod , pres_out ,
-     &                    eqd , sl , t(md) , rqd , ieos(md), izonef(md)
+     &                    eqd , sl , t(md) , rqd , ieos(md),
+     &                    zones_char(md)(1:30)
                         if ( iatty .gt. 0 )  write(iatty ,6031)  md ,
      *                       phod, pres_out , eqd , sl , t(md) , rqd,
-     &                        ieos(md), izonef(md)
+     &                        ieos(md), zones_char(md)(1:30)
                         else
                            write(iout, 6032)  md , phod , pres_out ,
-     &                          eqd , sl , t(md) , rqd , qh(md) 
+     &                          eqd , sl , t(md) , rqd , qh(md), 
+     &                          ieos(md), zones_char(md)(1:30) 
                            if ( iatty .gt. 0 )  write(iatty ,6032) md ,
      *                          phod, pres_out , eqd , sl , t(md) , 
-     &                          rqd , qh(md)
+     &                          rqd , qh(md), ieos(md), 
+     &                          zones_char(md)(1:30)
                         end if
                      endif
- 6031                format(i7,2x,g11.4,1x,g9.3,1x,g9.3,1x,f8.3,1x,
-     *                    g11.4,1x,g10.3,1x,i5,5x,i5)
+c gaz 062723 changed 6031 format i7 to a30 
+ 6029                format(i7,2x,g11.4,1x,g9.3,1x,f9.5,1x,
+     *                    g11.4,1x,g10.3,1x,i5,5x,a30)
+ 6031                format(i7,2x,g11.4,1x,g9.3,1x,g9.3,1x,f9.5,1x,
+     *                    g11.4,1x,g10.3,1x,i5,5x,a30)
  6032                format(i7,1x,g11.4,1x,g9.3,1x,g9.3,1x,g9.3,1x,
-     *                    f8.3,3x,g11.4,1x,g11.4,3x,i4)
+     *                    f8.3,3x,g11.4,1x,g11.4,1x,i5,5x,a30)
                   enddo
                enddo
                if (ichead .ne. 0) then
@@ -473,7 +491,7 @@ c
                endif
       
 c     
-c**** output for co2 ****
+c**** output for co2 and ngas****
 c     
                if (ico2.gt.0) call  co2ctr  ( 5 )
                if (ico2.lt.0.and.ice.eq.0) then
@@ -517,7 +535,7 @@ c
                if (iatty.gt.0) write(iatty,796)
             endif
  784        format(/,20x,'Global Mass & Energy Balances')
- 796        format(/,20x,'Global Water & Air Balances')
+ 796        format(/,20x,'Global Water & Gas Balances')
             if(ico2.ge.0.or.ice.ne.0) then
                if (ntty.eq.2) write(iout,785) amass,asteam,aener
                if (iatty.gt.0) write(iatty,785) amass,asteam,aener
@@ -606,14 +624,15 @@ c
      &           ' (air)')
             if(fdum.eq.-999.) then
 c     write out flux discrepency (kg/s)
-	       if (ntty.eq.2) write(iout,979) abs(g1),fdum1
-               if (iatty.gt.0)	write(iatty,979) abs(g1),fdum1	
- 979           format(' >>> End on flux error (kg/s) ',1p,g12.4,
+c  gaz 110519 changed g1 to tmch                 
+	       if (ntty.eq.2) write(iout,979) abs(tmch),fdum1
+               if (iatty.gt.0)	write(iatty,979) abs(tmch),fdum1	
+ 979           format(' >>> End on flowrate error (kg/s) ',1p,g12.4,
      &              ' Max error ',g12.4,' <<<')
-c     now write in terms of (m**3/s), use desity of water
-               if (ntty.eq.2) write(iout,978) abs(g1)/997.,fdum1/997.
-               if (iatty.gt.0) write(iatty,978) abs(g1)/997.,fdum1/997.	
- 978           format(' >>> End on flux error (m**3/s) ',1p,g12.4,
+c     now write in terms of (m**3/s), use density of water
+               if (ntty.eq.2) write(iout,978) abs(tmch)/997.,fdum1/997.
+              if (iatty.gt.0) write(iatty,978) abs(tmch)/997.,fdum1/997.	
+ 978          format(' >>> End on volume flux error (m**3/s) ',1p,g12.4,
      &              ' Max error ',g12.4,' <<<')
             endif    
          endif

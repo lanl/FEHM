@@ -155,6 +155,10 @@
       integer iodisp, iostrain, iostress      
 
       integer iaroot, timec_flag
+c gaz 020522 need max calls for vtk conversion   
+      integer icall_max
+c gaz 0310522 need ioscalar (created this date) for vtk conversion 
+      integer ioscalar
       real*8  contour_time
       character*8 time_units
       character*50 timec_string, times_string

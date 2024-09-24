@@ -346,7 +346,7 @@ c         enddo
 c  fill the array head
 c
 c         rho1grav = crl(1,1)*(9.81d-6)
-         call headctr(2,0,0.,0.)
+         call headctr(2,0,0.0d00,0.0d00)
 	 head12=0.
          do inode=1,n0
 

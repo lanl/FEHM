@@ -182,7 +182,9 @@ c
       real*8 tcap1(nn),tcap2(nn),dtcap1(nn),dtcap2(nn)
       real*8 pcai, axycap, pcaij,pcakb
 c
-      phi_0 = crl(4,1) + phi_inc
+c gaz 110819 pref, tref (global) read in scanin crl(4,1) repaced with pref 
+c gaz 112021 pref, now in comai and possible change with air table      
+      phi_0 = pref + phi_inc
 c     water column height correction
       pcai = cap_fac*dzrg(i)*(rlxyf(i)-0.5)
 
@@ -544,8 +546,8 @@ c
                a(iau+nmat(1))=a(iau+nmat(1))+dlapkb
                a(jml+nmat(1))=a(jml+nmat(1))-dlapkb  
                if(kb.gt.neq_primary) then
-                write(*,*) i, kb, jmia, ial, iau,jml, axy, dlapi,dlapkb
-                pause
+c                write(*,*) i, kb, jmia, ial, iau,jml, axy, dlapi,dlapkb
+c                pause
                endif
  72         continue
 	endif

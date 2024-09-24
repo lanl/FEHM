@@ -552,7 +552,8 @@ c end pjjohnson edit
       real*8, allocatable ::  betadfv(:,:)
       real*8, allocatable ::  cm(:) 
       real*8, allocatable ::  cm0(:)
-      real*8, allocatable ::  cnsk(:) 
+      real*8, allocatable ::  cnsk(:)
+      real*8, allocatable ::  cnsk_background(:)
       real*8, allocatable ::  cp1f(:) 
       real*8, allocatable ::  cp2f(:) 
       real*8, allocatable ::  cp3f(:) 
@@ -700,6 +701,8 @@ c gaz 090113 array for last TS porosity
       integer, allocatable ::  impedance_type(:)
       integer, allocatable ::  enthalpy_type(:)
       integer, allocatable ::  timestep_type(:)
+      integer, allocatable ::  eqtol_type(:)
+      integer, allocatable ::  tsmax_type(:)
       integer, allocatable ::  temperature_type(:)
       integer, allocatable ::  node_model(:)
       integer, allocatable ::  min_model(:)
@@ -718,7 +721,7 @@ c gaz 090113 array for last TS porosity
       integer iqa,ixa,iqw,iqenth,isatb,ienth,itempb,itempb2,ipresa
       integer imped,its,imod,isubmod,iqf,icm,isf,ifd,iqco2,ipresw
       integer isatb_ini,ipresa_ini,ipresw_ini,itempb_ini
-      integer iha,ipha,itha
+      integer iha,ipha,itha,itsmax,ieqtol
       integer isteady, istdy, isty, iwght, lchange
       integer ixperm,iyperm,izperm
       real*8 fac_sec_days, fac_min_days, fac_year_days
@@ -738,6 +741,8 @@ c gaz 111418 added qaxf for air fraction in water
       real*8, allocatable ::  huma(:) 
       real*8, allocatable ::  phuma(:) 
       real*8, allocatable ::  thuma(:) 
+c gaz debug  033021    
+      real*8, allocatable ::  pchuma(:) 
       real*8, allocatable ::  xnva(:) 
       real*8, allocatable ::  entha(:) 
       real*8, allocatable ::  sp(:) 
@@ -769,6 +774,8 @@ c gaz 111418 added qaxf for air fraction in water
       real*8, allocatable :: impedance(:,:)
       real*8, allocatable :: enthalpy(:,:)
       real*8, allocatable :: timestep(:,:)
+      real*8, allocatable :: timestepmax(:,:)
+      real*8, allocatable :: eqtolerance(:,:)
       real*8, allocatable :: temperature(:,:)
 c gaz 123115
       real*8, allocatable ::  humid(:,:) 
@@ -972,12 +979,28 @@ c gaz 071819
       real*8, allocatable ::  durockt(:)
 c gaz 111118   
 c sk_temp() used in sub thrmwc      
-      real*8, allocatable ::  sk_temp(:)
+      real*8, allocatable ::  sk_temp(:) 
+c gaz 112920  
+c sk0() used in sub thrmwc      
+      real*8, allocatable ::  sk0(:)       
 c gaz 081918
       integer, allocatable :: izone_renum(:)
       integer, allocatable :: nrenu_list(:)
       integer, allocatable :: irb_renum_act(:)
       integer, allocatable :: ncon_renum(:) 
       integer n_renu_zone, min_r_z, max_r_z, neq_act, neq_nonact
-      
+c gaz 090819
+c arrays and global variables associated with mass equality with
+c  phase change
+      real*8, allocatable ::  phi_prev(:)
+      real*8, allocatable ::  s_prev(:)
+      integer, allocatable :: n_phase_nodes(:)
+      integer, allocatable :: ieos_prev(:)
+      integer n_phase_ch
+c gaz 072120 array to track sc phase and T,P
+c ieos_sc(i) = 0, no T or P ge than Critical value
+c ieos_sc(i) = 0, T and P ge than Critical value      
+c ieos_sc(i) = 2, T ge than Critical value
+c ieos_sc(i) = 3, P ge than Critical value      
+      integer, allocatable :: ieos_sc(:)     
       end module comdi

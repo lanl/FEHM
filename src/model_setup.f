@@ -121,7 +121,10 @@ c
             end if
          endif
       else if(key(1:4).eq.'tran') then
-         steady_type(imod)=-1
+c gaz 062620 turn off tran but leave in
+         if(key(6:8).ne.'off') then
+          steady_type(imod)=-1
+         endif
       else if(key(1:3).eq.'sec') then
          tunit_type(imod)=1
       else if(key(1:3).eq.'min') then
@@ -386,10 +389,20 @@ c gaz new 061816
          read(inpt,*) (enthalpy(i,imod),i=1,ntimes)
          enthalpy_type(imod)=1
          if(isubmod.le.1) go to 30
+c gaz 012122 added equation tolerance    
+      else if(key(1:4).eq.'eqto') then
+         read(inpt,*) (eqtolerance(i,imod),i=1,ntimes)
+         eqtol_type(imod)=1
+         if(isubmod.le.1) go to 30
+c gaz 012122 added max timestep      
+      else if(key(1:4).eq.'tsma') then
+         read(inpt,*) (timestepmax(i,imod),i=1,ntimes)
+         tsmax_type(imod)=1
+         if(isubmod.le.1) go to 30
       else if(key(1:2).eq.'ts') then
          read(inpt,*) (timestep(i,imod),i=1,ntimes)
          timestep_type(imod)=1
-         if(isubmod.le.1) go to 30
+         if(isubmod.le.1) go to 30         
       else if(key(1:1).eq.'t') then
          read(inpt,*) (temperature(i,imod),i=1,ntimes)
          do i=1,ntimes

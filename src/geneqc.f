@@ -192,6 +192,8 @@ C ---  Removed coupling with gas diffusion in ADIF case
 
       parameter(dis_tol=1.d-12)
 
+c gaz debug 100720     
+c      kb = l+ pci(1)+pcio(1)
       sx1d=sx1(i)
       axi=pnx(i)
       ayi=pny(i)

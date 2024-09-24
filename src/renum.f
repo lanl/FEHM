@@ -263,7 +263,11 @@ c call routine to renumber with zone exclusion
       else if(iflg.eq.1) then
 c compute ordering
        if(ireord.eq.2) then
-        call renum_zone (1,neq_act)
+
+c xhua error6784 number of actual arguments cannot be greater than the number of dummy arguments
+c       call renum_zone (1,neq_act)   this is original
+        call renum_zone (1)
+
        else if(ireord.eq.1) then
         call genrcm(neq,nelm,irb,nop(1),nop(neq+1))
        else if(ireord.ge.10) then

@@ -46,6 +46,9 @@
       use combi, only : prnt_flxzvar
       use comco2, only : icarb
       use comdi
+c gaz 041620 need n0 and pci      
+      use comfi, only : pci
+      use comdti, only : n0
       use comrlp, only : ishisrlp, delta_sat, num_sat, sat_out
       use comsi, only : ihms
       use comwt, only : wt_flag
@@ -316,7 +319,16 @@
                      pres_flag = 2
                   end if
                end if
-            end if
+               end if
+c gaz 041520 make sure pci() iz allocated(n) for pres_flag 1,2,3 (pres_flag 4 OK)
+            if(allocated(pci).and.ico2.le.0) then
+             deallocate(pci)
+             allocate(pci(n0))
+             pci= 0.0d0
+            else if(.not.allocated(pci)) then
+             allocate(pci(n0))
+             pci= 0.0d0                
+            endif
             ishisp = ishis + 100
             chtmp = ''
             select case (pres_flag)
@@ -1362,12 +1374,14 @@ c           ishise = ishis + 150
          case ('rel', 'REL')
 ! Output table of relative permeability and cappillary pressure values
             fname = root(1:iroot) // '_rlp'
-            select case (form_flag)
-            case (1)
-               fname = trim(fname) // '.dat'
-            case (2)
-               fname = trim(fname) // '.csv'
-            end select 
+c            select case (form_flag)
+c            case (0)
+c                fname = trim(fname) // '.tbl'
+c            case (1)
+c               fname = trim(fname) // '_tbl.dat'
+c            case (2)
+c               fname = trim(fname) // '_tbl.csv'
+c            end select 
             call parse_string(chdum,imsg,msg,xmsg,cmsg,nwds)
 ! Set defaults
             num_sat = 0
@@ -1386,12 +1400,13 @@ c           ishise = ishis + 150
             end if
             ishisrlp = ishis + 500
             open (unit=ishisrlp, file=fname, form='formatted')
-            select case (form_flag)
-            case (0)
-               write(ishisrlp, 6000) verno, jdate, jtime, trim(wdd)
-            case (1)
-               write(ishisrlp, 6005) verno, jdate, jtime
-            end select            
+c gaz 071623 first line now starts in check_rlp
+c            select case (form_flag)
+c            case (0)
+c               write(ishisrlp, 6000) verno, jdate, jtime, trim(wdd)
+c            case (1)
+c               write(ishisrlp, 6005) verno, jdate, jtime
+c            end select            
          case ('glo', 'GLO')
 ! Output global variables
             fname =  root(1:iroot) // '_glob' // hissfx

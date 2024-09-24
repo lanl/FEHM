@@ -158,8 +158,8 @@ c tablular data for density and heat capacity
                    table_vroc(ntable_roc) = file_flux
                    ntable_vroc(i) = ntable_roc
                    lu = open_file(file_flux,'old')
-                   call manage_rock_tables(0,lu,
-     &               ntable_roc,0,0.d0,0.d0,0.d0,0.d0,0.d0)
+                   call manage_rock_tables(0,lu,ntable_roc,0,
+     &                  0.d0,0.d0,0.d0,0.d0,0.d0)
                endif
             else
                if(i.eq.0) ivrc=0
@@ -187,7 +187,12 @@ c     read in nodal capillary type
            do i = 1, ntblines_roc
              roc_table(i,1:3) = temp_table(i,1:3)
            enddo
-          call manage_rock_tables(3,0,0,0.d0,0.d0,0.d0,0.d0,0.d0)
+
+c xhua error#6631 
+c A non-optional actual argument must be present when invoking a procedure with an explicit interface
+c should have 4 integers followed by 5 reals 
+c         call manage_rock_tables(3,0,0,0.d0,0.d0,0.d0,0.d0,0.d0) original
+          call manage_rock_tables(3,0,0,0,0.d0,0.d0,0.d0,0.d0,0.d0)
         endif
 
             
@@ -247,9 +252,8 @@ c     vroc3f=d(density)/d(temp) at reference conditions
                	else if(itp.eq.4) then
                     tl = t(mi)
                     ntable_roc = ntable_vroc(it) 
-                   call manage_rock_tables(1,0,
-     &              ntable_roc,10,tl,cpr(mi),dcprt(mi),denr(mi),
-     &                ddenrt(mi))
+                   call manage_rock_tables(1,0,ntable_roc,10,
+     &                tl,cpr(mi),dcprt(mi),denr(mi),ddenrt(mi) )
                   urock(mi) = denr(mi)*cpr(mi)*(tl)
                   durockt(mi) = denr(mi)*(dcprt(mi)*(tl)+
      &                 cpr(mi)) + ddenrt(mi)*cpr(mi)*(tl)                   
@@ -433,8 +437,8 @@ c      endif
       return
       end
 
-      subroutine manage_rock_tables(iflg,table_unit,i_table,iparam,t_dum
-     &                    ,var1_dum, dvar1_dumt, var2_dum, dvar2_dumt)
+      subroutine manage_rock_tables(iflg,table_unit,i_table,iparam,
+     &           t_dum,var1_dum, dvar1_dumt, var2_dum, dvar2_dumt)
 c 
 c manage rock tables   
 c     
@@ -442,10 +446,16 @@ c Data is found on the following lines
       use comai 
       use comdi
       implicit none
-      integer iflg,lu,table_unit,ndx,cn,nparams,maxlines
-      integer i_table,iparam, lasttbl,i1,i2,mi,i
-      real*8 t_dum, dvar1_dumt, var1_dum, dvar2_dumt, var2_dum
+
+c     declare the 9 parameters
+      integer iflg,table_unit,i_table,iparam 
+      real*8 t_dum, dvar1_dumt,var1_dum,var2_dum, dvar2_dumt
+
+c     variables
       real*8 var_dum, dvar_dumt 
+      integer lu, lasttbl,i1,i2,mi,i
+      integer ndx,cn,nparams,maxlines
+
       parameter(nparams = 3,maxlines = 100000)
       character*300 chdum
       

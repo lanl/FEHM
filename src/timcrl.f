@@ -234,11 +234,14 @@ C***********************************************************************
       use comdti
       use comsplitts
       use comai
+      use combi, only : ka
       use avsio, only : dit_flag
       implicit none
 
       real*8 dafac, daycrl, pravg, tfacd, tmavg
-
+c gaz 032121 added integer i for do loop
+      integer i 
+      
       tfacd = max(5.0d00,aiaa*aiar)
       if (l .eq. 1 .and. iad .lt. abs(maxit))  then
          daynew =  daynew / aiaa
@@ -375,7 +378,7 @@ c     Add change to include changing max time step
             end if
          end if
 
-         if (daysp .ge. daycf .and. icf .eq. 0)  then
+         if (daysp .ge. daycf .and. icf .eq. 0.)  then
             if (iout .ne. 0) write(iout  ,6023)  l
             if (iatty .gt. 0)  write(iatty ,6023)  l
  6023       format(/,1x,'note>>tracer solution stopped after time step',
@@ -386,6 +389,7 @@ c     Add change to include changing max time step
                day    =  daycf - days
                daysp  =  daycf
             end if
+ 
          end if
       end if
 
@@ -393,7 +397,16 @@ c
 c     adjust for time varying boundary conditions
 c     
       days=daysp
-      call flow_boundary_conditions(3)
+c gaz 112920 add coding to reset water source to original
+c subroutine thrmwc (AWH) divides water source into water and air 
+c gaz 032121 (only use sk0 for AWH (ico2 gt 0) and specified source)
+      if(iboun.ne.0) then
+       call flow_boundary_conditions(3)
+      else if(ico2.gt.0) then
+        do i = 1, n0  
+         if(ka(i).eq.1) sk(i) = sk0(i) 
+        enddo
+      endif
       daysp=days
       days=daysp-day
       if (nicg .gt.1) then

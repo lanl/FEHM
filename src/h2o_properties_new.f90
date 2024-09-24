@@ -14,11 +14,13 @@ subroutine h2o_properties_new(iflg,iphase,var1,var2,var3,istate,var4,var5,var6)
 !***********************************************************************
 
 ! Nov 2  2015 gaz modified from Rajesh Pawar's co2_properties
+! gaz 112320 modified to allow non zero properties below pmin    
 !
       use property_interpolate_1
       use comco2, only: co2_prop
       use comai, only : itsat 
       use comrxni, only : cden_flag
+      use comii, only : pmin, tmin
 
   implicit none
   real*8 mol, mco2, mco22
@@ -33,6 +35,9 @@ subroutine h2o_properties_new(iflg,iphase,var1,var2,var3,istate,var4,var5,var6)
   real*8 mco21, dmco21dp,dmco21dt,dmco21dxc,dmco2dx,dvar4dt,dvar4dp
   real*8 :: cden_correction
   integer iflg, iphase, iphase1, ifail, istate, icode(9)
+! gaz 112320 
+  integer ipmin_test
+  real*8 pressure_old,var5a(9)
   character*200 interpfile, amessage
   !     units are P : MPa
   !     T : degree celsius
@@ -49,9 +54,11 @@ subroutine h2o_properties_new(iflg,iphase,var1,var2,var3,istate,var4,var5,var6)
   temperature = var2
   pressure = var1
   var5 = 0.0
+  ! gaz 112320
+  ipmin_test= 0
   
   if (iflg .eq. 1) then
-     ! determine co2 state
+     ! determine h2o state
      call get_h2o_state(ifail,temperature,pressure,istate)
      if(ifail.ne.0) go to 9890
   elseif(iflg.eq.2) then
@@ -64,6 +71,12 @@ subroutine h2o_properties_new(iflg,iphase,var1,var2,var3,istate,var4,var5,var6)
      ! determine properties and derivatives for liquid,vapor,supercritical phases
      icode=1   ! an array
      if(iphase.eq.4) iphase=1
+! gaz 112320  
+     if(iphase.eq.3.and.pressure.le.pmin(1)) then
+       ipmin_test= 1  
+       pressure_old = pressure
+       pressure = pmin(1)
+     endif
      call get_h2o_properties(ifail,iphase,9,icode,temperature,pressure,var5)
      ! change units to density-kg/m3 (done) , enthalpy-Mj/kg, and vis-cp
      var5(4)=var5(4)*1.d-3
@@ -72,6 +85,18 @@ subroutine h2o_properties_new(iflg,iphase,var1,var2,var3,istate,var4,var5,var6)
      var5(7)=var5(7)
      var5(8)=var5(8)
      var5(9)=var5(9)
+     if(ipmin_test.eq.1) then
+      pressure = pressure_old   
+! gaz 112420 get density values below pmin(1)      
+      call h2o_vap_ideal_gas(2,iphase,pressure,pmin(1),temperature,var5,var5a)
+!      var5(2) = 0.0
+!      var5(3) = 0.0
+!      var5(5) = 0.0
+!      var5(6) = 0.0
+!      var5(8) = 0.0
+!      var5(9) = 0.0
+      continue
+     endif
      if(ifail.ne.0) go to 9890
   elseif(iflg.eq.5) then
      ! determine properties and derivatives for liquid phase of 2-phase
@@ -114,5 +139,37 @@ subroutine h2o_properties_new(iflg,iphase,var1,var2,var3,istate,var4,var5,var6)
 9890 continue
 
 end subroutine h2o_properties_new
-
+subroutine h2o_vap_ideal_gas(iflg,iphase,pl,plow,tl,var5,var5a)
+! gaz 112420 initial coding
+! calculate water vapor props if pressure less than plow(pmin(1))
+implicit none
+integer iflg,iphase
+real*8 pl,plow,tl,var5(9),var5a(9), pl0,rov0,drovp,delp
+real*8 env0,denvp,visv,dvisvp
+if(iflg.eq.1) then
+! density of water vapor (ideal gas)    
+    pl0=plow
+    rov0=var5(1)
+!    drovp=rocv0*(273./(tl+273.))/pl0
+    drovp=rov0/pl0
+    var5(1)=drovp*pl
+    var5(3)=drovp
+!    drovt=-rov/(tl+273.)    
+else
+! gaz 112420 use taylor series expansion    
+   delp = pl-plow
+! water vapor density   
+   rov0=var5(1)
+   drovp = var5(3)
+   var5(1) = rov0 + drovp*delp
+! water vapor enthalpy 
+   env0 = var5(4)
+   denvp = var5(6)
+   var5(4) = env0 + denvp*delp   
+! water vapor viscosity
+   visv = var5(7)
+   dvisvp = var5(9)
+   var5(7) = visv + dvisvp*delp 
+endif
+end subroutine h2o_vap_ideal_gas
 

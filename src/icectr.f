@@ -1444,7 +1444,7 @@ c     fracw(i) = min(1.d0,fracw(i))
                         fracgas(i) = 1.d0 - fracw(i)
 c     calculate temperature
                         call hydrate_properties(6,0,phi(i),
-     &                       0.,0.,0.,tmeth(i),dums1,0.,0.,0.)
+     &     0.0d00,0.0d00,0.0d00,tmeth(i),dums1,0.0d00,0.0d00,0.0d00)
                         t(i) = tmeth(i)
                         frachyd(i) = frachyd(i) - bp(i2)*strd
                      else if(ihyd(i).eq.1) then

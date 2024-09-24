@@ -240,13 +240,16 @@ C**********************************************************************
       real*8 smind,smaxd,smind_t,smaxd_t,sminc, smaxc
       real*8 pmin_ice,pmax_ice
       real*8 tmin_ice,tmax_ice
-      parameter(smind = -2.,smaxd = 5.,smind_t = -0.1,smaxd_t = 1.1)
+c gaz 120621 trying  new  smind_t and   smaxd_t 
+c      parameter(smind = -2.,smaxd = 5.,smind_t = -0.1,smaxd_t = 1.1)
+      parameter(smind = -2.,smaxd = 5.,smind_t = -0.05,smaxd_t = 1.05)      
 	parameter(sminc = -0.15   , smaxc = 1.15)
       parameter(pmin_ice=-10.0,pmax_ice=200.0)
       parameter(tmin_ice=-10.0,tmax_ice=500.0)
       integer i, ii
       real*8 pl
-      integer ieo
+c gaz 120521      
+      integer ieo, ieosd
       real*8 tl
       real*8 sl
 c     RJP 04/15/07 added following for CO2
@@ -311,13 +314,34 @@ c
                   if(ieo.gt.2) then
                    if(pmax(ieo).le.0.0) ieo = 1
                   endif
-c     
+c gaz 120521
+                  ieosd = ieos(i)
                   tl=t(i)
                   sl=s(i)
                   if(pl.lt.pmin(ieo)) mlz=1
                   if(pl.gt.pmax(ieo)) mlz=1
-                  if(sl.lt.smind_t) mlz=1
-                  if(sl.gt.smaxd_t) mlz=1
+c gaz 120521 major change               
+c               if(sl.lt.smind_t) mlz=1
+c               if(sl.gt.smaxd_t) mlz=1
+               if(sl.lt.smind_t) then
+c gaz 120521 change to gaz only  ieos(i) = 3                  
+                if(ieosd.eq.2) then
+                  ieosd = 3
+                  ieos(i) = 3
+                  s(i) = 0.0
+                else
+                 mlz = 1
+                endif
+               else if(sl.gt.smaxd_t) then
+c gaz 120521 change to only  ieos(i) = 1                  
+                if(ieosd.eq.2) then
+                  ieosd = 1
+                  ieos(i) = 1
+                  s(i) = 1.0
+                else
+                 mlz = 1
+                endif
+               endif
                   if(tl.lt.tmin(ieo)) mlz=1
                   if(tl.gt.tmax(ieo)) mlz=1
                   if(ico2.gt.0) then
@@ -409,7 +433,8 @@ c
 c     
                ieo=iieos(i)
                if(ieo.gt.2) ieo=2
-c     
+c  gax 120521 need phase state
+               ieosd = ieos(i)
                tl=t(i)
                if (irdof .ne. 13 .or. ifree .ne. 0) then
                   sl=s(i)
@@ -417,9 +442,29 @@ c
                   sl = 1.0d0
                end if
                if(pl.lt.pmin_ice ) mlz=1
-               if(pl.gt.pmax_ice ) mlz=1
-               if(sl.lt.smind_t) mlz=1
-               if(sl.gt.smaxd_t) mlz=1
+               if(pl.gt.pmax_ice ) mlz=1 
+c gaz 120521 major change               
+c               if(sl.lt.smind_t) mlz=1
+c               if(sl.gt.smaxd_t) mlz=1
+               if(sl.lt.smind_t) then
+c gaz 120521 change to gaz only  ieos(i) = 3                  
+                if(ieosd.eq.2) then
+                  ieosd = 3
+                  ieos(i) = 3
+                  s(i) = 0.0
+                else
+                 mlz = 1
+                endif
+               else if(sl.gt.smaxd_t) then
+c gaz 120521 change to only  ieos(i) = 1                  
+                if(ieosd.eq.2) then
+                  ieosd = 1
+                  ieos(i) = 1
+                  s(i) = 1.0
+                else
+                 mlz = 1
+                endif
+               endif
                if(tl.lt.tmin_ice ) mlz=1
                if(tl.gt.tmax_ice ) mlz=1
                if(mlz.eq.1) goto 9000
@@ -435,8 +480,8 @@ c         time_ieos(i) = 0.0d0
             write(iout, 9011) i, cord(ii,1), cord(ii,2),
      &           cord(ii,3)
             write(iout, 9012) pl, tl, sl
-            if(ico2.gt.0  .and. icarb .eq. 0) write(iout, 9013) pci(i)
-            write(iout, 9015) ps(i),pnx(i)*1.d-6,ieos(i), iad
+            if(ico2.gt.0  .and. icarb .eq. 0) write(iout,9013) pci(i)
+            write(iout, 9015) ps(i),pnx(i)*1.d-6,ieos(i),iad,izonef(i)
             if (rxn_flag.ne.0)then
                 write(iout, 9016) ps_delta_rxn(i)
             endif
@@ -446,8 +491,8 @@ c         time_ieos(i) = 0.0d0
             write(iptty, 9011) i,cord(ii,1),cord(ii,2),
      &           cord(ii,3)
             write(iptty, 9012) pl, tl, sl
-            if(ico2.gt.0 .and. icarb .eq. 0) write(iptty, 9013) pci(i)
-            write(iptty, 9015) ps(i),pnx(i)*1.d-6,ieos(i),iad
+            if(ico2.gt.0 .and. icarb .eq. 0) write(iptty,9013) pci(i)
+            write(iptty, 9015) ps(i),pnx(i)*1.d-6,ieos(i),iad,izonef(i)
             if (rxn_flag.ne.0)then
                 write(iptty, 9016) ps_delta_rxn(i)
             endif
@@ -458,13 +503,13 @@ c         time_ieos(i) = 0.0d0
          endif
       endif
 
- 9010 format ('time step = ', i8, ' time step size = ', g21.14)
- 9011 format ('out of bounds : node ', i8,
+ 9010 format (1p,'time step = ', i8, ' time step size = ', g21.14)
+ 9011 format (1p,'out of bounds : node ', i8,
      &     ' x = ', g12.4, ' y = ', g12.4, ' z = ', g12.4)
- 9012 format (' p = ', g16.9, ' t =', g16.9, ' s = ', g16.9)
- 9013 format (' pci = ', g16.9)
+ 9012 format (1p,' p = ', g16.9, ' t =', g16.9, ' s = ', g16.9)
+ 9013 format (1p,' pci = ', g16.9)
  9015 format (1p,' porosity = ',g16.8,' permx ',g16.8,
-     & ' phase state ',i4, ' iter ', i4)
- 9016 format (' ps_delta_rxn = ',g16.9)
+     & ' phase state ',i3, ' iter ',i3,' zone ', i7)
+ 9016 format (1p,' ps_delta_rxn = ',g16.9)
       return
       end

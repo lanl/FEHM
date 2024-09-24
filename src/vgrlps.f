@@ -15,7 +15,7 @@ C**********************************************************************
 CD1
 CD1 PURPOSE
 CD1
-CD1 To compute the liquid relative permeability and derivative for the
+CD1 To compute the liquid and gas relative permeabilities and derivatives for the
 CD1 van Genuchten model.
 CD1
 C**********************************************************************
@@ -229,7 +229,7 @@ C**********************************************************************
       implicit none
 
       integer iflg
-
+c gaz 021424 modified code to have variable cutoff tolerances
       real*8 sl  
       real*8 star
       real*8 star1
@@ -321,9 +321,10 @@ c     gaz 091210
           rl = 1.0
           drls= 0.0
        endif
-# now block beginning on line 275 is ended
+c gaz 070720 fixed # in column 1  with c      
+c now block beginning on line 275 is ended
       endif
-# now block beginning on line 270 is ended
+c now block beginning on line 270 is ended
 
       if(iflg.eq.1) then
 c rv is 1. -rl

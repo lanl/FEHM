@@ -793,6 +793,12 @@ c-----------------------------------------------------------
       use comii
       use comrlp, only : rlpnew
       use comrxni
+c gaz 101221
+      use com_exphase
+c gaz 101321
+      use com_prop_data, only : den_h2o, enth_h2o, visc_h2o, humid_h2o,
+     & psat_h2o, den_ngas, enth_ngas, visc_ngas, xnl_ngas, ieval_flag  
+     
       use property_interpolate_1
       use comsi, only : ihms, density, internal_energy
       use comtable
@@ -841,7 +847,11 @@ C*****
       real*8 dqv,dhflxe,drovp,drovt
       real*8 cden_correction, cden_cor
 c gaz  081317,082917  
-      real*8 ur, dur_dt      
+      real*8 ur, dur_dt  
+c gaz 101321  
+      integer ipv_tpl
+      real*8 ros,pv,dtdp,dpvt,dpct
+      real*8 dum_gaz
 C*****
 C***** AF 11/15/10
       real*8 zwp, zwt                                ! phs 4/23/99
@@ -855,7 +865,9 @@ C*****
 c gaz 110715
       real*8 dum1,dumb,dumc,value(9)
       integer istate, ifail
-
+c gaz 101221      
+      integer loop_start, loop_end
+      
       integer i_mem_rlp
       save i_mem_rlp
       
@@ -866,6 +878,8 @@ c gaz 110715
       real*8, allocatable :: drlfs0(:)
       real*8, allocatable :: rvf0(:)
       real*8, allocatable :: drvfs0(:)
+c gaz 101221      
+cDEC$ FIXEDFORMLINESIZE:132      
       
       allocate(sto1(n0*2))
 c     
@@ -881,6 +895,9 @@ c     tfun -  temperature
 c     sw   -  saturation liquid
 c     
 ****  Avg molecular weight is set to molecular weight of water ****
+c gaz 090623 rlpm requires s(:) to be allocated
+c try to skip if heat conduction only (idoff = -1)
+      if(idoff.ne.-1) then
       if(abs(iexrlp).ne.0.and.i_mem_rlp.eq.0) then
          i_mem_rlp=1
          allocate(s0(n),pcp0(n),dpcps0(n),rlf0(n))
@@ -913,6 +930,8 @@ c     get relative perms
             drvpf(mi)=0.0          
          enddo
       endif
+c endif for heat conduction
+      endif
       iieosl=0
       dtin=1.0/dtot
 
@@ -927,555 +946,135 @@ c  rock state started at last time step temperatures
       if(iad.eq.0) call vrock_ctr(3,0)
       call vrock_ctr(1,0)
       call vrock_ctr(2,0)
-      
+c gaz 101221 added fluid control module
+c initialize and allocate memory   
+       call fluid_props_control(0, 0, 0, fluid(1), 
+     &      'all      ', '         ')   
+c gaz 123020 manage explicit update 
+       if(i_ex_update.ne.0.and.ieq_ex.gt.0) then
+         loop_start = ieq_ex
+         loop_end = ieq_ex
+       else
+         loop_start = 1
+         loop_end = neq          
+       endif       
       ifree1 = 0
-      do mid=1,neq
+c       do 100 mid=loop_start,loop_end
+c gaz 101221
+       do mid=loop_start,loop_end
          mi=mid+ndummy
+         if(igrav.ne.0) then
+          p_energy = -grav*cord(mi,igrav)
+         else
+          p_energy = 0.0d0
+         endif
          avgmolwt(mi) = mw_water
          ieosd=ieos(mi)
 c gaz 111415 modification to include supercritical
-          if(ieosd.eq.4) ieosd = 1
+         if(ieosd.eq.4) ieosd = 1
          iieosd=iieos(mi)
          if(ieosd.ge.2) ifree1 = ifree1 + 1
-
-c     undo equivalence relations for relative perms
-         xrl=rlf(mi)
-         drl=drlef(mi)
-         drlp=drlpf(mi)
-         xrv=rvf(mi)
-         drv=drvef(mi)
-         drvp=drvpf(mi)
-         if(igrav.ne.0) then
-            p_energy = -grav*cord(mi,igrav)
+c
+c undo equivalence relations for relative perms
+c
+         if (rlp_flag .eq. 1) then
+            xrl=rlf(mi)
+            drl=drlef(mi)
+            drlp=drlpf(mi)
+            xrv=rvf(mi)
+            drv=drvef(mi)
+            drvp=drvpf(mi)
          else
-            p_energy = 0.0d0
-         endif
+            if (ieosd.eq.2) then
+             xrl=rlf(mi)
+             drl=drlef(mi)
+             drlp=drlpf(mi)
+             xrv=rvf(mi)
+             drv=drvef(mi)
+             drvp=drvpf(mi)
+            else if (ieosd .eq. 1) then
+               xrl = 1.0 
+               xrv = 0.0
+            else if (ieosd.eq.3) then
+               xrl = 0.0
+               xrv = 1.0
+            else if (ieosd.eq.4) then
+c
+c gaz 102621 sc phase associated with liquid phase                 
+c              
+                xrl = 1.0
+                xrv =0.0
+            end if
+            drl = 0.0
+            drlp = 0.0
+            drv = 0.0
+            drvp = 0.0
+         end if
+
 c check for aux eos(iieosd.gt.10)
          if(itsat.le.10) then
-   
-c     adjust coefficients for thermo fits
-         if(iieosd.ne.iieosl) then
+          pl = phi(mi)
+          tl = t(mi)
 
-c     liquid phase coefficients
+c       go to 699
+       kq = l
+       call fluid_props_control(1, mi, mi,fluid(1), 
+     &      'all      ', '         ')
 c     
-c     liquid enthalpy
-c     numerator coefficients
-            ela0=cel(1,iieosd)
-            elpa1=cel(2,iieosd)
-            elpa2=cel(3,iieosd)
-            elpa3=cel(4,iieosd)
-            elta1=cel(5,iieosd)
-            elta2=cel(6,iieosd)
-            elta3=cel(7,iieosd)
-            elpta=cel(8,iieosd)
-            elp2ta=cel(9,iieosd)
-            elpt2a=cel(10,iieosd)
-c     denomenator coefficients
-            elb0=cel(11,iieosd)
-            elpb1=cel(12,iieosd)
-            elpb2=cel(13,iieosd)
-            elpb3=cel(14,iieosd)
-            eltb1=cel(15,iieosd)
-            eltb2=cel(16,iieosd)
-            eltb3=cel(17,iieosd)
-            elptb=cel(18,iieosd)
-            elp2tb=cel(19,iieosd)
-            elpt2b=cel(20,iieosd)
-c     liquid density
-c     numerator coefficients
-            dla0=crl(1,iieosd)
-            dlpa1=crl(2,iieosd)
-            dlpa2=crl(3,iieosd)
-            dlpa3=crl(4,iieosd)
-            dlta1=crl(5,iieosd)
-            dlta2=crl(6,iieosd)
-            dlta3=crl(7,iieosd)
-            dlpta=crl(8,iieosd)
-            dlp2ta=crl(9,iieosd)
-            dlpt2a=crl(10,iieosd)
-c     denomenator coefficients
-            dlb0=crl(11,iieosd)
-            dlpb1=crl(12,iieosd)
-            dlpb2=crl(13,iieosd)
-            dlpb3=crl(14,iieosd)
-            dltb1=crl(15,iieosd)
-            dltb2=crl(16,iieosd)
-            dltb3=crl(17,iieosd)
-            dlptb=crl(18,iieosd)
-            dlp2tb=crl(19,iieosd)
-            dlpt2b=crl(20,iieosd)
-c     liquid viscosity
-c     numerator coefficients
-            vla0=cvl(1,iieosd)
-            vlpa1=cvl(2,iieosd)
-            vlpa2=cvl(3,iieosd)
-            vlpa3=cvl(4,iieosd)
-            vlta1=cvl(5,iieosd)
-            vlta2=cvl(6,iieosd)
-            vlta3=cvl(7,iieosd)
-            vlpta=cvl(8,iieosd)
-            vlp2ta=cvl(9,iieosd)
-            vlpt2a=cvl(10,iieosd)
-c     denomenator coefficients
-            vlb0=cvl(11,iieosd)
-            vlpb1=cvl(12,iieosd)
-            vlpb2=cvl(13,iieosd)
-            vlpb3=cvl(14,iieosd)
-            vltb1=cvl(15,iieosd)
-            vltb2=cvl(16,iieosd)
-            vltb3=cvl(17,iieosd)
-            vlptb=cvl(18,iieosd)
-            vlp2tb=cvl(19,iieosd)
-            vlpt2b=cvl(20,iieosd)
-c     vapor phase coefficients
-c     
-c     vapor enthalpy
-c     numerator coefficients
-            eva0=cev(1,iieosd)
-            evpa1=cev(2,iieosd)
-            evpa2=cev(3,iieosd)
-            evpa3=cev(4,iieosd)
-            evta1=cev(5,iieosd)
-            evta2=cev(6,iieosd)
-            evta3=cev(7,iieosd)
-            evpta=cev(8,iieosd)
-            evp2ta=cev(9,iieosd)
-            evpt2a=cev(10,iieosd)
-c     denomenator coefficients
-            evb0=cev(11,iieosd)
-            evpb1=cev(12,iieosd)
-            evpb2=cev(13,iieosd)
-            evpb3=cev(14,iieosd)
-            evtb1=cev(15,iieosd)
-            evtb2=cev(16,iieosd)
-            evtb3=cev(17,iieosd)
-            evptb=cev(18,iieosd)
-            evp2tb=cev(19,iieosd)
-            evpt2b=cev(20,iieosd)
-c     vapor density
-c     numerator coefficients
-            dva0=crv(1,iieosd)
-            dvpa1=crv(2,iieosd)
-            dvpa2=crv(3,iieosd)
-            dvpa3=crv(4,iieosd)
-            dvta1=crv(5,iieosd)
-            dvta2=crv(6,iieosd)
-            dvta3=crv(7,iieosd)
-            dvpta=crv(8,iieosd)
-            dvp2ta=crv(9,iieosd)
-            dvpt2a=crv(10,iieosd)
-c     denomenator coefficients
-            dvb0=crv(11,iieosd)
-            dvpb1=crv(12,iieosd)
-            dvpb2=crv(13,iieosd)
-            dvpb3=crv(14,iieosd)
-            dvtb1=crv(15,iieosd)
-            dvtb2=crv(16,iieosd)
-            dvtb3=crv(17,iieosd)
-            dvptb=crv(18,iieosd)
-            dvp2tb=crv(19,iieosd)
-            dvpt2b=crv(20,iieosd)
-c     vapor viscosity
-c     numerator coefficients
-            vva0=cvv(1,iieosd)
-            vvpa1=cvv(2,iieosd)
-            vvpa2=cvv(3,iieosd)
-            vvpa3=cvv(4,iieosd)
-            vvta1=cvv(5,iieosd)
-            vvta2=cvv(6,iieosd)
-            vvta3=cvv(7,iieosd)
-            vvpta=cvv(8,iieosd)
-            vvp2ta=cvv(9,iieosd)
-            vvpt2a=cvv(10,iieosd)
-c     denomenator coefficients
-            vvb0=cvv(11,iieosd)
-            vvpb1=cvv(12,iieosd)
-            vvpb2=cvv(13,iieosd)
-            vvpb3=cvv(14,iieosd)
-            vvtb1=cvv(15,iieosd)
-            vvtb2=cvv(16,iieosd)
-            vvtb3=cvv(17,iieosd)
-            vvptb=cvv(18,iieosd)
-            vvp2tb=cvv(19,iieosd)
-            vvpt2b=cvv(20,iieosd)
-            iieosl=iieosd
-         endif
-         
-         pl=phi(mi)
+c gaz 101321 set variables to new code values from fluid_props_control
+c
+        rol   =  den_h2o(mi,1) 
+        drolp	=  den_h2o(mi,2) 
+        drolt	=  den_h2o(mi,3) 
+        rov	=  den_h2o(mi,4) 
+        ros   =  rov
+        drovp	=  den_h2o(mi,5) 
+        drovt =  den_h2o(mi,6) 
+        enl	=  enth_h2o(mi,1)
+        dhlp	=  enth_h2o(mi,2)
+        dhlt	=  enth_h2o(mi,3)
+        env	=  enth_h2o(mi,4)
+        ens   =  env
+        dhvp	=  enth_h2o(mi,5)
+        dhvt	=  enth_h2o(mi,6)
+        xvisl   =  visc_h2o(mi,1)
+        dvislp  =  visc_h2o(mi,2)
+        dvislt  =  visc_h2o(mi,3)
+        xvisv   =  visc_h2o(mi,4)
+        vis     =  xvisv
+        dvisvp  =  visc_h2o(mi,5)  
+        dvisvt  =  visc_h2o(mi,6)
+        
+      
+       pv         = psat_h2o(mi,1)  
+       dtdp       = psat_h2o(mi,2)
+       dpct       = psat_h2o(mi,3)
+c gaz 100721 (dpsats needed for vapor pressure lowering)       
+       dpsats     = psat_h2o(mi,4)      
+       dtps       = dtdp       
 
-c     evaluate thermo functions and derivatives
-         x=pl - phi_inc
-         x2=x*x
-         x3=x2*x
-         x4=x3*x
-         xa=pl
-         xa2=xa*xa
-         xa3=xa2*xa
-         xa4=xa3*xa    
-          pl=phi(mi)
-
-         if(ieosd.eq.2) then
-
-c     two phase conditions
-
-c     calculate temperature and dt/dp
-         tl=psatl(pl,pcp(mi),dpcef(mi),
-     2           dtsatp,dpsats,1,an(mi))
-          dtps = dtsatp
-         else
-            tl=t(mi)
-         endif
-         tl2=tl*tl
-         tl3=tl2*tl
-         tlx=x*tl
-         tl2x=tl2*x
-         tlx2=tl*x2
-         if(ieosd.ne.3) then
-C*****
-C*****AF 11/15/10
-c-----------------------------------------
-c     phs      Lookup table if tableFLAG = 1
-c-----------------------------------------
-c     
-            if(tableFLAG.NE.1.and.iwater_table.ne.1) then
-c*****
-c     liquid enthalpy
-               enwn1=ela0+elpa1*x+elpa2*x2+elpa3*x3
-               enwn2=elta1*tl+elta2*tl2+elta3*tl3
-               enwn3=elpta*tlx+elpt2a*tl2x+elp2ta*tlx2
-               enwn=enwn1+enwn2+enwn3
-               enwd1=elb0+elpb1*x+elpb2*x2+elpb3*x3
-               enwd2=eltb1*tl+eltb2*tl2+eltb3*tl3
-               enwd3=elptb*tlx+elpt2b*tl2x+elp2tb*tlx2
-               enwd=enwd1+enwd2+enwd3
-               enw=enwn/enwd
-               enl=enw + p_energy
-
-c     derivatives of enthalpy
-               dhwpn1=elpa1+2*elpa2*x+3*elpa3*x2+elpta*tl
-               dhwpn1=enwd*(dhwpn1+elpt2a*tl2+elp2ta*2*tlx)
-               dhwpn2=elpb1+2*elpb2*x+3*elpb3*x2+elptb*tl
-               dhwpn2=enwn*(dhwpn2+elpt2b*tl2+elp2tb*2*tlx)
-               dhwpn=dhwpn1-dhwpn2
-               dhwpd=enwd**2
-               dhwp=dhwpn/dhwpd
-               dhwtn1=elta1+2*elta2*tl+3*elta3*tl2+elpta*x
-               dhwtn1=enwd*(dhwtn1+elpt2a*2*tlx+elp2ta*x2)
-               dhwtn2=eltb1+2*eltb2*tl+3*eltb3*tl2+elptb*x
-               dhwtn2=enwn*(dhwtn2+elpt2b*2*tlx+elp2tb*x2)
-               dhwtn=dhwtn1-dhwtn2
-               dhwtd=enwd**2
-               dhwt=dhwtn/dhwtd
-               dhlt=dhwt
-               dhlp=dhwp
-
-c     liquid density
-               rnwn1=dla0+dlpa1*x+dlpa2*x2+dlpa3*x3
-               rnwn2=dlta1*tl+dlta2*tl2+dlta3*tl3
-               rnwn3=dlpta*tlx+dlpt2a*tl2x+dlp2ta*tlx2
-               rnwn=rnwn1+rnwn2+rnwn3
-               rnwd1=dlb0+dlpb1*x+dlpb2*x2+dlpb3*x3
-               rnwd2=dltb1*tl+dltb2*tl2+dltb3*tl3
-               rnwd3=dlptb*tlx+dlpt2b*tl2x+dlp2tb*tlx2
-               rnwd=rnwd1+rnwd2+rnwd3
-               rnw=rnwn/rnwd
-               rol=rnw
-               if(cden) then
+c gaz 072520 (different from ngas)    
+      if(ieosd.eq.3)then
+       ieosd = 3
+       xrv = 1
+c gaz 102621 possible error   xrl = 1     
+       xrl = 0
+       drl = 0
+       drv = 0
+       drlp = 0
+       drvp = 0 
+      endif                  
+c      
+c
+c gaz moved cden correction here
+c
+699    continue
+      if(cden) then
 c     Add correction for liquid species
-                  cden_cor = cden_correction(mi)
-                  rol = rol + cden_cor
-               end if
+         cden_cor = cden_correction(mi)
+         rol = rol + cden_cor
+      end if
 
-c     derivatives of density
-               drlpn1=dlpa1+2*dlpa2*x+3*dlpa3*x2+dlpta*tl
-               drlpn1=rnwd*(drlpn1+2*dlp2ta*tlx+dlpt2a*tl2)
-               drlpn2=dlpb1+2*dlpb2*x+3*dlpb3*x2+dlptb*tl
-               drlpn2=rnwn*(drlpn2+2*dlp2tb*tlx+dlpt2b*tl2)
-               drlpn=drlpn1-drlpn2
-               drolpd=rnwd**2
-               drolp=drlpn/drolpd
-               drlen1=dlta1+2*dlta2*tl+3*dlta3*tl2+dlpta*x
-               drlen1=rnwd*(drlen1+dlp2ta*x2+2*dlpt2a*tlx)
-               drlen2=dltb1+2*dltb2*tl+3*dltb3*tl2+dlptb*x
-               drlen2=rnwn*(drlen2+dlp2tb*x2+2*dlpt2b*tlx)
-               drlen=drlen1-drlen2
-               droled=rnwd**2
-               drolt=drlen/droled
-
-c     liquid viscosity
-               viln1=vla0+vlpa1*x+vlpa2*x2+vlpa3*x3
-               viln2=vlta1*tl+vlta2*tl2+vlta3*tl3
-               viln3=vlpta*tlx+vlpt2a*tl2x+vlp2ta*tlx2
-               viln=viln1+viln2+viln3
-               vild1=vlb0+vlpb1*x+vlpb2*x2+vlpb3*x3
-               vild2=vltb1*tl+vltb2*tl2+vltb3*tl3
-               vild3=vlptb*tlx+vlpt2b*tl2x+vlp2tb*tlx2
-               vild=vild1+vild2+vild3
-               vil=viln/vild
-               xvisl=vil
-
-c     derivatives of liquid viscosity
-               dvlpn1=vlpa1+2*vlpa2*x+3*vlpa3*x2+vlpta*tl
-               dvlpn1=vild*(dvlpn1+2*vlp2ta*tlx+vlpt2a*tl2)
-               dvlpn2=vlpb1+2*vlpb2*x+3*vlpb3*x2+vlptb*tl
-               dvlpn2=viln*(dvlpn2+2*vlp2tb*tlx+vlpt2b*tl2)
-               dvlpn=dvlpn1-dvlpn2
-               dvilpd=vild**2
-               dvislp=dvlpn/dvilpd
-               dvlen1=vlta1+2*vlta2*tl+3*vlta3*tl2+vlpta*x
-               dvlen1=vild*(dvlen1+vlp2ta*x2+2*vlpt2a*tlx)
-               dvlen2=vltb1+2*vltb2*tl+3*vltb3*tl2+vlptb*x
-               dvlen2=viln*(dvlen2+vlp2tb*x2+2*vlpt2b*tlx)
-               dvlen=dvlen1-dvlen2
-               dviled=vild**2
-               dvislt=dvlen/dviled
-c gaz 110715
-c new supercritical table similiar to doherty fast table as modified by rajesh pawar
-            else if(iwater_table.ne.0) then
-c subroutine h2o_properties_new(iflg,iphase,var1,var2,var3,istate,var4,var5,var6)  
-c    real*8 var1,var2,var3,var4,var5(9),var6
-              if(ieosd.eq.1.or.ieosd.eq.4)then
-                  call h2o_properties_new(4,ieosd,pl,tl,dum1,istate,
-     &                 dumb,value,dumc)
-
-             elseif (ieosd.eq.2) then
-                  call h2o_properties_new(5,ieosd,pl,tl,dum1,istate,
-     &                 dumb,value,dumc)
-
-             endif    
-                   rol = value(1)
-                   drolt = value(2)
-                   drolp = value(3)
-                   enl = value(4) + p_energy
-                   dhlt = value(5)
-                   dhlp = value(6)
-                   xvisl = value(7)
-                   dvislt = value(8)
-                   dvislp = value(9)    
-c chain rule not needed for table (d/dp already includes)
-                 if(ieosd.eq.2) then
-                  drolt = 0.0
-                  dhlt = 0.0
-                  dvislt = 0.0  
-                 endif
-
-C*****
-C*****AF 11/15/10
-c--------------------------------------------------------------------------
-          else    ! USE LOOKUP TABLE       phs 4/23/99         LOOKUP
-
-               izerrFLAG = 0.
-
-               indexp = pmin(1) + incp*dint((pl-pmin(1))/incp)
-               indext = tmin(1) + inct*dint((tl-tmin(1))/inct)
-c---  find 4 points            LOOKUP
-
-               point(1) = 1 + (((indexp-pmin(1))/incp)*numt)
-     x              +  ((indext-tmin(1))/inct)
-               point(2) = point(1) + numt
-               point(3) = point(2) + 1
-               point(4) = point(1) + 1
-c---  
-               if(PP(point(1),3).LT.0) izerrFLAG = 1.
-               if(PP(point(2),3).LT.0) izerrFLAG = 1.
-               if(PP(point(3),3).LT.0) izerrFLAG = 1.
-               if(PP(point(4),3).LT.0) izerrFLAG = 1.
-               if(izerrFLAG.EQ.1.) then
-                  write (ierr, 10)
-                  write (ierr, 20) pl, tl
-                  write (ierr, 30) pmin(1), tmin(1)
-                  write (ierr, 40) point(1),point(2),point(3),point(4)
-                  write (ierr, 50) PP(point(1),3), PP(point(4),3)
-                  write (ierr, 60) PP(point(2),3), PP(point(3),3)
-                  if (iptty .ne. 0) then
-c STOP execution if any lookuppoints are out of bounds.
-c     *****AF
-                     write (iptty, 10)
-                     write (iptty, 20) pl, tl
-                     write (iptty, 30) pmin(1), tmin(1)
-                     write (iptty, 40) point(1),point(2),point(3),
-     $                 point(4)
-                     write (iptty, 50) PP(point(1),3), PP(point(4),3)
-                     write (iptty, 60) PP(point(2),3), PP(point(3),3)
-                  end if
-c     *****AF
-c     *****AF  It would be ideal to just set values to the limits when the limits
-c     *****AF  are exceeded, then tell the user about the problem but let the run
-c     *****AF  continue. Perhaps add this later...
-c     *****AF
-                  stop                                      
-               endif
- 10            format ('Out of bounds in Thermw.f')
- 20            format ('Target values of P and T:', 2(1x, g16.9))
- 30            format ('Min values pmin(1) and tmin(1):', 2(1x, g16.9))
- 40            format ('point(1), (2), (3), (4):', 4(1x, i6))
- 50            format ('Rho at T before/after:', 2(1x,g16.9))
- 60            format ('Rho at P before/after:', 2(1x,g16.9))
-
-c---  compute weights for the P and T direction
-               zwp = (pl-indexp)/incp
-               zwt = (tl-indext)/inct
-c---  find values as function of P+T                 LOOKUP
-
-               rol   = (1-zwp)*(1-zwt)*PP(point(1),3) + (1-zwt)*zwp*
-     &              PP(point(2),3) + zwt*zwp*PP(point(3),3) +
-     &              (1-zwp)*zwt*PP(point(4),3)
-
-               if(cden) rol = rol+factcden*anl((ispcden-1)*n0+mi)
-
-               drolp = (1-zwp)*(1-zwt)*PP(point(1),4) + (1-zwt)*zwp*
-     &              PP(point(2),4) + zwt*zwp*PP(point(3),4) +
-     &              (1-zwp)*zwt*PP(point(4),4)
-
-               drolt = (1-zwp)*(1-zwt)*PP(point(1),5) + (1-zwt)*zwp*
-     &              PP(point(2),5) + zwt*zwp*PP(point(3),5) +
-     &              (1-zwp)*zwt*PP(point(4),5)
-
-               enl   = (1-zwp)*(1-zwt)*PP(point(1),6) + (1-zwt)*zwp*
-     &              PP(point(2),6) + zwt*zwp*PP(point(3),6) +
-     &              (1-zwp)*zwt*PP(point(4),6) + p_energy
-
-               dhlp  = (1-zwp)*(1-zwt)*PP(point(1),7) + (1-zwt)*zwp*
-     &              PP(point(2),7) + zwt*zwp*PP(point(3),7) +
-     &              (1-zwp)*zwt*PP(point(4),7)
-
-               dhlt  = (1-zwp)*(1-zwt)*PP(point(1),8) + (1-zwt)*zwp*
-     &              PP(point(2),8) + zwt*zwp*PP(point(3),8) +
-     &              (1-zwp)*zwt*PP(point(4),8)
-
-               xvisl = (1-zwp)*(1-zwt)*PP(point(1),9) + (1-zwt)*zwp*
-     &              PP(point(2),9) + zwt*zwp*PP(point(3),9) +
-     &              (1-zwp)*zwt*PP(point(4),9)
-
-               dvislp = (1-zwp)*(1-zwt)*PP(point(1),10) + (1-zwt)*zwp*
-     &              PP(point(2),10) + zwt*zwp*PP(point(3),10) +
-     &              (1-zwp)*zwt*PP(point(4),10)
-
-               dvislt = (1-zwp)*(1-zwt)*PP(point(1),11) + (1-zwt)*zwp*
-     &              PP(point(2),11) + zwt*zwp*PP(point(3),11) +
-     x              (1-zwp)*zwt*PP(point(4),11)  ! LOOKUP
-
-
-            end if              !  tableFLAG.NE.1           phs 4/23/99
-c-----------------------------------------------------------------------
-C*****
-         endif
-
-         if(ieosd.ne.1) then
-          if(iwater_table.eq.0) then
-c     vapor enthalpy
-            ensn1=eva0+evpa1*x+evpa2*x2+evpa3*x3
-            ensn2=evta1*tl+evta2*tl2+evta3*tl3
-            ensn3=evpta*tlx+evpt2a*tl2x+evp2ta*tlx2
-            ensn=ensn1+ensn2+ensn3
-            ensd1=evb0+evpb1*x+evpb2*x2+evpb3*x3
-            ensd2=evtb1*tl+evtb2*tl2+evtb3*tl3
-            ensd3=evptb*tlx+evpt2b*tl2x+evp2tb*tlx2
-            ensd=ensd1+ensd2+ensd3
-            ens=ensn/ensd
-            env=ens + p_energy
-
-c     derivatives of vapor enthalpy
-            dhvp1=evpa1+2*evpa2*x+3*evpa3*x2+evpta*tl
-            dhvp1=ensd*(dhvp1+2*evp2ta*tlx+evpt2a*tl2)
-            dhvp2=evpb1+2*evpb2*x+3*evpb3*x2+evptb*tl
-            dhvp2=ensn*(dhvp2+2*evp2tb*tlx+evpt2b*tl2)
-            dhvpn=dhvp1-dhvp2
-            dhvpd=ensd**2
-            dhvp=dhvpn/dhvpd
-            dhvt1=evta1+2*evta2*tl+3*evta3*tl2+evpta*x
-            dhvt1=ensd*(dhvt1+evp2ta*x2+2*evpt2a*tlx)
-            dhvt2=evtb1+2*evtb2*tl+3*evtb3*tl2+evptb*x
-            dhvt2=ensn*(dhvt2+evp2tb*x2+2*evpt2b*tlx)
-            dhvtn=dhvt1-dhvt2
-            dhvtd=ensd**2
-            dhvt=dhvtn/dhvtd
-
-c     vapor density
-            rnsn1=dva0+dvpa1*x+dvpa2*x2+dvpa3*x3
-            rnsn2=dvta1*tl+dvta2*tl2+dvta3*tl3
-            rnsn3=dvpta*tlx+dvpt2a*tl2x+dvp2ta*tlx2
-            rnsn=rnsn1+rnsn2+rnsn3
-            rnsd1=dvb0+dvpb1*x+dvpb2*x2+dvpb3*x3
-            rnsd2=dvtb1*tl+dvtb2*tl2+dvtb3*tl3
-            rnsd3=dvptb*tlx+dvpt2b*tl2x+dvp2tb*tlx2
-            rnsd=rnsd1+rnsd2+rnsd3
-            rns=rnsn/rnsd
-            rov=rns
-
-c     derivatives of vapor density
-            drspn1=dvpa1+2*dvpa2*x+3*dvpa3*x2+dvpta*tl
-            drspn1=rnsd*(drspn1+2*dvp2ta*tlx+dvpt2a*tl2)
-            drspn2=dvpb1+2*dvpb2*x+3*dvpb3*x2+dvptb*tl
-            drspn2=rnsn*(drspn2+2*dvp2tb*tlx+dvpt2b*tl2)
-            drspn=drspn1-drspn2
-            drospd=rnsd**2
-            drovp=drspn/drospd
-            drsen1=dvta1+2*dvta2*tl+3*dvta3*tl2+dvpta*x
-            drsen1=rnsd*(drsen1+dvp2ta*x2+2*dvpt2a*tlx)
-            drsen2=dvtb1+2*dvtb2*tl+3*dvtb3*tl2+dvptb*x
-            drsen2=rnsn*(drsen2+dvp2tb*x2+2*dvpt2b*tlx)
-            drsen=drsen1-drsen2
-            drostd=rnsd**2
-            drovt=drsen/drostd
-
-c     vapor viscosity
-            visn1=vva0+vvpa1*x+vvpa2*x2+vvpa3*x3
-            visn2=vvta1*tl+vvta2*tl2+vvta3*tl3
-            visn3=vvpta*tlx+vvpt2a*tl2x+vvp2ta*tlx2
-            visn=visn1+visn2+visn3
-            visd1=vvb0+vvpb1*x+vvpb2*x2+vvpb3*x3
-            visd2=vvtb1*tl+vvtb2*tl2+vvtb3*tl3
-            visd3=vvptb*tlx+vvpt2b*tl2x+vvp2tb*tlx2
-            visd=visd1+visd2+visd3
-            vis=visn/visd
-            xvisv=vis
-
-c     derivatives of vapor viscosity
-            dvspn1=vvpa1+2*vvpa2*x+3*vvpa3*x2+vvpta*tl
-            dvspn1=visd*(dvspn1+2*vvp2ta*tlx+vvpt2a*tl2)
-            dvspn2=vvpb1+2*vvpb2*x+3*vvpb3*x2+vvptb*tl
-            dvspn2=visn*(dvspn2+2*vvp2tb*tlx+vvpt2b*tl2)
-            dvspn=dvspn1-dvspn2
-            dvispd=visd**2
-            dvisvp=dvspn/dvispd
-            dvsen1=vvta1+2*vvta2*tl+3*vvta3*tl2+vvpta*x
-            dvsen1=visd*(dvsen1+vvp2ta*x2+2*vvpt2a*tlx)
-            dvsen2=vvtb1+2*vvtb2*tl+3*vvtb3*tl2+vvptb*x
-            dvsen2=visn*(dvsen2+vvp2tb*x2+2*vvpt2b*tlx)
-            dvsen=dvsen1-dvsen2
-            dvised=visd**2
-            dvisvt=dvsen/dvised
-
-           else if(iwater_table.ne.0) then
-c subroutine h2o_properties_new(iflg,iphase,var1,var2,var3,istate,var4,var5,var6)  
-c    real*8 var1,var2,var3,var4,var5(9),var6
-                if(ieosd.eq.3)then
-                  call h2o_properties_new(4,ieosd,pl,tl,dum1,istate,
-     &                 dumb,value,dumc)
-
-               elseif (ieosd.eq.2) then
-                  call h2o_properties_new(6,ieosd,pl,tl,dum1,istate,
-     &                 dumb,value,dumc)
-
-               endif    
-                   rov = value(1)
-                   drovt = value(2)
-                   drovp = value(3)
-                   env = value(4) + p_energy
-                   dhvt = value(5)
-                   dhvp = value(6)
-                   xvisv = value(7)
-                   dvisvt = value(8)
-                   dvisvp = value(9)  
-c chain rule not needed for table (d/dp already includes)
-               if(ieosd.eq.2) then
-                drovt = 0.0
-                dhvt = 0.0
-                dvisvt = 0.0  
-               endif
-          endif
-         endif
 c     modify derivatives for 2-phase
          if(ieosd.eq.2) then
             drolp=drolp+drolt*dtps
@@ -1492,8 +1091,8 @@ c     modify derivatives for 2-phase
             dvislt=0.0
             dtd=0.0
          endif
-c exclude 2phase in aux eos because of smeared phase lines         
-         else
+c exclude 2phase in aux eos because of smeared phase lines           
+       else
           ieosd = 1
           tl = t(mi)
           pl = phi(mi)
@@ -1512,7 +1111,7 @@ c viscosity and derivatives
           xvisl = prop
           dvislt = dpropt
           dvislp = dpropp         
-         endif
+        endif
 c gaz 081317      (gaz moved 102917)   
          if(ivrock.ne.0) then
           ur = urock(mi)   
@@ -1523,7 +1122,12 @@ c gaz 081317      (gaz moved 102917)
           ur = urock(mi)   
           dur_dt  = durockt(mi)
          endif
-         sl=s(mi)
+c gaz 110123 modified for heat conduction
+         if(idoff.eq.-1) then
+          sl = 1.0
+         else
+          sl=s(mi)
+         endif
          dq(mi)=0.0
          qh(mi)=0.0
          dqh(mi)=0.0
@@ -1624,6 +1228,7 @@ c     compressed liquid
             dtd=1.0
             xvisv=1.d20
 
+
 c     accumulation terms
             den1=rol
             den=den1*por
@@ -1650,6 +1255,9 @@ c     derivatives of accumulation terms
 c gaz 081317            
             daeh=(-dportl*ur+(1.-por)*dur_dt +
      &           dportl*(enl*rol-pl)+por*(rol*dhlt+enl*drolt))*dtin
+            
+            
+            
          end if
 
 
@@ -1694,7 +1302,10 @@ c     store derivatives of accumulation terms
             dtpa(mi)=dtps
             dtpae(mi)=dtd
             t(mi)=tl
-            s(mi)=sl
+c gaz 110123
+            if(idoff.ne.-1) then
+             s(mi)=sl
+            endif
 
 c     save accumulation terms for possible volume changes
             sto1(mi)=den
@@ -1703,9 +1314,12 @@ c     save accumulation terms for possible volume changes
             dil(mi)=0.0
             dilp(mi)=0.0
             dile(mi)=0.0
-            div(mi)=0.0
-            divp(mi)=0.0
-            dive(mi)=0.0
+c gaz 110123
+            if(idoff.ne.-1) then
+             div(mi)=0.0
+             divp(mi)=0.0
+             dive(mi)=0.0
+            endif
             if(ieosd.ne.3) then
 
 c     modify flow terms for new upwind scheme
@@ -1737,7 +1351,10 @@ c     modify flow terms for new upwind scheme
             devf(mi)=dhvp
             devef(mi)=dhvt
             rolf(mi)=rol
-            rovf(mi)=rov
+c gaz 110123
+            if(idoff.ne.-1) then
+             rovf(mi)=rov
+            endif
 
             if(qdis.gt.0.0) then
 

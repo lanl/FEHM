@@ -140,9 +140,11 @@ c set ponding condition
                ka(i) = -6
             else if (katmp(i).eq.-7) then 
 c set air only pressure with no water source
+c gaz 081323 allow for outflow only 
                pflow(i) = sktmp(i) 
                esk(i) = esktmp(i)
-               wellim(i) = abs(aiped(i)) * 1.0e+06
+c               wellim(i) = abs(aiped(i)) * 1.0e+06
+               wellim(i) = aiped(i)*1.0e+06
                ka(i) = -7
             else if (katmp(i).eq.-9) then 
 c set air  pressure, set water saturation
@@ -192,10 +194,65 @@ c set special outflow only condition
                esk(i) = esktmp(i)
                wellim(i) = abs(aiped(i)) * 1.0e+06
                ka(i) = -22
-            end if
-         end if
+            else if (katmp(i).eq.-21) then
+c gaz 111519 
+c set special air only flow when sat < 1. condition
+               pflow(i) = sktmp(i)
+               esk(i) = esktmp(i)
+               wellim(i) = abs(aiped(i)) * 1.0e+06
+               ka(i) = -21   
+            else if (katmp(i).eq.-20.or.katmp(i).eq.-25) then 
+c gaz 121219 
+c set special air only flow when sat < 1. condition
+               pflow(i) = sktmp(i)
+               esk(i) = esktmp(i)
+               wellim(i) = abs(aiped(i)) * 1.0e+06
+               ka(i) = katmp(i)    
+            else if (katmp(i).eq.-18) then 
+c gaz 082023 outflows for air and water
+c linear relperms
+               pflow(i) = sktmp(i)
+               esk(i) = esktmp(i)
+               wellim(i) = abs(aiped(i)) * 1.0e+06
+               ka(i) = katmp(i)                           
+            else if (katmp(i).eq.-19) then
+c gaz 121219 
+c set special air only flow when sat < 1. condition
+               pflow(i) = sktmp(i)
+               esk(i) = esktmp(i)
+               wellim(i) = abs(aiped(i)) * 1.0e+06
+               ka(i) = -19               
+            else if (katmp(i).eq.-101) then
+c gaz 051120 this BC seekes to adjust bounday pressure to maintain a positive (or small) flow
+c different than other models as it adjust boundary pressure - not not gridblock pressure
+c pflow() is the initial boundary pressure
+c esk() is a tolerance
+c wellim() is the usual impedance              
+               pflow(i) = sktmp(i)
+               esk(i) = esktmp(i)
+               wellim(i) = abs(aiped(i)) * 1.0e+06
+               ka(i) = -101   
+            else if (katmp(i).eq.-201) then
+c gaz 051720 this BC seekes to adjust bounday pressure based on changing densities (cden related)
+c will explicitly change boundary pressures after a transport simulation is finished,
+c pflow() is the initial boundary pressure
+c esk() is a tolerance
+c wellim() is the usual impedance              
+               pflow(i) = sktmp(i)
+               esk(i) = esktmp(i)
+               wellim(i) = abs(aiped(i)) * 1.0e+06
+               ka(i) = -201 
+           else if (katmp(i).eq.-202) then     
+c gaz 112923 test for dissolved species   
+c specified pressure and saturation   
+               pflow(i) = sktmp(i)
+               esk(i) = esktmp(i)
+               wellim(i) = abs(aiped(i)) * 1.0e+06
+               ka(i) = -202  
+           end if
+       endif
       end do
       
-      deallocate(aiped,esktmp,sktmp,katmp)
+      deallocate(aiped,esktmp,sktmp,katmp)                                 
            
       end

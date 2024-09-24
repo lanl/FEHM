@@ -75,7 +75,7 @@ CD3                                  with saturation
 CD3 isatf        int     I       Control parameter to decide if
 CD3                                 saturation temperature or pressure
 CD3                                 is computed
-CD3                                  
+CD3 salt_con     real*8   passes through to vaporl_salt(tl,salt_con                                 
 CD3 
 CD3 Interface Tables
 CD3
@@ -286,12 +286,19 @@ C***********************************************************************
       use property_interpolate_1
       implicit none
 
-      integer isatf,k,maxitp,ifail
-      real*8 tl,pcaps,dpcaps,dpsatt,dpsats
-      real*8 x,x2,x3,x4,pfun,pfunn,pfund,dpst,dptsn,dpstd,psatl0,delp
+c     function parameters
+      real*8  tl,pcaps,dpcaps,dpsatt,dpsats
+      integer isatf
+      real*8  salt_con
+
+c     variables
+      real*8 x,x2,x3,x4,pfun,pfunn,pfund
+      real*8 dpst,dptsn,dpstd,psatl0,delp
       real*8 ddelt,ddels,tfun,tfunn,tfund,pfun0,resid,drlp
-      real*8 salt_con,pv_sc,dsct,dscc
+      real*8 pv_sc,dsct,dscc
       real*8 dtps,dtpsn,dtpsd
+      integer k,maxitp,ifail
+
       psatl=0.0d0
       dpsatt=0.0d0
       if(ice.ne.0) then
@@ -326,9 +333,17 @@ c            psatl=0.00123
             dpsats=0.0
          endif
         else
-          call get_h2o_sat_pressure(ifail,tl,psatl,dpst)
-            dpsatt=dpst
-            dpsats=0.0         
+c gaz 102420 make sure sat p and t defined above h2o crit point 
+          if(tl.lt.tcrit_h2o) then
+           call get_h2o_sat_pressure(ifail,tl,psatl,dpst) 
+           dpsatt=dpst
+           dpsats=0.0 
+          else 
+           psatl = pcrit_h2o
+            dpsatt=0.0
+            dpsats=0.0
+          endif
+c          call get_h2o_sat_pressure(ifail,tl,psatl,dpst)
         endif
 c
 c get vapor pressure lowering (salt concentration)
@@ -420,10 +435,22 @@ c failed to converge
             endif
             psatl=x
          end if
-       else
+         else
 c tl is the pressure,psatl = temp
-          call get_h2o_sat_temperature(ifail,tl,psatl,dpsatt)
-            dpsats=0.0    
+c gaz debug 092119   (removed 042521          
+c          if(l.eq.1) then
+c            write(ierr,*) ' psatl chk ', ifail,tl,psatl,dpsatt
+c          endif
+c here tl=is the pressure   
+c gaz 102420          
+          if(tl.lt.pcrit_h2o) then
+           call get_h2o_sat_temperature(ifail,tl,psatl,dpsatt)
+            dpsats=0.0  
+          else
+           psatl= tcrit_h2o
+           dpsats = 0.0 
+           dpsatt = 0.0
+         endif
         endif
       endif
  9000 continue

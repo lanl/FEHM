@@ -288,7 +288,8 @@ C**********************************************************************
       implicit none
 
       integer ndummy,mid,mi,ieosd,kq
-      real*8 dtin,tempc,drocp,drocp0,rolref,xvisl,comw,pref,xvisv
+c gaz 110819 tref, pref (now global)       
+      real*8 dtin,tempc,drocp,drocp0,rolref,xvisl,comw,xvisv
       real*8 xrl,drl,drlp,xrv,drv,drvp,pl,sl,svd,pwl,dpwlp,dpwls
       real*8 qdis,qwdis,qadis,dqws,dqas,dqwp,dqap,por,sflux,permsd
       real*8 pflowd,perml,dpls,dpas,perma,roc,drocs,rol,drolp
@@ -327,12 +328,13 @@ c     get capillary pressures
 
 c     dependent variables vap p and sl
 c     misc. constants
-      tempc=(273.0)/(t(1)+273.0)
+      tempc=(273.0)/(tref+273.0)
       drocp0=roc0*tempc/pcl0
       rolref=crl(1,1)
       xvisl=crl(2,1)
       comw=crl(3,1)
-      pref=crl(4,1)
+c gaz 110819 pref, tref (global) read in scanin        
+c      pref=crl(4,1)
       xvisv=crl(5,1)
       rcomd=comw*rolref
 c

@@ -220,11 +220,11 @@ c----------------------------------------------------------------------
 
       use avsio
       use comai, only : altc, days, grav, iadif, icnl, ico2, idof, 
-     &     ichead, ihead, nei_in, ns_in, phi_inc, istrs, ivf,
+     &     ichead, ihead, nei_in, ns_in, phi_inc, istrs, ivf,wdd,
      &     neq_primary, rho1grav, ifdm_elem, igrav, ns, gdkm_flag
 c     &     neq_primary, rho1grav, ifdm_elem, i_subsid, igrav
       use combi, only: corz, izonef, nelm, nelmdg, sx1, ncord, 
-     &     ncord_inv, elem_temp
+     &     ncord_inv, elem_temp, elem_geo
       use comci, only: rolf, rovf
       use comdi
       use comfi, only : pci
@@ -308,11 +308,14 @@ c gaz 040917 gdkm blanking
          nadd = 0            
         endif
         irivp = 0 
+c gaz 051321 added ckeck for coordinate output        
+        if(iocord_tmp.ne.0) then 
          if (icnl .eq. 0) then
             iocord = 3
          else
             iocord = 2
          end if
+        endif
       else if (ifdual .ne. 0)then
          istart = neq + 1
          iend = neq * 2
@@ -628,20 +631,43 @@ c     Node loop
               i = ii
             end if
 c     Node number will be written first for avs and sur files
-c gaz 040517 this is where gdkm number is changed            
-            if (altc(1:3) .eq. 'avs' .or. altc(1:3) .eq. 'sur') then
-               if (ifdual .eq. 0) then
-                  write(string, 100) i
-               else if (iogdkm .eq. 1.and.iogdkmblank.ne.0) then
-                  write(string, 100) i
-               else
-                  write(string, 100) i - neq_primary                 
+c gaz 040517 this is where gdkm number is changed  
+            if (altc(1:3) .eq. 'avs' .or. altc(1:3) .eq. 'sur') then 
+c gaz 052221 need i_pri defined for gdkm w blanking                
+             i_pri = i   
+             if(ifdual.ne.0.and. iogdkm .eq. 1.
+     &                        and. iogdkmblank .eq. 1) then
+c gaz  040817 if blanking use primary grid node number (and blank variable) 
+c gaz identify secondary node variable (i_sec)                   
+                   write(string, 100) i
+                   i_pri = i
+                   if(nelm(nelm(i_pri+1)).gt.neq_primary) then
+                    i_sec = nelm(nelm(i_pri+1))
+                    i = i_sec
+                   else  
+c gaz use a blanking value
+                    i_sec = iblanking_value
+                    i = i_sec
+                   endif                   
+               else if (ifdual .eq. 0 .or. iogdkm .eq. 1) then
+                    write(string, 100) i
+               else 
+                  write(string, 100) i - neq_primary    
                end if
 c ic1 positions the column for printout               
-               ic1 = 11
+              ic1 = 11
+c
             else
                ic1 = 1
             end if
+
+            
+            
+            
+            
+            
+            
+c            
             if (iocord .ne. 0) then
 c Only output coordinates that are used
                if (altc(1:3) .eq. 'tec' .and. icall .ne. 1) then
@@ -666,8 +692,15 @@ c     (do nothing)
                      icord2 = 3
                      icord3 = 1
                   end select
+                  i_pri = i
                   do j = icord1, icord2, icord3
-                     write(vstring,110) dls(1:k), corz(i - offset,j)
+c                     write(vstring,110) dls(1:k), corz(i - offset,j)
+c gaz 052221 need different coding for gdkm with blanking
+                     if(iogdkm.eq.0) then
+                       write(vstring,110) dls(1:k), corz(i - offset,j)
+                     else
+                       write(vstring,110) dls(1:k), corz(i_pri,j)  
+                     endif
                      ic2 = ic1 + len_trim(vstring)
                      string(ic1:ic2) = vstring
                      ic1 = ic2 + 1
@@ -676,6 +709,7 @@ c     (do nothing)
             end if
 c     Node numbers are written after coordinates for tec files
             if (altc(1:3) .eq. 'tec') then
+            i_pri = i    
                if(ifdual.ne.0.and. iogdkm .eq. 1.
      &                        and. iogdkmblank .eq. 1) then
 c gaz  040817 if blanking use primary grid node number (and blank variable) 
@@ -1302,6 +1336,7 @@ c
          if (altc(1:3) .eq. 'sur') close (lu)
       enddo
       if(zone_saved) return
+c gaz 060822 major changes elem_geo      
       if (icall .eq. 1 .and. altc(1:3) .eq. 'tec' .and. iogeo .eq. 1)
      &     then
 c     Read the element connectivity and write to tec file
@@ -1309,36 +1344,15 @@ c     Read the element connectivity and write to tec file
 c     Do nothing unless blanking used
           if(iogdkmblank.ne.0) then
 c gaz 040817 attach geometry to gdkm file
-            il = open_file(geoname,'old')
-c     avsx geometry file has an initial line that starts with neq_primary
-            read(il,*) i
-            if (i .ne. neq_primary) backspace il
-            do i = 1, neq_primary
-               read(il,*)
-            end do
-            allocate (nelm2(ns_in))
+c gaz 060822 using elem_geo              
             do i = 1, nei_in
-               read (il,*) i1,i2,char_type,(nelm2(j), j=1,ns_in)
-               write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
-            end do
-            deallocate(nelm2)
-            close (il)              
+               write(lu, '(8(i8))') (elem_geo((i-1)*ns_in+j), j=1,ns_in)
+            end do         
           endif
          else if(irivp.eq.0) then
-            il = open_file(geoname,'old')
-c     avsx geometry file has an initial line that starts with neq_primary
-            read(il,*) i
-            if (i .ne. neq_primary) backspace il
-            do i = 1, neq
-               read(il,*)
-            end do
-            allocate (nelm2(ns_in))
             do i = 1, nei_in
-               read (il,*) i1,i2,char_type,(nelm2(j), j=1,ns_in)
-               write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
+               write(lu, '(8(i8))') (elem_geo((i-1)*ns_in+j), j=1,ns_in)
             end do
-            deallocate(nelm2)
-            close (il)
          else
 c     river segments (2 node elements)
             do i = 1,nnelm_riv
@@ -1346,23 +1360,24 @@ c     river segments (2 node elements)
      &              nelm_riv(i,2)-neq
             enddo
          endif
-      end if
-c gaz added element output  (hex only) for fdm generated grid   
-      if (icall .eq. 1 .and. altc(1:3) .eq. 'tec' .and. ivf .eq. -1
-     &     .and. ifdm_elem. eq. 1) then
+          end if
+c gaz added element output  (hex only) for fdm generated grid 
+c gaz 061422 removed fdm section (now redundant          
+c      if (icall .eq. 1 .and. altc(1:3) .eq. 'tec' .and. ivf .eq. -1
+c     &     .and. ifdm_elem. eq. 1) then
 c first generate elements      
-         call structured(4)
-         il = open_file('fdm_elem.macro','old')
-         read(il,*) 
-         read(il,*)  ns_in , nei_in
-         allocate (nelm2(ns_in))
-         do i = 1, nei_in
-            read (il,*) i1, (nelm2(j), j=1,ns_in)
-            write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
-         end do
-         deallocate(nelm2)
-         close (il)
-      end if        
+c         call structured(4)
+c         il = open_file('fdm_elem.macro','old')
+c         read(il,*) 
+c         read(il,*)  ns_in , nei_in
+c         allocate (nelm2(ns_in))
+c         do i = 1, nei_in
+c            read (il,*) i1, (nelm2(j), j=1,ns_in)
+c            write(lu, '(8(i8))') (nelm2(j), j=1,ns_in)
+c         end do
+c         deallocate(nelm2)
+c         close (il)
+c      end if        
       if (altc(1:3) .ne. 'sur') close (lu)
       iocord = iocord_tmp
 

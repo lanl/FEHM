@@ -92,8 +92,8 @@ c    calculate hydrate fraction
                tl = tmeth(i)
                pl= phimeth(i)
                ihyddc = ihyd(i) 
-               call hydrate_properties(6,0,pl,0.,0.,0.,tdis1,
-     &              der1,0.,0.,0.)
+               call hydrate_properties(6,0,pl,0.0d00,0.0d00,0.0d00,
+     &              tdis1,der1,0.0d00,0.0d00,0.0d00)
                call hydrate_properties(8,ihyddc,pl,tl,w_frac,fracg,
      &              frach,dum5,dum6,der3,der4)
            
@@ -110,7 +110,8 @@ c independent variables are p,fracw,Sh
 c t is calculated 
                pl = phimeth(i)
                tl = tmeth(i)
-               call hydrate_properties(6,0,pl,0.,0.,0.,tl,der1,0.,0.,0.)
+               call hydrate_properties(6,0,pl,0.0d00,0.0d00,0.0d00,
+     &          tl,der1,0.0d00,0.0d00,0.0d00)
                a(nmat(25)+i) = der1
             else
 c pressure is greater than the hydrate forming pressure 

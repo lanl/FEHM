@@ -37,6 +37,8 @@ c
       integer neqp1,imodel, i_dir_gdkm
 c gaz 041718      
       integer i_pri_kb, i_dir_gdkm_kb
+c gaz 120722
+      integer num_fracture_i, num_fracture_kb
       real*8 vfrac,vfrac2,vfrac_sec,tol_dir,tol_dis
       real*8 cordxa,cordya,cordza,cordxb,cordyb,cordzb
       real*8 dl2,dx2,dy2,dz2
@@ -64,7 +66,7 @@ c
          allocate(red_factor(0:ncon_size))
          red_factor = 1.0 
       else if(iflg.eq.1) then
-c calculate cell lengths for GDPM and GDKM calculations   
+c calculate cell lengths for GDPM and GDKM calculations    
        if(.not.allocated(dzrg)) allocate(dzrg(n))
        if(.not.allocated(dyrg)) allocate(dyrg(n))
        if(.not.allocated(dxrg)) allocate(dxrg(n))   
@@ -133,6 +135,13 @@ c calculate and store volume fractions
         imodel= igdpm(i)
 c first gdpm node is given last connection of primary node
 c check this logic
+c gaz 120722 check for negative number of fractures        
+c        if(gdkm_dir(igdpm(i)).eq.4.and.gdpm_x(igdpm(i),1).lt.0) then
+c          gdkm_dir(igdpm(i)) = 0
+c          num_fracture_i = abs(gdpm_x(igdpm(i),1))
+c          length_pri = sx1(i)**0.333333/((num_fracture_i+1)*2)
+c          gdpm_x(igdpm(i),1) = length_pri
+c        endif
         kb = nelm(nelm(i+1))
         if(imodel.ne.0) then
           sx1_primary = sx1(i)
@@ -149,7 +158,9 @@ c save gdkm volume fraction for node
         endif
        enddo 
       else if(iflg.eq.4) then   
-c calculate interface factors
+c calculate interface factors 
+c  gaz debug next line       
+       ik_gdkm_red = sx(1,1)
        ik_gdkm_red = 0     
        neqp1 = neq +1
        ik = nitfcpairs+1
@@ -158,14 +169,17 @@ c calculate interface factors
         i2 = nelm(i+1)
         if(i.le.neq_gdkm) then
          i_dir_gdkm = gdkm_dir(igdpm(i))  
+         num_fracture_i = gdpm_x(igdpm(i),1)
         else
          i_pri = nelm(nelm(i)+1)
+         num_fracture_i = gdpm_x(igdpm(i_pri),1)
          i_dir_gdkm = gdkm_dir(igdpm(i_pri)) 
         endif
         cordxa=cord(i,1)
         cordya=cord(i,2)
         cordza=cord(i,3)
 c identify secondary node associated with primary node i
+c if i_sec.lt.neq_gdkm, then not a gdkm node        
         i_pri = nelm(nelmdg(i))
         i_sec = nelm(nelm(i+1))
 c insure that the full area is used for gdkm models   
@@ -181,9 +195,12 @@ c neq_gdkm is the original primary nodes
          vfrac2 = gdkm_volume_fraction(kb)
 c gaz 041718 defined gdkm model for node kb         
          if(kb.le.neq_gdkm) then
+c gaz debug 110722 intersection if fracs different directions             
           i_dir_gdkm = max(i_dir_gdkm,gdkm_dir(igdpm(kb))) 
+          num_fracture_kb = gdpm_x(igdpm(kb),1)
          else
           i_pri_kb = nelm(nelm(kb)+1)
+          num_fracture_kb = gdpm_x(igdpm(i_pri_kb),1)
           i_dir_gdkm = max(i_dir_gdkm,gdkm_dir(igdpm(i_pri_kb)))  
          endif
          cordxb=cord(kb,1)
@@ -192,7 +209,11 @@ c gaz 041718 defined gdkm model for node kb
          dx2 = (cordxb-cordxa)**2
          dy2 = (cordyb-cordya)**2
          dz2 = (cordzb-cordza)**2
-         dl2 = dx2+dy2+dz2
+         if(icnl.eq.0) then
+          dl2 = dx2+dy2+dz2
+         else
+          dl2 = dx2+dy2
+         endif
          if(gdkm_flag.eq.1.and.i_dir_gdkm.eq.1) then
 c  fracture plane is orthogonal to x axis               
           ik = ik + 1
@@ -209,19 +230,19 @@ c node i is gdkm and kb is non-gdkm node
 c gaz 091016 the next line commented out because orthogonality not required           
           else if(dl2.gt.tol_dis.and.abs(dx2-dl2).le.tol_dir) then
 c          else if(dl2.gt.tol_dis) then    
-c correction for centered distance for gdkm node  to cell edge         
+c correction for centered distance for gdkm node  to cell edge          
              length_total = 0.5*(dxrg(i) + dxrg(kb))
              if(vfrac.lt.1.0) then
 c node i is gdkm node                 
               length_pri = vfrac   
-              dis_p =   length_pri*dxrg(i)/4.
+              dis_p =   length_pri*dxrg(i)/((num_fracture_i+1)*2)
               red_factor(ik) = length_total/(dis_p + 0.5*dxrg(kb))
 c gaz 1015016 debug  gaz debug 041718           
 c              red_factor(ik)=1.0
              else
 c node kb is gdkm node
               length_pri = vfrac2   
-              dis_p =   length_pri*dxrg(kb)/4.
+              dis_p =   length_pri*dxrg(kb)/((num_fracture_kb+1)*2)
               red_factor(ik) = length_total/(0.5*dxrg(i)+dis_p)
 c gaz 1015016 debug  gaz debug 041718            
 c              red_factor(ik)=1.0              
@@ -245,17 +266,17 @@ c check for primary-primary connection in x direction
 c          else if(dl2.gt.tol_dis) then   
 c correction for centered distance for gdkm node  to cell edge         
              length_total = 0.5*(dyrg(i) + dyrg(kb))
-               if(vfrac.lt.1.0) then
+             if(vfrac.lt.1.0) then
 c node i is gdkm node                 
               length_pri = vfrac   
-              dis_p =   length_pri*dyrg(i)/4.
+              dis_p =   length_pri*dyrg(i)/((num_fracture_i+1)*2)
               red_factor(ik) = length_total/(dis_p + 0.5*dyrg(kb))
 c gaz 1015016 debug             
-              red_factor(ik)=1.0                
+c              red_factor(ik)=1.0                
              else
 c node kb is gdkm node
               length_pri = vfrac2   
-              dis_p =   length_pri*dyrg(kb)/4.
+              dis_p =   length_pri*dyrg(kb)/((num_fracture_kb+1)*2)
               red_factor(ik) = length_total/(0.5*dyrg(i)+dis_p)
 c gaz 1015016 debug             
               red_factor(ik)=1.0                
@@ -279,14 +300,14 @@ c correction for centered distance for gdkm node  to cell edge
              if(vfrac.lt.1.0) then
 c node i is gdkm node                 
               length_pri = vfrac   
-              dis_p =   length_pri*dzrg(i)/4.
+              dis_p =   length_pri*dzrg(i)/((num_fracture_i+1)*2)
               red_factor(ik) = length_total/(dis_p + 0.5*dzrg(kb))
 c gaz 1015016 debug             
               red_factor(ik)=1.0                
              else
 c node kb is gdkm node
               length_pri = vfrac2   
-              dis_p =   length_pri*dzrg(kb)/4.
+              dis_p =   length_pri*dzrg(kb)/((num_fracture_kb+1)*2)
               red_factor(ik) = length_total/(0.5*dzrg(i)+dis_p)
 c gaz 1015016 debug             
               red_factor(ik)=1.0                
@@ -309,9 +330,107 @@ c gaz 020217
         enddo
         enddo
         ik_gdkm_red = ik
+        call gdkm_dir_check(1)
       else if(iflg.eq.5) then    
  
       endif
       
+      return
+      end
+
+      subroutine gdkm_dir_check(iflg)
+c gaz 111322
+c check and print gdkm coefficients for directional models
+c 
+c
+      use comai
+      use combi
+      use comco2
+      use comdi
+      use comdti
+      implicit none
+      
+      integer iflg,i,ncon_size,i1,i2,kb,ik,i_pri,i_sec
+      integer jk,kc,j,jj,n_loop, iriver
+      integer neqp1,imodel, i_dir_gdkm    
+      integer i_pri_kb, i_dir_gdkm_kb
+      integer iq, icd, jm, kz, jmi, ii2, ii1,idg 
+      integer it11(20),it8(20)
+      real*8 vfrac,vfrac2,vfrac_sec,tol_dir,tol_dis
+      real*8 cordxa,cordya,cordza,cordxb,cordyb,cordzb
+      real*8 dl2,dx2,dy2,dz2
+      real*8 sx1_primary, sx1_total, red_factor_old
+      real*8 cord1,cord2,cord3,cord1j,cord2j,cord3j
+      real*8 disx1, disy1, disz1, disx2, disy2, disz2
+      real*8 length_total, length_pri, dis_p
+      real*8 reduction_factor
+      parameter(tol_dir = 1.d-12,tol_dis = 1.d-6)    
+c      
+c tam initialize to avoid runtime errors
+      icd=0
+
+      if(iflg.eq.0) then
+c initialization if necessary          
+      else if(iflg.eq.1) then
+c modify interface factors
+      neqp1 = neq +1
+      if(i.gt.neq.and.idualp.eq.0) then
+      icd=neq
+      else
+      icd=0
+      endif
+
+c tam Fortran runtime error:
+c Index '-443' of dimension 1 of array 'nelm' below lower bound of 1
+      
+      do i = 1,neq
+      iq = 0
+     
+      if ((i-icd).lt.0) then
+      print*,"ERROR index lt 0 in gdkm_dir_check, skip i: ",i 
+      print*,"nelm size ", sizeof(nelm)
+      print*,"neq: ",neq," icd: ",icd," index: ",i-icd
+      else
+      ii1=nelm(i-icd)+1
+      ii2=nelm(i-icd+1)
+      idg=nelmdg(i-icd)-ii1+1
+      jmi=nelmdg(i-icd)
+      endif
+
+      do jm=jmi+1,ii2
+       kb=nelm(jm)+icd
+       iq=iq+1
+       it8(iq)=kb
+       it11(iq)=jm-neqp1
+      enddo          
+      if(i.le.neq_gdkm) then
+         i_dir_gdkm = gdkm_dir(igdpm(i))  
+      else
+         i_pri = nelm(nelm(i)+1)
+         i_dir_gdkm = gdkm_dir(igdpm(i_pri)) 
+      endif           
+      do jm=1,iq
+       kb=it8(jm)
+       kz=kb-icd
+        Vfrac2 = gdkm_volume_fraction(kb)
+         if(kb.le.neq_gdkm) then          
+          i_dir_gdkm_kb = gdkm_dir(igdpm(kb)) 
+         else
+          i_pri_kb = nelm(nelm(kb)+1)
+          i_dir_gdkm_kb= gdkm_dir(igdpm(i_pri_kb))  
+         endif
+         if(i_dir_gdkm.ne.0.and.i_dir_gdkm_kb.ne.0) then
+c  apply  volume fraction 
+          if(i_dir_gdkm.ne.i_dir_gdkm_kb) then
+           vfrac2 = gdkm_volume_fraction(kb)
+           vfrac  = gdkm_volume_fraction(i)
+           red_factor(istrw_itfc(it11(jm))) = 0.5*(vfrac+vfrac2)
+          endif
+         endif
+         reduction_factor = red_factor(istrw_itfc(it11(jm)))
+        enddo
+       enddo
+      else
+      endif
       return
       end

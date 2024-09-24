@@ -332,7 +332,12 @@ c         read(inpt,*) diti, ditip, ditip2, itci
          dit(index)=diti
          dit(index+icgts)=ditip
          dit(index+icgts*2)=ditip2
-         itc(index)=imsg(4)
+c gaz 062920 added coding to read a real or integer  itc()       
+         if (msg(4).eq.1) then
+            itc(index)=imsg(4)
+         else
+            itc(index)=xmsg(4)
+         endif         
 c     Store max time step value
          if(nwds.gt.4) then
             if (msg(5).eq.1) then

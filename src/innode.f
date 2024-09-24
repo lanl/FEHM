@@ -230,7 +230,9 @@ C***********************************************************************
 
       logical null1
       real*8 xmsg(4)
-      integer i, cnt, cnt2, cnt3, ja, jb, jc
+      integer i, cnt, cnt2, cnt3, ja, jb, jc, ja_tmp, ja_match
+c gaz 090523
+      integer i1, i2, ii, nin
       integer nflag, msg(4), imsg(4), nwds, ierr_flag
       character*4 macro
       character*5 myform
@@ -259,9 +261,28 @@ c**** read node numbers for output ****
             read(chdum,*) ja,jb,jc
             if (ja.lt.0) then
 c we are dealing with zone format
-               ja=abs(ja)
-               do i=1,n0
-                  if (izonef(i).eq.ja) then
+                 ja=abs(ja)   
+                 ja_tmp =ja
+                 call zone_saved(2,'node',ja_tmp,1, nin) 
+               if(nin.eq.0) then
+c not a saved zone
+                i1 = 1
+                i2 = n0
+               else 
+c a saved zone
+                i1 = 1
+                i2 = nin
+               endif
+               do ii = i1, i2
+c gaz 101223 use nin = 0 to indicate zone is not saved
+                  if(nin.eq.0) then
+                   i = ii
+                   ja_match = izonef(i)
+                  else
+                   i = ncord(ii)
+                   ja_match = ja
+                  endif
+                  if (ja_match.eq.ja) then
                      cnt = cnt + 1
                      select case (nflag)
                      case (1)

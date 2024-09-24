@@ -319,6 +319,7 @@ c
       use comdti
       use comei
       use comevap, only : evaporation_flag, evap_flag
+      use com_prop_data, only : ihenryiso, ctest, xnl_ngas, xnl_max 
       use comfi
       use comgi
       use comii
@@ -329,14 +330,15 @@ c
       implicit none
 
       integer ndummy,mid,mi,ieosd,kq
-      real*8 dtin,tempc,drocp,drocp0,rolref,xvisl,comw,pref,xvisv
+c gaz 110819 removed tref, pref (now global)       
+      real*8 dtin,tempc,drocp,drocp0,rolref,xvisl,comw,xvisv
       real*8 xrl,drl,drlp,xrv,drv,drvp,pl,sl,svd,pwl,dpwlp,dpwls
       real*8 qdis,qwdis,qadis,dqws,dqas,dqwp,dqap,por,sflux,permsd
       real*8 pflowd,area,uperm,roc,drocs,rol,drolp,dporpl
       real*8 rcomd,drols,dena,ddenp,ddens,ddenap,ddenas,dql,dqv
       real*8 pcl0,xvisl0,pdiff,plow,watfrac,dwfracp
-      real*8 airterm,watterm,pdifa,pdifw
-      real*8 tl_last,viln,vild,vil,tref
+      real*8 airterm,watterm,pdifa,pdifw   
+      real*8 tl_last,viln,vild,vil 
       real*8 viln1,viln2,viln3,vild1,vild2,vild3
       real*8 vla0,vlpa1,vlpa2,vlpa3,vlta1,vlta2,vlta3,vlpta,vlp2ta
       real*8 vlpt2a
@@ -346,15 +348,20 @@ c
       real*8 dsatp, rlpmin, qwmax_fac, qwmax
       real*8 pld,dis_ex,wat_ex,dwat_exs, time_max
       real*8 seep_facv,seep_facl,permsdv,permsdl,plwt
-      real*8 rol_b, rolref_b
+      real*8 rol_b, rolref_b, tol_dis, area_term, dis_term, vap_ratio
       real*8 cden_correction, cden_cor
+
+c gaz 081323
+      real*8 xrvdum,drvdum,xrldum,drldum,air_fac
+c gaz 111123
+      real*8 xnl, dxnlp, dxnls
       integer i_mem_rlp
       integer iadka        
       save i_mem_rlp
       parameter(pcl0 = 0.101325)
 c      parameter(roc0 = 1.292864)
-      parameter(rlpmin = 0.01)
-      parameter(qwmax_fac = 1.)
+      parameter(rlpmin = 0.01, tol_dis = 1.e-12)
+      parameter(qwmax_fac = 1., air_fac = 0.05d0)
 
       parameter(iadka=1000)                
       
@@ -365,9 +372,7 @@ c      parameter(roc0 = 1.292864)
       real*8, allocatable :: drlfs0(:)
       real*8, allocatable :: rvf0(:)
       real*8, allocatable :: drvfs0(:)
-c gaz debug  050712    
-      mi = l
-      mi = cord(1,1)
+
       if(irdof.ne.13) then
          if(abs(iexrlp).ne.0.and.i_mem_rlp.eq.0) then
             i_mem_rlp=1
@@ -395,17 +400,17 @@ c     get relative perms
             call pcp_save(2,neq,ndummy,0,pcp,dpcef,rlf,drlef,
      &           rvf,drvef,s,pcp0,dpcps0,rlf0,drlfs0,
      &           rvf0,drvfs0,s0)
-
             do mid=1,neq
                mi=mid+ndummy
                drlpf(mi)=0.0          
-               drvpf(mi)=0.0          
+               drvpf(mi)=0.0                                                                                           
             enddo
          endif
 c     get capillary pressures
          if (.not. rlpnew) call cappr(1,ndummy)
 
       endif
+
 c     
 c     calculate variable porosity if enabled
 c     
@@ -413,14 +418,15 @@ c
 c     
 c     dependent variables vap p and sl
 c     
-c     misc. constants (roc is at t = 0 C
-      tref = crl(6,1)
+c     misc. constants (roc is at tref)
+c gaz 110819 pref, tref (global) read in scanin        
+c      tref = crl(6,1)
       tempc=(273.0)/(tref+273.0)
       drocp0=roc0*tempc/pcl0
       rolref=crl(1,1)
       xvisl0=crl(2,1)
       comw=crl(3,1)
-      pref=crl(4,1)
+c      pref=crl(4,1)
       xvisv=visc_gas
 c      rcomd=comw*rolref
 
@@ -533,6 +539,7 @@ c
 c     water relative perm
             xrl=rlf(mi)
             drl=drlef(mi)
+
             drlp=drlpf(mi)
             dsatp=0.0
 c     air relative perm
@@ -580,6 +587,32 @@ c
          dqap=0.0
          por=ps(mi)
          kq=ka(mi)
+c gaz 111223 get liq mass frac dissolved gas
+c gaz 010624   these calls duplicates not necessary
+         if(l.lt.-1) then
+c        if(l.gt.0) then
+          call phase_change_mass_conv(1,mi,mi)
+          call solubility_isothermal(1,mi)
+         endif
+c gaz 040624 invoke  only for  ihenryiso ne 0
+          call solubility_isothermal(1,mi)
+          if(sl.lt.1.0d0) then
+           xnl    = xnl_ngas(mi,1)
+           dxnlp  = xnl_ngas(mi,2)
+           dxnls  = xnl_ngas(mi,3)
+           cnlf(mi) = xnl
+           dclf(mi) = dxnlp
+           dclef(mi) = dxnls
+          else
+           xnl_max = xnl_ngas(mi,1)
+           xnl = cnlf(mi)
+           dxnlp =0.0d0
+           dclf(mi) = 0.d0
+c gaz 122623
+           dclef(mi) = 1.0d0
+          endif
+
+         
 c     form flow terms
          if(kq.eq.-1.or.kq.eq.-2.and.compute_flow) then
 c     flow in or out
@@ -601,6 +634,9 @@ c
             else if(sflux.eq.1.0.and.irdof.eq.13) then
                qwdis=permsd*(pl-pflowd) 
                dqwp=permsd
+            else if(sflux.eq.-1.000) then
+                qadis=permsd*(pl-pflowd) 
+                dqap=permsd
             else if(sflux.gt.0.0.and.sflux.lt.1.0) then
                if(pflowd.ge.0.0) then
                   qadis=permsd*(pl-pflowd)
@@ -686,8 +722,9 @@ c gaz debug 081119
 c            watterm= xrl*permsdl
 c            airterm= xrv*permsdv
             watterm= sl*permsdl
-            airterm= (1.0-sl)*permsdv            
-            pflow(mi) = crl(4,1)
+            airterm= (1.0-sl)*permsdv   
+c gaz 110819 pref (crl(4,1) now pref and inputed elsewhere            
+            pflow(mi) = pref
             pdifa = pl-pflow(mi)
 c     
             pdifw = pl-pflow(mi)
@@ -705,9 +742,12 @@ c
                dqwp = 0.0
             endif
             if(jswitch.eq.0) then
-             qadis = airterm*(pdifa) 
-             dqas = -1.0*permsdv*pdifa
-             dqap =  airterm
+c gaz debug 121219                 
+c             qadis = airterm*(pdifa) 
+c             dqas = -1.0*permsdv*pdifa
+             qadis = permsdv*(pdifa) 
+             dqas = 0.
+             dqap =  permsdv
             else
              qadis = 0.0d0
              dqas = 0.0d0
@@ -777,13 +817,14 @@ c            permsd=abs(wellim(mi))
             elseif(igrav.eq.3) then
              permsd = max(pnx(mi),pny(mi))*sx1(mi)**0.3333
             endif
-            permsdl = permsd*seep_facl*esk(mi) 
+c gaz 121219 see below permsdl = permsd*seep_facl*esk(mi) 
 c gaz 081219             
 c            plow = crl(4,1)
             plow = pflow(mi)            
-            watterm = permsdl
+            watterm = permsd*abs(wellim(mi))
             pdifw = pwl-plow
-            if(pdifw.ge.0.0d0.and.sl.ge.1.0) then
+c gaz 121219 use  esk for sl            
+            if(pdifw.ge.0.0d0.and.sl.ge.esk(mi)) then
                qwdis = watterm*pdifw
                dqws = 0.0
                dqwp = watterm
@@ -827,14 +868,49 @@ c     ===area input in pflow term
          else if(kq.eq.-7.and.ifree.eq.0) then
 c     ===specified air pressure no flow water
 c     flow in or out
-            permsd=abs(wellim(mi))
-            pflowd=pflow(mi)
-            qadis = xrv*permsd*(pl-pflowd)
-            dqap = permsd*xrv
-            dqas = permsd*(pl-pflowd)*drv
+c gaz 081323 allow for outflow only
+c gaz 082223 modied
+           pflowd=pflow(mi)
+           permsd=abs(wellim(mi))
+           pdiff = pl - pflowd
+           if(pdiff.le.0.0d0) then 
+             permsd = 0.0d0                                        
+             pdiff = 0.0d0                     
+            endif
+            xrvdum = 1.0d0-sl
+            drvdum = -1.0d0
+            qadis = xrvdum*air_fac*permsd*(pdiff)
+            dqap = permsd*air_fac*xrvdum
+            dqas = permsd*air_fac*(pdiff)*drvdum
             qwdis = 0.0d00
             dqws = 0.0d00
             dqwp = 0.0d00  
+         else if(kq.eq.-18.and.ifree.eq.0) then
+c gaz 082023 ===specified  pressure  flow water  and air
+c  linear rel perm
+c gaz 081323 allow for outflow only
+           pflowd=pflow(mi)
+           permsd=abs(wellim(mi))
+           pdiff = pl - pflowd
+           if(pdiff.le.0.0d0) then 
+             permsd = 0.0d0                                        
+             pdiff = 0.0d0                     
+            endif
+            xrldum = sl
+            drldum = 1.0d0
+            xrvdum = 1.0d0-sl
+            drvdum = -1.0d0
+            qadis = xrvdum*air_fac*permsd*(pdiff)
+            dqap = permsd*air_fac*xrvdum
+            dqas = permsd*air_fac*(pdiff)*drvdum
+            qwdis = xrldum*permsd*(pdiff)
+            dqwp = permsd*xrldum
+            dqws = permsd*(pdiff)*drldum
+c            if(days.ge.40.8d00) then
+c             write(ierr,'(1x,1p,g16.8,1x,i6,7(1x,g16.8))') 
+c     &       days, iad, sl, pdiff, xrldum, xrvdum,
+c     &       permsd, qadis, qwdis
+c            endif
          else if(kq.eq.-9.and.ifree.eq.0) then
 c     ===specified air pressure 
 c     ===specified saturation
@@ -967,6 +1043,7 @@ c     no derivatives of rlps
          else if(kq.eq.-22.and.irdof.ne.13) then
 c     ===manage outflow only conditions
             if(sflux.lt.0.0) then
+               permsd=abs(wellim(mi))
                qadis = permsd*(pl-pflowd)
                dqap  = permsd 
                qwdis = permsd*(sl)
@@ -977,8 +1054,155 @@ c     ===manage outflow only conditions
                dqws = 0.0d00
                dqwp = 0.0d00
             endif
+         else if(kq.eq.-19.and.irdof.ne.13) then  
+c gaz 121519 conditional air source with water spec flowrate
+            permsd=abs(wellim(mi))
+            permsdv = permsd*seep_facv
+
+             qadis = 0.0d0
+             dqas = 0.0d0
+             dqap = 0.0d0    
+c pflow is flowrate             
+               qwdis = pflow(mi)
+               dqws  = 0.0d00
+               dqwp  = 0.0d00 
+          if(sl.lt.esk(mi)) then
+               qadis = permsdv*(pl-pref)
+               dqap  = permsdv 
+          elseif(sl.lt.1.0) then
+               qadis = permsdv*(pl-pref)
+               dqap  = permsdv            
+          endif                     
+         else if(kq.eq.-20.and.irdof.ne.13) then  
+c gaz 121519 conditional air source for boundaries
+     
+            if(igrav.le.2) then
+             permsd = pnx(mi)*sx1(mi)**0.3333
+            elseif(igrav.eq.3) then
+             permsd = max(pnx(mi),pny(mi))*sx1(mi)**0.3333
+            endif
+            permsdv = permsd*abs(wellim(mi))
+            permsdl = permsd*abs(wellim(mi))*esk(mi)
+             qadis = 0.0d0
+             dqas = 0.0d0
+             dqap = 0.0d0        
+               qwdis = 0.0d00
+               dqws  = 0.0d00
+               dqwp  = 0.0d00 
+          if(sl.le.0.0) then
+               if(jswitch.eq.0) then
+                qadis = permsdv*(pl-pflow(mi))
+                dqap  = permsdv 
+              endif
+          elseif(sl.lt.1.0) then
+               if(jswitch.eq.0) then
+                qadis = permsdv*(pl-pflow(mi))
+                dqap  = permsdv 
+              endif
+               qwdis = permsdl*(sl)
+               dqws  = permsdl
+               dqwp = 0.0d00  
+          else if(sl.ge.1.0) then
+              if(pl-pflow(mi).ge.0.0) then
+               qwdis = permsdl*(1.0 + (pl-pflow(mi)))
+               dqwp  = permsdl  
+              else
+               qwdis = permsdl
+               dqwp = 0.0
+              endif 
+          endif 
+         else if(kq.eq.-25.and.irdof.ne.13) then  
+c gaz 121519 conditional air source for boundaries
+c gaz 122219
+            
+            if(igrav.le.2) then
+             dis_term = dxrg(mi) + tol_dis
+             area_term = sx1(mi)/(dis_term*dis_term)
+             permsd = pnx(mi)*dil(mi)*area_term
+            elseif(igrav.eq.3) then
+             dis_term = max(dxrg(mi),dyrg(mi)) + tol_dis 
+             area_term = sx1(mi)/(dis_term*dis_term)
+             permsd = max(pnx(mi),pny(mi))*dil(mi)*area_term
+            endif
+            vap_ratio = max(0.,div(mi)/(dil(mi)+tol_dis))
+     &        *abs(wellim(mi)*1.e-6)
+            permsdv = permsd*vap_ratio/(esk(mi)+tol_dis)
+            permsdl = permsd/(esk(mi)+tol_dis)
+             qadis = 0.0d0
+             dqas = 0.0d0
+             dqap = 0.0d0        
+               qwdis = 0.0d00
+               dqws  = 0.0d00
+               dqwp  = 0.0d00 
+          if(sl.le.0.0) then
+               if(jswitch.eq.0) then
+                qadis = permsdv*(pl-pflow(mi))
+                dqap  = permsdv 
+              endif
+          elseif(ieos(mi).eq.2) then
+               if(jswitch.eq.0) then
+                qadis = permsdv*(pl-pflow(mi))
+                dqap  = permsdv 
+              endif
+               qwdis = permsdl*(sl)
+               dqws  = permsdl
+               dqwp = 0.0d00  
+          else if(sl.gt.1.0) then
+              if(pl-pflow(mi).ge.0.0) then
+               qwdis = permsdl*(1.0 + (pl-pflow(mi)))
+               dqwp  = permsdl  
+              else
+               qwdis = permsdl
+               dqwp = 0.0
+              endif 
+          endif                   
+         else if(kq.eq.-21.and.irdof.ne.13) then  
+c gaz 111519 conditional air source for boundaries
+c no water source allowed
+c gaz 121219 added permsd = here
+          if(sl.lt.esk(mi)) then
+               permsd=abs(wellim(mi))
+               pflowd = pflow(mi) 
+               qadis = permsd*(pl-pflowd)
+               dqap  = permsd 
+          else
+               qadis = 0.0
+               dqap  = 0.0             
+          endif
+               qwdis = 0.0d00
+               dqws = 0.0d00
+               dqwp = 0.0d00
          else if(kq.eq.-22.and.irdof.eq.13) then
 c     make sure there is a deivative wrt P for ifree ne 0
+         else if(kq.eq.-101) then
+c     change specified pressure to head condition
+              permsd=abs(wellim(mi))
+              pflowd = pflow(mi) 
+              qwdis = permsd*(pl-pflowd)
+              if(abs(qwdis).gt.esk(mi)) then
+               pflow(mi) = qwdis/permsd + pl
+               qwdis = 0.0
+               dqwp = permsd
+              else
+               qwdis = permsd*(pl-pflowd)
+               dqwp = permsd
+              endif
+         else if(kq.eq.-202) then
+c gaz 010724 specified pressure and mass fraction
+c pflow(mi) specified pressure(liq)
+c esk(mi)   specified mass fraction
+              permsd=abs(wellim(mi))
+              pflowd = pflow(mi)
+              sflux = esk(mi)
+c gaz 041524 added sat = 1 constraint
+              qwdis = permsd*(pl-pflowd) 
+c removed 
+c     &       + permsd*(sl-1.0)
+              dqwp  = permsd 
+              dqws = 0.0d0
+              qadis = permsd*(cnlf(mi)-sflux)
+              dqas = permsd*dclef(mi) 
+              dqap = permsd*dclf(mi)
          else if(kq.eq.2) then
             qwdis = qc(mi)
             qadis = esk(mi)
@@ -1063,22 +1287,74 @@ c     water density
          else
             pld=phi(mi)
          endif
+c gaz 042720 error fix    
          rol=rolref*(1.0+comw*(pld-pref))
          if(cden) rol= rol+cden_correction(mi)
+c         rol = rolf(mi)
          drolp=rcomd
          drols=0.0
 c     accumulation terms
-         den=por*rol*sl
-         dena=por*roc*svd
-         ddenp=por*sl*drolp+dporpl*rol*sl 
-         ddens=por*rol
-         ddenap=por*drocp*svd + dporpl*roc*svd
-         ddenas=por*(drocs*svd-roc)         
-c     
+c gaz 111123 add Henry's law option
+c        den=por*(sl*rol*(1.0-xnl)+sv*rov*(1.0-xnv))
+c        denc=por*(sl*rol*xnl+sv*rov*xnv)
+c pressure derivatives  (AWH)
+c        rop=por*(sv*drovp*(1.0-xnv)+sl*drolp*(1.0-xnl))    
+c        damp =rop*dtin + por*(sv*rov*(-dxnvp)
+c     &  +sl*rol*(-dxnlp))*dtin    
+c        dacp =(por*(sv*drovp*xnv+sv*rov*dxnvp+sl*drolp*xnl+sl*rol
+c     &   *dxnlp))*dtin
+        
+         if(ihenryiso.eq.0) then
+c no henry's law
+          den=por*rol*sl
+          dena=por*roc*svd
+          ddenp=por*sl*drolp+dporpl*rol*sl 
+          ddens=por*rol
+          ddenap=por*drocp*svd + dporpl*roc*svd
+          ddenas=por*(drocs*svd-roc) 
+c gaz 040624
+          cnlf(mi) = 0.0d0
+          dclf(mi) = 0.0d0
+          dclef(mi) = 0.0d0
+         else      
+c henry's law
+         if(sl.lt.1.0d0.and.sl.gt.0.0d0) then
+c 2 phase, Variables P and S, xnl= F(P,S)
+c gaz 122623
+c          den=por*rol*sl*(1.0-xnl)
+          den=por*rol*sl
+          dena=por*(roc*svd+rol*sl*xnl)
+c          ddenp=por*(sl*drolp*(1.0-xnl)-rol*sl*dxnlp)+
+c     &    dporpl*(rol*sl*(1-xnl))
+          ddenp=por*(sl*drolp) + dporpl*(rol*sl)
+c          ddens=por*(rol*(1.0-xnl) - rol*sl*dxnls)
+          ddens=por*rol
+          ddenap=por*(drocp*svd+drolp*sl*xnl+rol*sl*dxnlp)+ 
+     &    dporpl*(roc*svd+rol*sl*xnl)
+          ddenas=por*(drocs*svd-roc+rol*xnl+rol*sl*dxnls)  
+c          cnlf(mi) = xnl
+c          dclf(mi) = dxnlp
+c          dclef(mi) = dxnls
+         else
+c one phase, variables P and xnl 
+c          den=por*rol*sl*(1.0-xnl)
+          den=por*rol*sl
+          dena=por*(roc*svd+rol*sl*xnl)
+          ddenp=por*sl*drolp+dporpl*rol*sl 
+
+c ddens :derivative den wrt xnl
+c          ddens=por*(-rol*sl)
+          ddens=0.0d0
+          ddenap=por*(drocp*svd+drolp*sl*xnl)+ 
+     &    dporpl*(roc*svd+rol*sl*xnl)
+          ddenas=por*rol*sl  
+
+         endif
+         endif    
          if(irdof.eq.13) then
             ddenp=ddenp + por*rol*dsatp
          endif
-         deni(mi)=(den-denh(mi))*dtin
+         deni(mi)=(den-denh(mi))*dtin                                        
          dmpf(mi)=ddenp*dtin
          if(icons.lt.abs(maxit)) then 
 c     
@@ -1180,7 +1456,6 @@ c
             qh(mi) = 0.0
 	 endif
       enddo
-
       return
       end
       subroutine source_manage(iflg)
@@ -1211,3 +1486,197 @@ c limit max change in sk
 c        deallocate(sko)
       endif
       end
+      subroutine solubility_isothermal(iflg,mid)
+c gaz 110923
+c subroutine to calculate accurate saturations for gridblocks
+c undergoing phase change
+      use comai
+      use combi
+      use comci
+      use comdi
+      use comdti
+      use comei
+      use comevap, only : evaporation_flag, evap_flag
+      use comfi, only : alpha0, q_gas, q_gas_tot, alpha_h2, alpha_co2,
+     &         alpha_meth, alpha_air
+      use comgi
+      use comii
+      use comrlp, only : rlpnew
+      use com_prop_data, only : ctest, ihenryiso,xnl_max, xnl_ngas
+      use comrxni
+      use comwt
+      use davidi
+      implicit none
+      integer iflg, mid, ii, i
+      integer iphase_old, iphase_new
+      real*8 pl, xnl,dxnlp,dxnlt,dxnls,alpha_tol 
+c      real*8 ratio_mw_h2_air, ratio_mw_meth_air, ratio_mw_co2_air
+      real*8 alpha_iso,p_air,dp_air_s,dp_air_p
+c      parameter(ratio_mw_h2_air=0.07d0,ratio_mw_meth_air=0.55d0)
+c      parameter(ratio_mw_co2_air= 1.52d0, alpha_h2 = 8.d-7)                                      
+      parameter(alpha_tol = 1.d-18)    
+       ctest = 1.0
+       dp_air_p = 0.0d0
+c      
+      
+      if(iflg.eq.0) then
+c allocate memory
+c xnl,xnv
+       if(.not.allocated(xnl_ngas) ) then
+         allocate(xnl_ngas(n0,4))
+         xnl_ngas = 0.0d0
+       endif
+      else if(iflg.eq.1) then                                                
+c use Henry's law 
+        if(ihenryiso.eq.0) then
+         xnl_ngas(mid,1) = 0.0d0
+         xnl_ngas(mid,2) = 0.0d0
+         xnl_ngas(mid,3) = 0.0d0
+         return
+        endif
+c gaz 111523 test 
+         
+        if(itype_air.ne.0) then
+         alpha_air = alpha0
+         alpha_iso = alpha_air
+        else if(itype_co2.ne.0) then
+          alpha_iso = alpha_co2
+        else if(itype_meth.ne.0) then
+          alpha_iso = alpha_meth
+        else if(itype_h2.ne.0) then
+          alpha_iso = alpha_h2
+        endif 
+c gaz 111723 gas pressure Pg = phi(mid) + pcap(mid) << depends on saturation
+c        p_air = pcp(mid) + phi(mid)
+c gaz 042024 gas pressure Pg = phi(mid)
+c        p_air = pcp(mid) + phi(mid)
+c        dp_air_s  = dpcef(mid) 
+        p_air = phi(mid)
+        dp_air_p =1.0d0
+        dp_air_s  = 0.0d0
+          if(s(mid).lt.1.d00) then
+           xnl = alpha_iso*p_air + alpha_tol
+           dxnlp =alpha_iso*dp_air_p  
+           dxnlt =0.0d0
+           dxnls= alpha_iso*dp_air_s
+          else
+c max xnl 
+           xnl = alpha_iso*p_air + alpha_tol
+           dxnlp=0.0
+           dxnlt=0.0                                                               
+           dxnls=0.0           
+          endif
+        xnl_ngas(mid,1) =  xnl*ctest
+        xnl_ngas(mid,2) =  dxnlp*ctest
+        xnl_ngas(mid,3) =  dxnls*ctest
+      else if(iflg.eq.2) then
+c gaz 122223 calculate Sl
+c delp =pcp(s) calc S
+c        call vgcap_inv_calc(2,mid) 
+      else if(iflg.eq.3) then
+c gaz 120423 gas diff boundary flow       
+       q_gas_tot = 0.0
+       do i = 1, n0
+        if(ka(i).eq.-202) then
+         q_gas_tot = q_gas_tot +q_gas(i)
+        endif
+       enddo
+      endif
+      end
+      subroutine phase_change_mass_conv(iflg,mi1,mi2)
+c subroutine to calculate mass fractions for gridblocks
+c undergoing phase change
+      use comai
+      use combi
+      use comci
+      use comdi
+      use comdti
+      use comei
+      use comevap, only : evaporation_flag, evap_flag
+      use comfi
+      use comgi
+      use comii
+      use comrlp, only : rlpnew
+      use comrxni
+      use comwt
+      use davidi
+      use com_prop_data, only : xnl_ngas, xnl_max
+      implicit none
+      integer iflg, mi1, mi2, ii, i, i1, i2, nr1, nr2
+      integer iphase_old, iphase_new
+      real*8 tol_frac, frac_gas, gas_mass, liq_mass, phi_old, sl
+c gaz 041724
+      real*8 den_vap,rolref,rol,pld,comw, sl_new, xnl
+      parameter(tol_frac = 1.d-18)
+c gaz notes 090719
+c add arrays to comdi    
+c pressure may decrease past 0.1 ; need starting pres for
+c      mass (denity change)
+      i =   l +iad
+      if(iflg.eq.-1) then
+c gaz 121823 this section not used yet
+c allocate arrays if necessary
+        allocate(s_prev(n))
+        allocate(phi_prev(n))
+        allocate(n_phase_nodes(n))
+        allocate(ieos_prev(n))
+        s_prev = 0.0
+        phi_prev = 0.0
+        n_phase_nodes = 0
+        ieos_prev = 0
+      else if(iflg.eq.0) then
+c gaz 121823 allocate memory
+       if(.not.allocated(frac_gas_iso)) then
+        allocate(frac_gas_iso(n))
+        frac_gas_iso = 0.0d0
+       endif
+      else if(iflg.eq.1) then  
+c calculate mass fraction for noncondensible gas
+       do i = mi1, mi2
+        gas_mass = denei(i)*dtot+deneh(i)+tol_frac
+        liq_mass = deni(i)*dtot+denh(i) 
+        frac_gas = gas_mass/(gas_mass + liq_mass)
+        frac_gas_iso(i) = frac_gas
+       enddo
+      else if(iflg.eq.2) then  
+c NR update 2 phase isothermal  (P-S-xnl)
+c comes through use module : strd
+c
+       nr1=nrhs(1)
+       nr2=nrhs(2) 
+       do i = mi1, mi2                           
+         i1=i+nr1                 
+         i2=i+nr2 
+         sl = s(i)
+         phi_old = phi(i)
+c gaz 042124 
+c         if(sl.ge.1.d0.or.ieos(i).ne.2) then 
+         if(ieos(i).eq.1) then            
+          phi(i)=phi_old-bp(i1)*strd
+          cnlf(i) = cnlf(i)-bp(i2)*strd
+         else
+          phi(i)=phi_old-bp(i1)*strd
+          s(i) = sl-bp(i2)*strd  
+c          s(i) = min(1.d0,s(i))        
+         endif
+       enddo
+       else if(iflg.eq.3) then  
+c gaz 041724
+c estimate saturation if phase change
+c from solubilty gt sol max
+
+       i = mi1
+       if(s(i).ge.1.0) then
+        xnl = cnlf(i)
+        rolref=crl(1,1)
+        comw=crl(3,1)
+        pld  = phi(i)
+        rol=rolref*(1.0+comw*(pld-pref))
+        den_vap = roc0*(273.0/(tref+273.0))*pref/0.101325 
+        sl_new = (den_vap-rol*xnl)/(den_vap-rol*xnl_max)
+        s(i) = sl_new
+        continue
+       else
+       endif 
+      endif
+      end                                    

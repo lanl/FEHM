@@ -349,7 +349,8 @@ c  only perform calcs with with isotropic permeability
 c  need to modify fluxnet for clathrate simulation
             if(ico2.lt.0.and.idpdp.eq.0.and.idualp.eq.0) then
                do i=1,n
-                  if(wellim(i).gt.aiped_big.and.ka(i).ne.-2) then
+c gaz 082123 added more flo3 conditions
+                  if(wellim(i).gt.aiped_big.and.ka(i).gt.-2) then
                      bp1_save=bp(i+nrhs(1))
                      bp2_save=bp(i+nrhs(2))
                      bp(i+nrhs(1))=0.0

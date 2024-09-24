@@ -456,9 +456,13 @@ C***********************************************************************
       use comdti
       use comei
       use comevap, only : evaporation_flag
-      use comfi, only : qtc, qtotc, pci, pcio
+c gaz 040621 added qtotin below      
+      use comfi, only : qtc, qtotc, qtotin, pci, pcio, idiff_iso
+     &   ,cnlf,cnlof
       use comflow, only : a_axy
-      use comii, only : pmin,pmax,tmin,tmax
+      use comii, only : pmin,pmax,tmin,tmax,fluid,
+     &  tmin_air_tabl,tmax_air_tabl,pmin_air_tabl,pmax_air_tabl,
+     &  tmin_co2wh_tabl,tmax_co2wh_tabl,pmin_co2wh_tabl,pmax_co2wh_tabl 
       use compart
       use comriv
       use comrtd, only : maxmix_flag
@@ -473,10 +477,15 @@ C***********************************************************************
       use davidi
       use comfem, only : edgeNum1, NodeElems, ifem, flag_element_perm
       use comfem, only : fem_strain, conv_strain, conv_pstrain  
+      use com_prop_data, only : xnl_ngas, ihenryiso
       use property_interpolate
 c gaz 121117 added new interpolation for water      
       use property_interpolate_1
-
+c gaz 070620 added new interpolation for air      
+      use property_interpolate_2      
+c gaz 082121 added new interpolation for co2HT      
+      use property_interpolate_3 
+      
 c     added combi and comflow to get izonef and a_axy arrays
 c     in subroutine computefluxvalues
 
@@ -492,11 +501,12 @@ c     variable should be passed by reference.
 c     For UNIX versions, these lines are ignored as comments.
 C!DEC$ ATTRIBUTES dllexport, c :: fehmn
 C!DEC$ ATTRIBUTES value :: method
-C!DEC$ ATTRIBUTES reference :: method
-C!DEC$ ATTRIBUTES reference :: state
-C!DEC$ ATTRIBUTES reference :: ing
-C!DEC$ ATTRIBUTES reference :: out
-
+!DEC$ ATTRIBUTES reference :: method
+!DEC$ ATTRIBUTES reference :: state
+!DEC$ ATTRIBUTES reference :: ing
+!DEC$ ATTRIBUTES reference :: out
+c gaz 070521 added column increase
+cDEC$ FIXEDFORMLINESIZE:132
       integer(4) method, state
       real(8) ing(*), out(*)
 
@@ -506,7 +516,8 @@ c     run of fehm. It is initialized to 0 in comai
       character*80 filename
       integer open_file, ifail
 
-      logical used, die
+c gaz 122020 added null1      
+      logical used, die, null1
       real*8 tims_save, day_saverip, in3save
       real*8 deneht, denht, eskd, enthp, flemax, flmax, prav, 
      *     pravg, tajj, tas, teinfl, tinfl, tmav, tmavg, tyming
@@ -518,7 +529,7 @@ c*** water table rise modification
       real*8 water_table_old
       real*8 prop,dpropt,dpropp,p_energy
 c*** water table rise modification
-      logical it_is_open, intfile_ex
+      logical it_is_open, intfile_ex, logic_test
       integer im, ja, mi, i
       integer :: ichk = 0, tscounter = 0, flowflag = 0
       integer number_of_outbuffers, jpr
@@ -531,7 +542,11 @@ c*** water table rise modification
       integer ntty_save
 
       real*8 rel_hum,qin,qin_ng,qin_h2o,qin_enth,enth_avg,pl_dum
-
+c gaz 050620 added function cden_correction
+      real*8 cden_corr, cden_correction
+c gaz 121921 added sl and sl_tol for phase count isothermal models
+      real*8 sl, sl_tol, sl_old   
+      parameter(sl_tol = 1.d-5)
       save flowflag, ichk, tassem, tasii, tscounter,
      &     contr_riptot, tims_save, day_saverip, in3save,
      &     water_table_old, ntty_save
@@ -612,7 +627,6 @@ c*** water table rise modification
 c bhl_5/15/08
          ipmbal = 0
 c bhl_5/15/08
-
 c     Increase counter for simulation number
 
          if (ripfehm .ne. 0) then
@@ -635,7 +649,11 @@ c**** initialize/set parameter values (this routine calls scanin)
 c**** allocate memory ****
          if(irun.eq.1) call allocmem
 c**** call data initialization routine ****
-c gaz debug 032318
+c gaz debug area ***********************************   
+c gaz 032720 debug
+      ja = ps(1)+psini(1)+izonef(1)+minkt+pflow(1)
+c *********************************      
+c         
          if(i.eq.-999) then
           i = node_model(1)
          endif
@@ -664,9 +682,18 @@ c
          endif 
 c read h2o_property table
 c**** call h2o_properties_interpolation_lookup_table GAZ 103115
-         if(iwater_table.ne.0) then
-            inquire(file=nmfil(31), exist=intfile_ex)
-            if(.not.intfile_ex) then
+c gaz 122020 added null check for water EOS name  
+
+         if(itable_files.eq.0.and.iwater_table.eq.1) iwater_table = 0
+         inquire(file=nmfil(31), exist=intfile_ex)
+         if(intfile_ex) then
+c            fluid(1) ='h2o      '
+            if(iwater_table.eq.0) iwater_table = 1
+            call read_interpolation_data_1(ifail,nmfil(31),tmin(1),
+     &        tmax(1),pmin(1),pmax(1),
+     &        pcrit_h2o,tcrit_h2o,pcrit_h2o_true,tcrit_h2o_true)
+         else if(.not.null1(nmfil(31))) then
+c write error message           
                write(ierr, 7010) trim(nmfil(31))
                write(ierr, 7012)
                if (iout .ne. 0) then
@@ -678,30 +705,141 @@ c**** call h2o_properties_interpolation_lookup_table GAZ 103115
                   write(iptty, 7012)
                end if         
                stop
-            endif
-            call read_interpolation_data_1(ifail,nmfil(31),tmin(1),
-     &      tmax(1),pmin(1),pmax(1))
-          endif
+         endif
 
+c gaz 070720  HT air table       
+c read air property table
+c**** cal air_properties_interpolation_lookup_table GAZ 103115
+c gaz 122020 added null check for air EOS name 
+         if(itable_files.eq.0.and.iair_table.eq.1) iair_table = 0
+         inquire(file=nmfil(32), exist=intfile_ex)
+         i = len(nmfil(32)) 
+         logic_test = null1(nmfil(32))
+         if(intfile_ex) then  
+c            fluid(2) ='air      '
+            if(iair_table.eq.0) iair_table = 1
+            call read_interpolation_data_2(ifail,nmfil(32),
+     &      tmin_air_tabl(1),tmax_air_tabl(1),pmin_air_tabl(1),
+     &      pmax_air_tabl(1))
+          else if(.not.null1(nmfil(32))) then
+c write error message
+               write(ierr, 7010) trim(nmfil(32))
+               write(ierr, 7013)
+               if (iout .ne. 0) then
+                  write(iout, 7010) trim(nmfil(32))
+                  write(iout, 7013)
+               end if         
+               if (iptty .ne. 0) then
+                  write(iptty, 7010) trim(nmfil(32))
+                  write(iptty, 7013)
+               end if         
+               stop
+          endif
+         
+c gaz 082121  co2 HT table       
+c read co2wh property table
+c gaz 122020 added null check for air EOS name 
+         if(itable_files.eq.0.and.ico2wh_table.eq.1) ico2wh_table = 0
+         inquire(file=nmfil(33), exist=intfile_ex)
+         if(intfile_ex) then   
+c            fluid(3) ='co2wh    '
+            if(ico2wh_table.eq.0) ico2wh_table = 1
+            call read_interpolation_data_3(ifail,nmfil(33),
+     &      tmin_co2wh_tabl(1),tmax_co2wh_tabl(1),pmin_co2wh_tabl(1),
+     &      pmax_co2wh_tabl(1))            
+          else if(.not.null1(nmfil(33))) then
+c write error message
+               write(ierr, 7010) trim(nmfil(33))
+               write(ierr, 7014)
+               if (iout .ne. 0) then
+                  write(iout, 7010) trim(nmfil(33))
+                  write(iout, 7014)
+               end if         
+               if (iptty .ne. 0) then
+                  write(iptty, 7010) trim(nmfil(33))
+                  write(iptty, 7014)
+               end if         
+               stop
+          endif         
  6010    format('CO2 Properties Interpolation Table File not found: ', 
      &        /, a, /, 'Stopping')
  6012    format('Input correct name in control file using, co2in : ',
      &        'filename')
  7010    format('H2O Properties Interpolation Table File not found: ', 
      &        /, a, /, 'Stopping')
- 7012    format('Input correct name in control file using, h2oin : ',
-     &        'filename')
-
+ 7012    format('>> enter correct name in control file using, h2oin : ',
+     &        'filename',' <<')
+ 7013    format('>> enter correct name in control file using, airin : ',
+     &        'filename',' <<')
+ 7014    format('>> enter correct name in control file using, co2whn : ',
+     &        'filename',' <<')    
         if(icarb.ne.0) then
          if(iout.ne.0) write(iout, 6200) nmfil(29)
          if(iptty.ne.0) write(iptty, 6200) nmfil(29)
         endif
-        if(iwater_table.ne.0) then
+c gaz 070720        
+        if(iwater_table.eq.1) then
          if(iout.ne.0) write(iout, 6300) nmfil(31)
          if(iptty.ne.0) write(iptty, 6300) nmfil(31)
+c gaz 112721 write info regarding EOS data crit pts and true crit pts
+               if (iout .ne. 0) then
+               write(iout, 7009) 'pressure   ',pcrit_h2o_true,pcrit_h2o
+               write(iout, 7009) 'temperature',tcrit_h2o_true,tcrit_h2o
+               write(iout,'(a36)') 
+     &               '>>> crit props changed to h2o table values'                      
+               endif 
+               if (iptty .ne. 0) then
+               write(iptty, 7009) 'pressure   ',pcrit_h2o_true,pcrit_h2o
+               write(iptty, 7009) 'temperature',tcrit_h2o_true,tcrit_h2o
+               write(iptty,'(a36)')                   
+     &               '>>> crit props changed to h2o table values'                      
+               endif                 
+7009   format ('>>> critical ',a11,': true',1p, g16.10,
+     &         ' EOS table ',g16.10)                                     
+        else if(iwater_table.eq.2) then
+         if(iout.ne.0) write(iout, 6301) nmfil(31)
+         if(iptty.ne.0) write(iptty, 6301) nmfil(31)         
+         iwater_table = 1
+c gaz 112721 write info regarding EOS data crit pts and true crit pts
+               if (iout .ne. 0) then
+               write(iout, 7009) 'pressure   ',pcrit_h2o_true,pcrit_h2o
+               write(iout, 7009) 'temperature',tcrit_h2o_true,tcrit_h2o
+               write(iout,'(a36)') 
+     &                 '>>> crit props changed to h2o table values'                  
+               endif 
+               if (iptty .ne. 0) then
+               write(iptty, 7009) 'pressure   ',pcrit_h2o_true,pcrit_h2o
+               write(iptty, 7009) 'temperature',tcrit_h2o_true,tcrit_h2o
+               write(iptty,'(a36)')                   
+     &                 '>>> crit props changed to h2o table values'                  
+               endif           
         endif
+         if(iair_table.eq.1) then
+         if(iout.ne.0) write(iout, 6400) nmfil(32)
+         if(iptty.ne.0) write(iptty, 6400) nmfil(32)
+        else if(iair_table.eq.2) then
+         if(iout.ne.0) write(iout, 6401) nmfil(32)
+         if(iptty.ne.0) write(iptty, 6401) nmfil(32)         
+         iair_table = 1
+        endif   
+        if(ico2wh_table.eq.1) then
+         if(iout.ne.0) write(iout, 6500) nmfil(33)
+         if(iptty.ne.0) write(iptty, 6500) nmfil(33)
+        else if(ico2wh_table.eq.2) then
+         if(iout.ne.0) write(iout, 6501) nmfil(33)
+         if(iptty.ne.0) write(iptty, 6501) nmfil(33)         
+         ico2wh_table = 1
+        endif         
  6200 format(/,'>>> co2 property interpolation table -',3x, a100) 
- 6300 format(/,'>>> h2o property interpolation table -',3x, a100)   
+ 6300 format(/,'>>> h2o property table (from control file) -',3x, a100) 
+ 6301 format
+     &    (/,'>>> h2o property table (from data file(eos)) -',3x, a100) 
+ 6400 format(/,'>>> air property table (from control file) -',3x, a100) 
+ 6401 format
+     &    (/,'>>> air property table (from data file(eos)) -',3x, a100)     
+ 6500 format(/,'>>> co2wh property table (from control file) -',3x,a100) 
+ 6501 format
+     &    (/,'>>> co2wh property table (from data file(eos)) -',3x,a100) 
 c**** read and write data ****
          in3save = in(3)
          if(in(3).eq.0) then
@@ -738,8 +876,12 @@ c
 c *** intialize chemistry if needed **
          if(rxn_flag.eq.1) call initchem
 c**** call startup calculations ****
-         call startup (tajj, tasii)
+c gaz debug 102321
+       
+         call startup (tajj, tasii)       
 c moved flow_boundary_conditions(3) from above(could be dangerous!)
+c gaz debug 102321
+    
          call flow_boundary_conditions(3)   
 c call sx_combine to break connections to fixed type BCs
 c gaz 090618         
@@ -748,7 +890,7 @@ c gaz 090618
       else
          if (irun.eq.1.and.inobr.eq.0) call sx_combine_ani(1)
       endif           
-c**** call to set up area coefficients for md nodes
+c**** call to set up area coefficients for md nodes    
          call md_nodes(6,0,0)
 c**** call data checking routine ****
          call datchk
@@ -762,7 +904,11 @@ c
 c reset boundary conditions for principal stresses (fraction of lithostatic)
 c
 c         call stressctr(3,0) 
-c               
+c   
+c gaz calculate phase initial conditions      
+c gaz 122121   subroutine phase_count is attached to nr_stop_ctr.f            
+       call phase_count(1,is_ch,is_ch_t)
+       
 	 if(ico2.lt.0) then
             if (iout .ne. 0) write(iout,834) ifree1
             if (iptty .ne. 0) write(iptty,834) ifree1
@@ -847,8 +993,12 @@ c
             qtote = 0.0
             qtc = 0.0
             qtotc = 0.0
+            qtotin = 0.0
+            am0 = amass
             amass = 0.0
+            astmo = asteam
             asteam = 0.0
+            ame = aener
             aener = 0.0
             toutfl = 0.0
             teoutf = 0.0
@@ -887,6 +1037,7 @@ cHari 3/1/07
 c*** water table rise modification
             if (ripfehm .ne. 0) water_table_old = in(7)
 c*** adjust timestep size
+c boundary conditions changed if using boun macro          
             call timcrl
 
 c
@@ -965,21 +1116,19 @@ c itsats gt 10 always convert the temperature
                call icectr(-4,0)
             endif
 
-c**** if heat and mass transfer solution is disabled ****
+c**** if heat and mass transfer solution is disabled ****                                                              
             if ((ihf .ne. ihs) .or. .not. compute_flow ) then
-
+                                                              
                dtotdm = dtot
                tassem = tyming(caz) - tassem
 
 c**** if heat and mass transfer solution is enabled ****
             else
                dtotdm = dtot
-         
-               tassem = tyming(caz)
-
+               tassem = tyming(caz)                         
 c**** form equations, calculate corrections. ****
-               irestart_ts = 0
-               if(ipara.eq.0) then
+               irestart_ts = 0 
+                 if(ipara.eq.0) then
                   call bnswer
                else
                   call bnswer_part
@@ -1050,7 +1199,8 @@ c
      &                 ' or variable out of bounds')
                   days = days - day
                   call resetv (0)
-                  if(icontr.ne.0) then
+c gaz debug 111622                  
+                  if(icontr.gt.1) then
                      nicg=nicg-1
                      ditnd=dit(nicg)
                   endif
@@ -1134,7 +1284,7 @@ c delete infinite reservoir nodes from mass balance calcs
 
 c check for steady state solution
                if(isteady.ne.0) then
-                  call steady(1,0.,0.)
+                  call steady(1,0.0d00,0.0d00)
                endif
 
 c
@@ -1144,48 +1294,12 @@ c
 c
 c  calculate phase change information
 c
-               is_ch = 0
-               nphase_liq = 0
-               nphase_2 = 0
-               nphase_gas = 0
-               nphase_sc = 0
-               do i=1,n
-c gaz  081219 eliminated ps < 0 from phase count             
-                if(ps(i).gt.0.0d0) then
-                  if(ieos(i).eq.1) nphase_liq = nphase_liq + 1
-                  if(ieos(i).eq.2) nphase_2 = nphase_2 + 1
-                  if(ieos(i).eq.3) nphase_gas = nphase_gas + 1
-                  if(ieos(i).eq.4) nphase_sc = nphase_sc + 1
-                  if (irdof .ne. 13 .or. ifree .ne. 0) then
-                     if(s(i).lt.1.0.and.so(i).ge.1.0) then
-                        is_ch=is_ch +1
-                     else if(s(i).gt.0.0.and.so(i).le.0.0) then
-                        is_ch=is_ch +1
-                     else if(s(i).ge.1.0.and.so(i).lt.1.0) then
-                        is_ch=is_ch +1
-                     else if(s(i).le.0.0.and.so(i).gt.0.0) then
-                        is_ch=is_ch +1
-                     endif
-                   endif                 
-                  endif
-               enddo
-               is_ch_t = is_ch_t + is_ch
-               if(l.ne.1) then
-                dnphase_liq = nphase_liq - nphase_liq_0
-                dnphase_2 = nphase_2 - nphase_2_0
-                dnphase_gas = nphase_gas - nphase_gas_0
-                dnphase_sc = nphase_sc - nphase_sc_0
-               else
-                dnphase_liq = 0
-                dnphase_2 = 0
-                dnphase_gas = 0
-                dnphase_sc = 0
-               endif
-               nphase_liq_0 = nphase_liq
-               nphase_2_0 = nphase_2
-               nphase_gas_0 = nphase_gas
-               nphase_sc_0 = nphase_sc
+c gaz 122121 moved phase count ro subroutine               
+               call phase_count(1,is_ch,is_ch_t)
+
 c
+c gaz 120423 check  for gas diffusion boundary
+               if(idiff_iso.ne.0) call   solubility_isothermal(2,0)
 c call thermo because the solver is overwriting the deni and denei arrays
 c    
                if(istrs_coupl.gt.0.and.ico2.eq.0) then
@@ -1198,7 +1312,7 @@ c dtotdm is the current time step size in seconds
                aener = 0.0
                do ja = 1, n
 
-                  if (abs(ps(ja)) .gt. zero_t)  then
+                  if (abs(ps(ja)) .gt. zero_t.and.idoff.ne.-1)  then
 c qt = kg out - kg in
 c qte = MJ out - MJ in
                      qt = qt + sk(ja) * dtotdm
@@ -1206,7 +1320,8 @@ c qte = MJ out - MJ in
                   else
 c check with gaz -- it seems like this should be qh(ja) or the code
 c below is wrong
-                     qte = qte + sk(ja) * dtotdm
+c gaz 090823 corrected heat flow
+                     qte = qte + qh(ja) * dtotdm
                   end if
                   if (sk(ja) .gt. 0.0 .and. ps(ja).gt.0.0)  then
 c there is outflow at this node
@@ -1220,13 +1335,17 @@ c qtot = summation of kg out of system
 c there is inflow at this node
                      inflow_thstime=inflow_thstime+sk(ja)*dtotdm
                   endif
-                  if (qh(ja).gt.0.0 .and. ps(ja).gt.0.0) then
+c gaz allow heat conduction to produce heat flow
+c                  if (qh(ja).gt.0.0 .and. ps(ja).gt.0.0) then
+                  if (qh(ja).gt.0.0) then
 c there is outflow of energy at this node
 c teoutf = summation of MJ out of system
 c qtote = summation of MJ out of system
                      teoutf = teoutf + qh(ja) * dtotdm
                      qtote = qtote + qh(ja) * dtotdm
-                  else if (qh(ja).lt.0.0 .and. ps(ja).gt.0.0) then
+c gaz 090823 correction for heat conduction
+c                  else if (qh(ja).lt.0.0 .and. ps(ja).gt.0.0) then
+                  else if (qh(ja).lt.0.0) then
 c there is inflow of energy at this node
                      inen_thstime=inen_thstime+qh(ja)*dtotdm
                   end if
@@ -1252,7 +1371,8 @@ c                  pho (ja) = phi(ja)
                      denj (ja) = 0.0
                   endif        
                   deni (ja) = 0.0
-                  if (irdof .ne. 13) then
+c gaz 110123
+                  if (irdof .ne. 13.and.idoff.ne.-1) then
                      if(ifree.ne.0) then
                         so (ja) = rlxyf(ja)
                      else
@@ -1299,6 +1419,8 @@ c update peaceman term for wellbore pressure
                do ja = 1,n
                   to (ja) = t(ja)
                   pho (ja) = phi(ja)
+c gaz 042024 
+                 if(ihenryiso.ne.0)  cnlof(ja) = cnlf(ja)
                enddo
 c**** update co2 arrays ****
                call co2ctr (3)
@@ -1339,7 +1461,14 @@ c
 c  save old ps and pnx
 c
             if(isalt.ne.0) call saltctr(3,0,0.0d00,0.0d00) 
-c            
+c 
+            if(cden) then
+             do mi = 1,n0
+              cden_corr = cden_correction(mi)
+              rolf_pure(mi) = rolf(mi)- cden_corr
+              dil_pure(mi) = dil(mi)*(rolf_pure(mi)/rolf(mi))
+             enddo
+            endif
             call concen (1,tscounter)
 c
 c average and updates new porosities and perms if necessary
@@ -1670,14 +1799,23 @@ c     Change it back
          if (iout .ne. 0) write(iout, 6042) tyming(caz) - tasii 
          if (iptty .gt. 0) write(iptty, 6042) tyming(caz) - tasii
  6042    format(//, 1x, 'total code time(timesteps) = ', f13.6)
-
+c gaz 070521 end metrics for eos calls
+         call fluid_props_control(-2, 0, 0,'h2o      ', 
+     &        'all      ', '         ') 
          call dated (jdate, jtime)
 
          if (iout .ne. 0) write(iout, 6052)  verno, jdate, jtime
          if (iptty .gt. 0) write(iptty, 6052)  verno, jdate, jtime
+c gaz 020122 debug call vtk conversion
+         if(i_vtk.ne.0) call contr(2)
+c gaz 020723   generate and print flow vectors
+          call flowrate_vectors(-1)
+          call flowrate_vectors(1)
+          call flowrate_vectors(-2)                                                                    
 c      
 c gaz 111216 combine flux and scalar files for soilvision
 c
+      
       call zone_saved_manage(0,i,im,ja,mi,it_is_open)
 c      
       call zone_saved_manage(2,i,im,ja,mi,it_is_open)
@@ -1689,7 +1827,11 @@ c
       call zone_saved_manage(3,i,im,ja,mi,it_is_open)
       
       call zone_saved_manage(4,i,im,ja,mi,it_is_open)
-c     no more method = 4         
+c     no more method = 4  
+c gaz 062723 close saved zones (non SV applocation)
+c gaz 110123 added 'fehm'
+         call zone_saved(3,'fehm',0,0,0) 
+c      
          if (ripfehm .eq. 0) then
             close (inpt)
             if (iout .ne. 0) close (iout)

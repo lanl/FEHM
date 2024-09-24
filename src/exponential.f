@@ -25,7 +25,7 @@ c     p3 = exponent
 c     p4 = multiplier
 c     return:  r (wetting phase), rn (non-wetting phase), and derivatives 
 c     with respect to wetting phase 
-       
+c gaz 112623 cosmetic only       
       implicit none
       real*8 s,p1,p2,p3,r,dr,star,p4,rn,drn
       r=0;dr=0
@@ -33,7 +33,7 @@ c     with respect to wetting phase
          star=(s-p1)/(p2-p1)
          r= p4*star**p3
          dr = p4*p3*star**(p3-1.0)/(p2-p1)
-	 rn=p4*(1.-star)**p3
+	   rn=p4*(1.-star)**p3
          drn= -1.*p4*p3*(1.-star)**(p3-1.0)/(p2-p1)
       elseif (s.gt.p2) then
          r=1.

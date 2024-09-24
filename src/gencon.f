@@ -393,7 +393,9 @@ C***********************************************************************
       integer ikd,icode,spec_num,deriv_spec_num,igrp,matnum,diag_mat
       integer kgmres_sol,idof_sol,sia_iter,ncsp,i
       real*8 fdum2,pive,tolls,tollr
-
+c gaz 070922 added toldil 
+      real*8 toldil
+      parameter(toldil = 1.d-20)
       neqp1=neq+1
       idof_sol = ncsp
 
@@ -430,10 +432,14 @@ c     Try putting in uncoupled normalization
       endif
  100  format ('* singular matrix found during normalization *')
       fdum=sqrt(fdum2)
+c gaz 070922 added residual to call done     
+c      if(fdum.le.toldil) go to 101
       if(sia_iter.eq.0)fzero(igrp)=fdum
       tolls=max(fzero(igrp),min(g1*fdum,g2*fdum2))
-      tollr=g3*tolls
-      iter = 3 * north
+      tollr=g3*tolls      
+c gaz 070922 changed to maxsolve      
+c      iter = 3 * north
+      iter = maxsolve
       call storage_derivatives(1,1)
       if( irdof .ne. 9 ) then
                
@@ -491,7 +497,13 @@ c     Try putting in uncoupled normalization
          end if
       endif
       call storage_derivatives(0,1)
-
+c gaz 070922 jump to 101 if solution attained before solver (commented out 080622)
+c101   continue
+c      do id = 1, idof_sol
+c       do i = 1, neq    
+c        if(abs(bp(i+nmat_sol(id))).le.toldil) bp(i+nmat_sol(id))= 0.0d0
+c       enddo
+c      enddo
       if ( idualp .ne. 0) then
          call dual(13)
       endif

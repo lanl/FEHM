@@ -147,7 +147,11 @@ c
         if(ietype.eq.1) then
 c enrichment in the local x direction
          nlayers = ienrich_layers(imodel)
-         call add_resolution(1,ie,itype,nlayers,nei_add,node_add)          
+
+c xhua error#6634 The shape matching rules of actual arguments and dummy arguments have been violated
+c        call add_resolution(1,ie,itype,nlayers,nei_add,node_add)   this is original one
+         call add_resolution(1,ie,itype(1),nlayers,nei_add,node_add)
+
         endif
        endif
       enddo      

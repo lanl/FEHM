@@ -224,6 +224,7 @@
 !**********************************************************************
 
       real*8, allocatable ::  cnlf(:)
+      real*8, allocatable ::  cnlof(:)
       real*8, allocatable ::  cnvf(:) 
       real*8, allocatable ::  dcc(:) 
       real*8, allocatable ::  dce(:) 
@@ -258,8 +259,52 @@
       real*8, allocatable ::  dqpc(:)  
       real*8, allocatable ::  sici(:) 
       real*8, allocatable ::  flux_ts(:) 
+c gaz 100920 added last iteration variable values (air-water-heat)   
+      real*8, allocatable :: phi_last_iter(:)
+      real*8, allocatable :: t_last_iter(:) 
+      real*8, allocatable :: pci_last_iter(:)
+      real*8, allocatable :: s_last_iter(:) 
 
 !     ***** Variables in COMMON Block co2r *****
-      real*8 acner, amc, difc, qtc, qtotc
-
+      real*8 acner, amc, difc, qtc, qtotc, qtotin
+c gaz 101020 alpha0 (Henry's law constant made global)
+c gaz 121223 added Henry's law constant, isothermal, two phase
+      real*8, allocatable :: frac_gas_iso(:)
+      real*8 alpha0, alpha_air, alpha_h2, alpha_meth, alpha_co2
+      integer imod_sol
+c gaz 051722 added some variables for mass calculations
+      real*8, allocatable :: xntot(:)
+      real*8, allocatable :: zntotf(:)
+      real*8, allocatable :: zntot(:)
+c gaz 080722 more global mass variables   
+      real*8, allocatable :: mass_h2o(:)
+      real*8, allocatable :: mass_ngas(:)
+      real*8, allocatable :: energy_tot(:)
+      real*8, allocatable :: mass0_h2o(:)
+      real*8, allocatable :: mass0_ngas(:)
+      real*8, allocatable :: energy0_tot(:)
+c gaz 090222  
+      character*4, allocatable :: dum_calc_eos(:)
+c gaz 090622
+      real*8, allocatable :: dtot_test(:)
+c gaz 090722 make reset variables global    
+      real*8 phi_reset, pci_reset, t_reset, s_reset, dtot_min
+c gaz 120223 added idiff_iso
+      integer ieos_reset, iphase_chng, idiff_iso
+c gaz 040723, 050123  
+      character*22, allocatable :: descrip(:,:)
+      real*8 phi_max, phi_min
+      integer node_awh, inr_count, idelp, imass_unit, nawh, imass_chk
+      integer imout
+      integer, allocatable ::  inode_chng(:)
+      integer, allocatable ::  nawh_nodes(:)
+      integer, allocatable ::  ieos0(:)
+c gaz 030223, 120223
+      real*8, allocatable ::  sk_awh(:), dsk_awhdp(:), q_gas(:)
+      real*8 q_gas_tot
+      real*8 bpt(3),bpt0(3),a33t(3,3),a33ti(3,3),del(3)
+c gaz032623
+      logical  ts_chng
+      logical, allocatable :: read_mfrac_iso(:) 
       end module comfi
+ 

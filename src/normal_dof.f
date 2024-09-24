@@ -13,7 +13,7 @@
 !  assumes any liability or responsibility for the use of this software.
 C**********************************************************************
 CD1
-CD1 PURPOSE
+CD1 PURPOSE 
 CD1
 CD1 To normalize equations for coupled problems.
 CD1 
@@ -88,7 +88,7 @@ C***********************************************************************
       real*8 diag(idof,*),diagi(idof,*),rdum(*),a(*),r(*),det,fdum2
       real*8 diag_tol
       parameter (diag_tol=1.d-20)
-      
+
       neqp1=neq+1
       fdum2 = 0.0
 c     ****** start loop on rows *************************************** 
@@ -184,6 +184,98 @@ c     ************* uncoupled normalization *************************
             enddo
          enddo
       endif
+
+      return 
+      end
+     
+c gaz 082122 solve Ax=b for new phase change algorithm
+
+       subroutine inverse_matrix(idof,diag,diagi,indx,iflg)
+
+C**********************************************************************
+c gaz initial programming 082122  (put test in 072822)     
+c Ax=r
+c idof is dimension of sqare matrix diag(:,:)
+c ******************** define arguments **************************
+c neq    - number of rows and columns
+c a      - matrix to be normalized
+c indx   - storage(idof) needed for algorithm(integer array)
+c idof   - degree of freedom for problem
+c diag   - storage(idof,idof) needed for diagonal element of a
+c diagi  - storage(idof,idof) needed for diagonal inverse element of a
+c rdum   - storage(idof) needed for algorithm
+c iflg   - flag used for type of normalization
+c fdum2  - sum-squared of the residuals
+C***********************************************************************
+
+      implicit none
+
+      integer i,j,k,l,i1,i2,ii,ipos,idof
+      integer idiag,iflg,idofdiag
+      integer indx(idof)
+      real*8 diag(idof,*),diagi(idof,*),det,fdum2
+      real*8 diag_tol
+      parameter (diag_tol=1.d-20)
+c testing parameters
+      integer itest
+      parameter (itest = 0)
+      real*8 aij,rhs(3),da(3)
+
+      if(iflg.eq.0) then     
+c     ****************** form inverse of diagonal ********************* 
+c     diagonal is in diag(i,j),diagi(i,j) contains its inverse
+            do j=1,idof
+               do k=1,idof
+                  diagi(j,k)=0.0
+               enddo
+               diagi(j,j)=1.0
+            enddo
+            call ludcmp0(diag,idof,idof,indx,det)
+            if(indx(1).lt.0) then
+               indx(1)=-i
+               return
+            endif
+            do j=1,idof
+               call lubksb0(diag,idof,idof,indx,diagi(1,j))
+            enddo
+        endif
+      if(itest.eq.1) then     
+c     ****************** form inverse of diagonal ********************* 
+c     diagonal is in diag(i,j),diagi(i,j) contains its inverse
+         aij =1.
+         diag(1,1) = 2*aij
+         diag(1,2) = aij 
+         diag(1,3) = 0.0 
+         diag(2,1) = aij 
+         diag(2,2) = 2*aij  
+         diag(2,3) = aij
+         diag(3,1) = aij
+         diag(3,2) = aij
+         diag(3,3) = 2*aij      
+         rhs(1) = diag(1,1) + diag(1,2) + diag(1,3)
+         rhs(2) = diag(2,1) + diag(2,2) + diag(2,3)
+         rhs(3) = diag(3,1) + diag(3,2) + diag(3,3)     
+            do j=1,idof
+               do k=1,idof
+                  diagi(j,k)=0.0
+               enddo
+               diagi(j,j)=1.0
+            enddo
+            call ludcmp0(diag,idof,idof,indx,det)
+            if(indx(1).lt.0) then
+               indx(1)=-i
+               return
+            endif
+            do j=1,idof
+               call lubksb0(diag,idof,idof,indx,diagi(1,j))
+            enddo
+       endif
+
+         da(1) = diagi(1,1)*rhs(1)+diagi(1,2)*rhs(2)+diagi(1,3)*rhs(3)
+         da(2) = diagi(2,1)*rhs(1)+diagi(2,2)*rhs(2)+diagi(2,3)*rhs(3)
+         da(3) = diagi(3,1)*rhs(1)+diagi(3,2)*rhs(2)+diagi(3,3)*rhs(3)          
+
+
 
       return 
       end

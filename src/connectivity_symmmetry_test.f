@@ -63,13 +63,13 @@ C***********************************************************************
       real*8, allocatable :: area_con(:,:)
       real*8, allocatable :: sx_new(:,:)
       real*8, allocatable :: dum(:)
-      
-      logical ctest
+c gaz 112223 changed ctest to  ctest_sym (avoid confusion with ctest (xnl)     
+      logical ctest_sym
 
 c=======================================================================
 
       if(iflg.eq.0) then
-       ctest = .true.
+       ctest_sym = .true.
        neqp1 = neq + 1 
        do  i = 1,neq  
         i1 = nelmdg(i)+1
@@ -84,13 +84,13 @@ c=======================================================================
            go to 100
           endif
          enddo
-         ctest = .false.
+         ctest_sym = .false.
          write (ierr,*)  
      &   'connectivity failed, node (i,kb) = (',i,',',kb,')'
 100     continue         
         enddo
        enddo
-       if(ctest) then
+       if(ctest_sym) then
         if(iptty.ne.0) write(iptty,*)
         if(iptty.ne.0) 
      &   write(iptty,*) ' >>>> passed connectivity symmetry test <<<<'

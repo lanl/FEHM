@@ -181,7 +181,7 @@ C***********************************************************************
       implicit none
 
       integer unit
-
+c gaz 111621 added error file (unit 23 referenced in countour output)
       write(unit, 6100)  iocntl, nmfil(1),
      *     inpt  , nmfil(2),
      *     incoor, nmfil(3),
@@ -195,7 +195,8 @@ C***********************************************************************
      *     iscon1, nmfil(11),
      *     isstor, nmfil(12),
      *     ischk , nmfil(13),
-     *     cuser
+     *     ierr  , nmfil(14),      
+     *     cuser 
 
  6100 format(/,' File purpose - Variable - Unit number - File name',
      *     //,4x,'control       - iocntl -', i3, ' - ', a100,
@@ -211,6 +212,7 @@ C***********************************************************************
      *     /,4x, 'con plot (dp) - iscon1 -', i3, ' - ', a100, 
      *     /,4x, 'fe coef stor  - isstor -', i3, ' - ', a100, 
      *     /,4x, 'input check   - ischk  -', i3, ' - ', a100, 
+     *     /,4x, 'error file    - ierr   -', i3, ' - ', a100,      
      *     /,1x, 'Value provided to subroutine user: ', a9, /)
   
       end

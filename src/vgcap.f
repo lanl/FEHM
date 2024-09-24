@@ -273,6 +273,7 @@ C**********************************************************************
       real*8 termstar2
       real*8 termb1
       real*8 termb2
+      real*8 hp_cut
       parameter(ncut = 1)
       alamda = 1.0-1.0/beta
       denom = smr-slr
@@ -298,6 +299,14 @@ c     use linear interpolation for lower cutoff
             dhp=(3.0*ac1*sl**2+2.0*ac2*sl+ac3)
          else  if(star.ge.sucut) then
 c        else  if(star.ge.sucut.or.ireg.eq.5) then
+c     use linear interpolation for upper cutoff
+c            star,sucut = 0.99  hp_cut = 19.9976320885161
+c            star,sucut = 0.99925  hp_cut = 4.75925174261405
+c            hp = 19.9976320885161
+c          hp_cut = 4.75925174261405
+c          bc3 = hp_cut/(sucut-1.d0)
+c          hp = bc3*(star-1.d0)
+c          dhp = bc3*ds
 c     use linear interpolation for upper cutoff
             hp = bc3*sl + bc4
             dhp= bc3

@@ -268,16 +268,16 @@ c     Fluxes are written to tty and output file
      &                 sumboun(izone,ii)+sumboun(izone,iv),
      &                 qheat_tot(izone)
                end if
-                if(l.eq.1.and.izone.eq.1) then
-                 write(ierr,*) 'days,zone, and conduction heat loss(1)'
-                endif
-               if(izone.eq.1) then
-                write(ierr,*) ' days = ',days
-                do i3 = 1,nflxz 
-                 write(ierr,'(1x,i6,1x,g14.5,1x,i6,g14.5)') 
-     &              iflxz(i3),qheat_tot(i3)  
-                enddo
-               endif
+c   gaz 042521  (removed  if(l.eq.1.and.izone.eq.1) then
+c                 write(ierr,*) 'days,zone, and conduction heat loss(1)'
+c                endif
+c               if(izone.eq.1) then
+c                write(ierr,*) ' days = ',days
+c                do i3 = 1,nflxz 
+c                 write(ierr,'(1x,i6,1x,g14.5,1x,i6,g14.5)') 
+c     &              iflxz(i3),qheat_tot(i3)  
+c                enddo
+c               endif
             end do
          end if
       else if (flxz_flag .eq. 2) then

@@ -66,6 +66,9 @@
       character*80 dummy_string
       integer n_n_n, j, i_chk_nodes, icount
       real*8 gdpm_left, gdpm_right, vol_2nd
+c gaz 122222 
+      integer, allocatable :: gdkm_models(:)
+      integer max_models,ic_mod
       
 
 c     gdpm_flag: if nonzero, determines the geometry of the matrix. 
@@ -110,13 +113,17 @@ c gaz 091116
 c gdkm_dir = 0 older gdkm model (0,1,11) dpdp equivalent
 c gdkm_dir = 1 frac orth x dir
 c gdkm_dir = 2 frac orth y dir
-c gdkm_dir = 3 frac orth z dir         
+c gdkm_dir = 3 frac orth z dir      
+c gdkm_dir = 4 frac unidirectional (convert number fracture to fracture dis to matrix)        
        if(gdkm_flag.ne.0) then
         if(gdkm_new) then
 c input and directional models (including older model             
          read(inpt,*) gdkm_dir(imodel), vol_2nd,
      2         gdpm_x(imodel,1)
-         if(gdkm_dir(imodel).eq.4) gdkm_dir(imodel) = 0
+c gaz 190922 removed:120722 dir 4 has negative frac number        
+c          if(gdkm_dir(imodel).eq.4) then
+c           gdpm_x(imodel,1) = -abs(gdpm_x(imodel,1))
+c          endif
           ngdpm_layers(imodel) = 1
           vfrac_primary(imodel) = 1.0 - vol_2nd
         else
@@ -125,14 +132,18 @@ c input and directional models (including older model
           gdkm_dir(imodel) = 0
           ngdpm_layers(imodel) = 1
 c gaz 031918 print out that old format detected 
-          if(iout.ne.0) then
+          if(iout.ne.0.and.imodel.eq.1) then
           write(iout,*)'>> old gdkm input, non-directional(dpdp-like)',
-     &      ' model'
+     &      ' model ', imodel,' <<'
           endif
-          if(iptty.ne.0) then
+          if(iptty.ne.0.and.imodel.eq.1) then
           write(iptty,*)'>> old gdkm input, non-directional(dpdp-like)',
-     &      ' model'              
+     &      ' model ', imodel,' <<'             
           endif
+          if(ierr.ne.0.) then
+          write(ierr,*)'>> old gdkm input, non-directional(dpdp-like)',
+     &      ' model ', imodel,' <<'             
+          endif          
         endif
        else
          read(inpt,*) ngdpm_layers(imodel), vfrac_primary(imodel),
@@ -190,23 +201,42 @@ c     Set flag to identify which nodes have each gdpm model
 
 
 c     Determine how many gdpm nodes there actually are
+c gaz 122222 added id of gdkm models
+      max_models = imodel
+      allocate(gdkm_models(max_models))
+       gdkm_models = -1
       ngdpm_actual = 0
       do i = 1, neq_primary
          imodel = igdpm(i)
+         if(gdkm_new.and.imodel.gt.0) then
+           gdkm_models(imodel) = gdkm_dir(imodel)  
+           continue       
+         endif
          ngdpm_actual = ngdpm_actual + ngdpm_layers(imodel)
       end do
 c gaz 022617 and 042918
 c write out actual number of gdkm  or gdpm nodes          
       if(gdkm_flag.ne.0) then
+c gaz 092822 write out total nodes          
        if(iptty.ne.0) then
-       write(iptty,*)
-     &  'number of gdkm nodes ', ngdpm_actual  
+        write(iptty,*)
+     &  'number of gdkm nodes ', ngdpm_actual,' total nodes ', 
+     &   neq_primary+ngdpm_actual
+        do i= 1, max_models
+         if(gdkm_models(i).ge.0)  write(iptty,411) gdkm_models(i)
+        enddo
+411     format(' gdkm directional model used: ',i4)
        endif
        if(iout.ne.0) then
        write(iout,*)
-     &  'number of gdkm nodes ', ngdpm_actual             
+     &  'number of gdkm nodes ', ngdpm_actual,' total nodes ', 
+     &   neq_primary+ngdpm_actual  
+        do i= 1, max_models
+         if(gdkm_models(i).ge.0)  write(iout,411) gdkm_models(i)
+        enddo        
        endif  
       endif 
+      deallocate(gdkm_models)
       neq = neq_primary+ngdpm_actual
 c      n0 = neq
       if(i_chk_nodes.eq.0) then
@@ -260,43 +290,70 @@ c gaz 040517 do nothing here
 
       end if
       if(gdkm_flag.ne.0) then
-      n_n_n = neq_primary
-      do i = 1, neq_primary
-       imodel = igdpm(i)
-       if(imodel.gt.0) then
-c gaz 032218 a secondary node zone always get the primary node value +100           
-        n_n_n = n_n_n +1
-        izonef(n_n_n) = izonef(i) + 100
-       endif
-      enddo
+       igdpm_add = 1   
+       n_n_n = neq_primary
+       do i = 1, neq_primary
+        imodel = igdpm(i)
+        if(imodel.gt.0) then
+c gaz 032218 a secondary node zone always get the primary node value +100    
+c gaz 042521                 
+c if primary gdkm node zone = 0, set to zone = 1, and secondary node zone = 101  
+         if(izonef(i).eq.0) then
+                izonef(i) = 1
+                write(ierr,*) '>> gdkm primary node ',i,' has no zone: '
+     &            ,'setting zone(node)= 1, secondary node zone = 101'
+         endif            
+         n_n_n = n_n_n +1
+         izonef(n_n_n) = izonef(i) + 100
+        endif
+        enddo
+c gaz 081020 write gdkm connections to check file   
+       if(.not.allocated(izone_out_gdpm))
+     &  allocate(izone_out_gdpm(n_n_n,2))
+        izone_out_gdpm = 0
+        call zone(0,inpt) 
+c gaz 062820 add gdpm zone info to check file(unit = ischk)
+       if(ischk.ne.0) then
+       write(ischk,248)
+       write(ischk,249) (izone_out_gdpm(j,1),igdpm(izone_out_gdpm(j,1)),
+     &    j= 1,ngdpm_actual)
+248   format(1x,'GDKM nodes, model num(in order of input GDKM models:)')      
+249   format(10(3x,'(',i6,',',1x,i6')'))          
+       write(ischk,250)
+       write(ischk,251) (izone_out_gdpm(j,1),j+neq_primary,        
+     &   izone_out_gdpm(j,2), j= 1,ngdpm_actual)      
+250    format(1x,'Summary of GDKM zone info:',
+     &  ' (gdkm primary node,gdkm added node,zone)',/)
+251   format(10(3x,'(',i6,',',1x,i6,',',1x,i4,')'))     
+      endif
+      deallocate(izone_out_gdpm)
+      igdpm_add = 2
+c
       else if(gdpm_flag.ne.0) then
 
 c     Set zones for GDPM nodes for the case in which zone has
 c     already been called
 c     Convention: all GDPM nodes are assigned a zone that
 c     is 100 + the zone number of the primary node
+c     and last added node for each gdpm node is 200 + zone number
+c gaz 062920 added call to zone to id gdpm zones
+      igdpm_add = 1
+      if(.not.allocated(izone_out_gdpm))
+     &  allocate(izone_out_gdpm(ngdpm_actual,2))
+      izone_out_gdpm = 0
+      call zone(0,inpt)
 
-      n_n_n = neq_primary
-      do i = 1, neq_primary
-
-c     Loop over all GDPM nodes for primary node i
-c     ngdpm_layers(imodel) = 0 for imodel = 0 (i.e. no GDPM nodes)
-         imodel = igdpm(i)
-         do j = 1, ngdpm_layers(imodel)
-            n_n_n = n_n_n + 1
-c     Only assign the zone number this way if
-c     it hasn't already been assigned a non-zero value
-c     for example, in a zone with the nnum option
-            if(izonef(n_n_n).eq.0.and.
-     &           j.eq.ngdpm_layers(imodel).and.
-     &                ngdpm_layers(imodel).gt.1) then
-               izonef(n_n_n) = izonef(i) + 200
-            else if(izonef(n_n_n).eq.0) then
-               izonef(n_n_n) = izonef(i) + 100
-            end if
-         end do
-
-      end do
+c gaz 062820 add gdpm zone info to check file(unit = ischk)
+      if(ischk.ne.0) then
+       write(ischk,150)
+        write(ischk,151) (izone_out_gdpm(j,1),j+neq_primary,        
+     &   izone_out_gdpm(j,2), j= 1,ngdpm_actual)
+150    format(1x,'Summary of GDPM zone info:',
+     &  ' (gdpm primary node,gdpm added node,zone)',/)
+151   format(10(3x,'(',i6,',',1x,i6,',',1x,i4,')'))     
+      endif
+       deallocate(izone_out_gdpm)
+       igdpm_add = 2
       endif
       return
       end

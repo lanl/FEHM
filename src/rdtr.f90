@@ -3564,7 +3564,7 @@ subroutine rdtr ! The main input reader
 				if(zonenames(izonef(k)).eq.zones(i)) goto 2164
 			end do
 		write(ierr, *) 'Error:  Node ', k ,' belongs to ',izonef(k),'**',trim(zonenames(izonef(k))),' ,not present in assign macro'
-# this logic expects zones to be named 1,2,3,4 		
+!# this logic expects zones to be named 1,2,3,4 	gaz 033121 (put '!' in front of '#'	)
 		write(ierr,*) (zones(i),i=1,nzones)
 		goto 666   
 ! would be good to assign this node default values and move on		
@@ -3869,7 +3869,7 @@ subroutine rdtr ! The main input reader
 		end do
 	else
 		nprint = nspecies + nmasters + ncomplexes
-		write(*,*) '3866: ',nspecies,nmasters,ncomplexes
+!		write(*,*) '3866: ',nspecies,nmasters,ncomplexes (gaz 041921 debug line)
 		allocate(printspecies(nprint))
 		do j = 1, nspecies
 			printspecies(j) = species(j)

@@ -222,10 +222,13 @@ c      write_avs_node_mat, write_avs_ucd_header
       integer nscalar, nscalar_dual, nvector, nvector_dual
       integer nconcen, nconcen_dual, nmaterial, nmaterial_dual
       integer nheatflux
+c gaz 060722 
+      integer file_size_bytes, lu_test
 C
       real*8, allocatable :: dum(:)
       logical null1, exists, opnd
       character*10 response
+      character*20 dum_geo
 C
       save lu_log
 
@@ -246,6 +249,7 @@ C
       data icall /1/
       data num_cdata / 0 /, num_mdata / 0 /
       data io_err /0/
+
       if (iogdkm .eq. 1) then
          head_mat_dual = 'mat_gdkm_head'
          head_sca_dual = 'sca_gdkm_head'
@@ -337,8 +341,11 @@ C     the length of each component.
       if (nscalar .ne. 0) then
          nscalar_dual   = nscalar * iodual + nscalar * iogdkm + 
      &        iocord_temp
+c gaz 031022 added ioscalar to indicate if scalar variables are available
+        ioscalar = 1 
       else
-         nscalar_dual   = 0
+          ioscalar = 0
+          nscalar_dual   = 0
       end if
       nvector        = (ioliquid+iovapor)*iovelocity
       if (nvector .ne. 0) then
@@ -454,7 +461,10 @@ C     Open with ascii format, not binary
                end if
             end if
             
- 410        inquire (lu, OPENED=opnd)
+ 410        inquire (file = geoname, OPENED=opnd)
+c            inquire(file = geoname, exist = exists)
+c            inquire(file = geoname, recl = file_size_bytes)
+c            inquire(file = geoname, number = lu_test)
             if (.not. opnd .or. geoname .eq. ' ') then
 ! Use root name determined above
                geoname = ''
@@ -473,22 +483,61 @@ C     Open with ascii format, not binary
 ! If the file exists, we do not need to do anything else 
                if (.not. exists) then
 ! Open the file to be written
-                  open (lu, file = geoname)
-                  inquire (lu, OPENED=opnd)
+                  inquire(file = geoname, OPENED=opnd)
+                  if(.not.opnd) open (lu, file = geoname)
+                   inquire(file = geoname, OPENED=opnd)
+                   inquire(file = geoname, exist = exists)
+                   inquire(file = geoname, size = file_size_bytes)
+                   inquire(file = geoname, number = lu_test)
+               else if(file_size_bytes.gt.0) then
+c gaz 050922 check if geo file matches contour option   
+                  if(.not.opnd) open (lu, file = geoname)
+                  read(lu,'(a7)') dum_geo(1:7)
+                  if(dum_geo(1:7).eq.'TITLE ='.and.
+     &               altc(1:3).ne.'tec') then
+                   close(lu)
+                   open (lu, file = geoname)
+                   exists = .false.
+                  else if(dum_geo(1:7).ne.'TITLE ='.and.
+     &               altc(1:3).eq.'tec') then
+                   close(lu)
+                   open (lu, file = geoname)
+                   exists = .false.
+                  endif
                end if
-            end if
-
-            if (exists) then
+               end if
+c gaz 050922 check for mismatch  with tec and avs geo files
+            if (exists.and.file_size_bytes.gt.0) then 
+                   read(lu,'(a7)') dum_geo(1:7)
+                  if(dum_geo(1:7).eq.'TITLE ='.and.
+     &               altc(1:3).ne.'tec') then
+                   close(lu)
+                   open (lu, file = geoname)
+                   exists = .false.
+                  else if(dum_geo(1:7).ne.'TITLE ='.and.
+     &               altc(1:3).eq.'tec') then
+                   close(lu)
+                   open (lu, file = geoname)
+                   exists = .false.
+                  else
+                   backspace lu
+                  endif             
+            endif    
+            if (exists.and.file_size_bytes.gt.0) then
                if (iout .ne. 0) write (iout, *) 
      &              "Using existing geometry file: ", geoname
                if (iptty .ne. 0) write (iptty, *) 
      &              "Using existing geometry file: ", geoname
-               call tec_write_grid(0)
+c gaz 041822  050922 commented out             
+c               call tec_write_grid(lu)
 ! We will reopen the file when it needs to be read
                if (opnd)  close (lu)
-               
-            else if (opnd) then
+c gaz 060822 if opened fill file               
+c            else if (exists) then
+          else
 ! Write geometry file
+               if(.not.opnd) open (lu, file = geoname)
+               
                if (iout .ne. 0) write (iout, *) 
      &              "Geometry written to file: ", geoname
                if (iptty .ne. 0) write (iptty, *) 
@@ -497,7 +546,7 @@ C     Open with ascii format, not binary
                if (ioformat .eq. 1) then
 C No binary option
                else
-                  if (iogeo .eq. 1) then
+                  if (iogeo .eq. 1.and.altc(1:3).eq.'avs') then
                      call avs_write_cord(corz(1,1),
      1                    corz(1,2),
      2                    corz(1,3),
@@ -509,9 +558,10 @@ C No binary option
      3                    corz(1,3),
      4                    neq_primary,lu,ioformat,ierr)
                      close(lu)
-                     call tec_write_grid(0)
-                  else
+c 050922 gaz commented out                     call tec_write_grid(0)
+                  elseif (iogeo .eq. 1.and.altc(1:3).eq.'tec') then
                      call tec_write_grid(lu)
+                     close(lu)                     
                   end if
                endif
             end if
@@ -545,7 +595,10 @@ C No binary option
                call namefile1(lu,ioformat,avs_root,tmp_tail,
      &              iaroot,ierr)
                ifdual = 0
-               call write_avs_node_mat (lu,ifdual,nmaterial)
+c gaz 042921 first step to make mat file like scalar file               
+c               call write_avs_node_mat (lu,ifdual,nmaterial)
+              call write_avs_node_mat_s(icall, neq_primary, nscalar, lu,
+     &                ifdual, 0, nmaterial)
                close(lu)
             endif
          endif
@@ -574,7 +627,11 @@ C No binary option
                call namefile1(lu,ioformat,avs_root,tmp_tail,
      &              iaroot,ierr)
                ifdual = 1
-               call write_avs_node_mat (lu,ifdual,nmaterial_dual)
+c gaz 043021                
+c               call write_avs_node_mat (lu,ifdual,nmaterial_dual)
+c               write(lu,*) 'gdkm material test '
+              call write_avs_node_mat_s(icall, neq, nscalar, lu,
+     &                ifdual, 0, nmaterial_dual)
                close(lu)
             endif
          endif
@@ -877,6 +934,7 @@ C zvd 12/20/2002 pass in ntp array [sometimes only dimensioned (1)]
 C zvd 10/23/2007 remove altc, days from call, they are in comai
 c               call write_avs_node_con(an,anv,iovapor,npt(2),neq
 c gaz 111414
+               dum_geo(1:10) = wdd(1:10)
                call write_avs_node_con(icall,npt,neq_primary,
      &              nspeci,lu,ifdual)
 
@@ -916,11 +974,17 @@ C     Write output to logfile
      .           avs_root(1:iaroot)
             write (iptty, *) 'Number of times called: ',icall
          end if
+         if (iout .ne. 0 ) then
+            write (iout, *) 'Finished writing files for: ',
+     .           avs_root(1:iaroot)
+            write (iout, *) 'Number of times called: ',icall
+         end if
          if (icall .eq. 1) then
             write(lu_log, 315) trim(time_units)
          end if
 
          write(lu_log, 320) avs_root(1:iaroot), icall, contour_time
+         icall_max = max(icall,icall_max)
          call flush(lu_log)
           
  315     format('# Root filename', 15x, 'Output Time (', a, ')')

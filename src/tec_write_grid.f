@@ -31,7 +31,7 @@ C***********************************************************************
       use avsio
       use comai, only : icnl, ierr, ifdm_elem, ivf, neq_primary, 
      &     nei_in, ns_in, wdd
-      use combi, only : cord, nelm
+      use combi, only : cord, nelm, elem_geo, nact_elem_geo
       implicit none
 
       integer i, j, lu, i1, il, open_file
@@ -116,6 +116,7 @@ c     If lu =0, we are only defining the gridstring
       end do
 
       if (ivf .eq. -1 .and. ifdm_elem .eq. 1) then
+        if(nact_elem_geo.eq.0) then
          allocate (nelm2(ns_in))
          do i = 1, nei_in
             read (il,*) i1, (nelm2(j), j=1,ns_in)
@@ -123,9 +124,14 @@ c     If lu =0, we are only defining the gridstring
          end do
          deallocate(nelm2)
          close (il)
-      else
+        else
          do i = 1, nei_in
-            write (lu, 60) (nelm((i-1)*ns_in + j), j = 1, ns_in)
+            write (lu, 60) (elem_geo((i-1)*ns_in + j), j = 1, ns_in)
+         end do   
+        endif    
+      else if(nact_elem_geo.eq.1) then
+         do i = 1, nei_in
+            write (lu, 60) (elem_geo((i-1)*ns_in + j), j = 1, ns_in)
          end do
       end if
 

@@ -14,11 +14,12 @@ C**********************************************************************
 CD1
 CD1 PURPOSE
 CD1
-CD1 To determine variable set and make n-r corrections.
+CD1 To determine variable set and make n-r corrections. 
+CD1 gaz 042323 cleaned up comments
 CD1
 C**********************************************************************
 CD2
-CD2 REVISION HISTORY 
+CD2 REVISION HISTORY                                                 
 CD2
 CD2 Revision                    ECD
 CD2 Date         Programmer     Number  Comments
@@ -403,8 +404,13 @@ C**********************************************************************
       use comfi
       use comgi
       use comii
+      use com_prop_data, only : pl_last, tl_last, pcl_last
       use comtable, only : tableFLAG
       use davidi
+c gaz 011021 added com_exphase global variables    
+      use com_exphase, only : iphase_chk
+c gaz 080622       
+      use commass_AWH, only : ivar_mass
   
       implicit none
 
@@ -419,7 +425,11 @@ c gaz 121918 added pci0
       real*8 phase_mult
       real*8 phase_sat 
       real*8 satml 
+c gaz 101419       
       real*8 xdiff_tol
+c gaz 041823
+      real*8 fdum_0
+      save fdum_0
       parameter(psatmn=0.0001)
       parameter(eosmg=1.0001)
 c      parameter(eosml=0.95)
@@ -429,13 +439,12 @@ c      parameter(stepl=0.95)
       parameter(pcimin=0.0)
 c      parameter(phase_mult=1.00)
       parameter(phase_sat=1.0d-9)
-c gaz debug 092115
-c      parameter(satml=1.0d-4)
-c      parameter(satml=1.0d-6)
-c      parameter(phase_mult=1.01)
+
+c gaz 101419      
       parameter(xdiff_tol=1.0d-4)
-      real*8 pcrit_h2o, tcrit_h2o
-      parameter(pcrit_h2o=22.00d0, tcrit_h2o=373.95)
+c gaz 121718   0923219 h2o_crit   moved to comai
+c      real*8 pcrit_h2o, tcrit_h2o
+c      parameter(pcrit_h2o=22.00d0, tcrit_h2o=373.95)
 c ich_max should be odd or even but don't know which
 c      parameter(ich_max = 2)
       real*8 psatl
@@ -466,23 +475,37 @@ c      parameter(ich_max = 2)
       integer i3
       integer ifl
       integer ndummy,k
+c gaz 120821      
+      integer eval_test_h2o_0
       real*8 stepl_hm, phase_mult_hm, satml_hm, eosml_hm
       real*8 stepl_hma, phase_mult_hma, satml_hma, eosml_hma
-      parameter(stepl_hm = 0.95, phase_mult_hm = 1.00001)
+c gaz 112021 (water EOS table may have different pcrit_h2o and tcrit_h2o)       
+      real*8 xnl,dxnlp,dxnlpc,dxnlt,air_mass1, air_mass_l, pcl_gas
+      integer ipr_phase_detail
+      parameter(ipr_phase_detail = 1)
+      real*8  p0,t0,pc0,s0
+      real*8  wgtchng1, wgtchng2, tNR_min
+      character chariad*12
+c gaz 111621 stepl_hm = 0.95 to stepl_hm = 0.85     
+c gaz 111721 phase_mult_hm = 1.0001 to 1.0      
+c      parameter(stepl_hm = 0.85, phase_mult_hm = 1.0001)
+c gaz debug 112721   stepl_hm = 0.96 to 0.9    
+       parameter(stepl_hm = 0.95, phase_mult_hm = 1.000)
 c gaz debug 051516 (optimized for geothermal;satml = 1.0d-2 may be too large)      
-      parameter(satml_hm = 1.0d-2, eosml_hm = 0.9)
-      parameter(stepl_hma = 0.95, phase_mult_hma = 1.05)
+      parameter(satml_hm = 1.0d-6, eosml_hm = 0.9999)
+c gaz 101419  102119 ...mult_hma = 1.00001 is best
+      parameter(stepl_hma = 0.95, phase_mult_hma = 1.00001)
       parameter(satml_hma = 1.0d-7, eosml_hma = 0.99)
+      parameter(wgtchng1 = 0.9d0, wgtchng2 = 0.9d0,TNR_min=5.0d0)
 c
-c
-c ich_m1 and ich_m2 are in comai but are adjusted here
-c these are maybe best for geothermal systems
-c
+      
       if(ico2.eq.0) then
+c pure water and heat
         satml = satml_hm
         phase_mult = phase_mult_hm
         eosml = eosml_hm
       else
+c ngas (air,methane,co2),water, heat (AWH)
         satml = satml_hma
         phase_mult = phase_mult_hma
         eosml = eosml_hma
@@ -502,7 +525,7 @@ c
       else
          stepl = strd_iter
       endif
-      if(nr_stop.ne.0.and.iad.ge.1.and.ifl.eq.1)then
+      if(var_stop.and.iad.ge.1.and.ifl.eq.1)then
          call nr_stop_ctr(1)
       endif
 c gaz debug 090515  
@@ -522,6 +545,11 @@ c set newton raphson step length to 1.0 at beginning of timestep
          if(iad.eq.0) then
             strd =1.0
             ieos_ch = 0
+         else if(iad.ne.0.and.iter_intrvl.ne.0) then   
+             if(mod(iad,iter_intrvl).eq.0) then
+              strd =1.0
+              ieos_ch = 0
+             endif
          endif
 cc
 c
@@ -543,6 +571,16 @@ c gaz 111015 added super crtical phase
                      tl=t(ij)
                      sl=s(ij)
                      ieosd=ieos(ij)
+                     if(ieosd.eq.4) then
+                      if(tableFLAG.eq.0.and.iwater_table.eq.0) then
+c gaz 112020 stop if SC phase and no table write error msg and stop
+                      if(iptty.ne.0) write(iptty,30)
+                      if(iout.ne.0) write(iout,30) 
+                      write(ierr,30)
+30    format('>>>>>>>>>> super critical water phase but no EOS table',
+     &       ' , stopping <<<<<<<<<<<<')           
+                      endif   
+                     endif
                      if(ieosd.eq.0) ieosd=1
                      ieosdc=ieosd
 c
@@ -574,22 +612,42 @@ c     change to 2-phase
                         if(tl.ge.tboil*phase_mult.
      &                       and.days.ge.time_ieos(ij)) then
                            ieosdc=2
-c     s(ij)=eosml
 c gaz debug 121817                           
-c                            s(ij)=0.999    
+c eosml = 0.9999 (042323) 
                            s(ij) = eosml
                            t(ij)=tboil
                            time_ieos(ij) = days + time_ch
-c     call phase_balance_ctr(1,ij,phi(ij),t(ij),s(ij))
+c 
                         endif
 c
                      elseif(ieosd.eq.2) then
 c
 c     2-phase conditions
 c
-c  gaz 102917 update temperature earlier in iteration                         
-                           t(ij)=psatl(pl,pcp(ij),dpcef(ij),
-     &                          dtsatp,dpsats,1,an(ij))  
+c  gaz 102917 update temperature earlier in iteration    
+                         
+c  gaz 112121 check for SC conditions (also check for ieos = 1
+                     tboil = 2000.
+                      if(pl.ge.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+                        ieosdc = 4
+                        s(ij) = 1.0
+                      else if(pl.lt.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+                        ieosdc = 3 
+                        s(ij) = 0.0
+                      else if(pl.ge.pcrit_h2o.and.tl.le.tcrit_h2o) then
+                        ieosdc = 1 
+                        s(ij) = 1.0                        
+                      else if(pl.lt.pcrit_h2o) then
+                         tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,
+     &                             1,an(ij))
+                         t(ij) = tboil
+                      endif                         
+                         
+                         
+                         
+c gaz  112121    see tboil above                      
+c                           t(ij)=psatl(pl,pcp(ij),dpcef(ij),
+c     &                          dtsatp,dpsats,1,an(ij))  
 c
                          
                         if(sl.gt.1..and.days.ge.time_ieos(ij)) then
@@ -616,14 +674,21 @@ c
                      elseif(ieosd.eq.3) then
 c
 c     gas conditions
-c   
+c 
+c gaz 072120 added ieos_sc() ,102521 added  ieosdc = 4
                       if(pl.ge.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+                        ieos_sc(ij) = 1
                         ieosdc = 4
-                        s(ij) = 1
+c gaz 112121 should be s(ij) = 1 for pure water                     
+c                        s(ij) = 0
+                        s(ij) = 1.0
                       else if(pl.ge.pcrit_h2o.and.tl.lt.tcrit_h2o) then
+                        ieos_sc(ij) = 3  
                         ieosdc = 1
                         s(ij) = 1.0
-                      endif  
+                      else 
+c gaz 101719 modify if block (leave for now) 
+c gaz 072120 pl now in if block                          
                        tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,
      &                             1,an(ij))
                         if(tl.le.tboil/phase_mult.
@@ -633,16 +698,19 @@ c     change to 2-phase
                            t(ij)=tboil
                            ieosdc=2
                            time_ieos(ij) = days + time_ch
-                        endif
+                           endif
+                      endif     
                      elseif(ieosd.eq.4) then
-c
+c gaz 072120 ieosd.eq.4 equivalent to ieos_sc(ij).eq.1 (both SC)
 c     sc conditions 
 c 
 c sufficient  to go to gas or liquid
                       if(pl.lt.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+                        ieos_sc(ij) = 2  
                         ieosdc = 3
                         s(ij) = 0.0
                       else if(pl.ge.pcrit_h2o.and.tl.lt.tcrit_h2o) then
+                        ieos_sc(ij) = 3   
                         ieosdc = 1
                         s(ij) = 1.0
                       else if(pl.lt.pcrit_h2o.and.tl.lt.tcrit_h2o) then
@@ -651,12 +719,15 @@ c sufficient  to go to gas or liquid
                        if(tl.ge.tboil) then
                         ieosdc = 3
                         s(ij) = 0.0
+                        ieos_sc(ij) = 0
                        else
                         ieosdc = 1
                         s(ij) = 1.0
+                        ieos_sc(ij) = 0
                        endif 
                      else
                       ieosdc = 4
+                      ieos_sc(ij) = 1
                      endif
                    endif
 c
@@ -667,38 +738,72 @@ c
                      if(ieosd.ne.ieosdc) then
                         strd    =stepl
                         ieos_ch(ij) = ieos_ch(ij) +1
-                        if (ieos_ch(ij).gt.3) 
-     &                       write (ierr,233) 
-     &                       ij, ieos_ch(ij), (cord(ij,k),k=1,3)
-                     endif
+c  gaz connented out 111621                      if (ieos_ch(ij).gt.3) 
+c     &                       write (ierr,233) 
+c     &                       ij, ieos_ch(ij), (cord(ij,k),k=1,3)
+                      endif
                      ieos(ij)=ieosdc
                   enddo
- 233              format('$$$$$$$  >>>>>> ', 2i8,1p,3g14.4)
+c 233              format('$$$$$$$  >>>>>> ', 2i8,1p,3g14.4)
           else if(icarb.ne.0) then
             call icectrco2(-1,0)
 c            ieos = 1
           endif 
 c     
-               else if(ico2.gt.0) then
+         else if(ico2.gt.0.and.ivar_mass.gt.0) then
+c gaz 082622 if nr_completed gt.0 then call  
+c gaz 082922 nr_completed not working right             
+c          if(nr_completed.gt.0) then
+         if(l.gt.0) then
+           call varchk_AWH(1)
+c            nr_completed = 0
+         endif
+         else if(ico2.gt.0) then
 c
 c     determine phase state for water and noncondensible
 c
-c gaz debug 082714
-c gaz debug added saltctr calls 091414
-                  continue
-                  i = l
-                  i = fdum
+c gaz 072020 modified code to use partial pressures or pci
+c gaz 111520   next 2 lines only for debuging   
+                ij = fdum+l+iad
+c gaz 122920 allocate memory and initialize variables in explicit phase change
+                  call explicit_phase_update(0,0)
+                  if(.not.allocated(descrip)) then
+                   allocate(descrip(neq,4))
+                   descrip = '              '
+                  endif
+                  nr1=nrhs(1)
+                  nr2=nrhs(2)
+                  nr3=nrhs(3)
                   do i=1,neq
                      ij=i+ndummy
                      pl=phi(ij)
                      pci0 = pcio(ij)
                      pcl=pci(ij)
-c                     pcl=max(pcl,pcimin)
                      pci(ij)=pcl
                      x=pl-pcl
                      tl=t(ij)
                      sl=s(ij)
-                     ieosd=ieos(ij)
+c gaz 040423 
+                  ieosd=ieos(ij)      
+                  s0 = sl
+                  pc0 = pcl
+                  if(ieosd.ne.2) then
+                   p0 = bp(ij+nr1)
+                   t0 = bp(ij+nr2)
+                   pc0 = bp(ij+nr3)               
+                  else
+                   p0 = bp(ij+nr1)
+                   t0 = bp(ij+nr3)
+                   s0 = bp(ij+nr2)                    
+                  endif  
+                     if(ieosd.eq.4) then
+                      if(tableFLAG.eq.0.and.iwater_table.eq.0) then
+c gaz 112020 stop if SC phase and no table write error msg and stop
+                      if(iptty.ne.0) write(iptty,30)
+                      if(iout.ne.0) write(iout,30) 
+                      write(ierr,30)       
+                      endif   
+                     endif                     
                      if(ieosd.eq.0) ieosd=1
                      ieosdc=ieosd
 c     
@@ -717,50 +822,66 @@ c gaz 120818 add transition to supercritical state
 c SC state occurs when total pressure (pl here)  reaches Pcrit 
 c pure water uses total pressure and same here because it is liquid phase
 c or leaving liquid phase
-                         
-                     tboil = 2000.
-                      if(pl.ge.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+c gaz 072020 pl changed to  pl-pcl whwn comparing to pl 
+
+c                          
+                     tboil = tcrit_h2o
+c gaz 072020 pl to pl-pcl, finished 072020 with ioes_sc()                
+                      if(pl-pcl.ge.pcrit_h2o.and.tl.ge.tcrit_h2o
+     &                  .and.pcl.lt.pl) then
                         ieosdc = 4
+                        ieos_sc(ij) = 3
+                        descrip(ij,1) = '1 to 4 pcrit'
                         go to 101
-                      else if(pl.lt.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+c gaz 110220 gaz added ifblock for physical 2 phase                        
+                      else if(pl-pcl.lt.pcrit_h2o.and.tl.ge.tcrit_h2o
+     &                  .and.pcl.lt.pl) then
                         ieosdc = 3 
+                        ieos_sc(ij) = 3
                         s(ij) = 0.0
+                        descrip(ij,1) = '1 to 3 pcrit'
                         go to 101
-                      else if(pcl.ge.pl) then
-c gaz 121918  add physical phase change 
-c gaz 01                          
-                        ieosdc = 2
-                        s(ij) = 0.9
-                        strd = stepl
-                        pboil=psatl(tl,pcp(ij),dpcef(ij),dtsatp,dpsats,
-     &                             0,an(ij))
-                        phi(ij)= pcl
-                        pci(ij) = phi(ij)-pboil
+                       else if(pcl.ge.pl) then
+c gaz 040823 
+                         sl =1.0d0                              
+                         s(ij) = sl
+c gaz 042423   (varchk_12d)
+c                         phi(ij) = pcl
+c                         ieosdc = 2
+                         ieosdc = 2
+                         ieos_sc(ij) = 1
+                         pci(ij) = pcl*wgtchng1 + (1.d0-wgtchng1)*pc0
+                         t(ij)  = tl*wgtchng1 + (1.d0-wgtchng1)*t0
+                         descrip(ij,1) = '1 to 2 pcl>=pl'   
                         go to 101
                    else if(pl.lt.pcrit_h2o) then
 c gaz 121918 pci0 instead of pcl   
-c use total pressure
+c use total pressure because air is dissolved 
+c gaz 091920 is boiling point changed with dissolved air
                          tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,
-     &                             dpsats,1,an(ij))
-                      endif                       
+     &                             dpsats,1,an(ij))        
+                   endif                       
                        pboil=psatl(tl,pcp(ij),dpcef(ij),dtsatp,dpsats,
      &                             0,an(ij))
 
-c     change to 2-phase
-c gaz 121118 and 121818(changed to "t"
-c                        if((x.le.pboil/phase_mult.or.
+c     change to 2-phasec                        
+c                           if((x.le.pboil/phase_mult.or.
 c     &                        tl.gt.tboil*phase_mult).
                         
-                          if(tl.gt.tboil*phase_mult.  
-     &                     and.days.ge.time_ieos(ij)) then
+c                          if(tl.gt.tboil*phase_mult. 
+                           if(tl.gt.tboil.
+     &                     and.days.ge.time_ieos(ij)) then                              
                            ieosdc=2
-c                           strd=stepl
-                           strd = 1.
-c                           pboil=psatl(tl,pcp(ij),dpcef(ij),dtsatp,
-c     &                             dpsats,0,an(ij))
-c gaz 121218 and 121818                          
-c                           pci(ij)=(max(pl-pboil,0.0d00)+pcl)/2.
-                           s(ij)=0.95
+                           sl = 1.0
+                           ieos_sc(ij) = 1
+c gaz 100420 change tboil based on pcl                        
+                         tboil=psatl(pl-pcl,pcp(ij),dpcef(ij),dtsatp,
+     &                             dpsats,1,an(ij))                        
+                           t(ij) = tboil
+                           s(ij) = sl
+                           pci(ij) = pcl
+
+                           descrip(ij,1) = '1 to 2 mass chk'
                            time_ieos(ij) = days + time_ch
                         endif
 101                  continue  
@@ -768,24 +889,37 @@ c                           pci(ij)=(max(pl-pboil,0.0d00)+pcl)/2.
 c 
                      if(ieosd.eq.2) then
 c
-c                                  
-                      if(pl.ge.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+c  
+c gaz 070720 pl changed pl-pcl 
+                      ieos_sc(ij) = 2   
+                      if(pl-pcl.ge.pcrit_h2o.and.tl.ge.tcrit_h2o) then
                         ieosdc = 4
+                        ieos_sc(ij) = 4
                         s(ij) = 1.
                         go to 201
-                      else if(pl.lt.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+                      else if(pl-pcl.lt.pcrit_h2o.and.tl.ge.tcrit_h2o)
+     &                   then
+c gaz_101220 (iflg = 2 is for phase 2 to 3)
+                        call phase_chk(2,ij,pcl,sl,ieosd,'pcl')   
                         ieosdc = 3 
+                        pci(ij) = pcl
+                        ieos_sc(ij) = 3
                         s(ij) = 0.0
-                        go to 201
-                      else if(pcl.lt.-0.0001) then 
-c gaz 122018 another phase change                          
+                        descrip(ij,2) = '2 to 3 mass chk'
+                        go to 201                      
+c                     else if(pcl.lt.-0.0001) then 
+                       else if(pcl.lt.0.0) then 
+c gaz 122018 another phase change (physical ?)                         
                         ieosdc =3
-                        s(ij) = 0.0                               
-                        call prop_phase_change(1,ij,2,3,
-     &                  tl,pl,pcl)
+                        s(ij) = 0.0 
+                        ieos_sc(ij) = 3
+                        descrip(ij,2) = '2 to 3 pcl<0'
                         go to 201
-                      else if(pl.lt.pcrit_h2o) then
-c gaz 121918 pcl0 instead of pcl                          
+                      else if(pl-pcl.gt.pcrit_h2o.and.tl.lt.tcrit_h2o)
+     &                   then      
+                        ieosdc = 2
+                        ieos_sc(ij) = 1
+                       else if(pl-pcl.lt.pcrit_h2o) then                         
                          tboil=psatl(pl-pcl,pcp(ij),dpcef(ij),dtsatp,
      &                             dpsats,1,an(ij))
                       endif                       
@@ -795,43 +929,61 @@ c     change to liquid only conditions
                            pboil = psatl(tl,pcp(ij),dpcef(ij),
      &                          dpsatt,dpsats,0,an(ij))
 c gaz 011116 testing
-c                         if(sl.ge.1.000.and.so(ij).gt.0.95) then
                          if(sl.ge.1.000) then
                            ieosdc=1
-                           pci(ij)=pl-pboil
-                           s(ij)=1.0
-                           strd = stepl
+                           ieos_sc(ij) = 1
+                           descrip(ij,2) = '2 to 1 sl>=1'
+                           if(pl-pcl.lt.pboil) then
+c gaz040823
+c                            pcl = pl-pboil
+                            ieosdc = 2
+                            ieos_sc(ij) = 2
+                            pci(ij)=pcl 
+c gaz 111120
+c gaz 040823
+                             s(ij) = 1.0d0
+                             descrip(ij,2) = '2 to 2 pl-pcl.lt.pboil'
+                            go to 201
+                           else
+c gaz 040823
+c                            pcl = pl-pboil
+                            pci(ij)=pcl 
+                            ieosdc=1
+                            ieos_sc(ij) = 1
+                            s(ij) = 1.0
+                            descrip(ij,2) = '2 to 1 pl-pcl.ge.pboil'
+c                            strd = stepl
+                           endif                        
+
                            time_ieos(ij) = days + time_ch
-c                         else
-c                           s(ij) = 0.999
                          endif
                         endif 
+c end new addition on 092020
 c change to gas only
                         if(sl.le.0.00.and.days.ge.time_ieos(ij))then
 c gaz debug 090515
                            pboil = psatl(tl,pcp(ij),dpcef(ij),
      &                          dpsatt,dpsats,0,an(ij))
-c                          if(sl.le.0.0.and.so(ij).lt.0.05) then   
-                          if(sl.le.0.0) then         
-                           denei_ch(ij) = denei(ij)
-                           deni_ch(ij) = deni(ij)
-                           denpci_ch(ij) = denpci(ij)
-                           ieos_bal(ij) = ieos(ij)
-                           dum = so(ij)
+ 
+                          if(sl.le.0.0) then                                  
+
                            ieosdc=3 
+                           ieos_sc(ij) = 3
                            s(ij)=0.0
+                           descrip(ij,2) = '2 to 3 sl<=0.0'
                            strd = stepl
-                           time_ieos(ij) = days + time_ch
-c                          else
-c                           s(ij) = 0.0001
+
+
                           endif
                         endif
 c gaz debug 120714
                         if(x.lt.-xdiff_tol.and.sl.le.0.0.and.ieosdc.eq.2
      &                     .and.days.ge.time_ieos(ij)) then
                            ieosdc=3
+                           ieos_sc(ij) = 3
                            s(ij)=0.0
                            phi(ij) = pcl
+                           descrip(ij,2) = '2 to 3 x.. p = pc'
                            strd = stepl
                            time_ieos(ij) = days + time_ch
                         endif
@@ -840,10 +992,13 @@ c gaz debug 120714
                         if(x.lt.pboil.and.sl.le.1.e-8.and.ieosdc.
      &                     eq.2.and.days.ge.time_ieos(ij)) then
                            ieosdc=3
+                           ieos_sc(ij) = 3
                            s(ij)=0.0
                            t(ij) = 1.0001*tl 
+                           descrip(ij,2) = '2 to 3 x.. p = pc'
 c                           phi(ij) = pci(ij) + pboil*0.999
-                            pci(ij) = phi(ij) - pboil*0.999
+c gaz 012819                            
+c                            pci(ij) = phi(ij) - pboil*0.999
                             phi(ij) = pci(ij) + pboil
                            strd = stepl
                            time_ieos(ij) = days + time_ch
@@ -856,23 +1011,34 @@ c gaz debug 120814
                      if(ieosd.eq.3) then
 
 c gaz 120818 add SC transition logic (use pv (x here) instead of total pressure
-c gaz 121118 use pl for liquid phase(s)
-c                       if(x.ge.pcrit_h2o.and.tl.ge.tcrit_h2o) then
-                        if(pl.ge.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+
+                        ieos_sc(ij) = 3
+                        if(pcl.ge.pl) then
+ 
+                         pci(ij) = pcl
+                         continue
+                        endif
+                        if(pl-pcl.ge.pcrit_h2o.and.tl.ge.tcrit_h2o) then
                          ieosdc = 4
-                         s(ij) = 1
+                         ieos_sc(ij) = 3
+                         s(ij) = 0.0
                          go to 500
-c                      else if(x.ge.pcrit_h2o.and.tl.lt.tcrit_h2o) then
-                        elseif(pl.ge.pcrit_h2o.and.tl.lt.tcrit_h2o) then
-                         ieosdc = 1
+                        elseif(pl-pcl.ge.pcrit_h2o.and.tl.lt.tcrit_h2o)
+     &                      then
+                         ieosdc = 2
+                         ieos_sc(ij) = 1
                          s(ij) = 1.0
+                         descrip(ij,3) = '3 to 2 pl-pcl>=pcr'
                          go to 500
-                        elseif(tl.ge.tcrit_h2o) then
+                        elseif(pl-pcl.lt.pcrit_h2o.and.tl.ge.tcrit_h2o)
+     &                      then
+                          ieosdc = 3
+                          ieos_sc(ij) = 3
                           pvapor = pcrit_h2o
                           go to 500
                         else
                          pvapor=psatl(tl,pcp(ij),dpcef(ij),dpsatt,
-     &                           dpsats,0,an(ij))                          
+     &                           dpsats,0,an(ij))                     
                         endif  
                
 c     check vapor pressure against saturated vapor pressure
@@ -882,58 +1048,141 @@ c     change if lower
                            s(ij)=satml  
                            tboil=psatl(x,pcp(ij),dpcef(ij),dtsatp,
      &                            dpsats,1,an(ij))
-c                           t(ij) = 0.5*(tboil+tl)
-c                           if(ieosd.eq.3) then
-c                             s(ij)= satml
-c                           endif
+c                        
+c gaz 101819 
+c  
+c gaz debug 102420                           
+c 
+                           t(ij) = tboil
+                           s(ij) = sl
+                           pci(ij) = pl-pvapor
                            time_ieos(ij) = days + time_ch
-                           strd = stepl
                            ieosdc = 2
+                           ieos_sc(ij) = 2
+                           descrip(ij,3) = '3 to 2 phas_chk'
                       endif
 500                  continue
-                     endif
-c gaz 121118 add SC   
+                     endif  
 c
 c     sc conditions 
-c 
-c sufficient  to go to gas or liquid
+c                   
                   if(ieosd.eq.4) then 
-                      if(pl.lt.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+c gaz 101920 check for pcl.ge.pl and estimate new pcl
+                      ieos_sc(ij) = 3
+                      if(pcl.ge.pl) then
+                       call phase_chk(5,ij,pcl,sl,ieosd,'pcl') 
+                       pci(ij) = pcl
+                       continue
+                      endif
+                      if(pl-pcl.lt.pcrit_h2o.and.tl.ge.tcrit_h2o) then
+                        ieos_sc(ij) = 3
                         ieosdc = 3
                         s(ij) = 0.0
-                      else if(pl.ge.pcrit_h2o.and.tl.lt.tcrit_h2o) then
-                        ieosdc = 1
-                        s(ij) = 1.0
-                      else if(pl.lt.pcrit_h2o.and.tl.lt.tcrit_h2o) then
-                       tboil=psatl(pl,pcp(ij),dpcef(ij),dtsatp,dpsats,
-     &                             1,an(ij))
+                      else if(pl-pcl.ge.pcrit_h2o.and.tl.lt.tcrit_h2o)
+     &                     then
+c gaz 102520 phase_chk returns a saturation (no air solubility)   
+c check if dissolved in liquid (if so,ieosdc =1, if not, then ieosdc =2)
+                         pvapor=psatl(tl,pcp(ij),dpcef(ij),dpsatt,
+     &                           dpsats,0,an(ij))   
+c gaz following call saves 7 % iterations on 400 day problem               
+                        ieosdc = 2
+                        ieos_sc(ij) = 1                       
+                        s(ij) = max(sl,0.0)+0.001
+c                        pci(ij) = pl-pvapor
+c gaz 111120 added phi(ij) = ...                        
+c                        phi(ij) = pcl+pvapor (did not work)
+c                        strd = 0.98 is best
+                        strd = 0.98
+                      else if(pl-pcl.lt.pcrit_h2o.and.tl.lt.tcrit_h2o)
+     &                  then
+                        tboil=psatl(pl-pcl,pcp(ij),dpcef(ij),dtsatp,
+     &                             dpsats,1,an(ij))
                        if(tl.ge.tboil) then
                         ieosdc = 3
+                        ieos_sc(ij) = 3
                         s(ij) = 0.0
                        else
-                        ieosdc = 1
-                        s(ij) = 1.0
+c gaz 111220 trying to this 4-3 or 4-2   
+c phase_chk(6,ij,pcl,sl,ieosd,'sl ')  estimates sl assuming no liquid solubility                           
+c                        call phase_chk(6,ij,pcl,sl,ieosd,'sl ')  
+                        ieos_sc(ij) = 2
+                        ieosdc = 2
+c gaz 111520   commented out next line                     
+c                        pci(ij) = pl-pvapor
+c                        s(ij) = 0.
+c                        s(ij) = sl
+                        s(ij) = max(sl,0.0)+0.01
                        endif 
                       else
                        ieosdc = 4
+                       ieos_sc(ij) = 3
                       endif                     
-                   endif  
+                  endif  
 c
 c     remember if danl eos change occured
 c     tally eos numbers
 c 
+c gaz 012919 **************** very new limiting change to pci*********************************   
+                     pci(ij)=max(0.0d00,pci(ij))
+c gaz 040622                     
+c                     pci(ij)=min(phi(ij),pci(ij))
+                      if(phi(ij).lt.0.0d0) phi(ij) = 0.0d0                    
                      if(ieosd.ne.ieosdc) then
-c gaz debug 120814
-c                        strd    =stepl
-c                        if(ieosdc.eq.2) strd = 1.
+                        iphase_chng = iphase_chng +1
                         ieos_ch(ij) = ieos_ch(ij) +1
-                        
-c                        if (ieos_ch(ij).gt.3) 
-c     &                       write (iout,233) 
-c     &                       ij, ieos_ch(ij), (cord(ij,k),k=1,3)
+c gaz 122920 save phase change node info (countchanges                    
+                      call explicit_phase_update(1,ij)
                      endif
-                     ieos(ij)=ieosdc
-                  enddo    
+                                  
+c gaz 040323 print out detailed phase change information
+                if(ipr_phase_detail.ne.0) then
+                 if(iad.eq.0) then
+                  chariad(1:6) = '      '
+                  fdum_0 = -1
+                 else
+                  if(fdum_0.gt.fdum) then
+                   chariad(1:6) = 'lower '
+                   fdum_0 = fdum
+                  else
+                   chariad(1:6) = 'higher'
+                   fdum_0 = fdum
+                  endif
+                 endif
+                  if(ij.eq.1) then
+                   if(iad.gt.maxit) then
+                    chariad(7:12) = ' MAXIT'
+                   else
+                    chariad(7:12) = '      '
+                   endif
+                   write(ierr,555) l, day, days, iad, iphase_chng, fdum,
+     &              chariad
+                   if(iphase_chng.ge.0)  write(ierr,556)
+                  endif
+                 if(descrip(ij,ieosd)(1:13).ne.'            ') then
+                  write(ierr,557) ij,ieosd,ieosdc,p0,phi(ij),t0,t(ij), 
+     &            pc0,pci(ij),s0,s(ij),descrip(ij,ieosd)
+                 endif
+c                  if(ij.eq.neq) write(ierr,558) iphase_chng, strd
+555     format('time step ',i6,' day ',1p,g14.6,' days ',1p,g14.6,
+     &   ' iteration ',i5,' phase changes: ',i5,1x,'fdum ',g14.6,1x,a12)
+556     format('node',t9,'ieos0',t15,'ieos',t21,'press0',t35,'press',
+     &         t49,'t0',t63,'t',t77,'pc0',t91,'pci',t105,'s0',t119,'s') 
+557     format(i7,t9,i6,t15,i6,t21,1p,g14.5,t35,g14.5,
+     &         t49,g14.5,t63,g14.5,t77,g14.5,t91,g14.5,
+     &         t105,g14.5,t119,g14.5,t133,1x,a22)
+558    format('phase changes: ',i5,1x,' strd ',0p,f9.4)
+                  endif  
+                     ieos(ij)=ieosdc                       
+                  enddo  
+c gaz 050323 print out nodal masses and energy, 050523
+                call  awh_accumulation_calc(1,1,neq,0)
+                call  awh_accumulation_calc(4,0,0,0)
+c gaz 122920 added explicit update
+c this solves for new gridblock mass and energy conservation 
+                call explicit_phase_update(41,0)
+                call explicit_phase_update(2,0)
+                call explicit_phase_update(42,0)  
+102       continue                
                else if(ico2.lt.0.and.ice.eq.0)then
 c
 c     determine phase state for isothermal air-water flow
@@ -960,18 +1209,33 @@ c
             if (iad.eq.0) call vcon(1,ndummy)
 c
             if(ico2.gt.0) then
-               call thrmwc(ndummy)
+c gaz 120821 make sure all properties are evaluated for all nodes initially                
+              if(l.eq.0) then  
+               eval_test_h2o_0 = eval_test_h2o
+               eval_test_h2o = 1                
+                call thrmwc(ndummy)
+               eval_test_h2o = eval_test_h2o_0 
+              else
+                call thrmwc(ndummy)
+              endif
             else if(ico2.eq.0) then
 c RJP 04/10/07 
-            if(icarb.eq.1) then
+             if(icarb.eq.1) then
                call icectrco2(-34,ndummy)
 c              call icectrco2(3,ndummy)
 c              call icectrco2(-3,ndummy)
                call icectrco2(33,ndummy)
                call icectrco2(-35,ndummy)
-               else
-                  call thermw(ndummy)
-               end if
+c gaz 120821 make sure all properties are evaluated for all nodes initially                
+              else if(l.eq.0) then  
+               eval_test_h2o_0 = eval_test_h2o
+               eval_test_h2o = 1                
+                call thermw(ndummy)
+               eval_test_h2o = eval_test_h2o_0 
+              else
+                call thermw(ndummy)
+              endif
+
             else if(ico2.lt.0.and.ice.eq.0)then
                call airctr(3,ndummy)
             else if(ico2.lt.0.and.ice.ne.0)then
@@ -1013,23 +1277,48 @@ c gaz 10-18-2001
                      t(i)=t(i)-bp(i2)*strd
                   endif
                enddo    
-            else if(ico2.gt.0) then
+               else if(ico2.gt.0) then
 c
 c     NR corrections for water and noncondensible
 c
-c     strd is passed through common
+c gaz 032722 need to save true variable change (with strd etc)            
+c gaz 082622 added variable nr_completed                   
                nr1=nrhs(1)
                nr2=nrhs(2)
                nr3=nrhs(3)
+c  gaz   041323 
+               descrip = '                      '
+               iphase_chng = 0   
+c gaz 043023 calculate  mass water, energy, mass ngas
+             if(imass_chk.eq.0.and.l.eq.1)then
+c check  if mass check file exists
+                call awh_accumulation_calc(3,0,0,0)
+                if(imass_chk.ne.0) call awh_accumulation_calc(0,1,neq,0)
+             endif
+             if(imass_chk.ne.0.and.iad.gt.0)then
+c gaz 051023 
+c               call awh_accumulation_calc(2,1,neq,0)
+               call awh_accumulation_calc(0,1,neq,0)
+c gaz 050523 move after phase chng
+c               call awh_accumulation_calc(1,1,neq,0)
+             else if(imass_chk.eq.0) then
+               
+             endif
+          
                do i=1,neq
                   i1=i+nr1
                   i2=i+nr2
                   i3=i+nr3
                   ieosd=ieos(i)
+c gaz 032722                  
+                  pl_last = phi(i )
+                  tl_last = t(i)
+                  pcl_last = pci(i) 
+                  sl = s(i)
                   if(ps(i).eq.0.0) then
 c     gaz 10-18-2001
                      t(i)=t(i)-bp(i2)*strd
-c gaz 121718 added ieosd 4                     
+c gaz 121718 added ieosd 4 (SC)                  
                   elseif(ieosd.eq.1.or.ieosd.eq.4) then
                      phi(i)=phi(i)-bp(i1)*strd
                      t(i)=t(i)-bp(i2)*strd
@@ -1039,31 +1328,99 @@ c gaz 121718 added ieosd 4
                      s(i)=s(i)-bp(i2)*strd
 c  GAZ 5/1/98          
                      t(i)=t(i)-bp(i3)*strd
-c gaz 122418                     
-c                     tboil=psatl(phi(i),pcp(i),dpcef(i),dtsatp,
-c     &                            dpsats,1,an(i))
+c gaz 122418                      
                          pvapor=psatl(t(i),pcp(i),dpcef(i),dpsatt,
-     &                           dpsats,0,an(i))                      
-                     pci(i) = phi(i)-pvapor
+     &                           dpsats,0,an(i))  
+c gaz debug 093019(stays in! )                      
+                     if(pvapor.ge.phi(i)) then
+                          t(i)=psatl(phi(i),pcp(i),dpcef(i),
+     &                          dtsatp,dpsats,1,an(i)) 
+                        pvapor = phi(i)
+                     endif     
+c gaz 041023                    pci(i) = phi(i)-pvapor
                   elseif(ieosd.eq.3) then
                      phi(i)=phi(i)-bp(i1)*strd
                      t(i)=t(i)-bp(i2)*strd
                      pci(i)=pci(i)-bp(i3)*strd
                   endif
-c big change gaz 11/26/96
-c gaz debug 120714 (phi correction)
-c                  if(ieosd.ne.2.and.phi(i).lt.pci(i)) then
-c                   if(phi(i).lt.pci(i)) phi(i) = pci(i)
-c gaz debug 011415 try different approach pci correction
-c gaz debug 011415 this worked well (so far)
-c
-c                   pci(i) = phi(i)
-c                   strd = stepl
-c                  endif
-                  pci(i)=max(0.0d00,pci(i))
-                  pci(i)=min(phi(i),pci(i))
-                  s(i)=min(1.d00,max(0.0d00,s(i)))
-               enddo      
+c gaz 041323 
+                   if(phi(i).lt.0.0d00) then
+                    if(ieosd.ne.1) iphase_chng = iphase_chng +1
+                    if(ieosd.ne.1) descrip(i,ieosd)
+     &                     = '2 to 1 pl <= 0 NR '   
+                    if(ieosd.eq.1) descrip(i,ieosd)
+     &                     = '1 to 1 pl <= 0 NR ' 
+                    ieos(i) = 1
+                    ieosd = 1
+                    t(i) = tl_last
+                    phi(i) = pl_last  
+                   endif 
+c gaz 040923 changed min-max to include phase state
+c gaz 041323   ' lt instead of le ',  ' gt instead of ge '    OK     
+c gaz 041923 changing for pci < 0      
+                  if(pci(i).lt.0.0d00) then
+                   iphase_chng = iphase_chng +1
+                   if(ieosd.eq.1)  then
+                    pci(i) = 0.0d0
+                    descrip(i,ieosd) =  '1 to 1 pcl <= 0 NR '
+                   else if(ieosd.eq.2)  then
+                    pci(i) = 0.0d0
+                    ieos(i) = 1
+                    descrip(i,ieosd) =  '2 to 1 pcl <= 0 NR '          
+                   else
+                    pci(i) = 0.0d0
+                    ieos(i) = 3
+                    descrip(i,ieosd) =  '3 to 3 pcl <= 0 NR '
+                    s(i) =0.0d0
+                   endif
+                  endif
+                  if(pci(i).gt.phi(i)) then
+c                   if(ieosd.ne.1) iphase_chng = iphase_chng +1
+c gaz 041923
+c                   ieos(i) = 1                                     
+c                   ieosd = 1
+                   pci(i) = phi(i)
+                   if(ieosd.eq.2) descrip(i,ieosd)
+     &                     = '2 to 2 pcl >= pl NR '   
+                  if(ieosd.eq.1) descrip(i,ieosd)
+     &                     = '1 to 1 pcl >= pl NR ' 
+                  if(ieosd.eq.3) descrip(i,ieosd)
+     &                     = '3 to 3 pcl >= pl NR ' 
+                  endif
+c gaz 041323   ' lt instead of le ',  ' gt instead of ge '     OK
+                  if(s(i).lt.0.0d00) then
+                   if(ieosd.ne.3) iphase_chng = iphase_chng +1
+                   ieos(i) = 3
+                   ieosd = 3
+c gaz debug 042623
+                   t(i) = (tl_last+t(i))*0.5d0
+                   descrip(i,ieosd) = '2 to 3 sl <= 0 NR '
+                   s(i) = 0.0d00
+                  elseif(s(i).gt.1.0d00) then
+                   if(ieosd.ne.1) iphase_chng = iphase_chng +1
+                   ieos(i) = 1
+                   ieosd = 1
+                   descrip(i,ieosd) = '2 to 1 sl >= 1 NR '
+                   s(i) = 1.0d00
+                  endif
+                  if(t(i).le.tNR_min) then
+c                   t(i) = tl_last
+                  endif
+c gaz 032722  load variable changes into bp
+                  if(ieosd.ne.2) then
+                   bp(i1) = pl_last
+                   bp(i2) = tl_last
+                   bp(i3) = pcl_last                  
+                  else
+                   bp(i1) = pl_last
+                   bp(i3) = tl_last
+                   bp(i2) = sl                     
+                  endif                  
+               enddo 
+c gaz 051023
+                  call awh_accumulation_calc(2,1,neq,0)
+c gaz 082622 added nr_completed = 3              
+              nr_completed = 3
             else if(ico2.lt.0.and.ice.eq.0) then
 c     
 c     make corrections for isothermal air-water mixture
@@ -1085,6 +1442,7 @@ c
 
       return
       end
+c gaz auxilliary subroutines 1. prop_phase_change 2. awh_accumulation_calc
       subroutine prop_phase_change(iflg,i,ieosd1,ieosd2,
      & tl_new,phi_new,pcl_new)
 c
@@ -1126,4 +1484,144 @@ c error condition : no pore space
       else
       endif
       return
+      end
+
+      subroutine awh_accumulation_calc(iflg,i1,i2,ndummy)
+c
+c compar differences in accumulation terms
+c
+      use comai
+      use combi,only : sx1,nelm,nelmdg
+      use comci
+      use comdi
+      use comdti,only : n0
+      use comei,only : a
+      use comfi
+      use comgi,only : bp
+      use davidi,only : nmat,nrhs
+      use com_exphase,only : i_ex_update, ieq_ex
+      use com_prop_data
+      implicit none
+      real*8 dtin, ztol, energy_norm, frac_ngas, sx1d
+      real*8 delmax(3), tol_eq1, tol_eq2, tol_eq3
+      real*8 fdum_phase_calc, fdum_phase_prev,
+     &        tol_phase_calc, fdum_raw(3)
+      real*8 dtot_orig, ts_fac
+      real*8 strd_smpl
+      real*8 phi_low,phi_high,t_low,t_high,pci_low,pci_high
+      real*8 s_low,s_high
+      logical test_091322, exists
+      integer ndex(3)
+      integer inr, max_inr,ic_tol_count, inr_fail, ifail_phase_chk
+c    
+      integer i_ex_update_save, ieq_ex_save, ieos_save
+      integer  ieos_in
+      integer i, id, i1, i2, ij, iflg, neqp1, ndummy 
+      real*8  weightavg, weight_21, dmpf_new, dmpf_old, dmpf_avg
+      real*8 rolw_awh, s_over, drolw_awh_dp 
+c gaz 050123
+      character*80 accum_AWH_title
+      integer open_file
+      integer ieosd, ieosdc
+      parameter (weight_21 = 1.0)
+      parameter(ztol = 1.d-14, max_inr =10, tol_phase_calc = 1.d-6)
+      parameter(ts_fac = 0.5d0)
+      parameter(phi_low =-0.01,phi_high = 100., t_low = -1.)
+      parameter(t_high = 1000., pci_low = -1, pci_high = 100.)
+      parameter(s_low = -10, s_high = 10.)
+
+       if(iflg.eq.0) then
+c allocate memory  
+        if(.not.allocated(zntotf)) allocate(zntotf(n0)) 
+        if(.not.allocated(mass_h2o)) then 
+         allocate(mass_h2o(n0))
+         allocate(mass_ngas(n0))
+         allocate(energy_tot(n0))
+         allocate(mass0_h2o(n0))
+         allocate(mass0_ngas(n0))
+         allocate(energy0_tot(n0))
+         allocate(dum_calc_eos(n0))
+         allocate(dtot_test(n0))
+         allocate(ieos0(n0))
+c calculate initial nodal mass and energy totals (thrmwc already called )
+           do i = 1, nawh
+            id = nawh_nodes(i)
+            sx1d = sx1(id)
+            mass_h2o(id) = (deni(id)*dtot + denh(id))*sx1d
+            mass_ngas(id) = (denpci(id)*dtot + denpch(id))*sx1d
+            energy_tot(id) = (denei(id)*dtot + deneh(id))*sx1d
+c
+           enddo
+        endif
+      else if(iflg.eq.1) then
+c
+c gaz for phase change 
+c
+        neqp1 = neq+1
+        do i = 1, nawh
+         id = nawh_nodes(i)
+         ieq_ex = id
+         sx1d = sx1(id) 
+          call thrmwc(0)          
+         mass_h2o(id) = (deni(id)*dtot + denh(id))*sx1d
+         mass_ngas(id) = (denpci(id)*dtot + denpch(id))*sx1d
+         energy_tot(id) = (denei(id)*dtot + deneh(id))*sx1d
+         frac_ngas = mass_ngas(id)/(mass_ngas(id)+mass_h2o(id)+ztol)
+         zntotf(id) = frac_ngas
+c
+        enddo
+      else if(iflg.eq.2) then
+        do i = 1, nawh
+         id = nawh_nodes(i)
+         mass0_h2o(id)   = mass_h2o(id)
+         mass0_ngas(id)  = mass_ngas(id)
+         energy0_tot(id) = energy_tot(id)
+         ieos0(id) = ieos(id)
+        enddo
+      else if(iflg.eq.3) then
+c  read test nodes if file exists        
+          imass_unit = 0
+          inquire(file = 'acc_AWH_nodes.txt', exist = exists)
+          if(exists)  then
+           imass_chk = 1
+           imass_unit = open_file('acc_AWH_nodes.txt', 'old')
+           read(imass_unit,'(a80)')  accum_AWH_title
+           read(imass_unit,*) nawh
+           allocate(nawh_nodes(nawh))
+           backspace imass_unit
+           read(imass_unit,*) nawh,(nawh_nodes(i),i = 1, nawh)
+           imout = open_file('acc_AWH_write.txt', 'unknown')
+          else
+           imass_chk = 0
+          endif
+          
+      else if(iflg.eq.4) then
+c      printout mass change
+            do i = 1,nawh
+               ij = nawh_nodes(i)
+                 ieosd = ieos0(ij)
+                 ieosdc = ieos(ij)
+                  if(i.eq.1) then
+                   write(imout,555) l, day, days, iad, iphase_chng,
+     &              fdum, '            '
+                   write(imout,556)
+                  endif
+c gaz 050423 debug
+c                  
+                  write(imout,557) ij,ieosd,ieosdc,mass0_h2o(ij),
+     &            mass_h2o(ij),energy0_tot(ij),energy_tot(ij), 
+     &            mass0_ngas(ij),mass_ngas(ij),descrip(ij,ieosd)(1:22)
+c                endif
+            enddo
+555     format('time step ',i6,' day ',1p,g14.6,' days ',1p,g14.6,
+     &   ' iteration ',i5,' phase changes: ',i5,1x,'fdum ',g14.6,1x,a12)
+556     format('node',t10,'ieos0',t17,'ieos',t26,'mass0',t41,'mass',
+     &         t52,'energy0',t67,'energy',t85,'mngas0',t100,'mngas',
+     &         t114,'discription')
+557     format(i7,t9,i6,t15,i6,t21,1p,g14.5,t35,g14.5,
+     &         t49,g14.5,t63,g14.5,t77,g14.5,t91,g14.5,t114,a22)
+c     &         t105,g14.5,t119,g14.5,t135,' description ',a22)
+558    format('phase changes: ',i5,1x,' strd ',0p,f9.4)
+       endif
+      return 
       end

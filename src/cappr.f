@@ -294,7 +294,7 @@ c     load nodal capillary pressures
 c     
             do mid=1,neq
                mi=mid+ndummy
-               it=icap(mi)
+                  it=icap(mi)
                itperm = irlp(mi)
                itpperm = irlpt(itperm)
               if(it.eq.0.or.(itpperm .ge. 3 .and. itpperm .le. 20)) then
