@@ -559,6 +559,7 @@ class fcontour(object):
                 datas.append(np.array([[float(d) for d in ln.strip().split()[4:]] for ln in lns]))
             
         data = np.concatenate(datas,1)
+        #print(f'data is {data}')
         self._data[time] = dict([(var,data[:,icol]) for icol,var in enumerate(self.variables)])
     def _setup_headers_surf(self,headers):      # headers for the SURF output format
         for header in headers:
@@ -1508,6 +1509,7 @@ class fcomparison(object):
 
         # Sort the files to ensure consistent order across platforms
         files.sort()
+        #print(f'files are {files}')
 
         for fname in files:
             if '..' in fname:
@@ -1522,6 +1524,7 @@ class fcomparison(object):
             elif '..' not in fname:
                 path = os.path.join('..', 'compare', '') + fname
                 if os.path.exists(path):
+                    #print('valid comparison of: ', fname, ' and ', path)
                     pass
                 else:
                     continue
@@ -1545,9 +1548,10 @@ class fcomparison(object):
 
         data = np.array([[to_float(item) for item in sublist] for sublist in data], dtype=float)
         data = np.reshape(data,(-1,1))
+        #print(f'Processed file: {filename}')
+        #print(f'Data for {filename}: {data}') 
         self.files_info.append((filename, data))  # Store the data as a tuple (filename, data)
-        #print('Processed file: {filename}')
-        #print(f'Data for {filename}: {data}')                 
+                        
 
 def fdiff( verbose, in1, in2, format='diff', times=[], variables=[], components=[], nodes=[], info=[]):
     '''

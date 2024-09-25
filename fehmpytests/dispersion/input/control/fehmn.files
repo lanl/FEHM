@@ -1,0 +1,8 @@
+input: ../input/run1.dat
+grid: ../input/grid_out_5m_500cells.fehmn
+rsti: ../input/run.fin
+outp: fehmn.out
+root: run1
+
+none
+0

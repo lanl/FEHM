@@ -408,6 +408,21 @@ class fehmTest(unittest.TestCase):
         arguments['maxerr'] = 1.0
         
         self.test_case('doe', arguments)
+
+    def dispersion(self):
+        """
+        **Test Dispersion**
+        
+        """
+        
+        #arguments = {}
+        #arguments['times'] = [3.0]
+        #arguments['variables'] = ['P', 'T', 'saturation']
+        #arguments['maxerr'] = 1.0
+        
+        #self.test_case('dispersion', arguments)
+        self.test_case('dispersion')
+
         
     def head(self):
         """
