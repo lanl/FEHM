@@ -8,7 +8,15 @@ hero_height: is-hidden
 
 **Test the Concentration Dependent Brine Density Functionality**
 
-Compares generated history files to old history files that are known to be correct. Only the density values are tested.
+Compares generated history files to old history files that are known to be correct. Files are written for Air Density (kg/m^3), Water Density (kg/m^3), Capillary pressure (MPa), Vapor pressure (MPa), Water Pressure (MPa), and Temperature (C). Only the density values are tested.
+
+This test case is constructed from cden_test in the VV Test Suite. There are 2 runs, one using trac1.macro and the other using trac2.macro.
+
+<pre>
+static-multi1_denAIR.his   static-multi1_presVAP.his  static-multi2_denAIR.his	 static-multi2_presVAP.his
+static-multi1_denWAT.his   static-multi1_presWAT.his  static-multi2_denWAT.his	 static-multi2_presWAT.his
+static-multi1_presCAP.his  static-multi1_temp.his     static-multi2_presCAP.his  static-multi2_temp.his
+</pre>
 
 Test Directory: [FEHM/fehmpytests/cden](https://github.com/lanl/FEHM/tree/master/fehmpytests/cden)
 
