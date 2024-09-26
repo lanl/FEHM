@@ -39,8 +39,10 @@ node
 11
       2 100 200 300 400 500 600 700 800 900 1002
 hist
+conc
+end
 cont
-avs 50000    1.0
+avsx 50000    1.0
 liquid
 pres
 velocity
@@ -52,7 +54,7 @@ vapor
 formatted
 geom
 xyz
-endavs
+endavsx
 #-----------------------------
 #-----------------------------
 trac

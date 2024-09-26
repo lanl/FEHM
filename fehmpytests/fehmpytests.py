@@ -413,6 +413,9 @@ class fehmTest(unittest.TestCase):
         """
         **Test Dispersion**
         
+        Compares the generated contour and tracer files to old contour and tracer files known to be correct.
+        
+
         """
         
         #arguments = {}
@@ -900,7 +903,7 @@ class fehmTest(unittest.TestCase):
                 if os.path.exists( output_dir ): shutil.rmtree(output_dir)
                 os.mkdir( output_dir )
                 os.chdir( output_dir )
-                filetypes = ['*.avs','*.csv','*.his','*.out','*.trc','*.ptrk','*.dat','*.sptr3', '*.cflx']
+                filetypes = ['*.avs', '*.avsx', '*.csv','*.his','*.out','*.trc','*.ptrk','*.dat','*.sptr3', '*.cflx']
                 test_flag = False
                 
                 for filetype in filetypes:
@@ -964,7 +967,7 @@ class fehmTest(unittest.TestCase):
         mxerr = values['maxerr']
         components = values['components']
         test_measure = values['test_measure']
-        #print('\nsubcase: ', subcase, ' filetype: ', filetype, ' parameters: ', parameters)
+        #print(f'\nsubcase: {subcase} filetype: {filetype} parameters:  {parameters}')
 
         self._run_fehm(subcase)
        
@@ -1012,6 +1015,7 @@ class fehmTest(unittest.TestCase):
                         #print('true? ', difference, '<', mxerr, '=', difference<mxerr, 'for ', (os.path.join('..','compare','*')+subcase+'.'+filetype), ' and ', ('*'+subcase+'.'+filetype))
                         self.assertTrue(difference<mxerr, msg%(v, t))
                         test_flag = True
+                        
                     except AssertionError as e:
                         #Write to fail log if switch is on.
                         if self.log:
@@ -1268,6 +1272,7 @@ class fehmTest(unittest.TestCase):
 
         #Returns the test method for filetype.
         return { '*.avs':  contour_case,
+                 '*.avsx':  contour_case,
                  '*.csv':  contour_case,
                  '*.dat':  comparison_case,
                  '*.sptr3':  comparison_case,
@@ -1337,6 +1342,7 @@ class fehmTest(unittest.TestCase):
         os.chdir(self.maindir)
         
         msg = 'Unsuccessful fehm simulation\nContents of '
+        #print(f'Are we complete? {complete}, Doe we generate a message? {msg+errfile}, Do we have an errstr? {errstr}')
         #print('!!!!!!',self.assertTrue(complete, msg+errfile+':\n\n'+errstr) )
         self.assertTrue(complete, msg+errfile+':\n\n'+errstr)
         os.chdir(curdir)
@@ -1365,6 +1371,7 @@ def suite(mode, test_case, log):
         #suite.addTest(fehmTest('dissolution', log))
         #suite.addTest(fehmTest('doe', log))
         suite.addTest(fehmTest('dryout', log))
+        suite.addTest(fehmTest('dispersion', log))
         suite.addTest(fehmTest('evaporation', log))
         suite.addTest(fehmTest('fracture_aperture', log))
         suite.addTest(fehmTest('head', log))

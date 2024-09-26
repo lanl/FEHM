@@ -313,6 +313,7 @@ class fcontour(object):
         :type nearest: fl64,list
         '''
         from glob import glob
+        #print('Reading in contour data...')
         if isinstance(filename,list):
             files = filename
         else:
@@ -483,11 +484,14 @@ class fcontour(object):
         elif headers[0].startswith('node, '):       # check for SURF output
             self._format = 'surf'
         elif headers[0].startswith('nodes at '):    # check for AVSX output
+            #print('avsx format detected')
             self._format = 'avsx'
         elif headers[0].split()[0].isdigit():           # check for AVS output
             self._format = 'avs'
+        #print(f'Dected format is {self._format}')
         return True
     def _setup_headers_avsx(self,headers):      # headers for the AVSX output format
+        #print(f'setting up avsx headers')
         self._variables.append('n')
         for header in headers:
             header = header.strip().split(' : ')
@@ -497,6 +501,7 @@ class fcontour(object):
                 else: var = key
                 self._variables.append(var)
     def _read_data_avsx(self,files,mat_file):               # read data in AVSX format
+        #print('reading avsx data')
         datas = []
         for file in sorted(files):      # use alphabetical sorting
             with open(file, 'r') as fp:
@@ -510,6 +515,7 @@ class fcontour(object):
             #fp.close()
             datas.append(np.array([[float(d) for d in ln.strip().split(':')] for ln in lns]))
         data = np.concatenate(datas,1)
+        #print(f'avsx data {data}')
         self._data[time] = dict([(var,data[:,icol]) for icol,var in enumerate(self.variables)])
         
         if mat_file and not self._material_properties:
@@ -519,6 +525,7 @@ class fcontour(object):
             lns = fp.readlines()
             #fp.close()
             data = np.array([[float(d) for d in ln.strip().split(':')[1:]] for ln in lns])
+            #print(f'avsx data {data}')
             self._material= dict([(var,data[:,icol]) for icol,var in enumerate(self._material_properties)])
     def _setup_headers_avs(self,headers,files):         # headers for the AVS output format
         for header,file in zip(headers,files):
