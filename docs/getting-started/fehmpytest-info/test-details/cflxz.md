@@ -9,7 +9,14 @@ hero_height: is-hidden
 **Concentration Zone Flux Test**
 
 
-Comparison of FEHm with 1-D Difusion Model
+This test is constructed from cflxz_test in the VV Test Suite which compares FEHM results with solution from 1-D Difusion Model. FEHM writes files for Aqueous and Vapor Time vs Flux In/Out. This test case uses verified FEHM files from the VV Test which are compared using the Density variable.
+
+Files compared include:
+<pre>
+cflxz_test.00001_con_node.dat  cflxz_test.00002_con_node.dat  cflxz_testAqueous_Species_001.cflx
+cflxz_test.00001_sca_node.dat  cflxz_test.00002_sca_node.dat  cflxz_testVapor_Species_001.cflx
+cflxz_test.00001_vec_node.dat  cflxz_test.00002_vec_node.dat
+</pre>
 
 
 Test Directory: [FEHM/fehmpytests/cflxz](https://github.com/lanl/FEHM/tree/master/fehmpytests/cflxz)
