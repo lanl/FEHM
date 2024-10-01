@@ -8,7 +8,7 @@ hero_height: is-hidden
 
 **Test the Henrys law Problem**
 
-3 tests are run, see henry1.in, henry2.in, and henry3.in
+Comparison of Model and Analytical Solution for Concentration vs Time for 1) Air Movement through stagnant water 2) Water Movement through stagnant air 3) Liquid phase reaction. FEHM input files are henry1.in, henry2.in, and henry3.in
 
 <pre>
 ==> henry1.in <==
