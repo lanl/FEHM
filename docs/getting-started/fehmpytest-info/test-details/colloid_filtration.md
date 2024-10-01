@@ -8,7 +8,16 @@ hero_height: is-hidden
 
 **Test Colloid Filtration**
 
-Compares the generated ptrk files with the old ptrk files known to be correct.
+The itfc macro is used to assign values for colloid filtration at matrix interfaces. Input Data includes sources from the Yucca Mtn data repository.
+Comparisons are made between the generated ptrk files and the FEHM v2.24 ptrk files known to be correct.
+The test is constructed from VV Test Suite colloid_filtration created for FEHM verification for the Yucca Mtn QA program.
+
+The mptr files fehm_TSPA_base1.mptr and fehm_TSPA_base2.mptr contain the input for running the TSPA particle tracking simulation.
+The files used in comparison are:
+
+<pre>
+  fehm_TSPA_base1.ptrk  fehm_TSPA_base2.ptrk
+</pre>
 
 Test Directory: [FEHM/fehmpytests/colloid_filtration](https://github.com/lanl/FEHM/tree/master/fehmpytests/colloid_filtration)
 
