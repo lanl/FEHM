@@ -8,7 +8,8 @@ hero_height: is-hidden
 
 **Test Head Pressure Problem**
 
-Compares the generated contour files to old contour files that are known to be correct. Only the pressure values at day 2 are tested.
+Comparison of Head and Pressure Formulation for Pressure vs Position at Time  365.000.
+Compares the generated contour files to old contour files that are known to be correct. 
 
 Test Directory: [FEHM/fehmpytests/head](https://github.com/lanl/FEHM/tree/master/fehmpytests/head)
 
