@@ -8,7 +8,9 @@ hero_height: is-hidden
 
 **Test Dry-Out of a Partially Saturated Medium**
 
-Compares the generated contour files to old contour files known to be correct. The saturation is tested for all times.
+Dry-Out of a Partially Saturated Medium with comparison of Dryout Front vs Time word Vapor Pressure Lowering.
+Test is constructed from VV Test Suite dryout. This test compares the generated contour files to old contour files known to be correct. The saturation is tested for all times.
+
 
 Test Directory: [FEHM/fehmpytests/dryout](https://github.com/lanl/FEHM/tree/master/fehmpytests/dryout)
 
