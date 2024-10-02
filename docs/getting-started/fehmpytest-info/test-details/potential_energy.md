@@ -6,11 +6,10 @@ hero_height: is-hidden
 
 # potential_energy
 
-**Test potential_energy**
+**Potential Energy Test**
 
-
-Comparison of Ratio of Permeabilty Change to Ratio of Change in Flow Rate
-Test includes vertical and horizontal runs.
+This test case is constructed from the VV Test Suite potential_energy problem.
+It does a comparison of potential energy temperature results for vertical and horizontal runs.
 
 
 Test Directory: [FEHM/fehmpytests/potential_energy](https://github.com/lanl/FEHM/tree/master/fehmpytests/potential_energy)
