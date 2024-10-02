@@ -8,7 +8,9 @@ hero_height: is-hidden
 
 **Test the Toronyi Two-Phase Problem**
 
-Compares the generated contour files with the old contour files known to be correct. Tests all values at time 2.0.
+This test case is constructed from the VV Test Suite toronyi comparison of FEHM and Thomas & Pierson Solution for Final Saturation.
+
+Compares the generated files for Coordinate and FDM grid nodes with output files known to be correct. Tests all values at time 2.0.
 Run 2 test using toronyi_fdm.in and toronyi.in.
 
 
