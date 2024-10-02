@@ -8,7 +8,12 @@ hero_height: is-hidden
 
 **Test Multi-Species Particle Tracking**
 
-Compares the generated ptrk files with the old ptrk files knonw to be correct.
+This test is constructed from the VV Test Suite test problem mptr_test which is a comparison of Species 1 with Species 2 at final timestep.
+Compares the generated ptrk files with the FEHM output files known to be correct:
+
+<pre>
+fehm_test_mptr1.ptrk  fehm_test_mptr2.ptrk
+</pre>
 
 Test Directory: [FEHM/fehmpytests/mptr](https://github.com/lanl/FEHM/tree/master/fehmpytests/mptr)
 
