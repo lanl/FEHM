@@ -8,6 +8,10 @@ hero_height: is-hidden
 
 **Pressure Transient Analysis (Theis) Problem**
 
+This test case is constructed from the VV Test Suite theis problem.
+Solution for 1-D Theis pressure transient problem is compared for Pressure vs Time and Pressure vs Position.
+
+
 
 Test Directory: [FEHM/fehmpytests/theis](https://github.com/lanl/FEHM/tree/master/fehmpytests/theis)
 
