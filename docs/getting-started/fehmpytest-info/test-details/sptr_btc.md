@@ -8,6 +8,9 @@ hero_height: is-hidden
 
  **Test sptr_btc**
 
+This test case is constructed from the VV Test Suite sptr_btc problem which uses input files from the streamline test.
+The input files are copied and used directly in this test case. These include sptr.geom, valid1.ini, and valid1.stor.
+
 Run tests using sptr_long1alt.dat, sptr_long1btc.dat, and sptr_long1altxyz.dat.
 
 Test Directory: [FEHM/fehmpytests/sptr_btc](https://github.com/lanl/FEHM/tree/master/fehmpytests/sptr_btc)
