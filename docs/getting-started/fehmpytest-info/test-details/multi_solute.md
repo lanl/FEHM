@@ -8,7 +8,46 @@ hero_height: is-hidden
 
 **Test Multi-Solute Transport with Chemical Reaction**
 
-Compares the generated tracer files to old tracer files known to be correct. All concentraction values are tested.
+The test case is constructed from the VV Test Suite multi_solute model problem. It uses the trac and trxn macros and is a comparison of FEHM and PDREACT Solution for Concentration vs Time.
+Test compares the generated tracer files to old tracer files known to be correct. All concentraction values are tested.
+
+Test Cases for Multi-Solute Transport with Chemical Reaction - trac macro
+
+  Species Co_aq              
+  Species Fe_aq                     
+  Species EDTA_aq                    
+  Species CoEDTA_aq              
+  Species FeEDTA_aq                      
+  Species CoEDTA_s                       
+  Species Co_s                          
+  Species FeEDTA_s   
+
+Multi-Solute Transport with Chemical Reaction - trxn macro
+
+  Species Co_aq               
+  Species Fe_aq                   
+  Species EDTA_aq                 
+  Species CoEDTA_aq                  
+  Species FeEDTA_aq                    
+  Species CoEDTA_s                  
+  Species Co_s                        
+  Species FeEDTA_s    
+
+Comparison files:
+
+<pre>
+multi_solute_trac_Cobalt[aq].trc	       multi_solute_trxn_Cobalt_s.trc
+multi_solute_trac_Cobalt[s].trc            multi_solute_trxn_Cobalt.trc
+multi_solute_trac_Co-EDTA[aq].trc	       multi_solute_trxn_Co-EDTA_a.trc
+multi_solute_trac_Co-EDTA[s].trc	       multi_solute_trxn_Co-EDTA_s.trc
+multi_solute_trac_EDTA[aq].trc             multi_solute_trxn_EDTA.trc
+multi_solute_trac_Fe-EDTA[aq].trc          multi_solute_trxn_Fe-EDTA_a.trc
+multi_solute_trac_Fe-EDTA[s].trc	       multi_solute_trxn_Fe-EDTA_s.trc
+multi_solute_trac_FreeIon_Cobalt[aq].trc   multi_solute_trxn_FreeIon_Cobalt.trc
+multi_solute_trac_FreeIon_EDTA[aq].trc     multi_solute_trxn_FreeIon_EDTA.trc
+multi_solute_trac_FreeIon_Iron[aq].trc     multi_solute_trxn_FreeIon_Iron.trc
+multi_solute_trac_Iron[aq].trc             multi_solute_trxn_Iron.trc        
+</pre>
 
 Test Directory: [FEHM/fehmpytests/multi_solute](https://github.com/lanl/FEHM/tree/master/fehmpytests/multi_solute)
 
