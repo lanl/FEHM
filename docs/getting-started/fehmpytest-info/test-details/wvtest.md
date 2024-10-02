@@ -10,6 +10,8 @@ hero_height: is-hidden
 
 This is a test of the ability of the code to do dry-out by evaporation.
 
+This test is constructed from the VV Test Suite wvtest problem. 1)  Water vapor mass flux via diffusion 2)  Calculation of the water vapor diffusion coefficient.
+
 The problem is 1 m long with 5 elements and 12 nodes,
 the left side is fixed at 35 C and the right side is fixed at 10 C.
 
@@ -17,8 +19,7 @@ Initial saturation is 0.25  (left) to 0.15 (right) in steps of 0.02
 
 porosity = 0.8   tortuosity(adif) = 0.66
 
-Capillary forces are turned off so that as the water is moved to
-the cold end there is no way for it to flow back to the hot end.
+Capillary forces are turned off so that as the water is moved to the cold end there is no way for it to flow back to the hot end.
 Basically this is a one-way heat pipe.
 
 
