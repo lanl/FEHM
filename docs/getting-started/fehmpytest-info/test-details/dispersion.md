@@ -5,8 +5,9 @@ hero_height: is-hidden
 ---
 
 # dispersion
+This test simulates the advection-dispersion transport of solutes in groundwater (saturated single-phase flow) with a uniform Darcy flux and linear equilibrium sorption. The time step is 0.1 day, and the total simulation time is 10 days. The 5-meter simulation domain is discretized into 500 cells. The column has an initial uniform concentration of 0 mg/l, and at the inlet, a constant concentration of 1.0 mg/l conservative tracer is continuously injected. The example input file below corresponds to Case 1, as shown in Table 2 of the write-up under the information folder. 
 
-This test case is an example of the trac optional value NPRTTRC used to write specified time steps.
+In addition, this test case is an example of the trac optional value NPRTTRC used to write specified time steps.
 By default, all time steps are written.
 Group 3 - IACCMX, DAYCM, DAYCMM, DAYCMX, NPRTTRC
 
