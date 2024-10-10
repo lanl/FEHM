@@ -39,18 +39,16 @@ node
 11
       2 100 200 300 400 500 600 700 800 900 1002
 hist
-conc
+days 50 1.0
+con
+sat
 end
 cont
 avsx 50000    1.0
-liquid
 pres
-velocity
 sat
-temp
 conc
 vec
-vapor
 formatted
 geom
 xyz
@@ -60,7 +58,7 @@ endavsx
 trac
 0.0    1.5     1.e-7     1.0
 0      1e10     3.65e10   0
-50      1.5     1.e-6      0.001  
+50      1.5     1.e-6      0.001  1000
 1
 1
 0       0.0     0.0     1.   0.0  0.1 0.1 0.1
