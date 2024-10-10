@@ -910,14 +910,14 @@ c gaz identify secondary node variable (i_sec)
 c gaz use a blanking value
                     i_sec = iblanking_value
                     i = i_sec
-                   endif                   
+                   endif    
                else if (ifdual .eq. 0 .or. iogdkm .eq. 1) then
                   write(vstring, 105) dls(1:k), i
                   i_wrt = i
                else 
                   write(vstring, 105) dls(1:k), i - neq
                   i_wrt = i -neq
-               end if
+               end if              
                ic2 = ic1 + len_trim(vstring)
                string(ic1:ic2) = vstring
                ic1 = ic2 + 1
@@ -930,11 +930,10 @@ c gaz use a blanking value
                   string(ic1:ic2) = vstring
                   ic1 = ic2 + 1
                end if
-            end if
+           end if
 c end endif *****
-           
-            
-
+c xhua debug fixed the node-coordiate problem in output *con_node.avsx
+         i_wrt = i 
          if (altc(1:3) .eq. 'tec' .and. iocord .ne. 0) then
                   if (icall .eq. 1 .and. iozid .eq. 0) then
                    if(i.ne.iblanking_value) then

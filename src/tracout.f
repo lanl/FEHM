@@ -144,6 +144,14 @@ c Standard text
          write(spnum, '(i3.3)') nsp
          fname =  root(1:iroot) // '_' // trim(cpntnam(ic)) // trcsfx
          open (unit=iunit, file=fname, form='formatted')
+c xhua debug 06Oct2024
+c         select case (form_flag)
+c         case (0)
+c            write(ishiss, 6000) verno, jdate, jtime, trim(wdd)
+c         case (1)
+c            write(ishiss, 6005) verno, jdate, jtime
+c         end select
+c                
          call write_fileheader
       end do
       units = 'Moles/kg rock'
@@ -240,6 +248,7 @@ c Standard text
  250  format('TITLE = "', a30, 2x, a10, 2x, a8,'"')
  260  format('ZONE T = "', a, 1x, a, '"')
  270  format(a, ' Concentration ', '(', a, ')')
+      
       end subroutine write_fileheader
 
       end subroutine tracout
