@@ -28,7 +28,7 @@ git clone https://github.com/lanl/FEHM.git
 cd FEHM
 ```
 
-Next, you will need to create the executable. This is different depending on your operating system. Build FEHM using the FORTRAN code in FEHM/src.
+Next, you will need to create the executable. This is different depending on your operating system. For Linux/Mac, build FEHM using the FORTRAN code in `FEHM/src`. For Windows, Build FEHM using Visual Studio with the Fortran extension in the `FEHM` directory.
 
 *	**Linux/Mac**
 
@@ -44,10 +44,13 @@ Next, you will need to create the executable. This is different depending on you
 
 	This requires that you have Visual Studio installed along with Fortran extensions enabled.
 
-	1. Using your File Explorer, navigate to the location where you downloaded FEHM.
-	2. Navigate to `FEHM/src/PC/`
-	3. Double click on the `.vfproj` file. You may need to manually select Visual Studio as the correct program to run it. This will open Visual Studio with the file listed under the Solution Explorer.
-	4. Make sure the "Release" and "x64" are selected in the drop downs on the menu bar and then click "Start". This will create an executable in the `/src/x64/release` directory.
+	1. Using your File Explorer, navigate to the location where you downloaded `FEHM`.
+	2. Double click on the `.vfproj` file. You may need to manually select Visual Studio as the correct program to run it. This will open Visual Studio with the file listed under the Solution Explorer.
+	3. Make sure the "Release" and "x64" are selected in the drop downs on the menu bar and that (IFORT) is shown on the Solution Explorer, then click "Start". This will create an executable in the `FEHM/x64/release` directory.
+
+
+> [!NOTE]
+> Windows Users - Using IFORT may give a deprecation warning in Visual Studio. It is safe to ignore this message. FEHM runs best with IFORT and using IFX may give unpredicatble results.
 
 ### Test FEHM ###
 
@@ -60,14 +63,14 @@ python fehmpytests.py <FEHM executable path>
 # python fehmpytests.py ../src/xfehm
 
 # Example Windows
-# python fehmpytests.py ../src/PC/x64/release/FEHM3.4_VER2.exe
+# python fehmpytests.py ../x64/release/FEHM3.6_VER2.exe
 ```
 
 This will run a series of tests that will take several minutes to run and will look similar to this:
 
 ```
 -----------------------------------------------------------------------------------
-Ran 29 tests in 120.000s
+Ran 30 tests in 120.000s
 
 OK
 
