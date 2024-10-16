@@ -2,7 +2,7 @@
 
 External Collaborators must sign a Contribution Agreement. [Contribution Agreement for External Collaborators](CONTRIBUTING.md)
 
-Before you begin, you will need an github account and user name. 
+
 
 ## Download FEHM for development
 
@@ -16,7 +16,8 @@ $ git clone git@github.com:lanl/FEHM.git
 $ cd FEHM
 ```
 
-If SSH Key needed, generate a key for your machine.
+If there is an error, a SSH Key may be needed, generate a key for your machine.
+RSA keys are no longer used, see instructions for new keys at:
 [See GitHub Docs for SSH Key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
 ```
 Generate a SSH key (NOT RSA) in your .ssh directory.
