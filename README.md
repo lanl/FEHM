@@ -21,6 +21,10 @@ External Collaborators must sign a Contribution Agreement. [Contribution Agreeme
 
 ## Build FEHM ##
 
+FEHM V3.6.2 compiles and passes fehmpytests and VV Test Suites using Linux GNU Fortran (GCC) 13.2.0 and Windows Intel® Fortran Compiler Classic 2021.11.0 [Intel(R) 64]. 
+
+*Note Intel Classic 2021.12.0 has less tolerance for old fortran code. It passes all fehmpytests but the VV Test Suite has incomplete runs for fracture_aperture, reverse_tracking, colloid_stream, stress_3D, stress_3Dbeam, and uz_test. The remaining 78 tests are successful. This issue will be addressed in future versions.* 
+
 Download the Https repo to your current directory by running:
 
 ```bash
