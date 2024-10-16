@@ -25,7 +25,15 @@ ssh-keygen -t ed25519 -C "email.lanl.gov"
 Copy contents of id_ed25519.pub into your SSH Keys on github (under settings).
 ```
 
+## Build FEHM
 
+The build instructions are fairly straightforward but there are some platform dependent codes:
+
+All files in src are used for the PC version of the build.
+
+Linux version files are src/GFORTRAN/ inrestart.f,  insptr.f, and mainrip.f. The linux Makefile points to the files in GFORTRAN so the user does not need to know about this sub directory. As developers, be aware if one of these files are changed, the file in GFORTRAN will also need to be changed.
+
+dated.f is used to set the FEHM version headers. dated.f is used directly by Windows, the linux Makefile uses dated.template to write dated.f for the build.
 
 ## Git Basics
 
