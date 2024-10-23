@@ -56,7 +56,7 @@ Next, you will need to create the executable. This is different depending on you
 
 
 > [!NOTE]
-> Windows Users - Using IFORT may give a deprecation warning in Visual Studio. It is safe to ignore this message. FEHM runs best with IFORT and using IFX may give unpredicatble results.
+> Windows Users - Using IFORT may give a deprecation warning in Visual Studio. It is safe to ignore this message. FEHM runs best with IFORT and using IFX may give unpredictable results.
 
 ### Test FEHM ###
 
