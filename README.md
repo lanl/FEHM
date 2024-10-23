@@ -32,7 +32,7 @@ Download the Https repo to your current directory by running:
 git clone https://github.com/lanl/FEHM.git
 cd FEHM
 ```
-Or Download the ZIP file [HERE](https://github.com/lanl/FEHM/archive/refs/heads/master.zip) of from the green `<> Code` button above.
+Or Download the ZIP file [HERE](https://github.com/lanl/FEHM/archive/refs/heads/master.zip), or from the green `<> Code` button above.
 
 Next, you will need to create the executable. This is different depending on your operating system. For Linux/Mac, build FEHM using the FORTRAN code in `FEHM/src`. For Windows, Build FEHM using Visual Studio with the Fortran extension in the `FEHM` directory.
 
