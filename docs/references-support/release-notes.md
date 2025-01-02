@@ -1,6 +1,6 @@
 ---
 title : Release Notes
-layout : page
+layout : page_getting-started
 permalink : /references-support/release-notes
 hero_height: is-hidden
 ---
