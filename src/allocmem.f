@@ -670,6 +670,10 @@ c      call storage_derivatives(0)
       if(irdof.ne.13) then
         allocate(rovf(n0))
         allocate(div(n0))
+c gaz 070324 allocated memory if wtsi invoked
+      else if(ifree.ne.0) then
+        allocate(rovf(n0))
+        allocate(div(n0))
       else
         allocate(rovf(1))
         allocate(div(1))
@@ -750,7 +754,7 @@ c gaz 120120
       allocate(t(n0))
       allocate(cpr(n0))
       allocate(denr(n0))
-c gaz 090217      
+c gaz 090217                         
       allocate(urock(n0))
       allocate(durockt(n0))
       allocate(denh(n0))
@@ -1003,7 +1007,9 @@ c     open t1-t13 space
       allocate(t1(nn),t2(nn),t3(nn),t4(nn))
       allocate(t5(nn),t5v(nn),t6(nn),t7(nn))
 c RJP 04/08/07 added t13 for diffusion terms.
-      allocate(t8(nn),t9(nn),t10(nn),t13(nn),t14(nn),t17(nn))
+      allocate(t8(nn),t9(nn),t10(nn),t13(nn),t14(nn),t15(nn),t17(nn))
+c gaz 120724 added t18 1nd t19 for ND flow  
+      allocate(t18(nn),t19(nn),t8_nd(nn),t9_nd(nn))
       allocate(it4(nn),it5(nn),it6(nn),it8(nn),it8a(nn))
       allocate(it9(nn),it10(nn),it11(nn),it12(nn),it13(nn))
       allocate(it9a(nn),it10a(nn),it11a(nn),it12a(nn),it13a(nn))

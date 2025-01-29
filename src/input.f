@@ -498,6 +498,8 @@ c gaz debug 042120
       use com_exphase
 c gaz 040122 added access to commass_AWH     
       use commass_AWH, only : imass_phase
+c gaz 051224 nondarcy flow
+      use com_nondarcy
       implicit none
 
       integer i, izone, inode
@@ -511,6 +513,8 @@ c gaz 062718
       character*4 macro, macro1, chard, last_macro
       integer cnum,iieosd,inptorig,kk,msg(20),nwds,imsg(20)
       real*8 xmsg(20), simnum
+c gaz 051624
+      real*8  nd_beta_dum
       character*5 cden_type
       character*32 cmsg(20)
       character*30 zonesavename
@@ -527,7 +531,8 @@ c gaz 020522 enable vtk call
       last_macro = ''
       
       flag_heat_out = .false.      
-
+c gaz 051224 nd_flow
+      nd_flow = .false.
       read (inptorig, '(a80)') wdd
 
   100 continue
@@ -552,7 +557,6 @@ c confirm this is the terminator for the last macro read
  798  format ( 'WARNING : input title : ', 
      &     a4, ' unlabeled macro terminator',/)
          
-      nwds=0
       call parse_string2(wdd1,imsg,msg,xmsg,cmsg,nwds)
 
       if (nwds .gt. 1) then
@@ -670,7 +674,8 @@ c
  999     head0 = 0.0
  1000    continue
          ihead=1
-c         call headctr(0,0,0.0,0.0)
+c gaz 071224 added  hdflow for Head BCs 
+         if(.not.allocated(hdflow)) allocate(hdflow(n0))
 
       else if (macro .eq. 'chea') then
 c
@@ -1138,7 +1143,7 @@ c**** read in hydraulic conductivity**
       else if (macro .eq. 'ice ' .or. macro .eq. 'meth') then
 c**** read in ice or hydrate information ****
          ice = 1
-c also set to isothermal air-water to use some code structure
+c also set to isothermal air-water to use same code structure
          ico2 = -2
 c gaz 10-15-2001
          call icectr(0, 0)
@@ -1506,7 +1511,12 @@ c**** solution and integration type ****
 c*** NR stopping criterea based on variable changes
          nr_stop = 1
          call nr_stop_ctr(0)
-
+      else if (macro .eq. 'ndar') then
+c gaz 051224 *** enable non darcy ***
+       continue
+       nd_flow = .true.
+       call innondarcy
+c    
       else if (macro .eq. 'solv') then
 c**** solv (doesn't do anything yet) ****
 
@@ -1760,9 +1770,14 @@ c check for saved zonefile
           inquire (file = zonesavename, exist = ex)
           if(ex) then
            inquire (file = zonesavename, opened = op)   
-           if(.not.op) izunit=open_file(zonesavename,'unknown')
-           read(izunit,*)
-           read(izunit,*)
+           if(.not.op) then
+            izunit=open_file(zonesavename,'unknown')
+           else
+            inquire (file = zonesavename, number = izunit)
+           endif
+           rewind izunit
+           read(izunit,'(a)')
+           read(izunit,'(a)')
            read(izunit,*) nin
            if(allocated(ncord)) deallocate(ncord)
            allocate(ncord(nin))

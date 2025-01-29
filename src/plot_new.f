@@ -1053,7 +1053,8 @@ c gaz 080923 added pa output for isothermal 2 phase
               write(ishisp, form1_string) ptime,  
      &           (max(pci(nskw(i)),1.d-98), i=1,m)
              else
-              write(ishisp, form1_string) ptime,  
+c gaz 220125  changed   ishisp to ishisp2             
+              write(ishisp2, form1_string) ptime,  
      &           (max(phi(nskw(i))-pcp(nskw(i)),1.d-98), i=1,m)
              endif
             if (pres_flag .eq. 3)

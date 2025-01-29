@@ -377,7 +377,8 @@ c
       use comflow 
       use comsplitts 
       use com_prop_data, only : xnl_ngas, ihenryiso, xnl_max, xnl_ini,
-     &   xnl_chng_low,xnl_chng_high
+     &   xnl_chng_low,xnl_chng_high, den_h2o, visc_h2o
+      use com_nondarcy 
       implicit none
 
       integer iflg,ndummy,ico2d,ndum,nndum,ieoss,iieoss,iwelbs,i,mid
@@ -484,7 +485,8 @@ c gaz 121323 added read Henry's constant
              else if(dum_air(i:i+2).eq.'air'.or.
      &        dum_air(i:i+2).eq.'AIR') then
               itype_air = 1
-              do j = i+2,80
+c gaz 051224  "i+2,80" to "i+2,76"  works for Release version          
+              do j = i+2,76
                if(dum_air(j:j+4).eq.'henry'.or.
      &          dum_air(j:j+4).eq.'HENRY') then
                 read(dum_air(j+5:80),*) alpha_air
@@ -640,6 +642,15 @@ c            crl(6,1)=tref
             else
                crl(7,1)=0.0
             endif
+c gaz 110424 check for non-darcy flow (nd_flow)
+      if(nd_flow) then
+       if(allocated(den_h2o)) then
+        deallocate(den_h2o)
+        allocate(den_h2o(n0,6))
+        deallocate(visc_h2o)
+        allocate(visc_h2o(n0,6))        
+       endif
+      endif
 
 c     initialize 2-phase regions             
 c     

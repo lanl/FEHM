@@ -393,7 +393,7 @@
 !PS
 !***********************************************************************
 c gaz 102919 added iad_min(calculated in bnswer)
-      integer             iad_min
+      integer             iad_min,iad_min_sv
       integer             iab, iac, iaccmx, iad, iad_up, iadif, iamm
       integer             iamx, iatty, icapp, iccen, ice, icf, icgts 
       integer             ichng, icnl, ico2, icontr, ics, idof, idpdp 

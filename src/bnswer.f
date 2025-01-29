@@ -272,6 +272,7 @@ C**********************************************************************
       use comsplitts
       use davidi
       use comfem
+      use com_nondarcy, only: nd_test,nd_flow
       implicit none
 c gaz 110919 moved iad_min to comai (global variable now)
       integer iad_mult, i
@@ -292,6 +293,9 @@ c gaz 110715
       else
          iad_min=2
       endif
+c gaz 112024
+      iad_min_sv = iad_min 
+
       if(iflux_ts.ne.0.and.ico2.lt.0) then
          call cascade_sat(0)
       endif
@@ -504,6 +508,10 @@ c     RJP 04/17/07 changed following
          endif
 
       endif
+
+c      if(nd_flow.and.iad.ne.iad_min) then
+c       iad_min = nd_test+1
+c      endif
       if(fdum.le.f0.and.iad.ge.iad_min) goto 2000
       if(mlz.lt.0) goto 2000
       iad=iad+1
@@ -521,6 +529,8 @@ c     RJP 04/10/07 added following
          if(icarb.eq.1) then
             call icectrco2(2,0)
          else
+c  gaz debug 112124
+            i = phi(1)
             call varchk(1,0)
             if(idof_stress.ge.4) then
                call stressctr(9,0)            

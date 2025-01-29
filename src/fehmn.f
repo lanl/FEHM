@@ -651,7 +651,7 @@ c**** allocate memory ****
 c**** call data initialization routine ****
 c gaz debug area ***********************************   
 c gaz 032720 debug
-      ja = ps(1)+psini(1)+izonef(1)+minkt+pflow(1)
+      ja = ps(1)+psini(1)+izonef(1)+minkt+pflow(1)+igrav
 c *********************************      
 c         
          if(i.eq.-999) then
@@ -783,35 +783,30 @@ c gaz 070720
          if(iptty.ne.0) write(iptty, 6300) nmfil(31)
 c gaz 112721 write info regarding EOS data crit pts and true crit pts
                if (iout .ne. 0) then
-               write(iout, 7009) 'pressure   ',pcrit_h2o_true,pcrit_h2o
-               write(iout, 7009) 'temperature',tcrit_h2o_true,tcrit_h2o
-               write(iout,'(a36)') 
-     &               '>>> crit props changed to h2o table values'                      
+                  write(iout, 7009) 'pressure   ',pcrit_h2o_true,pcrit_h2o
+                  write(iout, 7009) 'temperature',tcrit_h2o_true,tcrit_h2o
+                  write(iout,'(a36)') '>>> crit props changed to h2o table values'                      
                endif 
                if (iptty .ne. 0) then
-               write(iptty, 7009) 'pressure   ',pcrit_h2o_true,pcrit_h2o
-               write(iptty, 7009) 'temperature',tcrit_h2o_true,tcrit_h2o
-               write(iptty,'(a36)')                   
-     &               '>>> crit props changed to h2o table values'                      
+                  write(iptty, 7009) 'pressure   ',pcrit_h2o_true,pcrit_h2o
+                  write(iptty, 7009) 'temperature',tcrit_h2o_true,tcrit_h2o
+                  write(iptty,'(a36)') '>>> crit props changed to h2o table values'                   
                endif                 
-7009   format ('>>> critical ',a11,': true',1p, g16.10,
-     &         ' EOS table ',g16.10)                                     
+7009   format ('>>> critical ',a11,': true',1p, g16.10,' EOS table ',g16.10)                                     
         else if(iwater_table.eq.2) then
          if(iout.ne.0) write(iout, 6301) nmfil(31)
          if(iptty.ne.0) write(iptty, 6301) nmfil(31)         
          iwater_table = 1
 c gaz 112721 write info regarding EOS data crit pts and true crit pts
                if (iout .ne. 0) then
-               write(iout, 7009) 'pressure   ',pcrit_h2o_true,pcrit_h2o
-               write(iout, 7009) 'temperature',tcrit_h2o_true,tcrit_h2o
-               write(iout,'(a36)') 
-     &                 '>>> crit props changed to h2o table values'                  
+                  write(iout, 7009) 'pressure   ',pcrit_h2o_true,pcrit_h2o
+                  write(iout, 7009) 'temperature',tcrit_h2o_true,tcrit_h2o
+                  write(iout,'(a36)') '>>> crit props changed to h2o table values'                  
                endif 
                if (iptty .ne. 0) then
-               write(iptty, 7009) 'pressure   ',pcrit_h2o_true,pcrit_h2o
-               write(iptty, 7009) 'temperature',tcrit_h2o_true,tcrit_h2o
-               write(iptty,'(a36)')                   
-     &                 '>>> crit props changed to h2o table values'                  
+                  write(iptty, 7009) 'pressure   ',pcrit_h2o_true,pcrit_h2o
+                  write(iptty, 7009) 'temperature',tcrit_h2o_true,tcrit_h2o
+                  write(iptty,'(a36)') '>>> crit props changed to h2o table values'                   
                endif           
         endif
          if(iair_table.eq.1) then
@@ -837,9 +832,9 @@ c gaz 112721 write info regarding EOS data crit pts and true crit pts
  6400 format(/,'>>> air property table (from control file) -',3x, a100) 
  6401 format
      &    (/,'>>> air property table (from data file(eos)) -',3x, a100)     
- 6500 format(/,'>>> co2wh property table (from control file) -',3x,a100) 
+ 6500 format(/,'>>> co2wh property table (from control file) -',3x, a100) 
  6501 format
-     &    (/,'>>> co2wh property table (from data file(eos)) -',3x,a100) 
+     &    (/,'>>> co2wh property table (from data file(eos)) -',3x, a100)      
 c**** read and write data ****
          in3save = in(3)
          if(in(3).eq.0) then
@@ -1284,7 +1279,7 @@ c delete infinite reservoir nodes from mass balance calcs
 
 c check for steady state solution
                if(isteady.ne.0) then
-                  call steady(1,0.0d00,0.0d00)
+                  call steady(1,0.,0.)
                endif
 
 c
@@ -1800,14 +1795,18 @@ c     Change it back
          if (iptty .gt. 0) write(iptty, 6042) tyming(caz) - tasii
  6042    format(//, 1x, 'total code time(timesteps) = ', f13.6)
 c gaz 070521 end metrics for eos calls
-         call fluid_props_control(-2, 0, 0,'h2o      ', 
-     &        'all      ', '         ') 
+         call fluid_props_control(-2, 0, 0,'h2o      ', 'all      ', '         ') 
          call dated (jdate, jtime)
 
          if (iout .ne. 0) write(iout, 6052)  verno, jdate, jtime
          if (iptty .gt. 0) write(iptty, 6052)  verno, jdate, jtime
 c gaz 020122 debug call vtk conversion
-         if(i_vtk.ne.0) call contr(2)
+c gaz 051424      
+         if(i_vtk.ne.0.and.ivf.ne.-1) then
+          call contr(2)
+         else if(i_vtk.ne.0.and.ifdm_elem.eq.1) then
+          call contr(2)
+         endif
 c gaz 020723   generate and print flow vectors
           call flowrate_vectors(-1)
           call flowrate_vectors(1)
