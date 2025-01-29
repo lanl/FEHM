@@ -644,9 +644,9 @@ class fehmTest(unittest.TestCase):
         self._run_fehm('')
 
         # Specify file names
-        output_file = 'run_Aqueous_species_001.trc'
+        output_file = 'run_Aqueous_Species_001.trc'
         # compare_file = path=os.path.join('..', 'compare', '') + 'MT3D001.OBS'
-        compare_file = path=os.path.join('..', 'compare', '') + 'run_Aqueous_species_001.trc'
+        compare_file = path=os.path.join('..', 'compare', '') + 'run_Aqueous_Species_001.trc'
         #print(f'Output file name: {output_file} Compare file name: {compare_file}')
 
         # Open and read in data
