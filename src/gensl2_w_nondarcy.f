@@ -392,7 +392,7 @@ c
       use comriv
       use comwellphys
 c gaz 040724
-      use com_prop_data, only : ihenryiso, ctest, xnl_ngas, xnl_max 
+      use com_prop_data, only : ihenryiso, ctest, xnl_ngas, xnl_max
       use com_nondarcy
       implicit none
 
@@ -545,8 +545,8 @@ c
         open(unit=57,file='nd_comp365-385.chk',status='unknown')
          write(57,180) 
        endif
-180   format(t5,'ts',t14,'i',t21,'kb',t34,'vxy',t51,'dvapi',t67,'dvapkb'
-     &    ,t85,'dvaei',t97,'dvaekb')
+180   format(t5,'ts',t14,'i',t21,'kb',t34,'vxy',t51,'dvapi',t67,
+     &  'dvapkb',t85,'dvaei',t97,'dvaekb')
       endif
 c end nd_test_write
       do 101 id=1,neq

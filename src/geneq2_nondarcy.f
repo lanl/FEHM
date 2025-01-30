@@ -655,19 +655,19 @@ c axyd units m**2*(area/dis)*Mpa
                daxydei=pxy*dpvti+0.5*sx4d*dgle(i)*
      &                    (cord(kz,igrav)-cord(iz,igrav))
                daxydekb=-pxy*dpcef(kb)+0.5*sx4d*dgle(kb)
-     &                    *(cord(kz,igrav)-cord(iz,igrav))               
+     &                    *(cord(kz,igrav)-cord(iz,igrav))
                t8(neighc)=axyd
 
                 aij = abs(t5(neighc)) 
                 kij = t15(neighc)*1.d-6
                call nd_props(0,icd,1,iq,i,kb,jm,0.5d0)
                 call nd_flow_vel(1,icd,1,iq,axyd,vel_nd,aij,kij,
-     &                fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm)
+     &          fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm)
                 aij = abs(t5(neighc)) 
 c gaz 090125                
                 axyd_nd = vel_nd*aij*muij
                 call nd_flow_vel(2,icd,1,iq,axyd,vel_nd,aij,kij,
-     &                fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm)  
+     &          fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm)  
     
 c determine upwind direction
 c find upwinding
@@ -727,7 +727,7 @@ c   gaz db 010125            aij=abs(t5(neighc)
                   dlaei_nd = t18(neighc)
                   dlaekb_nd = t19(neighc)
                   dlaei_nd=dlaei_nd*axyf+axyd_nd*fid1*dilei
-                  dlaekb_nd=dlaekb_nd*axyf+axyd_nd*fid*dilekb                     
+                  dlaekb_nd=dlaekb_nd*axyf+axyd_nd*fid*dilekb
                 endif
                 continue
 
@@ -789,9 +789,9 @@ c vxyd units m**2*(area/dis)*Mpa
                daxydpkb = pvxy+dg_termpkb
 
                daxydei= 0.5*sx4d*dgve(i)*
-     &                    (cord(kz,igrav)-cord(iz,igrav))
+     &                 (cord(kz,igrav)-cord(iz,igrav))
                daxydekb= 0.5*sx4d*dgve(kb)
-     &                    *(cord(kz,igrav)-cord(iz,igrav))               
+     &                 *(cord(kz,igrav)-cord(iz,igrav)) 
                call nd_props(0,icd,1,iq,i,kb,jm,0.5d0)
 c gaz 112424                
 
@@ -1030,13 +1030,13 @@ c   gaz db 010125            aij=abs(t5(neighc)
                call nd_props(0,icd,1,iq,i,kb,jm,0.5d0)
 
                 call nd_flow_vel(1,icd,1,iq,axyd,vel_nd,aij,kij,
-     &                fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm) 
+     &           fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm) 
                  aij = abs(t5(neighc)) 
 c gaz 090125
                  axyd_nd = vel_nd*muij*aij
 
                 call nd_flow_vel(2,icd,1,iq,axyd,vel_nd,aij,kij,
-     &                fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm)  
+     &           fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm)  
     
 c determine upwind direction
 c find upwinding
@@ -1137,7 +1137,7 @@ c                aij = abs(t5(neighc))
                   dlaei_nd = t18(neighc)
                   dlaekb_nd = t19(neighc)
                   dlaei_nd=dlaei_nd*axyf+axyd_nd*fid1*dilei
-                  dlaekb_nd=dlaekb_nd*axyf+axyd_nd*fid*dilekb                     
+                  dlaekb_nd=dlaekb_nd*axyf+axyd_nd*fid*dilekb
                 endif
                 continue
 c
@@ -1385,9 +1385,11 @@ c darcy derivatives (Pa/m)
         delz2=(cord(j,3)-cord(i,3))**2            
         dis2=delx2+dely2+delz2
         dis = sqrt(dis2)
-      dvelpi = 1.d6/dis*(kij/muvij) + phi_grad*(-kij/muvij**2)*dmuvijpi+
+      dvelpi = 1.d6/dis*(kij/muvij) 
+     &     + phi_grad*(-kij/muvij**2)*dmuvijpi+
      &     dg_termpi/muvij
-      dvelpj =-1.d6/dis*(kij/muvij) + phi_grad*(-kij/muvij**2)*dmuvijpj+
+      dvelpj =-1.d6/dis*(kij/muvij) 
+     &     + phi_grad*(-kij/muvij**2)*dmuvijpj+
      &     dg_termpkb/muvij
       continue
       else if(iflg.eq.1) then
@@ -1428,7 +1430,8 @@ c
 c note  velij**2 to velij*abs(velij)
         velij_2 = velij*abs(velij)
 c        d_velij_2 = 2.0d0*velij
-        d_velij_2 = ((velij+dvel)*abs(velij+dvel)-velij*abs(velij))/dvel
+          d_velij_2 = ((velij+dvel)*abs(velij+dvel)
+    &     -velij*abs(velij))/dvel
           r_vel = -c_nd+b_nd*velij+a_nd*velij_2
           dr_velv = b_nd + a_nd*d_velij_2
           if(abs(r_vel).lt.v_tol.and.ik.gt.1) then
@@ -1557,7 +1560,8 @@ c gaz mod 270125
         do ik = 1, ik_max
         velij_2 = velij*abs(velij)
 c        d_velij_2 = 2.0d0*velij
-        d_velij_2 = ((velij+dvel)*abs(velij+dvel)-velij*abs(velij))/dvel
+          d_velij_2 = ((velij+dvel)*abs(velij+dvel)
+     &    -velij*abs(velij))/dvel
           r_vel = -c_nd+b_nd*velij+a_nd*velij_2
           dr_velv = b_nd + a_nd*d_velij_2
           if(abs(r_vel).lt.v_tol.and.ik.gt.1) then

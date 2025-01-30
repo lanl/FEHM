@@ -814,7 +814,8 @@ c     ***** COMMON Block fdd1 *****
 c         allocate(diffmfl(nspeci,n0))
 c         allocate(tclx(1,n0),tcly(1,n0),tclz(1,n0))
          allocate(diffmfl(nspeci,maxlayers))
-         allocate(tclx(1,maxlayers),tcly(1,maxlayers),tclz(1,maxlayers))
+         allocate(tclx(1,maxlayers),
+     &   tcly(1,maxlayers),tclz(1,maxlayers))
       elseif(.not.sptrak) then
          allocate(diffmfl(totcomalloc,totnum))
          allocate(tclx(totcomalloc,totnum),tcly(totcomalloc,totnum),

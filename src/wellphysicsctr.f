@@ -502,7 +502,7 @@ c
                mdriftf(mi) = rov*vdrift*term1a 
                dmdriftp(mi) = drovp*vdrift*term1a
 c     dmdrifte has derivative wrt saturation (-1 from sg = 1.-sl) 
-               dmdrifte(mi) = (rov*vdrift*dterm1a)*(-1.)                   
+               dmdrifte(mi) = (rov*vdrift*dterm1a)*(-1.)
 c     
                mdriftf(mi) = 0.0
                dmdriftp(mi) = 0.0

@@ -1,5 +1,5 @@
-      subroutine fluid_props_control(iflg, istart, iend, fluid_type,
-     &           prop, phase)
+      subroutine fluid_props_control(iflg, istart, iend, 
+     &           fluid_type, prop, phase)
 c      
 c subroutine to manage fluid properties with 
 c gaz 070321 initial coding
@@ -25,9 +25,11 @@ c gaz 052522 describe  subroutine pass-through variables
 c iflg : flag passed to fluid prop routines          
           if(fluid_type(1:3).eq.'h2o') then
             if(iwater_table.eq.0) then
-             call h2o_props_polynomials(iflg, istart, iend, prop, phase)
+             call h2o_props_polynomials(iflg, istart, iend, 
+     &       prop, phase)
             else
-             call h2o_props_table(iflg, istart, iend, prop, phase)
+             call h2o_props_table(iflg, istart, iend, 
+     &       prop, phase)
             endif
           else if(fluid_type(1:3).eq.'air') then
             if(iair_table.eq.0) then
@@ -374,12 +376,12 @@ c evaluate properties
       if(l.eq.0.and.ii.eq.1.and.eval_test_h2o.eq.2) then
        write(ierr,1500)
 1500   format('l  iad ii',t12,'pl',t25,'pl_last',t40,'pl_old',t55,'tl'
-     &  ,t70,'tl_last',t85,'tl_old',t100,'ieosd ieosd_last ieosd_old')       
+     &  ,t70,'tl_last',t85,'tl_old',t100,'ieosd ieosd_last ieosd_old')
       else if(l.gt.0.and.eval_test_h2o.eq.2) then
        write(ierr,1501) l,iad,ii,pl,pl_last,pl_old,tl,tl_last,tl_old,
      &  ieosd, ieosd_last, ieosd_old, eval_dum
-1501   format(1x,i5,i3,i5,1p,t15,g14.7,t29,g14.7,t43,g14.7,t57,g14.7,t71
-     &  ,g14.7,t85,g14.7,t100,i3,i3,i3,1x,a3)   
+1501   format(1x,i5,i3,i5,1p,t15,g14.7,t29,g14.7,t43,g14.7,t57,g14.7,
+     &  t71, g14.7,t85,g14.7,t100,i3,i3,i3,1x,a3)
       endif
       ieval_flag(ii) = 0
 c gaz 120321 simplified
@@ -734,7 +736,8 @@ c end counting and other metrics
        if(ic_eval.gt.1) then
          ratio_eval_tot =  ic_eval/(itot_calls + 1.e-9)  
         if(iout.ne.0) write(iout,100)ic_eval,itot_calls,ratio_eval_tot
-        if(iptty.ne.0) write(iptty,100)ic_eval,itot_calls,ratio_eval_tot 
+        if(iptty.ne.0) write(iptty,100)
+     &                ic_eval,itot_calls,ratio_eval_tot 
 c gaz 032922 increase the integer format i9 to i12            
 100    format(/,' number of unique property calcs',1x,i12,1x,/,
      &    ' total number of prossible calls',1x,i12,1x,/,
@@ -904,12 +907,12 @@ c evaluate properties
       if(l.eq.0.and.ii.eq.1.and.eval_test_h2o.eq.2) then
        write(ierr,1500)
 1500   format('l  iad ii',t12,'pl',t25,'pl_last',t40,'pl_old',t55,'tl'
-     &  ,t70,'tl_last',t85,'tl_old',t100,'ieosd ieosd_last ieosd_old')       
+     &  ,t70,'tl_last',t85,'tl_old',t100,'ieosd ieosd_last ieosd_old')
       else if(l.gt.0.and.eval_test_h2o.eq.2) then
        write(ierr,1501) l,iad,ii,pl,pl_last,pl_old,tl,tl_last,tl_old,
      &  ieosd, ieosd_last, ieosd_old, eval_dum
-1501   format(1x,i5,i3,i5,1p,t15,g14.7,t29,g14.7,t43,g14.7,t57,g14.7,t71
-     &  ,g14.7,t85,g14.7,t100,i3,i3,i3,1x,a3)   
+1501   format(1x,i5,i3,i5,1p,t15,g14.7,t29,g14.7,t43,g14.7,t57,g14.7,
+     & t71,g14.7,t85,g14.7,t100,i3,i3,i3,1x,a3)
       endif
       ieval_flag(ii) = 0
 c gaz 120321 simplified
@@ -1222,8 +1225,8 @@ c gaz 070221
            if(t(ii).ge.tcrit_h2o) then
               psatl_100 = pcrit_h2o
            else
-            psatl_100 = psatl(t(ii),pcp(ii),dpcef(ii),dpsatt_100,dpsats,
-     &                   0,an(ii))
+            psatl_100 = psatl(t(ii),pcp(ii),dpcef(ii),
+     &      dpsatt_100,dpsats,0,an(ii))
            endif
             psat_h2o(ii,1) = psatl_100             
             psat_h2o(ii,2) = 0.0
@@ -1326,8 +1329,8 @@ c gaz 070221
            if(t(ii).ge.tcrit_h2o) then
               psatl_100 = pcrit_h2o
            else
-            psatl_100 = psatl(t(ii),pcp(ii),dpcef(ii),dpsatt_100,dpsats,
-     &                   0,an(ii))
+            psatl_100 = psatl(t(ii),pcp(ii),dpcef(ii),
+     &      dpsatt_100,dpsats,0,an(ii))
            endif
             psat_h2o(ii,1) = psatl_100             
             psat_h2o(ii,2) = 0.0

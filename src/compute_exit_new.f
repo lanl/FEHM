@@ -348,7 +348,7 @@ c     s kelkar.......april 8 04  check for bouncing between two cells
                               flag_fixggg=+1                  
                               call fixggg_1(flag_divd,inp1,oldnode(np1),
      $                             np1,ipc,
-     1                             vomrx,vomry,vomrz,aomrx,aomry,aomrz)      
+     1                             vomrx,vomry,vomrz,aomrx,aomry,aomrz)
                               idum_count=idum_count+1
                            elseif((newnode.eq.oldnode2(np1)).and.
      &                             (oldnode2(np1).ne.inp1)) then
@@ -2357,8 +2357,8 @@ c     given by ip1,ip2 and ip3 and taking the closest of the three
       end subroutine find_newpoint3_zheng
 c......................................................................
 
-      subroutine zheng_intersect_plane(i,np1,ip,xp1,yp1,zp1,xp2,yp2,      
-     &     zp2,
+      subroutine zheng_intersect_plane(i,np1,ip,xp1,yp1,zp1,     
+     &     xp2,yp2,zp2,
      2     vx_zheng,vy_zheng,vz_zheng,rw,
      3     xc,yc,zc,dtc)
 

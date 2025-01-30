@@ -2717,7 +2717,7 @@ c                  call principal_stress_3D(ishear,alambda,eigenvec)
             endif
             if(iptty.gt.0) write(iptty,*) ' ' 
             if(iptty.gt.0) write(iptty,*)
-     &           'Stresses(Convention: Compression is Positive (sign))'  
+     &      'Stresses(Convention: Compression is Positive (sign))'  
             if(iptty.gt.0) then
                if(flag_principal.eq.1) then
                   write(iptty,8119) 

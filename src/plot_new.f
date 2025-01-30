@@ -88,8 +88,8 @@
       save formp_string, formcs_string
 
       ishisnode = ishisp + ishist + ishishd + ishiss + ishisf + ishisfa 
-     &     + ishise+ ishisef + ishisd + ishisv + ishishm + ishiswt 
-     &     + ishisc + ishiswc + ishiscm + ishiscmf + ishiscmd + ishiscsl 
+     &  + ishise+ ishisef + ishisd + ishisv + ishishm + ishiswt 
+     &  + ishisc + ishiswc + ishiscm + ishiscmf + ishiscmd + ishiscsl 
      &     + ishiscsg + ishisdisx + ishisdisy + ishisdisz
      &     + ishisstr + ishisstrx + ishisstry + ishisstrz
       if (m .eq. 0 .and. node_azones .eq. 0) then

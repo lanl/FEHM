@@ -1203,7 +1203,7 @@ c gaz 071122 tecstring duplicates other strings
      &                 trim(gridstring), trim(times_string) 
                  else
                   write (lu, 94) trim(timec_string), 
-     &                 trim(gridstring), trim(sharestring)                  
+     &                 trim(gridstring), trim(sharestring)
                  endif
                  endif
                else

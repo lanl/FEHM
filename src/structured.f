@@ -791,8 +791,9 @@ c gaz 051424
           ifdm_elem = 0 
           if(iout.ne.0) write(iout,411) 
           if(iptty.ne.0) write(iptty,411) 
-411       format('>>> generated element connectivity not available for', 
-     &          ' non-3D FDM grid, request ignored <<<')
+411       format
+     &    ('>>> generated element connectivity not available for', 
+     &     ' non-3D FDM grid, request ignored <<<')
          endif  
       end if
 

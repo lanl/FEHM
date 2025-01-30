@@ -273,7 +273,7 @@ c     diagonal is in diag(i,j),diagi(i,j) contains its inverse
 
          da(1) = diagi(1,1)*rhs(1)+diagi(1,2)*rhs(2)+diagi(1,3)*rhs(3)
          da(2) = diagi(2,1)*rhs(1)+diagi(2,2)*rhs(2)+diagi(2,3)*rhs(3)
-         da(3) = diagi(3,1)*rhs(1)+diagi(3,2)*rhs(2)+diagi(3,3)*rhs(3)          
+         da(3) = diagi(3,1)*rhs(1)+diagi(3,2)*rhs(2)+diagi(3,3)*rhs(3) 
 
 
 

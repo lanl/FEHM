@@ -418,7 +418,7 @@ c         if(wdd1(i:i+3).eq.'save') izone_save = 1
       enddo
       curzone = numzones + 1
       if (zonetmp(1:1) .ne. '-') numzones = numzones + 1
- 63   if (curzone .gt. zmaxtmp) then                                                               
+ 63   if (curzone .gt. zmaxtmp) then
          allocate (znametmp(zmaxtmp),znumtmp(zmaxtmp))
          znametmp = zonenames
          znumtmp = zonenums 
@@ -1219,7 +1219,8 @@ c call timing function
         if(iptty.ne.0) then
          write(iptty,100) 
         endif
-100     format(1x,/,'>> Combining files for SoilVision application  <<')        
+100     format
+     &  (1x,/,'>> Combining files for SoilVision application  <<')        
         tajj = tyming(caz) 
       elseif(iflg.eq.3) then
         if(.not.sv_combine) return
@@ -1428,8 +1429,8 @@ c gaz use soil_vision_beta.dat(izunit2) as the template
          read(izunit2,'(a)') line_temp1
          write(izunit3,'(a)') trim(line_temp1) 
          read(line_temp1,'(a4,i6,a21,f17.1,a10,i10,a5,i9)')
-     &      string_temp(1:4), 
-     &      n_zone, string_temp(11:32),time_temp,string_temp (1:10),        
+     &      string_temp(1:4), n_zone, 
+     &      string_temp(11:32),time_temp,string_temp (1:10),        
      &      node_temp,string_temp(1:5), n_elem
           if(time_temp.eq.time_temp_last) then
            nzone_cnt = nzone_cnt + 1

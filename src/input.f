@@ -843,8 +843,10 @@ c**** contour plot information ****
          else
           if (iout .ne. 0) write(iout, 6011)   
          endif
- 6010    format(1x, '**** contour format defined  : ', a4, ' ****')
- 6011    format(1x, '**** contour format defined  : vtk (from tec)')        
+ 6010    format(1x,
+     &    '**** contour format defined  : ', a4, ' ****')
+ 6011    format(1x,
+     &    '**** contour format defined  : vtk (from tec)')        
          if (ncntr .le. 0) ncntr = 10000000
          if (abs(contim) .le. zero_t) then
             contim_rip = -abs(contim)
@@ -1212,9 +1214,9 @@ c**** iteration parameters ****
 c gaz 041620  if richards solution(jswitch.ne.0) , set irdof = 0
         if (jswitch.ne.0.and.irdof.eq.13) then
           if (iout .ne. 0) write(iout,*) "Warning: setting irdof = 0 ",
-     &           "for Richard's problem"
+     &      "for Richard's problem"
             if (iptty .gt. 0) write(iptty,*) 
-     &           "Warning: setting irdof = 0 for Richard's  problem"            
+     &      "Warning: setting irdof = 0 for Richard's  problem"
           irdof = 0
         endif
           

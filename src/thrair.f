@@ -409,7 +409,7 @@ c     get relative perms
             do mid=1,neq
                mi=mid+ndummy
                drlpf(mi)=0.0          
-               drvpf(mi)=0.0                                                                                           
+               drvpf(mi)=0.0
             enddo
          endif
 c     get capillary pressures
@@ -1375,7 +1375,7 @@ c 110124 check for non darcy flow  (liquid part)
          if(irdof.eq.13) then
             ddenp=ddenp + por*rol*dsatp
          endif
-         deni(mi)=(den-denh(mi))*dtin                                        
+         deni(mi)=(den-denh(mi))*dtin
          dmpf(mi)=ddenp*dtin
          if(icons.lt.abs(maxit)) then 
 c     
@@ -1534,8 +1534,8 @@ c undergoing phase change
 c      real*8 ratio_mw_h2_air, ratio_mw_meth_air, ratio_mw_co2_air
       real*8 alpha_iso,p_air,dp_air_s,dp_air_p
 c      parameter(ratio_mw_h2_air=0.07d0,ratio_mw_meth_air=0.55d0)
-c      parameter(ratio_mw_co2_air= 1.52d0, alpha_h2 = 8.d-7)                                      
-      parameter(alpha_tol = 1.d-18)    
+c      parameter(ratio_mw_co2_air= 1.52d0, alpha_h2 = 8.d-7)
+      parameter(alpha_tol = 1.d-18)
        ctest = 1.0
        dp_air_p = 0.0d0
 c      
@@ -1547,7 +1547,7 @@ c xnl,xnv
          allocate(xnl_ngas(n0,4))
          xnl_ngas = 0.0d0
        endif
-      else if(iflg.eq.1) then                                                
+      else if(iflg.eq.1) then
 c use Henry's law 
         if(ihenryiso.eq.0) then
          xnl_ngas(mid,1) = 0.0d0
@@ -1584,7 +1584,7 @@ c        dp_air_s  = dpcef(mid)
 c max xnl 
            xnl = alpha_iso*p_air + alpha_tol
            dxnlp=0.0
-           dxnlt=0.0                                                               
+           dxnlt=0.0
            dxnls=0.0           
           endif
         xnl_ngas(mid,1) =  xnl*ctest

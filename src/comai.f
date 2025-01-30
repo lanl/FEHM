@@ -522,7 +522,7 @@ c gaz 01-06-2014
       real*4              vernum
 c gaz 11-29-2009   
       real*8              p_stop,t_stop,s_stop,pa_stop,s2_stop
-      real*8              co2f_stop,h_stop    
+      real*8              co2f_stop,h_stop
 c gaz 070821
       real*8              p_tol, t_tol, pc_tol
 c gaz 032622 nr stopping criteria on raw or fractional equation balance errors
@@ -552,10 +552,10 @@ c gaz 100318 added wdd2
       character*80        wdd, wdd1,wdd2
       character*80        salt_read_file, salt_write_file
 c gaz 092319 h2o crit T and P moved here
-c gaz 110819 pref, tref moved here (now global)  
+c gaz 110819 pref, tref moved here (now global) 
       real*8 pcrit_h2o, tcrit_h2o, pref, tref
-c gaz 112721 removed parameter line because pcrit_h2o=22.064d0, tcrit_h2o=373.946  
-c can be changed (slightly) by SC water EOS table    
+c gaz 112721 removed parameter line because pcrit_h2o=22.064d0, tcrit_h2o=373.946
+c can be changed (slightly) by SC water EOS table 
 c      parameter(pcrit_h2o=22.064d0, tcrit_h2o=373.946) 
       real*8 pcrit_h2o_true, tcrit_h2o_true
       integer nmacros

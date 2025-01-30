@@ -242,8 +242,8 @@ C**********************************************************************
       real*8 tmin_ice,tmax_ice
 c gaz 120621 trying  new  smind_t and   smaxd_t 
 c      parameter(smind = -2.,smaxd = 5.,smind_t = -0.1,smaxd_t = 1.1)
-      parameter(smind = -2.,smaxd = 5.,smind_t = -0.05,smaxd_t = 1.05)      
-	parameter(sminc = -0.15   , smaxc = 1.15)
+      parameter(smind = -2.,smaxd = 5.,smind_t = -0.05,smaxd_t = 1.05)
+      parameter(sminc = -0.15   , smaxc = 1.15)
       parameter(pmin_ice=-10.0,pmax_ice=200.0)
       parameter(tmin_ice=-10.0,tmax_ice=500.0)
       integer i, ii

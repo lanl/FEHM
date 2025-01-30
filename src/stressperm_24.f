@@ -257,7 +257,8 @@ c Lee and Cho (2002) empirical model
       
       integer jpt,iispmd
       real*8 str_l(3,3)
-      real*8 perm_frac,mu_d,d1,Dd,dk,Ks,d_shear,l19,tau_ex,cohesion,mu_s
+      real*8 perm_frac,mu_d,d1,Dd,dk,Ks,d_shear
+      real*8 l19,tau_ex,cohesion,mu_s
       iispmd = ispm(jpt)
       
       Ks = spm1f(iispmd)
