@@ -626,8 +626,8 @@ class fehmTest(unittest.TestCase):
         #
         # .. Updated: January 2025 by Erica Hinrichs
 
-        atol = 1e-10  # Absolute tolerance
-        rtol = 1e-05  # Relative tolerance
+        atol = 1e-02  # Absolute tolerance
+        rtol = 1e-01  # Relative tolerance
         verbose = args['verbose'] # Verbosity Level
         test_flag = False
 
@@ -645,15 +645,13 @@ class fehmTest(unittest.TestCase):
 
         # Specify file names
         output_file = 'run_Aqueous_Species_001.trc'
-        # compare_file = path=os.path.join('..', 'compare', '') + 'MT3D001.OBS'
-        compare_file = path=os.path.join('..', 'compare', '') + 'run_Aqueous_Species_001.trc'
+        compare_file = path=os.path.join('..', 'compare', '') + 'MT3D001.OBS'
         #print(f'Output file name: {output_file} Compare file name: {compare_file}')
 
-        # Open and read in data
+        # Open and read in data for output file
         with open(output_file, 'r') as file:
             lines = file.readlines()[4:]
             data = [line.strip().split() for line in lines]
-            #print('DATA', data)
             max_length = max(len(sublist) for sublist in data)
             data = [sublist + [''] * (max_length - len(sublist)) for sublist in data]
 
@@ -664,16 +662,14 @@ class fehmTest(unittest.TestCase):
                     return 0
 
             out_data = np.array([[to_float(item) for item in sublist] for sublist in data], dtype=float)
-            #print(f'Data for {output_file}: {out_data}')
             out_data = np.delete(out_data, [0, 1, 6], 1)
             out_data = np.reshape(out_data,(-1,1))
             #print(f'Data for {output_file}: {out_data}')
 
+        # Open and read in data for comparison file
         with open(compare_file, 'r') as file:
-            #lines = file.readlines()[2:]
-            lines = file.readlines()[4:]
+            lines = file.readlines()[2:]
             data = [line.strip().split() for line in lines]
-            #print('DATA', data)
             max_length = max(len(sublist) for sublist in data)
             data = [sublist + [''] * (max_length - len(sublist)) for sublist in data]
 
@@ -684,10 +680,7 @@ class fehmTest(unittest.TestCase):
                     return 0
 
             compare_data = np.array([[to_float(item) for item in sublist] for sublist in data], dtype=float)
-            #print(f'Data for {compare_file}: {compare_data}')
-            #compare_data = np.delete(compare_data, [0, 1], 1)
-            #compare_data = np.reshape(compare_data,(-1,1))
-            compare_data = np.delete(compare_data, [0, 1, 6], 1)
+            compare_data = np.delete(compare_data, [0, 1], 1)
             compare_data = np.reshape(compare_data,(-1,1))
             #print(f'Data for {compare_file}: {compare_data}')
 
@@ -724,7 +717,7 @@ class fehmTest(unittest.TestCase):
                 
             if max_difference <= atol + rtol * np.abs(out_flat).max():
                 if verbose >= 3:
-                    print(f'Files are considered EQUAL within a relative tolerance of:{rtol}, and an absolute tolerance of:{atol}')
+                    print(f'Files are considered EQUAL within a relative tolerance of: {rtol}, and an absolute tolerance of: {atol}')
                 test_flag = True
                     #print(f'Max difference: {max_difference}\n')
                     
@@ -744,10 +737,7 @@ class fehmTest(unittest.TestCase):
                 self.fail("Files are not equal. Test failed.")
 
         os.chdir(self.maindir)
-
-        
-
-           
+          
     def uz_test(self):
         # Test uz_test
         #
@@ -792,7 +782,9 @@ class fehmTest(unittest.TestCase):
         #     423 (1910) https://archive.org/details/cbarchive_122715_solutionofasystemofdifferentia1843
         #
         # .. Authors: Dylan Harp, Michelle Bourret
-        # .. Updated May 2016 by Dylan Harp 
+        # .. Updated January 2025 by Erica Hinrichs 
+
+        verbose = args['verbose'] # Verbosity Level
 
         # Change to test directory
         os.chdir('rad_decay')
@@ -869,7 +861,7 @@ class fehmTest(unittest.TestCase):
                 else:
                     CC_fail += 1
 
-        if CI_fail == 0 and CX_fail == 0 and CC_fail == 0:
+        if CI_fail == 0 and CX_fail == 0 and CC_fail == 0 and verbose >= 3:
             print('\nSuccessful evaluation of rad_decay.')
 
         elif CI_fail > 0:
@@ -1441,6 +1433,7 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('theis', log))
         suite.addTest(fehmTest('toronyi', log))
         #suite.addTest(fehmTest('transport3d', log))
+        suite.addTest(fehmTest('transport3d_validation', log))
         #suite.addTest(fehmTest('uz_test', log))
         suite.addTest(fehmTest('vapor_extraction', log))
         suite.addTest(fehmTest('wvtest', log))
