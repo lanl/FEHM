@@ -25,6 +25,11 @@ from subprocess import PIPE
 from contextlib import contextmanager
 import shutil
 from tpl_write import tpl_write
+from copy import copy,deepcopy
+import platform
+WINDOWS = platform.system()=='Windows'
+if WINDOWS: slash = '\\'
+else: slash = '/'
 
 try:
     #sys.path.insert(0,os.path.join('pyfehm'))
@@ -613,6 +618,126 @@ class fehmTest(unittest.TestCase):
         
         self.test_case('transport3d')
 
+    def transport3d_validation(self):
+        # Test transport3d_validation
+        #
+        # 3D solute advective-transport benchmark test in MT3D's user guide, problem 7.7.
+        # Comparison of FEHM and Modflow for concentration vs time
+        #
+        # .. Updated: January 2025 by Erica Hinrichs
+
+        atol = 1e-02  # Absolute tolerance
+        rtol = 1e-01  # Relative tolerance
+        verbose = args['verbose'] # Verbosity Level
+        test_flag = False
+
+        # Change to test directory
+        os.chdir('transport3d_validation')
+
+        # Create simulation run directory
+        output_dir = '_output'
+        if os.path.exists( output_dir ): shutil.rmtree(output_dir)
+        os.mkdir( output_dir )
+        os.chdir(output_dir)
+
+        # Run fehm
+        self._run_fehm('')
+
+        # Specify file names
+        output_file = 'run_Aqueous_Species_001.trc'
+        compare_file = path=os.path.join('..', 'compare', '') + 'MT3D001.OBS'
+        #print(f'Output file name: {output_file} Compare file name: {compare_file}')
+
+        # Open and read in data for output file
+        with open(output_file, 'r') as file:
+            lines = file.readlines()[4:]
+            data = [line.strip().split() for line in lines]
+            max_length = max(len(sublist) for sublist in data)
+            data = [sublist + [''] * (max_length - len(sublist)) for sublist in data]
+
+            def to_float(value):
+                try:
+                    return float(value)
+                except ValueError:
+                    return 0
+
+            out_data = np.array([[to_float(item) for item in sublist] for sublist in data], dtype=float)
+            out_data = np.delete(out_data, [0, 1, 6], 1)
+            out_data = np.reshape(out_data,(-1,1))
+            #print(f'Data for {output_file}: {out_data}')
+
+        # Open and read in data for comparison file
+        with open(compare_file, 'r') as file:
+            lines = file.readlines()[2:]
+            data = [line.strip().split() for line in lines]
+            max_length = max(len(sublist) for sublist in data)
+            data = [sublist + [''] * (max_length - len(sublist)) for sublist in data]
+
+            def to_float(value):
+                try:
+                    return float(value)
+                except ValueError:
+                    return 0
+
+            compare_data = np.array([[to_float(item) for item in sublist] for sublist in data], dtype=float)
+            compare_data = np.delete(compare_data, [0, 1], 1)
+            compare_data = np.reshape(compare_data,(-1,1))
+            #print(f'Data for {compare_file}: {compare_data}')
+
+        # Compare files
+        if len(out_data) != len(compare_data):
+            print('The output and compare files do not match')
+            print(f'Output file length: {len(out_data)} and Compare file length: {len(compare_data)}')
+            pass
+
+        if out_data.size == 0 or compare_data.size == 0:
+            print(f'Missing data in comparison for files: {out_file} and {compare_file}')
+            pass
+
+        out_flat = out_data.flatten()
+        compare_flat = compare_data.flatten()
+
+        #print('Out file Flat:', out_flat, len(out_flat))
+        #print('Compare file Flat:', compare_flat, len(compare_flat))
+
+        if len(out_flat) == 0 or len(compare_flat) == 0:
+            print(f'No data to compare in files: {output_file} and {compare_file}')
+            pass
+
+        # Check if arrays are close enough within the tolerance
+        if np.allclose(out_flat, compare_flat, rtol=rtol, atol=atol, equal_nan=True):
+            if verbose >= 3:
+                print(f'Files are EQUAL')
+            test_flag = True
+                
+        else:
+            # Calculate the differences
+            difference = np.abs(out_flat - compare_flat)
+            max_difference = np.max(difference)
+                
+            if max_difference <= atol + rtol * np.abs(out_flat).max():
+                if verbose >= 3:
+                    print(f'Files are considered EQUAL within a relative tolerance of: {rtol}, and an absolute tolerance of: {atol}')
+                test_flag = True
+                    #print(f'Max difference: {max_difference}\n')
+                    
+            else:
+                differences = np.setdiff1d(out_flat, compare_flat)
+                differences2 = np.setdiff1d(compare_flat, out_flat)
+
+                # print(f'Differences: {differences}')
+                # print(f'Differences2: {differences2}')
+
+                if verbose >= 3:
+                    print(f'Files are UNEQUAL.')
+                    print(f'Found {len(differences)} differences in {output_file} and {compare_file}.')
+                pass
+        
+        if not test_flag:
+                self.fail("Files are not equal. Test failed.")
+
+        os.chdir(self.maindir)
+          
     def uz_test(self):
         # Test uz_test
         #
@@ -657,7 +782,9 @@ class fehmTest(unittest.TestCase):
         #     423 (1910) https://archive.org/details/cbarchive_122715_solutionofasystemofdifferentia1843
         #
         # .. Authors: Dylan Harp, Michelle Bourret
-        # .. Updated May 2016 by Dylan Harp 
+        # .. Updated January 2025 by Erica Hinrichs 
+
+        verbose = args['verbose'] # Verbosity Level
 
         # Change to test directory
         os.chdir('rad_decay')
@@ -734,7 +861,7 @@ class fehmTest(unittest.TestCase):
                 else:
                     CC_fail += 1
 
-        if CI_fail == 0 and CX_fail == 0 and CC_fail == 0:
+        if CI_fail == 0 and CX_fail == 0 and CC_fail == 0 and verbose >= 3:
             print('\nSuccessful evaluation of rad_decay.')
 
         elif CI_fail > 0:
@@ -1306,6 +1433,7 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('theis', log))
         suite.addTest(fehmTest('toronyi', log))
         #suite.addTest(fehmTest('transport3d', log))
+        suite.addTest(fehmTest('transport3d_validation', log))
         #suite.addTest(fehmTest('uz_test', log))
         suite.addTest(fehmTest('vapor_extraction', log))
         suite.addTest(fehmTest('wvtest', log))
