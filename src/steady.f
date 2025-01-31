@@ -694,7 +694,7 @@ c               return
 c     If we have reached steady state or reached our maximum
 c     time limit, make sure we output information
 c gaz 033020             
-            if(itt .eq. 0.and.isteady.ge.1) then
+            if(itt .eq. 0 .and. isteady.ge.1) then
                if (iout .ne. 0) write(iout,50) days, trim(info_string)
                if(iptty.ne.0) write(iptty,50) days, trim(info_string) 
                if(isteady.eq.1) write(iout,57)
@@ -777,19 +777,19 @@ c gaz 033020
      &        write (iout, 41) trim(info_string)
          if (toldp .ne. tolerance)
      &        write(iout, 40) 'pressure', pdifmax, toldp
-         if (toldp .ne. tolerance. and. i_pdiff. ne. 0) 
+         if (toldp .ne. tolerance .and. i_pdiff .ne. 0) 
      &      write(iout, 43) i_pdiff,pmax_i,pmax_io,izonef(i_pdiff)
          if (toldh .ne. tolerance)
      &        write(iout, 40) 'head', hdifmax, toldh
          if (tolds .ne. tolerance)
      &      write(iout, 40) 'saturation', sdifmax, tolds
-         if (tolds .ne. tolerance. and. i_sdiff. ne. 0) 
-            write(iout, 44) i_sdiff,smax_i,smax_io,izonef(i_sdiff)
+         if (tolds .ne. tolerance .and. i_sdiff .ne. 0) 
+     &      write(iout, 44) i_sdiff,smax_i,smax_io,izonef(i_sdiff)
          if (toldt .ne. tolerance)
      &        write(iout, 40) 'temperature', tdifmax, toldt
          if (tacc .ne. tolerance)
      &      write(iout, 40) 'nodal mass', accmax, tacc
-         if (tacc .ne. tolerance. and. i_accdif. ne. 0) 
+         if (tacc .ne. tolerance .and. i_accdif .ne. 0) 
      &      write(iout,45)i_accdif,
      &            accmax/(sx1(i_accdif)*denh(i_accdif)),
      &            amass_ch,izonef(i_accdif)         
@@ -801,26 +801,26 @@ c gaz 033020
      &        'enthalpy balance (IN-OUT)', enth_rate, tolde
             write(iout,42) tmch
 c gaz 033020            
-         if (isty .ne. 0.and.isteady.eq.2) write(iout,51)
+         if (isty .ne. 0 .and.isteady.eq.2) write(iout,51)
       end if
       if(iptty.ne.0) then
          if (isteady .ne. 2 .and. iflg .ne. 3) 
      &        write (iptty, 41) trim(info_string)
          if (toldp .ne. tolerance)
      &        write(iptty, 40) 'pressure', pdifmax, toldp
-         if (toldp .ne. tolerance. and. i_pdiff. ne. 0) 
+         if (toldp .ne. tolerance .and. i_pdiff .ne. 0) 
      &        write(iptty, 43) i_pdiff,pmax_i,pmax_io,izonef(i_pdiff)
          if (toldh .ne. tolerance)
      &        write(iptty, 40) 'head', hdifmax, toldh
          if (tolds .ne. tolerance)
      &        write(iptty, 40) 'saturation', sdifmax, tolds
-         if (tolds .ne. tolerance. and. i_sdiff. ne. 0) 
+         if (tolds .ne. tolerance .and. i_sdiff .ne. 0) 
      &        write(iptty, 44) i_sdiff,smax_i,smax_io,izonef(i_sdiff) 
          if (toldt .ne. tolerance)         
      &        write(iptty, 40) 'temperature', tdifmax, toldt
          if (tacc .ne. tolerance)
      &        write(iptty, 40) 'nodal mass', accmax, tacc
-         if (tacc .ne. tolerance. and. i_accdif. ne. 0) 
+         if (tacc .ne. tolerance .and. i_accdif .ne. 0) 
      &    write(iptty,45)i_accdif,
      &            accmax/(sx1(i_accdif)*denh(i_accdif)),
      &            amass_ch,izonef(i_accdif)         
@@ -831,7 +831,7 @@ c gaz 033020
          if (tolde .ne. tolerance) write(iptty, 40) 
      &        'enthalpy balance (IN-OUT)', enth_rate, tolde
          write(iptty,42) tmch
-         if (isty .ne. 0.and.isteady.eq.2) write(iptty,51)
+         if (isty .ne. 0 .and.isteady.eq.2) write(iptty,51)
       endif 
       
  40   format ('>>>>> Max change in ', a, 1pg12.4, ' tolerance',

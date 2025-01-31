@@ -1429,9 +1429,11 @@ c
         do ik = 1, ik_max
 c note  velij**2 to velij*abs(velij)
         velij_2 = velij*abs(velij)
-c        d_velij_2 = 2.0d0*velij
-          d_velij_2 = ((velij+dvel)*abs(velij+dvel)
-    &     -velij*abs(velij))/dvel
+
+c    d_velij_2 = 2.0d0*velij
+          d_velij_2 = 
+     &    ((velij+dvel)*abs(velij+dvel)-velij*abs(velij))/dvel
+
           r_vel = -c_nd+b_nd*velij+a_nd*velij_2
           dr_velv = b_nd + a_nd*d_velij_2
           if(abs(r_vel).lt.v_tol.and.ik.gt.1) then

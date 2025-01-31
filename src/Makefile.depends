@@ -259,7 +259,7 @@ geneq2_nondarcy.o: comci.o combi.o comdti.o comwellphys.o comai.o com_nondarcy.o
 gensl2_w_nondarcy.o: davidi.o comhi.o comcouple.o comgi.o comfi.o comei.o comdi.o 
 gensl2_w_nondarcy.o: comci.o combi.o comdti.o comai.o comwt.o comriv.o 
 gensl2_w_nondarcy.o: comwellphys.o com_prop_data.o com_nondarcy.o
-innondarcy.o: comdi.o cmodti.o comai.o cmoki.o com_nondarcy.o
+innondarcy.o: comdi.o comdti.o comai.o comki.o com_nondarcy.o
 geneq2_part.o: com_part.o comai.o combi.o comci.o comdi.o comdti.o comei.o
 geneq2_part.o: comfi.o comflow.o comgi.o comji.o davidi.o
 geneq2_rich.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
@@ -732,7 +732,7 @@ comgi.mod: comgi.o
 cmohi.mod: cmohi.o
 cmoii.mod: cmoii.o
 cmoji.mod: cmoji.o
-cmoki.mod: cmoki.o
+comki.mod: comki.o
 commass_AWH.mod: commass_AWH.o
 commeth.mod: commeth.o
 comnire.mod: comnire.o

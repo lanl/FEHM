@@ -675,7 +675,7 @@ c
  1000    continue
          ihead=1
 c gaz 071224 added  hdflow for Head BCs 
-         if(.not.allocated(hdflow)) allocate(hdflow(n0))
+c        if(.not.allocated(hdflow)) allocate(hdflow(n0))
 
       else if (macro .eq. 'chea') then
 c
