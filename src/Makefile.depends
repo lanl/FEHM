@@ -256,9 +256,6 @@ geneq2_ani_2p.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 geneq2_ani_2p.o: comflow.o comgi.o comji.o davidi.o
 geneq2_nondarcy.o: comflow.o davidi.o comji.o comfi.o comgi.o comei.o comdi.o
 geneq2_nondarcy.o: comci.o combi.o comdti.o comwellphys.o comai.o com_nondarcy.o 
-gensl2_w_nondarcy.o: davidi.o comhi.o comcouple.o comgi.o comfi.o comei.o comdi.o 
-gensl2_w_nondarcy.o: comci.o combi.o comdti.o comai.o comwt.o comriv.o 
-gensl2_w_nondarcy.o: comwellphys.o com_prop_data.o com_nondarcy.o
 innondarcy.o: comdi.o comdti.o comai.o comki.o com_nondarcy.o
 geneq2_part.o: com_part.o comai.o combi.o comci.o comdi.o comdti.o comei.o
 geneq2_part.o: comfi.o comflow.o comgi.o comji.o davidi.o
@@ -325,9 +322,11 @@ gensdp_switch.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 gensdp_switch.o: comgi.o comhi.o davidi.o
 gensl1.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o comfi.o
 gensl1.o: comflow.o comgi.o comhi.o comriv.o davidi.o
-gensl2.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o comfi.o
-gensl2.o: comflow.o comgi.o comhi.o comji.o comriv.o comsplitts.o comwellphys.o
-gensl2.o: comwt.o davidi.o
+gensl2.o: davidi.o comhi.o comcouple.o comgi.o comfi.o comei.o comdi.o
+gensl2.o: comai.o comci.o combi.o comdti.o comai.o comwt.o comriv.o
+gensl2.o: comwellphys.o com_prop_data.o com_nondarcy.o
+gensl2.o: comflow.o comji.o comfi.o comgi.o comei.o comdi.o comci.o combi.o
+gensl2.o: comdti.o comai.o comsplitts.o comflow.o 
 gensl2_part.o: com_part.o comai.o combi.o comci.o comcouple.o comdi.o comdti.o
 gensl2_part.o: comei.o comfi.o comflow.o comgi.o comhi.o comji.o comsplitts.o
 gensl2_part.o: davidi.o

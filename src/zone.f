@@ -418,7 +418,7 @@ c         if(wdd1(i:i+3).eq.'save') izone_save = 1
       enddo
       curzone = numzones + 1
       if (zonetmp(1:1) .ne. '-') numzones = numzones + 1
- 63   if (curzone .gt. zmaxtmp) then                                                               
+ 63   if (curzone .gt. zmaxtmp) then
          allocate (znametmp(zmaxtmp),znumtmp(zmaxtmp))
          znametmp = zonenames
          znumtmp = zonenums 
@@ -506,7 +506,7 @@ c     read in nodes in zone from xy list
                i_old = i
                icnl_old=icnl
                icnl=1
-               call near3(xg,yg,0.0,i,0)
+               call near3(xg,yg,0.0d0,i,0)
                icnl=icnl_old
                if(i_old.eq.i) go to 71
                xg=cord(i,1)
@@ -803,11 +803,11 @@ c called from ingdpm
             n_n_n = n_n_n + 1
             if(izonef(n_n_n).eq.0) then
 c gaz 042521                 
-c if primary gdkm node zone = 0, set to zone = 1, and secondary node zone = 101  
+c if primary gdkm node zone = 0, set to zone = 1, and secondary node zone = 101 
                if(izonef(i).eq.0) then
                 izonef(i) = 1
                 if(ierr_wrt.ne.0) then
-                 write(ierr,*)'>> gdkm primary node ',i,' has no zone: '
+                 write(ierr,*)'>> gdkm primary node ',i,' has no zone:'
      &            ,'setting zone(node)= 1, secondary node zone = 101'
                 endif
                endif
@@ -1221,7 +1221,8 @@ c call timing function
         if(iptty.ne.0) then
          write(iptty,100) 
         endif
-100     format(1x,/,'>> Combining files for SoilVision application  <<')        
+100     format
+     &  (1x,/,'>> Combining files for SoilVision application  <<')
         tajj = tyming(caz) 
       elseif(iflg.eq.3) then
         if(.not.sv_combine) return
@@ -1430,8 +1431,8 @@ c gaz use soil_vision_beta.dat(izunit2) as the template
          read(izunit2,'(a)') line_temp1
          write(izunit3,'(a)') trim(line_temp1) 
          read(line_temp1,'(a4,i6,a21,f17.1,a10,i10,a5,i9)')
-     &      string_temp(1:4), 
-     &      n_zone, string_temp(11:32),time_temp,string_temp (1:10),        
+     &      string_temp(1:4), n_zone, 
+     &      string_temp(11:32),time_temp,string_temp (1:10),        
      &      node_temp,string_temp(1:5), n_elem
           if(time_temp.eq.time_temp_last) then
            nzone_cnt = nzone_cnt + 1

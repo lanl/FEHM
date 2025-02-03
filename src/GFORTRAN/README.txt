@@ -17,3 +17,12 @@ inrestart.o : ${ALTDIR}inrestart.f
 insptr.o : ${ALTDIR}insptr.f
 	${FC} ${FFLAGS} $< -c -o ${SRCDIR}$@
 
+
+Note: change version and date in dated.template
+Used in Makefile to set version and date
+.PHONY: dated
+dated:
+	rm -f ${SRCDIR}dated.f
+	rm -f ${SRCDIR}dated.o
+	sed s/OS\ DATE/${OSTAG}\ ${DATETAG}/ ${SRCDIR}dated.template > ${SRCDIR}dated.f
+
