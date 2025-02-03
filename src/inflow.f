@@ -286,7 +286,10 @@ c rich only
             end if
          end if
       end do
-      
+c gaz 070924  check elevation
+c set hd to pflow if ihead.ne.0 
+      if(ihead.ne.0) call hdbc_mod(0,1,n0,0)   
+  
       deallocate(aiped,esktmp,sktmp)
            
       end

@@ -1035,6 +1035,7 @@ c zero head indicated by -9999999.0
                         else
                            pflow(i)=tempb(i)
                         endif
+                         hdflow(i) = tempb(i)
                         call headctr(5,i,pflow(i),pflow(i))
                         if(irdof.ne.13) then
                            if(pflow(i).lt.crl(4,1)) then
@@ -1046,6 +1047,9 @@ c GAZ(4-8-2001)            satb(i)=1.e-6
                         endif
                         ka(i)=-1
 c gaz 012316
+c gaz 071124 check for specified head/elevation inconsistency
+c gaz 071224 moved to thrair
+c                        if(ihead.ne.0) call hdbc_mod(2,i,i,0) 
                         esk(i) = 1.0
                         if(wellim(i).eq.0.0) wellim(i)=sx1(i)*1.d06
 c        
