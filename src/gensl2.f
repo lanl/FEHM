@@ -392,7 +392,8 @@ c
       use comriv
       use comwellphys
 c gaz 040724
-      use com_prop_data, only : ihenryiso, ctest, xnl_ngas, xnl_max 
+      use com_prop_data, only : ihenryiso, ctest, xnl_ngas, xnl_max
+      use com_nondarcy
       implicit none
 
       real*8, allocatable :: sto5(:,:)
@@ -421,13 +422,15 @@ c gaz debug 112019
       real*8, allocatable :: dumdb4(:)   
       integer, allocatable :: ieosdum(:)  
 c gaz 112419      
-      integer i_uzsz_re
+      integer i_uzsz_re, num_unit
+      logical op,ex
       parameter(i_uzsz_re=1)
       parameter(adiag_tol=1.d-10)
       parameter(iparchek = 0)
       integer jj
       neqp1=neq+1
 c test of coefficients
+      jj = phi(1)+s(1)
        if(iparchek.eq.1) then
        write(ierr,*) 'fe coef. upper diag'
        write(ierr,*)
@@ -488,6 +491,64 @@ c gaz 120323 added coding for boundary flow from gas diffusion
          if(idiff_iso.ne.0)  then
           q_gas = 0.0d0
          endif
+c gaz  111824 debug
+c gaz  120324 debug
+c      nd_test= -1   
+c      if(l.eq.1.and.nd_test.ne.0) then   
+c       if(fdum.eq.-1.0) then 
+c        nd_test = 100
+c        iad_min = iad_min_sv 
+c        iad = iad_min_sv
+c        nd_test = iad_min_sv
+c        return
+c       endif
+c      else
+c       nd_test = -1
+c       iad_min = iad_min_sv
+c      endif
+c
+      if(nd_test_write.gt.0) then
+c gaz debug 151224          
+       inquire(file='nd_comp1-21.chk', opened = op)
+       inquire  (file='nd_comp1-21.chk', exist = ex)
+       if(ex.and.op.and.l.eq.1.and.iad.eq.0) then
+        inquire(file='nd_comp1-21.chk', number = num_unit)
+        close(num_unit)
+        open(unit=55,file='nd_comp1-21.chk',status='unknown')
+         write(55,180) 
+       else if(.not.op.and.l.eq.1.and.iad.eq.0) then
+        open(unit=55,file='nd_comp1-21.chk',status='unknown')
+         write(55,180) 
+       endif
+c
+       inquire(file='nd_comp360-380.chk', opened = op)
+       inquire  (file='nd_comp360-380.chk', exist = ex)
+       if(ex.and.op.and.l.eq.1.and.iad.eq.0) then
+        inquire(file='nd_comp360-380.chk', number = num_unit)
+        close(num_unit)
+        open(unit=56,file='nd_comp360-380.chk',status='unknown')
+         write(56,180) 
+
+       else if(.not.op.and.l.eq.1.and.iad.eq.0) then
+        open(unit=56,file='nd_comp360-380.chk',status='unknown')
+         write(56,180)
+       endif
+c
+       inquire(file='nd_comp365-385.chk', opened = op)
+       inquire  (file='nd_comp365-385.chk', exist = ex)
+       if(ex.and.op.and.l.eq.1.and.iad.eq.0) then
+        inquire(file='nd_comp365-385', number = num_unit)
+        close(num_unit)
+        open(unit=57,file='nd_comp365-385.chk',status='unknown')
+         write(57,180) 
+       else if(.not.op.and.l.eq.1.and.iad.eq.0) then
+        open(unit=57,file='nd_comp365-385.chk',status='unknown')
+         write(57,180) 
+       endif
+180   format(t5,'ts',t14,'i',t21,'kb',t34,'vxy',t51,'dvapi',t67,
+     &  'dvapkb',t85,'dvaei',t97,'dvaekb')
+      endif
+c end nd_test_write
       do 101 id=1,neq
 c     
 c     decide on equation type
@@ -530,6 +591,9 @@ c do we need to make sure this is a wtsi node?
             else if(ihenryiso.ne.0) then
                call geneq2_sol(id)
                call add_accumulation(id)
+            else if(nd_flow) then
+               call geneq2_nondarcy(id)
+               call add_accumulation(id)   
             else
                call geneq2(id)
                call add_accumulation(id)
@@ -549,7 +613,7 @@ c do we need to make sure this is a wtsi node?
          endif
  101  continue
 
-         
+           
 c     
 c
 c add correction for saturations over 1.0
@@ -921,7 +985,7 @@ c            pause
 c     
          call explicit(mink)
          minkt=minkt+mink
-c     
+c 
          if(fdum.gt.f0.or.iad.le.iad_min-1) then
             facr=1.0
 c            tolls=max(facr*f0,min(g1*fdum,g2*fdum2))
@@ -994,7 +1058,7 @@ c
       end if
       
  999  continue
-      
+   
       deallocate(dum)
 
       
