@@ -118,6 +118,7 @@
 		<File RelativePath=".\src\coeff_management.f"/>
 		<File RelativePath=".\src\coeffc.f"/>
 		<File RelativePath=".\src\com_exphase.f"/>
+		<File RelativePath=".\src\com_nondarcy.f"/>
 		<File RelativePath=".\src\com_part.f"/>
 		<File RelativePath=".\src\com_prop_data.f"/>
 		<File RelativePath=".\src\comai.f"/>
@@ -291,6 +292,7 @@
 		<File RelativePath=".\src\geneq2.f"/>
 		<File RelativePath=".\src\geneq2_ani.f"/>
 		<File RelativePath=".\src\geneq2_ani_2p.f"/>
+		<File RelativePath=".\src\geneq2_nondarcy.f"/>
 		<File RelativePath=".\src\geneq2_part.f"/>
 		<File RelativePath=".\src\geneq2_rich.f"/>
 		<File RelativePath=".\src\geneq2_sol.f"/>
@@ -392,6 +394,7 @@
 		<File RelativePath=".\src\inmentat.f"/>
 		<File RelativePath=".\src\inmptr.f"/>
 		<File RelativePath=".\src\innode.f"/>
+		<File RelativePath=".\src\innondarcy.f"/>
 		<File RelativePath=".\src\inpatran.f"/>
 		<File RelativePath=".\src\inperm.f"/>
 		<File RelativePath=".\src\inpres.f"/>
