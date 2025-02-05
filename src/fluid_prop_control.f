@@ -108,7 +108,7 @@ c            parameter(eval_test_h2o = 1)
         if(iflg.eq.0) then
 c gaz 120421 used code from tables     
 c initialize and allocate memory
-c gaz 110324
+c gaz 110324 added n_allocate_iso
          if(.not.allocated(xv_h2o)) then
           if(ico2.lt.0) then
            n_allocate_iso = n0
@@ -2221,3 +2221,4 @@ c      stop
       endif
       return
       end 
+

@@ -652,6 +652,7 @@ c**** allocate memory ****
 c**** call data initialization routine ****
 c gaz debug area ***********************************   
 c gaz 032720 debug
+c gaz jan2025 edits add igrav to ja
       ja = ps(1)+psini(1)+izonef(1)+minkt+pflow(1)+igrav
 c *********************************      
 c         

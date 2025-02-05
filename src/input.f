@@ -557,6 +557,7 @@ c confirm this is the terminator for the last macro read
  798  format ( 'WARNING : input title : ', 
      &     a4, ' unlabeled macro terminator',/)
          
+      nwds=0
       call parse_string2(wdd1,imsg,msg,xmsg,cmsg,nwds)
 
       if (nwds .gt. 1) then
@@ -1794,9 +1795,5 @@ c fill array  izoneflxz()
           endif  
       endif    
       end subroutine readsavedzone
-
-
-
-
 
 

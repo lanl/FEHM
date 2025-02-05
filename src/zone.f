@@ -335,6 +335,7 @@ c      integer, allocatable :: ncord(:)
       integer, allocatable :: zone_list(:), tmp_list(:)
       character*20 zonetmp
       character*30 zonesavename
+c gaz jan2025 change dumzone from length 5
       character*10 dumzone
       integer k, curzone
       logical ex, zone_check
@@ -1652,3 +1653,4 @@ c identify water table
       endif
       return
       end
+
