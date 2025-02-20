@@ -74,9 +74,15 @@ c remove tec log file if exists
       inquire(file = temp_file, exist = exists)
 c 
 c create vtk         
-      
-      vtk_log_file(1:iq) = cont_log_file(1:iq)
-      vtk_log_file(iq:iq+13) = '_vtk_log.file'
+c debug tam
+c     this assumes iq is the dot at end of root name
+c     fix junk characters after file name
+c     vtk_log_file(1:iq) = cont_log_file(1:iq)
+c     vtk_log_file(iq:iq+13) = '_vtk_log.file'
+
+      vtk_log_file= trim(avs_root)
+      write(vtk_log_file(iq:iq+12),9) '_vtk_log.file'
+9     format(a13)
       open(unit=8,file=vtk_log_file,status='unknown')
       write(8,1) verno, jdate, jtime
 1     format(a30,1x,a11,1x,a8,
