@@ -280,9 +280,9 @@ cM	    rnrm = dnrm2 (nn, work(1,r), 1)
 	    mxnrmr = max(mxnrmr, rnrm)
 	 enddo
 
-*         print *,'2: work(1,r) = ',work(1,r),' ',work(2,r),' ',work(3,r)
-*         print *,'3:         x = ',x(1),' ',x(2),' ',x(3)
-*         pause
+c        print *,'2: work(1,r) = ',work(1,r),' ',work(2,r),' ',work(3,r)
+c        print *,'3:         x = ',x(1),' ',x(2),' ',x(3)
+c        pause
 
 c
 c     ==================================

@@ -335,7 +335,8 @@ c      integer, allocatable :: ncord(:)
       integer, allocatable :: zone_list(:), tmp_list(:)
       character*20 zonetmp
       character*30 zonesavename
-      character*5 dumzone
+c gaz jan2025 change dumzone from length 5
+      character*10 dumzone
       integer k, curzone
       logical ex, zone_check
 c gaz 042523
@@ -418,7 +419,7 @@ c         if(wdd1(i:i+3).eq.'save') izone_save = 1
       enddo
       curzone = numzones + 1
       if (zonetmp(1:1) .ne. '-') numzones = numzones + 1
- 63   if (curzone .gt. zmaxtmp) then                                                               
+ 63   if (curzone .gt. zmaxtmp) then
          allocate (znametmp(zmaxtmp),znumtmp(zmaxtmp))
          znametmp = zonenames
          znumtmp = zonenums 
@@ -506,7 +507,7 @@ c     read in nodes in zone from xy list
                i_old = i
                icnl_old=icnl
                icnl=1
-               call near3(xg,yg,0.0d00,i,0)
+               call near3(xg,yg,0.0d0,i,0)
                icnl=icnl_old
                if(i_old.eq.i) go to 71
                xg=cord(i,1)
@@ -633,15 +634,17 @@ c     Change to n0 (used to be neq) - BAR 12-15-99
  6011       format (10i8)
          end if
 c gaz 062723  write nodes to zone_char 
-          write(dumzone(1:5),'(i5)') izone 
+c          write(dumzone(1:5),'(i5)') izone 
+c gaz 062124  write nodes to zone_char(enlargerd length)
+          write(dumzone(1:10),'(i10)') izone    
           do i = 1, nin
            jb = ncord(i)
            do jc = 1,25           
-            if(zones_char(jb)(jc:jc+4).eq.dumzone(1:5)) then
+            if(zones_char(jb)(jc:jc+9).eq.dumzone(1:10)) then
              go to 8001
-            else if(zones_char(jb)(jc:jc+4).eq.'    ') then
-             write( zones_char(jb)(jc:jc+4),'(i5)') izone
-             go to 8001
+            else if(zones_char(jb)(jc:jc+9).eq.'         ') then
+             write( zones_char(jb)(jc:jc+9),'(i10)') izone
+             go to 8001                         
             endif
            enddo
 8001      continue
@@ -801,11 +804,11 @@ c called from ingdpm
             n_n_n = n_n_n + 1
             if(izonef(n_n_n).eq.0) then
 c gaz 042521                 
-c if primary gdkm node zone = 0, set to zone = 1, and secondary node zone = 101  
+c if primary gdkm node zone = 0, set to zone = 1, and secondary node zone = 101 
                if(izonef(i).eq.0) then
                 izonef(i) = 1
                 if(ierr_wrt.ne.0) then
-                 write(ierr,*)'>> gdkm primary node ',i,' has no zone: '
+                 write(ierr,*)'>> gdkm primary node ',i,' has no zone:'
      &            ,'setting zone(node)= 1, secondary node zone = 101'
                 endif
                endif
@@ -1219,7 +1222,8 @@ c call timing function
         if(iptty.ne.0) then
          write(iptty,100) 
         endif
-100     format(1x,/,'>> Combining files for SoilVision application  <<')        
+100     format
+     &  (1x,/,'>> Combining files for SoilVision application  <<')
         tajj = tyming(caz) 
       elseif(iflg.eq.3) then
         if(.not.sv_combine) return
@@ -1428,8 +1432,8 @@ c gaz use soil_vision_beta.dat(izunit2) as the template
          read(izunit2,'(a)') line_temp1
          write(izunit3,'(a)') trim(line_temp1) 
          read(line_temp1,'(a4,i6,a21,f17.1,a10,i10,a5,i9)')
-     &      string_temp(1:4), 
-     &      n_zone, string_temp(11:32),time_temp,string_temp (1:10),        
+     &      string_temp(1:4), n_zone, 
+     &      string_temp(11:32),time_temp,string_temp (1:10),        
      &      node_temp,string_temp(1:5), n_elem
           if(time_temp.eq.time_temp_last) then
            nzone_cnt = nzone_cnt + 1
@@ -1588,4 +1592,65 @@ c         elseif(gdpm_flag) then shaoping email 050421
       deallocate(izone_out_gdpm)
 
       return
+      end        
+      subroutine hdbc_mod(iflg,j,k,zone_chng)
+c
+c gaz 070924 modify BC or zones for elevation mismatch
+c only testediflg = 2
+c    
+      use comai
+      use combi
+      use comdi
+      implicit none
+      integer i,j,k,iflg,zone_chng,nodes_remove
+      integer i1,i2,kb,ii 
+      real*8 elevation_chk, pflow_chk, head_chk, sat_hd, thic_half 
+      if(iflg.eq.0) then
+      if(.not.allocated(hdflow)) allocate(hdflow(n))
+      write(ierr,*) ' zone, hdflow, elevation ' 
+      nodes_remove = 0
+      do i = j,k
+       if(ka(i).eq.-1.or.ka(i).eq.-2) then
+        hdflow(i) = pflow(i)
+        write(ierr,*) 'node ',i, izonef(i),hdflow(i),cord(i,igrav) 
+        nodes_remove =  nodes_remove + 1
+       endif
+      enddo
+      continue
+      else if(iflg.eq.1) then
+c check zone elevation
+       nodes_remove = 0
+       do i = j,k
+c checking zone for elevation higher than head     ,
+        if(izonef(i).eq.zone_chng) then
+         elevation_chk =  cord(i,igrav)
+         thic_half = 0.5d0*dzrg(i)
+         head_chk  = hdflow(i)
+         if(head_chk.ge.elevation_chk-thic_half.and.
+     &     head_chk.le.elevation_chk+thic_half) then
+c identify water table                      
+            nodes_remove =  nodes_remove + 1
+            sat_hd = (head_chk-(elevation_chk-thic_half))/dzrg(i)
+            write(ierr,100) i, head_chk, sat_hd, elevation_chk
+          endif
+100      format('water table boundary node ',i7,' hd'1x,f12.7, 
+     &     ' sat ', f12.7,' elev ', f12.7)  
+        endif 
+       enddo
+        write(ierr,*) 'gridblocks at water table zone = ',zone_chng,  
+     &  nodes_remove 
+       continue
+      else if(iflg.eq.2) then
+
+       do i = j,k
+        if(ka(i).eq.-1.or.ka(i).eq.-2) then
+         elevation_chk =  cord(i,igrav)-0.5d0*dzrg(i)
+         if(hdflow(i).lt.elevation_chk) then
+          ka(i) = 0
+         endif
+        endif
+       enddo
+      endif
+      return
       end
+

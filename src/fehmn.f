@@ -462,7 +462,8 @@ c gaz 040621 added qtotin below
       use comflow, only : a_axy
       use comii, only : pmin,pmax,tmin,tmax,fluid,
      &  tmin_air_tabl,tmax_air_tabl,pmin_air_tabl,pmax_air_tabl,
-     &  tmin_co2wh_tabl,tmax_co2wh_tabl,pmin_co2wh_tabl,pmax_co2wh_tabl 
+     &  tmin_co2wh_tabl,tmax_co2wh_tabl,pmin_co2wh_tabl,
+     &  pmax_co2wh_tabl 
       use compart
       use comriv
       use comrtd, only : maxmix_flag
@@ -651,7 +652,8 @@ c**** allocate memory ****
 c**** call data initialization routine ****
 c gaz debug area ***********************************   
 c gaz 032720 debug
-      ja = ps(1)+psini(1)+izonef(1)+minkt+pflow(1)
+c gaz jan2025 edits add igrav to ja
+      ja = ps(1)+psini(1)+izonef(1)+minkt+pflow(1)+igrav
 c *********************************      
 c         
          if(i.eq.-999) then
@@ -761,17 +763,17 @@ c write error message
                end if         
                stop
           endif         
- 6010    format('CO2 Properties Interpolation Table File not found: ', 
+ 6010  format('CO2 Properties Interpolation Table File not found: ', 
      &        /, a, /, 'Stopping')
- 6012    format('Input correct name in control file using, co2in : ',
+ 6012  format('Input correct name in control file using, co2in : ',
      &        'filename')
- 7010    format('H2O Properties Interpolation Table File not found: ', 
+ 7010  format('H2O Properties Interpolation Table File not found: ', 
      &        /, a, /, 'Stopping')
- 7012    format('>> enter correct name in control file using, h2oin : ',
+ 7012  format('>> enter correct name in control file using, h2oin : ',
      &        'filename',' <<')
- 7013    format('>> enter correct name in control file using, airin : ',
+ 7013  format('>> enter correct name in control file using, airin : ',
      &        'filename',' <<')
- 7014    format('>> enter correct name in control file using, co2whn : ',
+ 7014  format('>> enter correct name in control file using, co2whn : ',
      &        'filename',' <<')    
         if(icarb.ne.0) then
          if(iout.ne.0) write(iout, 6200) nmfil(29)
@@ -783,35 +785,43 @@ c gaz 070720
          if(iptty.ne.0) write(iptty, 6300) nmfil(31)
 c gaz 112721 write info regarding EOS data crit pts and true crit pts
                if (iout .ne. 0) then
-               write(iout, 7009) 'pressure   ',pcrit_h2o_true,pcrit_h2o
-               write(iout, 7009) 'temperature',tcrit_h2o_true,tcrit_h2o
-               write(iout,'(a36)') 
-     &               '>>> crit props changed to h2o table values'                      
+                  write(iout, 7009) 'pressure   ',
+     &            pcrit_h2o_true,pcrit_h2o
+                  write(iout, 7009) 'temperature',
+     &            tcrit_h2o_true,tcrit_h2o
+                  write(iout,'(a36)') 
+     &            '>>> crit props changed to h2o table values'
                endif 
                if (iptty .ne. 0) then
-               write(iptty, 7009) 'pressure   ',pcrit_h2o_true,pcrit_h2o
-               write(iptty, 7009) 'temperature',tcrit_h2o_true,tcrit_h2o
-               write(iptty,'(a36)')                   
-     &               '>>> crit props changed to h2o table values'                      
+                  write(iptty, 7009) 'pressure   ',
+     &            pcrit_h2o_true,pcrit_h2o
+                  write(iptty, 7009) 'temperature',
+     &            tcrit_h2o_true,tcrit_h2o
+                  write(iptty,'(a36)')              
+     &            '>>> crit props changed to h2o table values'
                endif                 
-7009   format ('>>> critical ',a11,': true',1p, g16.10,
-     &         ' EOS table ',g16.10)                                     
+7009    format ('>>> critical ',
+     &          a11,': true',1p, g16.10,' EOS table ',g16.10)
         else if(iwater_table.eq.2) then
          if(iout.ne.0) write(iout, 6301) nmfil(31)
-         if(iptty.ne.0) write(iptty, 6301) nmfil(31)         
+         if(iptty.ne.0) write(iptty, 6301) nmfil(31)
          iwater_table = 1
 c gaz 112721 write info regarding EOS data crit pts and true crit pts
                if (iout .ne. 0) then
-               write(iout, 7009) 'pressure   ',pcrit_h2o_true,pcrit_h2o
-               write(iout, 7009) 'temperature',tcrit_h2o_true,tcrit_h2o
-               write(iout,'(a36)') 
-     &                 '>>> crit props changed to h2o table values'                  
+                  write(iout, 7009) 'pressure   ',
+     &            pcrit_h2o_true,pcrit_h2o
+                  write(iout, 7009) 'temperature',
+     &            tcrit_h2o_true,tcrit_h2o
+                  write(iout,'(a36)')                  
+     &            '>>> crit props changed to h2o table values'
                endif 
                if (iptty .ne. 0) then
-               write(iptty, 7009) 'pressure   ',pcrit_h2o_true,pcrit_h2o
-               write(iptty, 7009) 'temperature',tcrit_h2o_true,tcrit_h2o
-               write(iptty,'(a36)')                   
-     &                 '>>> crit props changed to h2o table values'                  
+                  write(iptty, 7009) 'pressure   ',
+     &            pcrit_h2o_true,pcrit_h2o
+                  write(iptty, 7009) 'temperature',
+     &            tcrit_h2o_true,tcrit_h2o
+                  write(iptty,'(a36)')                    
+     &            '>>> crit props changed to h2o table values'
                endif           
         endif
          if(iair_table.eq.1) then
@@ -831,15 +841,18 @@ c gaz 112721 write info regarding EOS data crit pts and true crit pts
          ico2wh_table = 1
         endif         
  6200 format(/,'>>> co2 property interpolation table -',3x, a100) 
- 6300 format(/,'>>> h2o property table (from control file) -',3x, a100) 
+ 6300 format
+     & (/,'>>> h2o property table (from control file) -',3x, a100) 
  6301 format
-     &    (/,'>>> h2o property table (from data file(eos)) -',3x, a100) 
- 6400 format(/,'>>> air property table (from control file) -',3x, a100) 
- 6401 format
-     &    (/,'>>> air property table (from data file(eos)) -',3x, a100)     
- 6500 format(/,'>>> co2wh property table (from control file) -',3x,a100) 
- 6501 format
-     &    (/,'>>> co2wh property table (from data file(eos)) -',3x,a100) 
+     & (/,'>>> h2o property table (from data file(eos)) -',3x, a100) 
+ 6400 format
+     & (/,'>>> air property table (from control file) -',3x, a100) 
+ 6401 format(/,'>>> air property table (from data file(eos)) -',
+     & 3x, a100)     
+ 6500 format(/,'>>> co2wh property table (from control file) -',
+     & 3x, a100) 
+ 6501 format(/,'>>> co2wh property table (from data file(eos)) -',
+     & 3x, a100)      
 c**** read and write data ****
          in3save = in(3)
          if(in(3).eq.0) then
@@ -1142,8 +1155,8 @@ c**** mlz.ne.0 means thermo variable is out of bounds ****
                   if (mlz .eq. -1)  then
                      if (iout .ne. 0) write(iout, 6020)  l, iad, day
                      if (iptty .gt. 0)  write(iptty, 6020)  l, iad, day
- 6020                format(/, 1x, 'timestep = ', i6, ' iterations = ', 
-     *                    i4, ' timestep size = ', g15.4)
+ 6020                format(/, 1x, 'timestep = ', i6, 
+     &               ' iterations = ',i4, ' timestep size = ', g15.4)
                   else if(mlz.eq.-2) then
                      if (iout .ne. 0) write(iout, *) 
      &                  'restart -  normalization failed'
@@ -1242,8 +1255,9 @@ c**** solve for heat and mass transfer solution ****
 
                   if (iout .ne. 0) write(iout, 6030) trim(nmfil(7))
                   if (iptty .gt. 0)  write(iptty, 6030) trim(nmfil(7))
- 6030             format(/, 1x, '**** allotted time gone, terminating ',
-     *                 'run : restart = ', a, ' ****')
+ 6030             format(/, 1x, 
+     &               '**** allotted time gone, terminating ',
+     &               'run : restart = ', a, ' ****')
 c Make sure fin file is written if we are stopping
                   if (isave .ne. 0) call diskwrite
                   if(isalt.ne.0) call saltctr(21,0,0.0d00,0.0d00)
@@ -1284,7 +1298,7 @@ c delete infinite reservoir nodes from mass balance calcs
 
 c check for steady state solution
                if(isteady.ne.0) then
-                  call steady(1,0.0d00,0.0d00)
+                  call steady(1,0.0d0,0.0d0)
                endif
 
 c
@@ -1609,7 +1623,7 @@ c**** call contour plot ****
                   if (iflxn .eq. 1) call flxn
                end if
                call pest(1)
-                if(isalt.ne.0) call saltctr(6,0,0.0d00,0.0d00)              
+                if(isalt.ne.0) call saltctr(6,0,0.0d00,0.0d00)
                if (ifinsh .ne. 0)  ex = .TRUE.
                if (dayscn .ge. abs(contim)) dayscn = 0.
 
@@ -1705,10 +1719,12 @@ c     contim_rip days
          
       if(die) then
          if (iout .ne. 0) then
-         write(iout, '(a40)') 'Kill file present; simulation terminated'
+         write(iout, '(a40)') 
+     &   'Kill file present; simulation terminated'
          endif
          if (iptty .gt. 0) then
-         write(iptty, '(a40)')'Kill file present; simulation terminated'
+         write(iptty, '(a40)')
+     &   'Kill file present; simulation terminated'
          endif
       endif
 
@@ -1801,17 +1817,22 @@ c     Change it back
  6042    format(//, 1x, 'total code time(timesteps) = ', f13.6)
 c gaz 070521 end metrics for eos calls
          call fluid_props_control(-2, 0, 0,'h2o      ', 
-     &        'all      ', '         ') 
+     &    'all      ', '         ') 
          call dated (jdate, jtime)
 
          if (iout .ne. 0) write(iout, 6052)  verno, jdate, jtime
          if (iptty .gt. 0) write(iptty, 6052)  verno, jdate, jtime
 c gaz 020122 debug call vtk conversion
-         if(i_vtk.ne.0) call contr(2)
+c gaz 051424      
+         if(i_vtk.ne.0.and.ivf.ne.-1) then
+          call contr(2)
+         else if(i_vtk.ne.0.and.ifdm_elem.eq.1) then
+          call contr(2)
+         endif
 c gaz 020723   generate and print flow vectors
           call flowrate_vectors(-1)
           call flowrate_vectors(1)
-          call flowrate_vectors(-2)                                                                    
+          call flowrate_vectors(-2)
 c      
 c gaz 111216 combine flux and scalar files for soilvision
 c
@@ -1836,18 +1857,19 @@ c
             close (inpt)
             if (iout .ne. 0) close (iout)
          end if
- 6052    format(//, 1x, '****----------------------------------------', 
-     *        '-----------------****', 
-     *        /, 1x, '**** This program for ', 35x, '    ****', 
-     *        /, 1x, '****   Finite Element Heat and Mass Transfer ', 
-     *        'in porous media ****', 
-     *        /, 1x, '****-------------------------------------------', 
-     *        '--------------****', 
-     *        /, 1x, '**** ', 12x, '  Version  : ', a30, ' ****', 
-     *        /, 1x, '**** ', 12x, '  End Date : ', a11, 18x, '  ****', 
-     *        /, 1x, '**** ', 12x, '      Time : ', a8, 20x, '   ****', 
-     *        /, 1x, '****-------------------------------------------',
-     *        '--------------****')
+ 6052    format(//, 1x, 
+     &     '****----------------------------------------', 
+     &     '-----------------****', 
+     &    /, 1x, '**** This program for ', 35x, '    ****', 
+     &    /, 1x, '****   Finite Element Heat and Mass Transfer ', 
+     &    'in porous media ****', 
+     &    /, 1x, '****-------------------------------------------', 
+     &     '--------------****', 
+     &    /, 1x, '**** ', 12x, '  Version  : ', a30, ' ****', 
+     &    /, 1x, '**** ', 12x, '  End Date : ', a11, 18x, '  ****', 
+     &    /, 1x, '**** ', 12x, '      Time : ', a8, 20x, '   ****', 
+     &    /, 1x, '****-------------------------------------------',
+     &     '--------------****')
 
 c     Add call to routine to transfer particle information to out(i)
 c     array for rip simulations
@@ -2369,10 +2391,10 @@ c     do that here
 
                if(out_flag.ne.0) then
 c     average concentration
-                  out(indexout-add_spots) = idcavg(indexmzone,ispecies)
+                 out(indexout-add_spots) = idcavg(indexmzone,ispecies)
 
 c     maximum concentration
-                  out(indexout-add_spots2) = idcmax(indexmzone,ispecies)
+                 out(indexout-add_spots2) = idcmax(indexmzone,ispecies)
 
                end if
 

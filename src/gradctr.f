@@ -67,6 +67,8 @@ c gaz 052019
       character*5 dgradm
       character*80 gradmod_root
       logical grad_dum
+c gaz 210125      
+      logical ex
       character*3 grad_all
       parameter(ngrad_max= 50)
       real*8 dist,var_inode 
@@ -149,8 +151,11 @@ c
          write(j,'(a4, 1x, i9)') 'grad',ngrad       
          do i = 1, ngrad
             write(j,*) 
-     &           izone_grad(i),cordg(i),idirg(i),
+     &            izone_grad(i),cordg(i),idirg(i),
      &           igradf(i),var0(i),grad1(i)
+c check if izone_grad is a saved zone 
+c this will populate izonef(i)            
+         call  check_saved_zone(1,izone_grad(i),ex) 
          enddo
          write(j,'(a4)') 'end '
          write(j,'(8(1x,i9))') (izonef(i),i=1,n0)
@@ -297,3 +302,47 @@ c
 c 
       return
       end                
+
+c gaz jan2025 added subroutine
+         subroutine check_saved_zone(iflg,ja,ex)
+c check for saved zonefile
+          use comai
+          use combi
+          implicit none
+          character*30 zonesavename
+          logical ex,op
+          integer iflg,izunit,ja,nin,i
+          integer open_file
+        if(iflg.eq.1) then
+          zonesavename(1:14) = 'zone00000.save'
+          write(zonesavename(5:9),'(i5)') abs(ja)+10000
+          zonesavename(5:5) = '0'
+          ex = .false.
+          op = .false.
+          inquire (file = zonesavename, exist = ex)
+          if(ex) then
+           inquire (file = zonesavename, opened = op)   
+           if(.not.op) then
+            izunit=open_file(zonesavename,'unknown')
+           else
+            inquire(file = zonesavename, number=izunit)
+            close(izunit)
+            izunit=open_file(zonesavename,'unknown')
+           endif
+           read(izunit,*)  ja
+           read(izunit,*)  wdd
+           read(izunit,*) nin
+           if(allocated(ncord)) deallocate(ncord)
+           allocate(ncord(nin))
+           backspace izunit
+           read(izunit,*) nin, (ncord(i), i =1, nin)
+           close(izunit)
+           do i = 1,nin
+            izonef(ncord(i)) = ja
+           enddo
+           deallocate(ncord)
+          endif
+        endif  
+        return
+        end
+

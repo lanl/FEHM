@@ -888,7 +888,7 @@ c generic fracture model  with num of fractures/gridblock
                 frac_num = max(int(length_total/delx_gdpm+tolf),1)
                 continue
 
-              elseif(gdkm_dir(imodel).eq.0) then                                                 
+              elseif(gdkm_dir(imodel).eq.0) then
 c generic fracture model original  
                  dis_p = 0.0
                  dis_s = 0.0
@@ -916,7 +916,7 @@ c delx_gdpm = gdpm_x(imodel,1) not used as frac spacing (inputs fracture number)
 
              dis_p =   length_pri*length_total/((frac_num+1)*2)
 
-             dis_s =  (1.-length_pri)*length_total/(frac_num+1)            
+             dis_s =  (1.-length_pri)*length_total/(frac_num+1)
 c gaz 121322 distance does not need dis_s
              dis_s = 0.0
 c multiply by 2 because centered secondary volume has 2 area faces 
@@ -934,7 +934,7 @@ c gaz 042218
      &    t30,'dis_p',t45,'dis_s',t59,'nposition',t72,'sx(npos,isox)')
 902     format (t1,i10,t15,g12.4,t29,g12.4,t43,g12.4,t59,i10,t72,g12.4,
      &    ' gdkm_dir', i4,' frac_num ', f8.3,' delx_gdpm ', f9.3)
-          else                                                                                
+          else
 c older generic fracture model - like dpdp
            sx1gdpm = sx1( primary_node)*(1.-vfrac_primary(imodel)) 
      &           /vfrac_primary(imodel)

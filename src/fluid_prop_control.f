@@ -1,5 +1,5 @@
-      subroutine fluid_props_control(iflg, istart, iend, fluid_type,
-     &           prop, phase)
+      subroutine fluid_props_control(iflg, istart, iend, 
+     &           fluid_type, prop, phase)
 c      
 c subroutine to manage fluid properties with 
 c gaz 070321 initial coding
@@ -25,9 +25,11 @@ c gaz 052522 describe  subroutine pass-through variables
 c iflg : flag passed to fluid prop routines          
           if(fluid_type(1:3).eq.'h2o') then
             if(iwater_table.eq.0) then
-             call h2o_props_polynomials(iflg, istart, iend, prop, phase)
+             call h2o_props_polynomials(iflg, istart, iend, 
+     &       prop, phase)
             else
-             call h2o_props_table(iflg, istart, iend, prop, phase)
+             call h2o_props_table(iflg, istart, iend, 
+     &       prop, phase)
             endif
           else if(fluid_type(1:3).eq.'air') then
             if(iair_table.eq.0) then
@@ -58,7 +60,7 @@ c
 
           implicit none
              
-          integer iflg, istart, iend, ii, n_allocate
+          integer iflg, istart, iend, ii, n_allocate, n_allocate_iso
           character*9 prop, phase
 
           integer ndummy,iieosl,mid,mi,ieosd,iieosd,kq
@@ -106,18 +108,21 @@ c            parameter(eval_test_h2o = 1)
         if(iflg.eq.0) then
 c gaz 120421 used code from tables     
 c initialize and allocate memory
+c gaz 110324 added n_allocate_iso
          if(.not.allocated(xv_h2o)) then
           if(ico2.lt.0) then
+           n_allocate_iso = n0
            n_allocate = 1
           else
+           n_allocate_iso = n0
            n_allocate = n0
           endif
-          allocate(den_h2o(n_allocate,6))
+          allocate(den_h2o(n_allocate_iso,6))
           allocate(enth_h2o(n_allocate,6))
-          allocate(visc_h2o(n_allocate,6))
-          allocate(den_h2o_old(n_allocate,6))
+          allocate(visc_h2o(n_allocate_iso,6))
+          allocate(den_h2o_old(n_allocate_iso,6))
           allocate(enth_h2o_old(n_allocate,6))
-          allocate(visc_h2o_old(n_allocate,6))
+          allocate(visc_h2o_old(n_allocate_iso,6))
           allocate(psat_h2o(n_allocate,4))
           allocate(humid_h2o(n_allocate,3))
           allocate(xv_h2o(n_allocate))
@@ -340,20 +345,13 @@ c      tl_last = tl
 c      ieosd_last = ieosd
 c gaz 101521 added pure water and heat sat pressure      
       if(ico2.eq.0) then
-
 c water_vapor_calc ids table-lookup or polynomial evaluation            
-c tam Error string length does not match declared length of character*9
-c fix by passing empty sring with 9 spaces
-
-       call water_vapor_calc(1, ii, ii, '         ', '         ')
-
+       call water_vapor_calc(1, ii, ii, '', '')
        xv = pl
        pv =xv
       else
 c water_vapor_calc_ngas ids table-lookup or polynomial evaluation  
-
-       call water_vapor_calc_ngas(1, ii, ii, 
-     &                           '         ', '         ')
+       call water_vapor_calc_ngas(1, ii, ii, '', '')
        xv = xv_h2o(ii)  
        pv =xv
       endif       
@@ -378,12 +376,12 @@ c evaluate properties
       if(l.eq.0.and.ii.eq.1.and.eval_test_h2o.eq.2) then
        write(ierr,1500)
 1500   format('l  iad ii',t12,'pl',t25,'pl_last',t40,'pl_old',t55,'tl'
-     &  ,t70,'tl_last',t85,'tl_old',t100,'ieosd ieosd_last ieosd_old')       
+     &  ,t70,'tl_last',t85,'tl_old',t100,'ieosd ieosd_last ieosd_old')
       else if(l.gt.0.and.eval_test_h2o.eq.2) then
        write(ierr,1501) l,iad,ii,pl,pl_last,pl_old,tl,tl_last,tl_old,
      &  ieosd, ieosd_last, ieosd_old, eval_dum
-1501   format(1x,i5,i3,i5,1p,t15,g14.7,t29,g14.7,t43,g14.7,t57,g14.7,t71
-     &  ,g14.7,t85,g14.7,t100,i3,i3,i3,1x,a3)   
+1501   format(1x,i5,i3,i5,1p,t15,g14.7,t29,g14.7,t43,g14.7,t57,g14.7,
+     &  t71, g14.7,t85,g14.7,t100,i3,i3,i3,1x,a3)
       endif
       ieval_flag(ii) = 0
 c gaz 120321 simplified
@@ -738,7 +736,8 @@ c end counting and other metrics
        if(ic_eval.gt.1) then
          ratio_eval_tot =  ic_eval/(itot_calls + 1.e-9)  
         if(iout.ne.0) write(iout,100)ic_eval,itot_calls,ratio_eval_tot
-        if(iptty.ne.0) write(iptty,100)ic_eval,itot_calls,ratio_eval_tot 
+        if(iptty.ne.0) write(iptty,100)
+     &                ic_eval,itot_calls,ratio_eval_tot 
 c gaz 032922 increase the integer format i9 to i12            
 100    format(/,' number of unique property calcs',1x,i12,1x,/,
      &    ' total number of prossible calls',1x,i12,1x,/,
@@ -765,7 +764,7 @@ c
 
           implicit none
              
-          integer iflg, istart, iend, ii, n_allocate
+          integer iflg, istart, iend, ii, n_allocate, n_allocate_iso
           character*9 prop, phase
 
           integer mid,mi,ieosd,kq
@@ -795,18 +794,21 @@ c            parameter(eval_test_h2o = 1)
             character*3 eval_dum
         if(iflg.eq.0) then
 c initialize and allocate memory
+c gaz 110324
          if(.not.allocated(xv_h2o)) then
           if(ico2.lt.0) then
+           n_allocate_iso = n0
            n_allocate = 1
           else
+           n_allocate_iso = n0
            n_allocate = n0
           endif
-          allocate(den_h2o(n_allocate,6))
+          allocate(den_h2o(n_allocate_iso,6))
           allocate(enth_h2o(n_allocate,6))
-          allocate(visc_h2o(n_allocate,6))
-          allocate(den_h2o_old(n_allocate,6))
+          allocate(visc_h2o(n_allocate_iso,6))
+          allocate(den_h2o_old(n_allocate_iso,6))
           allocate(enth_h2o_old(n_allocate,6))
-          allocate(visc_h2o_old(n_allocate,6))
+          allocate(visc_h2o_old(n_allocate_iso,6))
           allocate(psat_h2o(n_allocate,4))
           allocate(humid_h2o(n_allocate,3))
           allocate(xv_h2o(n_allocate))
@@ -874,16 +876,13 @@ c      tl_last = tl
 c      ieosd_last = ieosd
 c gaz 101521 added pure water and heat sat pressure      
       if(ico2.eq.0) then
-
 c water_vapor_calc ids table-lookup or polynomial evaluation            
-c tam make empty string with 9 spaces
-       call water_vapor_calc(1, ii, ii,'         ', '         ')
+       call water_vapor_calc(1, ii, ii, '', '')
        xv = pl
        pv =xv
       else
-
 c water_vapor_calc_ngas ids table-lookup or polynomial evaluation  
-       call water_vapor_calc_ngas(1, ii, ii, '         ', '         ')
+       call water_vapor_calc_ngas(1, ii, ii, '', '')
        xv = xv_h2o(ii)  
        pv =xv
       endif       
@@ -908,12 +907,12 @@ c evaluate properties
       if(l.eq.0.and.ii.eq.1.and.eval_test_h2o.eq.2) then
        write(ierr,1500)
 1500   format('l  iad ii',t12,'pl',t25,'pl_last',t40,'pl_old',t55,'tl'
-     &  ,t70,'tl_last',t85,'tl_old',t100,'ieosd ieosd_last ieosd_old')       
+     &  ,t70,'tl_last',t85,'tl_old',t100,'ieosd ieosd_last ieosd_old')
       else if(l.gt.0.and.eval_test_h2o.eq.2) then
        write(ierr,1501) l,iad,ii,pl,pl_last,pl_old,tl,tl_last,tl_old,
      &  ieosd, ieosd_last, ieosd_old, eval_dum
-1501   format(1x,i5,i3,i5,1p,t15,g14.7,t29,g14.7,t43,g14.7,t57,g14.7,t71
-     &  ,g14.7,t85,g14.7,t100,i3,i3,i3,1x,a3)   
+1501   format(1x,i5,i3,i5,1p,t15,g14.7,t29,g14.7,t43,g14.7,t57,g14.7,
+     & t71,g14.7,t85,g14.7,t100,i3,i3,i3,1x,a3)
       endif
       ieval_flag(ii) = 0
 c gaz 120321 simplified
@@ -1175,7 +1174,7 @@ c
 
           implicit none
              
-          integer iflg, istart, iend, ii, n_allocate
+          integer iflg, istart, iend, ii, n_allocate, n_allocate_iso
           integer ipv_tol
           character*9 prop, phase
 
@@ -1226,8 +1225,8 @@ c gaz 070221
            if(t(ii).ge.tcrit_h2o) then
               psatl_100 = pcrit_h2o
            else
-            psatl_100 = psatl(t(ii),pcp(ii),dpcef(ii),dpsatt_100,dpsats,
-     &                   0,an(ii))
+            psatl_100 = psatl(t(ii),pcp(ii),dpcef(ii),
+     &      dpsatt_100,dpsats,0,an(ii))
            endif
             psat_h2o(ii,1) = psatl_100             
             psat_h2o(ii,2) = 0.0
@@ -1284,7 +1283,7 @@ c
 
           implicit none
              
-          integer iflg, istart, iend, ii, n_allocate
+          integer iflg, istart, iend, ii, n_allocate, n_allocate_iso
           integer ipv_tol
           character*9 prop, phase
 
@@ -1330,8 +1329,8 @@ c gaz 070221
            if(t(ii).ge.tcrit_h2o) then
               psatl_100 = pcrit_h2o
            else
-            psatl_100 = psatl(t(ii),pcp(ii),dpcef(ii),dpsatt_100,dpsats,
-     &                   0,an(ii))
+            psatl_100 = psatl(t(ii),pcp(ii),dpcef(ii),
+     &      dpsatt_100,dpsats,0,an(ii))
            endif
             psat_h2o(ii,1) = psatl_100             
             psat_h2o(ii,2) = 0.0
@@ -1375,7 +1374,7 @@ c
 
           implicit none
              
-          integer iflg, istart, iend, ii, n_allocate
+          integer iflg, istart, iend, ii, n_allocate, n_allocate_iso
           character*9 prop, phase
 
           integer mid,mi,ieosd,kq
@@ -1418,18 +1417,21 @@ c gaz 100621
         if(iflg.eq.0) then
 c initialize and allocate memory
          if(.not.allocated(den_ngas)) then
+c gaz 110324
           if(ico2.lt.0) then
+           n_allocate_iso = n0
            n_allocate = 1
           else
+           n_allocate_iso = n0
            n_allocate = n0
           endif
-          allocate(den_ngas(n_allocate,6))
+          allocate(den_ngas(n_allocate_iso,6))
           allocate(enth_ngas(n_allocate,6))
-          allocate(visc_ngas(n_allocate,6))
+          allocate(visc_ngas(n_allocate_iso,6))
           allocate(xnl_ngas(n_allocate,6))
-          allocate(den_ngas_old(n_allocate,6))
+          allocate(den_ngas_old(n_allocate_iso,6))
           allocate(enth_ngas_old(n_allocate,6))
-          allocate(visc_ngas_old(n_allocate,6))
+          allocate(visc_ngas_old(n_allocate_iso,6))
           allocate(xnl_ngas_old(n_allocate,6))
          endif
          if(.not.allocated(phi_old)) then
@@ -1651,7 +1653,7 @@ c
 
           implicit none
              
-          integer iflg, istart, iend, ii, n_allocate
+          integer iflg, istart, iend, ii, n_allocate, n_allocate_iso
           character*9 prop, phase
 
           integer mid,mi,ieosd,kq
@@ -1684,23 +1686,25 @@ c gaz 092821
 c initialize and allocate memory
          if(.not.allocated(den_ngas)) then
           if(ico2.lt.0) then
+           n_allocate_iso = n0
            n_allocate = 1
           else
+           n_allocate_iso = n0
            n_allocate = n0
           endif
-          allocate(den_ngas(n_allocate,6))
+          allocate(den_ngas(n_allocate_iso,6))
           allocate(enth_ngas(n_allocate,6))
-          allocate(visc_ngas(n_allocate,6))
+          allocate(visc_ngas(n_allocate_iso,6))
           allocate(xnl_ngas(n_allocate,6))
-          allocate(den_ngas_old(n_allocate,6))
+          allocate(den_ngas_old(n_allocate_iso,6))
           allocate(enth_ngas_old(n_allocate,6))
-          allocate(visc_ngas_old(n_allocate,6))
+          allocate(visc_ngas_old(n_allocate_iso,6))
           allocate(xnl_ngas_old(n_allocate,6))
          endif
          if(.not.allocated(phi_old)) then
-          allocate(phi_old(n_allocate))
+          allocate(phi_old(n_allocate_iso))
           allocate(t_old(n_allocate))
-          allocate(pci_old(n_allocate))
+          allocate(pci_old(n_allocate_iso))
           allocate(ieval_flag(n_allocate))
           ieval_flag = 0
           phi_old = 0.0d0
@@ -2217,3 +2221,4 @@ c      stop
       endif
       return
       end 
+

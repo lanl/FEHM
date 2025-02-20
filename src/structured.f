@@ -787,11 +787,13 @@ c generate a write element info to file 'fdm_coor_elem.macro'
          if(nx.gt.1.and.ny.gt.1.and.nz.eq.1) then     
            call generate_elements(nx,ny,nz)  
          else
+c gaz 051424             
+          ifdm_elem = 0 
           if(iout.ne.0) write(iout,411) 
-
           if(iptty.ne.0) write(iptty,411) 
-411       format('>>> generated element connectivity not available for', 
-     &          ' non-3D FDM grid, request ignored <<<')
+411       format
+     &    ('>>> generated element connectivity not available for', 
+     &     ' non-3D FDM grid, request ignored <<<')
          endif  
       end if
 

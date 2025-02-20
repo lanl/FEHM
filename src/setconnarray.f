@@ -123,7 +123,8 @@ c write error message
         write(i_redfac,*) 'itfc information file'
         write(i_redfac,*) 'reduction factor number, node 1, node 2,',
      &   ' factor, x, y, z'
-101   format(t20,i7,t30,i8,t40,i8,t50,1p,g14.6,t64,3(2x,g14.6),2(1x,i7))   
+101   format(t20,i7,t30,i8,t40,i8,t50,1p,g14.6,t64,
+     &   3(2x,g14.6),2(1x,i7))   
       endif
       do i = 1, neq
          

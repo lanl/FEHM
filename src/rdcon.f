@@ -1459,7 +1459,7 @@ c     Compute rock, liquid, and vapor volume for each node
                   if (idum .ne. nsp) then
 c     We didn't save input for this species, this is an error
                      write (ierr, *) 
-     &                    'Error:  Missing mole input data for species ', nsp, '.'
+     &    'Error:  Missing mole input data for species ', nsp, '.'
                      stop
                   end if
                   npn=npt(nsp)
@@ -1514,8 +1514,8 @@ c     Assumes nnum style zone input
                               if (num_nodes .gt. 0) then
                                  if (znum .eq. abs(ja)) then
                                     allocate(node_list(num_nodes))
-                                    read (izf, *) (node_list(i), i = 1, 
-     &                                   num_nodes)
+                                    read (izf, *) 
+     &                              (node_list(i), i = 1, num_nodes)
                                     exit
                                  else
                                     read (izf, *) (rdum1, i = 1, 
@@ -1629,7 +1629,7 @@ c     Henry's law species
                               end if
                            end if
                         end do
-                        if (allocated(node_list)) deallocate (node_list)
+                        if (allocated(node_list)) deallocate(node_list)
                      else   
                         do i = ja, jb, jc
                            mi = i + npn
@@ -1781,10 +1781,10 @@ c     Square of dispersivity is used in alpha calculation
                               tempz = (cord1z-cord2z)**2
                               templength = tempx+tempy+tempz
                               alphaconl(sehindexl) =
-     +                             sqrt((dispxavw*dispyavw*dispzavw*
-     +                             templength)/(dispyavw*dispzavw*tempx+
-     3                             dispxavw*dispzavw*tempy +
-     4                             dispxavw*dispyavw*tempz))
+     &                        sqrt((dispxavw*dispyavw*dispzavw*
+     &                        templength)/(dispyavw*dispzavw*tempx+
+     &                        dispxavw*dispzavw*tempy +
+     &                        dispxavw*dispyavw*tempz))
                               sehindexl=sehindexl+1
                            endif
                         enddo

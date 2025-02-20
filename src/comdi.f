@@ -469,6 +469,8 @@ c KCL 5-2-11, for DeltaPoros subroutine
       real*8, allocatable ::  head(:) 
       real*8, allocatable ::  pcp(:)
       real*8, allocatable ::  pflow(:) 
+c gaz 071224 need to save hdflow BC
+      real*8, allocatable ::  hdflow(:) 
       real*8, allocatable ::  pflowa(:)
       real*8, allocatable ::  xairfl(:)
       real*8, allocatable ::  phi(:) 

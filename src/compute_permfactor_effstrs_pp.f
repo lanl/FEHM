@@ -177,7 +177,7 @@ c
      &          + efac_2*bulk(node_2)*(phi(node_2)-phini(node_2)))     
         elseif(node_2.eq.node_J) then
        p_eff=0.5*(efac_1*bulk(node_1)*(phi(node_1)-phini(node_1))
-     &          + efac_2*bulk(node_2)*(phi(node_2)-phini(node_2)+dpp))    
+     &     + efac_2*bulk(node_2)*(phi(node_2)-phini(node_2)+dpp))    
         else
        p_eff=0.5*(efac_1*bulk(node_1)*(phi(node_1)-phini(node_1))
      &          + efac_2*bulk(node_2)*(phi(node_2)-phini(node_2)))     

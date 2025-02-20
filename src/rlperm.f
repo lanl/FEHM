@@ -521,7 +521,7 @@ c user should enter perm as in perm macro
                icapp = 1
                icapt(i) = 1
                                      
-c = = = = = end pjjohnson change for read; next is rlp later                 
+c           end pjjohnson change for read; next is rlp later                 
             else if (irlpd .eq. 12 .or. irlpd .eq. 13) then
 c linear with residual saturations as function of hydrate fraction
 c for use with methane hydrate 
@@ -757,13 +757,13 @@ c gaz 110419 write out warnings
            if(iout.ne.0) write(iout,*) 
      &      '>>> incorrect vg model 3 parameters <<<'
            if(iptty.ne.0) write(iptty,*) 
-     &      '>>> incorrect vg model 3 parameters <<<'                       
+     &      '>>> incorrect vg model 3 parameters <<<'
        endif 
        if(rp2f(i).gt.1.0) then  
            if(iout.ne.0) write(iout,*) 
      &      '>>> incorrect vg model 3 parameters <<<'
            if(iptty.ne.0) write(iptty,*) 
-     &      '>>> incorrect vg model 3 parameters <<<'                      
+     &      '>>> incorrect vg model 3 parameters <<<'
        endif
                alpha = rp3f(i)
                beta = rp4f(i)
@@ -1159,7 +1159,9 @@ c rlp(S)
      2                 rp7f(it), rp8f(it), rp9f(it),
      3                 rp10f(it), rp6f(it), su_cut,
      4                 cp1f(it),cp2f(it),hp, dhp ,ireg    )
-                  star = (sl-rp1f(it))/(rp2f(it)-rp1f(it))                                             f
+
+c tam removed charactesr "           f" appearing at end of statement
+                  star = (sl-rp1f(it))/(rp2f(it)-rp1f(it))
 c gaz 120723 fix number of parameters   (compare to rlp_cap call to vgrlps)
 c gaz 041223 switched out rp4(beta) for rp3 alamda
                    tol_l = rp6f(it)

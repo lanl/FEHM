@@ -112,7 +112,8 @@
 
         endif
       else
-        write(iout,*) '***ERROR: Drucker Prager stiffness routine called for
+        write(iout,*) 
+     &   '***ERROR: Drucker Prager stiffness routine called for
      &   a node not set to be Drucker Prager'
       endif
       
