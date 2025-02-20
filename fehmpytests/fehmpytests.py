@@ -203,6 +203,15 @@ class fehmTest(unittest.TestCase):
         
         self.test_case('colloid_filtration')
 
+    def darcy2D(self):
+        # Test Darcy and non-Darcy flow liquid and gas 2D 
+        #
+        # Compares the generated presWAT files files known to be correct.
+        #
+        # .. Authors: Terry Miller modified from George tests for ndar 
+
+        self.test_case('darcy2D')
+
     def dispersion(self): 
         # Test Dispersion
         #
@@ -1281,6 +1290,7 @@ def suite(mode, test_case, log):
         #suite.addTest(fehmTest('cellbased', log))
         suite.addTest(fehmTest('cflxz', log))
         suite.addTest(fehmTest('colloid_filtration', log))
+        #suite.addTest(fehmTest('darcy2D', log))
         #suite.addTest(fehmTest('dissolution', log))
         #suite.addTest(fehmTest('doe', log))
         suite.addTest(fehmTest('dryout', log))
@@ -1325,6 +1335,7 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('cellbased', log))
         suite.addTest(fehmTest('cflxz', log))
         suite.addTest(fehmTest('colloid_filtration', log))
+        suite.addTest(fehmTest('darcy2D', log))
         suite.addTest(fehmTest('dissolution', log))
         suite.addTest(fehmTest('doe', log))
         suite.addTest(fehmTest('dryout', log))

@@ -1,0 +1,25 @@
+simple 2d unit square                   
+ no. points used in structure out.,no. blocks
+    4    1
+ element node number    4 defining element node number    4 triangulation(1=y,0=n    0
+      data blocks
+ block no.  definition points   material
+    1    1    2    4    3
+      location points
+ point no.  x-coord.  y-coord.  z-coord.
+         1        0.00000        0.00000
+         2       20.00000        0.00000
+         3        0.00000       20.00000
+         4       20.00000       20.00000
+      data block no.  1
+      -----------------
+      no. div. first direction = 20  no. div. second direction = 20  no. div. third direction =***
+      list of weighting factors in first direction
+     1.000     1.000     1.000     1.000     1.000     1.000     1.000     1.000
+     1.000     1.000     1.000     1.000     1.000     1.000     1.000     1.000
+     1.000     1.000     1.000     1.000
+      list of weighting factors in second direction
+     1.000     1.000     1.000     1.000     1.000     1.000     1.000     1.000
+     1.000     1.000     1.000     1.000     1.000     1.000     1.000     1.000
+     1.000     1.000     1.000     1.000
+      list of weighting factors in third direction

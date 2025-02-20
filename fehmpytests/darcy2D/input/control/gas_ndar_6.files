@@ -1,0 +1,13 @@
+input: ../input/gas_ndar_6.in
+grida: ../input/mdat_2d_simple.grid
+outp: gas_ndar_6.out
+rsti: ../input/non_darcy_2D.ini_gonly
+root: gas_ndar_6
+nopf: ../input/non_darcy_2D2.nop
+check: gas_ndar_6.chk
+
+all
+
+
+rsto: gas_ndar_6.fin_gonly6
+rsto:OUTPUT_2D_GASONLY/non_darcy_2D.ini_gonly
