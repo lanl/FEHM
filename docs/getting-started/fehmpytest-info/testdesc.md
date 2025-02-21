@@ -31,6 +31,7 @@ For Developers, Run Full to include tests under development: ```python fehmpytes
 | [**cden**](/test-details/cden.md)  |**Test the Concentration Dependent Brine Density Functionality**<br>Compares generated history files to old history files that are known to be correct. |
 | [**cflxz**](/test-details/cflxz.md) | **Concentration Zone Flux Test**<br> Comparison of FEHM with 1-D Difusion Model |
 | [**colloid_filtration**](/test-details/colloid_filtration.md)  |**Test Colloid Filtration**<br> TSPA particle tracking simulation. |
+| [**darcy2D**](/test-details/darcy2D.md) | **Test 2D Darcy vs non-Darcy flow**<br> Simulates pumping test both gas and liquid water | 
 | [**dispersion**](/test-details/dispersion.md) | **Test Advection-Dispersion Transport**<br> Test simulates the advection-dispersion transport of solutes in groundwater | 
 |[**dissolution**](/test-details/dissolution.md) |**Test the Dissoultion Macro**<br> One-dimensional transport simulation of calcite (CaC03(s)) dissolution |
 | [**doe**](/test-details/doe.md)  |**Test the DOE Code Comparison Project, Problem 5, Case A**<br>Compares contour files for rlp, rlpm, and table.| 
