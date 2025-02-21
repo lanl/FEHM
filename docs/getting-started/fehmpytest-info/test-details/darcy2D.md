@@ -14,7 +14,7 @@ The code uses a fully implicit non-Darcy implementation with a control volume  f
 Using the data from Zeng and Grigg (2006), these tests were designed to confirm the validity of the implementation. Both gas and liquid water pumping were examined in a 2D problem intended to approximate a pump test. Tests included here are Liquid Darcy, Liquid non-Darcy, Gas Darcy, and Gas non-Darcy.
 
 <!-- Begin image -->
-<p><a href="FEHM/fehmpytests/darcy2D/_information/contour_darcy_m9_m6.png"> <img width="400" src="FEHM/fehmpytests/darcy2D/_information/contour_darcy_m9_m6.png" /> </a></p>
+<p><a href="/img/contour_darcy_m9_m6.png"> <img width="400" src="/img/contour_darcy_m9_m6.png" /> </a></p>
 <!-- End image -->
 Figure 1. Solution domain and pressure contour comparison darcy (black line), non-darcy beta=1.d9 (red line), and non-darcy beta=1.d6 (green dots).
 
