@@ -14,9 +14,14 @@ The code uses a fully implicit non-Darcy implementation with a control volume  f
 Using the data from Zeng and Grigg (2006), these tests were designed to confirm the validity of the implementation. Both gas and liquid water pumping were examined in a 2D problem intended to approximate a pump test. Tests included here are Liquid Darcy, Liquid non-Darcy, Gas Darcy, and Gas non-Darcy.
 
 <!-- Begin image --> 
-<p><a href="../../../../fehmpytests/darcy2D/_information/contour_darcy_m9_m6.png"> <img width="400" src="../../../../fehmpytests/darcy2D/_information/contour_darcy_m9_m6.png"> </a></p>
-<!-- End image -->
+<!-- io html pages can not resolve this path to actual test directory with images, for now copy image where it can be found -->
+<!-- Does not display: ../../../../fehmpytests/darcy2D/_information/contour_darcy_m9_m6.png -->
+
+<p> <a href="../../../../img/contour_darcy_m9_m6.png"> <img width="400" src="../../../../img/contour_darcy_m9_m6.png"> </a> <br></p>
+
 Figure 1. Solution domain and pressure contour comparison darcy (black line), non-darcy beta=1.d9 (red line), and non-darcy beta=1.d6 (green dots). Contour lines starting at lower left corner are MPa 2.8, 2.0, 1.0, and .5 furthest away from corner. Click on image for full view.
+
+See image: [FEHM/fehmpytests/darcy2D/_information/contour_darcy_m9_m6](https://github.com/lanl/FEHM/tree/master/fehmpytests/darcy2D/_information)
 
 ## Example macro ndar
 
@@ -41,4 +46,7 @@ Document by George and Dolan pending.
  
 
 Test Directory: [FEHM/fehmpytests/darcy2D](https://github.com/lanl/FEHM/tree/master/fehmpytests/darcy2D)
+
+Documents and Image Directory: [FEHM/fehmpytests/darcy2D/_information](https://github.com/lanl/FEHM/tree/master/fehmpytests/darcy2D/_information)
+
 
