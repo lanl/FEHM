@@ -31,7 +31,7 @@ For Developers, Run Full to include tests under development: ```python fehmpytes
 | [**cden**](/test-details/cden.md)  |**Test the Concentration Dependent Brine Density Functionality**<br>Compares generated history files to old history files that are known to be correct. |
 | [**cflxz**](/test-details/cflxz.md) | **Concentration Zone Flux Test**<br> Comparison of FEHM with 1-D Difusion Model |
 | [**colloid_filtration**](/test-details/colloid_filtration.md)  |**Test Colloid Filtration**<br> TSPA particle tracking simulation. |
-| [**darcy2D**](/test-details/darcy2D.md) | **Test 2D Darcy vs non-Darcy flow**<br> Simulates pumping test both gas and liquid water | 
+| [**darcy2D**](/test-details/darcy2D.md) ```*``` | **Test 2D Darcy vs non-Darcy flow**<br> Simulates pumping test both gas and liquid water | 
 | [**dispersion**](/test-details/dispersion.md) | **Test Advection-Dispersion Transport**<br> Test simulates the advection-dispersion transport of solutes in groundwater | 
 |[**dissolution**](/test-details/dissolution.md) |**Test the Dissoultion Macro**<br> One-dimensional transport simulation of calcite (CaC03(s)) dissolution |
 | [**doe**](/test-details/doe.md)  |**Test the DOE Code Comparison Project, Problem 5, Case A**<br>Compares contour files for rlp, rlpm, and table.| 
@@ -58,7 +58,7 @@ For Developers, Run Full to include tests under development: ```python fehmpytes
 | [**theis**](/test-details/theis.md)  | **Test Pressure Transient Analysis Problem**<br> 1-D Theis pressure transient problem |
 | [**toronyi**](/test-details/toronyi.md) | **Test the Toronyi Two-Phase Problem**<br>  Final Saturation using Coordinate grid and FDM grid node comparisons |
 | [**transport3d**](/test-details/transport3d.md) |  **Test transport3d**<br> Three-Dimensional Radionuclide Transport Problem using trac_rlp | 
-| [**transport3d_validation**](/test-details/transport3d_validation.md) |  **transport3d validation**<br> 3D solute advective-transport benchmark test | 
+| [**transport3d_validation**](/test-details/transport3d_validation.md) ```*``` |  **transport3d validation**<br> 3D solute advective-transport benchmark test | 
 | [**vapor_extraction**](/test-details/vapor_extraction.md)  | **Test vapor_extraction**<br> Vapor Extraction from an Unsaturated Reservoir |
 | [**wvtest**](/test-details/wvtest.md)  | **Unsaturated Diffusion test**<br>  dry-out by evaporation using one-way heat pipe  |
 
