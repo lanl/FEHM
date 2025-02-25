@@ -11,7 +11,7 @@ hero_height: is-hidden
 <p>An alternative form of input for macro cont is possible. This is</p>
 <ul class="simple">
 <li>Group 1 - <code class="docutils literal notranslate"><span class="pre">ALTC</span></code>, <code class="docutils literal notranslate"><span class="pre">NCNTR</span></code>, <code class="docutils literal notranslate"><span class="pre">CONTIM</span></code>, <code class="docutils literal notranslate"><span class="pre">KEYWORD</span></code></li>
-<li>Group 2 - <a href="#id1"><span class="problematic" id="id2">``</span></a>CHDUM <a href="#id3"><span class="problematic" id="id4">``</span></a>(only input if ALTC is ‘avs’, ‘avsx’, ‘surf’, or ‘tec’)</li>
+<li>Group 2 - CHDUM (only input if ALTC is ‘avs’, ‘avsx’, ‘surf’, or ‘tec’)</li>
 </ul>
 <p>If CHDUM = <code class="docutils literal notranslate"><span class="pre">'zone'</span></code> that line is followed by</p>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">NSURF</span>
@@ -33,7 +33,7 @@ hero_height: is-hidden
 <tbody valign="top">
 <tr class="row-even"><td>ALTC</td>
 <td>character*4</td>
-<td>Keyword specifying the type of contour output wanted (avs, avsx, fehm, free, ment, ptrn): ‘avs’ produces contour plot files compatible with the AVS postprocessor. ‘avsx’ produces contour plot files compatible with the AVS Express postprocessor.‘fehm’ produces a binary output file. The same contour plot file is produced using the first form of Group1 input. ‘free’ produces a free format contour plot file. ‘surf’ produces a contour plot file compatible with the SURFER postprocessor. ‘tec’ produces a contour plot file compatible with the TECPLOT postprocessor.</td>
+<td>Keyword specifying the type of contour output wanted (avs, avsx, fehm, free, ment, ptrn, surf, tec, vtk): 'avs' produces contour plot files compatible with the AVS postprocessor. ‘avsx’ produces contour plot files compatible with the AVS Express postprocessor.‘fehm’ produces a binary output file. The same contour plot file is produced using the first form of Group1 input. ‘free’ produces a free format contour plot file. ‘surf’ produces a contour plot file compatible with the SURFER postprocessor. ‘tec’ produces a contour plot file compatible with the TECPLOT postprocessor. ‘vtk’ produces a VTK contour plot file compatible with Paraview. </td>
 </tr>
 <tr class="row-odd"><td>NCNTR</td>
 <td>integer</td>
@@ -73,18 +73,29 @@ hero_height: is-hidden
 </tr>
 </tbody>
 </table>
+
 <p>FEHM will automatically distinguish between the alternative input formats. When keywords are used they must be entered starting in the first column. The contour data will be output whenever either of the interval criteria are satisfied.</p>
 <p>For keyword output, if the material keyword is selected, the following material property values (at the initial time) will be written for each node: permeability in the x, y, and z directions, thermal conductivity in the x, y, and z directions, porosity, rock specific heat, capillary pressure, relative permeability model being used, and capillary pressure model being used. If vapor and/or liquid are selected, pressure, velocity, or density must also be defined (otherwise, no data for these values will be written). velocity will result in vector values, other values will be scalar. If concentration is selected, values will be output only if nspeci is defined for tracer solutions. See the control statement trac for a description of nspeci for solutes.</p>
-<p>The following are examples of cont. For the first example, FEHM binary format contour output files will be written every 100 timesteps and for each 1.e20 days. The second example invokes AVS contour output. AVS UCD formatted files will be written for every 100 time steps and 1.e20 days. The resulting files will include a log file, geometry file, plus header and data files for the following: material properties, solute concentrations, liquid velocities, pressures and temperatures.</p>
+<p>The following are examples of cont. For the first example, FEHM binary format contour output files will be written every 100 timesteps and for each 1.e20 days. The second example invokes AVS contour output. AVS UCD formatted files will be written for every 100 time steps and 1.e20 days. The resulting files will include a log file, geometry file, plus header and data files for the following: material properties, solute concentrations, liquid velocities, pressures and temperatures.
+The third example write a vtk contour file. The first number is for Time step interval, and the second is for Time interval.
+</p>
+
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cont</span>
 <span class="mi">100</span>
 <span class="mf">1.e20</span>
-
 <span class="n">contavsmatconliquidvelocitypressuretempformattedendavs</span>
 <span class="mi">100</span>
 <span class="mf">1.e20</span>
 </pre></div>
 </div>
+
+<div>
+<pre>
+cont
+vtk   10000    10
+</pre>
+</div>
+
   <div role="contentinfo">
     <p>
         
