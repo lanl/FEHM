@@ -1,4 +1,9 @@
-Test directories created from George's directories:
+FEHMPYTESTS description for darcy2D is at 
+https://lanl.github.io/FEHM/getting-started/fehmpytest-info/test-details/darcy2D/
+
+Additional documentation and images are in the directory darcy2D/_information
+
+These Test directories were created from George's directories sent Jan 2025:
 
 LIQUID
 /project/eesdev/FEHM/from_george/NONDARCY/NONDARCY_PKG_LANL_280125/FEHMPYTEST_LIQ_tests
