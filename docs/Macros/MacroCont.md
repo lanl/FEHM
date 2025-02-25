@@ -77,7 +77,6 @@ hero_height: is-hidden
 <p>FEHM will automatically distinguish between the alternative input formats. When keywords are used they must be entered starting in the first column. The contour data will be output whenever either of the interval criteria are satisfied.</p>
 <p>For keyword output, if the material keyword is selected, the following material property values (at the initial time) will be written for each node: permeability in the x, y, and z directions, thermal conductivity in the x, y, and z directions, porosity, rock specific heat, capillary pressure, relative permeability model being used, and capillary pressure model being used. If vapor and/or liquid are selected, pressure, velocity, or density must also be defined (otherwise, no data for these values will be written). velocity will result in vector values, other values will be scalar. If concentration is selected, values will be output only if nspeci is defined for tracer solutions. See the control statement trac for a description of nspeci for solutes.</p>
 <p>The following are examples of cont. For the first example, FEHM binary format contour output files will be written every 100 timesteps and for each 1.e20 days. The second example invokes AVS contour output. AVS UCD formatted files will be written for every 100 time steps and 1.e20 days. The resulting files will include a log file, geometry file, plus header and data files for the following: material properties, solute concentrations, liquid velocities, pressures and temperatures.
-The third example write a vtk contour file. The first number is for Time step interval, and the second is for Time interval.
 </p>
 
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cont</span>
@@ -89,13 +88,14 @@ The third example write a vtk contour file. The first number is for Time step in
 </pre></div>
 </div>
 
+<p>This third example writes a vtk contour file. The first number is for Time step interval, and the second is for Time interval.</p>
 <div>
 <pre>
 cont
 vtk   10000    10
 </pre>
 </div>
-
+<br>
   <div role="contentinfo">
     <p>
         
