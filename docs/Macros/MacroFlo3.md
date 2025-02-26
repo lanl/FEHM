@@ -5,7 +5,8 @@ hero_height: is-hidden
 
 <h1><code class="docutils literal notranslate"><span class="pre">flo3</span></code><a class="headerlink" href="#flo3" title="Permalink to this headline">¶</a></h1>
 
-<p>The **flo3** macro provides an alternate format for flow data for a seepage face.</p>
+<p>The <span class="pre">flo3</span> macro provides an alternate format for flow data and sets special flow conditions (free drainage, seepage face). </p>
+
 <table border="1" class="docutils">
 <colgroup>
 <col width="18%" />
