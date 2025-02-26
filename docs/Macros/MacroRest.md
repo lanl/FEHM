@@ -4,7 +4,21 @@ hero_height: is-hidden
 ---
 
 <h1><code class="docutils literal notranslate"><span class="pre">rest</span></code><a class="headerlink" href="#rest" title="Permalink to this headline">¶</a></h1>
-<p>The ‘restart’ macro controls the content and format of the initial condition file (filename appears after keyword rsti: in the control file) and the final condition file (filename appears after keyword rsto: in the control file).</p>
+
+<p>The <span class="pre">rest</span> macro controls the content and format of the initial condition file.</p> 
+
+<p>FEHM writes a restart file for each run. The restart output file name may be given in the input
+control file or as terminal input, or if unspecified will default to fehmn.fin. The restart file is used on a subsequent runs by providing the name of the file.
+  
+It is recommended that the restart input file name be modified to avoid confusion with the restart output file. For example, by
+changing the suffix to .ini, the default restart output file, fehmn.fin would be renamed fehmn.ini. Values from
+the restart file will overwrite any variable initialization prescribed in the input file. The initial
+time of simulation will also be taken from the restart file unless specified in the macro time
+input.
+</p>
+<p>Keywords can be used to define the restart and final condition files. Use 'rsti:' filename and/or 'rsto:' filename. For example, <pre>rsti:  input/doe.ini</pre> will use the file "input/doe.ini" as a restart file.</p>
+<br>
+
 <ul class="simple">
 <li>Group 1 -     CHDUM</li>
 </ul>
@@ -72,6 +86,7 @@ all variables in current simulation)<ul>
 <li>disp (disx, disy, disz)</li>
 <li>strs or stre or strs (strx, stry, strz, stxy, stxz, styz)</li>
 </ul>
+<br>
 <p>The following is an example of rest. In this example restart data will be written
 to an unformatted file and liquid flux will be output. If a read restart file
 is used it will be in ascii format and if liquid flux data is present in the
@@ -91,6 +106,7 @@ file it will be read.</p>
 </tr>
 </tbody>
 </table>
+<br>
   <div role="contentinfo">
     <p>
         
