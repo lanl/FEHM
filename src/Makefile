@@ -27,11 +27,19 @@
 #***********************************************************************
 
 # Compiletime variables
-FC = gfortran
+HAS_PORT := $(shell command -v port 2>/dev/null)
+ifneq ($(HAS_PORT),)
+    PREFIX = /opt/local/bin
+    # Look for any gfortran-mp-* binary in PREFIX and pick the first match.
+    GFORTRAN_MP := $(firstword $(wildcard $(PREFIX)/gfortran-mp-*))
+    FC = $(notdir $(GFORTRAN_MP))    
+else
+    FC = gfortran
+    PREFIX = /usr/local/bin
+endif
 # EXE = myfehm
 EXE = xfehm
 SRCDIR = ./
-PREFIX = /usr/local/bin
 
 # Build system specific variables
 DEPEND = ${SRCDIR}Makefile.depends
@@ -60,10 +68,10 @@ endif
 # Define special permissions for gfortran
 # Namely, accessing two Fortran files from an
 # alternate directory due to compatibility issues
-ifeq (${FC}, gfortran)
-	ALTDIR = ${SRCDIR}GFORTRAN/
+ifneq ($(filter gfortran gfortran-mp-%, $(FC)),)
+    ALTDIR = $(SRCDIR)GFORTRAN/
 else
-	ALTDIR = ${SRCDIR}
+    ALTDIR = $(SRCDIR)
 endif
 
 
