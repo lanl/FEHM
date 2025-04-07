@@ -40,7 +40,6 @@ endif
 # EXE = myfehm
 EXE = xfehm
 SRCDIR = ./
-PREFIX = /usr/local/bin
 
 # Build system specific variables
 DEPEND = ${SRCDIR}Makefile.depends
