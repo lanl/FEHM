@@ -6,7 +6,7 @@ hero_height: is-hidden
 
 # darcy2D
 
-**2D Test Darcy and Non-Darcy flow in Liquid Water and Gas**
+**2D Pump Test Darcy and Non-Darcy flow in Liquid Water and Gas**
 
 The use of Darcy’s law in subsurface porous flow models is nearly universal.  However, there are important applications where Darcy's law is not valid. Flow in fractures and flow near pumping or extraction wells are applications where Non-Darcy flow models are often required.  
 The code uses a fully implicit non-Darcy implementation with a control volume  finite volume code (or control volume finite difference code) with a minimum of coding that allows for general non-darcy models. 
@@ -15,19 +15,25 @@ Using the data from Zeng and Grigg (2006), these tests were designed to confirm 
 
 <!-- Begin image --> 
 <!-- io html pages can not resolve this path to actual test directory with images, for now copy image where it can be found -->
-<!-- Does not display: ../../../../fehmpytests/darcy2D/_information/contour_darcy_m9_m6.png -->
+<!-- Does not display on IO pages ../../../../fehmpytests/darcy2D/_information/contour_darcy_m9_m6.png -->
+<!-- Does display on github page (img directory does not)  ../../../../fehmpytests/darcy2D/_information/contour_darcy_m9_m6.png -->
 
 <p> 
- <a href="../../../../img/contour_darcy_m9_m6.png"> <img width="400" src="../../../../img/contour_darcy_m9_m6.png"> </a> 
- <a href="https://github.com/lanl/FEHM/blob/master/fehmpytests/darcy2D/_information/contour_darcy_m9_m10.png"> <img width="400" src="https://github.com/lanl/FEHM/blob/master/fehmpytests/darcy2D/_information/contour_darcy_m9_m10.png"> </a>
-
+ <a href="../../../../img/contour_darcy_m9_m10.png"> <img width="500" src="../../../../img/contour_darcy_m9_m10.png"> </a> 
 </p>
 
-Figure 1. Solution domain and pressure contour comparison darcy (black line), non-darcy beta=1.d9 (red line), and non-darcy beta=1.d6 (green dots). Contour lines starting at lower left corner are MPa 2.8, 2.0, 1.0, and .5 furthest away from corner. 
-Second image includes non-darcy beta=1.d9 (blue line).
+Figure 1. Solution domain and liquid pressure comparisons for each value of beta model.
+Contour lines starting at lower left corner are MPa 2.8, 2.0, 1.0, and .5 furthest away from corner. 
 Click on image for full view.
 
-If images do not display, go to [FEHM/fehmpytests/darcy2D/_information/contour_darcy_m9_m6](https://github.com/lanl/FEHM/tree/master/fehmpytests/darcy2D/_information)
+Black contour is Darcy with ndar OFF, and is equal to ndar set to beta 1.d6 
+
+Red contour is non-darcy with ndar beta set to 1.d9
+
+Blue contour is non-darcy with ndar beta set to 1.d10
+
+
+More images are in test directory [FEHM/fehmpytests/darcy2D/_information/contour_darcy_m9_m6](https://github.com/lanl/FEHM/tree/master/fehmpytests/darcy2D/_information)
 
 
 ## Example macro ndar
@@ -43,12 +49,12 @@ ndar
 end ndar
 
 or
-ndar OFF (to skip non-darcy)
+ndar OFF (keyword **OFF** is used to skip a macro)
 </pre>
 
 ## Example macro cont with vtk
 
-The vtk option is available through the macro **cont**. In this example, vtk contour files are written at Time 0.0 and Time 50.0  *rootname*.00001_sca_node.vtk and *rootname*.00002_sca_node.vtk, each with contour data for Liquid Pressure (MPa) and Saturation. The pressure contour images were created using Time 2 vtk files.
+The vtk option is available through the macro **cont**. In this example, vtk contour files are written at Time 0.0 and Time 50.0  *rootname*.00001_sca_node.vtk and *rootname*.00002_sca_node.vtk, each with contour data for Liquid Pressure (MPa) and Saturation. The pressure contour images were created using Time 0002 vtk files.
 
 <pre>
 cont
