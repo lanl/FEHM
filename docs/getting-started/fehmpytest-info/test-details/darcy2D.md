@@ -1,10 +1,10 @@
 ---
-title : darcy2D
+title : Non-Darcy
 layout : page_getting-started
 hero_height: is-hidden
 ---
 
-# darcy2D
+# Non-Darcy
 
 **2D Pump Test Darcy and Non-Darcy flow in Liquid Water and Gas**
 
