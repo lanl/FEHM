@@ -1,0 +1,12 @@
+input: ../input/liq_ndar_9.in
+grida: ../input/tri_nonortho.fehmn
+outp:liq_ndar_9_unst.out
+root:liq_ndar_9_unst
+check:liq_ndar_9_unst.chk
+
+all  
+
+rsti: ../input/non_darcy_2D.ini_liq
+nopf: ../input/non_darcy_2D2.nop
+
+
