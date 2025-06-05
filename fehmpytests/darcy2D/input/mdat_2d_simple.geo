@@ -1,4 +1,4 @@
-TITLE = "Two phase example with test of non-darcy flow"
+TITLE = "Two phase example with test of non darcy flow ndar 1.0d6"
 FILETYPE = "GRID"
 VARIABLES = "X coordinate (m)" "Y coordinate (m)"
 ZONE T = "GRID", N =      441, E =      400, DATAPACKING = POINT, ZONETYPE = FEQUADRILATERAL, STRANDID = 0, SOLUTIONTIME = 0.

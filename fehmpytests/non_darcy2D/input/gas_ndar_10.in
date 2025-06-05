@@ -1,7 +1,7 @@
 Gas Only example test of non-darcy flow 2D 
 #
-# gas replaced with vapor
 #****************output*******************************
+# gas replaced with vapor
 # write vtk contour files for each variable listed
 cont 
 vtk     5000    1.00000e+19
@@ -36,7 +36,7 @@ FEHM3.6_VER2 270125 (test)
 # 1.0d09 will result in higher velocities
 # 1.0d10 will result in much higher velocities
 ndar 
-1 441 1 1.0d09
+1 441 1 1.0d10
 
 end ndar
 #**********************************************

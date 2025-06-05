@@ -1,12 +1,11 @@
 Gas Only example test of non-darcy flow 2D 
 #
-# gas replaced with vapor
 #****************output*******************************
 # write vtk contour files for each variable listed
 cont 
 vtk     5000    1.00000e+19
 geom
-vapor 
+gas 
 pres
 saturation
 perm
