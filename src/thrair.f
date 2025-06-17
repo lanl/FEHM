@@ -379,7 +379,8 @@ c      if(nd_flow) then
 c         if(.not.allocated(den_h2o)) allocate(den_h2o(n,6))
 c         if(.not.allocated(visc_h2o)) allocate(visc_h2o(n,6))
 c      endif
-      if(irdof.ne.13) then
+c gaz 060525 need rlf_nd and rvf_nd defined for non darcy flow
+      if(irdof.ne.13.and.irdof.ne.11) then
          if(abs(iexrlp).ne.0.and.i_mem_rlp.eq.0) then
             i_mem_rlp=1
             allocate(s0(n),pcp0(n),dpcps0(n),rlf0(n))
@@ -409,12 +410,28 @@ c     get relative perms
             do mid=1,neq
                mi=mid+ndummy
                drlpf(mi)=0.0          
-               drvpf(mi)=0.0
+               drvpf(mi)=0.0                                                                                           
             enddo
-         endif
-c     get capillary pressures
-         if (.not. rlpnew) call cappr(1,ndummy)
-
+        endif
+c     get capillary pressures 
+          if (.not. rlpnew) call cappr(1,ndummy)
+         else if(irdof.eq.13) then
+          rlf(1:n0) = 1.0d0
+          drlef(1:n0) = 0.0d0
+          rvf(1:n0) = 0.0d0
+          drvef(1:n0) = 0.0d0     
+         else if(irdof.eq.11) then
+          rlf(1:n0) = 0.0d0
+          drlef(1:n0) = 0.0d0
+          rvf(1:n0) = 1.0d0
+          drvef(1:n0) = 0.0d0
+      endif
+c gaz 020425 modified for non darcy flow
+      if(nd_flow) then
+       rlf_nd(1:n0) = rlf(1:n0)
+       rvf_nd(1:n0) = rvf(1:n0)
+       drlef_nd(1:n0) = drlef(1:n0)
+       drvef_nd(1:n0) = drvef(1:n0)
       endif
 
 c     
@@ -1365,17 +1382,21 @@ c 110124 check for non darcy flow  (liquid part)
           if(nd_flow) then 
            den_h2o(mi,1)= rol 
            den_h2o(mi,2) = drolp 
+           den_h2o(mi,3) = 0.0d0 
            den_h2o(mi,4)= roc 
-           den_h2o(mi,5) = drocp  
+           den_h2o(mi,5) = drocp 
+           den_h2o(mi,6) = 0.0d0   
            visc_h2o(mi,1) = xvisl 
            visc_h2o(mi,2) = 0.0d0 
+           visc_h2o(mi,3) = 0.0d0 
            visc_h2o(mi,4) = xvisv 
-           visc_h2o(mi,5) = 0.0d0     
+           visc_h2o(mi,5) = 0.0d0 
+           visc_h2o(mi,6) = 0.0d0    
           endif  
          if(irdof.eq.13) then
             ddenp=ddenp + por*rol*dsatp
          endif
-         deni(mi)=(den-denh(mi))*dtin
+         deni(mi)=(den-denh(mi))*dtin                                        
          dmpf(mi)=ddenp*dtin
          if(icons.lt.abs(maxit)) then 
 c     
@@ -1534,8 +1555,8 @@ c undergoing phase change
 c      real*8 ratio_mw_h2_air, ratio_mw_meth_air, ratio_mw_co2_air
       real*8 alpha_iso,p_air,dp_air_s,dp_air_p
 c      parameter(ratio_mw_h2_air=0.07d0,ratio_mw_meth_air=0.55d0)
-c      parameter(ratio_mw_co2_air= 1.52d0, alpha_h2 = 8.d-7)
-      parameter(alpha_tol = 1.d-18)
+c      parameter(ratio_mw_co2_air= 1.52d0, alpha_h2 = 8.d-7)                                      
+      parameter(alpha_tol = 1.d-18)    
        ctest = 1.0
        dp_air_p = 0.0d0
 c      
@@ -1547,7 +1568,7 @@ c xnl,xnv
          allocate(xnl_ngas(n0,4))
          xnl_ngas = 0.0d0
        endif
-      else if(iflg.eq.1) then
+      else if(iflg.eq.1) then                                                
 c use Henry's law 
         if(ihenryiso.eq.0) then
          xnl_ngas(mid,1) = 0.0d0
@@ -1584,7 +1605,7 @@ c        dp_air_s  = dpcef(mid)
 c max xnl 
            xnl = alpha_iso*p_air + alpha_tol
            dxnlp=0.0
-           dxnlt=0.0
+           dxnlt=0.0                                                               
            dxnls=0.0           
           endif
         xnl_ngas(mid,1) =  xnl*ctest

@@ -220,7 +220,6 @@
       real*8, allocatable ::  t8(:) 
       real*8, allocatable ::  t9(:) 
       real*8, allocatable ::  t10(:) 
-c gaz 140125 (da.mo.yr)      
       real*8, allocatable ::  t13(:) 
       real*8, allocatable ::  t14(:)
       real*8, allocatable ::  t15(:)
@@ -228,6 +227,8 @@ c gaz 140125 (da.mo.yr)
       real*8, allocatable ::  t17(:)
       real*8, allocatable ::  t18(:)
       real*8, allocatable ::  t19(:)
+c gaz 050525 ndar arrays      
+      real*8, allocatable ::  t5_nd(:) 
       real*8, allocatable ::  t8_nd(:) 
       real*8, allocatable ::  t9_nd(:) 
 

@@ -500,8 +500,10 @@ c gaz 040122 added access to commass_AWH
       use commass_AWH, only : imass_phase
 c gaz 051224 nondarcy flow
       use com_nondarcy
+c gaz 160425 added for vtk
+      use avsio, only : iogeo
       implicit none
-
+                                                 
       integer i, izone, inode
       integer idum, j, jj
       real tmpli
@@ -557,7 +559,6 @@ c confirm this is the terminator for the last macro read
  798  format ( 'WARNING : input title : ', 
      &     a4, ' unlabeled macro terminator',/)
          
-      nwds=0
       call parse_string2(wdd1,imsg,msg,xmsg,cmsg,nwds)
 
       if (nwds .gt. 1) then
@@ -817,9 +818,13 @@ c**** contour plot information ****
             read(inpt, '(a)') input_msg
             call parse_string(input_msg,imsg,msg,xmsg,cmsg,nwds)
             altc = cmsg(1)
+c gaz 160425 iogeo = 0
+            iogeo = 0
             if(altc.eq.'vtk ') then
              altc = 'tec '
              i_vtk = 1
+c gaz 160425 added iogeo=1 because vtk always needs geometry
+             iogeo = 1
             endif
             ncntr = imsg(2)
             if (msg(3).eq.1) then
@@ -844,10 +849,8 @@ c**** contour plot information ****
          else
           if (iout .ne. 0) write(iout, 6011)   
          endif
- 6010    format(1x, 
-     &   '**** contour format defined  : ', a4, ' ****')
- 6011    format(1x, 
-     &   '**** contour format defined  : vtk (from tec)')        
+ 6010    format(1x, '**** contour format defined  : ', a4, ' ****')
+ 6011    format(1x, '**** contour format defined  : vtk (from tec)')        
          if (ncntr .le. 0) ncntr = 10000000
          if (abs(contim) .le. zero_t) then
             contim_rip = -abs(contim)
@@ -1217,7 +1220,7 @@ c gaz 041620  if richards solution(jswitch.ne.0) , set irdof = 0
           if (iout .ne. 0) write(iout,*) "Warning: setting irdof = 0 ",
      &           "for Richard's problem"
             if (iptty .gt. 0) write(iptty,*) 
-     &           "Warning: setting irdof = 0 for Richard's  problem"
+     &           "Warning: setting irdof = 0 for Richard's  problem"            
           irdof = 0
         endif
           
@@ -1795,5 +1798,9 @@ c fill array  izoneflxz()
           endif  
       endif    
       end subroutine readsavedzone
+
+
+
+
 
 

@@ -392,7 +392,7 @@ c
       use comriv
       use comwellphys
 c gaz 040724
-      use com_prop_data, only : ihenryiso, ctest, xnl_ngas, xnl_max
+      use com_prop_data, only : ihenryiso, ctest, xnl_ngas, xnl_max 
       use com_nondarcy
       implicit none
 
@@ -546,7 +546,7 @@ c
          write(57,180) 
        endif
 180   format(t5,'ts',t14,'i',t21,'kb',t34,'vxy',t51,'dvapi',t67,
-     &  'dvapkb',t85,'dvaei',t97,'dvaekb')
+     &    'dvapkb',t85,'dvaei',t97,'dvaekb')
       endif
 c end nd_test_write
       do 101 id=1,neq
@@ -621,7 +621,8 @@ c
       if(iflux_ts.ne.0) call cascade_sat(2)
 c
       if(irdof.eq.14) then
-c
+c`
+
 c     first call air_rdof to rearrange equations
 c     
          call air_rdof(0,irdof,0,nelm,nmat,nrhs,a,bp,sx1)
@@ -710,7 +711,8 @@ c
       else if(irdof.eq.11) then
 c     
 c     coding for 1dof airflow only
-c     
+c  gaz: this section moves air residuals to nrhs(1)
+c  moves derivatives  to 1 (normalized) 
 c     
          fdum2=0.0
          do id=1,neq
@@ -725,6 +727,7 @@ c
             enddo
             bp(id+nrhs(1))=bp(id+nrhs(2))/apiv
             fdum2=fdum2+bp(id+nrhs(1))*bp(id+nrhs(1))
+            bp(id+nrhs(2)) = 0.0d0
          enddo
          fdum=sqrt(fdum2)
          if(fdum.eq.0.0) go to 999
@@ -1101,13 +1104,16 @@ c first check if saturation change(to 0r from 2-phase) occurs
       jmi=nelmdg(i-icd)
       jmia=jmi-neqp1
       sx1d = sx1(i)
-      
-      bp(iz+nrhs(1))=bp(iz+nrhs(1))+sx1d*deni(i)+sk(i)
-      a(jmia+nmat(1))=a(jmia+nmat(1))+sx1d*dmpf(i)+dq(i)
+c gaz 270425      
 	if(jswitch.ne.0) then
          a(jmia+nmat(2))=a(jmia+nmat(2))+sx1d*+dmef(i)+dqh(i)
          bp(iz+nrhs(2))=bp(iz+nrhs(2))+sx1d*denei(i)+qh(i)
+      else if(irdof.eq.13) then
+         bp(iz+nrhs(1))=bp(iz+nrhs(1))+sx1d*deni(i)+sk(i)
+         a(jmia+nmat(1))=a(jmia+nmat(1))+sx1d*dmpf(i)+dq(i)     
       else if(irdof.ne.13) then
+         bp(iz+nrhs(1))=bp(iz+nrhs(1))+sx1d*deni(i)+sk(i)
+         a(jmia+nmat(1))=a(jmia+nmat(1))+sx1d*dmpf(i)+dq(i)
          a(jmia+nmat(2))=a(jmia+nmat(2))+sx1d*dmef(i)+dqh(i)
          a(jmia+nmat(3))=a(jmia+nmat(3))+sx1d*depf(i)+drc(i)
          a(jmia+nmat(4))=a(jmia+nmat(4))+sx1d*deef(i)+deqh(i)

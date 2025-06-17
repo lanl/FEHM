@@ -27,14 +27,16 @@
       integer nr_iter_max, nd_test, nd_test_write
       real*8  muij,dmuijpi,dmuijpj,dmuijei,dmuijej
       real*8  muvij,dmuvijpi,dmuvijpj,dmuvijei,dmuvijej
-      real*8  rolij,drolijpi,drolijpj
-      real*8  rovij,drovijpi,drovijpj
-      real*8  enlij,denlijpi,denlijpj
-      real*8  envij,denvijpi,denvijpj
+      real*8  rolij,drolijpi,drolijpj,drolijei,drolijej
+      real*8  rovij,drovijpi,drovijpj,drovijei,drovijej
+      real*8  enlij,denlijpi,denlijpj,denlijei,denlijej
+      real*8  envij,denvijpi,denvijpj,denvijei,denvijej
 c gaz 110624
       real*8 phi_grad,g_term
       real*8 dg_termpi,dg_termpkb,dg_termei,dg_termekb
       real*8 daxydpi, daxydpkb, daxydei, daxydekb
+c gaz 020425
+      real*8 xrl_nd, xrv_nd
       parameter(vel_tol = 1.d-6, nr_iter_max = 15, visc_corr = 1.d-6)
       parameter(vel_tol_min = 1.d-22, nd_test_write = 0)
 c

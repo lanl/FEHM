@@ -793,6 +793,7 @@ c-----------------------------------------------------------
       use comii
       use comrlp, only : rlpnew
       use comrxni
+      use com_nondarcy
 c gaz 101221
       use com_exphase
 c gaz 101321
@@ -934,7 +935,13 @@ c endif for heat conduction
       endif
       iieosl=0
       dtin=1.0/dtot
-
+c gaz 020425 modified for non darcy flow
+      if(nd_flow) then
+       rlf_nd(1:n0) = rlf(1:n0)
+       rvf_nd(1:n0) = rvf(1:n0)
+       drlef_nd(1:n0) = drlef(1:n0)
+       drvef_nd(1:n0) = drvef(1:n0)
+      endif
 c     generate relative permeabilities
 c     calculate pressure dependant porosity and derivatives
       if(iporos.ne.0) call porosi(1)
@@ -948,8 +955,8 @@ c  rock state started at last time step temperatures
       call vrock_ctr(2,0)
 c gaz 101221 added fluid control module
 c initialize and allocate memory   
-       call fluid_props_control(0, 0, 0, fluid(1), 
-     &      'all      ', '         ')   
+       call fluid_props_control(0, 0, 0, 
+     &   fluid(1), 'all      ', '         ')   
 c gaz 123020 manage explicit update 
        if(i_ex_update.ne.0.and.ieq_ex.gt.0) then
          loop_start = ieq_ex
@@ -1018,8 +1025,8 @@ c check for aux eos(iieosd.gt.10)
 
 c       go to 699
        kq = l
-       call fluid_props_control(1, mi, mi,fluid(1), 
-     &      'all      ', '         ')
+       call fluid_props_control(1, mi, mi,
+     &   fluid(1), 'all      ', '         ')
 c     
 c gaz 101321 set variables to new code values from fluid_props_control
 c
@@ -1254,9 +1261,7 @@ c     derivatives of accumulation terms
             damh=(rol*dportl+drolt*por)*dtin
 c gaz 081317            
             daeh=(-dportl*ur+(1.-por)*dur_dt +
-     &           dportl*(enl*rol-pl)+por*(rol*dhlt+enl*drolt))*dtin
-            
-            
+     &       dportl*(enl*rol-pl)+por*(rol*dhlt+enl*drolt))*dtin
             
          end if
 
@@ -1290,7 +1295,7 @@ c     derivatives of accumulation terms
             roe=por*drovt
             damh =roe*dtin
 c gaz 081317            
-            daeh =((1.d0-por)*dur_dt+por*rov*dhvt+env*roe)*dtin          
+            daeh=((1.d0-por)*dur_dt+por*rov*dhvt+env*roe)*dtin          
          end if
          if(ieosd.ne.-1) then
 
