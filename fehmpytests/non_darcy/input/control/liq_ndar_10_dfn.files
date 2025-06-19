@@ -1,0 +1,18 @@
+input: ../input/liq_ndar_10_dfn.in 
+gridf: ../input/full_mesh.fehmn
+outp:  liq_ndar_10_dfn.out
+rsto:  liq_ndar_10_dfn.fin
+check: liq_ndar_10_dfn.chk
+root:  liq_ndar_10_dfn
+error: liq_ndar_10_dfn.err
+stor:  ../input/full_mesh.stor
+
+all
+0
+
+
+# replace dfn stor file with lagrit stor file
+# stor:  full_mesh_vol_area.stor
+# dfn generated stor file many NAN values 
+
+

@@ -243,8 +243,8 @@ c      write(jtimex,'(i2.2,1h:,i2.2,1h:,i2.2)')  jjtime
 !     vernum = 3.4 before gaz update
       vernum = 3.6
 ! Code version identifier
-!     verno = "FEHM V3.4.2lbUbuntu16 25-06-17 QA:NA"
+!     verno = "FEHM V3.4.2lbUbuntu16 25-06-18 QA:NA"
 !     verno = "FEHM V3.6.2   DATE QA:REL"
-      verno = "FEHM V3.6.3   DATE QA:NDY"
+      verno = "FEHM V3.6.3.2 DATE QA:NDY"
 
       end

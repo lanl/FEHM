@@ -1,0 +1,237 @@
+Two phase example with test of non-darcy flow
+#
+# modified by gaz Jun 17 2025
+# used better initial value to include gravity with ndar 1E10 and 1E11
+# Set in the grad macro
+# added an impedance factor in model 3 (constant outflow pres) to improve MBE
+# Note this input is using full_mesh.stor with implied thickness of 1
+#****************output*******************************
+# write vtk contour files for each variable listed
+# vtk time_step time_interval
+# contours are done soon after day 20 for darcy flow
+# vtk  5000   1.00000e+19
+# tec  5000  10 
+cont
+vtk  5000  10 
+geom
+liq
+pres
+saturation
+perm
+formatted
+end
+# write hist files for pressure/saturation at nodes in node macro
+hist
+days
+pres
+liq
+vapor
+sat
+end
+#****************grid*******************************
+# dfnWorks grid named in fehmn.files
+#****************air********************************
+air
+2
+20.0 0.1 air
+#****************fehm id******************************
+idfe
+FEHM3.6.3NDY
+#****************non darcy flow******************************
+# assigns beta value to all nodes 
+# beta is the non-darcy coefficient of Forchheimer equation
+# 1.0d06 will be similar to darcy result
+# 1.0d09 will result in higher velocities
+# comment ndar macro for older versions of fehm
+ndar 
+1 7285 1  1.0d10
+  
+end ndar
+#****** velocity output by node pairs *******************
+# Control statement for Velocity output
+# between two nodes is output
+# a single internode velocity is calculated between node pairs
+# Written to .out file
+# replace gaz node numbers with dfn numbers
+# pairs near inflow and open boundary
+dvel
+8
+41 42
+42 43
+43 44
+40 41
+7245 7246
+7245 7244
+7205 7206
+7284 7285
+#****************rlp******************************
+# Relative permeability and capillary pressure models
+# needed for two phase
+# 1 = linear perma and cap
+# residual liq and vapor saturation are 0
+# max liq sat, max vapor sat = 1.
+# capillary pres at zero sat = 1.
+# saturation at which cap pres at zero = 1.
+# assigned to all nodes
+rlp
+1 0. 0. 1. 1. 1. 1.
+
+1 0 0 1
+
+#*******************rock parameters*************************
+# all nodes with perm x,y,z
+# Rock density (kg/m3), Rock specific heat (J/kg.K), porosity
+# note second row overwrites first row
+perm
+     1 0 0 1.d-21 1.d-21 1.d-21
+     1 0 0  1.d-12 1.d-12 1.d-12
+     
+rock                              
+  1    0     0     2.50E+03     1.00E+03    0.15 
+
+#***************zones*****************************
+# gaz zone 21 is node 1   bottom corner on left bndry
+# gaz zone 22 is node 421 top corner on left bndry
+# change node 1 to 42 inflow 
+# change node 421 to 7245 outflow (not used?)
+zone
+21
+nnum
+1 42
+22
+nnum
+1 7245
+
+#***************boun*****************************
+# all boundaries assumed closed unless defined here 
+# model 2
+# distributed water source pumping
+# 0 for 20 days, then -1 kgs (neg means source pumping)
+# positive values are extracting (sink)
+# model 3
+# const pres value on top boundary
+# all boundaries assumed closed except top
+# replace gaz defined by nodes 421 to 441
+# with right boundary 7205-7285
+boun
+model 1
+ti
+4 0. 100. 200. 300.
+dsw
+0.0d0 -1.0d-3 -0.0d-3 -1.0d-4
+model 2
+ti
+3 0. 20. 1E12 
+dsw
+-0.0d-2 -1.0d0 -1.0d0 
+ft
+20.0 20.0 20.0
+ts
+1.d-0 0.001 0.001
+tsmax
+10. 10. 10.
+model 3
+ti
+2 0. 1.d10
+pw
+0.1 0.1
+ft
+20.0 20.0
+if
+1.e-2 1.e-2
+
+7205 7285 1 3
+-21 0 0  2
+
+# 1E-3 (initial timestep) 50 days (final sim time) 
+# 600 (max number of timesteps) 1 (print every timestep in run.out)
+# Last 3 numbers are year, month, time 
+# 1.d-3 50.0 600 1 1999 1 0.00000
+time
+1.d-2 100.0 600 1 1999 1 0.00000
+20.  -1.5  1.0  1E-2
+
+#***************IC BC*****************************
+# Initial pressure (MPa) and Temperature (C) for liquid phase.
+# replace gaz 441 nodes
+pres 
+1 7285 1 0.1 20. 1
+
+grad
+1
+all 5.0 3 1 0.1 -9.80e-3
+#***************************************************
+# The top row of zone is selecting all nodes in x direction 
+# and only the nodes on the y boundary from 19.9 to 20.1 
+# which selects all the nodes on the right boundary of the mesh
+# This would be called with -101 and is not used
+# if needed, dfn domain is -20 to 20, -10 to 10, -5 to 5
+# zone
+# 101
+# -0.01 20.01 20.01 -0.01 
+# 19.9 19.9 20.1 20.1	
+# 
+# commented out as it is not used in gaz model
+# zone
+# file
+# full_boundary.zone
+#
+#***************************************************
+# gravity y dir
+# this is gaz real 2D problem
+# ctrl
+#  -10 1.00000e-05 40 100 gmre
+#  1 0 0 2
+# 
+#  1.00000 2 1.00000
+#  10 1.5 1.000e-10 365.25    
+#  1 0
+#
+#***************************************************
+# replace gaz 2D modified for 3D dfn example
+ctrl
+ -10  1.e-5   40  100 gmre
+  1  0  0    2
+  0
+  1.0   0  1.
+  10  1.75  1.e-10  365.25 
+  0  +1
+sol
+ 1 -1
+# gaz removed irdof = 13
+#  1.00000e-05 1.00000e-05 0.0100000 -1.00000e-3 1.1 
+iter
+ 1.00000e-05 1.00000e-03 0.0100000 -1.00000e-4 1.1
+0      0       0       5       3600. 
+#************************************************
+# node control statement using block keyword
+# write his values for the following nodes
+# 1,421,21 are nodes on the left bndry on y axis
+# 10,430,21 is middle line along y axis
+# 399,441,21 are 3 nodes on right bndry top right
+# node
+# bloc
+# 1 421 21
+# 10 430 21
+# 399 441 21
+#
+# dfn left, top, x-axis end 
+node
+block
+42 61 1 
+3187 3187 1
+3636 3636 1
+4087 4087 1
+5997 5997 1
+6173 6173 1
+7244 7245 1
+
+stop
+
+dsa
+0.0d0 -1.0d-4 -0.0d-3 -1.0d-4
+ts
+1.d-0 0.01 0.1 0.1
+tsmax
+10. 5.  5. 365.
+

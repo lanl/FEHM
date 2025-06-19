@@ -1,0 +1,14 @@
+input: ../input/gas_ndar_OFF.in
+grida: ../input/mdat_2d_simple.grid
+outp: gas_darcy.out
+root: gas_darcy
+check: gas_darcy.chk
+
+all
+
+
+nopf: ../input/darcy_2D2.nop
+rsti: ../input/non_darcy_2D.ini_gonly
+rsto: gas_darcy.fin_gonly
+
+
