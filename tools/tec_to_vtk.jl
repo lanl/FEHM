@@ -148,27 +148,27 @@ function tec_to_df(f,variables=0)
 	var_sym = [Symbol(v) for v in variables]
 	rename!(df,var_sym)
 
-	if (in(:X_coordinate,names(df)))
-		delete!(df,:X_coordinate)
+	if (in("X_coordinate",names(df)))
+		select!(df, Not(:X_coordinate))
 	end
-	if (in(:Y_coordinate,names(df)))
-		delete!(df,:Y_coordinate)
+	if (in("Y_coordinate",names(df)))
+		select!(df, Not(:Y_coordinate))
 	end
-	if (in(:Z_coordinate,names(df)))
-		delete!(df,:Z_coordinate)
+	if (in("Z_coordinate",names(df)))
+		select!(df, Not(:Z_coordinate))
 	end
 
-	if (in(:X,names(df)))
-		delete!(df,:X)
+	if (in("X",names(df)))
+		select!(df, Not(:X))
 	end
-	if (in(:Y,names(df)))
-		delete!(df,:Y)
+	if (in("Y",names(df)))
+		select!(df, Not(:Y))
 	end
-	if (in(:Z,names(df)))
-		delete!(df,:Z)
+	if (in("Z",names(df)))
+		select!(df, Not(:Z))
 	end
-	if (in(:Zone,names(df)))
-		delete!(df,:Zone)
+	if (in("Zone",names(df)))
+		select!(df, Not(:Zone))
 	end
 
 	return df
