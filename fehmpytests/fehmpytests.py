@@ -1028,7 +1028,7 @@ class fehmTest(unittest.TestCase):
             f_new = fpost.fcontour(verbose, ('*'+subcase+'.'+filetype))
             f_dif = fpost.fdiff(verbose, f_new, f_old)
                 
-            msg = 'Incorrect %s at time %s.'
+            msg = '\nError with %s, Incorrect %s at time %s. Difference of %s is greater then max error of %s.'
 
             #If no pre-specified times, grab them from f_dif.
             if len(values['times']) == 0:
@@ -1062,7 +1062,7 @@ class fehmTest(unittest.TestCase):
                     }[test_measure]
                     try:
                         #print('true? ', difference, '<', mxerr, '=', difference<mxerr, 'for ', (os.path.join('..','compare','*')+subcase+'.'+filetype), ' and ', ('*'+subcase+'.'+filetype))
-                        self.assertTrue(difference<mxerr, msg%(v, t))
+                        self.assertTrue(difference<mxerr, msg%(subcase,v, t, difference, mxerr))
                         test_flag = True
                         
                     except AssertionError as e:
@@ -1095,8 +1095,7 @@ class fehmTest(unittest.TestCase):
                 nodes = f_dif.nodes
             else:
                 nodes = values['nodes']   
-            msg = 'Incorrect %s at node %s.'  
-            
+            msg = '\nError with %s, Incorrect %s at node %s. Difference of %s is greater then max error of %s.'
             #Check the nodes at each variable for any significant differences.   
             test_flag = False
             for v in variables:
@@ -1113,7 +1112,7 @@ class fehmTest(unittest.TestCase):
                             float(len(f_dif[v][n]))
                     }[test_measure]
                     try:   
-                        self.assertTrue(difference<mxerr, msg%(v, n))
+                        self.assertTrue(difference<mxerr, msg%(subcase,v, n,difference,mxerr))
                         test_flag = True
                     except AssertionError as e:
                         #Write to fail log if switch is on.
@@ -1177,7 +1176,7 @@ class fehmTest(unittest.TestCase):
             else:
                 nodes = values['nodes']    
 
-            msg = 'Incorrect %s at node %s.'  
+            msg = '\nError with %s, Incorrect %s at node %s. Difference of %s is greater then max error of %s.'  
             
             #Check the nodes at each variable for any significant differences.
             test_flag = False
@@ -1196,7 +1195,7 @@ class fehmTest(unittest.TestCase):
                             float(len(f_dif[v][n]))
                     }[test_measure]     
                     try:
-                        self.assertTrue(difference<mxerr, msg%(v, n))
+                        self.assertTrue(difference<mxerr, msg%(subcase,v, n,difference,mxerr))
                         test_flag = True
                     except AssertionError as e:
                         #Write to fail log if switch is on.
@@ -1238,7 +1237,8 @@ class fehmTest(unittest.TestCase):
             else:
                 components = values['components']
                 
-            msg = 'Incorrect %s at %s node %s.'  
+            msg = 'Incorrect %s at %s node %s.'
+            msg = '\nError with %s, Incorrect %s at %s node %s. Difference of %s is greater then max error of %s.'  
             
             #Check the node at each component for significant differences.   
             test_flag = False
@@ -1257,7 +1257,7 @@ class fehmTest(unittest.TestCase):
                                 float(len(fdiff_array)) 
                         }[test_measure]
                         try:
-                            self.assertTrue(difference < mxerr, msg%(v,c,n))
+                            self.assertTrue(difference < mxerr, msg%(subcase,v,c,n,difference,mxerr))
                             test_flag = True
                         except AssertionError as e:
                             #Write to fail log if switch is on.
@@ -1281,7 +1281,7 @@ class fehmTest(unittest.TestCase):
             f_new = fpost.fptrk(verbose, ('*'+subcase+filetype)) 
             f_dif = fpost.fdiff(verbose, f_new, f_old)
             
-            msg = 'Incorrect %s.'
+            msg = '\nError with %s, Incorrect %s. Difference of %s is greater then max error of %s.'
             
             #If no pre-specified variables, grab them from f_dif.         
             if len(values['variables']) == 0:
@@ -1304,7 +1304,7 @@ class fehmTest(unittest.TestCase):
                 }[test_measure]
                 #Perform test, if fail log switch is on, write a fail log.
                 try:
-                    self.assertTrue(difference < mxerr, msg%v)
+                    self.assertTrue(difference < mxerr, msg%(subcase,v,difference,mxerr))
                     test_flag = True
                 except AssertionError as e:
                     #Write to fail log if switch is on.
