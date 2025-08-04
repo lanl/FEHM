@@ -729,7 +729,7 @@ cmodi.mod: cmodi.o
 comdti.mod: comdti.o
 comei.mod: comei.o
 comevap.mod: comevap.o
-com_exphase.mod: com_exphase
+com_exphase.mod: com_exphase.o
 comfem.mod: comfem.o
 comfi.mod: comfi.o
 comflow.mod: comflow.o

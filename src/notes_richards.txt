@@ -1,0 +1,135 @@
+Hi George,
+
+Perfect timing, I was just starting to look at FEHM non-darcy tests again.
+As I remember, your version of code is passing the WIN version of VV tests.
+But when I compiled the latest code and ran fehmpytests, the richards tests are failing.
+
+Did you run your version of fehmpytests and did it pass all tests?
+On my version of latest code using linux, all tests pass except richards.
+I can send you my test and output if you want to look at them.
+
+There are two issues with these tests.
+
+The first may be a precision issue and if you check it and think it is ok, we can accept the new output files as correct and update the comparison files (or adjust fehmpytests tolerance). The second issues with strange fehm.err files may be fixed with an updated input file or ignored.
+
+There are 4 tests under fehmpytests/richards (control files in /input/control). The four tests are 2phase_rlpm,  2phase_rlp,  rich_rlpm, and  rich_rlp
+
+1) the AVS output files have different values.
+
+This may be an issue of output format/precision differences that can be fixed by overwriting these new "approved" output files for comparison. OR setting fehmpytests tolerance to accept within precision OR it needs to be fixed.
+
+00002_sca_node.avs for rich_rlpm  and rich_rlp fail:
+0000008049  0.989554216E-01   0.900000020
+0000008050  0.989554216E-01   0.900000020
+
+Comparison file from previous fehm tests:
+0000008049  0.100716092       0.999252445
+0000008050  0.100716106       0.999252431
+
+2) the fehmn.err files for 2phase_rlp and rich_rlp have many lines:
+
+      Assuming           wateris an rlp model
+ Alpha parameter in    3.8499999999999996                1           0  rlp macro will be ignored. It should be specified in cap keyword
+      Assuming             airis an rlp model
+Unrecognized type option "same" is obselete and is ignored in rlpm, check model
+At least two phases must be specified in rlpm, check model    1
+      Assuming           wateris an rlp model
+
+...
+Unrecognized type option "same" is obselete and is ignored in rlpm, check model
+      Assuming           wateris an rlp model
+ Alpha parameter in    5.0000000000000000               11          40  rlp macro will be ignored. It should be specified in cap keyword
+      Assuming             airis an rlp model
+Unrecognized type option "same" is obselete and is ignored in rlpm, check model
+
+
+
+On Tue, Jun 17, 2025 at 6:21 PM Miller, Terry Ann <tamiller@lanl.gov> wrote:
+
+    Hi George,
+
+    I ran the 3 liq non-darcy tests you sent earlier.
+    I will stop here until I hear from you regarding the richards tests.
+
+    The new code gets the same results as the files you sent.
+    I have not plotted vtk files but the ending .out values all match:
+
+    -------------------------------
+    liq_ndar_10.out_no_nd ndar OFF has lowest pres:
+
+    Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+       1   3.513       0.000       3.513       0.000          0.0000        6.66837E-21     0.0000
+
+     Net kg water discharge (total out-total in):  -0.197636E+03
+     Net kg air discharge   (total out-total in):   0.000000E+00
+     simulation ended: days   50.000000000000000000000     timesteps    77
+     total N-R iterations =        154
+     total solver iterations =        340
+
+    -------------------------------
+    liq_ndar_10.out_nd10 ndar 1.d10
+
+    Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+       1   16.70       0.000       16.70       0.000          0.0000        6.61884E-21     0.0000
+
+     Net kg water discharge (total out-total in):  -0.636673E+02
+     Net kg air discharge   (total out-total in):   0.000000E+00
+     simulation ended: days   50.000000000000000000000     timesteps    77
+     total N-R iterations =        159
+     total solver iterations =        515
+
+    -------------------------------
+    liq_ndar_10.out_nd11 ndar 1.d11
+
+    Node   P (MPa)   P Cap (MPa) P Liq (MPa) Vapor (kg/s)     S gas        Tot (mfrac)    Liq (mfrac)
+       1   127.0       0.000       127.0       0.000          0.0000        6.23155E-21     0.0000
+
+     Net kg water discharge (total out-total in):  -0.113088E+03
+     Net kg air discharge   (total out-total in):   0.791942E-16
+     simulation ended: days   50.000000000000000000000     timesteps    77
+     total N-R iterations =        163
+     total solver iterations =        753
+
+
+Hi George,
+
+The richards test that passes (as of last version), still has bad .err files.
+Some are empty and some look like the version I sent.
+
+I attached the richards test that was passing, it has 4 directories.
+There are only 3 in today's test which means fehm failed before it could run the 4th.
+
+Attached is fehmpytest/richards that is passing according to our test.
+
+The files used by the richards test are in /compare
+sft 346516 Jan 29 13:17 2phase_rlp.00002_sca_node.avs
+sft 346516 Jan 29 13:17 2phase_rlpm.00002_sca_node.avs
+sft 346516 Jan 29 13:17 rich_rlp.00002_sca_node.avs
+sft 346516 Jan 29 13:17 rich_rlpm.00002_sca_node.avs
+
+
+rom: george zyvoloski <gazyvoloski@gmail.com>
+Sent: Tuesday, June 17, 2025 4:09 PM
+To: Miller, Terry Ann <tamiller@lanl.gov>; Stauffer, Philip H <stauffer@lanl.gov>; Hyman, Jeffrey De'Haven <jhyman@lanl.gov>
+Subject: [EXTERNAL] Richards and vtk issues
+ 
+Hi Terry. The fehmn.err is interesting. Can you see if a run from a few months back has the same fehmn.err output?
+Also, I think I fixed the vtk output for dfn( see attached subroutine). I assumed that triangles were 2D. In dfn, they are in 3D space. The dfm problem ran fine but needed a better initial value that included gravity with ndar values 1E10 and 1E11. I provided that with the grad macro, see attached run.dat. I also added an impedance factor in model 3 (constant outflow pressure) to improve MBE.
+I have a question for Jeffrey. Is there a thickness for the triangles? Or is it "1"
+Best, G
+
+Hi George,
+
+Here is the fehmpytests richards outputs from linux in case it helps.
+
+Note the errors in 2phase_rlpm_output/fehmn.err
+
+  Assuming           wateris an rlp model
+ Alpha parameter in    3.8499999999999996                1           0  rlp macro will be ignored. It should be specified in cap keyword
+      Assuming             airis an rlp model
+Unrecognized type option "same" is obselete and is ignored in rlpm, check model
+At least two phases must be specified in rlpm, check model    1
+      Assuming           wateris an rlp model
+ Alpha parameter in    2.2200000000000002                2           4  rlp macro will be ignored. It should be specified in cap keyword
+...
+
