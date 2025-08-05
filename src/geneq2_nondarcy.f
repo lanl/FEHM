@@ -655,9 +655,9 @@ c axyd units m**2*(area/dis)*Mpa
                daxydei=pxy*dpvti+0.5*sx4d*dgle(i)*
      &                    (cord(kz,igrav)-cord(iz,igrav))
                daxydekb=-pxy*dpcef(kb)+0.5*sx4d*dgle(kb)
-     &                    *(cord(kz,igrav)-cord(iz,igrav))               
+     &                    *(cord(kz,igrav)-cord(iz,igrav))      
                t8(neighc)=axyd
-                 fid=0.5
+               fid=0.5
 c gaz 220125,250525 removed upwind for liq
                  if(axyd.lt.0.0) fid=dnwgt
                  if(axyd.gt.0.0) fid=upwgt
@@ -669,12 +669,12 @@ c gaz 220125,250525 removed upwind for liq
                 vel_nd = axyd/(aij*muij+kij_tol)
 
                 call nd_flow_vel(1,icd,1,iq,axyd,vel_nd,aij,kij,
-     &                fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm)
+     &                 fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm)
                 aij = abs(t5(neighc)) 
 c gaz 090125                
                 axyd_nd = vel_nd*aij*muij
                 call nd_flow_vel(2,icd,1,iq,axyd,vel_nd,aij,kij,
-     &                fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm)  
+     &                 fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm)  
     
 c determine upwind direction
 c find upwinding
@@ -734,7 +734,7 @@ c   gaz db 010125            aij=abs(t5(neighc)
                   dlaei_nd = t18(neighc)
                   dlaekb_nd = t19(neighc)
                   dlaei_nd=dlaei_nd*axyf+axyd_nd*fid1*dilei
-                  dlaekb_nd=dlaekb_nd*axyf+axyd_nd*fid*dilekb                     
+                  dlaekb_nd=dlaekb_nd*axyf+axyd_nd*fid*dilekb          
                 endif
                 continue
 
@@ -797,7 +797,7 @@ c vxyd units m**2*(area/dis)*Mpa
                daxydei= 0.5*sx4d*dgve(i)*
      &                    (cord(kz,igrav)-cord(iz,igrav))
                daxydekb= 0.5*sx4d*dgve(kb)
-     &                    *(cord(kz,igrav)-cord(iz,igrav))               
+     &                    *(cord(kz,igrav)-cord(iz,igrav))
                call nd_props(0,icd,1,iq,i,kb,jm,0.5d0)
 c gaz 112424 
 c vxyd is the darcy based velocity
@@ -1158,7 +1158,7 @@ c                aij = abs(t5(neighc))
                   dlaei_nd = t18(neighc)
                   dlaekb_nd = t19(neighc)
                   dlaei_nd=dlaei_nd*axyf+axyd_nd*fid1*dilei
-                  dlaekb_nd=dlaekb_nd*axyf+axyd_nd*fid*dilekb                     
+                  dlaekb_nd=dlaekb_nd*axyf+axyd_nd*fid*dilekb    
                 endif
                 continue
 c
