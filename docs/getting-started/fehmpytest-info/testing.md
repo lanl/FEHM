@@ -17,68 +17,66 @@ hero_height: is-hidden
 ---
 
 
-Use fehmpytests to test changes to FEHM to ensure correct simulation. Fehmpytests can be run in four different modes, default, admin, developer (currently in development), and solo which each run a set of tests. Currently, default and admin mode run the same set of tests and solo mode runs a single test. Developer mode is not implemented yet but will run a subset of admin tests. Please ensure that you are using Python3
+Use fehmpytests to test changes to FEHM to ensure correct simulations. Please ensure that you are using Python3.
 
-## Testing in Default Mode
 
-To test the default suite:
+## Running the Tests
 
-1. Navigate to the folder *fehmpytests* in a terminal.
-2. Type the following command into the terminal:
+To test the default set of tests:
+
+Navigate to the folder *fehmpytests* in a terminal.
+Type the following command into the terminal:
 
    ``python fehmpytests.py <fehm-path>``
        
-   where ```<fehm-path>``` is the path to the FEHM executable.
+   where ```<fehm-path>``` is the path to the FEHM executable, for instance ```../src/xfehm```
 
-## Testing in Admin Mode
 
-To test the admin suite:
-
-1. Navigate to the folder *fehmpytests* in a terminal.
-2. Type the following command into the terminal:
-
-   ``python fehmpytests.py --admin <fehm-path>``
-   
-   where ```<fehm-path>``` is the path to the FEHM executable.
-   
-## Testing in Developer Mode
-
-(In Development) To test the developer suite:
-
-1. Navigate to the folder *fehmpytests* in a terminal.
-2. Type the following command into the terminal:
-
-   ``python fehmpytests.py --dev <fehm-path>``
-   
-   where ```<fehm-path>``` is the path to the FEHM executable.
-                
-## Testing in Solo Mode
-
-The process for testing a single test case in solo mode is similar to testing 
-a suite in the other modes. There is an additional command line argument needed.
- 
-To test a singe test-case:
-
-1. Navigate to the folder *fehmpytests* in a terminal.
-2. Type the following command into the terminal:
+To run a single test case:
 
    ``python fehmpytests.py <fehm-path> <test-case>``
      
-   where ```<fehm-path>``` is the location of the FEHM executable and <test-case> 
-   is the name of the test-case method.
+   where ```<fehm-path>``` is the location of the FEHM executable and <test-case> is the name of the test-case to run.
+   
+
+## Options
+
+In addition to mode settings, the following options are available. Option flags should occur on command line before the executable path and name.
+
+    ``python fehmpytests.py [-h] [-a | -d | -f | -s] [-l] [-v {0,1,2,3}] [--clean] exe [testcase]``
+
+
+**-h  --help**               
+    Show this help message and exit.
+    
+**-a  --admin**              
+    Run the entire test-suite, this is the default mode.
+    
+**-d  --dev**                
+    Run a portion of the test-suite (set in fehmpytests.py by developers).
+
+**-f  --full**              
+    Run the entire test-suite including those under development with possible failures.
+    
+**-l  --log**                
+    Create a fail statistics file 'fail_log.txt'.
+    
+**-v {0,1,2,3}  --verbose {0,1,2,3}**     
+    Verbosity level: 0 = No output, 1 = Minimal Output, 2 = Detailed Output, 3 = All Output, for developers
+    
+**--clean**                  
+   Clean up, remove fehm output files and exit.
+   
+
+
+
    
 > ##### WARNING
 >
-> Developers must run in default, admin, or developer mode before commiting new code. 
+> Developers must run in default or admin modes before commiting new code.
 {: .block-warning}
 
 
-## Creating an Error Log
 
-An error log .txt file can be created to show details about an error and where 
-it occurred. To generate an error log, add the switch *log* after 
-**fehmpytests.py** and before ```<fehm-path>```. Here is an example:
-
-``python fehmpytests.py --admin --log <fehm-path>``
 
 
