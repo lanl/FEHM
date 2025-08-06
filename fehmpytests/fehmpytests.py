@@ -1068,6 +1068,7 @@ class fehmTest(unittest.TestCase):
                     except AssertionError as e:
                         #Write to fail log if switch is on.
                         if self.log:
+                            self.fail_log.write(f'\nError with {subcase}, Incorrect {v} at time {t}. Difference of {difference} is greater then max error of {mxerr}.')
                             kvpairs = {'variable':str(v), 'time':str(t)}
                             line = '\nFailed at subcase:'+subcase
                             line = line+' filetype:'+filetype
