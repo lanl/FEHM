@@ -1508,6 +1508,14 @@ def suite(mode, test_case, log):
     
 if __name__ == '__main__':
     
+    pre_parser = argparse.ArgumentParser(add_help=False)
+    pre_parser.add_argument('--clean', action='store_true')
+    pre_args, _ = pre_parser.parse_known_args()
+
+    if pre_args.clean:
+        cleanup()
+        sys.exit(0)
+        
     #Unless the user specifies a single test-case, this isn't important.
     test_case = ''
 
