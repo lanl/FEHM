@@ -669,12 +669,12 @@ c gaz 220125,250525 removed upwind for liq
                 vel_nd = axyd/(aij*muij+kij_tol)
 
                 call nd_flow_vel(1,icd,1,iq,axyd,vel_nd,aij,kij,
-     &                 fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm)
+     &                fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm)
                 aij = abs(t5(neighc)) 
 c gaz 090125                
                 axyd_nd = vel_nd*aij*muij
                 call nd_flow_vel(2,icd,1,iq,axyd,vel_nd,aij,kij,
-     &                 fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm)  
+     &                fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm)  
     
 c determine upwind direction
 c find upwinding

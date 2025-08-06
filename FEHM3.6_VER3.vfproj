@@ -288,6 +288,7 @@
 		<File RelativePath=".\src\geneq1_stress.f"/>
 		<File RelativePath=".\src\geneq1_stress_coupl.f"/>
 		<File RelativePath=".\src\geneq1_stress_coupl_porosi.f"/>
+		<File RelativePath=".\src\geneq1_w_nondarcy.f"/>
 		<File RelativePath=".\src\geneq1_well.f"/>
 		<File RelativePath=".\src\geneq2.f"/>
 		<File RelativePath=".\src\geneq2_ani.f"/>
@@ -448,6 +449,7 @@
 		<File RelativePath=".\src\near3.f"/>
 		<File RelativePath=".\src\new_loc_omr.f"/>
 		<File RelativePath=".\src\node_midedge_box_size.f"/>
+		<File RelativePath=".\src\non_darcy_subroutines.f"/>
 		<File RelativePath=".\src\nopcnr.f"/>
 		<File RelativePath=".\src\nopcnv.f"/>
 		<File RelativePath=".\src\normal.f"/>
