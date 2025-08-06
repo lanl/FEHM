@@ -42,30 +42,33 @@ To run a single test case:
 
 ## Options
 
-The following options are available with fehmpytests. Option flags should occur on command line before the executable path and name.
+Options can be a -letter or --keyword as shown below. They should be used on the command line before the executable path and name.
 
     ``python fehmpytests.py [-h] [-a | -d | -f | -s] [-l] [-v {0,1,2,3}] [--clean] exe [testcase]``
+    
+
+The following options are available with fehmpytests:
 
 
-**-h  --help**               
+``-h  --help``               
     Show this help message and exit.
     
-**-a  --admin**              
+``-a  --admin``              
     Run the entire test-suite, this is the default mode.
     
-**-d  --dev**                
+``-d  --dev``                
     Run a portion of the test-suite (set in fehmpytests.py by developers).
 
-**-f  --full**              
+``-f  --full``              
     Run the entire test-suite including those under development with possible failures.
     
-**-l  --log**                
+``-l  --log``                
     Create a fail statistics file 'fail_log.txt'.
     
-**-v {0,1,2,3}  --verbose {0,1,2,3}**     
+``-v {0,1,2,3}  --verbose {0,1,2,3}``    
     Verbosity level: 0 = No output, 1 = Minimal Output, 2 = Detailed Output, 3 = All Output, for developers
     
-**--clean**                  
+``--clean``                  
    Clean up, remove fehm output files and exit.
    
 
