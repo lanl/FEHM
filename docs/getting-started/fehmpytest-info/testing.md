@@ -17,12 +17,13 @@ hero_height: is-hidden
 ---
 
 
-Use fehmpytests to test changes to FEHM to ensure correct simulations. Please ensure that you are using Python3.
+
+FEHM provides a set of python driven tests to verify the FEHM installation. These tests require Python3 be installed.
 
 
 ## Running the Tests
 
-To test the default set of tests:
+To run and verify the default set of tests:
 
 Navigate to the folder *fehmpytests* in a terminal.
 Type the following command into the terminal:
@@ -41,7 +42,7 @@ To run a single test case:
 
 ## Options
 
-In addition to mode settings, the following options are available. Option flags should occur on command line before the executable path and name.
+The following options are available with fehmpytests. Option flags should occur on command line before the executable path and name.
 
     ``python fehmpytests.py [-h] [-a | -d | -f | -s] [-l] [-v {0,1,2,3}] [--clean] exe [testcase]``
 
@@ -68,8 +69,47 @@ In addition to mode settings, the following options are available. Option flags 
    Clean up, remove fehm output files and exit.
    
 
+## Example fehmpytests session
+
+```bash
+cd FEHM/fehmpytests/
+python fehmpytests.py ../src/xfehm
+
+```
+
+This will run a series of tests that will take several minutes to run and will look similar to this:
+
+```
+avdonin (__main__.fehmTest.avdonin) ... ok
+baro_vel (__main__.fehmTest.baro_vel) ... ok
+bodyforce (__main__.fehmTest.bodyforce) ... ok
+...
+transport3d_validation (__main__.fehmTest.transport3d_validation) ... ok
+vapor_extraction (__main__.fehmTest.vapor_extraction) ... ok
+wvtest (__main__.fehmTest.wvtest) ... ok
+rad_decay (__main__.fehmTest.rad_decay) ... ok
+-----------------------------------------------------------------------------------
+Ran 30 tests in 120.000s
+
+OK
+
+```
 
 
+## V&V Verification Test Suite ##
+
+Th large V&V verification test suite was created under the YMP QA program and has been the main source for testing and development over many years. The disadvantage of this test suite is its large size, complicated perl scripts, old fortran compare executables, and platform dependency. The Windows version of the test suite is used to verify modern FEHM simulations. The Windows Test Suite runs over 80 test problems, and can takes over an hour to run. The Linux and Mac versions of the Test Suite are no longer supported. They have perl scripts that no longer work and old input files. Though no longer used for code verification, the V&V problems can be run individually to explore examples and aid development.
+
+Most thee test cases in fehmpytests are constructed from problems in the Windows V&V test suite.
+
+The V&V FEHM Test Suite documentation: https://www.lanl.gov/orgs/ees/fehm/docs/FEHM_VERIFICATION_V3.3.0.pdf
+
+The V&V FEHM Test Suite can be downloaded from Assets under Releases.
+https://github.com/lanl/FEHM/releases
+- VERIFICATION_V3.3.0lnx.tar.gz
+- VERIFICATION_V3.3.0mac.tar.gz
+- VERIFICATION_V3.3.0win.zip
+- 
    
 > ##### WARNING
 >
