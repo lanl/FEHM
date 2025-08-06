@@ -1118,6 +1118,7 @@ class fehmTest(unittest.TestCase):
                     except AssertionError as e:
                         #Write to fail log if switch is on.
                         if self.log:
+                            self.fail_log.write(f'\nError with {subcase}, Incorrect {v} at node {n}. Difference of {difference} is greater then max error of {mxerr}.')
                             kvpairs = {'variable':str(v), 'node':str(n)}
                             line = '\nFailed at subcase:'+subcase
                             line = line+' filetype:'+filetype
@@ -1201,6 +1202,7 @@ class fehmTest(unittest.TestCase):
                     except AssertionError as e:
                         #Write to fail log if switch is on.
                         if self.log:
+                            self.fail_log.write(f'\nError with {subcase}, Incorrect {v} at node {n}. Difference of {difference} is greater then max error of {mxerr}.')
                             kvpairs = {'variable':str(v), 'node':str(n)}
                             line = '\nFailed at subcase:'+subcase
                             line = line+' filetype:'+filetype
@@ -1263,6 +1265,7 @@ class fehmTest(unittest.TestCase):
                         except AssertionError as e:
                             #Write to fail log if switch is on.
                             if self.log:
+                                self.fail_log.write(f'\nError with {subcase}, Incorrect {v} at {c} node {n}. Difference of {difference} is greater then max error of {mxerr}.')
                                 kvpairs = { 'component': str(c), 
                                             'node': str(n),
                                             'variable': str(v), }
@@ -1310,6 +1313,7 @@ class fehmTest(unittest.TestCase):
                 except AssertionError as e:
                     #Write to fail log if switch is on.
                     if self.log:
+                        self.fail_log.write(f'\nError with {subcase}, Incorrect {v}. Difference of {difference} is greater then max error of {mxerr}.')
                         kvpairs = {'variable': str(v)}
                         line = '\nFailed at subcase:'+subcase
                         line = line+' filetype:'+filetype
