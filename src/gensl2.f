@@ -1104,7 +1104,10 @@ c first check if saturation change(to 0r from 2-phase) occurs
       jmi=nelmdg(i-icd)
       jmia=jmi-neqp1
       sx1d = sx1(i)
-c gaz 270425      
+c gaz 270425 
+c gaz 080825      
+      bp(iz+nrhs(1))=bp(iz+nrhs(1))+sx1d*deni(i)+sk(i)
+      a(jmia+nmat(1))=a(jmia+nmat(1))+sx1d*dmpf(i)+dq(i)    
 	if(jswitch.ne.0) then
          a(jmia+nmat(2))=a(jmia+nmat(2))+sx1d*+dmef(i)+dqh(i)
          bp(iz+nrhs(2))=bp(iz+nrhs(2))+sx1d*denei(i)+qh(i)
@@ -1112,8 +1115,8 @@ c gaz 270425
          bp(iz+nrhs(1))=bp(iz+nrhs(1))+sx1d*deni(i)+sk(i)
          a(jmia+nmat(1))=a(jmia+nmat(1))+sx1d*dmpf(i)+dq(i)     
       else if(irdof.ne.13) then
-         bp(iz+nrhs(1))=bp(iz+nrhs(1))+sx1d*deni(i)+sk(i)
-         a(jmia+nmat(1))=a(jmia+nmat(1))+sx1d*dmpf(i)+dq(i)
+c         bp(iz+nrhs(1))=bp(iz+nrhs(1))+sx1d*deni(i)+sk(i)
+c         a(jmia+nmat(1))=a(jmia+nmat(1))+sx1d*dmpf(i)+dq(i)
          a(jmia+nmat(2))=a(jmia+nmat(2))+sx1d*dmef(i)+dqh(i)
          a(jmia+nmat(3))=a(jmia+nmat(3))+sx1d*depf(i)+drc(i)
          a(jmia+nmat(4))=a(jmia+nmat(4))+sx1d*deef(i)+deqh(i)
