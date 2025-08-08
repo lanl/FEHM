@@ -212,6 +212,10 @@ class fehmTest(unittest.TestCase):
         # Test Darcy and non-Darcy flow liquid and gas 2D
         #
         # Compares the generated presWAT files files known to be correct.
+        # Note these test cases are configured with beta values such that
+        # the non-darcy and darcy flow results are the same.
+        # See non_darcy test for non-darcy non linear flow results
+        # This test may be modified with non-darcy removed eventually.
         #
         # .. Authors: Terry Miller modified from George tests for ndar
 
@@ -434,6 +438,15 @@ class fehmTest(unittest.TestCase):
         # .. Updated: June 2014 by Mark Lange
         
         self.test_case('multi_solute')
+
+    def non_darcy(self):
+        # Test non-darcy flow liquid and gas 2D
+        #
+        # Under development with George Z. and not included under default yet.
+        #
+        # .. Authors: Terry Miller modified from George tests for ndar
+
+        self.test_case('non_darcy')
 
     def perm_test(self):
         # Test perm_test
@@ -1482,6 +1495,7 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('henrys_law', log))
         suite.addTest(fehmTest('mptr', log))
         suite.addTest(fehmTest('multi_solute', log))
+        suite.addTest(fehmTest('non_darcy', log))
         suite.addTest(fehmTest('perm_test', log))
         suite.addTest(fehmTest('potential_energy', log))
         suite.addTest(fehmTest('ramey', log))
