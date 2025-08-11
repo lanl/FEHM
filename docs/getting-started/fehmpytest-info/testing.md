@@ -99,6 +99,18 @@ OK
 
 ```
 
+The following shows a command running the single test **non-darcy**. The ``-l`` flag will write a *fail_log.txt* if there are errors.
+
+```
+python fehmpytests.py -l ../src/xfehm non_darcy
+non_darcy (__main__.fehmTest.non_darcy) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 2.220s
+
+OK
+```
+
 
 ## V&V Verification Test Suite ##
 
