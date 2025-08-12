@@ -234,7 +234,7 @@ c*******************************
             endif     
          endif         
       endif
- 99   format(/,1x'Time step ',i6,' Days'1x,f9.2)   
+ 99   format(/,1x,'Time step ',i6,' Days'1x,f9.2)   
  100  format(1x,'Number of damaged gridblocks (gt 0.01 k/k0 ) ', 1x,i6)
  101  format(1x,'Largest tensile stresses in damaged zone')
  102  format(1x,'Node ',i6,1x,'Sxx ',g12.4,1x,'Kxx ',
