@@ -17,7 +17,7 @@ hero_height: is-hidden
 ---
 
 
-Use fehmpytests to test changes to FEHM to ensure correct simulation. Fehmpytests can be run in four different modes, default, admin, developer (currently in development), and solo which each run a set of tests. Currently, default and admin mode run the same set of tests and solo mode runs a single test. Developer mode is not implemented yet but will run a subset of admin tests. Please ensure that you are using Python3
+Use fehmpytests to test changes to FEHM to ensure correct simulation. Fehmpytests can be run in four different modes, default, admin, developer (currently in development), and solo which each run a set of tests. Currently, default and admin mode run the same set of tests and solo mode runs a single test. Developer mode is not implemented yet but will run a subset of admin tests. Please ensure that you are using Python >3.5.
 
 ## Testing in Default Mode
 
