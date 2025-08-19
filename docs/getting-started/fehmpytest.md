@@ -14,7 +14,7 @@ to easily test new code and add new tests for existing or future functionality. 
 Future plans are to integrate it into the FEHM build process and provide more 
 modularity by improving the devloper interface. 
 
-Fehmpytests requires Python 3
+Fehmpytests requires Python >3.5. 
 
 
 ## Topics

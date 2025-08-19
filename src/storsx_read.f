@@ -76,7 +76,7 @@ c local
       integer, allocatable :: istrw_temp(:)
       real*8 tot
 c      character*100 filename, tail
-      character*120 filename, tail
+      character*200 filename, tail
       character*72 cline
       character*32 sxformat
       character*3 stat_var

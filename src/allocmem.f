@@ -814,8 +814,7 @@ c     ***** COMMON Block fdd1 *****
 c         allocate(diffmfl(nspeci,n0))
 c         allocate(tclx(1,n0),tcly(1,n0),tclz(1,n0))
          allocate(diffmfl(nspeci,maxlayers))
-         allocate(tclx(1,maxlayers),
-     &   tcly(1,maxlayers),tclz(1,maxlayers))
+         allocate(tclx(1,maxlayers),tcly(1,maxlayers),tclz(1,maxlayers))
       elseif(.not.sptrak) then
          allocate(diffmfl(totcomalloc,totnum))
          allocate(tclx(totcomalloc,totnum),tcly(totcomalloc,totnum),
@@ -1009,8 +1008,8 @@ c     open t1-t13 space
       allocate(t5(nn),t5v(nn),t6(nn),t7(nn))
 c RJP 04/08/07 added t13 for diffusion terms.
       allocate(t8(nn),t9(nn),t10(nn),t13(nn),t14(nn),t15(nn),t17(nn))
-c gaz 120724 added t18 1nd t19 for ND flow  
-      allocate(t18(nn),t19(nn),t8_nd(nn),t9_nd(nn))
+c gaz 120724 added t18 1nd t19 for ND flow 090625 added t5_nd 
+      allocate(t18(nn),t19(nn),t8_nd(nn),t9_nd(nn),t5_nd(nn))
       allocate(it4(nn),it5(nn),it6(nn),it8(nn),it8a(nn))
       allocate(it9(nn),it10(nn),it11(nn),it12(nn),it13(nn))
       allocate(it9a(nn),it10a(nn),it11a(nn),it12a(nn),it13a(nn))

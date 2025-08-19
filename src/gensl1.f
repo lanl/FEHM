@@ -1,4 +1,4 @@
-      subroutine gensl1
+      subroutine gensl1 
 !***********************************************************************
 !  Copyright, 2004,  The  Regents  of the  University of California.
 !  This program was prepared by the Regents of the University of 
@@ -124,6 +124,8 @@ C***********************************************************************
       use comai
       use comriv
       use comcouple
+c gaz 120225   
+      use com_nondarcy
       implicit none
 
       integer ndex(2)
@@ -208,8 +210,11 @@ c
          call geneq1_well(id)
         else if(ianpe.ne.0) then 
          call geneq1_ani(id)
+c gaz 120225          
+        else if(nd_flow) then
+         call geneq1_w_nondarcy(id)
         else
-         call geneq1(id)
+         call geneq1(id)        
         endif
       enddo
       do id=1,neq

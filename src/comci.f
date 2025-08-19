@@ -311,6 +311,14 @@
       real*8, pointer :: drvef(:)
       real*8, pointer :: drvpf(:)
 
+c gaz  020425 added parameters for non-darcy  Not using shared space
+      real*8, allocatable :: rlf_nd(:)
+      real*8, allocatable :: drlef_nd(:)
+      real*8, allocatable :: drlpf_nd(:)
+      real*8, allocatable :: rvf_nd(:)
+      real*8, allocatable :: drvef_nd(:)
+      real*8, allocatable :: drvpf_nd(:)
+
 ! Not using shared space
       real*8, pointer ::   dvas(:)
       real*8, allocatable ::   denci(:)

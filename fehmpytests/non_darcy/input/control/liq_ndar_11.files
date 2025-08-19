@@ -1,0 +1,12 @@
+input: ../input/liq_ndar_11.in
+grida: ../input/mdat_2d_simple.grid
+outp:liq_ndar_11.out
+root:liq_ndar_11
+check:liq_ndar_11.chk
+
+all  
+
+rsti: ../input/non_darcy_2D.ini_liq
+nopf: ../input/non_darcy_2D2.nop
+
+

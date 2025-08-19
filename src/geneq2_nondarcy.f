@@ -655,19 +655,26 @@ c axyd units m**2*(area/dis)*Mpa
                daxydei=pxy*dpvti+0.5*sx4d*dgle(i)*
      &                    (cord(kz,igrav)-cord(iz,igrav))
                daxydekb=-pxy*dpcef(kb)+0.5*sx4d*dgle(kb)
-     &                    *(cord(kz,igrav)-cord(iz,igrav))
+     &                    *(cord(kz,igrav)-cord(iz,igrav))      
                t8(neighc)=axyd
-
+               fid=0.5
+c gaz 220125,250525 removed upwind for liq
+                 if(axyd.lt.0.0) fid=dnwgt
+                 if(axyd.gt.0.0) fid=upwgt
+                 fid1= 1.d0-fid
                 aij = abs(t5(neighc)) 
-                kij = t15(neighc)*1.d-6
-               call nd_props(0,icd,1,iq,i,kb,jm,0.5d0)
+                xrl_nd = fid*rlf_nd(kb)+fid1*rlf_nd(i)
+                kij = t15(neighc)*1.d-6*xrl_nd
+                call nd_props(0,icd,1,iq,i,kb,jm,0.5d0)
+                vel_nd = axyd/(aij*muij+kij_tol)
+
                 call nd_flow_vel(1,icd,1,iq,axyd,vel_nd,aij,kij,
-     &          fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm)
+     &                fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm)
                 aij = abs(t5(neighc)) 
 c gaz 090125                
                 axyd_nd = vel_nd*aij*muij
                 call nd_flow_vel(2,icd,1,iq,axyd,vel_nd,aij,kij,
-     &          fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm)  
+     &                fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm)  
     
 c determine upwind direction
 c find upwinding
@@ -727,7 +734,7 @@ c   gaz db 010125            aij=abs(t5(neighc)
                   dlaei_nd = t18(neighc)
                   dlaekb_nd = t19(neighc)
                   dlaei_nd=dlaei_nd*axyf+axyd_nd*fid1*dilei
-                  dlaekb_nd=dlaekb_nd*axyf+axyd_nd*fid*dilekb
+                  dlaekb_nd=dlaekb_nd*axyf+axyd_nd*fid*dilekb          
                 endif
                 continue
 
@@ -774,8 +781,7 @@ c
      *              *(cord(kz,igrav)-cord(iz,igrav))
                t8(neighc)=vxyd
 c vxyd units m**2*(area/dis)*Mpa
-               aij=abs(t5(neighc))
-               kij = t15(neighc)*1.d-6
+
                   divkb=div(kb)
                   divpkb=divp(kb)
                   divekb=dive(kb)                
@@ -789,12 +795,21 @@ c vxyd units m**2*(area/dis)*Mpa
                daxydpkb = pvxy+dg_termpkb
 
                daxydei= 0.5*sx4d*dgve(i)*
-     &                 (cord(kz,igrav)-cord(iz,igrav))
+     &                    (cord(kz,igrav)-cord(iz,igrav))
                daxydekb= 0.5*sx4d*dgve(kb)
-     &                 *(cord(kz,igrav)-cord(iz,igrav)) 
+     &                    *(cord(kz,igrav)-cord(iz,igrav))
                call nd_props(0,icd,1,iq,i,kb,jm,0.5d0)
-c gaz 112424                
-
+c gaz 112424 
+c vxyd is the darcy based velocity
+c                fid = 0.5d0
+c gaz 220525 added upwind calc
+c                if(vxyd.lt.0.0) fid=dnwgt
+c                if(vxyd.gt.0.0) fid=upwgt
+c                fid1= 1.d0-fid
+               aij=abs(t5(neighc))
+               xrv_nd = fid*rvf_nd(kb)+fid1*rvf_nd(i)  
+               kij = t15(neighc)*1.d-6
+                vel_nd = vxyd/(aij*muvij+kij_tol)  
                 call nd_flow_vel(3,icd,1,iq,vxyd,vel_nd,aij,kij,
      &               fid,dvapi_nd,dvapkb_nd,dvaei_nd,dvaekb_nd,i,kb,jm)
                 aij = abs(t5(neighc))
@@ -896,16 +911,16 @@ c gaz 111124
                 continue
 c gaz_testing  121424
        if(nd_test_write.gt.0) then
-        if(i.eq.1.and.kb.eq.21.and.iad.eq.0) then
-         write(55,181)l,i,kb,vxy,dvapi,dvapkb,
-     &    dvaei,dvaekb,vxy_nd,dvapi_nd,dvapkb_nd,dvaei_nd,dvaekb_nd
-       else if(i.eq.360.and.kb.eq.380.and.iad.eq.0) then
-         write(56,181)l,i,kb,vxy,dvapi,dvapkb,
-     &    dvaei,dvaekb,vxy_nd,dvapi_nd,dvapkb_nd,dvaei_nd,dvaekb_nd
-       else if(i.eq.365.and.kb.eq.385.and.iad.eq.0) then
-         write(57,181)l,i,kb,vxy,dvapi,dvapkb,
-     &    dvaei,dvaekb,vxy_nd,dvapi_nd,dvapkb_nd,dvaei_nd,dvaekb_nd
-       endif
+c        if(i.eq.1.and.kb.eq.21.and.iad.eq.0) then
+c         write(55,181)l,i,kb,vxy,dvapi,dvapkb,
+c     &    dvaei,dvaekb,vxy_nd,dvapi_nd,dvapkb_nd,dvaei_nd,dvaekb_nd
+c       else if(i.eq.360.and.kb.eq.380.and.iad.eq.0) then
+c         write(56,181)l,i,kb,vxy,dvapi,dvapkb,
+c     &    dvaei,dvaekb,vxy_nd,dvapi_nd,dvapkb_nd,dvaei_nd,dvaekb_nd
+c       else if(i.eq.365.and.kb.eq.385.and.iad.eq.0) then
+c         write(57,181)l,i,kb,vxy,dvapi,dvapkb,
+c     &    dvaei,dvaekb,vxy_nd,dvapi_nd,dvapkb_nd,dvaei_nd,dvaekb_nd
+c       endif
 181    format(t1,i5,t9,i6,t17,i6,1p,5(1x,g16.6),/,t23,5(1x,g16.6))
 c gaz 230125 moved endif up (consistent with 2D ?)
        endif
@@ -1017,26 +1032,32 @@ c axyd units m**2*(area/dis)*Mpa
      &                (cord(kz,igrav)-cord(iz,igrav))
                daxydpi = -pxy+dg_termpi
                daxydpkb = pxy+dg_termpkb
-
-               daxydei=pxy*dpvti+0.5*sx4d*dgle(i)*
+               if(irdof.ne.13) then
+                daxydei=pxy*dpvti+0.5*sx4d*dgle(i)*
      &                    (cord(kz,igrav)-cord(iz,igrav))
-               daxydekb=-pxy*dpcef(kb)+0.5*sx4d*dgle(kb)
+                daxydekb=-pxy*dpcef(kb)+0.5*sx4d*dgle(kb)
      &                    *(cord(kz,igrav)-cord(iz,igrav))
+               endif
                t8(neighc)=axyd
-c   gaz db 010125            aij=abs(t5(neighc)
-
-                aij=abs(t5(neighc))             
-                kij = t15(neighc)*1.d-6
-               call nd_props(0,icd,1,iq,i,kb,jm,0.5d0)
-
+c   
+                 fid=0.5
+c gaz 220125 removed upwind for liq
+                 if(axyd.lt.0.0) fid=dnwgt
+                 if(axyd.gt.0.0) fid=upwgt
+                 fid1= 1.d0-fid
+                aij = abs(t5(neighc)) 
+                xrl_nd = fid*rlf_nd(kb)+fid1*rlf_nd(i)
+                kij = t15(neighc)*1.d-6*xrl_nd
+                call nd_props(0,icd,1,iq,i,kb,jm,0.5d0)
+                vel_nd = axyd/(aij*muij+kij_tol)
                 call nd_flow_vel(1,icd,1,iq,axyd,vel_nd,aij,kij,
-     &           fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm) 
+     &                fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm) 
                  aij = abs(t5(neighc)) 
 c gaz 090125
                  axyd_nd = vel_nd*muij*aij
 
                 call nd_flow_vel(2,icd,1,iq,axyd,vel_nd,aij,kij,
-     &           fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm)  
+     &                fid,dlapi_nd,dlapkb_nd,dlaei_nd,dlaekb_nd,i,kb,jm)  
     
 c determine upwind direction
 c find upwinding
@@ -1137,7 +1158,7 @@ c                aij = abs(t5(neighc))
                   dlaei_nd = t18(neighc)
                   dlaekb_nd = t19(neighc)
                   dlaei_nd=dlaei_nd*axyf+axyd_nd*fid1*dilei
-                  dlaekb_nd=dlaekb_nd*axyf+axyd_nd*fid*dilekb
+                  dlaekb_nd=dlaekb_nd*axyf+axyd_nd*fid*dilekb    
                 endif
                 continue
 c
@@ -1180,10 +1201,14 @@ c
                vxyd=pxyh+0.5*sx4h*(rovf(i)+rovf(kb))
      *              *(cord(kz,igrav)-cord(iz,igrav))
                t8(neighc)=vxyd
+                 fid=0.5
+c                 if(vxyd.lt.0.0) fid=dnwgt
+c                 if(vxyd.gt.0.0) fid=upwgt
+                 fid1 = 1.0d0-fid
 c vxyd units m**2*(area/dis)*Mpa
 c   gaz db 010125            aij=abs(t5(neighc)
-               aij = abs(t5(neighc))
-               kij = t15(neighc)*1.d-6
+c               aij = abs(t5(neighc))
+c               kij = t15(neighc)*1.d-6
                   divkb=div(kb)
                   divpkb=divp(kb)
                   divekb=dive(kb) 
@@ -1193,11 +1218,7 @@ c   gaz db 010125            aij=abs(t5(neighc)
      &                 (cord(kz,igrav)-cord(iz,igrav))
                   dg_termpkb = 0.5*sx4h*dgvp(kb)*
      &                 (cord(kz,igrav)-cord(iz,igrav))
-c                  dvpi=-pvxy + dg_termpi
-c                  dvpkb=pvxy + dg_termpkb
-c                  dvei=0.5*sx4h*dgve(i)*(cord(kz,igrav)-cord(iz,igrav))
-c                  dvekb=0.5*sx4h*dgve(kb)
-c     *                 *(cord(kz,igrav)-cord(iz,igrav))
+
                daxydpi = -pvxy+dg_termpi
                daxydpkb = pvxy+dg_termpkb
 
@@ -1208,12 +1229,21 @@ c     *                 *(cord(kz,igrav)-cord(iz,igrav))
                call nd_props(0,icd,1,iq,i,kb,jm,0.5d0)
 c gaz 112424                
 c vxyd is the darcy based velocity
+c                fid = 0.5d0
+c gaz 220525 added upwind calc
+c                if(vxyd.lt.0.0) fid=dnwgt
+c                if(vxyd.gt.0.0) fid=upwgt
+c                fid1= 1.d0-fid
+                aij = abs(t5(neighc)) 
+                xrv_nd = fid*rvf_nd(kb)+fid1*rvf_nd(i)                              
+                kij = t15(neighc)*1.d-6*xrv_nd
+                call nd_props(0,icd,1,iq,i,kb,jm,0.5d0)
+                vel_nd = vxyd/(aij*muvij+kij_tol)           
                 call nd_flow_vel(3,icd,1,iq,vxyd,vel_nd,aij,kij,
      &               fid,dvapi_nd,dvapkb_nd,dvaei_nd,dvaekb_nd,i,kb,jm)
 c gaz 050125
                 aij = abs(t5(neighc))
                 vxyd_nd = vel_nd*aij*muvij
-c                vxyd_nd = vel_nd*muvij
                 call nd_flow_vel(4,icd,1,iq,vxyd,vel_nd,aij,kij,
      &               fid,dvapi_nd,dvapkb_nd,dvaei_nd,dvaekb_nd,i,kb,jm)
 
@@ -1222,6 +1252,7 @@ c find upwinding
                  fid=0.5
                  if(vxyd_nd.lt.0.0) fid=dnwgt
                  if(vxyd_nd.gt.0.0) fid=upwgt
+                 fid1 = 1.0d0-fid
                  t9_nd(neighc)=fid  
 c gaz 103024 need derivatived muij
                aij = abs(t5(neighc))
@@ -1294,531 +1325,7 @@ c
       
       return
       end
-      subroutine nd_flow_vel(iflg,icd,i1,iq,axyd,velij,aij,kij,
-     &                      fid,dvelpi,dvelpj,dvelei,dvelej,i,j,jm)
-      use comflow
-      use davidi
-      use comji
-      use comfi
-      use comgi
-      use comei
-      use comdi
-      use comci
-      use combi
-      use comdti
-      use comwellphys
-      use comai
-      use com_nondarcy
-      implicit none
-
-      integer iflg,inr,i,j,i1,iq,iz,kz
-      integer jm,kb,icd,neighc, ik, ik_max
-      real*8 r_velij,dr_velij_dv,betaij,velij,fid,fid1
-      real*8 axyd,axyf,dlapi,dlapj,dili,dilpi,dilj,dilpj,rol_i
-      real*8 rol_j,drolp_i,drolp_j,dvelpi,dvelpj,dvelei,dvelej
-      real*8 axyij,dilij,pxy,kij,axy_nd,aij,disij
-      real*8 dis, phi_i, phi_j
-      real*8 dis2, delx2, dely2, delz2
-      real*8 sx4d, pxyi, term1, term2
-      real*8 a_nd, b_nd, c_nd, devli, devlj
-c gaz 270125 moved v_tol to com_nondarcy
-      real*8 r_vel,dr_velv,fac_nd
-      real*8  velij0,coef0,coef1,coef2
-      real*8  dcndpi,dcndpj,dandpi,dandpj,dbndpi,dbndpj  
-      real*8  dcndei,dcndej,dandei,dandej,dbndei,dbndej  
-      real*8 s_i,s_j
-      real*8 velij_2,d_velij_2, dvel
-      if(iflg.eq.0) then
-c darcy law liquid phase
-        delx2=(cord(j,1)-cord(i,1))**2
-        dely2=(cord(j,2)-cord(i,2))**2
-        delz2=(cord(j,3)-cord(i,3))**2            
-        dis2=delx2+dely2+delz2
-        dis = sqrt(dis2)
-        phi_j = phi(j)
-        phi_i = phi(i)
-c  pressure is in Pa 
-        if(irdof.ne.13) then     
-         phi_j = phi_j - pcp(j)
-         phi_i = phi_i - pcp(i)
-        endif
-         phi_grad = -(1.d6*(phi_j-phi_i)/dis)         
-         velij = phi_grad*(kij/muij) + g_term/muij 
-         continue
-      else if(iflg.eq.-1) then  
-c darcy derivatives (Pa/m)
-        delx2=(cord(j,1)-cord(i,1))**2
-        dely2=(cord(j,2)-cord(i,2))**2
-        delz2=(cord(j,3)-cord(i,3))**2            
-        dis2=delx2+dely2+delz2
-        dis = sqrt(dis2)
-c
-        dvelpi = 1.d6/dis*(kij/muij) + phi_grad*(-kij/muij**2)*dmuijpi+
-     &     dg_termpi/muij
-        dvelpj =-1.d6/dis*(kij/muij) + phi_grad*(-kij/muij**2)*dmuijpj+
-     &     dg_termpkb/muij
-       if(irdof.ne.13) then 
-c note muij only depends on total pressure
-c phi_i = phi_i - pcp(i)
-        dvelei = -1.d6*dpcef(i)/dis*(kij/muij) 
-        dvelej = 1.d6*dpcef(j)/dis*(kij/muij) 
-       endif
-      continue
-      else if(iflg.eq.-2) then
-c darcy law gas phase
-        delx2=(cord(j,1)-cord(i,1))**2
-        dely2=(cord(j,2)-cord(i,2))**2
-        delz2=(cord(j,3)-cord(i,3))**2            
-        dis2=delx2+dely2+delz2
-        dis = sqrt(dis2)
-        phi_j = phi(j)
-        phi_i = phi(i)
-c  pressure is in Pa  
-c  add     
-        phi_grad = -(1.d6*(phi_j-phi_i)/dis)          
-        velij = phi_grad*(kij/muvij) + g_term/muvij  
-        continue
-      else if(iflg.eq.-3) then  
-c darcy derivatives (Pa/m)
-        delx2=(cord(j,1)-cord(i,1))**2
-        dely2=(cord(j,2)-cord(i,2))**2
-        delz2=(cord(j,3)-cord(i,3))**2            
-        dis2=delx2+dely2+delz2
-        dis = sqrt(dis2)
-      dvelpi = 1.d6/dis*(kij/muvij) 
-     &     + phi_grad*(-kij/muvij**2)*dmuvijpi+
-     &     dg_termpi/muvij
-      dvelpj =-1.d6/dis*(kij/muvij) 
-     &     + phi_grad*(-kij/muvij**2)*dmuvijpj+
-     &     dg_termpkb/muvij
-      continue
-      else if(iflg.eq.1) then
-
-c      this is now called after variable update 
-    
-
-        delx2=(cord(j,1)-cord(i,1))**2
-        dely2=(cord(j,2)-cord(i,2))**2
-        delz2=(cord(j,3)-cord(i,3))**2            
-        dis2=delx2+dely2+delz2
-        dis = sqrt(dis2)
-        phi_j = phi(j)
-        phi_i = phi(i)
-c gaz 111324     
-         if(irdof.ne.13) then
-          phi_j = phi(j)-pcp(j)
-          phi_i = phi(i)-pcp(i)
-         endif
-c  pressure is in Pa   
-c gaz 090125 (da.mo.yr)     
-c        phi_grad = -(1.d6*(phi_j-phi_i)/dis)     
-        rolij = 0.5d0*(rolf(j)+rolf(i))
-        betaij = 0.5d0*(nd_beta(j) + nd_beta(i)) 
-
-        c_nd = axyd 
-        b_nd = muij*aij
-        a_nd = (kij*aij)*rolij*betaij
-c        a_nd = 0.0d0
-c gaz 092224 use NR  
-        ik_max = 20
-        velij = c_nd/(b_nd+vel_tol_min)
-        v_tol = abs(velij*1.d-3) + vel_tol_min
-c
-        dvel =  max(v_tol*1.d-2,vel_tol_min)
-c
-        do ik = 1, ik_max
-c note  velij**2 to velij*abs(velij)
-        velij_2 = velij*abs(velij)
-
-c    d_velij_2 = 2.0d0*velij
-          d_velij_2 = 
-     &    ((velij+dvel)*abs(velij+dvel)-velij*abs(velij))/dvel
-
-          r_vel = -c_nd+b_nd*velij+a_nd*velij_2
-          dr_velv = b_nd + a_nd*d_velij_2
-          if(abs(r_vel).lt.v_tol.and.ik.gt.1) then
-           velij = velij-r_vel/(dr_velv+v_tol)
-           go to 99
-          else
-           velij = velij-r_vel/(dr_velv+v_tol)
-          endif
-        enddo
-c gaz debug 121024
-       if(ik.ge.ik_max) then
-        write(ierr,444) 'liquid', l,i,j,iad,r_vel, velij
-444     format(a6,1x,'ts ',i7,' i ',i7,' j ',i7,i7,' iad',i3,
-     &    ' resid ',g14.7,' velij ',g14.7,/)
-       write(iout,444) 'liquid', l,i,j,iad,r_vel, velij
-       continue
-       endif
-99     if(velij.gt.0.0) then
-         fid= dnwgt
-       else if(velij.lt.0.0) then
-         fid=upwgt
-       endif
-        continue
-      else if(iflg.eq.2) then
-c     
-c liquid phase calculations
-c velocity derivatives
-c
-
-              delx2=(cord(j,1)-cord(i,1))**2
-              dely2=(cord(j,2)-cord(i,2))**2
-              delz2=(cord(j,3)-cord(i,3))**2            
-              dis2=delx2+dely2+delz2
-              dis = sqrt(dis2)
-              if(irdof.ne.13) then
-               phi_j = phi(j)-pcp(j)
-               phi_i = phi(i)-pcp(i)
-              endif
-c  pressure is in now Pa includes cap pressure      
-c               phi_grad = -(1.d6*(phi_j-phi_i)/dis)     
-c               rolij = 0.5d0*(rolf(j)+rolf(i))
-c               betaij = 0.5d0*(nd_beta(j) + nd_beta(i)) 
-c               b_nd = kij/muij
-c gaz 100125 changed velij equation and derivatives
-               rolij = 0.5d0*(rolf(j)+rolf(i))
-               betaij = 0.5d0*(nd_beta(j) + nd_beta(i)) 
-               b_nd = muij*aij
-               a_nd = (kij*aij)*rolij*betaij
-c gaz 100125
-               dbndpi = aij*dmuijpi
-               dbndpj = aij*dmuijpj
-               a_nd = (kij*aij)*rolij*betaij
-c gaz 100125   
-               dandpi =  (kij*aij)*betaij*drolijpi 
-               dandpj =  (kij*aij)*betaij*drolijpj
-               c_nd =  axyd
-               dcndpi= daxydpi
-               dcndpj= daxydpkb
-
-
-c residual eq: 0.0 = r_vel = -c_nd+b_nd*velij+a_nd*velij_2
-c dvelij/dpi:
-
-c gaz mod 270125
-
-             dvel =  max(v_tol*1.d-2,vel_tol_min)
-             velij_2 = velij*abs(velij)
-             d_velij_2 = 2.0d0*velij
-c        d_velij_2 = ((velij+dvel)*abs(velij+dvel)-velij*abs(velij))/dvel
-c             dvelpi = (-b_nd*dcndpi-dbndpi*c_nd+dg_termpi/muij+
-c     &                dandpi*velij_2)/(1.0d0+a_nd*d_velij_2)  
-c             dvelpj = (-b_nd*dcndpj-dbndpj*c_nd+dg_termpkb/muij+
-c     &                dandpj*velij_2)/(1.0d0+a_nd*d_velij_2)  
-
-             dvelpi = (-dcndpi-velij*(dbndpi+dandpi*abs(velij)))
-     &                /(-b_nd-a_nd*d_velij_2+v_tol)  
-             dvelpj = (-dcndpj-velij*(dbndpj+dandpj*abs(velij)))
-     &                /(-b_nd-a_nd*d_velij_2+v_tol)   
-
-c gaz add d/ds for cap pressure
-            if(irdof.ne.13) then
-              s_i = s(i)
-              s_j = s(j)
-              dcndei = daxydei
-              dcndej = daxydekb
-              dbndei = 0.0d0
-              dbndej = 0.0d0
-              dandei = 0.0d0
-              dandej = 0.0d0
-
-             dvelei = (-dcndei-velij*(dbndei+dandei*abs(velij)))
-     &                /(-b_nd-a_nd*d_velij_2+v_tol)  
-             dvelej = (-dcndej-velij*(dbndej+dandej*abs(velij)))
-     &                /(-b_nd-a_nd*d_velij_2+v_tol)                   
-            endif
-            continue
-      else if(iflg.eq.3) then
-
-c calculate gas velocity
-c      this is now called after variable update     
-        delx2=(cord(j,1)-cord(i,1))**2
-        dely2=(cord(j,2)-cord(i,2))**2
-        delz2=(cord(j,3)-cord(i,3))**2            
-        dis2=delx2+dely2+delz2
-        dis = sqrt(dis2)
-        phi_j = phi(j)
-        phi_i = phi(i)
-c  pressure is in Pa        
-c        phi_grad = -(1.d6*(phi_j-phi_i)/dis)     
-c gaz 103024    
-        betaij = 0.5d0*(nd_beta(j) + nd_beta(i)) 
-c c_nd pressure gradient
-c        c_nd = phi_grad
-c        b_nd = kij/muvij
-c        a_nd = (kij/muvij)*rovij*betaij
-c axyd is vxyd
-        c_nd = axyd 
-        b_nd = muvij*aij
-        a_nd = (kij*aij)*rovij*betaij
-c gaz mod 270125
-       ik_max = 20
-        velij = c_nd/(b_nd+vel_tol_min)
-        v_tol = abs(velij*1.d-3) + vel_tol_min
-        dvel =  max(v_tol*1.d-2,vel_tol_min)
-        velij_2 = velij*abs(velij)
-        do ik = 1, ik_max
-        velij_2 = velij*abs(velij)
-c        d_velij_2 = 2.0d0*velij
-          d_velij_2 = ((velij+dvel)*abs(velij+dvel)
-     &    -velij*abs(velij))/dvel
-          r_vel = -c_nd+b_nd*velij+a_nd*velij_2
-          dr_velv = b_nd + a_nd*d_velij_2
-          if(abs(r_vel).lt.v_tol.and.ik.gt.1) then
-           velij = velij-r_vel/(dr_velv+v_tol)
-           go to 199
-          else
-           velij = velij-r_vel/(dr_velv+v_tol)
-          endif
-        enddo
-        continue
-       if(ik.ge.ik_max) then
-        write(ierr,444) 'vapor ', l,i,j,iad,r_vel, velij
-        write(iout,444) 'vapor ', l,i,j,iad,r_vel, velij 
-        continue
-       endif
-199     if(velij.gt.0.0) then
-         fid= dnwgt
-       else if(velij.lt.0.0) then
-         fid=upwgt
-       endif
-
-        continue
-      else if(iflg.eq.4) then
-c     
-c gas phase calculations
-c velocity derivatives
-c
-              delx2=(cord(j,1)-cord(i,1))**2
-              dely2=(cord(j,2)-cord(i,2))**2
-              delz2=(cord(j,3)-cord(i,3))**2            
-              dis2=delx2+dely2+delz2
-              dis = sqrt(dis2)
-c               phi_j = phi(j)
-c               phi_i = phi(i)
-c  pressure is in now Pa       
-c               phi_grad = -(1.d6*(phi_j-phi_i)/dis)     
-c               betaij = 0.5d0*(nd_beta(j) + nd_beta(i)) 
-c               b_nd = kij/muvij
-c gaz 100125 changed velij equation and derivatives
-               rovij = 0.5d0*(rovf(j)+rovf(i))
-               betaij = 0.5d0*(nd_beta(j) + nd_beta(i)) 
-               b_nd = muvij*aij
-               a_nd = (kij*aij)*rovij*betaij
-               dbndpi = -kij*(1.0d0/muvij)**2*dmuvijpi
-               dbndpj = -kij*(1.0d0/muvij)**2*dmuvijpj
-               a_nd = (kij/muvij)*rovij*betaij
-c gaz 100125
-               dbndpi = aij*dmuvijpi
-               dbndpj = aij*dmuvijpj
-               a_nd = (kij*aij)*rovij*betaij
-c gaz 100125   
-               dandpi =  (kij*aij)*betaij*drovijpi 
-               dandpj =  (kij*aij)*betaij*drovijpj
-c axyd is vxyd for velocity
-               c_nd =  axyd
-               dcndpi= daxydpi
-               dcndpj= daxydpkb
-c residual eq: 0.0 = -c_nd*b_nd+velij+a_nd*velij**2
-c r_vel = -(c_nd*b_nd)+g_term/muvij+velij+a_nd*velij**2
-c dvelij/dpi:
-c gaz 121324 velij_2
-        v_tol = abs(velij*1.d-3) + vel_tol_min
-c
-        dvel =  max(v_tol*1.d-2,1.d-12)
-c        velij = c_nd*b_nd
-             velij_2 = velij*abs(velij)
-c       
-c        d_velij_2 = ((velij+dvel)*abs(velij+dvel)-velij*abs(velij))/dvel
-             d_velij_2 = 2.d0*velij
-c             dvelpi = (-b_nd*dcndpi-dbndpi*c_nd+dg_termpi/muvij+
-c     &                dandpi*velij_2)/(1.0d0+2.0d0*a_nd*d_velij_2)  
-c             dvelpj = (-b_nd*dcndpj-dbndpj*c_nd+dg_termpkb/muvij+
-c     &                dandpj*velij_2)/(1.0d0+2.0d0*a_nd*d_velij_2)  
-             dvelpi = (-dcndpi-velij*(dbndpi+dandpi*abs(velij)))
-     &                /(-b_nd-a_nd*d_velij_2+v_tol)  
-             dvelpj = (-dcndpj-velij*(dbndpj+dandpj*abs(velij)))
-     &                /(-b_nd-a_nd*d_velij_2+v_tol)   
-            continue
-      endif
-      return
-      end                                                  
-c
-      subroutine nd_props(iflg,icd,i1,iq,i,j,jm,fid)
-c gaz 102724
-c propertirs for ND vel calc
-      use comflow
-      use davidi
-      use comji
-      use comfi
-      use comgi
-      use comei
-      use comdi
-      use comci
-      use combi
-      use comdti
-      use comwellphys
-      use comai
-      use com_nondarcy
-      use com_prop_data, only : den_h2o, enth_h2o, visc_h2o, humid_h2o,
-     & psat_h2o, den_ngas, enth_ngas, visc_ngas, xnl_ngas, ieval_flag  
-      implicit none
-
-      integer iflg,inr,i,j,i1,iq,iz,kz
-      integer jm,kb,icd,neighc, ik, ik_max
-      real*8      rol_i,   rol_j     
-      real*8  	   drolp_i, drolp_j	 	 
-      real*8  	   drolt_i, drolt_j	 	 
-      real*8  	   rov_i,   rov_j	 	 
-      real*8  	   ros_i,   ros_j     
-      real*8  	   drovp_i, drovp_j	 	 
-      real*8  	   drovt_i, drovt_j   
-      real*8      enl_i,   enl_j	 	 
-      real*8      dhlp_i,  dhlp_j	 	 
-      real*8      dhlt_i,  dhlt_j	 	 
-      real*8      env_i,   env_j	 	 
-      real*8	     ens_i,   ens_j     
-      real*8      dhvp_i,  dhvp_j	 	 
-      real*8      dhvt_i,  dhvt_j	 	 
-      real*8      xvisl_i, xvisl_j   
-      real*8 	    dvislp_i,dvislp_j  
-      real*8 	    dvislt_i, dvislt_j 
-      real*8 	    xvisv_i, xvisv_j   
-      real*8 	    vis_i,   vis_j     
-      real*8 	    dvisvp_i,dvisvp_j  
-      real*8 	    dvisvt_i,dvisvt_j  
-c 
-      real*8  fid, fid1     
-      real*8 xvisl_temp
-      if(iflg.eq.0) then
-       fid1 = 1.d0-fid
-       if(ico2.lt.0.and.irdof.eq.13) then     
-c fully saturated isothermal flow  
-c gaz 110324
-c        xvisl_temp = 1.0d-3            
-        rol_i     =  den_h2o(i,1) 
-        rol_j     =  den_h2o(j,1) 
-        drolp_i	  =  den_h2o(i,2) 
-        drolp_j	  =  den_h2o(j,2) 
-        drolijpi = drolp_i*fid1
-        drolijpj = drolp_j*fid
-        xvisl_i = visc_h2o(i,1) 
-        xvisl_j = visc_h2o(j,1)
-        dvislp_i = visc_h2o(i,2) 
-        dvislp_j = visc_h2o(i,2) 
-        muij = xvisl_j*fid + xvisl_i*fid1
-        dmuijpi =  dvislp_i*fid1
-        dmuijpj =  dvislp_j*fid
-        rolij = rol_j*fid + rol_i*fid1
-
-       else if(ico2.lt.0) then
-c isothermal 2 phase
-c i       
-        rol_i     =  den_h2o(i,1) 
-        drolp_i	  =  den_h2o(i,2) 
-        rov_i	  =  den_h2o(i,4) 
-        ros_i     =  rov_i
-        drovp_i	  =  den_h2o(i,5) 
-        xvisl_i   =  visc_h2o(i,1)
-        dvislp_i  =  visc_h2o(i,2)
-        xvisv_i   =  visc_h2o(i,4)
-        vis_i     =  xvisv_i
-        dvisvp_i  =  visc_h2o(i,5)  
-c j
-        rol_j     =  den_h2o(j,1) 
-        drolp_j	  =  den_h2o(j,2) 
-        rov_j	  =  den_h2o(j,4) 
-        ros_j     =  rov_j
-        drovp_j	  =  den_h2o(j,5) 
-        xvisl_j   =  visc_h2o(j,1)
-        dvislp_j  =  visc_h2o(j,2)
-        xvisv_j   =  visc_h2o(j,4)
-        vis_j     =  xvisv_j
-        dvisvp_j  =  visc_h2o(j,5)  
-        muij = xvisl_j*fid + xvisl_i*fid1
-        dmuijpi =  dvislp_i*fid1
-        dmuijpj =  dvislp_j*fid
-        rolij = rol_j*fid + rol_i*fid1
-        drolijpi =  drolp_i*fid1
-        drolijpj =  drolp_j*fid
-        muvij = xvisv_j*fid + xvisv_i*fid1
-        dmuvijpi =  dvisvp_i*fid1
-        dmuvijpj =  dvisvp_j*fid
-        rovij = rov_j*fid + rov_i*fid1
-        drovijpi =  drovp_i*fid1
-        drovijpj =  drovp_j*fid
-       else if(ico2.eq.0) then
-c WH
-c i       
-        rol_i     =  den_h2o(i,1) 
-        drolp_i	  =  den_h2o(i,2) 
-        drolt_i	  =  den_h2o(i,3) 
-        rov_i	  =  den_h2o(i,4) 
-        ros_i     =  rov_i
-        drovp_i	  =  den_h2o(i,5) 
-        drovt_i   =  den_h2o(i,6) 
-        enl_i	  =  enth_h2o(i,1)
-        dhlp_i	  =  enth_h2o(i,2)
-        dhlt_i	  =  enth_h2o(i,3)
-        env_i	  =  enth_h2o(i,4)
-        ens_i     =  env_i
-        dhvp_i	  =  enth_h2o(i,5)
-        dhvt_i	  =  enth_h2o(i,6)
-        xvisl_i   =  visc_h2o(i,1)
-        dvislp_i  =  visc_h2o(i,2)
-        dvislt_i  =  visc_h2o(i,3)
-        xvisv_i   =  visc_h2o(i,4)
-        vis_i     =  xvisv_i
-        dvisvp_i  =  visc_h2o(i,5)  
-        dvisvt_i  =  visc_h2o(i,6)
-c j
-        rol_j     =  den_h2o(j,1) 
-        drolp_j	  =  den_h2o(j,2) 
-        drolt_j	  =  den_h2o(j,3) 
-        rov_j	  =  den_h2o(j,4) 
-        ros_j     =  rov_j
-        drovp_j	  =  den_h2o(j,5) 
-        drovt_j   =  den_h2o(j,6) 
-        enl_j	  =  enth_h2o(j,1)
-        dhlp_j	  =  enth_h2o(j,2)
-        dhlt_j	  =  enth_h2o(j,3)
-        env_j	  =  enth_h2o(j,4)
-        ens_j     =  env_j
-        dhvp_j	  =  enth_h2o(j,5)
-        dhvt_j	  =  enth_h2o(j,6)
-        xvisl_j   =  visc_h2o(j,1)
-        dvislp_j  =  visc_h2o(j,2)
-        dvislt_j  =  visc_h2o(j,3)
-        xvisv_j   =  visc_h2o(j,4)
-        vis_j     =  xvisv_j
-        dvisvp_j  =  visc_h2o(j,5)  
-        dvisvt_j  =  visc_h2o(j,6)
-        muij = xvisl_j*fid + xvisl_i*fid1
-        dmuijpi =  dvislp_i*fid1
-        dmuijpj =  dvislp_j*fid
-        dmuijei =  dvislt_i*fid1
-        dmuijej =  dvislt_j*fid   
-c gaz 120724        
-        muvij = xvisv_j*fid + xvisv_i*fid1
-        dmuijpi =  dvisvp_i*fid1
-        dmuvijpj =  dvisvp_j*fid
-        dmuvijei =  dvisvt_i*fid1
-        dmuvijej =  dvisvt_j*fid         
-        rolij = rol_j*fid + rol_i*fid1
-        drolijpi =  drolp_i*fid1
-        drolijpj =  drolp_j*fid
-        enlij = enl_j*fid + enl_i*fid1
-        denlijpi =  dhlp_i*fid1
-        denlijpj =  dhlp_j*fid
-      else if(ico2.gt.0) then
-c AWH   Not completed yet
-      endif                  
-      else if(iflg.eq.1) then
-      endif
-      return 
-      end
+ 
 
  
       

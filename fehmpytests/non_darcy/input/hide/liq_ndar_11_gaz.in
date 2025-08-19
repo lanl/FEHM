@@ -1,0 +1,190 @@
+Two phase example test of non-darcy flow 2D 
+#
+# sol and iter modified by gaz
+#****************output*******************************
+# write vtk contour files for each variable listed
+cont 
+vtk     5000    1.00000e+19
+geom
+liq
+pres
+saturation
+perm
+formatted 
+end
+# write hist files for pressure/saturation at nodes in node macro
+hist 
+days
+pres
+liq
+vapor
+sat
+end
+#****************grid*******************************
+# grid named in fehmn.files
+#****************air********************************
+air
+2
+20.0 0.1 air
+#****************fehm id******************************
+idfe
+FEHM3.6_VER2 270125 (test)
+#****************non-darcy flow******************************
+# assigns beta value to all nodes 
+# beta is the non-darcy coefficient of Forchheimer equation 
+# 1.0d06 will be similar to darcy result (ndar OFF)
+# 1.0d09 will result in higher velocities
+# 1.0d10 will result in much higher velocities
+ndar 
+1 441 1 1.0d11
+
+end ndar
+#**********************************************
+# Control statement for Velocity output 
+# a single internode velocity is calculated between node pairs
+# Written to .out file
+dvel
+8
+1 2
+1 22 
+22 43
+2 3
+3 4
+9 10
+19 20
+400 421
+#****************rlp******************************
+# Relative permeability and capillary pressure models
+# needed for two phase
+# 1 = linear perm and cap
+# residual liq and vapor saturation are 0
+# max liq sat, max vapor sat = 1.
+# capillary pres at zero sat = 1.
+# saturation at which cap pres at zero = 1.
+# assigned to all nodes
+rlp
+1 0. 0. 1. 1. 1. 1.
+
+1 0 0 1
+
+#*******************rock parameters*************************
+# all nodes with perm x,y,z
+# second line with higher perm overwrites first low perm
+# 1.d-12 is very high perm such as unconsolidated sand
+# 1.d-21 is very very low permeability like a clay
+# perm along with pumping rate will control velocities
+perm
+     1 0 0 1.d-21 1.d-21 1.d-21
+     1 0 0  1.d-12 1.d-12 1.d-12
+     
+# all nodes 
+# Rock density (kg/m3), Rock specific heat (J/kg.K), porosity 
+rock                              
+  1    0     0     2.50E+03     1.00E+03    0.15 
+
+#***************zones*****************************
+# zone 21 is node 1   bottom corner on left bndry
+# this zone is the pumping source
+# zone 22 is node 421 top corner on left (not used) 
+zone
+21
+nnum
+1 1
+22
+nnum
+1 421
+
+#***************boun*****************************
+# model 2
+# distributed water source pumping
+# 0 for 20 days, then -1 kgs
+# neg values are for pumping source
+# pos values are extracting (sink)
+# model 3
+# const pres value on top boundary
+# all boundaries assumed closed except top
+# top defined by nodes 421 to 441
+boun
+model 1
+ti
+4 0. 100. 200. 300.
+dsw
+0.0d0 -1.0d-3 -0.0d-3 -1.0d-4
+model 2
+ti
+2 0. 20. 
+dsw
+-0.0d-2 -1.0d0 
+ft
+20.0 20.0
+ts
+1.d-0 0.00001 
+tsmax
+1. 1 
+model 3
+ti
+2 0. 1.d10
+pw
+0.1 0.1
+ft
+20.0 20.0
+
+421 441 1 3
+-21 0 0  2
+
+# 1E-3 (initial timestep) 50 days (final sim time) 
+# 600 (max number of timesteps) 1 (print every timestep in .out)
+# Last 3 numbers are year, month, time 
+time
+1.d-3 50.0 600 1 1999 1 0.00000
+
+#***************IC BC*****************************
+# Initial pressure (MPa) and Temperature (C) for liquid phase
+pres 
+1 441 1 0.1 20. 1
+
+#***************************************************
+# The top row 101 zone is selecting all nodes in x direction
+# and only the nodes on the y boundary from 19.9 to 20.1
+# which selects all the nodes on the right boundary of the mesh
+# This would be called with -101 and is not used here
+zone
+101
+-0.01 20.01 20.01 -0.01 
+19.9 19.9 20.1 20.1	
+
+# gravity y dir
+# real 2D problem
+ctrl
+ -10 1.00000e-05 40 100 gmre
+ 1 0 0 2
+
+ 1.00000 2 1.00000
+ 10 1.5 1.000e-10 365.25    
+ 1 0
+sol
+ 1 -1
+# gaz removed irdof = 13 
+iter
+ 1.00000e-05 1.00000e-05 0.0100000 -1.00000e-3 1.1
+0      0       0       5       3600. 
+#***************************************************
+# node control statement using block keyword
+# write values for the following nodes
+# 1,421,21 are nodes on the left bndry on y axis
+# 10,430,21 is middle line along y axis
+# 399,441,21 are 3 nodes on right bndry top right
+node
+bloc
+1 421 21
+10 430 21
+399 441 21
+
+stop
+
+dsa
+0.0d0 -1.0d-4 -0.0d-3 -1.0d-4
+ts
+1.d-0 0.01 0.1 0.1
+tsmax
+10. 5.  5. 365.
