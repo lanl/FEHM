@@ -65,8 +65,10 @@ vtk     5000    1.00000e+19
 
 ## Reference
 
+
+Zeng, Z., Grigg, R. A Criterion for Non-Darcy Flow in Porous Media. Transp Porous Med 63, 57–69 (2006). [https://doi.org/10.1007/s11242-005-2720-3](https://doi.org/10.1007/s11242-005-2720-3)
+
 Document by George and Dolan pending.
- 
 
 Test Directory: [FEHM/fehmpytests/darcy2D](https://github.com/lanl/FEHM/tree/master/fehmpytests/darcy2D)
 
