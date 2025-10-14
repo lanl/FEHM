@@ -212,10 +212,6 @@ class fehmTest(unittest.TestCase):
         # Test Darcy and non-Darcy flow liquid and gas 2D
         #
         # Compares the generated presWAT files files known to be correct.
-        # Note these test cases are configured with beta values such that
-        # the non-darcy and darcy flow results are the same.
-        # See non_darcy test for non-darcy non linear flow results
-        # This test may be modified with non-darcy removed eventually.
         #
         # .. Authors: Terry Miller modified from George tests for ndar
 
@@ -447,6 +443,16 @@ class fehmTest(unittest.TestCase):
         # .. Authors: Terry Miller modified from George tests for ndar
 
         self.test_case('non_darcy')
+
+    def non_darcy_dfn(self):
+        # Test darcy and non-darcy water into single fracture
+        #
+        # These tests are developed by the dfnWorks team headed by Jeffrey
+        # Dolan, Matt, Maitri
+        #
+        # .. Authors: Terry Miller modified from dfnWorks ndar tests
+
+        self.test_case('non_darcy_dfn')
 
     def perm_test(self):
         # Test perm_test
@@ -965,7 +971,7 @@ class fehmTest(unittest.TestCase):
                 if os.path.exists( output_dir ): shutil.rmtree(output_dir)
                 os.mkdir( output_dir )
                 os.chdir( output_dir )
-                filetypes = ['*.avs', '*.avsx', '*.csv','*.his','*.out','*.trc','*.ptrk','*.dat','*.sptr3', '*.cflx']
+                filetypes = ['*.avs', '*.avsx', '*.csv','*.his','*.out','*.trc','*.vtk','*.ptrk','*.dat','*.sptr3', '*.cflx']
                 test_flag = False
                 
                 for filetype in filetypes:
@@ -1041,7 +1047,7 @@ class fehmTest(unittest.TestCase):
             f_new = fpost.fcontour(verbose, ('*'+subcase+'.'+filetype))
             f_dif = fpost.fdiff(verbose, f_new, f_old)
                 
-            msg = '\nError with %s, Incorrect %s at time %s. Difference of %s is greater then max error of %s.'
+            msg = 'Incorrect %s at time %s.'
 
             #If no pre-specified times, grab them from f_dif.
             if len(values['times']) == 0:
@@ -1075,13 +1081,12 @@ class fehmTest(unittest.TestCase):
                     }[test_measure]
                     try:
                         #print('true? ', difference, '<', mxerr, '=', difference<mxerr, 'for ', (os.path.join('..','compare','*')+subcase+'.'+filetype), ' and ', ('*'+subcase+'.'+filetype))
-                        self.assertTrue(difference<mxerr, msg%(subcase,v, t, difference, mxerr))
+                        self.assertTrue(difference<mxerr, msg%(v, t))
                         test_flag = True
                         
                     except AssertionError as e:
                         #Write to fail log if switch is on.
                         if self.log:
-                            self.fail_log.write(f'\nError with {subcase}, Incorrect {v} at time {t}. Difference of {difference} is greater then max error of {mxerr}.')
                             kvpairs = {'variable':str(v), 'time':str(t)}
                             line = '\nFailed at subcase:'+subcase
                             line = line+' filetype:'+filetype
@@ -1109,7 +1114,8 @@ class fehmTest(unittest.TestCase):
                 nodes = f_dif.nodes
             else:
                 nodes = values['nodes']   
-            msg = '\nError with %s, Incorrect %s at node %s. Difference of %s is greater then max error of %s.'
+            msg = 'Incorrect %s at node %s.'  
+            
             #Check the nodes at each variable for any significant differences.   
             test_flag = False
             for v in variables:
@@ -1126,12 +1132,11 @@ class fehmTest(unittest.TestCase):
                             float(len(f_dif[v][n]))
                     }[test_measure]
                     try:   
-                        self.assertTrue(difference<mxerr, msg%(subcase,v, n,difference,mxerr))
+                        self.assertTrue(difference<mxerr, msg%(v, n))
                         test_flag = True
                     except AssertionError as e:
                         #Write to fail log if switch is on.
                         if self.log:
-                            self.fail_log.write(f'\nError with {subcase}, Incorrect {v} at node {n}. Difference of {difference} is greater then max error of {mxerr}.')
                             kvpairs = {'variable':str(v), 'node':str(n)}
                             line = '\nFailed at subcase:'+subcase
                             line = line+' filetype:'+filetype
@@ -1191,7 +1196,7 @@ class fehmTest(unittest.TestCase):
             else:
                 nodes = values['nodes']    
 
-            msg = '\nError with %s, Incorrect %s at node %s. Difference of %s is greater then max error of %s.'  
+            msg = 'Incorrect %s at node %s.'  
             
             #Check the nodes at each variable for any significant differences.
             test_flag = False
@@ -1210,12 +1215,11 @@ class fehmTest(unittest.TestCase):
                             float(len(f_dif[v][n]))
                     }[test_measure]     
                     try:
-                        self.assertTrue(difference<mxerr, msg%(subcase,v, n,difference,mxerr))
+                        self.assertTrue(difference<mxerr, msg%(v, n))
                         test_flag = True
                     except AssertionError as e:
                         #Write to fail log if switch is on.
                         if self.log:
-                            self.fail_log.write(f'\nError with {subcase}, Incorrect {v} at node {n}. Difference of {difference} is greater then max error of {mxerr}.')
                             kvpairs = {'variable':str(v), 'node':str(n)}
                             line = '\nFailed at subcase:'+subcase
                             line = line+' filetype:'+filetype
@@ -1253,8 +1257,7 @@ class fehmTest(unittest.TestCase):
             else:
                 components = values['components']
                 
-            msg = 'Incorrect %s at %s node %s.'
-            msg = '\nError with %s, Incorrect %s at %s node %s. Difference of %s is greater then max error of %s.'  
+            msg = 'Incorrect %s at %s node %s.'  
             
             #Check the node at each component for significant differences.   
             test_flag = False
@@ -1273,12 +1276,11 @@ class fehmTest(unittest.TestCase):
                                 float(len(fdiff_array)) 
                         }[test_measure]
                         try:
-                            self.assertTrue(difference < mxerr, msg%(subcase,v,c,n,difference,mxerr))
+                            self.assertTrue(difference < mxerr, msg%(v,c,n))
                             test_flag = True
                         except AssertionError as e:
                             #Write to fail log if switch is on.
                             if self.log:
-                                self.fail_log.write(f'\nError with {subcase}, Incorrect {v} at {c} node {n}. Difference of {difference} is greater then max error of {mxerr}.')
                                 kvpairs = { 'component': str(c), 
                                             'node': str(n),
                                             'variable': str(v), }
@@ -1298,7 +1300,7 @@ class fehmTest(unittest.TestCase):
             f_new = fpost.fptrk(verbose, ('*'+subcase+filetype)) 
             f_dif = fpost.fdiff(verbose, f_new, f_old)
             
-            msg = '\nError with %s, Incorrect %s. Difference of %s is greater then max error of %s.'
+            msg = 'Incorrect %s.'
             
             #If no pre-specified variables, grab them from f_dif.         
             if len(values['variables']) == 0:
@@ -1321,12 +1323,11 @@ class fehmTest(unittest.TestCase):
                 }[test_measure]
                 #Perform test, if fail log switch is on, write a fail log.
                 try:
-                    self.assertTrue(difference < mxerr, msg%(subcase,v,difference,mxerr))
+                    self.assertTrue(difference < mxerr, msg%v)
                     test_flag = True
                 except AssertionError as e:
                     #Write to fail log if switch is on.
                     if self.log:
-                        self.fail_log.write(f'\nError with {subcase}, Incorrect {v}. Difference of {difference} is greater then max error of {mxerr}.')
                         kvpairs = {'variable': str(v)}
                         line = '\nFailed at subcase:'+subcase
                         line = line+' filetype:'+filetype
@@ -1338,6 +1339,7 @@ class fehmTest(unittest.TestCase):
                 self.fail("Missing common nodes in compare and output ptrk files, no test performed")
 
         #Returns the test method for filetype.
+        # comparison_case is simplest with line-by-line comparison
         return { '*.avs':  contour_case,
                  '*.avsx':  comparison_case,
                  '*.csv':  contour_case,
@@ -1345,6 +1347,7 @@ class fehmTest(unittest.TestCase):
                  '*.sptr3':  comparison_case,
                  '*.his':  history_case,
                  '*.trc':  comparison_case,
+                 '*.vtk':  comparison_case,
                  '*.out':  comparison_case, 
                  '*.cflx': comparison_case,
                  '*.ptrk': ptrack_case }[filetype]
@@ -1450,7 +1453,8 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('henrys_law', log))
         suite.addTest(fehmTest('mptr', log))
         suite.addTest(fehmTest('multi_solute', log))
-        suite.addTest(fehmTest('perm_test', log))
+        suite.addTest(fehmTest('non_darcy', log))
+        suite.addTest(fehmTest('non_darcy_dfn', log))
         suite.addTest(fehmTest('potential_energy', log))
         suite.addTest(fehmTest('ramey', log))
         suite.addTest(fehmTest('richards', log))
@@ -1495,7 +1499,6 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('henrys_law', log))
         suite.addTest(fehmTest('mptr', log))
         suite.addTest(fehmTest('multi_solute', log))
-        suite.addTest(fehmTest('non_darcy', log))
         suite.addTest(fehmTest('perm_test', log))
         suite.addTest(fehmTest('potential_energy', log))
         suite.addTest(fehmTest('ramey', log))
@@ -1522,14 +1525,6 @@ def suite(mode, test_case, log):
     
 if __name__ == '__main__':
     
-    pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument('--clean', action='store_true')
-    pre_args, _ = pre_parser.parse_known_args()
-
-    if pre_args.clean:
-        cleanup()
-        sys.exit(0)
-        
     #Unless the user specifies a single test-case, this isn't important.
     test_case = ''
 
