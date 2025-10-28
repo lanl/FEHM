@@ -31,7 +31,6 @@ For Developers, Run Full to include tests under development: ```python fehmpytes
 | [**cden**](/test-details/cden.md)  |**Test the Concentration Dependent Brine Density Functionality**<br>Compares generated history files to old history files that are known to be correct. |
 | [**cflxz**](/test-details/cflxz.md) | **Concentration Zone Flux Test**<br> Comparison of FEHM with 1-D Difusion Model |
 | [**colloid_filtration**](/test-details/colloid_filtration.md)  |**Test Colloid Filtration**<br> TSPA particle tracking simulation. |
-| [**darcy2D**](/test-details/darcy2D.md) ```*``` | **Test 2D Darcy vs non-Darcy flow**<br> Simulates pumping test both gas and liquid water | 
 | [**dispersion**](/test-details/dispersion.md) | **Test Advection-Dispersion Transport**<br> Test simulates the advection-dispersion transport of solutes in groundwater | 
 |[**dissolution**](/test-details/dissolution.md) |**Test the Dissoultion Macro**<br> One-dimensional transport simulation of calcite (CaC03(s)) dissolution |
 | [**doe**](/test-details/doe.md)  |**Test the DOE Code Comparison Project, Problem 5, Case A**<br>Compares contour files for rlp, rlpm, and table.| 
@@ -61,6 +60,18 @@ For Developers, Run Full to include tests under development: ```python fehmpytes
 | [**transport3d_validation**](/test-details/transport3d_validation.md) ```*``` |  **transport3d validation**<br> 3D solute advective-transport benchmark test | 
 | [**vapor_extraction**](/test-details/vapor_extraction.md)  | **Test vapor_extraction**<br> Vapor Extraction from an Unsaturated Reservoir |
 | [**wvtest**](/test-details/wvtest.md)  | **Unsaturated Diffusion test**<br>  dry-out by evaporation using one-way heat pipe  |
+
+
+## Test Cases for New Capabilities Under Development
+
+These represent new capabilities under development. They are not included in the default fehmpytests until finished.
+
+| TEST CASE NAMES<br>Click name for more details | Description | Status  |
+|:---------------------|:-----------------------|:--------------------|
+| [**darcy2D**](/test-details/darcy2D.md)  | **Test 2D Darcy vs non-Darcy flow**<br> Zeng and Grigg (2006) liquid pump test | These are first version tests from George |
+| [**non_darcy**](https://github.com/lanl/FEHM/blob/gaz-nondarcy2/fehmpytests/non_darcy/README.md)  | **Test 2D Darcy vs non-Darcy flow**<br> liquid, gas, 2phase| dev branch gaz-nondarcy2 |
+| [**non_darcy_dfn**](https://github.com/lanl/FEHM/blob/gaz-nondarcy2/fehmpytests/non_darcy_dfn/README.md)  | **Test 2D in 3D Darcy vs non-Darcy flow**<br> dfn single fracture tests| dev branch gaz-nondarcy2 |
+
 
 
 
