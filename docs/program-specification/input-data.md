@@ -90,7 +90,7 @@ As an aid to the user, the capabilities of FEHM summarized in [Capabilities of F
 | [meth](../Macros/MacroIce.md) or [ice](../Macros/MacroIce.md)| Methane hydrate input|
 | [mptr](../Macros/MacroMptr.md)| Multiple species particle tracking simulation input|
 | [nfinv](../Macros/MacroNfinv.md)| Finite element instead of finite volume calculations|
-| [ndar](../Macros/MacroNgas.md)| Non-Darcy flow model |
+| [ndar](../Macros/MacroNDAR.md)| Non-Darcy flow model |
 | [ngas](../Macros/MacroNgas.md)| Noncondensible gas (air) data|
 | [nobr](../Macros/MacroNobr.md)| Don’t break connection between nodes with boundary conditions|
 | [node](../Macros/MacroNode.md)| Node numbers for output and time histories|
