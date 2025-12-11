@@ -311,6 +311,23 @@
       real*8, pointer :: drvef(:)
       real*8, pointer :: drvpf(:)
 
+c gaz  020425 added parameters for non-darcy  Not using shared space
+      real*8, allocatable :: rlf_nd(:)
+      real*8, allocatable :: drlef_nd(:)
+      real*8, allocatable :: drlpf_nd(:)
+      real*8, allocatable :: rvf_nd(:)
+      real*8, allocatable :: drvef_nd(:)
+      real*8, allocatable :: drvpf_nd(:)
+c gaz 061025
+      real*8, allocatable :: xvisl_nd(:)
+      real*8, allocatable :: dvislp_nd(:)
+      real*8, allocatable :: dvislt_nd(:)
+      real*8, allocatable :: dvislc_nd(:)
+      real*8, allocatable :: xvisv_nd(:)
+      real*8, allocatable :: dvisvp_nd(:)
+      real*8, allocatable :: dvisvt_nd(:)
+      real*8, allocatable :: dvisvc_nd(:)
+
 ! Not using shared space
       real*8, pointer ::   dvas(:)
       real*8, allocatable ::   denci(:)

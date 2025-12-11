@@ -1020,6 +1020,10 @@ c mixture of water and air,co2
       use comrxni
 c gaz 123020
       use com_exphase
+c gaz 210725
+      use comHT_test
+c gaz 100125
+      use com_nondarcy
 c gaz 060820
       use com_prop_data, only : den_h2o, enth_h2o, visc_h2o, humid_h2o,
      & psat_h2o, den_ngas, enth_ngas, visc_ngas, xnl_ngas, ieval_flag
@@ -1520,6 +1524,7 @@ c
 c gaz 062221 testing  line length extention
 cDEC$ FIXEDFORMLINESIZE:132
 c gaz 112818 
+      mi = l
       dcp_dt = 0.0
       if(abs(iexrlp).ne.0.and.i_mem_rlp.eq.0) then
         i_mem_rlp=1
@@ -1555,6 +1560,13 @@ c     get relative perms
       endif
       iieosl=0
       dtin=1.0/dtot
+c gaz 020425 modified for non darcy flow
+      if(nd_flow) then
+       rlf_nd(1:n0) = rlf(1:n0)
+       rvf_nd(1:n0) = rvf(1:n0)
+       drlef_nd(1:n0) = drlef(1:n0)
+       drvef_nd(1:n0) = drvef(1:n0)
+      endif
 c
 c generate relative permeabilities
 c
@@ -1578,10 +1590,8 @@ c
       if(.not.allocated(sk_temp)) allocate(sk_temp(neq))   
 c gaz 060721 poly testing
 c initialize and allocate memory   
-       call fluid_props_control(0, 0, 0, fluid(1), 
-     &      'all      ', '         ')
-       call fluid_props_control(0, 0, 0, fluid(2),
-     &      'all      ', '         ')
+       call fluid_props_control(0, 0, 0, fluid(1), 'all      ', '         ')
+       call fluid_props_control(0, 0, 0, fluid(2), 'all      ', '         ')
 c gaz 123020 manage explicit update 
        if(i_ex_update.ne.0.and.ieq_ex.gt.0) then
          loop_start = ieq_ex
@@ -1668,8 +1678,7 @@ c gaz 060721 poly unification
 c start calculations    
 
 c gaz 070321       
-       call fluid_props_control(1, mi, mi,fluid(1), 
-     &      'all      ', '         ')
+       call fluid_props_control(1, mi, mi,fluid(1), 'all      ', '         ')
        if(iprop_testa.ne.0.and.l.eq.iprop_testa) then
         write(ierr,676) mi,ieos(mi),phi(mi),t(mi),pci(mi)
         write(ierr,677)
@@ -1678,8 +1687,7 @@ c gaz 070321
         write(ierr,678) 'visc',(visc_h2o(mi,im),im=1,6)
         write(ierr,678) 'huma',(humid_h2o(mi,im),im=1,3)
        endif 
-676   format(1p,'node ',
-     &    i8,' ieos ',i3,' P ',g16.8,1x,'T ',g16.8,1x,'PC ',g16.8) 
+676   format(1p,'node ',i8,' ieos ',i3,' P ',g16.8,1x,'T ',g16.8,1x,'PC ',g16.8) 
 677   format('var ',t9,'varl',t23,'dvarlp',t37,'dvarlt',t53,'varv',
      & t69,'dvarvp',t82,'dvarvt',t95,'dvarvpc')   
 678   format(1p,a,7(1x,g14.5))   
@@ -1740,7 +1748,9 @@ c gaz 072520 force ieosd to stay = 3, changes from 4 to 1 in h2o_properties_new
       if(ieosd.eq.3.or.ieosd.eq.4)then
        ieosd = 3
        xrv = 1
-       xrl = 1
+c gaz 111125
+c      xrl = 1
+       xrl = 0
        drl = 0
        drv = 0
        drlp = 0
@@ -1757,8 +1767,7 @@ c     Add correction for liquid species
       end if
 c
 c gaz 071821 new call fluid_props_control
-        call fluid_props_control(1, mi, mi,fluid(2), 
-     &      'all      ', '         ')
+      call fluid_props_control(1, mi, mi,fluid(2), 'all      ', '         ')
 c
 
          xnl    = xnl_ngas(mi,1)
@@ -2264,7 +2273,25 @@ c air balance
         daepc =(ropc*env+por*rov*dhvpc)*dtin
         dacpc =(por*rov*dxnvpc+xnv*ropc)*dtin
       end if
-c
+c c gaz 220725
+c gaz save mass and energy terms adjust for time step parameter
+        var_awh_param(17)  = den
+
+        var_awh_param(18) = damp/dtin 
+	  var_awh_param(19) = damh/dtin
+        var_awh_param(20) = dacp/dtin
+
+        var_awh_param(21) = dene
+ 
+	  var_awh_param(22) = daep/dtin
+        var_awh_param(23) = daeh/dtin
+        var_awh_param(24) = daepc/dtin
+
+        var_awh_param(25) = denc
+	  var_awh_param(26) = dacp/dtin
+        var_awh_param(27) = dach/dtin
+        var_awh_param(28) = dacpc/dtin
+
       if(ieosd.ne.4) then
 c
 c store derivatives of accumulation terms
@@ -2297,8 +2324,7 @@ c     if(ieosd.ne.3) then
         dile(mi)=drolt*xrl/xvisl+rol*drl/xvisl
      *  -rol*xrl/xvisl**2*dvislt
         enlf(mi)=enl
-        dglp(mi)=drolp
-        dgle(mi)=drolt
+        dglp(mi)=drolp                                 
         delf(mi)=dhlp
         delef(mi)=dhlt
         delcf(mi)=dhlpc
@@ -2339,6 +2365,17 @@ c
       denvap(mi)=dhvsp
       denvae(mi)=dhvst
       denvac(mi)=dhvspc
+
+      if(nd_flow) then
+       xvisl_nd(mi) = xvisl
+       dvislp_nd(mi) = dvislp
+       dvislt_nd(mi) = dvislt
+       dvislc_nd(mi) = dvlpc
+       xvisv_nd(mi) = xvisv
+       dvisvp_nd(mi) = dvisvp
+       dvisvt_nd(mi) = dvisvt
+       dvisvc_nd(mi) = dvvpc
+      endif
 c
 c ********** source term code start *****************
 c
@@ -2978,6 +3015,30 @@ c
       deef(mi)=denrd*dtin
       endif
       endif
+c
+c gaz 210725 added tests
+c 
+        var_h2o(4) = rol
+        var_h2o(5) = drolp
+        var_h2o(6) = drolt
+c gaz 290625 awh (two fluid mixtures)
+c note rol does not depend on xnl, xvixl   does not depend on xnl
+        var_awh_param(1)  = rov
+        var_awh_param(2)  = drovp 
+        var_awh_param(3)  = drovt
+        var_awh_param(4)  = drovpc
+	  var_awh_param(5)  = env
+        var_awh_param(6)  = dhvp
+        var_awh_param(7)  = dhvt
+        var_awh_param(8)  = dhvpc 
+        var_awh_param(9)  = enl  
+        var_awh_param(10) = dhlp 
+	  var_awh_param(11) = dhlt 
+        var_awh_param(12) = dhlpc
+        var_awh_param(13) = xvisv 
+	  var_awh_param(14) = dvisvp
+        var_awh_param(15) = dvisvt
+        var_awh_param(16) = dvvpc
   100 continue
 c
 c modify accumulation terms for volume changes

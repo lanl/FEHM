@@ -9,7 +9,7 @@ c 091622 gaz added gdkm output
 c
       use avsio, only : avs_root, icall_max, iovelocity,
      &  ioconcentration, ioscalar, iomaterial, iogdkm
-      use comai, only : verno, jdate, jtime, iccen
+      use comai, only : verno, jdate, jtime, iccen, igrav
       
       implicit none
       real*8 x0,y0,z0,x1,x2,y1,y2,z1,z2,timez
@@ -74,15 +74,9 @@ c remove tec log file if exists
       inquire(file = temp_file, exist = exists)
 c 
 c create vtk         
-c debug tam
-c     this assumes iq is the dot at end of root name
-c     fix junk characters after file name
-c     vtk_log_file(1:iq) = cont_log_file(1:iq)
-c     vtk_log_file(iq:iq+13) = '_vtk_log.file'
-
-      vtk_log_file= trim(avs_root)
-      write(vtk_log_file(iq:iq+12),9) '_vtk_log.file'
-9     format(a13)
+      
+      vtk_log_file(1:iq) = cont_log_file(1:iq)
+      vtk_log_file(iq:iq+13) = '_vtk_log.file'
       open(unit=8,file=vtk_log_file,status='unknown')
       write(8,1) verno, jdate, jtime
 1     format(a30,1x,a11,1x,a8,
@@ -146,7 +140,7 @@ c gaz 071522  only one material file time = 0.0
 12     format(a18) 
 112     format(a23)        
        inquire(file = cont_log_file, exist = exists)
-        if(exists.eqv..true.) then
+        if(exists.eq..true.) then
           jj = len_trim(cont_log_file)
           tec_file_name(j)(1:jj) = cont_log_file(1:jj)
         else
@@ -227,7 +221,12 @@ c
 c vtk triangle = 5        
         if(dum_zone1(ichar3:ichar3+2).eq.'TRI') then
          ivtk_elem = 5
-         idem = 2
+c gaz 170625 added hopefully a change to allow tri in 3D space !!!!
+         if(igrav.eq.3) then
+          idem = 3
+         else
+          idem = 2
+         endif
          ns = 3
 c vtk quad = 9      
         else if(dum_zone1(ichar3:ichar3+2).eq.'QUA') then
@@ -428,7 +427,7 @@ c write out scalar name
       write(10,192) 
       write(10,'(1p,10(1x,i14))') (i, i = 1, neq)      
 c gaz 021322 added delete for tec files      
-      close(9)
+      close(9, dispose = 'delete')
       close(10)
       else
 c j_vtk gt 1 
@@ -518,7 +517,7 @@ c write out scalar name
       write(10,191) 'Node_Num'
       write(10,192) 
       write(10,'(1p,10(1x,g14.6))') (i, i = 1, neq)
-      close(9)      
+      close(9, dispose = 'delete')      
       close(10)
 c end of loop for vtk output files  
       endif

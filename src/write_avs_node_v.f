@@ -178,7 +178,8 @@ c gaz 111616
       character*30 zonesavename, char_temp
       character*6 zonestring 
       character*200 file_flux
-      
+c gaz 260925
+      character*200 grid_chk      
       save tec_string
 
 c--------------------------------------------
@@ -637,6 +638,15 @@ c gaz 041922 changed to tec
             read(il,*) 
             read(il,*)
             read(il,*)
+c gaz 260925            
+            read(il,'(a80)') grid_chk(1:80)
+            do i = 1, 74
+             if(grid_chk(i:i+5).eq.'NOGRID') then
+              close(il) 
+              go to 101
+             endif
+            enddo
+            backspace il
             read(il,'(a20,i9)') char_temp(1:20),i
             if (i .ne. neq_primary) backspace il
             do i = 1, neq
@@ -651,7 +661,7 @@ c gaz 041922 changed to tec
             close (il)
          endif
       end if
-
+101   continue
       iocord = iocord_temp
 
  90   format(i1,2x,5(i5,2x))

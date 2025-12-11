@@ -75,7 +75,7 @@ CD3                                  with saturation
 CD3 isatf        int     I       Control parameter to decide if
 CD3                                 saturation temperature or pressure
 CD3                                 is computed
-CD3 salt_con     real*8   passes through to vaporl_salt(tl,salt_con                                 
+CD3                                  
 CD3 
 CD3 Interface Tables
 CD3
@@ -286,19 +286,12 @@ C***********************************************************************
       use property_interpolate_1
       implicit none
 
-c     function parameters
-      real*8  tl,pcaps,dpcaps,dpsatt,dpsats
-      integer isatf
-      real*8  salt_con
-
-c     variables
-      real*8 x,x2,x3,x4,pfun,pfunn,pfund
-      real*8 dpst,dptsn,dpstd,psatl0,delp
+      integer isatf,k,maxitp,ifail
+      real*8 tl,pcaps,dpcaps,dpsatt,dpsats
+      real*8 x,x2,x3,x4,pfun,pfunn,pfund,dpst,dptsn,dpstd,psatl0,delp
       real*8 ddelt,ddels,tfun,tfunn,tfund,pfun0,resid,drlp
-      real*8 pv_sc,dsct,dscc
+      real*8 salt_con,pv_sc,dsct,dscc
       real*8 dtps,dtpsn,dtpsd
-      integer k,maxitp,ifail
-
       psatl=0.0d0
       dpsatt=0.0d0
       if(ice.ne.0) then

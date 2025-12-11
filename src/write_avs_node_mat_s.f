@@ -275,6 +275,8 @@ c gaz 050221
       integer maxtitle, mout, neq_write
       parameter(maxtitle = 22)
       logical :: xon = .false., yon = .false., zon = .false.
+c gaz 260925
+      character*200 grid_chk
 c gaz 061322
       logical exists
       character*5 dual_char
@@ -1180,6 +1182,15 @@ c     tec geometry file has 4 initial lines t
              read(il,*) 
              read(il,*)
              read(il,*)
+c gaz 260925            
+            read(il,'(a80)') grid_chk(1:80)
+            do i = 1, 74
+             if(grid_chk(i:i+5).eq.'NOGRID') then
+              close(il) 
+              go to 102
+             endif
+            enddo
+            backspace il
              read(il,'(a20,i9)') wdd(1:20),i
              if (i .ne. neq_primary) backspace il
              do i = 1, neq
@@ -1205,6 +1216,7 @@ c     river segments (2 node elements)
             enddo
          endif
       end if
+102   continue
 c gaz added element output  (hex only) for fdm generated grid   
       if (icall .eq. 1 .and. altc(1:3) .eq. 'tec' .and. ivf .eq. -1
      &     .and. ifdm_elem. eq. 1) then

@@ -29,6 +29,7 @@ CD2
 C***********************************************************************
 
       use comdi
+      use comci
       use comdti
       use comai
       use comki
@@ -39,7 +40,13 @@ C***********************************************************************
 c      
 c**** read non darcy parameter beta ****
 c
-      if(.not.allocated(nd_beta)) allocate(nd_beta(n0))
+      if(.not.allocated(nd_beta))  then
+        allocate(nd_beta(n0))
+        allocate(rlf_nd(n0),rvf_nd(n0),drlef_nd(n0),drvef_nd(n0))
+c gaz 061025
+        allocate(xvisl_nd(n0),dvislp_nd(n0),dvislt_nd(n0),dvislc_nd(n0))
+        allocate(xvisv_nd(n0),dvisvp_nd(n0),dvisvt_nd(n0),dvisvc_nd(n0))
+      endif
       narrays = 1
       itype(1) = 8
       default(1) = 1.d-15

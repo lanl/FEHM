@@ -200,7 +200,7 @@ c calculate air solubility in water
        real*8 tl,pl,pcl,xnl,dxnlp,dxnlpc,dxnlt, alpha0
        real*8 xtol,alpha, dalpca,dalphat,tsolmax, alpha_tol       
        integer imod_sol
-        parameter (imod_sol = 1)
+        parameter (imod_sol = 0)
         parameter (alpha0 = 1.6111d-04)     
         parameter(xtol=1.d-16, tsolmax = 300., alpha_tol = 1.d-9)  
         xnl_max=0.1      

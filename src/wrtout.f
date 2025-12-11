@@ -377,7 +377,9 @@ c                      sl = s(md)
                         if(izone_free_nodes(md).gt.1) then        
                            sl=min(s(md)-rlptol,1.00d0)     
                         else
+c gaz 070524 
 c	                   sl = s(md) 
+                         sl = s(md)
                          if(abs(sl).lt.1.d-98) sl = 1.d-98
                         endif
                      else if(irdof .ne. 13) then
@@ -441,27 +443,29 @@ c     phod is head with offset removed
                         if (ico2 .lt. 0) then
                           write(iout, 6031)  md , phod , pres_out ,
      &                    eqd , sl , t(md) , rqd , ieos(md),
-     &                    zones_char(md)(1:30)
+     &                    zones_char(md)(1:80)
                         if ( iatty .gt. 0 )  write(iatty ,6031)  md ,
      *                       phod, pres_out , eqd , sl , t(md) , rqd,
-     &                        ieos(md), zones_char(md)(1:30)
+     &                        ieos(md), zones_char(md)(1:80)
                         else
                            write(iout, 6032)  md , phod , pres_out ,
      &                          eqd , sl , t(md) , rqd , qh(md), 
-     &                          ieos(md), zones_char(md)(1:30) 
+     &                          ieos(md), zones_char(md)(1:80) 
                            if ( iatty .gt. 0 )  write(iatty ,6032) md ,
      *                          phod, pres_out , eqd , sl , t(md) , 
      &                          rqd , qh(md), ieos(md), 
-     &                          zones_char(md)(1:30)
+     &                          zones_char(md)(1:80)
                         end if
                      endif
-c gaz 062723 changed 6031 format i7 to a30 
+c gaz 062723 changed 6031 format i7 to a30, 
+c gaz 310825 noticed 'gas' changed to gaz
+c gaz 062124 increased spacing and a30 to a80 
  6029                format(i7,2x,g11.4,1x,g9.3,1x,f9.5,1x,
-     *                    g11.4,1x,g10.3,1x,i5,5x,a30)
+     *                    g11.4,1x,g10.3,1x,i5,11x,a80)
  6031                format(i7,2x,g11.4,1x,g9.3,1x,g9.3,1x,f9.5,1x,
-     *                    g11.4,1x,g10.3,1x,i5,5x,a30)
+     *                    g11.4,1x,g10.3,1x,i5,11x,a80)
  6032                format(i7,1x,g11.4,1x,g9.3,1x,g9.3,1x,g9.3,1x,
-     *                    f8.3,3x,g11.4,1x,g11.4,1x,i5,5x,a30)
+     *                    f8.3,3x,g11.4,1x,g11.4,1x,i5,11x,a80)
                   enddo
                enddo
                if (ichead .ne. 0) then

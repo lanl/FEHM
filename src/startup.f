@@ -658,7 +658,8 @@ c gaz 11-25-11
       if(icoef_neg.ne.0) then
        call coeff_management(1)
       endif     
-c      
+c  
+  
 c
 c     Call routine to adjust the connectivity array if needed
 c     to add gdpm nodes
@@ -816,10 +817,8 @@ c s kelkar 3 July 2014, for calculating heat flow vectors
             if(flag_heat_out) then
                if (idpdp .ne. 0) then
                   flag_heat_out = .false.
-                  write(iptty,*)
-     &            'heat out option currently only single porosity'
-                  write(ierr,*)
-     &            'heat out option currently only single porosity'
+       write(iptty,*),'heat out option currently only single porosity'
+       write(ierr,*),'heat out option currently only single porosity'
                else
                   allocate(e_axy_adv(ldna))
                   allocate(e_axy_cond(ldna))
@@ -1434,6 +1433,7 @@ c bookeeping for air-water or methane
       if(ico2.lt.0.and.ice.eq.0) then
 c get cell lengths for wtsi if necessary
          call airctr(11, 0)
+
          call airctr(6, 0)
 c check temperature used in isothermal calculations
          call airctr(13, 0)
@@ -1458,8 +1458,7 @@ c**** insure anl = anlo for cden to get density right for firsat timestep****
 c**** determine initial variable state ****
 c gaz 070521 initialize count of calls to eos properties (AWH only)
        if(ico2.gt.0) then
-        call fluid_props_control(-1, 0, 0, 'h2o      ', 
-     &  'all      ', '         ')  
+        call fluid_props_control(-1, 0, 0, 'h2o      ', 'all      ', '         ')  
        endif
 c gaz 111223 henry's law  isothermal  allocate memory
        if(ico2.lt.0) then

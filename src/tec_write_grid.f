@@ -38,6 +38,7 @@ C***********************************************************************
       integer, allocatable :: nelm2(:)
       character(18) :: title(3), typestring
       character(60) :: varstring
+
       real*8 dummy
 
 c
@@ -101,7 +102,12 @@ c     If lu =0, we are only defining the gridstring
       write (lu, 10) trim(wdd)
       write (lu, 20)
       write (lu, 30) trim(varstring)
-      write (lu, 45) trim(gridstring)
+c gaz 260925 identify no elements 
+      if(ns_in.eq.0) then
+       write (lu, 44)
+      else 
+       write (lu, 45) trim(gridstring)
+      endif
       do i = 1, neq_primary
          select case (icnl)
          case (0)
@@ -140,6 +146,7 @@ c     If lu =0, we are only defining the gridstring
  30   format ('VARIABLES = ', a)
  40   format (', N = ', i8, ', E = ', i8, 
      &     ', DATAPACKING = POINT', ', ZONETYPE = ', a)
+ 44   format ('ZONE T = "NOGRID"')
  45   format ('ZONE T = "GRID"', a, ', STRANDID = 0, ',
      &     'SOLUTIONTIME = 0.')
  50   format(3(e16.9,2x))

@@ -477,14 +477,6 @@ c gaz 052322 initialize imass_phase
       imass_phase = 0
       ivar_mass = 0
  10   continue
-
-c     initialize parse_string2 parameters
-      nwds = 0
-      msg = 0
-      imsg = 0
-      xmsg = 0.
-      cmsg = ''
-
       filename = ''
       read (inpt, '(a80)', END = 50) dumstring
       if (dumstring(1:1) .eq. '#') go to 10
@@ -796,11 +788,8 @@ c     and number of entries in each table
                      read (idum, '(a80)', end = 24) dumstring
                      if (null_new(dumstring) .or.  dumstring(1:3) .eq. 
      &                    'end' .or. dumstring(1:3) .eq. 'END') exit
-
-                     nwds=0
                      call parse_string2(dumstring, imsg, msg, xmsg, 
      &                    cmsg, nwds)
-
 c Don't count header lines (header lines should start with a character)
                      if (msg(1) .ne. 3) ntblines = ntblines + 1
                   end do
@@ -1122,7 +1111,7 @@ c**** We need to know number of elements  if elem is in inpt ****
          if(ja  .eq.  0) go to 30
          go  to  20
          
- 30      read (locunitnum, *)  adumm
+ 30      read (locunitnum, *)  adumm, igrav
          read (locunitnum, *)  idumm
 c**** We need to know problem geometry ****
          read (locunitnum, *)  icnl
@@ -1501,9 +1490,7 @@ c check for file keyword, and read past filename if present
                   isorp = isorp + 1
 ! Liquid or vapor, abs(ispeci).eq.1, do nothing else
                   if (abs(ispeci).eq.2) then
-
 ! Henry's law species read additional input line if data is on two lines
-                     nwds=0
                      call parse_string(dumstring, imsg, msg, xmsg, 
      &                    cmsg, nwds)
                      if ((numd .eq. 0 .and. nwds .lt. 16) .or. 
@@ -1794,7 +1781,6 @@ c find max_probdivs
                backspace locunitnum
             end if
             read(locunitnum,'(a80)') dummy_line
-            nwds=0
             call parse_string(dummy_line,imsg,msg,xmsg,cmsg,nwds)
             tprp_num = imsg(1)
 ! Use multiple simulation number - irun for GoldSim or msim run
@@ -2013,7 +1999,6 @@ c find max_probdivs
                backspace locunitnum
             end if
             read(locunitnum,'(a80)') dummy_line
-            nwds=0
             call parse_string(dummy_line,imsg,msg,xmsg,cmsg,nwds)
             tprp_num = imsg(1)
 ! Use multiple simulation number - irun for GoldSim or msim run
@@ -2372,7 +2357,6 @@ c Jan 27, 05 S kelkar read past "spring" node list
 ! The first non-character line read should contain courant factor, etc.
                if (itensor .eq. -999) then
                   done = .false.
-                  nwds=0
                   call parse_string(dummy_line, imsg, msg, xmsg, cmsg,
      &                 nwds)
                   if(nwds.ge.3) then
@@ -2395,7 +2379,6 @@ c Jan 27, 05 S kelkar read past "spring" node list
 c...................................................................
  
          read (locunitnum, '(a80)') dumstring
-         nwds=0
          call parse_string(dumstring, imsg, msg, xmsg, cmsg, nwds)
          if (msg(2).eq.1) then
             ist=imsg(2)

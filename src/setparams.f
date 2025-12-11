@@ -322,6 +322,8 @@ c gaz050223 setparameters_2b is thesame as 2c
       use comxi, only : cform
 c RJP12/13/06 ADDED following
       use comriv
+c gaz 190725
+      use commass_AWH, only : n_awh_test
       implicit none
 
       character*4 macro
@@ -335,6 +337,8 @@ c set some parameters
       idualp = 0
       izeolites = 0
       ichng = 0
+      n_awh_test = 0
+
 c gaz 061513
       ich_pebi = 0
       if(irun.eq.1) then

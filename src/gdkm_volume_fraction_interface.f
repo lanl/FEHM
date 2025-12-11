@@ -366,9 +366,6 @@ c
       real*8 reduction_factor
       parameter(tol_dir = 1.d-12,tol_dis = 1.d-6)    
 c      
-c tam initialize to avoid runtime errors
-      icd=0
-
       if(iflg.eq.0) then
 c initialization if necessary          
       else if(iflg.eq.1) then
@@ -379,24 +376,12 @@ c modify interface factors
       else
       icd=0
       endif
-
-c tam Fortran runtime error:
-c Index '-443' of dimension 1 of array 'nelm' below lower bound of 1
-      
       do i = 1,neq
       iq = 0
-     
-      if ((i-icd).lt.0) then
-      print*,"ERROR index lt 0 in gdkm_dir_check, skip i: ",i 
-      print*,"nelm size ", sizeof(nelm)
-      print*,"neq: ",neq," icd: ",icd," index: ",i-icd
-      else
       ii1=nelm(i-icd)+1
       ii2=nelm(i-icd+1)
       idg=nelmdg(i-icd)-ii1+1
       jmi=nelmdg(i-icd)
-      endif
-
       do jm=jmi+1,ii2
        kb=nelm(jm)+icd
        iq=iq+1

@@ -432,6 +432,10 @@ c
 c gaz 082616      
       integer kb_pri
       real*8 reduction_factor
+c gaz 061124
+c sensitivity test vmag
+      real*8 vmag_test
+      parameter (vmag_test = 1.d0)
       character*120 fname, root
       character*7 fsuffix
       integer iroot
@@ -686,8 +690,8 @@ c                    sxzc=sx(iw,3)
      4                       dispxavw*dispyavw*tempz) )
 c------- PHS ---------- 9/3/2004 -----------------------------
 
-                        slx2tt = sx2c*(sehvell(sehindexl)*alphaavw +
-     &                       dum_bar)
+                        slx2tt = sx2c*(sehvell(sehindexl)*alphaavw
+     &                       /vmag_test + dum_bar)
 c--------------------------------------------------------------------
                         sehindexl=sehindexl+1
                      else
@@ -798,8 +802,9 @@ c                    sx3c=radkb*sx(iw,2)
      +                       (tempx+tempy))/
      &                       (dispxavw*tempy + dispyavw*tempx ))
 c----------------- PHS ------- 9/3/2004 -----------------------------
-                        slx2tt = sx2c*(sehvell(sehindexl)*alphaavw +
-     &                       dum_bar)
+                        slx2tt = sx2c*(sehvell(sehindexl)*alphaavw
+     &                   /vmag_test + dum_bar)
+                     
 c--------------------------------------------------------------------
                         sehindexl=sehindexl+1
                      else
@@ -853,9 +858,10 @@ c     dir$ ivdep
                iw=it10(jm)
                if (dispsame.eq.1) then
                  if(filter_flag(spec_num).eq.0) then
-                  heatc=sehvell(sehindexl)
+                  heatc=sehvell(sehindexl)/vmag_test
                  else
                   heatc=ftn_factor(istrw_cold(iau))*sehvell(sehindexl)
+     &            /vmag_test
                  endif
                   sehindexl=sehindexl+1
                else

@@ -707,19 +707,19 @@ c
         use comdti, only : n0
         implicit none
         integer  jb, jc, iflg, nzone_used, inode
-        character*5 dumzone
+        character*10 dumzone
 
 c allocate memory if needed
         if(.not.allocated(zones_char)) allocate(zones_char(n0))
         if(iflg.eq.1) then 
 c gaz 062723  write nodes to zone_char  for no saved zone
-          write(dumzone(1:5),'(i5)') nzone_used    
+          write(dumzone(1:10),'(i10)') nzone_used    
            jb = inode      
-           do jc = 1,25           
-            if(zones_char(jb)(jc:jc+4).eq.dumzone(1:5)) then
+           do jc = 1,50           
+            if(zones_char(jb)(jc:jc+9).eq.dumzone(1:10)) then
              go to 8001
-            else if(zones_char(jb)(jc:jc+4).eq.'    ') then
-             write( zones_char(jb)(jc:jc+4),'(i5)') nzone_used
+            else if(zones_char(jb)(jc:jc+9).eq.'         ') then
+             write( zones_char(jb)(jc:jc+9),'(i10)') nzone_used
              go to 8001
             endif
            enddo
@@ -727,14 +727,14 @@ c gaz 062723  write nodes to zone_char  for no saved zone
        
         else if(iflg.eq.2) then
 c gaz 101523  write nodes to zone_char  for ja,jb,jc =' 1 0 0'
-          write(dumzone(1:5),'(a5)') ' all ' 
+          write(dumzone(1:10),'(a10)') '      all' 
 c gaz 101523  inode = 1, nzone_use = n0
           do jb  = inode, nzone_used
-           do jc = 1,25           
-            if(zones_char(jb)(jc:jc+4).eq.dumzone(1:5)) then
+           do jc = 1,50           
+            if(zones_char(jb)(jc:jc+9).eq.dumzone(1:10)) then
              go to 8002
-            else if(zones_char(jb)(jc:jc+4).eq.'    ') then
-             write( zones_char(jb)(jc:jc+4),'(a5)') ' all '
+            else if(zones_char(jb)(jc:jc+9).eq.'         ') then
+             write( zones_char(jb)(jc:jc+9),'(a10)') '      all'
              go to 8002
             endif
            enddo

@@ -653,10 +653,17 @@ c gaz 110424 check for non-darcy flow (nd_flow)
       endif
 
 c     initialize 2-phase regions             
-c     
-            do i=1,n0
-               ieos(i)=2
-            enddo
+c 
+c gaz 260425 added irdof = 11,13 
+c            do i=1,n0
+              if(irdof.eq.13) then
+               ieos(1:n0) = 1
+              else if(irdof.eq.11) then
+               ieos(1:n0) = 3
+              else
+               ieos(1:n0) = 2
+              endif
+c            enddo
          elseif(iflg.eq.-2) then
 c     
 c     for rich eq make "a" smaller
@@ -757,8 +764,9 @@ c                write(ierr,878) 'rich',l,iad,ieos_c,strd,fdum
                else
 c     
 c     determine phase state uzsz
-c     
-                  if(irdof.ne.13) then
+c  
+c gaz 250425   
+                  if(irdof.ne.13.and.irdof.ne.11) then
 c     pnx used to be set in the following loops -- currently removed
 c gaz 081723 try skipping section
                     if(nr_test.eq.0) then
@@ -874,7 +882,7 @@ c                           if (so(mi).ge.1.0) then
                            endif
                         endif
 c     
-                        if(s(mi).lt.-schng) then
+                        if(s(mi).lt.-schng) then                            
                           strd = strd_iter
 c gaz 120919 13:50                          
                           ieos(mi) = 3
@@ -902,7 +910,8 @@ c gaz 121923 enable variable switching
             call phase_change_mass_conv(2,1,n0)
             return
            endif
-            if(abs(irdof).ne.14) then
+c gaz 260325  skip if gas only
+            if(abs(irdof).ne.14.and.irdof.ne.11) then
 c     
 c     update solution
 c     
@@ -928,7 +937,7 @@ c gaz 081623  make first correction and phase change here
 c less pressure change 2 to 3
                    strd1 = 0.95d0
                    strd2 = 1.d0-strd1
-                   ieos(i) = 3
+                   ieos(i) = 3                                            
                    phi(i)=(phi_old*strd2+phi(i)*strd1)
                    s(i) = 0.0d0
                   else if(s(i).gt.1.0d0.and.ieosd.eq.2) then
@@ -967,7 +976,7 @@ c                   phi(i)=(phi_old*strd2+phi(i)*strd1)
                   endif  
                 endif
 c gaz 092723 end isoco
-                endif
+                endif                                                       
                enddo
 c     
 c     call cascade redistribution if requested
@@ -975,7 +984,15 @@ c
                if(iflux_ts.ne.0) then
                   call cascade_sat(1)
                endif
-c     
+c gaz 260425    
+            else if(irdof.eq.11) then
+               nr1=nrhs(1)
+                 do i=1,neq
+                  i1=i+nr1
+                  phi(i)=phi(i)-bp(i1)
+                  s(i) = 0.0d0
+                 enddo
+             continue
             else
 c     
 c     update solution(with exact mass balance)
@@ -1134,11 +1151,9 @@ c     calculate global mass and energy flows
                   write(iatty,707) dife
                endif
  703           format(/,20x,'Global Mass Balances (Vapor)')
- 704           format
-     &         (1x,'Vapor discharge this time step: ',e14.6,' kg')
+ 704           format(1x,'Vapor discharge this time step: ',e14.6,' kg')
  705           format(1x,'Total vapor discharge: ',9x,e14.6,' kg')
- 706           format(/,1x,
-     &              'Net kg vapor discharge (total out-total ',
+ 706           format(/,1x,'Net kg vapor discharge (total out-total ',
      &              'in): ',e14.6)
  707           format(1x,'Conservation Error: ',25x,e14.6)
             endif
@@ -1290,9 +1305,8 @@ c check for bad temperatures
            if(i_t_bad.gt.0) then
             if(iptty.ne.0) write(iptty,*)'************************'
             if(iout.ne.0) write(iout,*)'************************'
-            if(iptty.ne.0) write(iptty,*) 
-     &             i_t_bad,' temps are too low ',
-     &             '(set to Tref) - see error file'
+            if(iptty.ne.0) write(iptty,*) i_t_bad,' temps are too low ',
+     &                    '(set to Tref) - see error file'
             if(iout.ne.0) write(iout,*) i_t_bad,' temps are too low',
      &                    '(set to Tref) - see error file'
             if(iptty.ne.0) write(iptty,*)'************************'
@@ -1345,8 +1359,7 @@ c     write wt output for contours
      &              cord(inode,3), izonef(inode), wt_elev, 0.0
             end do
 
- 4015       format("(1x, 3(g16.9, '", a, "'), 
-     &           i4, 2('", a, "', g16.9))")
+ 4015       format("(1x, 3(g16.9, '", a, "'), i4, 2('", a, "', g16.9))")
  4020       format(1x, 'X (m), Y (m), Z (m), Zone, WT elev (m), ', 
      &           'WT elev2 (m)')
  4019       format(1x, 'X (m) : Y (m) : Z (m) : Zone : WT elev (m) : ',

@@ -451,8 +451,7 @@ c gaz 121921 allow phase count for isothermal models  (defined sl)
                         is_ch=is_ch +1
                      else if(sl.gt.rlptol.and.sl_old.le.rlptol) then
                         is_ch=is_ch +1
-                     else if(sl.ge.1.0-rlptol.and.
-     &                     sl_old.lt.1.0-rlptol) then
+                     else if(sl.ge.1.0-rlptol.and.sl_old.lt.1.0-rlptol) then
                         is_ch=is_ch +1
                      else if(sl.le.rlptol.and.sl_old.gt.rlptol) then
                         is_ch=is_ch +1

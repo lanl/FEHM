@@ -222,11 +222,9 @@ C***********************************************************************
 c gaz 102623 g16.9 tp g16.8
          if(days.eq.0.0) then
           days = 0.0
-          write(daychar,'(1p,g16.9)') days 
-         else
-c xhua 05202024 revised for VV test problem "stress_bodyforce"
-c          write(daychar,'(1p,g16.8)') days  ! this is orginal 
           write(daychar,'(1p,g16.9)') days
+         else
+          write(daychar,'(1p,g16.8)') days
          endif
          k1 = 0
          do 

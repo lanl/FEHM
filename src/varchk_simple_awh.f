@@ -17,18 +17,13 @@ c
       use commass_AWH
       use com_prop_data, only : pl_last, tl_last, pcl_last
       implicit none
-  
-c     subroutine arguments
-      integer iflg,i1,i2,ndummy
-      real*8  dumawh1,dumawh2,strd_simple  
-
-      integer id1,id,i,j,ij,jmia,neqp1
+     
+      integer iflg,id1,id,i,j,i1,i2,ij,jmia,neqp1
       integer nr1,nr2,nr3 
-      integer ieosd,ieosdc
+      integer ieosd,ieosdc,ndummy
       integer i3, i4, kb
-      real*8 pl,tl,pcl,sl,step_nr
-
-c     functions
+      real*8  dumawh1,dumawh2
+      real*8 pl,tl,pcl,sl,strd_simple, step_nr
       real*8 pvapor,dpsatt,dpsats,dtsatp,psatl,tboil
       real*8 pv_diff,s_low,s_high,s_12,s_32,s_21,s_23
 c gaz 030323 moved  phi_max  to comfi
@@ -47,13 +42,9 @@ c gaz 030323 moved  phi_max  to comfi
         pcl = pci(id)
         sl = s(id)
         ieosd = ieos(id)
-
-c tam linux gf13 Error: Type mismatch between argument and actual argument (REAL(8)/REAL(4)).
-c args should be real*8, change 0.0 to 0.0d00 
-
-        tboil=psatl(pl-pcl,0.0d00,0.0d00,dtsatp,dpsats,1,0.0d00)
-        pvapor = psatl(tl,0.0d00,0.0d00,dpsatt,dpsats,0,0.0d00)  
-
+        tboil=psatl(pl-pcl,0.0,0.0,dtsatp,
+     &                             dpsats,1,0.0)
+        pvapor = psatl(tl,0.,0.,dpsatt,dpsats,0,0.0)  
         pv_diff = (pl-pcl) - pvapor 
         ieosd = ieos(id)
         ieosdc = ieosd

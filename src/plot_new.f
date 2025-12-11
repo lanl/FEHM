@@ -88,8 +88,8 @@
       save formp_string, formcs_string
 
       ishisnode = ishisp + ishist + ishishd + ishiss + ishisf + ishisfa 
-     &  + ishise+ ishisef + ishisd + ishisv + ishishm + ishiswt 
-     &  + ishisc + ishiswc + ishiscm + ishiscmf + ishiscmd + ishiscsl 
+     &     + ishise+ ishisef + ishisd + ishisv + ishishm + ishiswt 
+     &     + ishisc + ishiswc + ishiscm + ishiscmf + ishiscmd + ishiscsl 
      &     + ishiscsg + ishisdisx + ishisdisy + ishisdisz
      &     + ishisstr + ishisstrx + ishisstry + ishisstrz
       if (m .eq. 0 .and. node_azones .eq. 0) then
@@ -1053,9 +1053,15 @@ c gaz 080923 added pa output for isothermal 2 phase
               write(ishisp, form1_string) ptime,  
      &           (max(pci(nskw(i)),1.d-98), i=1,m)
              else
-c gaz 220125  changed   ishisp to ishisp2             
-              write(ishisp2, form1_string) ptime,  
+c gaz 220125  changed   ishisp to ishisp2  
+c gaz 050525 pcp not allocated for irdof=13
+              if(irdof.ne.13) then           
+               write(ishisp2, form1_string) ptime,  
      &           (max(phi(nskw(i))-pcp(nskw(i)),1.d-98), i=1,m)
+              else
+               write(ishisp2, form1_string) ptime,  
+     &           (max(phi(nskw(i)),1.d-98), i=1,m)
+              endif
              endif
             if (pres_flag .eq. 3)
      &             write(ishisp3, form1_string) ptime, (dumv(i), i=1,m)

@@ -303,7 +303,9 @@ c ico2 set in scanin.f
       idof   = 2
       ifinsh = 0
       iflag  = 0
-      igrav  = 0
+c gaz 070924
+c igrav set in scanin.f
+c      igrav  = 0
       ihf    = 0
       ihs    = 0
       iprtout    = 0

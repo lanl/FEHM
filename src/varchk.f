@@ -494,11 +494,14 @@ c gaz debug 112721   stepl_hm = 0.96 to 0.9
 c gaz debug 051516 (optimized for geothermal;satml = 1.0d-2 may be too large)      
       parameter(satml_hm = 1.0d-6, eosml_hm = 0.9999)
 c gaz 101419  102119 ...mult_hma = 1.00001 is best
-      parameter(stepl_hma = 0.95, phase_mult_hma = 1.00001)
-      parameter(satml_hma = 1.0d-7, eosml_hma = 0.99)
+c gaz 290925
+c     parameter(stepl_hma = 0.95d0, phase_mult_hma = 1.00001d0)
+      parameter(stepl_hma = 1.0d0, phase_mult_hma = 1.000001d0)
+      parameter(satml_hma = 1.0d-7, eosml_hma = 0.999d0)
       parameter(wgtchng1 = 0.9d0, wgtchng2 = 0.9d0,TNR_min=5.0d0)
 c
-      
+c gaz debug
+       k = cnlf(1)+cnvf(1)+fdum      
       if(ico2.eq.0) then
 c pure water and heat
         satml = satml_hm
@@ -935,7 +938,7 @@ c gaz 011116 testing
                            descrip(ij,2) = '2 to 1 sl>=1'
                            if(pl-pcl.lt.pboil) then
 c gaz040823
-c                            pcl = pl-pboil
+                            pcl = pl-pboil
                             ieosdc = 2
                             ieos_sc(ij) = 2
                             pci(ij)=pcl 
@@ -977,6 +980,7 @@ c gaz debug 090515
                           endif
                         endif
 c gaz debug 120714
+                        x = phi(ij)-pci(ij)
                         if(x.lt.-xdiff_tol.and.sl.le.0.0.and.ieosdc.eq.2
      &                     .and.days.ge.time_ieos(ij)) then
                            ieosdc=3
@@ -1013,8 +1017,7 @@ c gaz debug 120814
 c gaz 120818 add SC transition logic (use pv (x here) instead of total pressure
 
                         ieos_sc(ij) = 3
-                        if(pcl.ge.pl) then
- 
+                        if(pcl.ge.pl) then 
                          pci(ij) = pcl
                          continue
                         endif
@@ -1043,6 +1046,7 @@ c gaz 120818 add SC transition logic (use pv (x here) instead of total pressure
                
 c     check vapor pressure against saturated vapor pressure
 c     change if lower
+                       x = phi(ij)-pci(ij)
                        if(x.ge.pvapor*phase_mult.and.days.
      &                    ge.time_ieos(ij)) then 
                            s(ij)=satml  
@@ -1052,10 +1056,11 @@ c
 c gaz 101819 
 c  
 c gaz debug 102420                           
-c 
+c gaz 270925 added  call phase_chk(1..
+                           call phase_chk(1,ij,pcl,sl,ieosd,'pcl')
                            t(ij) = tboil
-                           s(ij) = sl
-                           pci(ij) = pl-pvapor
+c                           s(ij) = sl
+c                           pci(ij) = pcl
                            time_ieos(ij) = days + time_ch
                            ieosdc = 2
                            ieos_sc(ij) = 2
@@ -1338,12 +1343,17 @@ c gaz debug 093019(stays in! )
                         pvapor = phi(i)
                      endif     
 c gaz 041023                    pci(i) = phi(i)-pvapor
+c gaz 280925 uncommented (above)
+                  pci(i) = phi(i)-pvapor
                   elseif(ieosd.eq.3) then
                      phi(i)=phi(i)-bp(i1)*strd
                      t(i)=t(i)-bp(i2)*strd
                      pci(i)=pci(i)-bp(i3)*strd
                   endif
 c gaz 041323 
+                  pci(i)=max(0.0d00,pci(i))
+                  s(i)=min(1.d00,max(0.0d00,s(i)))
+                   go to 899
                    if(phi(i).lt.0.0d00) then
                     if(ieosd.ne.1) iphase_chng = iphase_chng +1
                     if(ieosd.ne.1) descrip(i,ieosd)
@@ -1352,6 +1362,7 @@ c gaz 041323
      &                     = '1 to 1 pl <= 0 NR ' 
                     ieos(i) = 1
                     ieosd = 1
+c gaz 290925
                     t(i) = tl_last
                     phi(i) = pl_last  
                    endif 
@@ -1394,6 +1405,8 @@ c gaz 041323   ' lt instead of le ',  ' gt instead of ge '     OK
                    ieosd = 3
 c gaz debug 042623
                    t(i) = (tl_last+t(i))*0.5d0
+c gaz 290925
+                   phi(i) = (pl_last+phi(i))*0.5d0
                    descrip(i,ieosd) = '2 to 3 sl <= 0 NR '
                    s(i) = 0.0d00
                   elseif(s(i).gt.1.0d00) then
@@ -1404,9 +1417,13 @@ c gaz debug 042623
                    s(i) = 1.0d00
                   endif
                   if(t(i).le.tNR_min) then
-c                   t(i) = tl_last
+c gaz 290925
+                   t(i) = tl_last
+                   continue
                   endif
 c gaz 032722  load variable changes into bp
+c gaz 280925 added continue
+899               continue  
                   if(ieosd.ne.2) then
                    bp(i1) = pl_last
                    bp(i2) = tl_last
@@ -1415,7 +1432,9 @@ c gaz 032722  load variable changes into bp
                    bp(i1) = pl_last
                    bp(i3) = tl_last
                    bp(i2) = sl                     
-                  endif                  
+                  endif  
+c gaz 280925 added continue
+                 continue                
                enddo 
 c gaz 051023
                   call awh_accumulation_calc(2,1,neq,0)

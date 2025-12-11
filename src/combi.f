@@ -237,7 +237,9 @@ c gaz 102716 saving zones
       character*200, allocatable ::  contour_flux_files(:)
       character*200, allocatable ::  contour_conc_files(:)
 c gaz 062723 zones assigned to node
-      character*30, allocatable ::  zones_char(:)
+c gaz 062124
+c      character*80, allocatable ::  zones_char(:)
+      character*80, allocatable ::  zones_char(:)
       integer maxsvzone 
       parameter (maxsvzone = 200)
 c gaz 062920 added array for zone output to check file 

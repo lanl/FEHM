@@ -302,8 +302,6 @@ c
 c 
       return
       end                
-
-c gaz jan2025 added subroutine
          subroutine check_saved_zone(iflg,ja,ex)
 c check for saved zonefile
           use comai
@@ -343,6 +341,5 @@ c check for saved zonefile
            deallocate(ncord)
           endif
         endif  
-        return
-        end
-
+          return
+          end

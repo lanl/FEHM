@@ -1028,7 +1028,8 @@ c gaz 021919 added hi perm for flow pass through
 c gaz 022319 correct initial mass and energy
                ame = ame - deneh(i)*volume(i)
                am0 = am0 - denh(i)*volume(i)
-               astmo = astmo - dstm (i)
+c gaz 011225               
+c               astmo = astmo - dstm (i)
                volume(i)=sx1(i)
             endif 
             endif

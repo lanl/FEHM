@@ -215,7 +215,6 @@ C***********************************************************************
       integer i, iflg, itt
       real*8 divisor, divisore, inflow, inflowe, btol_save, tolde_save
       real*8 flow_max, ratio2, balfac1, balfac2, balfac3, balfac12
-c gaz jan2025 add pdifmax_old for pmax calculations
       real*8 balfac13, tol_divisor, tmch1_min, tmch1_max,  pdifmax_old
       character*20 dummy
       logical null1
@@ -375,7 +374,7 @@ c gaz 010222 added  tmch_save
                end if
                
                pdifmax = abs((phi(i)-pho(i))/divisor)
-c gaz 081923,071324 use pdefmax_old
+c gaz 081923,071324
                if(pdifmax.gt.pdifmax_old) then
                 pdifmax_old = pdifmax
                 i_pdiff = i
@@ -617,37 +616,37 @@ c                  ratio = flow_max/balance_tol
                    tmch1_max = 100.*stmch0
                    tmch1 = ((tmch1_max-tmch1_min)/(balfac3 -balfac2))*
      &               flow_max + tmch1_min
-          write(ierr,*) 'balfac2 flow_max ', flow_max,' tmch1 ',tmch1 
+          write(ierr,*) 'balfac2 flow_max ', flow_max,' tmch1 ',tmch1     
                   else if(flow_max.gt.balfac1) then 
                    tmch1_min = 10.*stmch0
                    tmch1_max = 50.*stmch0
-                   tmch1 = ((tmch1_max-tmch1_min)/(balfac2 -balfac1))
-     &               * flow_max + tmch1_min 
-          write(ierr,*) 'balfac2 flow_max ', flow_max,' tmch1 ',tmch1
+                   tmch1 = ((tmch1_max-tmch1_min)/(balfac2 -balfac1))*
+     &               flow_max + tmch1_min 
+          write(ierr,*) 'balfac2 flow_max ', flow_max,' tmch1 ',tmch1      
                   else if(flow_max.gt.balfac12) then
                    tmch1_min = 5.*stmch0
                    tmch1_max = 10.*stmch0
-                   tmch1 = ((tmch1_max-tmch1_min)/(balfac1 -balfac12))
-     &               * flow_max + tmch1_min
-          write(ierr,*) 'balfac12 flow_max ', flow_max,' tmch1 ',tmch1
+                   tmch1 = ((tmch1_max-tmch1_min)/(balfac1 -balfac12))*
+     &               flow_max + tmch1_min  
+          write(ierr,*) 'balfac12 flow_max ', flow_max,' tmch1 ',tmch1      
                   else if(flow_max.gt.balfac13) then
                    tmch1_min = 1.5*stmch0
                    tmch1_max = 5.*stmch0
-                   tmch1 = ((tmch1_max-tmch1_min)/(balfac12 -balfac13))
-     &               * flow_max + tmch1_min 
-          write(ierr,*) 'balfac13 flow_max ', flow_max,' tmch1 ',tmch1
+                   tmch1 = ((tmch1_max-tmch1_min)/(balfac12 -balfac13))*
+     &               flow_max + tmch1_min 
+            write(ierr,*) 'balfac13 flow_max ', flow_max,' tmch1 ',tmch1       
                   else if(flow_max.gt.balance_tol) then
                    tmch1_min = stmch0
                    tmch1_max = 1.5*stmch0
-                   tmch1=((tmch1_max-tmch1_min)/(balfac13-balance_tol))
-     &               * flow_max + tmch1_min
-          write(ierr,*) 'bal_tol flow_max ', flow_max,' tmch1 ',tmch1
-                  else
-                   tmch1 = stmch0 
+                   tmch1=((tmch1_max-tmch1_min)/(balfac13-balance_tol))*
+     &               flow_max + tmch1_min   
+            write(ierr,*) 'bal_tol flow_max ', flow_max,' tmch1 ',tmch1       
+                  else                   
+                   tmch1 = stmch0                    
                   endif 
-c gaz 080519 tolerance should decrease monotonically   
+c gaz 080519 tolerance should decrease monotonically                     
                   tmch = min(tmch1,tmch_old)   
-                  write(ierr,*) ' tmch ', tmch,' tmch_old ',tmch_old
+                  write(ierr,*) ' tmch ', tmch,' tmch_old ',tmch_old   
                   tmch_old = tmch  
                endif			 		 
 c            endif
@@ -793,16 +792,16 @@ c gaz 033020
          if (tolds .ne. tolerance)
      &        write(iout, 40) 'saturation', sdifmax, tolds
          if (tolds .ne. tolerance. and. i_sdiff. ne. 0) 
-     &        write(iout, 44) i_sdiff, smax_i, smax_io, izonef(i_sdiff) 
+     &        write(iout, 44) i_sdiff, smax_i, smax_io, izonef(i_sdiff)         
          if (toldt .ne. tolerance)
      &        write(iout, 40) 'temperature', tdifmax, toldt
          if (tacc .ne. tolerance)
      &        write(iout, 40) 'nodal mass', accmax, tacc
          if (tacc .ne. tolerance. and. i_accdif. ne. 0) 
      &    write(iout,45)i_accdif,accmax/(sx1(i_accdif)*denh(i_accdif)),
-     &            amass_ch,izonef(i_accdif) 
+     &            amass_ch,izonef(i_accdif)         
          if (toldc .ne. tolerance)         
-     &        write(iout, 40) 'air pressure', pcidifmax, toldc 
+     &        write(iout, 40) 'air pressure', pcidifmax, toldc         
          if (balance_tol .ne. tolerance) write(iout, 40) 
      &        'flow balance (IN-OUT)', flow_rate, balance_tol
          if (tolde .ne. tolerance) write(iout, 40) 
@@ -817,23 +816,20 @@ c gaz 033020
          if (toldp .ne. tolerance)
      &        write(iptty, 40) 'pressure', pdifmax, toldp
          if (toldp .ne. tolerance. and. i_pdiff. ne. 0) 
-     &        write(iptty, 43) i_pdiff, pmax_i, 
-     &        pmax_io, izonef(i_pdiff)
+     &        write(iptty, 43) i_pdiff, pmax_i, pmax_io, izonef(i_pdiff)
          if (toldh .ne. tolerance)
      &        write(iptty, 40) 'head', hdifmax, toldh
          if (tolds .ne. tolerance)
      &        write(iptty, 40) 'saturation', sdifmax, tolds
          if (tolds .ne. tolerance. and. i_sdiff. ne. 0) 
-     &        write(iptty, 44) i_sdiff, smax_i, 
-     &        smax_io, izonef(i_sdiff)
+     &        write(iptty, 44) i_sdiff, smax_i, smax_io, izonef(i_sdiff) 
          if (toldt .ne. tolerance)         
      &        write(iptty, 40) 'temperature', tdifmax, toldt
          if (tacc .ne. tolerance)
      &        write(iptty, 40) 'nodal mass', accmax, tacc
          if (tacc .ne. tolerance. and. i_accdif. ne. 0) 
-     &        write(iptty,45)i_accdif,
-     &        accmax/(sx1(i_accdif)*denh(i_accdif)),
-     &        amass_ch,izonef(i_accdif)         
+     &    write(iptty,45)i_accdif,accmax/(sx1(i_accdif)*denh(i_accdif)),
+     &            amass_ch,izonef(i_accdif)         
          if (toldc .ne. tolerance)
      &        write(iptty, 40) 'air pressure', pcidifmax, toldc
          if (balance_tol .ne. tolerance) write(iptty, 40) 
@@ -852,8 +848,8 @@ c gaz 033020
  44   format ('>>>>> Gridblock Max Sat change ',i8,
      &     ' Sat(new) ',1p,g12.4,' Sat(old) ',g12.4,
      &     ' Zone ',i6,' <<<<<')
- 45   format ('>>>>> Gridblock Max Mass change ',i8,' Frac change ',
-     &   1p,g12.4,' Total Mass change ',g14.6,' Zone ',i6,' <<<<<')     
+  45  format ('>>>>> Gridblock Max Mass change ',i8,' Frac change ',1p, 
+     &       g12.4,' Total Mass change ',g14.6,' Zone ',i6,' <<<<<')     
  41   format (/, '>>>>> Steady state check (', a, ') <<<<<')
  42   format ('>>>>> Equation tolerance (',1p,g12.4, ') <<<<<')    
  51   format(/,'>>>>> Starting transient simulation',
@@ -862,4 +858,3 @@ c gaz 033020
       end subroutine write_steady_state
 
       end subroutine steady
-

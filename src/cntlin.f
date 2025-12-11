@@ -291,15 +291,9 @@ c      root_name = blank
                stop
             end if
             do
-
-! tam Fortran runtime error: Substring out of bounds:
-! upper bound (121) of 'input_string' exceeds string length (120)
-! add check and exit if len is longer than 120
                j = j + 1
-               if (j > len(input_string)) exit
                if (input_string(j:j) .ne. " " .and.
-     &             input_string(j:j) .ne. achar(9)) exit
-
+     &              input_string(j:j) .ne. achar(9)) exit
             end do  
             flen = len_trim (input_string)
             filename = input_string(j:flen)

@@ -191,7 +191,8 @@ c     assign defaults
       ioporosity = 0
       iosource = 0
       iodensity = 0
-      iogeo = 0
+c gaz 160325 iogeo set in input for vtk
+c      iogeo = 0
       iogrid = 0
       iocord = 0
       iopermeability = 0

@@ -1563,9 +1563,8 @@ c
             end if
          else            
             if (ifinsh .ne. 2 .and. ptime .lt. (last_time + histime)
-c xhua debug 06Oct2024 fixed the printout time intervals for concentration hist outputs *.trc
-c     &           .and. l .lt. (last_step)
-     &           .and. l .lt. (last_step + nhist)
+     &           .and. l .lt. (last_step)
+c    &           .and. l .lt. (last_step + nhist)
      &           .and. iprttrc .lt. nprttrc) then
                time2print = .FALSE.
             else

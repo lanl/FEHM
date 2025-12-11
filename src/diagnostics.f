@@ -538,7 +538,8 @@ c gaz 110123
             end if
          enddo
       endif
- 900  format(1x,a3,1x,'R=',g12.4,1x,'node=',i7,1x,'zone=',i6,
+c gaz enlarged format for zone
+ 900  format(1x,a3,1x,'R=',g12.4,1x,'node=',i7,1x,'zone= ',i10,
      &     1x,'x=',g10.4,1x,'y=',g10.4,1x,'z=',g10.4)
       return
       end

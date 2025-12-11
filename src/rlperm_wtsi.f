@@ -54,12 +54,16 @@
       implicit none
       integer iflg, inode, mm, ihead_ck, j
       integer iadtest, iad_ck_wtsi
-      real*8  hmin, hmax, hfac_l, hfac_h, strd_wtsi
+      real*8  hmin, hmax, hfac_l, hfac_h, strd_wtsi_ref
       real*8  rlzf_dum, dis_ck, head_ck1, head_ck2
+      real*8 hdiff,fac_1,fac_2,fac_3,strd_wtsi
       real*8  fac_wtsi
       parameter (iad_ck_wtsi= 1)
-      parameter (strd_wtsi= 1.d00)
-      parameter (hfac_h=1.0d0, hfac_l=1.00001d0, fac_wtsi= 10000.)
+      parameter (strd_wtsi_ref= 1.0d0)
+c gaz 071524
+c      parameter (strd_wtsi= 1.d00)
+c      parameter (hfac_h=1.0d0, hfac_l=1.00001d0, fac_wtsi= 10000.)
+      parameter (hfac_h=1.00001d0, hfac_l=0.9999d0, fac_wtsi= 10000.)
       save iadtest
       
       if(iflg.eq.0) then
@@ -70,37 +74,54 @@ c
 c     calculate relative perms and other free surface quantities
 c     
 c     first check and change phase state
-c     
+c   
+         fac_1 = 1.d-5 
+         fac_2 = 1.d-5 
+         fac_3 = 1.d-5 
+         if(iad.le.4) then
+          strd_wtsi = strd_wtsi_ref 
+         else
+          strd_wtsi =  1.d0
+         endif
+
          if(iad.lt.iad_up_wtsi) then
             if(iad.eq.0) dry_zone = 0
             if(iad.eq.0) strd = 1.0d0
             do inode=1,n0
+              hmin=head12(inode,1)
+              hmax=head12(inode,2)
+              hdiff = hmax - hmin 
                if(izone_free_nodes(inode).eq.3) then
-                  hmin=head12(inode,1)
-                  hmax=head12(inode,2) 
-                  if(phi(inode).lt.hmax*hfac_l
-     &                 .and.phi(inode).gt.hmin*hfac_h) then
+                  if(phi(inode).le.hmax*hfac_l
+     &                 .and.phi(inode).ge.hmin*hfac_h) then
                      izone_free_nodes(inode)= 2
+                     phi(inode) = min(hmin + fac_2*hdiff,phi(inode))
                      strd = strd_wtsi
-                  else if(phi(inode).gt.hmax*hfac_h) then 
+                  else if(phi(inode).gt.hmax*hfac_l) then 
+                     phi(inode) = max(hmax + fac_1*hdiff,phi(inode))
                      izone_free_nodes(inode)= 1
                      strd = strd_wtsi
                   endif
                else if(izone_free_nodes(inode).eq.2) then
-                  hmin=head12(inode,1)
-                  hmax=head12(inode,2) 
                   if(phi(inode).lt.hmin*hfac_l) then
                      izone_free_nodes(inode)= 3
+                     phi(inode) = min(hmin - fac_3*hdiff,phi(inode))
                      strd = strd_wtsi
                   else if(phi(inode).gt.hmax*hfac_h) then 
                      izone_free_nodes(inode)= 1
+                     phi(inode) = max(hmax + fac_1*hdiff,phi(inode))
                      strd = strd_wtsi
                   endif
                else 
-                  hmin=head12(inode,1)
-                  hmax=head12(inode,2)
-                  if(phi(inode).lt.hmax*hfac_l) then
+c maybe also allow for change to izone_free_nodes(inode)= 3
+                  if(phi(inode).le.hmax*hfac_l
+     &                 .and.phi(inode).ge.hmin*hfac_h) then
+                     phi(inode) = max(hmax - fac_2*hdiff,phi(inode))
                      izone_free_nodes(inode)= 2
+                     strd = strd_wtsi
+                  else if(phi(inode).lt.hmin*hfac_l) then
+                     izone_free_nodes(inode)= 3
+                     phi(inode) = min(hmin - fac_3*hdiff,phi(inode))
                      strd = strd_wtsi
                   endif
                endif   
@@ -115,7 +136,6 @@ c
 
                rlxyf(inode) = 1.d0
                drlxyf(inode) = 0.d0               
-               
             else if(izone_free_nodes(inode).eq.2) then
                hmin=head12(inode,1)
                hmax=head12(inode,2)
@@ -126,12 +146,12 @@ c
                hmin=head12(inode,1)
                hmax=head12(inode,2)
                rlxyf(inode) = 0.d0 + rlptol
-               drlxyf(inode) = 1.d0/(hmax-hmin) 
+c gaz 071524 
+               drlxyf(inode) = 1.d0/(hmax-hmin)
                ifree1 = ifree1 +1
             else
                rlxyf(inode) = 1.d0 + rlptol
                drlxyf(inode) = 0.0d0
-
             endif
 c     
 c     new code gaz 12-15-05 for  horizontal-vertical anisotropy

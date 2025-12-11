@@ -20,12 +20,16 @@ c
       
       integer  imass_phase,neq_phase_chk,n_phase_chk, ivar_mass
 c      real*8 r1min,r2min,r3min,r123min,r123tol
-c      integer, allocatable :: nphase_chk(:)
+      integer n_awh_test, neq_test
       real*8, allocatable  :: wmass_awh(:)
       real*8, allocatable  :: energy_awh(:)
       real*8, allocatable  :: amass_awh(:)
       real*8, allocatable  :: r1_mass(:)
       real*8, allocatable  :: r2_energy(:)
       real*8, allocatable  :: r3_amass(:)
+c gaz 190725
+      real*8, allocatable  :: awh_var_test(:,:)
+     
+     
       
       end module commass_AWH

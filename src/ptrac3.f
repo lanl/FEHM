@@ -1115,7 +1115,8 @@ c     3        ,print_node,itime
 
       subroutine compute_concentrations
       implicit none
-
+c gaz 100925
+      integer i_gttol
       anl = anv
       anv = 0.
       do np1 = 1, num_part
@@ -1141,6 +1142,20 @@ c     concentration in particles per fluid mass
          if(iprtr.lt.0) then
             an(i) = an(i) + 0.5*(tt1-tt1_old)*(anl(i)+anv(i))/num_part
          end if
+c gaz debug 090925
+       if (i.eq.1) then
+        write(ierr,*) 'days tracer ', tt1 
+        i_gttol = 0
+       endif
+       if(abs(anv(i)).gt.1.d-12) then
+        i_gttol = i_gttol+1
+        write(ierr,444) i, anv(i), anv(i)*denom 
+444    format('node ',i8,' value ',1p,g14.6,' num part ',f10.3)
+        continue
+       endif
+       if (i.eq.n0) then
+        write(ierr,*) 'days tracer ', tt1,' tot part ', i_gttol  
+       endif
       end do
 
       if(iprtr.ge.0) then

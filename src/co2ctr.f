@@ -427,18 +427,15 @@ c applying tol_p to mass frac calc
 c     set tbnd for pco2 change(see about line 580)
        parameter(tbnd = -1.0)
        save ngas_flag, ngas_flag2
-
-c tam  avoid memory error when junk is passed to parse_string2
-c      initialize parse_string2 parameters
-       nwds = 0
-       imsg = 0
-       xmsg = 0.
-       cmsg = ''
 c     
 c     return if no noncondensible present
 c     
       istflag = 0
       if(ico2.gt.0) then
+c debug
+      i = t(1) 
+      i = s(1) 
+      i = so(1)     
 c     iflg is used to tell if call is for initialization
          if(iflg.eq.0) then
 c
@@ -518,7 +515,6 @@ c gaz added phase designation for humidity IC (gas,ieos(i) = 3 )
 c     Check to verify if new input is being used for group 3
             read (inpt, '(a80)') dumstring
             backspace inpt
-            nwds=0
             call parse_string2(dumstring,imsg,msg,xmsg,cmsg,nwds)
             if (nwds .gt. 0 .and. nwds .lt. 5) then
                old_input = .true.
@@ -604,7 +600,6 @@ c     Check to verify if new input is being used for group 4
             if (.not. old_input) then
                read (inpt, '(a80)') dumstring
                backspace inpt
-               nwds=0
                call parse_string2(dumstring,imsg,msg,xmsg,cmsg,nwds)
                if (nwds .gt. 0 .and. nwds .lt. 5) then
                   old_input = .true.
@@ -1065,24 +1060,18 @@ c switch variables case 1
          if(ieosd.eq.2) then
 c possible change from 2 phase conditions  
 c since calculating on an individual gridblock we can ignore porosity and volume
-
-c xhua error#6631 A non-optional actual argument must be present when 
-c                 invoking a procedure with an explicit interface
-c        call mass_component_liq(ij,2)    this is old one
-c        call mass_component_gas(ij,2)    this is old one
-         call mass_component_liq(iflg,ij,2)
-         call mass_component_gas(iflg,ij,2)
-
+         call mass_component_liq(ij,2)
+         call mass_component_gas(ij,2)
          sl = s(ij)
          sv =1.0-sl
          z_total = (xnl*rol*sl+xnv*rov*sv)
          z_massfrac = z_total/(rol*sl+rov*sv)
 c check for liquid phase transition
-         call mass_component_liq(iflg,ij,1)
+         call mass_component_liq(ij,1)
 c check for gas phase transition
-         call mass_component_gas(iflg,ij,1)
+         call mass_component_gas(ij,1)
 c check for sc phase transition
-         call mass_component_sc(iflg,ij,1)         
+         call mass_component_sc(ij,1)         
          else if(ieosd.eq.1) then         
 c possible change from liquid conditions          
          else if(ieosd.eq.3) then
@@ -1133,28 +1122,22 @@ c calculate non water liq component in binary mixture
       real*8 z_old, z, zl_ngas, roc_tmp, phi_tmp, dresid_masspc 
 c gaz 072522 added local variables   
       real*8 pci_tmp, psatl, psatl_100, dpsatt_100, dpsats
-
+      real*8 dum0, dum2, dum3
       real*8 resid_mass, tol_mass_phase 
       integer  ij, iphase, istate, ieos_save, intv, intv_cnt
       integer inr0, max_inr0
       integer, allocatable :: node_intv(:)
-
-c tam Error: Type mismatch between actual arguments  (CHARACTER(80)/REAL(8
-c dumb, dumc changed from character*80 to real*8
-      real*8 dum0, dum2, dum3, dumb, dumc
-      character*80 dum1
-      logical phase_nr(3), test_phase
       parameter (max_inr0 = 10, tol_mass_phase = 1.d-6, intv = 10)
-c     parameter (test_phase = .true.)
-
+c
+      character*80 dum1, dumb, dumc
+      logical phase_nr(3), test_phase
+c      parameter (test_phase = .true.)
 cDEC$ FIXEDFORMLINESIZE:132      
       if(iflg.eq.0) then
 c allocate memory            
 c initialize and allocate memory   
-       call fluid_props_control(0, 0, 0, fluid(1), 
-     &       'all      ', '         ')
-       call fluid_props_control(0, 0, 0, fluid(2), 
-     &       'all      ', '         ')
+       call fluid_props_control(0, 0, 0, fluid(1), 'all      ', '         ')
+       call fluid_props_control(0, 0, 0, fluid(2), 'all      ', '         ')  
       else if(iflg.eq.1.or.iflg.eq.-1) then
 c calculate initial phase states   
 c gaz 072522 check for gas phase conditions step 1
@@ -1286,10 +1269,8 @@ c
         sl = s(mi)
 c gaz set s(mi) = 0.5 to get liq and vap props  
           s(mi) = 0.5
-          call fluid_props_control(1, mi, mi,fluid(1), 
-     &         'all      ', '         ') 
-          call fluid_props_control(1, mi, mi,fluid(2),
-     &         'all      ', '         ') 
+          call fluid_props_control(1, mi, mi,fluid(1), 'all      ', '         ') 
+          call fluid_props_control(1, mi, mi,fluid(2), 'all      ', '         ')
           rol = den_h2o(mi,1)
           rov	= den_h2o(mi,4)          
           roc = den_ngas(mi,1) 
@@ -1299,8 +1280,7 @@ c gaz set s(mi) = 0.5 to get liq and vap props
           s(mi) =sl 
         do inr0 = 1, max_inr0
 c        
-          resid_mass = xnl*rol*sl + xnv*ros*(1-sl) - 
-     &                 zl_ngas*(rol*sl+ros*(1-sl)) 
+          resid_mass = xnl*rol*sl + xnv*ros*(1-sl) - zl_ngas*(rol*sl+ros*(1-sl))            
           dresid_sl = xnl*rol - xnv*ros - zl_ngas*(rol-ros)
           sl = sl - resid_mass/dresid_sl
           if(abs(resid_mass).le.tol_mass_phase) then 
@@ -1345,23 +1325,19 @@ c did not converge in max_inr iterations
           node_intv(intv_cnt) = mi
          elseif(mod(intv_cnt,intv).eq.0) then
           node_intv(intv_cnt) = mi     
-          write(ierr,502)(node_intv(i),ieos_prev(node_intv(i)),
-     &          ieos(node_intv(i)),i = 1,intv_cnt)
+          write(ierr,502)(node_intv(i),ieos_prev(node_intv(i)),ieos(node_intv(i)),i = 1,intv_cnt)
           intv_cnt = 0  
          endif
         endif
         enddo
         if(intv_cnt.ne.0) then
-          write(ierr,502)(node_intv(i),ieos_prev(node_intv(i)),
-     &          ieos(node_intv(i)),i = 1,intv_cnt)
+          write(ierr,502)(node_intv(i),ieos_prev(node_intv(i)),ieos(node_intv(i)),i = 1,intv_cnt)
           intv_cnt = 0 
         endif
-501     format('time (days)',1x,g12.5,' tstep',1x,i6,
-     &         ' iter',1x,i4,' phase chng',1x,i6)   
+501     format('time (days)',1x,g12.5,' tstep',1x,i6,' iter',1x,i4,' phase chng',1x,i6)   
 502     format(1x,10(1x,'node =',i7,',','(',i1,',',i1,')'))   
-        if(iflg.eq.-1.and.phase_nr(1).eqv..false..and.
-     &     phase_nr(2).eqv..false.
-     &     .and.phase_nr(3).eqv..false.) then       
+        if(iflg.eq.-1.and.phase_nr(1).eq..false..and.phase_nr(2).eq..false.
+     &  .and.phase_nr(3).eq..false.) then       
 c something went wrong in. phase check    
          if(iptty.ne.0) write(iptty,*) 'phase check error - stopping'
          if(iout.ne.0) write(iout,*) 'phase check error - stopping'
@@ -1468,9 +1444,7 @@ c switch variables from(P,S,T) to (P,Z,T) (ieosd = 1 and 3)
       real*8 delpcl,dresid_dpcl,drovpc,drovt,pv1,rov1,pv_in
       real*8 pcl_orig,roc_orig,pv_h2o, rol_liq, rol_vap, por
       real*8 dresid_sl,delsl,var_dum,var_dum1,sl_best, sl_best32
-      real*8 value_a(9) 
-c tam changed from 3 to 4 to match deriv in massfrac_derivatives()
-      real*8 deriv(4,4)
+      real*8 value_a(9), deriv(3,3)
       integer i1,i2,j,ij,istate,iphase,jmia,neqp1
       integer i3,kb,nr1,nr2,nr3
       real*8 ztol
@@ -1707,8 +1681,7 @@ c      use comdi,only : ps, denh, deneh, ieos, t, phi, s
       integer iflg,i,id,id1,i1,i2,nsizea1,nsizea,neqp1,ndummy   
       real*8 dtin, ztol, energy_norm, frac_ngas, sx1d
       real*8 delmax(3), tol_eq1, tol_eq2, tol_eq3
-      real*8 fdum_phase_calc, fdum_phase_prev 
-      real*8 tol_phase_calc, fdum_raw(3)
+      real*8 fdum_phase_calc, fdum_phase_prev, tol_phase_calc, fdum_raw(3)
       real*8 dtot_orig, ts_fac
       real*8 strd_smpl
       real*8 phi_low,phi_high,t_low,t_high,pci_low,pci_high
