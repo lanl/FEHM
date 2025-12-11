@@ -1,10 +1,12 @@
 ##!/bin/bash
+# Usage: diff_script.sh file1 file
 
+# this produces error
 ## Check for the correct number of arguments
-if [[ "$##" -ne 2 ]]; then
-    echo "Usage: $0 file1 file2"
-    exit 1
-fi
+# if [[ "$##" -eq 2 ]]; then
+#     echo "Usage: $0 file1 file2"
+#     exit 1
+# fi
 
 file1=$1
 file2=$2
