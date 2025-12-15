@@ -15,6 +15,9 @@ CD1
 CD1 PURPOSE
 CD1
 CD1 Finite Element Heat and Mass Transfer in porous media.
+CD1
+CD1 Uncomment PC for Windows, Uncomment UNIX for Linux
+CD1 This version is for PC
 CD1 
 C***********************************************************************
 CD2
@@ -161,18 +164,19 @@ CPS END fehmn
 CPS
 C***********************************************************************
 
-c	PC Version
-C      use dfport
-C      use ifport
+C	PC Version
+      use ifport
+C      use compart, only : ripfehm
+C      use comai, only : irun
       implicit none
 
       interface
          subroutine fehmn(method, state,in, out)
 C!DEC$ ATTRIBUTES c :: fehmn
-C!DEC$ ATTRIBUTES value :: method
-C!DEC$ ATTRIBUTES reference :: state
-C!DEC$ ATTRIBUTES reference :: in
-C!DEC$ ATTRIBUTES reference :: out
+!DEC$ ATTRIBUTES reference :: method
+!DEC$ ATTRIBUTES reference :: state
+!DEC$ ATTRIBUTES reference :: in
+!DEC$ ATTRIBUTES reference :: out
          integer method, state
          real(8) in(4), out(3)
          end subroutine fehmn
@@ -192,7 +196,7 @@ c zvd 09-Sep-2011 change size of in array to be consistent with iofile
 c modification for GoldSim 
       in = 0.
       out = 0.
-c      ripfehm = 0
+c     ripfehm = 0
 c     Determine how many runs to perform
       call inmsim
 
@@ -200,12 +204,12 @@ c     Perform all runs
       do irun = 1, nsim
 
          if(file_exists) then
-c	UNIX version
-            write(pre_string,1000) 'sh fehmn.pre ',irun, nsim
-            call system(pre_string)
-c	PC version
-C	     write(pre_string,1000) 'fehmn.pre ',irun, nsim
-C            return_flag = system(pre_string)
+C	UNIX version
+C            write(pre_string,1000) 'sh fehmn.pre ',irun, nsim
+C	PC version
+	      write(pre_string,1000) 'fehmn.pre ',irun, nsim
+C            call system(pre_string)
+            return_flag = system(pre_string)
          end if
 c     First call for initialization, second call for calculation
          method = 0
@@ -216,22 +220,22 @@ c     First call for initialization, second call for calculation
          method = 1
          call fehmn(method, state, in, out)
          if(file_exists) then
-c	PC Version
-C            write(post_string,1001) 'fehmn.post ',irun, nsim
-C            return_flag = system(post_string)
-c	UNIX Version
-            write(post_string,1001) 'sh fehmn.post ',irun, nsim
-            call system(post_string)
-         end if
+C	PC Version
+            write(post_string,1001) 'fehmn.post ',irun, nsim
+C	UNIX Version
+C            write(post_string,1001) 'sh fehmn.post ',irun, nsim
+C            call system(post_string)
+            return_flag = system(post_string)
+        end if
       end do
 
 
-c	UNIX Version
- 1000 format(a13, 1x, i10, 1x, i10)
- 1001 format(a14, 1x, i10, 1x, i10)
-c	PC Version
-C 1000 format(a10, 1x, i10, 1x, i10)
-C 1001 format(a11, 1x, i10, 1x, i10)
+C	UNIX Version
+c 1000 format(a13, 1x, i10, 1x, i10)
+c 1001 format(a14, 1x, i10, 1x, i10)
+C	PC Version
+ 1000 format(a10, 1x, i10, 1x, i10)
+ 1001 format(a11, 1x, i10, 1x, i10)
 
       stop
 
@@ -254,12 +258,12 @@ c     If there are multiple simulations, determine how many
       if(file_exists) then
          open(1,file='fehmn.msim')
          read(1,*) nsim
-c       PC Version
-C         open(2,file='fehmn.pre.bat')
-C         open(3,file='fehmn.post.bat')
-c       UNIX version
-         open(2,file='fehmn.pre')
-         open(3,file='fehmn.post')
+C       PC Version
+         open(2,file='fehmn.pre.bat')
+         open(3,file='fehmn.post.bat')
+C       UNIX version
+C         open(2,file='fehmn.pre')
+C         open(3,file='fehmn.post')
          more = .true.
          print_flag = 2
          do while(more)

@@ -16,6 +16,9 @@ CD1 PURPOSE
 CD1
 CD1 Finite Element Heat and Mass Transfer in porous media.
 CD1 
+CD1 Uncomment PC for Windows, Uncomment UNIX for Linux
+CD1 This version is for UNIX
+CD1
 C***********************************************************************
 CD2
 CD2 REVISION HISTORY
@@ -161,7 +164,7 @@ CPS END fehmn
 CPS
 C***********************************************************************
 
-c	PC Version
+C	PC Version
 C       use ifport
 
 C     not used V3.6
@@ -203,10 +206,10 @@ c     Perform all runs
       do irun = 1, nsim
 
          if(file_exists) then
-c	UNIX version
+C	UNIX version
             write(pre_string,1000) 'sh fehmn.pre ',irun, nsim
             call system(pre_string)
-c	PC version
+C	PC version
 C	     write(pre_string,1000) 'fehmn.pre ',irun, nsim
 C            return_flag = system(pre_string)
          end if
@@ -219,20 +222,20 @@ c     First call for initialization, second call for calculation
          method = 1
          call fehmn(method, state, in, out)
          if(file_exists) then
-c	PC Version
+C	PC Version
 C            write(post_string,1001) 'fehmn.post ',irun, nsim
 C            return_flag = system(post_string)
-c	UNIX Version
+C	UNIX Version
             write(post_string,1001) 'sh fehmn.post ',irun, nsim
             call system(post_string)
          end if
       end do
 
 
-c	UNIX Version
+C	UNIX Version
  1000 format(a13, 1x, i10, 1x, i10)
  1001 format(a14, 1x, i10, 1x, i10)
-c	PC Version
+C	PC Version
 C 1000 format(a10, 1x, i10, 1x, i10)
 C 1001 format(a11, 1x, i10, 1x, i10)
 
@@ -257,10 +260,10 @@ c     If there are multiple simulations, determine how many
       if(file_exists) then
          open(1,file='fehmn.msim')
          read(1,*) nsim
-c       PC Version
+C       PC Version
 C         open(2,file='fehmn.pre.bat')
 C         open(3,file='fehmn.post.bat')
-c       UNIX version
+C       UNIX version
          open(2,file='fehmn.pre')
          open(3,file='fehmn.post')
          more = .true.
