@@ -1,0 +1,12 @@
+input: ../input/gas_ndar_9.in
+grida: ../input/mdat_2d_simple.grid
+outp: gas_ndar_9.out
+root: gas_ndar_9
+check: gas_ndar_9.chk
+
+all
+
+
+rsti: ../input/non_darcy_2D.ini_liq
+nopf: ../input/non_darcy_2D2.nop
+

@@ -1,0 +1,17 @@
+input: ../input/A1Darcy_dp1e00.in
+gridf: ../input/full_mesh.fehmn
+outp:  A1Darcy_dp1e00.out
+rsto:  A1Darcy_dp1e00.fin
+check: A1Darcy_dp1e00.chk
+root:  A1Darcy_dp1e00
+error: A1Darcy_dp1e00.err
+stor: ../input/full_mesh_vol_area_1e-3.stor
+
+all
+0
+
+
+# dfn generated stor file for aperture 
+# stor:  full_mesh_vol_area_1e-3.stor
+
+
