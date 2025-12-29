@@ -246,8 +246,8 @@ geneq1_stress_coupl.o: comflow.o comgi.o comhi.o comji.o comsi.o davidi.o
 geneq1_stress_coupl_porosi.o: comai.o combi.o comci.o comdi.o comdti.o comei.o
 geneq1_stress_coupl_porosi.o: comfem.o comfi.o comflow.o comgi.o comhi.o
 geneq1_stress_coupl_porosi.o: comji.o comriv.o comsi.o davidi.o
-geneq1_well.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
-geneq1_well.o: comflow.o comgi.o comhi.o comji.o comriv.o davidi.o
+geneq1_well.o: comflow.o davidi.o comji.o comhi.o comfi.o comgi.o comei.o
+geneq1_well.o: comdi.o comci.o combi.o comdti.o comai.o comriv.o
 geneq2.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comflow.o
 geneq2.o: comgi.o comji.o comwellphys.o davidi.o com_prop_data.o
 geneq2_ani.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
@@ -320,6 +320,23 @@ gensdp3.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o comgi.o
 gensdp3.o: comhi.o davidi.o
 gensdp_switch.o: comai.o combi.o comci.o comdi.o comdti.o comei.o comfi.o
 gensdp_switch.o: comgi.o comhi.o davidi.o
+geneq1_w_nondarcy.o: comflow.o davidi.o comji.o comhi.o comfi.o comgi.o
+geneq1_w_nondarcy.o: comei.o comdi.o comci.o combi.o comdti.o comai.o
+geneq1_w_nondarcy.o: comriv.o comfem.o comsi.o com_nondarcy.o
+geneq2_nondarcy.o: comflow.o davidi.o comji.o comfi.o comgi.o comei.o 
+geneq2_nondarcy.o: comdi.o comci.o combi.o comdti.o com_nondarcy.o
+geneqc_w_nondarcy.o: comzeoli.o comflow.o davidi.o comji.o comfi.o comgi.o
+geneqc_w_nondarcy.o: comei.o comdi.o comci.o combi.o comdti.o comai.o
+geneqc_w_nondarcy.o: comrxni.o com_nondarcy.o com_nondarcy_AWH.o
+gensl1_w_nondarcy.o: davidi.o comflow.o comhi.o comgi.o comfi.o comei.o comdi.o
+gensl1_w_nondarcy.o: comci.o combi.o comdti.o comai.o comriv.o comcouple.o
+gensl1_w_nondarcy.o: com_nondarcy.o  
+gensl2_w_nondarcy.o: davidi.o comhi.o comcouple.o comgi.o comfi.o comei.o
+gensl2_w_nondarcy.o: comdi.o comci.o combi.o comdti.o comai.o comwt.o comriv.o
+gensl2_w_nondarcy.o: comwellphys.o com_prop_data.o com_nondarcy.o comflow.o
+gensl2_w_nondarcy.o: davidi.o comji.o comfi.o comgi.o comei.o comsplitts.o
+gensl4_w_nondarcy.o: davidi.o comhi.o comgi.o comfi.o comei.o comdi.o comci.o
+gensl4_w_nondarcy.o: combi.o comdti.o comai.o comcouple.o com_nondarcy.o
 gensl1.o: comai.o combi.o comci.o comcouple.o comdi.o comdti.o comei.o comfi.o
 gensl1.o: comflow.o comgi.o comhi.o comriv.o davidi.o
 gensl2.o: davidi.o comhi.o comcouple.o comgi.o comfi.o comei.o comdi.o
@@ -414,6 +431,11 @@ inptrk.o: comsptr.o
 input.o: comai.o combi.o comchem.o comci.o comco2.o comdi.o comdti.o comevap.o
 input.o: comflow.o compart.o comriv.o comrxni.o comsi.o comsplitts.o comsptr.o
 input.o: comwt.o davidi.o trxnvars.o com_prop_data.o com_nondarcy.o
+input_w_nondarcy.o: comai.o combi.o comchem.o comci.o comco2.o comdi.o comdti.o comevap.o
+input_w_nondarcy.o: comflow.o compart.o comriv.o comrxni.o comsi.o comsplitts.o comsptr.o
+input_w_nondarcy.o: comwt.o davidi.o trxnvars.o com_prop_data.o com_nondarcy.o
+input_w_nondarcy.o: com_exphase.o commass_AWH.o com_nondarcy.o avsio.o 
+innondarcy.o: comdi.o comci.o comdti.o comai.o comki.o com_nondarcy.o
 inrestart.o: comai.o combi.o comxi.o
 inrlp.o: comai.o comco2.o comcomp.o comdi.o comdti.o comki.o comrlp.o
 inrock.o: comai.o comdi.o comdti.o comki.o
@@ -712,14 +734,14 @@ wtsictr.o: comai.o combi.o comci.o comdi.o comdti.o comfi.o comii.o comwt.o
 wtsictr.o: comxi.o
 zone.o: avsio.o comai.o combi.o comdi.o comdti.o trxnvars.o
 avsio.mod: avsio.o
-cmoai.mod: cmoai.o
+comai.mod: comai.o
 combi.mod: combi.o
 comchem.mod: comchem.o
 comci.mod: comci.o
 comco2.mod: comco2.o
 comcomp.mod: comcomp.o
 comcouple.mod: comcouple.o
-cmodi.mod: cmodi.o
+comdi.mod: comdi.o
 comdti.mod: comdti.o
 comei.mod: comei.o
 comevap.mod: comevap.o
@@ -728,9 +750,9 @@ comfem.mod: comfem.o
 comfi.mod: comfi.o
 comflow.mod: comflow.o
 comgi.mod: comgi.o
-cmohi.mod: cmohi.o
-cmoii.mod: cmoii.o
-cmoji.mod: cmoji.o
+comhi.mod: comhi.o
+comii.mod: comii.o
+comji.mod: comji.o
 comki.mod: comki.o
 commass_AWH.mod: commass_AWH.o
 commeth.mod: commeth.o

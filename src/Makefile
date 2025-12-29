@@ -52,8 +52,9 @@ DEBUGFLAGS = -g -O0 -frecord-marker=4 -fbounds-check -Wall
 
 
 # Define the written OS tag
+# OSTAG = lbUbuntu16
 ifeq (${OPSYS}, Linux)
-	OSTAG = lbUbuntu16
+	OSTAG = rhel
 else ifeq (${OPSYS}, Darwin)
 	OSTAG = macOS
 else ifeq (${OPSYS}, Windows)
