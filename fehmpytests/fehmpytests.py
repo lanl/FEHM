@@ -210,6 +210,7 @@ class fehmTest(unittest.TestCase):
 
     def darcy2D(self):
         # Test Darcy and non-Darcy flow liquid and gas 2D
+        # Initial tests to be replaced by tests in non_darcy
         #
         # Compares the generated presWAT files files known to be correct.
         #
@@ -434,6 +435,26 @@ class fehmTest(unittest.TestCase):
         # .. Updated: June 2014 by Mark Lange
         
         self.test_case('multi_solute')
+
+    def non_darcy(self):
+        # Test non-darcy flow liquid and gas 2D
+        #
+        # Under development with George Z. 
+        #
+        # .. Authors: Terry Miller modified from George tests for ndar
+
+        self.test_case('non_darcy')
+
+    def non_darcy_dfn(self):
+        # Test darcy and non-darcy water into single fracture
+        #
+        # These tests were developed by the dfnWorks team 
+        # Jeffrey, Dolan, Matt, Maitri
+        # Using gaz-nondarcy2 branch
+        #
+        # .. Authors: Terry Miller modified from dfnWorks ndar tests
+
+        self.test_case('non_darcy_dfn')
 
     def perm_test(self):
         # Test perm_test
@@ -944,6 +965,7 @@ class fehmTest(unittest.TestCase):
                 
         try:
             #Test the new files generated with each subcase.
+            # Search compare directory for files to be used to validate run.
             for subcase in subcases:
                 parameters['subcase'] = subcase
                 # CD into run directory
@@ -952,7 +974,8 @@ class fehmTest(unittest.TestCase):
                 if os.path.exists( output_dir ): shutil.rmtree(output_dir)
                 os.mkdir( output_dir )
                 os.chdir( output_dir )
-                filetypes = ['*.avs', '*.avsx', '*.csv','*.his','*.out','*.trc','*.ptrk','*.dat','*.sptr3', '*.cflx']
+                filetypes = ['*.avs', '*.avsx', '*.csv','*.his','*.out','*.trc','*.vtk','*.ptrk','*.dat','*.sptr3', '*.cflx']
+
                 test_flag = False
                 
                 for filetype in filetypes:
@@ -1327,6 +1350,7 @@ class fehmTest(unittest.TestCase):
                  '*.sptr3':  comparison_case,
                  '*.his':  history_case,
                  '*.trc':  comparison_case,
+                 '*.vtk':  comparison_case,
                  '*.out':  comparison_case, 
                  '*.cflx': comparison_case,
                  '*.ptrk': ptrack_case }[filetype]
@@ -1349,7 +1373,21 @@ class fehmTest(unittest.TestCase):
             filesfile = os.path.join('..','input','control',subcase+'.files')
             
         evalstr = exe+' '+filesfile
-        #print('evalstr: ', evalstr)
+
+        # debug tam --------------------------
+        try:
+            #print('evalstr: ', evalstr)
+            base_name = os.path.basename(filesfile)
+            destination_path = os.path.join(os.getcwd(), base_name)
+
+        ## Copy the file
+            shutil.copy(filesfile, destination_path)
+            #print(f"Copied '{filesfile}' to '{destination_path}'")
+
+        except Exception as e:
+            print(f"An error occurred while copying the file: {e}")
+
+        # end debug -------------------------
         
         with open(os.devnull, "w") as f:
             call(evalstr, shell=True, stdout=f)
@@ -1418,6 +1456,8 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('cflxz', log))
         suite.addTest(fehmTest('colloid_filtration', log))
         suite.addTest(fehmTest('darcy2D', log))
+        suite.addTest(fehmTest('non_darcy', log))
+        suite.addTest(fehmTest('non_darcy_dfn', log))
         #suite.addTest(fehmTest('dissolution', log))
         #suite.addTest(fehmTest('doe', log))
         suite.addTest(fehmTest('dryout', log))
@@ -1464,6 +1504,8 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('cflxz', log))
         suite.addTest(fehmTest('colloid_filtration', log))
         suite.addTest(fehmTest('darcy2D', log))
+        suite.addTest(fehmTest('darcy2D', log))
+        suite.addTest(fehmTest('non_darcy', log))
         suite.addTest(fehmTest('dissolution', log))
         suite.addTest(fehmTest('doe', log))
         suite.addTest(fehmTest('dryout', log))
