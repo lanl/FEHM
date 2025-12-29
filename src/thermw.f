@@ -880,6 +880,7 @@ c gaz 101221
       real*8, allocatable :: rvf0(:)
       real*8, allocatable :: drvfs0(:)
 c gaz 101221      
+c gaz 122225 romove extended line
 cDEC$ FIXEDFORMLINESIZE:132      
       
       allocate(sto1(n0*2))

@@ -1141,12 +1141,12 @@ c gaz 072522 added local variables
       integer inr0, max_inr0
       integer, allocatable :: node_intv(:)
       parameter (max_inr0 = 10, tol_mass_phase = 1.d-6, intv = 10)
-c tam 122225 correct from char to real as expected in routines
-c     character*80 dum1, dumb, dumc
+c gaz 231225 character*80 to real*8^M
+c     character*80 dum1, dumb, dumc^M
       real*8  dum1, dumb, dumc
       logical phase_nr(3), test_phase
 c      parameter (test_phase = .true.)
-cDEC$ FIXEDFORMLINESIZE:132      
+c DEC$ FIXEDFORMLINESIZE:132      
       if(iflg.eq.0) then
 c allocate memory            
 c initialize and allocate memory   
@@ -1467,7 +1467,7 @@ c switch variables from(P,S,T) to (P,Z,T) (ieosd = 1 and 3)
       real*8 delpcl,dresid_dpcl,drovpc,drovt,pv1,rov1,pv_in
       real*8 pcl_orig,roc_orig,pv_h2o, rol_liq, rol_vap, por
       real*8 dresid_sl,delsl,var_dum,var_dum1,sl_best, sl_best32
-c tam 122225 changed from 3 to 4 to match deriv in massfrac_derivatives()
+c tam 221225 changed from 3 to 4 to match deriv in massfrac_derivatives()
       real*8 deriv(4,4)
       real*8 value_a(9)
       integer i1,i2,j,ij,istate,iphase,jmia,neqp1
