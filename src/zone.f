@@ -506,7 +506,7 @@ c     read in nodes in zone from xy list
                i_old = i
                icnl_old=icnl
                icnl=1
-               call near3(xg,yg,0.0,i,0)
+               call near3(xg,yg,0.0d0,i,0)
                icnl=icnl_old
                if(i_old.eq.i) go to 71
                xg=cord(i,1)

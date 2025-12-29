@@ -955,7 +955,8 @@ c  rock state started at last time step temperatures
       call vrock_ctr(2,0)
 c gaz 101221 added fluid control module
 c initialize and allocate memory   
-       call fluid_props_control(0, 0, 0, fluid(1), 'all      ', '         ')   
+       call fluid_props_control(0, 0, 0, fluid(1), 
+     &      'all      ', '         ')   
 c gaz 123020 manage explicit update 
        if(i_ex_update.ne.0.and.ieq_ex.gt.0) then
          loop_start = ieq_ex
@@ -1024,7 +1025,8 @@ c check for aux eos(iieosd.gt.10)
 
 c       go to 699
        kq = l
-       call fluid_props_control(1, mi, mi,fluid(1), 'all      ', '         ')
+       call fluid_props_control(1, mi, mi,fluid(1), 
+     &      'all      ', '         ')
 c     
 c gaz 101321 set variables to new code values from fluid_props_control
 c

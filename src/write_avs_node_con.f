@@ -932,9 +932,10 @@ c gaz use a blanking value
                end if
             end if
 c end endif *****
-           
-            
 
+c xhua debug fixed the node-coordiate problem in output *con_node.avsx ^M
+c      i_wrt needs to be set to i 
+         i_wrt = i
          if (altc(1:3) .eq. 'tec' .and. iocord .ne. 0) then
                   if (icall .eq. 1 .and. iozid .eq. 0) then
                    if(i.ne.iblanking_value) then

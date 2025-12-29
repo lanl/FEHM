@@ -187,9 +187,12 @@ c     read in nodal capillary type
            do i = 1, ntblines_roc
              roc_table(i,1:3) = temp_table(i,1:3)
            enddo
-          call manage_rock_tables(3,0,0,0.d0,0.d0,0.d0,0.d0,0.d0)
-        endif
 
+c xhua error#6631
+c should have 4 integers followed by 5 reals
+c         call manage_rock_tables(3,0,0,0.d0,0.d0,0.d0,0.d0,0.d0) original
+          call manage_rock_tables(3,0,0,0,0.d0,0.d0,0.d0,0.d0,0.d0)
+        endif
             
          else if(iflg.eq.1) then
 

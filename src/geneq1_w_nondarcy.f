@@ -830,7 +830,7 @@ c vxyd is the darcy based velocity
 c gaz 310325 added vel_nd
                 vel_nd = vxyd/(aij*muvij+kij_tol)
                 call nd_flow_vel(3,icd,1,iq,vxyd,vel_nd,aij,kij,
-     &              0.50,dvapi_nd,dvapkb_nd,dvaei_nd,dvaekb_nd,i,kb,jm)
+     &              0.5d0,dvapi_nd,dvapkb_nd,dvaei_nd,dvaekb_nd,i,kb,jm)
 c gaz 050125
                 aij = abs(t5_nd(neighc))
                 vxyd_nd = vel_nd*aij*muvij

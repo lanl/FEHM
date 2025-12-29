@@ -817,8 +817,8 @@ c s kelkar 3 July 2014, for calculating heat flow vectors
             if(flag_heat_out) then
                if (idpdp .ne. 0) then
                   flag_heat_out = .false.
-       write(iptty,*),'heat out option currently only single porosity'
-       write(ierr,*),'heat out option currently only single porosity'
+       write(iptty,*) 'heat out option currently only single porosity'
+       write(ierr,*) 'heat out option currently only single porosity'
                else
                   allocate(e_axy_adv(ldna))
                   allocate(e_axy_cond(ldna))
@@ -1458,7 +1458,8 @@ c**** insure anl = anlo for cden to get density right for firsat timestep****
 c**** determine initial variable state ****
 c gaz 070521 initialize count of calls to eos properties (AWH only)
        if(ico2.gt.0) then
-        call fluid_props_control(-1, 0, 0, 'h2o      ', 'all      ', '         ')  
+        call fluid_props_control(-1, 0, 0, 'h2o      ', 
+     &       'all      ', '         ')  
        endif
 c gaz 111223 henry's law  isothermal  allocate memory
        if(ico2.lt.0) then

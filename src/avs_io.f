@@ -495,12 +495,12 @@ c gaz 050922 check if geo file matches contour option
                   read(lu,'(a7)') dum_geo(1:7)
                   if(dum_geo(1:7).eq.'TITLE ='.and.
      &               altc(1:3).ne.'tec') then
-                   close(lu,dispose = 'delete')
+                   close(lu,status = 'delete')
                    open (lu, file = geoname)
                    exists = .false.
                   else if(dum_geo(1:7).ne.'TITLE ='.and.
      &               altc(1:3).eq.'tec') then
-                   close(lu,dispose = 'delete')
+                   close(lu,status = 'delete')
                    open (lu, file = geoname)
                    exists = .false.
                   endif
@@ -511,12 +511,12 @@ c gaz 050922 check for mismatch  with tec and avs geo files
                    read(lu,'(a7)') dum_geo(1:7)
                   if(dum_geo(1:7).eq.'TITLE ='.and.
      &               altc(1:3).ne.'tec') then
-                   close(lu,dispose = 'delete')
+                   close(lu,status = 'delete')
                    open (lu, file = geoname)
                    exists = .false.
                   else if(dum_geo(1:7).ne.'TITLE ='.and.
      &               altc(1:3).eq.'tec') then
-                   close(lu,dispose = 'delete')
+                   close(lu,status = 'delete')
                    open (lu, file = geoname)
                    exists = .false.
                   else

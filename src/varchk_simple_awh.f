@@ -42,9 +42,9 @@ c gaz 030323 moved  phi_max  to comfi
         pcl = pci(id)
         sl = s(id)
         ieosd = ieos(id)
-        tboil=psatl(pl-pcl,0.0,0.0,dtsatp,
-     &                             dpsats,1,0.0)
-        pvapor = psatl(tl,0.,0.,dpsatt,dpsats,0,0.0)  
+        tboil=psatl(pl-pcl,0.0d00,0.0d00,dtsatp,dpsats,1,0.0d00)
+        pvapor = psatl(tl,0.0d00,0.0d00,dpsatt,dpsats,0,0.0d00)
+
         pv_diff = (pl-pcl) - pvapor 
         ieosd = ieos(id)
         ieosdc = ieosd

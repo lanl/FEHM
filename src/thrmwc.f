@@ -1590,8 +1590,10 @@ c
       if(.not.allocated(sk_temp)) allocate(sk_temp(neq))   
 c gaz 060721 poly testing
 c initialize and allocate memory   
-       call fluid_props_control(0, 0, 0, fluid(1), 'all      ', '         ')
-       call fluid_props_control(0, 0, 0, fluid(2), 'all      ', '         ')
+       call fluid_props_control(0, 0, 0, fluid(1), 
+     &      'all      ', '         ')
+       call fluid_props_control(0, 0, 0, fluid(2), 
+     &      'all      ', '         ')
 c gaz 123020 manage explicit update 
        if(i_ex_update.ne.0.and.ieq_ex.gt.0) then
          loop_start = ieq_ex
@@ -1678,7 +1680,8 @@ c gaz 060721 poly unification
 c start calculations    
 
 c gaz 070321       
-       call fluid_props_control(1, mi, mi,fluid(1), 'all      ', '         ')
+       call fluid_props_control(1, mi, mi,fluid(1), 
+     &      'all      ', '         ')
        if(iprop_testa.ne.0.and.l.eq.iprop_testa) then
         write(ierr,676) mi,ieos(mi),phi(mi),t(mi),pci(mi)
         write(ierr,677)
@@ -1687,7 +1690,8 @@ c gaz 070321
         write(ierr,678) 'visc',(visc_h2o(mi,im),im=1,6)
         write(ierr,678) 'huma',(humid_h2o(mi,im),im=1,3)
        endif 
-676   format(1p,'node ',i8,' ieos ',i3,' P ',g16.8,1x,'T ',g16.8,1x,'PC ',g16.8) 
+676   format(1p,'node ',i8,' ieos ',i3,' P ',g16.8,1x,'T ',
+     &       g16.8,1x,'PC ',g16.8) 
 677   format('var ',t9,'varl',t23,'dvarlp',t37,'dvarlt',t53,'varv',
      & t69,'dvarvp',t82,'dvarvt',t95,'dvarvpc')   
 678   format(1p,a,7(1x,g14.5))   
@@ -1767,7 +1771,8 @@ c     Add correction for liquid species
       end if
 c
 c gaz 071821 new call fluid_props_control
-      call fluid_props_control(1, mi, mi,fluid(2), 'all      ', '         ')
+      call fluid_props_control(1, mi, mi,fluid(2), 
+     &      'all      ', '         ')
 c
 
          xnl    = xnl_ngas(mi,1)

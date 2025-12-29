@@ -30,6 +30,13 @@
       character*80 line
       logical :: found_end, end_macro
 
+c     tam initialize parse_string2 parameters
+      nwds = 0
+      msg = 0
+      imsg = 0
+      xmsg = 0.
+      cmsg = ''
+
       do
 c     Find the end of input for this macro
 

@@ -243,13 +243,9 @@ c      write(jtimex,'(i2.2,1h:,i2.2,1h:,i2.2)')  jjtime
 !     vernum = 3.4 before gaz update
       vernum = 3.6
 ! Code version identifier
-c gaz 021521 allow identifier to be read in      
-      if(idfehm.eq.0) then
-#       verno = "FEHM3.6_VER2"
-#       verno = "FEHM V3.6.3.2   DATE QA:DEV"
-        verno = "FEHM V3.6.3.3   DATE ND:DEV"
-      else
-       verno(1:30) = verno_fehmid(1:30)
-      endif
+!     verno = "FEHM V3.4.2rhel 25-12-28 QA:NA"
+!     verno = "FEHM V3.6.2   DATE QA:REL"
+!     verno = "FEHM V3.6.3.2 DATE ND:DEV" 
+      verno = "FEHM V3.6.3.3 DATE ND:DEV"
 
       end

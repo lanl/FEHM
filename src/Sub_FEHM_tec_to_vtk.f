@@ -74,9 +74,17 @@ c remove tec log file if exists
       inquire(file = temp_file, exist = exists)
 c 
 c create vtk         
-      
-      vtk_log_file(1:iq) = cont_log_file(1:iq)
-      vtk_log_file(iq:iq+13) = '_vtk_log.file'
+c     vtk_log_file(1:iq) = cont_log_file(1:iq)
+c     vtk_log_file(iq:iq+13) = '_vtk_log.file'
+c tam fix for linux which have bad characters in name
+c     fix assumes iq is the dot at end of root name
+c     vtk_log_file(1:iq) = cont_log_file(1:iq)
+c     vtk_log_file(iq:iq+13) = '_vtk_log.file'
+
+      vtk_log_file= trim(avs_root)
+      write(vtk_log_file(iq:iq+12),9) '_vtk_log.file'
+9     format(a13)
+
       open(unit=8,file=vtk_log_file,status='unknown')
       write(8,1) verno, jdate, jtime
 1     format(a30,1x,a11,1x,a8,
@@ -140,7 +148,7 @@ c gaz 071522  only one material file time = 0.0
 12     format(a18) 
 112     format(a23)        
        inquire(file = cont_log_file, exist = exists)
-        if(exists.eq..true.) then
+        if(exists.eqv..true.) then
           jj = len_trim(cont_log_file)
           tec_file_name(j)(1:jj) = cont_log_file(1:jj)
         else
@@ -427,7 +435,7 @@ c write out scalar name
       write(10,192) 
       write(10,'(1p,10(1x,i14))') (i, i = 1, neq)      
 c gaz 021322 added delete for tec files      
-      close(9, dispose = 'delete')
+      close(9, status = 'delete')
       close(10)
       else
 c j_vtk gt 1 
@@ -517,7 +525,7 @@ c write out scalar name
       write(10,191) 'Node_Num'
       write(10,192) 
       write(10,'(1p,10(1x,g14.6))') (i, i = 1, neq)
-      close(9, dispose = 'delete')      
+      close(9, status = 'delete')      
       close(10)
 c end of loop for vtk output files  
       endif

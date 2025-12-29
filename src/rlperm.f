@@ -856,7 +856,8 @@ c     calculate normalisation factor for saturation
             end if
             if (irlpt(i) .eq.21) then
 c    initialization of arrays for Thomeer 
-               call thomeercap(0,0,0,0.,0.,0.,0.,0.,0.,0.,0.)
+               call thomeercap(0,0,0,0.d0,0.d0,
+     &              0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
 c    calculate cutoff values for cap pressure
                call thomeercap(1,0,i,0.d0,0.d0,
      &              0.d0,0.d0,0.d0,0.d0,0.d0,0.d0)
