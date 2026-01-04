@@ -328,7 +328,7 @@ C***********************************************************************
       logical null1, opened, done, ok, null_new
       integer idumm, ja, jb, jc, numtime
       character* 4 cdumm, macro, ctmp
-      real*8 adumm, rdum1
+      real*8 adumm, rdum1, dum_grav
       integer igrp,pos_index,trac_flag,ispeci
       integer ic2
       integer, allocatable :: group_mat(:,:)
@@ -351,8 +351,6 @@ C***********************************************************************
       integer jjj, isimnum, realization_num,maxrp
       logical nulldum, found_end, intfile_ex
 
-c tam debug
-      integer iostat
 c gaz 051823
       integer wdd1_len
 c gaz 061223
@@ -1123,13 +1121,10 @@ c**** We need to know number of elements  if elem is in inpt ****
          go  to  20
          
 
-c tam 122825 debug 
-c adding code to protect against crash
-c when igrav may be int or real 
 
-30      read (locunitnum, *)  adumm, rdum1
-        igrav = int(rdum1)
-        print*,"igrav set: ",igrav
+c gaz 281225 added dum_grav        
+ 30      read (locunitnum, *)  adumm, dum_grav 
+         igrav = int(dum_grav)
 
          read (locunitnum, *)  idumm
 c**** We need to know problem geometry ****
