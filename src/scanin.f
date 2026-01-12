@@ -979,21 +979,37 @@ c     need to know if a table with water props is read
            if(wdd1(1:9).eq.'table h2o') then
             iwater_table = 1   
 c gaz 051823
-            wdd1_len = len_trim(wdd1(10:80))
-            table_name = wdd1(10:wdd1_len+10)
+
+c tam debug for table not being found
+c gaz 040126 changed  (wdd1(10: to (wdd(11: to avoid space at start
+            wdd1_len = len_trim(wdd1(11:80))
+            print*,"wdd1_len = ",wdd1_len
+            table_name = wdd1(11:wdd1_len+10)
+c           print*,"table_name = ",table_name
+
 c gaz 041621 write err mesg if specified table does nor exist  
+c tam debug
             intfile_ex = .false.      
             inquire(file=table_name, exist=intfile_ex)
-            if(intfile_ex)  then
-              iwater_table = 2  
+
+c tam debug if statement evaluates to false
+c spaces in the statement had weird characters but this works too
+c if (intfile_ex)then
+            if (intfile_ex .eqv. .true.) then
+              iwater_table = 2
+c             print*,"iwater_table set successful, ",iwater_table
+              if(iptty.ne.0)  write(iptty,291) 'h2o', table_name
             else
              if(iptty.ne.0)  write(iptty,290) 'h2o', table_name
              if(iout.ne.0)  write(iout,290) 'h2o', table_name
              if(ierr.ne.0)  write(ierr,290) 'h2o', table_name  
              stop
             endif
+
 290         format(' Named ',a3,' table not found: ',a70,/,
-     &        '>>>>> Stopping <<<<<<')   
+     &        '>>>>> Stopping <<<<<<') 
+291         format(' Using ',a3,' table file: ',a70 )
+
             if(iwater_table.eq.2) nmfil(31) = table_name
              num_eos_table = num_eos_table + 1
              fluid(num_eos_table) ='h2o      '
@@ -1005,23 +1021,36 @@ c gaz 041621 write err mesg if specified table does nor exist
             if(iwater_table.eq.2) nmfil(31) = table_name  
              num_eos_table = num_eos_table + 1
              fluid(num_eos_table) ='h2o      '
+
            else if(wdd1(1:9).eq.'table air') then
+
+c gaz 040126 changed  (wdd1(10: to (wdd(11: to avoid space at start
             iair_table = 1   
-            table_name = trim(wdd1(10:80))
-            wdd1_len = len_trim(wdd1(10:80))
-            table_name = wdd1(10:wdd1_len+10)
+            table_name = trim(wdd1(11:80))
+            wdd1_len = len_trim(wdd1(11:80))
+            table_name = wdd1(11:wdd1_len+10)
 c gaz 041621 write err mesg if specified table does nor exist      
-            intfile_ex = .false.   
+            intfile_ex = .false.
             inquire(file=table_name, exist=intfile_ex)
-            if(intfile_ex)  then
-              iair_table = 2  
+
+c tam debug intfile_ex issue not evaluated on linux
+c     problem was weird characters inside evalution
+
+            if (intfile_ex .eqv. .true.) then
+              iair_table = 2 
+c             print*,"iair_table set successful, ",iwater_table
+              if(iptty.ne.0)  write(iptty,291) 'air', table_name
             else
              if(iptty.ne.0)  write(iptty,290) 'air', table_name
              if(iout.ne.0)  write(iout,290) 'air', table_name
              if(ierr.ne.0)  write(ierr,290) 'air', table_name  
              stop
-            endif            
-            if(intfile_ex) iair_table = 2    
+
+            endif 
+
+c tam removed this statement as it is set safely above
+c           if(intfile_ex) iair_table = 2    
+
             if(iair_table.eq.2) nmfil(32) = table_name 
              num_eos_table = num_eos_table + 1
              fluid(2) ='air      '

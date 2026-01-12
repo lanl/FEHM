@@ -47,6 +47,8 @@ OPSYS = $(shell uname -s )
 DATETAG = $(shell date '+%y-%m-%d')
 DATE = $(shell date '+.%d%b%y')
 # FFLAGS = -frecord-marker=4 -no-pie -fallow-argument-mismatch
+# use protections against array issues -tam jan2026
+#FLAGS = -frecord-marker=4 -no-pie -fbounds-check -Wall 
 FFLAGS = -frecord-marker=4 -no-pie -ffpe-summary='none'
 DEBUGFLAGS = -g -O0 -frecord-marker=4 -fbounds-check -Wall
 

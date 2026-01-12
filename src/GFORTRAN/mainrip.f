@@ -196,6 +196,8 @@ c     temporary variables for testing
 
 c zvd 09-Sep-2011 change size of in array to be consistent with iofile
 c modification for GoldSim 
+      method=0
+      state=0
       in = 0.
       out = 0.
 c      ripfehm = 0

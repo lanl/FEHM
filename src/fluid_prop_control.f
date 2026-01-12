@@ -344,12 +344,12 @@ c      ieosd_last = ieosd
 c gaz 101521 added pure water and heat sat pressure      
       if(ico2.eq.0) then
 c water_vapor_calc ids table-lookup or polynomial evaluation            
-       call water_vapor_calc(1, ii, ii, '', '')
+       call water_vapor_calc(1, ii, ii, '         ', '         ')
        xv = pl
        pv =xv
       else
 c water_vapor_calc_ngas ids table-lookup or polynomial evaluation  
-       call water_vapor_calc_ngas(1, ii, ii, '', '')
+       call water_vapor_calc_ngas(1, ii, ii, '         ', '         ')
        xv = xv_h2o(ii)  
        pv =xv
       endif       
@@ -873,13 +873,17 @@ c      tl_last = tl
 c      ieosd_last = ieosd
 c gaz 101521 added pure water and heat sat pressure      
       if(ico2.eq.0) then
+
 c water_vapor_calc ids table-lookup or polynomial evaluation            
-       call water_vapor_calc(1, ii, ii, '', '')
+c tam 050126 linux seg fault
+c     string length must match prop(0/9)
+
+       call water_vapor_calc(1, ii, ii, '         ', '         ')
        xv = pl
        pv =xv
       else
 c water_vapor_calc_ngas ids table-lookup or polynomial evaluation  
-       call water_vapor_calc_ngas(1, ii, ii, '', '')
+       call water_vapor_calc_ngas(1, ii, ii, '         ', '         ')
        xv = xv_h2o(ii)  
        pv =xv
       endif       
@@ -1260,6 +1264,9 @@ c         dhumidpc = 0.0
       endif 
       return 
       end
+
+c tam 050126 linux seg fault 
+c     string length is shorter than declared dummy argument prop(0/9)
 
       subroutine water_vapor_calc(iflg, istart, iend, prop, phase)
 c      

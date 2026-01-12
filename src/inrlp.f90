@@ -60,6 +60,10 @@
   	   nrlp_phases=0   ;it=0 ;k2=0 ! initialize table and rlp indices
       maxrp = 30
       maxcp = 30
+
+! tam initialize parse_string2 parameters
+!     also set nwds=0 before each call to parse_string2 to avoid values from past calls
+      nwds = 0
       msg = 0
       imsg = 0
       xmsg = 0.
@@ -137,6 +141,7 @@
       j = 0
       it = lasttbl
       do
+         nwds=0
          read (inpt, '(a80)') chdum
          if (null1(chdum) .or. chdum(1:3) .eq. 'end' .or.   &
               chdum(1:3) .eq. 'END') exit
@@ -219,6 +224,7 @@
 !     Read past any header lines in the table (header lines should start with a character)
                do 
                   read (table_unit,'(a)') chdum(1:40)
+                  nwds=0
                   call parse_string2(chdum,imsg,msg,xmsg,cmsg,nwds)
                   if (msg(1) .ne. 3) then
                      backspace (table_unit)
@@ -347,6 +353,7 @@
                read (inpt, '(a80)') chdum
                if (null1(chdum) .or. chdum(1:3) .eq. 'end' .or.   &
                     chdum(1:3) .eq. 'END') exit
+               nwds=0
                call parse_string2(chdum,imsg,msg,xmsg,cmsg,nwds)
                if (cmsg(1) .eq. 'fracture') then
                if (nwds .lt. 8) write(ierr, 60) 7, cmsg(2), rlp_group(i)  ! make sure at least 7 parameters were specified
@@ -470,6 +477,7 @@
                read (inpt, '(a80)') chdum
                if (null1(chdum) .or. chdum(1:3) .eq. 'end' .or.    &
                 chdum(1:3) .eq. 'END') exit
+               nwds=0
                call parse_string2(chdum,imsg,msg,xmsg,cmsg,nwds)
                
                if (cmsg(1) .eq. 'fracture') then

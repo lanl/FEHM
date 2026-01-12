@@ -272,13 +272,13 @@ c      character*20 vstring
       character*30 zonesavename, char_temp
       character*6 zonestring
 c gaz 050221
-      integer maxtitle, mout, neq_write
+      integer maxtitle, mout, neq_write, iostat
       parameter(maxtitle = 22)
       logical :: xon = .false., yon = .false., zon = .false.
 c gaz 260925
       character*200 grid_chk
 c gaz 061322
-      logical exists
+      logical exists, is_open
       character*5 dual_char
       character*42 title(maxtitle), units(maxtitle), pstring
       character*42, allocatable :: title_kd(:)
@@ -1175,9 +1175,25 @@ c     avsx geometry file has an initial line that starts with neq_primary
           endif
           else if(irivp.eq.0) then
             if(nact_elem_geo.eq.0) then
-             inquire(file = geoname, number = num_unit)
-             close(num_unit)
-             il = open_file(geoname,'old')
+
+c tam 051226 protect against already closed file
+c            I added a stop to avoid seg fault on linux
+c            inquire(file = geoname, number = num_unit)
+c            close(num_unit)
+
+            is_open = .false.
+            inquire(unit=num_unit, opened=is_open)
+            if (is_open) then
+                close(num_unit, iostat=iostat)
+                if (iostat /= 0) then
+                    print *, "Error closing file: ",geoname
+                    stop
+                endif
+                is_open = .false.
+            endif
+
+            il = open_file(geoname,'old')
+
 c     tec geometry file has 4 initial lines t
              read(il,*) 
              read(il,*)
