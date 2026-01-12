@@ -565,16 +565,16 @@ c
                call add_accumulation(id)
             else if(iwellp_chk.ne.0) then
 c no accumulation term in the wellbore            
-               call geneq2_wellphysics(id)	
+               call geneq2_wellphysics(id)
             else if(ianpe.ne.0.and.irdof.eq.13) then
                call geneq2_ani(id)
-               call add_accumulation(id)   
+               call add_accumulation(id)
             else if(ianpe.ne.0.and.irdof.ne.13) then
                call geneq2_ani_2p(id)
-               call add_accumulation(id)                            
+               call add_accumulation(id) 
             else if(irich.ne.0) then
                call geneq2_rich(id)
-               call add_accumulation(id)	
+               call add_accumulation(id)
             else if(ifree.ne.0) then
               if(iriver.eq.2.and.id.gt.neq_primary) then
                call geneq2_wtsi_well(id)
@@ -583,7 +583,8 @@ c no accumulation term in the wellbore
               endif
                call add_accumulation(id)
 c set updates to zero if s=0 and all neighbors are s=0
-               if(dry_zone(id).eq.0.and.sk(id).eq.0.0) then	
+               if(dry_zone(id).eq.0.and.sk(id).eq.0.0) then
+
 c do we need to make sure this is a wtsi node?						 
                   a(nelmdg(id)-neqp1+nmat(1))=sx1(id)
                   bp(id+nrhs(1))=0.0d00
@@ -919,6 +920,7 @@ c      use already-formed LU factors
      &                 ,mdof_sol)
                end if
             endif
+
 c***************************Change 3/2/94 gaz       .
             call storage_derivatives(0,1)
             itert=itert+iter
@@ -1110,7 +1112,9 @@ c      a(jmia+nmat(1))=a(jmia+nmat(1))+sx1d*dmpf(i)+dq(i)
 	if(jswitch.ne.0) then
          a(jmia+nmat(1))=a(jmia+nmat(1))+sx1d*dmpf(i)+dq(i)  
          bp(iz+nrhs(1))=bp(iz+nrhs(1))+sx1d*deni(i)+sk(i) 
-         a(jmia+nmat(2))=a(jmia+nmat(2))+sx1d*+dmef(i)+dqh(i)
+
+c tam 050126 term sx1d*+dmef(i)fixed to sx1d*dmef(i)
+         a(jmia+nmat(2))=a(jmia+nmat(2))+sx1d*dmef(i)+dqh(i)
          bp(iz+nrhs(2))=bp(iz+nrhs(2))+sx1d*denei(i)+qh(i)
       else if(irdof.eq.13) then
          bp(iz+nrhs(1))=bp(iz+nrhs(1))+sx1d*deni(i)+sk(i)
@@ -1266,8 +1270,8 @@ c
                if(ieos(i).ne.1) then
                   bpsave = bp(i+nrhs(1))
                   bp(i+nrhs(1)) = bp(i+nrhs(2))
-                  bp(i+nrhs(2)) = bpsave    	   
-               endif	  
+                  bp(i+nrhs(2)) = bpsave 
+               endif
             enddo
         endif    
       return 

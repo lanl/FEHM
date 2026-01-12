@@ -126,18 +126,33 @@ C***********************************************************************
       use comcouple
 c gaz 120225   
       use com_nondarcy
+
       implicit none
+
 
       integer ndex(2)
       integer i, id, neqp1, nsizea, nsizea1 
       integer iparchek,kb,jj,i1,i2,i3,i4,j
-      real a11     
-      real*8 dumn(100),term
+
+c tam 091226 cleanup to fix bad values in arrays
+c     change .0 to .d0
+c     remove Nonconforming tab characters from gfortran
+c tam change a11 to real*8 instead of real
+c     real a11     
+
+      real *8 a11
+      real*8 dumn(100)
       real*8, allocatable :: sto5(:,:)
       real*8, allocatable :: dum(:)
       real*8  facr, fdum2, tollr, tolls, tmch_new, tmch_old, bp_max
       save tmch_old
       parameter(iparchek =0)
+
+c tam initialize
+      i = 0
+      id = 0
+      bp_max = 0.0d0
+      
       neqp1=neq+1
 c test of coefficients
        if(iparchek.eq.1) then
@@ -157,7 +172,7 @@ c test of coefficients
           if(iw.gt.0) then
            a11 = sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz)
           else
-           a11 = 0.0
+           a11 = 0.0d0
           endif
           write(ierr,355)i,kb,iw,a11
           go to 899
@@ -173,7 +188,7 @@ c test of coefficients
           if(iw.gt.0) then
            a11 = sx(iw,isox)+sx(iw,isoy)+sx(iw,isoz)
           else
-           a11 = 0.0
+           a11 = 0.0d0
           endif
          write(ierr,355)i,kb,iw,a11
         enddo        
@@ -190,43 +205,63 @@ c
 c gaz 113021          
 c       if(nr_stop.eq.2) then
         if(nr_stop.gt.2) then        
-          fdum=-1.0
+          fdum=-1.0d0
         go to 999
        endif
       endif
 c           
+c initialize arrays
       do i=1,neq
-         bp(i+nrhs(1))=0.0
-         bp(i+nrhs(2))=0.0
+         bp(i+nrhs(1))=0.0d0
+         bp(i+nrhs(2))=0.0d0
       enddo
       nsizea1=nelm(neqp1)-neqp1
       nsizea=4*nsizea1
       do i=1,nsizea
-         a(i)=0.0
+         a(i)=0.0d0
       enddo
-      fdum2=0.
+      fdum2=0.0d0
+
+c     Loop over id with geneq1 calls
       do id=1,neq
-        if(iriver.eq.2.and.id.gt.neq_primary) then
+
+        if(iriver.eq.2 .and. id.gt.neq_primary) then
          call geneq1_well(id)
         else if(ianpe.ne.0) then 
          call geneq1_ani(id)
+
 c gaz 120225          
+c fill array a in geneq1 routines
         else if(nd_flow) then
          call geneq1_w_nondarcy(id)
         else
          call geneq1(id)        
         endif
       enddo
+c     End Loop with geneq1 calls
+
       do id=1,neq
          if(ps(id).le.0.0) then
             a(nelmdg(id)-neqp1+nmat(1))=sx1(id)
-            bp(id+nrhs(1))=0.0
+            bp(id+nrhs(1))=0.0d0
          endif
       enddo
 
 c     call md_modes to complete equations for multiply defined nodes
-c don't need to call geneqmdnode (through md_nodes) gaz
+c     don't need to call geneqmdnode (through md_nodes) gaz
 c     if(imdnode.ne.0) call md_nodes(3,0,0)
+
+c gaz 060126 debug linux bad values in a
+c     check geneq1_w_nondarcy to avoid NaN values in a
+c     write(ierr,*) 'test of ND NDWH after geneq1'
+c     write(ierr,*) 'A(W,P)'
+c     write(ierr,'(1p,10g10.2)') (a(nmat(1)+i),i=1,10)
+c     write(ierr,*) 'A(W,T)'
+c     write(ierr,'(1p,10g10.2)')  (a(nmat(2)+i),i=1,10)
+c     write(ierr,*) 'A(E,P)'
+c     write(ierr,'(1p,10g10.2)')  (a(nmat(3)+i),i=1,10)
+c     write(ierr,*) 'A(E,T)'
+c     write(ierr,'(1p,10g10.2)')  (a(nmat(4)+i),i=1,10)
 
       call dual(10)
 c
@@ -296,20 +331,20 @@ c gaz 112521 added more information
          f0=max(fdum*epe,tmch)
       endif
       if(fdum1.lt.0.0.and.iad.ne.0) then
-	  bp_max = 0.0
+         bp_max = 0.0d0
          do i=1,neq
             bp_max= max(abs(bp(i+nrhs(1))),abs(bp(i+nrhs(2))),bp_max) 
          enddo
 c gaz 113121 modified to work with changes in nr_stop_ctr1         
 c	 if(bp_max.lt.tmch.and.nr_stop.eq.0) then         
-	 if(bp_max.lt.tmch.and.nr_stop.le.2) then
-         fdum=-1.0
+         if(bp_max.lt.tmch .and. nr_stop.le.2) then
+         fdum=-1.0d0
          go to 999
        else
-         f0=-1.0
-	   if(iad.eq.1) tmch_old = bp_max
-	   tmch_new = min(bp_max,tmch_old)
-	   tmch_old = tmch_new
+         f0=-1.0d0
+         if(iad.eq.1) tmch_old = bp_max
+           tmch_new = min(bp_max,tmch_old)
+           tmch_old = tmch_new
 	 endif
       endif
       if(f0.gt.0.0d00) then
@@ -359,7 +394,7 @@ c
      &              accm,mdof_sol)
             end if
          endif
-	   deallocate(dum)
+         deallocate(dum)
          itert=itert+iter
          itotals=itotals+iter
          minkt=minkt+mink
@@ -466,7 +501,6 @@ c to the node is idisk from the 'a' matrix
       enddo
  9992 format(30(2x,g12.5))
          
-
       return
       end 
 c...........................................................

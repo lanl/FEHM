@@ -180,8 +180,14 @@ c gaz 120225
       use com_nondarcy
       implicit none
 
-      logical bit
-      integer i, iz4m1
+c tam 091226 linux compiler warnings and fixes
+c     change .0 to .d0
+c     removed logical bit unused
+c     initialize important variables
+c     note i is passed as argument, do not use except as current id
+c     use ii as temporary loop variable instead of i
+      integer i
+      integer iz4m1, ii
       integer ial, iau, icd, ii1, ii2, idg, ij, ij1, ij2, isl, iq, iz
       integer jm, jmi, jmia, jml, kb, kz
       integer neighc, neqp1, nmatavw
@@ -219,7 +225,7 @@ c gaz 120725
       real*8 dlepi_nd, dlepkb_nd, dvepi_nd, dvepkb_nd
       real*8 dleei_nd, dleekb_nd, dveei_nd, dveekb_nd
       real*8 dlei_nd, dlekb_nd, dlpi_nd, dlpkb_nd
-      real*8  dvpi_nd, dvpkb_nd, dvei_nd, dvekb_nd
+      real*8 dvpi_nd, dvpkb_nd, dvei_nd, dvekb_nd
 
       real*8 velij_nd,dvelpi,dvelpj,aij,den_term
       real*8 axyd_nd,vxyd_nd,kij,kij_tol
@@ -227,8 +233,33 @@ c gaz 120725
       real*8 red_tmp(20), sx_tmp(20)
       integer kb_pri,i_dir_gdkm
       integer igdkm_test
+
       parameter(dis_tol=1.d-12, igdkm_test = 0) 
-c
+
+c tam 090126
+c initialize to avoid NaN values assigned to a() 
+      pxy=0.d0
+      sx3c=0.d0
+      sx3t=0.d0
+      sx4d=0.d0
+      sxzt=0.d0
+      sx4h=0.d0
+      dvapi=0.0d0
+      dvapi_nd=0.0d0
+      dvaei=0.0d0
+      dvaei_nd=0.0d0
+      dvapkb=0.0d0
+      dvapkb_nd=0.0d0
+      dvaekb=0.0d0
+      dvaekb_nd=0.0d0
+      dvepi=0.0d0
+      dvepi_nd=0.0d0
+      dveei=0.0d0
+      dveei_nd=0.0d0
+      dvepkb=0.0d0
+      dvepkb_nd=0.0d0
+      dveekb=0.0d0
+      dveekb_nd=0.0d0
 c
 ! Guessed at value for grav_air
 c      grav_air = 0.
@@ -332,6 +363,7 @@ c     endif
       endif
 68    continue
 58    continue
+
 c gaz 051616 
       allocate(grav_wgt(iq))
       if(icnl.eq.0) then
@@ -378,7 +410,7 @@ c           pxy=sx2c*perml(1)+sx3c*perml(2)+sxzc*perml(3)
             dely2=(cord(kz,2)-cord(iz,2))**2
             delz2=(cord(kz,3)-cord(iz,3))**2
             if(iriver.eq.2.and.kb.gt.neq_primary) then
-c this connection broken, then added when well equations are generated            
+c this connection broken, then added when well equations are generated 
               sx2c = 0.0
             endif
             dis2=delx2+dely2+delz2
@@ -444,7 +476,7 @@ c gaz 120225
             t15(neighc)= (pxy)/(sx2c+kij_tol)
             t5_nd(neighc)=sx2c*sqrt(dis2)
  59      continue
-      else if ( icnl.ne.0 )  t h e n
+      else if ( icnl.ne.0 ) then
 c
 c 2-d geometry 
 c
@@ -574,7 +606,9 @@ c
 c gaz 051616
 c initialize grav_wgt
       grav_wgt = 0.5d0
-      do 60 jm=1,iq                                                             +
+
+c tam 090126 remove  + character at end of long line
+      do 60 jm=1,iq
       kb=it8(jm)
       kz=kb-icd
       neighc=it9(jm)
@@ -587,18 +621,18 @@ c initialize grav_wgt
 
 c gaz 120225      
 c axyd units m**2*(area/dis)*Mpa
-               g_term = 0.5*sx4d*(rolf(i)+rolf(kb))
+               g_term = 0.5d0*sx4d*(rolf(i)+rolf(kb))
      &              *(cord(kz,igrav)-cord(iz,igrav))
-               dg_termpi = 0.5*sx4d*dglp(i)*
+               dg_termpi = 0.5d0*sx4d*dglp(i)*
      &                 (cord(kz,igrav)-cord(iz,igrav))
-               dg_termpkb = 0.5*sx4d*dglp(kb)*
+               dg_termpkb = 0.5d0*sx4d*dglp(kb)*
      &                (cord(kz,igrav)-cord(iz,igrav))
                daxydpi = -pxy+dg_termpi
                daxydpkb = pxy+dg_termpkb
                
-               daxydei=pxy*dpvti+0.5*sx4d*dgle(i)*
+               daxydei=pxy*dpvti+0.5d0*sx4d*dgle(i)*
      &                    (cord(kz,igrav)-cord(iz,igrav))
-               daxydekb=-pxy*dpcef(kb)+0.5*sx4d*dgle(kb)
+               daxydekb=-pxy*dpcef(kb)+0.5d0*sx4d*dgle(kb)
      &                    *(cord(kz,igrav)-cord(iz,igrav))               
 c gaz 050325               t8(neighc)=axyd
 c find upwind direction
@@ -693,12 +727,12 @@ c
 
 c gaz 091624 aij = t5_nd() area
 c             if(nd_flow) then
-c   gaz db 010125            aij=abs(t5(neighc)
+c gaz db 010125 aij=abs(t5(neighc)
                 aij = abs(t5_nd(neighc)) 
-c                aij = 1.d0  
+c                aij = 1.0d0  
                 axyd_nd = t8_nd(neighc)
                 fid=t9_nd(neighc)
-                fid1=1.0-fid  
+                fid1=1.0d0-fid  
                 axyf=(fid*dilkb+fid1*dili)
                 axy_nd = axyd_nd*axyf
                 
@@ -749,6 +783,7 @@ c s kelkar 3 July 2014, for calculating heat flow vectors
          e_axy_adv(ial+nmatavw)=-aexy
       endif
 
+
       bp(iz+nrhs(1))=bp(iz+nrhs(1))+axy
       bp(kz+nrhs(1))=bp(kz+nrhs(1))-axy
       a(jmia+nmat(1))=a(jmia+nmat(1))+dlapi
@@ -770,11 +805,22 @@ c
       a(iau+nmat(4))=a(iau+nmat(4))+dleekb
       a(jml+nmat(3))=a(jml+nmat(3))-dlepkb
       a(jml+nmat(4))=a(jml+nmat(4))-dleekb
+
    62 continue
-      e n d i f
+      endif
 c
 c vapour phase calculations
 c
+c gaz debug 121225
+      kz = l+iad+fdum+days
+c      if(l.ge.41.and.iad.eq.1) then
+cc       pause  'l=41,iad =1'
+c       kz=nelm(neqp1)-neqp1
+c       kb=4*kz
+c       do neighc=1,kb
+c         a(neighc)=0.0d0
+c       enddo
+c      endif
 c     
 c     vapour phase calculations
 c    
@@ -786,7 +832,7 @@ c
                pxyh=t2(neighc)
                pvxy = t4(neighc)
                sx4h=t7(neighc)
-               if(rovf(i).le.0.0.or.rovf(kb).le.0.0) grav_wgt(jm)=1.0d0
+             if(rovf(i).le.0.0.or.rovf(kb).le.0.0) grav_wgt(jm)=1.0d0
                vxyd=pxyh+0.5*sx4h*(rovf(i)+rovf(kb))
      *              *(cord(kz,igrav)-cord(iz,igrav))
                t8(neighc)=vxyd
@@ -797,27 +843,34 @@ c               kij = t15(neighc)*1.d-6
                   divkb=div(kb)
                   divpkb=divp(kb)
                   divekb=dive(kb) 
-                  g_term = 0.5*sx4h*(rovf(i)+rovf(kb))
+                  g_term = 0.5d0*sx4h*(rovf(i)+rovf(kb))
      &              *(cord(kz,igrav)-cord(iz,igrav))                
-                  dg_termpi = 0.5*sx4h*dgvp(i)*
+                  dg_termpi = 0.5d0*sx4h*dgvp(i)*
      &                 (cord(kz,igrav)-cord(iz,igrav))
-                  dg_termpkb = 0.5*sx4h*dgvp(kb)*
+                  dg_termpkb = 0.5d0*sx4h*dgvp(kb)*
      &                 (cord(kz,igrav)-cord(iz,igrav))
 
                daxydpi = -pvxy+dg_termpi
                daxydpkb = pvxy+dg_termpkb
-c gaz 300325   corrected   dgle(i) to dgve(i)     
-               daxydei=pxy*dpvti+0.5*sx4d*dgve(i)*
+c gaz 300325   corrected   dgle(i) to dgve(i)
+c gaz 141225 removed cap pressure derivatives wrt saturation     
+               daxydei=0.5d0*sx4d*dgve(i)*
      &                    (cord(kz,igrav)-cord(iz,igrav))
-               daxydekb=-pxy*dpcef(kb)+0.5*sx4d*dgve(kb)
+               daxydekb=-0.5d0*sx4d*dgve(kb)
      &                    *(cord(kz,igrav)-cord(iz,igrav))                 
 c 
 c gaz 050325               t8(neighc)=axyd
 c find upwind direction
                 fid=.5d0
 c gaz 050325 add coding to save upwind position
-                if(vxyd.lt.0.0) fid=dnwgt
-                if(vxyd.gt.0.0) fid=upwgt
+      if(div(i).gt.0.0d0.and.div(kb).gt.0.0d0) then
+       if(vxyd.lt.0.0) fid=dnwgt
+       if(vxyd.gt.0.0) fid=upwgt
+      else if(div(i).lt.0.0d0) then
+        fid=dnwgt
+      else if(div(kb).lt.0.0d0) then
+        fid=upwgt
+      endif
                 t9(neighc)=fid
                 fid1 = 1.d0-fid
                 xrv_nd = fid*rvf_nd(kb)+fid1*rvf_nd(i)
@@ -828,18 +881,29 @@ c gaz 020425 kij includes rel perm
 c gaz 112424                
 c vxyd is the darcy based velocity
 c gaz 310325 added vel_nd
+c gaz 121225  modifications for s(i) = 0
+
+                if(s(i) .ne. 1.d0) then
                 vel_nd = vxyd/(aij*muvij+kij_tol)
+c gaz 070126
                 call nd_flow_vel(3,icd,1,iq,vxyd,vel_nd,aij,kij,
      &              0.5d0,dvapi_nd,dvapkb_nd,dvaei_nd,dvaekb_nd,i,kb,jm)
+c     &              0.50,dvapi_nd,dvapkb_nd,dvaei_nd,dvaekb_nd,i,kb,jm)
 c gaz 050125
                 aij = abs(t5_nd(neighc))
                 vxyd_nd = vel_nd*aij*muvij
                 call nd_flow_vel(6,icd,1,iq,vxyd,vel_nd,aij,kij,
      &              0.5d0,dvapi_nd,dvapkb_nd,dvaei_nd,dvaekb_nd,i,kb,jm)
+               else
+c new call to return variables for vxyd_nd = vxyd
+                call nd_flow_vel(7,icd,1,iq,vxyd,vel_nd,aij,kij,
+     &              0.5d0,dvapi_nd,dvapkb_nd,dvaei_nd,dvaekb_nd,i,kb,jm) 
+                    vxyd_nd = vxyd              
+               endif
 
 c find upwinding
                 t8_nd(neighc)=vxyd_nd 
-                 fid=0.5
+                 fid=0.5d0
                  if(vxyd_nd.lt.0.0) fid=dnwgt
                  if(vxyd_nd.gt.0.0) fid=upwgt
                  t9_nd(neighc)=fid  
@@ -894,6 +958,7 @@ c
       dvepkb=dvpkb*vexyf+vxyd*fid*(divpkb*envkb+divkb*devkb)
       dveei=dvei*vexyf+vxyd*fid1*(divei*envi+divi*devei)
       dveekb=dvekb*vexyf+vxyd*fid*(divekb*envkb+divkb*devekb)
+
 c gaz 040325
                 aij = abs(t5_nd(neighc))  
                 vxyd_nd = t8_nd(neighc)  
@@ -967,8 +1032,9 @@ c
       a(iau+nmat(4))=a(iau+nmat(4))+dveekb
       a(jml+nmat(3))=a(jml+nmat(3))-dvepkb
       a(jml+nmat(4))=a(jml+nmat(4))-dveekb
+
    65 continue
-      e n d i f
+      endif
 c
 c add heat conduction
 c
@@ -1014,7 +1080,8 @@ c gaz 092922 debug
       a(jmia+nmat(2))=a(jmia+nmat(2))+sx1d*dmef(i)+dqt(i)
       a(jmia+nmat(3))=a(jmia+nmat(3))+sx1d*depf(i)+dqh(i)
       a(jmia+nmat(4))=a(jmia+nmat(4))+sx1d*deef(i)+deqh(i)
+
 c gaz 051616
       deallocate(grav_wgt)
-      r e t u r n
-      e    n    d
+      return
+      end
