@@ -253,6 +253,9 @@ C**********************************************************************
 c
 c determine acceleration method
 c
+      integer i
+      i = 0
+      ibcgs = 0
       if(accm.eq.'bcgs') then
        ibcgs = 1
       elseif (accm.eq.'gmre') then
@@ -423,6 +426,7 @@ c        call sub_bcgs3(neq,a,b,r,na,nb,nrhs,ncon,nop,north,stor1,epn
      *        ,h,c,s,g,y,iter,idof,iptty,maxor)
          endif
       endif
+
  9000 continue
       return
       end

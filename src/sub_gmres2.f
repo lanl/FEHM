@@ -385,6 +385,7 @@ c     acceleration routine
       integer neqm1, neqp1, maxit, inorth, kk, i, j, j1, j2, jj, kb
       integer k, jneq, jm1, nr1, nr2, lu3, ke0, ke1, k1, k2, ib
       integer nrhs_dum(2)
+    
       logical done
       parameter (tols=1.d-12)
 c     
@@ -399,6 +400,10 @@ c
       lu3=(north+1)*neq
       maxit=iter
       iter=1
+
+c tam debug
+      tmp1 = 0.0d0
+      tmp2 = 0.0d0
 c     
 c     set some arrays equal
 c     
@@ -541,6 +546,7 @@ c     endif
 *     -----------------
 *     q-r factorization
 *     -----------------
+
          jm1 = j - 1
          do 3400 i = 1,jm1
             tmp1 = c(i)*h(i,j) - s(i)*h(i+1,j)
@@ -548,6 +554,8 @@ c     endif
             h(i,j) = tmp1
             h(i+1,j) = tmp2
  3400    continue
+
+
          sqroot = sqrt(h(j,j)*h(j,j)+h(j+1,j)*h(j+1,j))
          sqroot =max(sqroot,1.d-12)
          c(j) = h(j,j)/sqroot
