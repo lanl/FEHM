@@ -226,6 +226,7 @@ class fehmTest(unittest.TestCase):
         #
         # .. Authors: Xiang Huang
         # .. Updated: June 2024 by Erica Hinrichs
+        # removed tamiller as scripts for this are not working
         
         #arguments = {}
         #arguments['times'] = [3.0]
@@ -1461,7 +1462,7 @@ def suite(mode, test_case, log):
         #suite.addTest(fehmTest('dissolution', log))
         #suite.addTest(fehmTest('doe', log))
         suite.addTest(fehmTest('dryout', log))
-        suite.addTest(fehmTest('dispersion', log))
+#       suite.addTest(fehmTest('dispersion', log))
         suite.addTest(fehmTest('evaporation', log))
         suite.addTest(fehmTest('fracture_aperture', log))
         suite.addTest(fehmTest('head', log))
