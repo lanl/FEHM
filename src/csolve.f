@@ -1562,9 +1562,16 @@ c
                time2print = .FALSE.
             end if
          else            
+
+c tam  160126  added previous fix from xhua 
+c xhua 06Oct2024 fixed the printout time intervals
+c           for conentraion hist in *.trc
+c           if (ifinsh .ne. 2 .and. ptime .lt. (last_time + histime)
+c    &           .and. l .lt. (last_step)
+c    &           .and. iprttrc .lt. nprttrc) then
+
             if (ifinsh .ne. 2 .and. ptime .lt. (last_time + histime)
-     &           .and. l .lt. (last_step)
-c    &           .and. l .lt. (last_step + nhist)
+     &           .and. l .lt. (last_step + nhist)
      &           .and. iprttrc .lt. nprttrc) then
                time2print = .FALSE.
             else
