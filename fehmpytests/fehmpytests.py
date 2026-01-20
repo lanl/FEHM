@@ -11,6 +11,11 @@
 # warranty, express or  implied, or assumes any liability or
 # responsibility for the use of this information.      
 #***********************************************************************
+# tamiller modified Jan 2026
+#          this is older than October versions which were in process of being improved
+#          but they had issues running some tests
+#          This version needs error handling fixed and messages improved
+#
 import unittest
 import os
 import sys
@@ -210,7 +215,6 @@ class fehmTest(unittest.TestCase):
 
     def darcy2D(self):
         # Test Darcy and non-Darcy flow liquid and gas 2D
-        # Initial tests to be replaced by tests in non_darcy
         #
         # Compares the generated presWAT files files known to be correct.
         #
@@ -226,7 +230,6 @@ class fehmTest(unittest.TestCase):
         #
         # .. Authors: Xiang Huang
         # .. Updated: June 2024 by Erica Hinrichs
-        # removed tamiller as scripts for this are not working
         
         #arguments = {}
         #arguments['times'] = [3.0]
@@ -440,22 +443,46 @@ class fehmTest(unittest.TestCase):
     def non_darcy(self):
         # Test non-darcy flow liquid and gas 2D
         #
-        # Under development with George Z. 
+        # These are the initial tests developed for ndar macro
+        # they are simple 2D liquid and gas 
         #
         # .. Authors: Terry Miller modified from George tests for ndar
+
+        print('\nDEV NOTE: non_darcy_dfn requires FEHM V3.3.1 or later.\n')
 
         self.test_case('non_darcy')
 
     def non_darcy_dfn(self):
         # Test darcy and non-darcy water into single fracture
         #
-        # These tests were developed by the dfnWorks team 
+        # These tests were developed by the dfnWorks team
         # Jeffrey, Dolan, Matt, Maitri
         # Using gaz-nondarcy2 branch
+        # 3 Apertures, 2 ndar settings, plus darcy = 9 subcases
         #
         # .. Authors: Terry Miller modified from dfnWorks ndar tests
 
+        print('\nDEV NOTE: non_darcy_dfn requires FEHM V3.3.2 or later.\n')
+
         self.test_case('non_darcy_dfn')
+
+    def non_darcy_vv(self):
+        # V+V Tests for non-darcy WH, AWH, and W2P 
+        #
+        # These are V+V tests developed by George 
+        # gaz-nondarcy3
+        #
+        # .. Authors: Terry Miller modified from George V+V tests 
+
+        arguments = {}
+
+        print('\nDEV NOTE: non_darcy_vv requires FEHM V3.3.3 or later.\n')
+        print('DEV NOTE: non_darcy_vv maxerr tolerance set to 0.05\n')
+
+        arguments['maxerr'] = 0.05
+        self.test_case('non_darcy_vv',arguments)
+        # self.test_case('non_darcy_vv')
+
 
     def perm_test(self):
         # Test perm_test
@@ -796,9 +823,12 @@ class fehmTest(unittest.TestCase):
         #
         # .. Updated: July 2024 by Erica Hinrichs
         #
-        #arguments = {}
+        arguments = {}
 
-        self.test_case('wvtest')
+        print('\nDEV NOTE: non_darcy_vv maxerr tolerance set to 0.1\n')
+        arguments['maxerr'] = 0.1
+
+        self.test_case('wvtest,arguments')
 
     def rad_decay(self):
         # Test radioactive decay option in rxn macro
@@ -934,6 +964,8 @@ class fehmTest(unittest.TestCase):
         
         Authors: Mark Lange
         Updated: June 2014 by Mark Lange                                
+        Modified: Erica Hinrichs for verbose output
+        Modified: Terry Miller Jan 2026 improvements to output information
         """ 
          
         os.chdir(name)
@@ -966,7 +998,6 @@ class fehmTest(unittest.TestCase):
                 
         try:
             #Test the new files generated with each subcase.
-            # Search compare directory for files to be used to validate run.
             for subcase in subcases:
                 parameters['subcase'] = subcase
                 # CD into run directory
@@ -975,18 +1006,15 @@ class fehmTest(unittest.TestCase):
                 if os.path.exists( output_dir ): shutil.rmtree(output_dir)
                 os.mkdir( output_dir )
                 os.chdir( output_dir )
-                filetypes = ['*.avs', '*.avsx', '*.csv','*.his','*.out','*.trc','*.vtk','*.ptrk','*.dat','*.sptr3', '*.cflx']
 
+                # loop through file types in compare directory
+                # be sure filetype is defined ie contour or comparison
+                filetypes = ['*.avs', '*.avsx', '*.csv','*.his','*.out','*.trc','*.vtk','*.ptrk','*.dat','*.sptr3', '*.cflx']
                 test_flag = False
-                
                 for filetype in filetypes:
                     parameters['filetype'] = filetype
                     compare_pattern = (os.path.join('..', 'compare', '*' )+ subcase + filetype)
                     found_files = glob.glob(compare_pattern)
-
-                    if args['verbose'] >= 3:
-                        print(f'Checking for files with pattern: {compare_pattern}. Found {len(found_files)} files.')
-                        #print('Found files: ', found_files)
 
                     if len(found_files) > 0:
                         #print(f'\n\nfound {len(found_files)} files. Continuing to test template')
@@ -996,16 +1024,21 @@ class fehmTest(unittest.TestCase):
                             print(f'Test method executed for filetype: {filetype} on files: {found_files}')
                         test_flag = True
                     else:
-                        if args['verbose'] >= 3:
-                            print(f'Test method NOT executed for filetype: {filetype}')
-                        pass
+                        pass 
 
-                os.chdir('..')
+                # report error if no valid file types found
                 if not test_flag:
+
+                    # print('Check: Found files: ', len(found_files))
+                    line = f'\nSetup failed at subcase: {subcase} filetype: {filetype}'
                     if self.log:
-                        line = f'\nFailed at subcase: {subcase} filetype: {filetype}'
                         self.fail_log.write(line)
-                    self.fail("Missing any valid comparison files, no test performed")
+                        self.fail_log.write("Missing valid comparison files, no test performed")
+                    self.fail(line)
+                    self.fail("Missing valid comparison files, no test performed")
+
+                # continue 
+                os.chdir('..')
 
         finally:
             # Allows other tests to be performed after exception.
@@ -1344,6 +1377,7 @@ class fehmTest(unittest.TestCase):
                 self.fail("Missing common nodes in compare and output ptrk files, no test performed")
 
         #Returns the test method for filetype.
+        # Must define filetype here
         return { '*.avs':  contour_case,
                  '*.avsx':  comparison_case,
                  '*.csv':  contour_case,
@@ -1374,21 +1408,17 @@ class fehmTest(unittest.TestCase):
             filesfile = os.path.join('..','input','control',subcase+'.files')
             
         evalstr = exe+' '+filesfile
+        #print('evalstr: ', evalstr)
 
         # debug tam --------------------------
+        # Copy the fehm filesfile for manual checking of runs
         try:
-            #print('evalstr: ', evalstr)
             base_name = os.path.basename(filesfile)
             destination_path = os.path.join(os.getcwd(), base_name)
-
-        ## Copy the file
             shutil.copy(filesfile, destination_path)
             #print(f"Copied '{filesfile}' to '{destination_path}'")
-
         except Exception as e:
             print(f"An error occurred while copying the file: {e}")
-
-        # end debug -------------------------
         
         with open(os.devnull, "w") as f:
             call(evalstr, shell=True, stdout=f)
@@ -1457,12 +1487,10 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('cflxz', log))
         suite.addTest(fehmTest('colloid_filtration', log))
         suite.addTest(fehmTest('darcy2D', log))
-        suite.addTest(fehmTest('non_darcy', log))
-        suite.addTest(fehmTest('non_darcy_dfn', log))
         #suite.addTest(fehmTest('dissolution', log))
         #suite.addTest(fehmTest('doe', log))
         suite.addTest(fehmTest('dryout', log))
-#       suite.addTest(fehmTest('dispersion', log))
+        suite.addTest(fehmTest('dispersion', log))
         suite.addTest(fehmTest('evaporation', log))
         suite.addTest(fehmTest('fracture_aperture', log))
         suite.addTest(fehmTest('head', log))
@@ -1473,6 +1501,9 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('henrys_law', log))
         suite.addTest(fehmTest('mptr', log))
         suite.addTest(fehmTest('multi_solute', log))
+        suite.addTest(fehmTest('non_darcy', log))
+        suite.addTest(fehmTest('non_darcy_dfn', log))
+        suite.addTest(fehmTest('non_darcy_vv', log))
         suite.addTest(fehmTest('perm_test', log))
         suite.addTest(fehmTest('potential_energy', log))
         suite.addTest(fehmTest('ramey', log))
@@ -1505,8 +1536,6 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('cflxz', log))
         suite.addTest(fehmTest('colloid_filtration', log))
         suite.addTest(fehmTest('darcy2D', log))
-        suite.addTest(fehmTest('darcy2D', log))
-        suite.addTest(fehmTest('non_darcy', log))
         suite.addTest(fehmTest('dissolution', log))
         suite.addTest(fehmTest('doe', log))
         suite.addTest(fehmTest('dryout', log))
@@ -1520,6 +1549,9 @@ def suite(mode, test_case, log):
         suite.addTest(fehmTest('henrys_law', log))
         suite.addTest(fehmTest('mptr', log))
         suite.addTest(fehmTest('multi_solute', log))
+        suite.addTest(fehmTest('non_darcy', log))
+        suite.addTest(fehmTest('non_darcy_dfn', log))
+        suite.addTest(fehmTest('non_darcy_vv', log))
         suite.addTest(fehmTest('perm_test', log))
         suite.addTest(fehmTest('potential_energy', log))
         suite.addTest(fehmTest('ramey', log))
