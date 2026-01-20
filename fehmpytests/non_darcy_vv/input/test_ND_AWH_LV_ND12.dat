@@ -1,0 +1,198 @@
+title: 1D test of RH boundary conditions (3a tests lower humidity)
+idfehm
+ FEHM3.6_AWH_V_ND_TEST
+#hi temp table
+eos
+table h2o ../input/h2o_props_gaz_6a.txt
+table air ../input/air_table_nist23_test.txt
+sol
+1 -1 
+ndar  
+1 0 0 1.0d12
+
+end ndar 
+pres
+    1   0  0 0.2 0.1 2
+    1 1 1  0.2 0.1 2
+ 
+ngas  
+3
+1  0  0  0.01
+
+
+
+end ngas
+# fdm finite difference grid
+fdm
+block
+50 1 1
+0.0 0.0 0.0 
+1 1.
+-50 1.
+
+1 1.
+
+1 1.
+
+node
+bloc
+1 1 1
+
+#------------------------------------  BOUN
+#test1 input mod 2, mod 3, mod 4, outflow mod 1 K= 1.e-13
+#test2 input mod 2, mod 3, mod 4, outflow mod 1 K= 1.e-14
+boun
+model 1           OUTFLOW (HU)
+ti
+2 0 1e20
+pw
+ 0.1 0.1
+t
+90 90
+if
+1.e3 1.e3
+model 2             INFLO W (sw,sa.se)
+ti
+2 0. 1.e20
+sw
+  -1.e-6 -1.e-6
+sa
+  -1.e-3 -1.e-3
+model 3              INFLOW (sw,sa.se)
+ti
+2 0. 1.e20
+sw
+  -1.e-4 -1.e-4
+sa
+  -1.e-3 -1.e-3
+se
+  -5.e-4 -5.e-4  
+model 4                      INFLOW (sw,sa.se)
+ti 
+2  0. 1.e20
+sw
+  -1.e-7 -1.e-7
+sa
+  -1.e-4 -1.e-4
+se
+  -4.e-5 -4.e-5  
+model 5                      INFLOW (sw,sa.se)
+ti 
+3  0.0 25 50
+sw
+  -1.e-03 -1.e-02 -1.e-04
+sa
+  -1.e-06 -1.e-09 -1.e-08
+ts
+  0.01   0.1  0.02
+t
+120 120 250
+if
+1e-2 1.e-2 1.d-2
+
+1 1 1 5
+50 50 1  1
+
+flxo
+3
+1 2
+10 11
+48 49
+#model 6        change from model 2 to model 3, and  model 4
+#ti
+#4 0. 200. 400. 1.e20
+#ts
+#1.e-4 1.e-1 1.e-1 1.e-1
+#chmodel               
+#2 3 4 4
+#hflx
+#1 1 1 100. 1.e-4
+#
+#t
+#200. 200.              #28.5 28.5
+#---------------Output----------------------
+hist
+days 1.e20  1.0e-2
+fluxz
+pres air
+saturation
+temperature
+flow
+global water
+global steam
+temperature
+end
+cont
+vtk 1000 1e20
+mat
+geo
+xyz
+liquid
+vapor
+capillary
+flux net
+saturation
+velocity
+temperature
+pressure
+end
+#---------------Time/Ctrl-----gaz 10 ts--------------
+time
+ 0.2 100 250  1  2000  1  0.0
+
+ctrl
+20  1.e-5  8  100  gmre
+1 0 0 1
+
+1.0  0  1.0
+20  1.2  1e-9 5
+0  0
+iter
+1e-6 1e-6 1e-4 -1e-3 1.2
+0       0       0       5       14000.
+#----------------Perm/Rock-------------------
+perm
+1  0  0  5.e-15 1e-18 1e-18
+1  0  0  1.e-13 1e-18 1e-18
+1  0  0  1.e-12 1e-18 1e-18
+1  0  0  1.e-13 1e-18 1e-18
+
+rock
+1  0  0  2000.  1010.   0.1
+
+cond
+1 0 0   3.0  3.0 3.0
+
+rlp  1
+ 1  0.0  0.0  1  1  0.1  1
+
+ 1  0  0  1
+
+stop
+
+
+model 1           OUTFLOW (HU)
+ti
+2 0 1e20
+ph
+ 0.1 0.1
+th
+ 80 80               #28.5 28.5
+hu
+  0.001 0.001
+if
+1.e2 1.e2
+
+model 5                      INFLOW (sw,sa.se)
+ti 
+2  0.0 1.e20
+sw
+  -1.e-06 -1.e-06
+sa
+  -1.e-08 -1.e-08
+t
+120 120
+if
+1e-2 1.e-2
+cond
+1 0 0   3.0e-6  3.0 3.0

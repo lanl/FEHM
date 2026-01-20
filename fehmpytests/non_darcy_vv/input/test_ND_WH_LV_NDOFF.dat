@@ -1,0 +1,125 @@
+title: 1D test ND: W and heat and heat (WH)
+idfehm
+ FEHM3.6_VER_ND1
+#hi temp table
+eos
+table h2o ../input/h2o_props_gaz_6a.txt
+table air ../input/air_table_nist23_test.txt
+sol
+1 -1 
+# run darcy with ndar off 
+ndar OFF 
+1 0 0 1.d12
+
+end ndar 
+pres
+    1   0  0 0.2 90 1
+ 
+# fdm finite difference grid
+fdm
+block
+50 1 1
+0.0 0.0 0.0 
+1 1.
+-50 1.
+
+1 1.
+
+1 1.
+
+node
+3
+1 25 49
+#------------------------------------  BOUN
+#test1 input mod 2, mod 3, mod 4, outflow mod 1 K= 1.e-13
+#test2 input mod 2, mod 3, mod 4, outflow mod 1 K= 1.e-14
+boun
+model 1           OUTFLOW (HU)
+ti
+2 0 1e20
+pw
+ 0.2 0.2
+t
+90 90
+if
+1.e3 1.e3 
+model 2                     INFLOW (sw,se)
+ti 
+3  0.0 50 100
+sw
+  -1.e-03 -1.e-05 -1.e-04
+ts
+  0.2   0.3  0.02
+t
+125 180 250
+if
+1e-2 1.e-2 1.d-2
+
+1 1 1 2
+50 50 1  1
+
+flxo
+3
+1 2
+10 11
+48 49            
+#---------------Output----------------------
+hist
+days 1.e20  1.0e-2
+fluxz
+pres air
+saturation
+temperature
+flow
+global water
+global steam
+temperature
+end
+cont
+vtk 1000 1e20
+mat
+geo
+xyz
+liquid
+vapor
+capillary
+flux net
+saturation
+velocity
+temperature
+pressure
+end
+#---------------Time/Ctrl-----gaz 10 ts--------------
+time
+ 0.2 200 250  1  2000  1  0.0
+
+ctrl
+20  1.e-5  8  100  gmre
+1 0 0 1
+
+1.0  0  1.0
+20  1.2  1e-9 5
+0  0
+iter
+1e-6 1e-6 1e-4 -1e-3 1.2
+0       0       0       5       14000.
+#----------------Perm/Rock-------------------
+perm
+1  0  0  5.e-15 1e-18 1e-18
+1  0  0  1.e-13 1e-18 1e-18
+1  0  0  1.e-12 1e-18 1e-18
+1  0  0  1.e-13 1e-18 1e-18
+
+rock
+1  0  0  2000.  1010.   0.1
+
+cond
+1 0 0   3.0  3.0 3.0
+
+rlp  1
+ 1  0.0  0.0  1  1  0.1  1
+
+ 1  0  0  1
+
+stop
+

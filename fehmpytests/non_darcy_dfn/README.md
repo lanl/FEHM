@@ -43,6 +43,7 @@ Run these 9 tests with the following:
 
 *python fehmpytests.py ../src/xfehm non_darcy_dfn* 
 
+Note, for these tests only dp 1.00e+00 are used.
 The following directories will be created using the following naming convention:
 A1 = aperture e1e-3 = 0.001
 A2 = aperture e5e-4 = 0.0005
@@ -50,10 +51,29 @@ A3 = aperture e1e-4 = 0.0001
 B2 = ndar beta = 1.0e+02
 B5 = ndar beta = 1.0e+05
 
+
 <pre>
-A1B2_dp1e00_output   A1B5_dp1e00_output   A1Darcy_dp1e00
-A2B2_dp1e00_output   A2B5_dp1e00_output   A2Darcy_dp1e00
-A3B2_dp1e00_output   A3B5_dp1e00_output   A3Darcy_dp1e00
+Input:
+A1B2_dp1e00_ndar.in:title:   Water into Jeffrey Fracture - ndar 1.0d2, perm 8.33e-08, dp 1.00e+00
+A1B5_dp1e00_ndar.in:title:   Water into Jeffrey Fracture - ndar 1.0d5, perm 8.33e-08, dp 1.00e+00
+A2B2_dp1e00_ndar.in:title:   Water into Jeffrey Fracture - ndar 1.0d2, perm 2.08e-08, dp 1.00e+00
+A2B5_dp1e00_ndar.in:title:   Water into Jeffrey Fracture - ndar 1.0d5, perm 2.08e-08, dp 1.00e+00
+A3B2_dp1e00_ndar.in:title:   Water into Jeffrey Fracture - ndar 1.0d2, perm 8.33e-10, dp 1.00e+00
+A3B5_dp1e00_ndar.in:title:   Water into Jeffrey Fracture - ndar 1.0d2, perm 8.33e-10, dp 1.00e+00
+A1Darcy_dp1e00.in:title:   Water into Jeffrey Fracture - perm 8.33e-08, dp 1.00e+00
+A2Darcy_dp1e00.in:title:   Water into Jeffrey Fracture - perm 2.08e-08, dp 1.00e+00
+A3Darcy_dp1e00.in:title:   Water into Jeffrey Fracture - perm 8.33e-10, dp 1.00e+00
+
+Output:
+A1B2_dp1e00_output
+A1B5_dp1e00_output
+A2B2_dp1e00_output
+A2B5_dp1e00_output
+A3B2_dp1e00_output
+A3B5_dp1e00_output
+A1Darcy_dp1e00_output
+A2Darcy_dp1e00_output
+A3Darcy_dp1e00_output
 </pre>
 
 
