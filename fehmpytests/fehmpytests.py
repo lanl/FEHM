@@ -11,11 +11,13 @@
 # warranty, express or  implied, or assumes any liability or
 # responsibility for the use of this information.      
 #***********************************************************************
-# tamiller modified Jan 2026
+# Version 3.6.2 fehmpytests.py
+#
+# tamiller modified Jan 2026 for branch gaz-nondarcy3 V3.6.3.3
 #          this is older than October versions which were in process of being improved
 #          but they had issues running some tests
 #          This version needs error handling fixed and messages improved
-#
+#          
 import unittest
 import os
 import sys
@@ -448,7 +450,7 @@ class fehmTest(unittest.TestCase):
         #
         # .. Authors: Terry Miller modified from George tests for ndar
 
-        print('\nDEV NOTE: non_darcy_dfn requires FEHM V3.3.1 or later.\n')
+        print('\nDEV NOTE: non_darcy_dfn requires FEHM V3.6.3 or later.\n')
 
         self.test_case('non_darcy')
 
@@ -462,7 +464,7 @@ class fehmTest(unittest.TestCase):
         #
         # .. Authors: Terry Miller modified from dfnWorks ndar tests
 
-        print('\nDEV NOTE: non_darcy_dfn requires FEHM V3.3.2 or later.\n')
+        print('\nDEV NOTE: non_darcy_dfn requires FEHM V3.6.3.2 or later.\n')
 
         self.test_case('non_darcy_dfn')
 
@@ -476,7 +478,7 @@ class fehmTest(unittest.TestCase):
 
         arguments = {}
 
-        print('\nDEV NOTE: non_darcy_vv requires FEHM V3.3.3 or later.\n')
+        print('\nDEV NOTE: non_darcy_vv requires FEHM V3.6.3.3 or later.\n')
         print('DEV NOTE: non_darcy_vv maxerr tolerance set to 0.05\n')
 
         arguments['maxerr'] = 0.05
