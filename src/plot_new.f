@@ -1050,7 +1050,8 @@ c**** write number of plot nodes, node numbers and coordinates ****
             if (pres_flag .eq. 2 .or. pres_flag .eq. 3) then
 c gaz 080923 added pa output for isothermal 2 phase
              if(ico2.gt.0) then
-              write(ishisp, form1_string) ptime,  
+c gaz 120326 changed ishisp to ishisp2
+              write(ishisp2, form1_string) ptime,  
      &           (max(pci(nskw(i)),1.d-98), i=1,m)
              else
 c gaz 220125  changed   ishisp to ishisp2  
