@@ -86,6 +86,7 @@ C***********************************************************************
       integer idiag,neqp1,iflg,idofdiag
       integer nelm(*),nmat(*),nrhs(*),nelmdg(*),indx(*)
       real*8 diag(idof,*),diagi(idof,*),rdum(*),a(*),r(*),det,fdum2
+      real*8 adum
       real*8 diag_tol
       parameter (diag_tol=1.d-20)
 
@@ -129,17 +130,16 @@ c     identify row elements
                   do j=1,idof
                      do k=1,idof
                         diag(j,k)=a(nmat((j-1)*idof+k)+ipos)
-                        a(nmat((j-1)*idof+k)+ipos)=0.0
                      enddo
                   enddo
 c     multiply row elements by inverse of diagonal
                   do j=1,idof
                      do k=1,idof
+                        adum=0.0
                         do l=1,idof
-                           a(nmat((j-1)*idof+k)+ipos)=
-     $                          + a(nmat((j-1)*idof+k)+ipos)+
-     &                          diagi(j,l)*diag(l,k)
+                           adum=adum+diagi(j,l)*diag(l,k)
                         enddo
+                        a(nmat((j-1)*idof+k)+ipos)=adum
                      enddo
                   enddo
                else 
